@@ -1,0 +1,275 @@
+import { VOLUME_LANDMARKS } from "@/lib/volume-data";
+import type { ProgramWithDays } from "@/utils/programs";
+import type { WorkoutLog } from "@/utils/workout-logs";
+
+// ── Volume gauge ──────────────────────────────────────────────────────────────
+
+function VolumeGaugeRow({
+  group,
+  direct,
+  indirect,
+  landmark,
+}: {
+  group: string;
+  direct: number;
+  indirect: number;
+  landmark: { mev: number; mav: number; mrv: number };
+}) {
+  const total = direct + indirect;
+  const scale = Math.max(landmark.mrv + 4, total + 2);
+
+  const zone =
+    total < landmark.mev
+      ? "SOUS-MEV"
+      : total <= landmark.mav
+      ? "OPTIMAL"
+      : total <= landmark.mrv
+      ? "PROCHE MRV"
+      : "DÉPASSEMENT MRV";
+
+  const fillColor =
+    total < landmark.mev
+      ? "bg-red-600/70"
+      : total <= landmark.mav
+      ? "bg-green-500"
+      : total <= landmark.mrv
+      ? "bg-orange-500"
+      : "bg-red-900";
+
+  const badgeCls =
+    total < landmark.mev
+      ? "text-red-400 border-red-500/30 bg-red-500/10"
+      : total <= landmark.mav
+      ? "text-green-400 border-green-500/30 bg-green-500/10"
+      : total <= landmark.mrv
+      ? "text-orange-400 border-orange-500/30 bg-orange-500/10"
+      : "text-red-300 border-red-700/40 bg-red-900/20";
+
+  const mevPct = (landmark.mev / scale) * 100;
+  const mavPct = (landmark.mav / scale) * 100;
+  const mrvPct = (landmark.mrv / scale) * 100;
+  const fillPct = Math.min((total / scale) * 100, 100);
+
+  return (
+    <div className="space-y-1.5">
+      {/* Header row */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className="text-xs font-bold text-white flex-shrink-0">{group}</span>
+          <span className="text-[10px] text-[#F5EDED]/35 truncate">
+            {direct} directs
+            {indirect > 0 && ` + ${indirect} indirects`}
+            {" "}= <strong className="text-[#F5EDED]/60">{total} sets</strong>
+          </span>
+        </div>
+        <span
+          className={`flex-shrink-0 text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border ${badgeCls}`}
+        >
+          {zone}
+        </span>
+      </div>
+
+      {/* Progress bar */}
+      <div className="relative h-2.5 bg-[#150000] rounded-full overflow-visible border border-[#890404]/20">
+        {/* Fill */}
+        <div
+          className={`absolute left-0 top-0 h-full rounded-full ${fillColor}`}
+          style={{ width: `${fillPct}%` }}
+        />
+        {/* MEV marker */}
+        <div
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[#F5EDED]/25"
+          style={{ left: `${mevPct}%` }}
+        />
+        {/* MAV marker */}
+        <div
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[#F5EDED]/25"
+          style={{ left: `${mavPct}%` }}
+        />
+        {/* MRV marker */}
+        <div
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-red-500/50"
+          style={{ left: `${mrvPct}%` }}
+        />
+      </div>
+
+      {/* Scale labels */}
+      <div className="relative h-3">
+        <span
+          className="absolute text-[8px] text-[#F5EDED]/25 font-bold -translate-x-1/2"
+          style={{ left: `${mevPct}%` }}
+        >
+          MEV {landmark.mev}
+        </span>
+        <span
+          className="absolute text-[8px] text-[#F5EDED]/25 font-bold -translate-x-1/2"
+          style={{ left: `${mavPct}%` }}
+        >
+          MAV {landmark.mav}
+        </span>
+        <span
+          className="absolute text-[8px] text-red-400/50 font-bold -translate-x-1/2"
+          style={{ left: `${mrvPct}%` }}
+        >
+          MRV {landmark.mrv}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ── Intensity row ─────────────────────────────────────────────────────────────
+
+function IntensityRow({
+  name,
+  dayLabel,
+  rir,
+  currentWeight,
+}: {
+  name: string;
+  dayLabel: string;
+  rir: number | null;
+  currentWeight: number | null | undefined;
+}) {
+  let badge: React.ReactNode;
+
+  if (currentWeight === undefined) {
+    // No log found for this exercise
+    badge = (
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#F5EDED]/5 border border-[#F5EDED]/10 text-[#F5EDED]/30">
+        Première session
+      </span>
+    );
+  } else if (currentWeight === null) {
+    badge = (
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#F5EDED]/5 border border-[#F5EDED]/10 text-[#F5EDED]/30">
+        = Stable
+      </span>
+    );
+  } else {
+    badge = (
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-green-500/15 border border-green-500/25 text-green-400">
+        ▲ Données disponibles
+      </span>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-3 py-2 border-b border-[#890404]/10 last:border-0">
+      <div className="min-w-0">
+        <p className="text-xs font-semibold text-white truncate">{name}</p>
+        <p className="text-[9px] text-[#F5EDED]/30">{dayLabel}</p>
+      </div>
+      <div className="flex items-center gap-2 flex-shrink-0">
+        {rir !== null && (
+          <span className="text-[9px] font-bold text-[#F5EDED]/40 border border-[#890404]/20 px-1.5 py-0.5 rounded">
+            RIR {rir}
+          </span>
+        )}
+        {badge}
+      </div>
+    </div>
+  );
+}
+
+// ── Main export ───────────────────────────────────────────────────────────────
+
+export default function VolumeIntensitySection({
+  program,
+  workoutLogs,
+}: {
+  program: ProgramWithDays;
+  workoutLogs: WorkoutLog[];
+}) {
+  // ── Compute volume per muscle group ──
+  const volumeByGroup: Record<string, { direct: number; indirect: number }> = {};
+
+  for (const day of program.days) {
+    for (const ex of day.exercises) {
+      if (!ex.muscle_group) continue;
+      const group = ex.muscle_group;
+      if (!volumeByGroup[group]) volumeByGroup[group] = { direct: 0, indirect: 0 };
+      const sets = ex.sets ?? 0;
+      if (ex.is_direct !== false) {
+        volumeByGroup[group].direct += sets;
+      } else {
+        volumeByGroup[group].indirect += sets;
+      }
+    }
+  }
+
+  const volumeEntries = Object.entries(volumeByGroup).sort(([a], [b]) =>
+    a.localeCompare(b, "fr")
+  );
+
+  // ── Build weight map from workout logs ──
+  const weightMap: Record<string, number | null> = {};
+  for (const log of workoutLogs) {
+    const key = log.exercise_name.toLowerCase();
+    if (!(key in weightMap)) {
+      weightMap[key] = log.weight_kg ?? null;
+    }
+  }
+
+  // ── All exercises flat ──
+  const allExercises = program.days.flatMap((d) =>
+    d.exercises.map((e) => ({ ...e, dayLabel: d.day_label }))
+  );
+
+  const hasVolume = volumeEntries.length > 0;
+  const hasExercises = allExercises.length > 0;
+
+  if (!hasVolume && !hasExercises) return null;
+
+  return (
+    <div className="space-y-5 mb-8">
+      {/* ── Volume section ── */}
+      {hasVolume && (
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
+            Volume — Semaine planifiée
+          </p>
+          <div className="space-y-5">
+            {volumeEntries.map(([group, { direct, indirect }]) => {
+              const landmark = VOLUME_LANDMARKS[group];
+              if (!landmark) return null;
+              return (
+                <VolumeGaugeRow
+                  key={group}
+                  group={group}
+                  direct={direct}
+                  indirect={indirect}
+                  landmark={landmark}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Intensity section ── */}
+      {hasExercises && (
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+            Intensité — RIR & Progression
+          </p>
+          <div>
+            {allExercises.map((ex) => {
+              const key = ex.name.toLowerCase();
+              const hasLog = key in weightMap;
+              return (
+                <IntensityRow
+                  key={ex.id}
+                  name={ex.name}
+                  dayLabel={ex.dayLabel}
+                  rir={ex.rir}
+                  currentWeight={hasLog ? weightMap[key] : undefined}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

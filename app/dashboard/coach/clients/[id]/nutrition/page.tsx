@@ -1,0 +1,82 @@
+import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
+import { getUser, getProfile, getClientById } from "@/utils/auth";
+import {
+  getNutritionProfile,
+  getTodayLogs,
+  getLast30DaysLogs,
+  getAllFoods,
+  getActiveDietPlan,
+  getAllDietPlans,
+} from "@/utils/nutrition";
+import { saveNutritionProfile } from "./actions";
+import { createDietPlan, deactivateDietPlan } from "./diet-plan-actions";
+import CoachClientNutritionTabs from "@/components/ui/CoachClientNutritionTabs";
+import { ChevronLeft } from "lucide-react";
+
+export default async function CoachClientNutritionPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+
+  const user = await getUser();
+  if (!user) redirect("/auth/login");
+
+  const [profile, client] = await Promise.all([
+    getProfile(user.id),
+    getClientById(id),
+  ]);
+
+  if (profile?.role === "client") redirect("/dashboard/client");
+  if (!client) notFound();
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans] =
+    await Promise.all([
+      getNutritionProfile(id),
+      getTodayLogs(id, today),
+      getLast30DaysLogs(id),
+      getAllFoods(),
+      getActiveDietPlan(id),
+      getAllDietPlans(id),
+    ]);
+
+  return (
+    <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
+      <Link
+        href={`/dashboard/coach/clients/${id}`}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+      >
+        <ChevronLeft size={14} />
+        {client.full_name}
+      </Link>
+
+      <div className="mb-8">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Nutrition
+        </p>
+        <h1 className="text-3xl font-black uppercase tracking-tight">
+          {client.full_name}
+        </h1>
+      </div>
+
+      <CoachClientNutritionTabs
+        clientId={id}
+        clientWeight={client.weight_start}
+        nutritionProfile={nutritionProfile}
+        todayLogs={todayLogs}
+        historyLogs={historyLogs}
+        foods={foods}
+        activePlan={activePlan}
+        allPlans={allPlans}
+        today={today}
+        saveNutritionProfile={saveNutritionProfile}
+        createDietPlan={createDietPlan}
+        deactivateDietPlan={deactivateDietPlan}
+      />
+    </div>
+  );
+}
