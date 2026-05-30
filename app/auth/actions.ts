@@ -1,6 +1,7 @@
 "use server"
 
 import { createServerSupabase } from "@/lib/supabase-server"
+import { createAdminClient } from "@/lib/supabase-admin"
 import { redirect } from "next/navigation"
 
 export async function loginAction(formData: FormData) {
@@ -9,25 +10,32 @@ export async function loginAction(formData: FormData) {
 
   const supabase = await createServerSupabase()
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  const { data: authData, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  })
 
   if (error) {
+    console.error("Login error:", error.message)
     redirect("/auth/login?error=invalid_credentials")
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-
-  if (!user) {
+  const userId = authData.user?.id
+  if (!userId) {
     redirect("/auth/login?error=no_user")
   }
 
-  const { data: profile } = await supabase
+  // Use admin client to read role — bypasses RLS so it always works
+  const admin = createAdminClient()
+  const { data: profile, error: profileError } = await admin
     .from("profiles")
     .select("role")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single()
+
+  console.log("User ID:", userId)
+  console.log("Profile:", profile)
+  console.log("Profile error:", profileError?.message)
 
   if (profile?.role === "coach") {
     redirect("/dashboard/coach")

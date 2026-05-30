@@ -101,27 +101,7 @@ export default async function LoginPage({ searchParams }: Props) {
               required
               autoComplete="email"
               placeholder="ton@email.com"
-              style={{
-                width: "100%",
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid rgba(224,30,30,0.15)",
-                borderRadius: 8,
-                padding: "12px 16px",
-                color: "#F5EDED",
-                fontFamily: "var(--font-montserrat, 'Montserrat'), sans-serif",
-                fontWeight: 500,
-                fontSize: 14,
-                outline: "none",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#E01E1E";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(224,30,30,0.1)";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(224,30,30,0.15)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className="ep-input"
             />
           </div>
 
@@ -147,27 +127,7 @@ export default async function LoginPage({ searchParams }: Props) {
               required
               autoComplete="current-password"
               placeholder="••••••••"
-              style={{
-                width: "100%",
-                background: "rgba(0,0,0,0.4)",
-                border: "1px solid rgba(224,30,30,0.15)",
-                borderRadius: 8,
-                padding: "12px 16px",
-                color: "#F5EDED",
-                fontFamily: "var(--font-montserrat, 'Montserrat'), sans-serif",
-                fontWeight: 500,
-                fontSize: 14,
-                outline: "none",
-                transition: "border-color 0.15s, box-shadow 0.15s",
-              }}
-              onFocus={(e) => {
-                e.currentTarget.style.borderColor = "#E01E1E";
-                e.currentTarget.style.boxShadow = "0 0 0 3px rgba(224,30,30,0.1)";
-              }}
-              onBlur={(e) => {
-                e.currentTarget.style.borderColor = "rgba(224,30,30,0.15)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
+              className="ep-input"
             />
           </div>
 
@@ -190,42 +150,11 @@ export default async function LoginPage({ searchParams }: Props) {
             </div>
           )}
 
-          <button
-            type="submit"
-            style={{
-              width: "100%",
-              height: 48,
-              background: "linear-gradient(135deg, #E01E1E 0%, #890404 100%)",
-              border: "none",
-              borderRadius: 8,
-              color: "#F5EDED",
-              fontFamily: "var(--font-montserrat, 'Montserrat'), sans-serif",
-              fontWeight: 800,
-              fontSize: 13,
-              letterSpacing: "0.08em",
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-              marginTop: 4,
-            }}
-            onMouseEnter={(e) => {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.filter = "brightness(1.1)";
-              el.style.boxShadow = "0 4px 20px rgba(224,30,30,0.3)";
-              el.style.transform = "translateY(-1px)";
-            }}
-            onMouseLeave={(e) => {
-              const el = e.currentTarget as HTMLButtonElement;
-              el.style.filter = "none";
-              el.style.boxShadow = "none";
-              el.style.transform = "translateY(0)";
-            }}
-          >
+          <button type="submit" className="ep-btn-primary" style={{ width: "100%", height: 48, fontSize: 13 }}>
             Se connecter
           </button>
         </form>
 
-        {/* Footer */}
         <p
           className="animate-fade-in stagger-6"
           style={{
