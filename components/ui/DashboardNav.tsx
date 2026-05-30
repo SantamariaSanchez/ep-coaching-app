@@ -24,15 +24,15 @@ const COACH_ITEMS = [
 
 const CLIENT_ITEMS = [
   { label: "Accueil",    icon: Home,          segment: "" },
-  { label: "Road Map",  icon: Map,           segment: "roadmap" },
-  { label: "Programme", icon: Dumbbell,      segment: "program" },
-  { label: "Logbook",   icon: BookOpen,      segment: "logbook" },
-  { label: "Nutrition", icon: Apple,         segment: "nutrition" },
-  { label: "Check-in",  icon: ClipboardList, segment: "checkin" },
-  { label: "Photos",    icon: Image,         segment: "photos" },
-  { label: "Messages",  icon: MessageCircle, segment: "messages" },
-  { label: "Progrès",   icon: TrendingUp,    segment: "progress" },
-  { label: "Profil",    icon: User,          segment: "profile" },
+  { label: "Road Map",   icon: Map,           segment: "roadmap" },
+  { label: "Programme",  icon: Dumbbell,      segment: "program" },
+  { label: "Logbook",    icon: BookOpen,      segment: "logbook" },
+  { label: "Nutrition",  icon: Apple,         segment: "nutrition" },
+  { label: "Check-in",   icon: ClipboardList, segment: "checkin" },
+  { label: "Photos",     icon: Image,         segment: "photos" },
+  { label: "Messages",   icon: MessageCircle, segment: "messages" },
+  { label: "Progrès",    icon: TrendingUp,    segment: "progress" },
+  { label: "Profil",     icon: User,          segment: "profile" },
 ];
 
 const COACH_MOBILE  = ["", "clients", "analytics", "bilan", "messages"];

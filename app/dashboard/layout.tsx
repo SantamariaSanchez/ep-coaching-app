@@ -1,3 +1,6 @@
+// Force all dashboard routes to be server-rendered (required for auth middleware + Vercel)
+export const dynamic = "force-dynamic";
+
 import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 
