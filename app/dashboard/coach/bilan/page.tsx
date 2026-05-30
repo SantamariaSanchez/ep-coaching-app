@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getPendingBilans, getDoneBilans } from "@/utils/checkins";
 import {
@@ -10,7 +10,7 @@ import CoachBilanView from "@/components/ui/CoachBilanView";
 
 export default async function CoachBilanPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");

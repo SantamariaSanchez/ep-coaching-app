@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import ClientsSection from "@/components/ui/ClientsSection";
 
@@ -6,7 +6,7 @@ export default async function ClientsPage() {
   const user = await getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    redirect("/");
   }
 
   const [profile, clients] = await Promise.all([

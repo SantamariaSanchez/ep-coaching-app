@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
@@ -6,7 +6,7 @@ import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 
 export default async function ClientProgramPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const [profile, program, corrections] = await Promise.all([
     getProfile(user.id),

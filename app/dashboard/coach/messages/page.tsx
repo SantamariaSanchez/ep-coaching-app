@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import Link from "next/link";
@@ -16,7 +16,7 @@ interface LastMessage {
 
 export default async function CoachMessagesPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");

@@ -121,7 +121,7 @@ export default function DashboardNav() {
   async function handleSignOut() {
     const supabase = createClientSupabase();
     await supabase.auth.signOut();
-    router.push("/auth/login");
+    router.push("/");
     router.refresh();
   }
 

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import {
   getThisWeekCheckin,
@@ -152,7 +152,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
 
 export default async function CheckinPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");

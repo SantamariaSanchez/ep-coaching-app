@@ -1,3 +1,4 @@
+"use client";
 import Link from "next/link";
 import { Shield, User } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";

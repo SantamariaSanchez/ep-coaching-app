@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getClientMeasurements } from "@/utils/measurements";
 import { getNutritionProfile } from "@/utils/nutrition";
@@ -52,7 +52,7 @@ function StatCard({
 
 export default async function ClientProfilePage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");

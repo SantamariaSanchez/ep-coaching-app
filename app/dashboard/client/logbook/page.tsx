@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import {
@@ -10,7 +10,7 @@ import LogbookClient from "@/components/client/LogbookClient";
 
 export default async function LogbookPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");

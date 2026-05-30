@@ -1,4 +1,4 @@
-"use server"
+﻿"use server"
 
 import { createServerSupabase } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
@@ -17,12 +17,12 @@ export async function loginAction(formData: FormData) {
 
   if (error) {
     console.error("Login error:", error.message)
-    redirect("/auth/login?error=invalid_credentials")
+    redirect("/")
   }
 
   const userId = authData.user?.id
   if (!userId) {
-    redirect("/auth/login?error=no_user")
+    redirect("/")
   }
 
   // Use admin client to read role — bypasses RLS so it always works
@@ -32,10 +32,6 @@ export async function loginAction(formData: FormData) {
     .select("role")
     .eq("id", userId)
     .single()
-
-  console.log("User ID:", userId)
-  console.log("Profile:", profile)
-  console.log("Profile error:", profileError?.message)
 
   if (profile?.role === "coach") {
     redirect("/dashboard/coach")

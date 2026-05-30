@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientMeasurements } from "@/utils/measurements";
@@ -15,7 +15,7 @@ export default async function CoachClientMeasurementsPage({
   const { id } = await params;
 
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const [profile, client, measurements] = await Promise.all([
     getProfile(user.id),

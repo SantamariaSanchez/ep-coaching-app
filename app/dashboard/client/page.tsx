@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
@@ -65,7 +65,7 @@ function QuickCard({
 
 export default async function ClientDashboard() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   // Only redirect if we KNOW the role is coach — never redirect on null profile

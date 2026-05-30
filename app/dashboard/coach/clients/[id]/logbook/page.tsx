@@ -1,4 +1,4 @@
-import { redirect, notFound } from "next/navigation";
+﻿import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getAllClientSessions, getClientPersonalRecords } from "@/utils/sessions";
 import { ChevronLeft } from "lucide-react";
@@ -13,7 +13,7 @@ export default async function CoachClientLogbookPage({
   const { id } = await params;
 
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const [profile, client, sessions, records] = await Promise.all([
     getProfile(user.id),

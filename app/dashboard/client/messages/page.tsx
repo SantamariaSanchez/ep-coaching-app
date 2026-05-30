@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
@@ -21,7 +21,7 @@ async function getCoachId(): Promise<string | null> {
 
 export default async function ClientMessagesPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");

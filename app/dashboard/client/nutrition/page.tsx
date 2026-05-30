@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import {
   getNutritionProfile,
@@ -12,7 +12,7 @@ import { addFoodLog, removeFoodLog, createCustomFood } from "./actions";
 
 export default async function ClientNutritionPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");

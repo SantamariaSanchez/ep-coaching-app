@@ -1,11 +1,11 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAllClientsNutritionSummary } from "@/utils/nutrition";
 import CoachNutritionOverview from "@/components/ui/CoachNutritionOverview";
 
 export default async function CoachNutritionPage() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");

@@ -1,4 +1,4 @@
-import { redirect } from "next/navigation";
+﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import ClientsSection from "@/components/ui/ClientsSection";
 import DashboardStats from "@/components/coach/DashboardStats";
@@ -6,7 +6,7 @@ import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
 
 export default async function CoachDashboard() {
   const user = await getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/");
 
   const [profile, clients] = await Promise.all([
     getProfile(user.id),
