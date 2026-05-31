@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   title: "EP Coaching",
   description: "Application de coaching sportif personnalisé",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "EP Coaching",
+  },
+  icons: {
+    apple: "/icon-192.png",
+  },
 };
 
 export const viewport: Viewport = {

@@ -4,7 +4,7 @@
   "description": "Ton espace coaching personnalisé",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#270101",
+  "background_color": "#0D0000",
   "theme_color": "#E01E1E",
   "icons": [
     {

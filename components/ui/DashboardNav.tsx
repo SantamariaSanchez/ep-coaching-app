@@ -69,6 +69,15 @@ function useNavState() {
 export default function DashboardNav() {
   const { isCoach, navItems, mobileItems } = useNavState();
   const router = useRouter();
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 768px)");
+    setIsDesktop(mq.matches);
+    const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
+  }, []);
 
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
@@ -140,8 +149,13 @@ export default function DashboardNav() {
   return (
     <>
       <aside
-        className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40"
         style={{
+          display: isDesktop ? "flex" : "none",
+          flexDirection: "column",
+          position: "fixed",
+          left: 0, top: 0,
+          height: "100%",
+          zIndex: 40,
           width: 220,
           background: "#0A0000",
           borderRight: "1px solid rgba(224,30,30,0.1)",
@@ -300,13 +314,17 @@ export default function DashboardNav() {
 
       {/* ── Mobile bottom nav ──────────────────────────────────────────────── */}
       <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bottom-nav-safe"
         style={{
+          display: isDesktop ? "none" : "block",
+          position: "fixed",
+          bottom: 0, left: 0, right: 0,
+          zIndex: 40,
           background: "#0A0000",
           borderTop: "1px solid rgba(224,30,30,0.12)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
         }}
       >
-        <div style={{ display: "flex", alignItems: "stretch", justifyContent: "space-around", padding: "6px 4px 0" }}>
+        <div style={{ display: "flex", alignItems: "stretch", justifyContent: "space-around", padding: "6px 4px 6px" }}>
           {mobileItems.map(({ label, icon: Icon, href, active, segment }) => {
             const count = badgeFor(segment);
             return (
