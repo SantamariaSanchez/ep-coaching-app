@@ -39,16 +39,16 @@ function InscriptionForm({ onSuccess }: { onSuccess: () => void }) {
       <div style={{ textAlign: "center", padding: "24px 0" }}>
         <CheckCircle2 size={48} style={{ color: "#4ade80", margin: "0 auto 16px" }} strokeWidth={1.5} />
         <h3 style={{ fontWeight: 800, fontSize: 20, color: "#F5EDED", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-          Demande envoyée !
+          Compte créé !
         </h3>
-        <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", margin: "0 0 8px", lineHeight: 1.6 }}>
-          Emmanuel va créer ton accès et te contacter par email.
+        <p style={{ fontSize: 14, color: "rgba(245,237,237,0.6)", margin: "0 0 8px", lineHeight: 1.6 }}>
+          {state.message ?? "Tes identifiants arrivent par email."}
         </p>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: "0 0 24px" }}>
-          Tu pourras ensuite te connecter ici avec tes identifiants.
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: "0 0 24px" }}>
+          Vérifie ta boîte mail (et les spams).
         </p>
         <button onClick={onSuccess} className="ep-btn-primary" style={{ width: "100%", height: 44 }}>
-          Me connecter
+          Me connecter maintenant →
         </button>
       </div>
     );
