@@ -79,9 +79,10 @@ function cellColor(value: number | null, thresholds: { ok: number; warn: number 
 }
 
 function AlertCard({ client }: { client: ClientAnalytics }) {
-  const high = client.alerts.filter((a) => a.severity === "high").length;
-  const med = client.alerts.filter((a) => a.severity === "medium").length;
-  const low = client.alerts.length - high - med;
+  const alerts = client.alerts ?? [];
+  const high = alerts.filter((a) => a.severity === "high").length;
+  const med = alerts.filter((a) => a.severity === "medium").length;
+  const low = alerts.length - high - med;
   return (
     <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
       <div className="flex items-center justify-between px-4 py-3 border-b border-[#890404]/15">
@@ -95,7 +96,7 @@ function AlertCard({ client }: { client: ClientAnalytics }) {
         </div>
       </div>
       <div className="divide-y divide-[#890404]/10">
-        {client.alerts.map((alert, i) => (
+        {(client.alerts ?? []).map((alert, i) => (
           <div key={i} className="flex items-start gap-3 px-4 py-3">
             <AlertIcon name={alert.icon} severity={alert.severity} />
             <div className="flex-1 min-w-0">
@@ -121,7 +122,7 @@ function HighlightCard({ client }: { client: ClientAnalytics }) {
         </Link>
       </div>
       <div className="divide-y divide-green-500/10">
-        {client.highlights.map((h, i) => (
+        {(client.highlights ?? []).map((h, i) => (
           <div key={i} className="flex items-start gap-3 px-4 py-2.5">
             <HighlightIcon name={h.icon} />
             <div>
@@ -250,7 +251,7 @@ export default function AnalyticsClient() {
               <h2 className="text-sm font-black uppercase tracking-widest text-green-400/80">Ce qui fonctionne</h2>
               {clientsWithHighlights.length > 0 && (
                 <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-green-500/15 text-green-400 border border-green-500/25">
-                  {clientsWithHighlights.reduce((s, c) => s + c.highlights.length, 0)}
+                  {clientsWithHighlights.reduce((s, c) => s + (c.highlights ?? []).length, 0)}
                 </span>
               )}
             </div>

@@ -12,6 +12,11 @@ export default async function CoachClientMessagesPage({
 }) {
   const { clientId } = await params;
 
+  // Guard: clientId must be a valid UUID
+  if (!clientId || clientId === "undefined" || clientId.length < 10) {
+    redirect("/dashboard/coach/messages");
+  }
+
   const user = await getUser();
   if (!user) redirect("/");
 
