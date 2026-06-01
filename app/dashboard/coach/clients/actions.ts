@@ -31,6 +31,10 @@ export async function addClient(
     });
 
   if (authError || !authData.user) {
+    const msg = authError?.message ?? "";
+    if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("registered")) {
+      return { error: "Ce client est déjà inscrit. Il apparaît dans ta liste de clients — rafraîchis la page si besoin." };
+    }
     return { error: authError?.message ?? "Erreur lors de la création du compte." };
   }
 

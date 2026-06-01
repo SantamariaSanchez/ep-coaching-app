@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export async function getUser() {
   if (
@@ -51,8 +52,9 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 export async function getClients(): Promise<Profile[]> {
   try {
-    const supabase = await createServerSupabase();
-    const { data } = await supabase
+    // Use admin client to bypass RLS — coach must see ALL clients regardless of policies
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("profiles")
       .select("id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency")
       .eq("role", "client")
