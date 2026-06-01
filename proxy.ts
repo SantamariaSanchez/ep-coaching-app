@@ -57,3 +57,7 @@ export async function proxy(request: NextRequest) {
 
   return supabaseResponse;
 }
+
+export const config = {
+    matcher: ["/dashboard/:path*", "/auth/:path*"],
+};
