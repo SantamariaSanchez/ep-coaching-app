@@ -67,8 +67,8 @@ export async function getClients(): Promise<Profile[]> {
 
 export async function getClientById(id: string): Promise<Profile | null> {
   try {
-    const supabase = await createServerSupabase();
-    const { data } = await supabase
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("profiles")
       .select("id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency")
       .eq("id", id)
