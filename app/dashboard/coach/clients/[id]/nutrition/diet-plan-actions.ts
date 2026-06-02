@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getUser } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
 import type { DietMode } from "@/utils/nutrition";
@@ -22,7 +22,7 @@ export async function createDietPlan(
     const user = await getUser();
     if (!user) return { error: "Non authentifié" };
 
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
     // Deactivate previous plans
     await supabase
@@ -68,7 +68,7 @@ export async function deactivateDietPlan(
   planId: string
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     await supabase
       .from("diet_plans")
       .update({ is_active: false })

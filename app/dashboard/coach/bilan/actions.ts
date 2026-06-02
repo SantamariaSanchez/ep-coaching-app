@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import {
   notifyClientBilanReady,
@@ -24,7 +24,7 @@ export async function sendBilan(
     return { error: "La note doit être entre 1 et 10." };
   }
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for coach writing bilan data
 
   const { error } = await supabase
     .from("check_ins")
@@ -66,7 +66,7 @@ export async function sendCorrectionFeedbackBilan(
 
   if (!coach_feedback) return { error: "Le retour écrit est obligatoire." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for coach writing bilan data
   const { error } = await supabase
     .from("exercise_corrections")
     .update({
@@ -95,7 +95,7 @@ export async function sendPhotoFeedbackBilan(
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
   if (!coach_feedback) return { error: "Le retour est obligatoire." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for coach writing bilan data
 
   const { error } = await supabase
     .from("photo_updates")

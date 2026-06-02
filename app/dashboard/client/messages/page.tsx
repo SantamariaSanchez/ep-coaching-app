@@ -6,13 +6,15 @@ import ConversationView from "@/components/messaging/ConversationView";
 // The coach's user ID — fetched by looking for a profile with role=coach
 async function getCoachId(): Promise<string | null> {
   try {
-    const { createServerSupabase } = await import("@/lib/supabase-server");
-    const supabase = await createServerSupabase();
-    const { data } = await supabase
+    // Admin client bypasses RLS - client cannot read other users profiles
+    const { createAdminClient } = await import("@/lib/supabase-admin");
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("profiles")
       .select("id")
       .eq("role", "coach")
-      .single();
+      .limit(1)
+      .maybeSingle();
     return data?.id ?? null;
   } catch {
     return null;

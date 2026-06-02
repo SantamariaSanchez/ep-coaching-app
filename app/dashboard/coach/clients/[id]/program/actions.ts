@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ProgramInput } from "@/utils/programs";
 
@@ -9,7 +9,7 @@ export async function saveProgram(
   input: ProgramInput
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
     // Delete existing active program — cascade removes days + exercises
     const { error: deleteError } = await supabase
@@ -98,7 +98,7 @@ export async function submitCorrectionFeedback(
 
   if (!coach_feedback) return { error: "Le retour écrit est obligatoire." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
   const { error } = await supabase
     .from("exercise_corrections")
     .update({

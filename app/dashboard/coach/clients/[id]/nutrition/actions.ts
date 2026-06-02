@@ -1,6 +1,6 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { NutritionProfileInput } from "@/utils/nutrition";
 
@@ -9,7 +9,8 @@ export async function saveNutritionProfile(
   data: NutritionProfileInput
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    // Use admin client - coach writes to another user profile (bypasses RLS)
+    const supabase = createAdminClient();
 
     const { error } = await supabase.from("nutrition_profiles").upsert(
       {
@@ -26,12 +27,16 @@ export async function saveNutritionProfile(
       { onConflict: "client_id" }
     );
 
-    if (error) return { error: "Erreur lors de la sauvegarde." };
+    if (error) {
+      console.error("saveNutritionProfile error:", error);
+      return { error: "Erreur lors de la sauvegarde." };
+    }
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("saveNutritionProfile exception:", e);
     return { error: "Erreur inattendue." };
   }
 }

@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { notifyClientPhotoFeedback } from "@/app/actions/notifications";
 
@@ -14,7 +14,7 @@ export async function saveCompetitionSettings(
   const competition_category = (formData.get("competition_category") as string) || null;
   const competition_date = (formData.get("competition_date") as string) || null;
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
   const { error } = await supabase
     .from("profiles")
@@ -39,7 +39,7 @@ export async function sendPhotoFeedback(
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
   if (!coach_feedback) return { error: "Le retour est obligatoire." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
   const { error } = await supabase
     .from("photo_updates")

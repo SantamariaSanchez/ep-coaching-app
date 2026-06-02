@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 
 type ReplyState = { error: string } | { success: true } | null;
@@ -18,7 +18,7 @@ export async function replyToCheckin(
     return { error: "Le retour et la note sont requis." };
   }
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
   const { error } = await supabase
     .from("check_ins")

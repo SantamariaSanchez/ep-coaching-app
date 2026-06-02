@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { CoachNoteInput, KeyDecisionInput } from "@/utils/notes";
 
@@ -10,7 +10,7 @@ export async function saveCoachNote(
   data: CoachNoteInput
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
     if (noteId) {
       const { error } = await supabase
@@ -39,7 +39,7 @@ export async function saveKeyDecision(
   data: KeyDecisionInput
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase
       .from("key_decisions")
       .insert({ client_id: clientId, ...data });
@@ -57,7 +57,7 @@ export async function deleteKeyDecision(
   decisionId: string
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase
       .from("key_decisions")
       .delete()

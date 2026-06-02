@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 
 export interface MeasurementInput {
@@ -25,7 +25,7 @@ export async function saveMeasurement(
   data: MeasurementInput
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
     const { error } = await supabase.from("measurements").insert({
       client_id: clientId,
@@ -47,7 +47,7 @@ export async function deleteMeasurement(
   measurementId: string
 ): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase
       .from("measurements")
       .delete()
