@@ -44,12 +44,37 @@ export async function proxy(request: NextRequest) {
 
   // Authenticated on an auth page → redirect to dashboard
   if (user && isAuthPage) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    const dest = profile?.role === "coach" ? "/dashboard/coach" : "/dashboard/client";
+    // Use service role key to bypass RLS when reading the profile
+    let role: string | null = null;
+    try {
+      const adminClient = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          cookies: {
+            getAll() { return []; },
+            setAll() {},
+          },
+          auth: { autoRefreshToken: false, persistSession: false },
+        }
+      );
+      const { data: profile } = await adminClient
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      role = profile?.role ?? null;
+    } catch {
+      // Fallback: read from anon client
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single();
+      role = profile?.role ?? null;
+    }
+
+    const dest = role === "coach" ? "/dashboard/coach" : "/dashboard/client";
     const res = NextResponse.redirect(new URL(dest, request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
