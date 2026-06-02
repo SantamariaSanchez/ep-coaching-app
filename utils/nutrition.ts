@@ -341,7 +341,9 @@ export async function getAllClientsNutritionSummary(
   today: string
 ): Promise<ClientNutritionSummary[]> {
   try {
-    const supabase = await createServerSupabase();
+    // Must use admin client — coach reads all clients' data (bypasses RLS)
+    const { createAdminClient } = await import("@/lib/supabase-admin");
+    const supabase = createAdminClient();
 
     // Get all clients
     const { data: clients } = await supabase

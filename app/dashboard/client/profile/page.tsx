@@ -1,227 +1,172 @@
-﻿import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
-import { getClientMeasurements } from "@/utils/measurements";
-import { getNutritionProfile } from "@/utils/nutrition";
-import { getISOWeek } from "@/utils/checkins";
-import ClientProfileEditForm from "@/components/ui/ClientProfileEditForm";
-import { User, Calendar, Target, Scale } from "lucide-react";
+"use client";
+import { useEffect, useState } from "react";
+import { createClientSupabase } from "@/lib/supabase-client";
+import { useRouter } from "next/navigation";
+import { Bell, Lock, LogOut, Save, CheckCircle2, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/components/ui/Skeleton";
 
-function InfoRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string | null | undefined;
-}) {
+const inp: React.CSSProperties = {
+  width:"100%", background:"rgba(0,0,0,0.4)", border:"1px solid rgba(224,30,30,0.15)",
+  borderRadius:8, color:"#F5EDED", padding:"11px 14px",
+  fontFamily:"var(--font-montserrat,sans-serif)", fontWeight:500, fontSize:14, outline:"none",
+};
+
+function Sec({title,children}:{title:string;children:React.ReactNode}) {
   return (
-    <div className="flex flex-col gap-0.5 py-3 border-b border-[#890404]/10 last:border-0">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-        {label}
-      </span>
-      <span className="text-sm text-white font-medium">{value || "—"}</span>
+    <div style={{background:"linear-gradient(135deg,#1A0101 0%,#0D0000 100%)",border:"1px solid rgba(224,30,30,0.12)",borderRadius:14,padding:20,marginBottom:16}}>
+      <p style={{fontSize:10,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase" as const,color:"rgba(224,30,30,0.6)",marginBottom:16}}>{title}</p>
+      {children}
     </div>
   );
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  color = "#E01E1E",
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string;
-  color?: string;
-}) {
+function Row({label,value}:{label:string;value:string|null|undefined}) {
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-      <div
-        className="w-8 h-8 rounded-lg flex items-center justify-center mb-3"
-        style={{ backgroundColor: `${color}15`, border: `1px solid ${color}25` }}
-      >
-        <Icon size={15} style={{ color }} strokeWidth={1.8} />
-      </div>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        {label}
-      </p>
-      <p className="text-xl font-black text-white">{value}</p>
+    <div style={{display:"flex",justifyContent:"space-between",padding:"10px 0",borderBottom:"1px solid rgba(224,30,30,0.08)"}}>
+      <span style={{fontSize:12,color:"rgba(245,237,237,0.4)"}}>{label}</span>
+      <span style={{fontSize:13,fontWeight:600,color:"#F5EDED"}}>{value||"non renseigne"}</span>
     </div>
   );
 }
 
-export default async function ClientProfilePage() {
-  const user = await getUser();
-  if (!user) redirect("/");
+export default function ClientProfilePage() {
+  const router = useRouter();
+  const sb = createClientSupabase();
+  const [profile, setProfile] = useState<Record<string,unknown>|null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fullName, setFullName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [push, setPush] = useState(false);
+  const [resetSent, setResetSent] = useState(false);
+  const [weeks, setWeeks] = useState<number|null>(null);
 
-  const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  useEffect(() => {
+    sb.auth.getUser().then(async ({data:{user}}) => {
+      if (!user) { router.push("/"); return; }
+      const {data:p} = await sb.from("profiles").select("*").eq("id",user.id).single();
+      if (p) {
+        const prof = p as Record<string,unknown>;
+        setProfile(prof);
+        setFullName((prof.full_name as string) ?? "");
+        setPhone((prof.phone as string) ?? "");
+        if (prof.start_date) {
+          const w = Math.floor((Date.now()-new Date((prof.start_date as string)+"T12:00:00").getTime())/(7*24*60*60*1000));
+          setWeeks(w);
+        }
+      }
+      const {data:sub} = await sb.from("push_subscriptions").select("id").eq("user_id",user.id).maybeSingle();
+      setPush(!!sub);
+      setLoading(false);
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[]);
 
-  const [measurements, nutritionProfile] = await Promise.all([
-    getClientMeasurements(user.id),
-    getNutritionProfile(user.id),
-  ]);
+  async function save() {
+    if (!profile) return;
+    setSaving(true);
+    await sb.from("profiles").update({full_name:fullName,phone}).eq("id",profile.id as string);
+    setSaved(true); setSaving(false);
+    setTimeout(() => setSaved(false), 3000);
+  }
 
-  const latestMeasurement = measurements[0] ?? null;
-  const today = new Date();
-  const weekNumber = getISOWeek(today);
+  async function signOut() {
+    await sb.auth.signOut();
+    router.push("/auth/client");
+  }
 
-  const weeksSinceStart = profile?.start_date
-    ? Math.floor(
-        (today.getTime() -
-          new Date(profile.start_date + "T12:00:00").getTime()) /
-          (7 * 24 * 60 * 60 * 1000)
-      )
+  async function resetPwd() {
+    const email = profile?.email as string;
+    if (!email) return;
+    await sb.auth.resetPasswordForEmail(email, {redirectTo:`${window.location.origin}/auth/client`});
+    setResetSent(true);
+  }
+
+  if (loading) return (
+    <div style={{padding:"32px 20px",maxWidth:560,margin:"0 auto"}}>
+      {[...Array(3)].map((_,i) => <Skeleton key={i} className="h-36 mb-4 rounded-xl"/>)}
+    </div>
+  );
+
+  const startFmt = (profile?.start_date as string|null)
+    ? new Intl.DateTimeFormat("fr-FR",{day:"numeric",month:"long",year:"numeric"}).format(new Date((profile!.start_date as string)+"T12:00:00"))
     : null;
 
-  const phaseLabel =
-    nutritionProfile?.phase === "deficit"
-      ? "Déficit calorique"
-      : nutritionProfile?.phase === "surplus"
-      ? "Surplus calorique"
-      : nutritionProfile?.phase === "maintenance"
-      ? "Maintenance"
-      : null;
-
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto page-transition pb-24 md:pb-8">
-      {/* Header */}
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Mon espace
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
-          Mon Profil
-        </h1>
-        <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Semaine {weekNumber}{weeksSinceStart != null ? ` · ${weeksSinceStart} sem. de coaching` : ""}
-        </p>
+    <div style={{padding:"24px 20px 80px",maxWidth:560,margin:"0 auto"}}>
+      <div style={{marginBottom:28}}>
+        <p style={{fontSize:10,fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",color:"rgba(224,30,30,0.6)",margin:"0 0 4px"}}>Mon espace</p>
+        <h1 style={{fontWeight:800,fontSize:28,letterSpacing:"-0.04em",color:"#F5EDED",margin:0}}>Mon profil</h1>
       </div>
 
-      {/* Stats rapides */}
-      <section className="mb-8">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Stats rapides
-        </p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <StatCard
-            icon={Scale}
-            label="Poids actuel"
-            value={
-              latestMeasurement?.weight != null
-                ? `${latestMeasurement.weight} kg`
-                : profile?.weight_start != null
-                ? `${profile.weight_start} kg`
-                : "—"
-            }
-            color="#E01E1E"
-          />
-          <StatCard
-            icon={Target}
-            label="Poids de départ"
-            value={profile?.weight_start != null ? `${profile.weight_start} kg` : "—"}
-            color="#fbbf24"
-          />
-          <StatCard
-            icon={Calendar}
-            label="Semaines"
-            value={weeksSinceStart != null ? `${weeksSinceStart}` : "—"}
-            color="#60a5fa"
-          />
-          <StatCard
-            icon={User}
-            label="Phase"
-            value={phaseLabel ?? "—"}
-            color="#4ade80"
-          />
+      <Sec title="Mes informations">
+        <div style={{marginBottom:14}}>
+          <label style={{display:"block",fontSize:10,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase" as const,color:"rgba(224,30,30,0.7)",marginBottom:7}}>Prenom et Nom</label>
+          <input value={fullName} onChange={e=>setFullName(e.target.value)} style={inp} placeholder="Jean Dupont"/>
         </div>
-      </section>
-
-      {/* Informations personnelles */}
-      <section className="mb-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Informations personnelles
-        </p>
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl px-5">
-          <InfoRow label="Nom complet" value={profile?.full_name} />
-          <InfoRow label="Email" value={profile?.email} />
-          <InfoRow label="Téléphone" value={profile?.phone} />
-          <InfoRow
-            label="Statut"
-            value={
-              profile?.status === "active"
-                ? "Actif"
-                : profile?.status === "paused"
-                ? "En pause"
-                : "Terminé"
-            }
-          />
+        <div style={{marginBottom:14}}>
+          <label style={{display:"block",fontSize:10,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase" as const,color:"rgba(224,30,30,0.7)",marginBottom:7}}>Email</label>
+          <input value={(profile?.email as string)??"" } readOnly style={{...inp,opacity:0.5,cursor:"not-allowed"}}/>
         </div>
-      </section>
-
-      {/* Suivi */}
-      <section className="mb-6">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Suivi
-        </p>
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl px-5">
-          <InfoRow
-            label="Date de début du coaching"
-            value={
-              profile?.start_date
-                ? new Intl.DateTimeFormat("fr-FR", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  }).format(new Date(profile.start_date + "T12:00:00"))
-                : null
-            }
-          />
-          <InfoRow
-            label="Semaine actuelle"
-            value={
-              weeksSinceStart != null
-                ? `Semaine ${weekNumber} (${weeksSinceStart} sem. de coaching)`
-                : `Semaine ${weekNumber}`
-            }
-          />
-          <InfoRow
-            label="Poids de départ"
-            value={
-              profile?.weight_start != null
-                ? `${profile.weight_start} kg`
-                : null
-            }
-          />
-          <InfoRow
-            label="Poids actuel"
-            value={
-              latestMeasurement?.weight != null
-                ? `${latestMeasurement.weight} kg`
-                : null
-            }
-          />
+        <div style={{marginBottom:14}}>
+          <label style={{display:"block",fontSize:10,fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase" as const,color:"rgba(224,30,30,0.7)",marginBottom:7}}>Telephone</label>
+          <input value={phone} onChange={e=>setPhone(e.target.value)} style={inp} placeholder="06 XX XX XX XX"/>
         </div>
-      </section>
+        <button onClick={save} disabled={saving} className="ep-btn-primary" style={{width:"100%",marginTop:4}}>
+          {saved ? <><CheckCircle2 size={14}/> Sauvegarde</> : saving ? "Sauvegarde..." : <><Save size={14}/> Sauvegarder</>}
+        </button>
+      </Sec>
 
-      {/* Objectif */}
-      {profile?.goal && (
-        <section className="mb-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Mon objectif
-          </p>
-          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-            <p className="text-sm text-[#F5EDED]/75 leading-relaxed">
-              {profile.goal}
-            </p>
+      <Sec title="Mon coaching">
+        <Row label="Date de debut" value={startFmt}/>
+        {weeks !== null && <Row label="Semaines de coaching" value={`${weeks} semaines`}/>}
+        <Row label="Objectif" value={profile?.goal as string|null}/>
+        <Row label="Poids de depart" value={(profile?.weight_start as number|null) != null ? `${profile!.weight_start} kg` : null}/>
+        {(profile?.competition_category as string) && <Row label="Categorie" value={profile!.competition_category as string}/>}
+      </Sec>
+
+      <Sec title="Notifications">
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+          <div>
+            <p style={{fontSize:14,fontWeight:600,color:"#F5EDED",margin:"0 0 3px"}}>Notifications push</p>
+            <p style={{fontSize:12,color:"rgba(245,237,237,0.35)",margin:0}}>{push ? "Activees sur cet appareil" : "Non activees"}</p>
           </div>
-        </section>
-      )}
+          {push
+            ? <span style={{fontSize:11,fontWeight:700,color:"#4ade80",padding:"4px 10px",background:"rgba(74,222,128,0.1)",border:"1px solid rgba(74,222,128,0.2)",borderRadius:20}}>Activees</span>
+            : <button onClick={async()=>{
+                try {
+                  if (!("serviceWorker" in navigator)) return;
+                  const reg = await navigator.serviceWorker.register("/sw.js");
+                  await navigator.serviceWorker.ready;
+                  if (await Notification.requestPermission() !== "granted") return;
+                  const b64 = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+                  const pad = "=".repeat((4 - b64.length % 4) % 4);
+                  const raw = window.atob((b64+pad).replace(/-/g,"+").replace(/_/g,"/"));
+                  const key = Uint8Array.from([...raw].map(c=>c.charCodeAt(0))).buffer as ArrayBuffer;
+                  const sub = await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+                  await fetch("/api/push/subscribe",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({subscription:sub.toJSON()})});
+                  setPush(true);
+                } catch(e) { console.error(e); }
+              }} className="ep-btn-primary" style={{fontSize:11,padding:"8px 14px"}}>
+              <Bell size={12}/> Activer
+            </button>
+          }
+        </div>
+      </Sec>
 
-      {/* Edit form */}
-      <section>
-        <ClientProfileEditForm currentPhone={profile?.phone ?? null} />
-      </section>
+      <Sec title="Compte">
+        <button onClick={resetPwd} style={{display:"flex",alignItems:"center",justifyContent:"space-between",width:"100%",padding:"12px 0",background:"none",border:"none",cursor:"pointer",borderBottom:"1px solid rgba(224,30,30,0.08)",marginBottom:4}}>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+            <Lock size={15} style={{color:"rgba(245,237,237,0.4)"}}/>
+            <span style={{fontSize:14,color:"#F5EDED",fontWeight:500}}>{resetSent ? "Email envoye !" : "Changer mon mot de passe"}</span>
+          </div>
+          <ChevronRight size={14} style={{color:"rgba(245,237,237,0.2)"}}/>
+        </button>
+        <button onClick={signOut} style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",marginTop:8,background:"rgba(224,30,30,0.12)",border:"1px solid rgba(224,30,30,0.3)",borderRadius:8,padding:"12px 20px",color:"#E01E1E",fontWeight:800,fontSize:13,letterSpacing:"0.08em",textTransform:"uppercase",cursor:"pointer"}}>
+          <LogOut size={14}/> Se deconnecter
+        </button>
+      </Sec>
     </div>
   );
 }

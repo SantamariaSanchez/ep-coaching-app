@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getUser, getProfile } from "@/utils/auth";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 
 // GET — load roadmap for a client
@@ -12,7 +12,8 @@ export async function GET(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { clientId } = await params;
-  const supabase = await createServerSupabase();
+  // Admin client: coach reads client data, client reads own data
+  const supabase = createAdminClient();
 
   const { data: roadmap } = await supabase
     .from("roadmaps")
@@ -56,9 +57,9 @@ export async function POST(
     objectives: Omit<RoadmapObjective, "id" | "roadmap_id">[];
   };
 
-  const supabase = await createServerSupabase();
+  // Admin client bypasses RLS for all roadmap writes
+  const supabase = createAdminClient();
 
-  // Upsert roadmap
   const { data: roadmap, error: rmErr } = await supabase
     .from("roadmaps")
     .upsert(
@@ -75,7 +76,6 @@ export async function POST(
 
   const roadmapId = (roadmap as { id: string }).id;
 
-  // Delete + reinsert phases
   await supabase.from("roadmap_phases").delete().eq("roadmap_id", roadmapId);
   if (phases.length > 0) {
     await supabase.from("roadmap_phases").insert(
@@ -83,7 +83,6 @@ export async function POST(
     );
   }
 
-  // Delete + reinsert objectives
   await supabase.from("roadmap_objectives").delete().eq("roadmap_id", roadmapId);
   if (objectives.length > 0) {
     await supabase.from("roadmap_objectives").insert(
