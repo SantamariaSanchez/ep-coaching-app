@@ -139,7 +139,7 @@ function HighlightCard({ client }: { client: ClientAnalytics }) {
 function SkeletonAnalytics() {
   return (
     <div className="space-y-8">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12, marginBottom:32 }}>
         {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28" />)}
       </div>
       <div className="space-y-3">
@@ -158,6 +158,15 @@ export default function AnalyticsClient() {
   const [data, setData] = useState<CoachDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadedAt, setLoadedAt] = useState<Date | null>(null);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 640px)");
+    setIsDesktop(mq.matches);
+    const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", h);
+    return () => mq.removeEventListener("change", h);
+  }, []);
 
   function load() {
     setLoading(true);
@@ -217,7 +226,12 @@ export default function AnalyticsClient() {
       ) : (
         <>
           {/* Global stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)",
+            gap: 12,
+            marginBottom: 40,
+          }}>
             <StatCard label="Clients actifs" value={data?.activeCount ?? 0} sub={`${data?.activeCount ?? 0} suivi${(data?.activeCount ?? 0) > 1 ? "s" : ""}`} icon={Users} />
             <StatCard label="Alertes critiques" value={data?.criticalAlerts ?? 0} sub={(data?.criticalAlerts ?? 0) === 0 ? "tout va bien" : "nécessitent action"} color={(data?.criticalAlerts ?? 0) > 0 ? "text-red-400" : "text-white"} icon={AlertTriangle} />
             <StatCard label="Adhésion nutrition" value={`${data?.avgAdherence ?? 0}%`} sub="moyenne 7 derniers jours" color={(data?.avgAdherence ?? 0) >= 80 ? "text-green-400" : (data?.avgAdherence ?? 0) >= 60 ? "text-amber-400" : "text-red-400"} icon={Apple} />
