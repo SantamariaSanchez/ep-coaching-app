@@ -17,15 +17,19 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "EP Coaching",
-  description: "Application de coaching sportif personnalisé",
+  description: "Ton espace coaching personnalisé",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "EP Coaching",
+    title: "EP",
   },
   icons: {
-    apple: "/icon-192.png",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+    icon: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
   },
 };
 

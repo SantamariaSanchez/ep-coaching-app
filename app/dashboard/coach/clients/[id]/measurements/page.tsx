@@ -2,10 +2,8 @@
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientMeasurements } from "@/utils/measurements";
-import { saveMeasurement } from "./actions";
-import MeasurementForm from "@/components/ui/MeasurementForm";
 import MeasurementHistoryTable from "@/components/ui/MeasurementHistoryTable";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Info } from "lucide-react";
 
 export default async function CoachClientMeasurementsPage({
   params,
@@ -87,10 +85,20 @@ export default async function CoachClientMeasurementsPage({
         </div>
       )}
 
-      {/* Form */}
-      <div className="mb-8">
-        <MeasurementForm clientId={id} saveAction={saveMeasurement} />
+      {/* Read-only notice */}
+      <div className="flex items-center gap-3 bg-blue-500/8 border border-blue-500/20 rounded-xl px-4 py-3 mb-6">
+        <Info size={14} className="text-blue-400 flex-shrink-0" strokeWidth={2} />
+        <p className="text-xs text-blue-400">
+          Les mensurations sont saisies par le client depuis son espace. Elles sont visibles ici en lecture seule.
+        </p>
       </div>
+
+      {measurements.length === 0 && (
+        <div className="ep-card p-10 text-center mb-6">
+          <p className="text-sm text-[#F5EDED]/40">Aucune mensuration enregistrée.</p>
+          <p className="text-xs text-[#F5EDED]/25 mt-1">Le client doit les saisir depuis son espace Mensurations.</p>
+        </div>
+      )}
 
       {/* History */}
       <div>

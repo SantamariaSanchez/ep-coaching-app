@@ -42,6 +42,31 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
+  // Authenticated: enforce role-based access to dashboards
+  if (user && isDashboard) {
+    try {
+      const adminForRole = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        { cookies: { getAll() { return []; }, setAll() {} }, auth: { autoRefreshToken: false, persistSession: false } }
+      );
+      const { data: prof } = await adminForRole.from("profiles").select("role").eq("id", user.id).single();
+      const role = prof?.role ?? "client";
+      // Coach trying to access client dashboard → redirect to coach dashboard
+      if (role === "coach" && isClientDashboard) {
+        const res = NextResponse.redirect(new URL("/dashboard/coach", request.url));
+        supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
+        return res;
+      }
+      // Client trying to access coach dashboard → redirect to client dashboard
+      if (role === "client" && isCoachDashboard) {
+        const res = NextResponse.redirect(new URL("/dashboard/client", request.url));
+        supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
+        return res;
+      }
+    } catch { /* non-blocking */ }
+  }
+
   // Authenticated on an auth page → redirect to dashboard
   if (user && isAuthPage) {
     // Use service role key to bypass RLS when reading the profile
