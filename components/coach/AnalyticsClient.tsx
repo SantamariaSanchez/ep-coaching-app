@@ -226,12 +226,7 @@ export default function AnalyticsClient() {
       ) : (
         <>
           {/* Global stats */}
-          <div style={{
-            display: "grid",
-            gridTemplateColumns: isDesktop ? "repeat(4, 1fr)" : "repeat(2, 1fr)",
-            gap: 12,
-            marginBottom: 40,
-          }}>
+          <div className="analytics-stats-grid" style={{ marginBottom: 40 }}>
             <StatCard label="Clients actifs" value={data?.activeCount ?? 0} sub={`${data?.activeCount ?? 0} suivi${(data?.activeCount ?? 0) > 1 ? "s" : ""}`} icon={Users} />
             <StatCard label="Alertes critiques" value={data?.criticalAlerts ?? 0} sub={(data?.criticalAlerts ?? 0) === 0 ? "tout va bien" : "nécessitent action"} color={(data?.criticalAlerts ?? 0) > 0 ? "text-red-400" : "text-white"} icon={AlertTriangle} />
             <StatCard label="Adhésion nutrition" value={`${data?.avgAdherence ?? 0}%`} sub="moyenne 7 derniers jours" color={(data?.avgAdherence ?? 0) >= 80 ? "text-green-400" : (data?.avgAdherence ?? 0) >= 60 ? "text-amber-400" : "text-red-400"} icon={Apple} />
