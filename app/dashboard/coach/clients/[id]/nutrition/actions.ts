@@ -1,4 +1,5 @@
 "use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -7,7 +8,9 @@ import type { NutritionProfileInput } from "@/utils/nutrition";
 export async function saveNutritionProfile(
   clientId: string,
   data: NutritionProfileInput
-): Promise<{ error?: string }> {
+): Promise<{
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error }; error?: string }> {
   try {
     // Use admin client - coach writes to another user profile (bypasses RLS)
     const supabase = createAdminClient();

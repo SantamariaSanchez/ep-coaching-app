@@ -130,8 +130,10 @@ export async function getPendingReplies(): Promise<CheckInWithClient[]> {
 
 export async function getPendingBilans(): Promise<CheckInWithClientProfile[]> {
   try {
-    const supabase = await createServerSupabase();
-    const { data } = await supabase
+    // Admin client: coach reads ALL clients' check-ins (bypasses RLS)
+    const { createAdminClient } = await import("@/lib/supabase-admin");
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("check_ins")
       .select("*, profiles:client_id(full_name, email)")
       .is("bilan_sent_at", null)
@@ -144,10 +146,11 @@ export async function getPendingBilans(): Promise<CheckInWithClientProfile[]> {
 
 export async function getDoneBilans(): Promise<CheckInWithClientProfile[]> {
   try {
-    const supabase = await createServerSupabase();
+    const { createAdminClient } = await import("@/lib/supabase-admin");
+    const admin = createAdminClient();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const { data } = await supabase
+    const { data } = await admin
       .from("check_ins")
       .select("*, profiles:client_id(full_name, email)")
       .not("bilan_sent_at", "is", null)
@@ -161,8 +164,9 @@ export async function getDoneBilans(): Promise<CheckInWithClientProfile[]> {
 
 export async function getPendingBilansCount(): Promise<number> {
   try {
-    const supabase = await createServerSupabase();
-    const { count } = await supabase
+    const { createAdminClient } = await import("@/lib/supabase-admin");
+    const admin = createAdminClient();
+    const { count } = await admin
       .from("check_ins")
       .select("id", { count: "exact", head: true })
       .is("bilan_sent_at", null);

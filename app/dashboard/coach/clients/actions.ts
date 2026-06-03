@@ -1,4 +1,5 @@
 "use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -9,6 +10,8 @@ export async function addClient(
   prevState: AddClientState,
   formData: FormData
 ): Promise<AddClientState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
   const admin = createAdminClient();
 
   const fullName = (formData.get("full_name") as string).trim();

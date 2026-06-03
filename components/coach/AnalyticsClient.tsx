@@ -188,9 +188,9 @@ export default function AnalyticsClient() {
   const clientsWithHighlights = clients.filter((c) => (c.highlights ?? []).length > 0);
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto pb-16 page-transition">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+    <div style={{ padding: "16px 16px 64px", maxWidth: 900, margin: "0 auto" }}>
+      {/* Header — compact on mobile */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isDesktop ? 28 : 16 }}>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Analytics — 21 jours

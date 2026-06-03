@@ -1,4 +1,5 @@
 ﻿"use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -7,7 +8,9 @@ import type { ProgramInput } from "@/utils/programs";
 export async function saveProgram(
   clientId: string,
   input: ProgramInput
-): Promise<{ error?: string }> {
+): Promise<{
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error }; error?: string }> {
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 

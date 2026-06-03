@@ -1,4 +1,5 @@
 ﻿"use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -11,6 +12,8 @@ export async function saveCompetitionSettings(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
   const competition_category = (formData.get("competition_category") as string) || null;
   const competition_date = (formData.get("competition_date") as string) || null;
 

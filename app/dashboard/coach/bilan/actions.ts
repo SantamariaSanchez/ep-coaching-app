@@ -1,4 +1,5 @@
 ﻿"use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -19,6 +20,9 @@ export async function sendBilan(
   const bilan_rating_raw = formData.get("bilan_rating") as string;
   const bilan_rating = bilan_rating_raw ? parseInt(bilan_rating_raw, 10) : null;
 
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
   if (!bilan_text) return { error: "Le retour écrit est obligatoire." };
   if (bilan_rating !== null && (bilan_rating < 1 || bilan_rating > 10)) {
     return { error: "La note doit être entre 1 et 10." };
@@ -26,16 +30,21 @@ export async function sendBilan(
 
   const supabase = createAdminClient(); // admin bypasses RLS for coach writing bilan data
 
+  const now = new Date().toISOString();
   const { error } = await supabase
     .from("check_ins")
     .update({
       bilan_text,
       bilan_rating: bilan_rating ?? null,
-      bilan_sent_at: new Date().toISOString(),
+      bilan_sent_at: now,
+      coach_replied_at: now,
     })
     .eq("id", checkinId);
 
-  if (error) return { error: "Erreur lors de l'envoi du bilan." };
+  if (error) {
+    console.error("sendBilan error:", error.message, "| checkinId:", checkinId);
+    return { error: "Erreur sauvegarde: " + error.message };
+  }
 
   // Fetch client info for notification
   const { data: profile } = await supabase

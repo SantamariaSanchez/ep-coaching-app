@@ -1,4 +1,5 @@
-﻿import { redirect } from "next/navigation";
+﻿export const dynamic = "force-dynamic"; // Always fetch fresh bilan data
+import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getPendingBilans, getDoneBilans } from "@/utils/checkins";
 import {

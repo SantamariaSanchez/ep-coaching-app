@@ -1,4 +1,5 @@
 ﻿"use server";
+import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -9,6 +10,8 @@ export async function replyToCheckin(
   prevState: ReplyState,
   formData: FormData
 ): Promise<ReplyState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
   const checkinId = formData.get("checkin_id") as string;
   const clientId = formData.get("client_id") as string;
   const coachNotes = (formData.get("coach_notes") as string).trim();
