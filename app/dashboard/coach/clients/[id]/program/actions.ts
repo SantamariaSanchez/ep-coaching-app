@@ -8,9 +8,9 @@ import type { ProgramInput } from "@/utils/programs";
 export async function saveProgram(
   clientId: string,
   input: ProgramInput
-): Promise<{
+): Promise<{ error?: string }> {
   const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error }; error?: string }> {
+  if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 

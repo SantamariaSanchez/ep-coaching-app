@@ -9,9 +9,9 @@ export async function saveCoachNote(
   clientId: string,
   noteId: string | null,
   data: CoachNoteInput
-): Promise<{
+): Promise<{ error?: string }> {
   const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error }; error?: string }> {
+  if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 

@@ -8,9 +8,9 @@ import type { NutritionProfileInput } from "@/utils/nutrition";
 export async function saveNutritionProfile(
   clientId: string,
   data: NutritionProfileInput
-): Promise<{
+): Promise<{ error?: string }> {
   const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error }; error?: string }> {
+  if (!guard.ok) return { error: guard.error };
   try {
     // Use admin client - coach writes to another user profile (bypasses RLS)
     const supabase = createAdminClient();
