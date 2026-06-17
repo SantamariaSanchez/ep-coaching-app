@@ -4,7 +4,7 @@ interface CardProps {
   title?: string;
   children: ReactNode;
   className?: string;
-  variant?: "default" | "highlighted";
+  variant?: "default" | "highlighted" | "hero" | "flat";
 }
 
 export default function Card({
@@ -13,10 +13,14 @@ export default function Card({
   className = "",
   variant = "default",
 }: CardProps) {
+  const cls =
+    variant === "highlighted" ? "ep-card-highlighted"
+    : variant === "hero"        ? "ep-card-hero"
+    : variant === "flat"        ? "ep-card-flat"
+    : "ep-card";
+
   return (
-    <div
-      className={`${variant === "highlighted" ? "ep-card-highlighted" : "ep-card"} p-5 ${className}`}
-    >
+    <div className={`${cls} p-5 ${className}`}>
       {title && <p className="ep-section-title">{title}</p>}
       {children}
     </div>

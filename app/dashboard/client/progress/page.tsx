@@ -230,17 +230,19 @@ export default async function ClientProgressPage() {
   );
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto page-transition pb-24 md:pb-8">
+    <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 800, margin: "0 auto" }}>
       {/* Header */}
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Historique
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <TrendingUp size={26} className="text-[#E01E1E]" />
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Historique</p>
+        <h1 style={{
+          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+          color: "#F5EDED", margin: 0, lineHeight: 1.05,
+          display: "flex", alignItems: "center", gap: 12,
+        }}>
+          <TrendingUp size={24} style={{ color: "#E01E1E" }} strokeWidth={2} />
           Progression
         </h1>
-        <p className="mt-1 text-xs text-[#F5EDED]/30">
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
           {measurements.length} mensuration{measurements.length !== 1 ? "s" : ""}{" "}
           · {checkins.length} check-in{checkins.length !== 1 ? "s" : ""}
         </p>

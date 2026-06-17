@@ -17,13 +17,11 @@ export default function DashboardLayoutShell({ children }: { children: React.Rea
     <main
       style={{
         marginLeft: isDesktop ? 220 : 0,
-        // Bottom padding on mobile for the bottom nav + safe area
-        paddingBottom: isDesktop ? 0 : "calc(80px + env(safe-area-inset-bottom, 0px))",
+        // Bottom padding: 72px nav + safe area inset
+        paddingBottom: isDesktop ? 0 : "calc(72px + env(safe-area-inset-bottom, 0px))",
         minHeight: "100vh",
-        background:
-          "radial-gradient(ellipse 80% 40% at 50% -10%, rgba(137,4,4,0.15) 0%, transparent 70%)",
-        // Prevent flash of wrong margin on SSR
-        transition: "margin-left 0.0s",
+        position: "relative",
+        zIndex: 1,
       }}
     >
       {children}

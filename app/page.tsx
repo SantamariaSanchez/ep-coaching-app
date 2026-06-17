@@ -13,8 +13,8 @@ export default function HomePage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "32px 20px",
-        background:
-          "radial-gradient(ellipse 80% 50% at 50% 0%, #3D0505 0%, #1A0101 40%, #0D0000 100%)",
+        position: "relative",
+        zIndex: 1,
       }}
     >
       {/* Logo */}
@@ -74,23 +74,26 @@ export default function HomePage() {
             alignItems: "center",
             gap: 14,
             padding: "32px 24px",
-            background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-            border: "1px solid rgba(224,30,30,0.15)",
-            borderRadius: 16,
+            background: "rgba(22,2,2,0.55)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(224,30,30,0.14)",
+            borderRadius: "var(--radius-xl)",
             cursor: "pointer",
-            transition: "all 0.2s ease",
+            transition: "all 0.25s ease",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)",
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLAnchorElement;
-            el.style.borderColor = "#E01E1E";
-            el.style.transform = "translateY(-3px)";
-            el.style.boxShadow = "0 12px 40px rgba(224,30,30,0.2)";
+            el.style.borderColor = "rgba(224,30,30,0.4)";
+            el.style.transform = "translateY(-4px)";
+            el.style.boxShadow = "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(224,30,30,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget as HTMLAnchorElement;
-            el.style.borderColor = "rgba(224,30,30,0.15)";
+            el.style.borderColor = "rgba(224,30,30,0.14)";
             el.style.transform = "translateY(0)";
-            el.style.boxShadow = "none";
+            el.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)";
           }}
         >
           <div
@@ -144,23 +147,26 @@ export default function HomePage() {
             alignItems: "center",
             gap: 14,
             padding: "32px 24px",
-            background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-            border: "1px solid rgba(224,30,30,0.15)",
-            borderRadius: 16,
+            background: "rgba(22,2,2,0.55)",
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+            border: "1px solid rgba(224,30,30,0.14)",
+            borderRadius: "var(--radius-xl)",
             cursor: "pointer",
-            transition: "all 0.2s ease",
+            transition: "all 0.25s ease",
+            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)",
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLAnchorElement;
-            el.style.borderColor = "#E01E1E";
-            el.style.transform = "translateY(-3px)";
-            el.style.boxShadow = "0 12px 40px rgba(224,30,30,0.2)";
+            el.style.borderColor = "rgba(224,30,30,0.4)";
+            el.style.transform = "translateY(-4px)";
+            el.style.boxShadow = "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(224,30,30,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
           }}
           onMouseLeave={(e) => {
             const el = e.currentTarget as HTMLAnchorElement;
-            el.style.borderColor = "rgba(224,30,30,0.15)";
+            el.style.borderColor = "rgba(224,30,30,0.14)";
             el.style.transform = "translateY(0)";
-            el.style.boxShadow = "none";
+            el.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)";
           }}
         >
           <div

@@ -1,8 +1,9 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
+import { Dumbbell } from "lucide-react";
 
 export default async function ClientProgramPage() {
   const user = await getUser();
@@ -17,16 +18,19 @@ export default async function ClientProgramPage() {
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
   return (
-    <div className="px-6 py-8 max-w-6xl mx-auto page-transition pb-24 md:pb-8">
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Entraînement
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
+    <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 900, margin: "0 auto" }}>
+
+      {/* Header */}
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Entraînement</p>
+        <h1 style={{
+          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+          color: "#F5EDED", margin: 0, lineHeight: 1.05,
+        }}>
           Mon programme
         </h1>
         {program && (
-          <p className="mt-1 text-xs text-[#F5EDED]/30">
+          <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
             {program.name}
             {program.frequency ? ` · ${program.frequency}×/semaine` : ""}
             {program.type ? ` · ${program.type}` : ""}
@@ -35,65 +39,116 @@ export default async function ClientProgramPage() {
       </div>
 
       {!program || program.days.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "60px 20px",
+          textAlign: "center",
+          gap: 12,
+        }}>
+          <div style={{
+            width: 56,
+            height: 56,
+            borderRadius: 18,
+            background: "rgba(137,4,4,0.1)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <Dumbbell size={22} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.35)", margin: 0 }}>
             Aucun programme disponible
           </p>
-          <p className="text-xs text-[#F5EDED]/25 mt-1">
-            Ton programme sera visible ici dès que ton coach l&apos;aura créé.
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0 }}>
+            Ton coach le créera prochainement.
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto pb-4">
-          <div
-            className="flex gap-4"
-            style={{ minWidth: `${program.days.length * 280}px` }}
-          >
-            {program.days.map((day) => (
+        <div style={{ overflowX: "auto", paddingBottom: 8 }}>
+          <div style={{
+            display: "flex",
+            gap: 12,
+            minWidth: `${program.days.length * 280}px`,
+          }}>
+            {program.days.map((day, di) => (
               <div
                 key={day.id}
-                className="flex-1 min-w-[260px] bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
+                className="ep-card animate-fade-up"
+                style={{
+                  flex: 1,
+                  minWidth: 260,
+                  padding: "18px 16px",
+                  animationDelay: `${di * 60}ms`,
+                }}
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4 pb-2 border-b border-[#890404]/20">
+                <p style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  letterSpacing: "0.12em",
+                  textTransform: "uppercase",
+                  color: "#E01E1E",
+                  marginBottom: 14,
+                  paddingBottom: 10,
+                  borderBottom: "1px solid rgba(224,30,30,0.1)",
+                }}>
                   {day.day_label}
                 </p>
 
                 {day.exercises.length === 0 ? (
-                  <p className="text-xs text-[#F5EDED]/25 italic">
+                  <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>
                     Aucun exercice
                   </p>
                 ) : (
-                  <div className="space-y-2">
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {day.exercises.map((ex) => (
                       <div
                         key={ex.id}
-                        className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
+                        style={{
+                          background: "rgba(0,0,0,0.35)",
+                          border: "1px solid rgba(137,4,4,0.2)",
+                          borderRadius: 12,
+                          padding: "11px 14px",
+                        }}
                       >
-                        <p className="text-sm font-semibold text-white leading-tight">
+                        <p style={{
+                          fontSize: 13,
+                          fontWeight: 700,
+                          color: "#F5EDED",
+                          margin: "0 0 6px",
+                          lineHeight: 1.3,
+                        }}>
                           {ex.name}
                         </p>
-                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1.5">
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
                           {ex.sets != null && ex.reps && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
+                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
                               {ex.sets} × {ex.reps}
                             </span>
                           )}
                           {ex.rir !== null && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
+                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
                               RIR {ex.rir}
                             </span>
                           )}
                           {ex.rest_seconds != null && ex.rest_seconds > 0 && (
-                            <span className="text-[10px] text-[#F5EDED]/50">
+                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
                               {ex.rest_seconds >= 60
                                 ? `${Math.floor(ex.rest_seconds / 60)}min`
-                                : `${ex.rest_seconds}s`}{" "}
-                              repos
+                                : `${ex.rest_seconds}s`} repos
                             </span>
                           )}
                         </div>
                         {ex.notes && (
-                          <p className="text-[10px] text-[#F5EDED]/35 mt-1 italic">
+                          <p style={{
+                            fontSize: 11,
+                            color: "rgba(245,237,237,0.3)",
+                            marginTop: 6,
+                            fontStyle: "italic",
+                            lineHeight: 1.4,
+                          }}>
                             {ex.notes}
                           </p>
                         )}
@@ -107,7 +162,7 @@ export default async function ClientProgramPage() {
         </div>
       )}
 
-      {/* ── Corrections & Questions ─────────────────────────────────────────── */}
+      {/* Corrections & Questions */}
       <ClientCorrectionsSection corrections={corrections} />
     </div>
   );

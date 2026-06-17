@@ -40,9 +40,9 @@ export default function ClientsSection({ clients }: { clients: Profile[] }) {
             alignItems: "center",
             justifyContent: "center",
             padding: "48px 24px",
-            background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
+            background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
             border: "1px solid var(--ep-border)",
-            borderRadius: 14,
+            borderRadius: "var(--radius-lg)",
             textAlign: "center",
           }}
         >

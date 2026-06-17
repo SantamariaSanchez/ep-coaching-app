@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/Skeleton";
-import MetricGauge from "@/components/ui/MetricGauge";
-import ProgressBar from "@/components/ui/ProgressBar";
-import { ClipboardList, CheckCircle2, Activity, Clock } from "lucide-react";
+import ProgressRing from "@/components/ui/ProgressRing";
+import { ClipboardList, CheckCircle2, ChevronRight } from "lucide-react";
 
 interface Stats {
   consumedCals: number;
-  targetCals: number;
-  adherence: number;
+  targetCals:   number;
+  adherence:    number;
   daysWithLogs: number;
   stepsDisplay: string;
   sleepDisplay: string;
@@ -18,30 +17,40 @@ interface Stats {
   weekNumber: number;
 }
 
-function MiniStat({ icon: Icon, value, label, color }: {
-  icon: React.ElementType; value: string; label: string; color: string;
-}) {
+function SleepDisplay({ value }: { value: string }) {
+  const hours = parseFloat(value) || 0;
+  const pct = Math.min(hours / 9, 1);
   return (
-    <div
-      style={{
-        background: "rgba(0,0,0,0.3)",
-        border: "1px solid var(--ep-border)",
-        borderRadius: 12,
-        padding: "12px 8px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        gap: 6,
-      }}
-    >
-      <Icon size={18} style={{ color }} strokeWidth={1.8} />
-      <p style={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", margin: 0, letterSpacing: "-0.02em" }}>
-        {value}
-      </p>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: 0 }}>
-        {label}
-      </p>
-    </div>
+    <ProgressRing
+      value={Math.round(hours * 10) / 10}
+      max={9}
+      size={96}
+      strokeWidth={7}
+      color="#a78bfa"
+      trackColor="rgba(167,139,250,0.07)"
+      label="Sommeil"
+      unit="h"
+      delay={200}
+    />
+  );
+}
+
+function StepsDisplay({ value }: { value: string }) {
+  const steps = parseInt(value.replace(/\D/g, "")) || 0;
+  return (
+    <ProgressRing
+      value={steps}
+      max={10000}
+      size={96}
+      strokeWidth={7}
+      color="#60a5fa"
+      trackColor="rgba(96,165,250,0.07)"
+      label="Pas"
+      asPercent={false}
+      unit={value.includes("k") ? "k" : ""}
+      sublabel={`/ 10k`}
+      delay={300}
+    />
   );
 }
 
@@ -57,94 +66,135 @@ export default function ClientDashboardStats() {
 
   if (!stats) {
     return (
-      <div style={{ marginBottom: 32 }}>
-        <Skeleton className="h-3 w-28 mb-3" />
-        <Skeleton className="h-40 mb-4" />
-        <Skeleton className="h-3 w-28 mb-3" />
-        <Skeleton className="h-44" />
+      <div style={{ marginBottom: 28 }}>
+        <div className="ep-skeleton" style={{ height: 180, marginBottom: 16, borderRadius: "var(--radius-xl)" }} />
+        <div className="ep-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
       </div>
     );
   }
 
+  const calPct = stats.targetCals > 0
+    ? Math.round((stats.consumedCals / stats.targetCals) * 100)
+    : 0;
   const adherenceColor =
-    stats.adherence >= 80 ? "green" : stats.adherence >= 60 ? "amber" : "red";
+    stats.adherence >= 80 ? "#4ade80"
+    : stats.adherence >= 50 ? "#fbbf24"
+    : "#E01E1E";
 
   return (
     <>
-      {/* ── Aujourd'hui ──────────────────────────────────────────────────────── */}
-      <section style={{ marginBottom: 28 }}>
-        <span className="ep-section-title">Aujourd&apos;hui</span>
-        <div className="ep-card" style={{ padding: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, alignItems: "center" }}>
-            {/* Calories gauge */}
-            <div style={{ display: "flex", justifyContent: "center", padding: "4px 0" }}>
-              <MetricGauge
-                value={stats.consumedCals}
-                max={stats.targetCals}
-                size={88}
-                strokeWidth={7}
-                label="obj."
-                unit="kcal"
-              />
-            </div>
-            <MiniStat icon={Activity} value={stats.stepsDisplay} label="Pas / jour" color="#60a5fa" />
-            <MiniStat icon={Clock} value={stats.sleepDisplay} label="Sommeil" color="#a78bfa" />
-          </div>
-          {!stats.hasCheckinThisWeek && (
-            <p style={{ marginTop: 12, textAlign: "center", fontSize: 10, color: "rgba(245,237,237,0.3)", letterSpacing: "0.05em" }}>
-              Fais ton check-in hebdo pour voir tes stats
-            </p>
+      {/* ── Hero rings card ─────────────────────────────────────────────────── */}
+      <div
+        className="ep-card-hero animate-scale-in"
+        style={{ padding: "28px 20px 24px", marginBottom: 16 }}
+      >
+        {/* Week badge */}
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 24,
+        }}>
+          <span className="ep-badge-red">Semaine {stats.weekNumber}</span>
+          {stats.hasCheckinThisWeek && (
+            <span style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 4,
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#4ade80",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}>
+              <CheckCircle2 size={12} />
+              Check-in ✓
+            </span>
           )}
         </div>
-      </section>
 
-      {/* ── Ma semaine ────────────────────────────────────────────────────────── */}
-      <section style={{ marginBottom: 24 }}>
-        <span className="ep-section-title">Ma semaine</span>
-        <div className="ep-card" style={{ padding: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 20 }}>
-            <span className="ep-badge-red">Semaine {stats.weekNumber}</span>
+        {/* 3 rings */}
+        <div style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr",
+          gap: 8,
+          alignItems: "end",
+          justifyItems: "center",
+        }}>
+          {/* Nutrition ring — main/largest */}
+          <ProgressRing
+            value={calPct}
+            max={100}
+            size={110}
+            strokeWidth={9}
+            color="#E01E1E"
+            trackColor="rgba(224,30,30,0.07)"
+            label="Nutrition"
+            unit="%"
+            sublabel={`${stats.consumedCals} / ${stats.targetCals} kcal`}
+            delay={0}
+          />
+
+          {/* Adherence ring */}
+          <ProgressRing
+            value={stats.adherence}
+            max={100}
+            size={96}
+            strokeWidth={7}
+            color={adherenceColor}
+            trackColor={`${adherenceColor}10`}
+            label="Adhésion"
+            unit="%"
+            sublabel={`${stats.daysWithLogs}/7 jours`}
+            delay={100}
+          />
+
+          {/* Sleep ring */}
+          <SleepDisplay value={stats.sleepDisplay} />
+        </div>
+      </div>
+
+      {/* ── Check-in CTA ────────────────────────────────────────────────────── */}
+      {!stats.hasCheckinThisWeek && (
+        <Link
+          href="/dashboard/client/checkin"
+          className="animate-slide-up"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "16px 20px",
+            background: "linear-gradient(135deg, rgba(224,30,30,0.12) 0%, rgba(137,4,4,0.08) 100%)",
+            border: "1px solid rgba(224,30,30,0.22)",
+            borderRadius: "var(--radius-lg)",
+            textDecoration: "none",
+            marginBottom: 16,
+            animationDelay: "0.2s",
+          }}
+        >
+          <div style={{
+            width: 40,
+            height: 40,
+            borderRadius: 12,
+            background: "rgba(224,30,30,0.15)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
+          }}>
+            <ClipboardList size={18} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
           </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <ProgressBar
-              value={stats.adherence}
-              max={100}
-              color={adherenceColor}
-              label="Adhésion nutrition"
-              showPercent
-              height={8}
-            />
-            <p style={{ marginTop: 6, fontSize: 10, color: "rgba(245,237,237,0.3)" }}>
-              {stats.daysWithLogs} / 7 jours avec logs nutrition
+          <div style={{ flex: 1 }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+              Check-in semaine {stats.weekNumber}
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+              Partage ton ressenti avec ton coach
             </p>
           </div>
-
-          {stats.hasCheckinThisWeek ? (
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 16px",
-                background: "rgba(74,222,128,0.07)",
-                border: "1px solid rgba(74,222,128,0.2)",
-                borderRadius: 10,
-              }}
-            >
-              <CheckCircle2 size={15} style={{ color: "#4ade80", flexShrink: 0 }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#4ade80", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Check-in envoyé ✓
-              </span>
-            </div>
-          ) : (
-            <Link href="/dashboard/client/checkin" className="ep-btn-primary" style={{ width: "100%", display: "flex" }}>
-              <ClipboardList size={14} />
-              Faire mon check-in
-            </Link>
-          )}
-        </div>
-      </section>
+          <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />
+        </Link>
+      )}
     </>
   );
 }

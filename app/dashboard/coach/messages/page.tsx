@@ -1,8 +1,8 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import Link from "next/link";
-import { MessageCircle, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { PushPermission } from "@/components/messaging/PushPermission";
 
 interface LastMessage {
@@ -21,12 +21,7 @@ export default async function CoachMessagesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");
 
-  const [clients, supabase] = await Promise.all([
-    getClients(),
-    createServerSupabase(),
-  ]);
-
-  // For each client, fetch last message + unread count
+  const [clients, supabase] = await Promise.all([getClients(), createServerSupabase()]);
   const clientIds = clients.map((c) => c.id);
 
   const { data: lastMessages } = await supabase
@@ -35,7 +30,6 @@ export default async function CoachMessagesPage() {
     .in("conversation_id", clientIds.length > 0 ? clientIds : ["00000000-0000-0000-0000-000000000000"])
     .order("created_at", { ascending: false });
 
-  // Build a map: clientId → { lastMessage, unreadCount }
   const msgMap: Record<string, { content: string; time: string; unread: number }> = {};
   const seenConv = new Set<string>();
 
@@ -43,15 +37,9 @@ export default async function CoachMessagesPage() {
     const cid = msg.conversation_id;
     if (!seenConv.has(cid)) {
       seenConv.add(cid);
-      const content =
-        msg.type === "voice"
-          ? "🎤 Message vocal"
-          : msg.content?.slice(0, 40) ?? "";
+      const content = msg.type === "voice" ? "🎤 Message vocal" : msg.content?.slice(0, 50) ?? "";
       const time = new Intl.DateTimeFormat("fr-FR", {
-        day: "numeric",
-        month: "short",
-        hour: "2-digit",
-        minute: "2-digit",
+        day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
       }).format(new Date(msg.created_at));
       msgMap[cid] = { content, time, unread: 0 };
     }
@@ -60,7 +48,6 @@ export default async function CoachMessagesPage() {
     }
   }
 
-  // Sort clients: those with messages first, then by last message time
   const clientsWithMsg = clients
     .map((c) => ({ ...c, msg: msgMap[c.id] ?? null }))
     .sort((a, b) => {
@@ -73,84 +60,136 @@ export default async function CoachMessagesPage() {
   const totalUnread = Object.values(msgMap).reduce((s, v) => s + v.unread, 0);
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto page-transition">
+    <div className="page-transition" style={{ padding: "32px 20px 48px", maxWidth: 600, margin: "0 auto" }}>
       <PushPermission userId={user.id} />
 
-      <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Messagerie
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
-          Messages
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Messagerie</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h1 style={{
+            fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+            color: "#F5EDED", margin: 0, lineHeight: 1.05,
+          }}>
+            Messages
+          </h1>
           {totalUnread > 0 && (
-            <span className="ml-3 text-lg font-black px-2 py-0.5 rounded-full bg-[#E01E1E] text-white">
+            <span className="animate-pulse-glow" style={{
+              background: "#E01E1E",
+              color: "#fff",
+              borderRadius: 20,
+              padding: "3px 10px",
+              fontSize: 12,
+              fontWeight: 800,
+            }}>
               {totalUnread}
             </span>
           )}
-        </h1>
+        </div>
       </div>
 
-      {clients.length === 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
-          <p className="text-sm text-[#F5EDED]/40">Aucun client encore</p>
+      {clients.length === 0 ? (
+        <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Aucun client encore</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {clientsWithMsg.map((client, i) => {
+            const initials = (client.full_name ?? "?")
+              .split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
+
+            return (
+              <Link
+                key={client.id}
+                href={`/dashboard/coach/messages/${client.id}`}
+                className="animate-fade-up"
+                style={{
+                  animationDelay: `${i * 40}ms`,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 14,
+                  padding: "14px 16px",
+                  background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
+                  border: "1px solid rgba(224,30,30,0.09)",
+                  borderRadius: "var(--radius-lg)",
+                  textDecoration: "none",
+                  transition: "border-color 0.2s",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(224,30,30,0.25)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(224,30,30,0.09)";
+                }}
+              >
+                {/* Avatar */}
+                <div style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  background: "linear-gradient(135deg, #E01E1E, #890404)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 13,
+                  fontWeight: 800,
+                  color: "#F5EDED",
+                  flexShrink: 0,
+                  position: "relative",
+                }}>
+                  {initials}
+                  {client.msg?.unread > 0 && (
+                    <span style={{
+                      position: "absolute",
+                      top: -4, right: -4,
+                      background: "#E01E1E",
+                      border: "2px solid #0D0000",
+                      borderRadius: "50%",
+                      width: 16, height: 16,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 8, fontWeight: 800, color: "#fff",
+                    }}>
+                      {client.msg.unread > 9 ? "9+" : client.msg.unread}
+                    </span>
+                  )}
+                </div>
+
+                {/* Info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED" }}>
+                    {client.full_name ?? "Client"}
+                  </p>
+                  {client.msg ? (
+                    <p style={{
+                      margin: "2px 0 0",
+                      fontSize: 11,
+                      color: "rgba(245,237,237,0.35)",
+                      whiteSpace: "nowrap",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}>
+                      {client.msg.content}
+                    </p>
+                  ) : (
+                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.18)", fontStyle: "italic" }}>
+                      Aucun message
+                    </p>
+                  )}
+                </div>
+
+                {/* Right */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+                  {client.msg && (
+                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.22)" }}>
+                      {client.msg.time}
+                    </span>
+                  )}
+                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
-
-      <div className="space-y-2">
-        {clientsWithMsg.map((client) => (
-          <Link
-            key={client.id}
-            href={`/dashboard/coach/messages/${client.id}`}
-            className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
-          >
-            {/* Avatar */}
-            <div className="w-10 h-10 rounded-full bg-[#890404]/20 border border-[#890404]/30 flex items-center justify-center flex-shrink-0">
-              <span className="text-xs font-black text-[#E01E1E] uppercase">
-                {(client.full_name ?? "?")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .slice(0, 2)}
-              </span>
-            </div>
-
-            {/* Info */}
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-black text-white">
-                {client.full_name ?? "Client"}
-              </p>
-              {client.msg ? (
-                <p className="text-[10px] text-[#F5EDED]/35 truncate">
-                  {client.msg.content}
-                </p>
-              ) : (
-                <p className="text-[10px] text-[#F5EDED]/20 italic">
-                  Aucun message
-                </p>
-              )}
-            </div>
-
-            {/* Right: time + unread badge */}
-            <div className="flex flex-col items-end gap-1 flex-shrink-0">
-              {client.msg && (
-                <span className="text-[9px] text-[#F5EDED]/25">
-                  {client.msg.time}
-                </span>
-              )}
-              {client.msg && client.msg.unread > 0 ? (
-                <span className="text-[9px] font-black px-1.5 py-0.5 rounded-full bg-[#E01E1E] text-white min-w-[18px] text-center">
-                  {client.msg.unread}
-                </span>
-              ) : (
-                <ChevronRight
-                  size={14}
-                  className="text-[#F5EDED]/20 group-hover:text-[#F5EDED]/40 transition-colors"
-                />
-              )}
-            </div>
-          </Link>
-        ))}
-      </div>
     </div>
   );
 }

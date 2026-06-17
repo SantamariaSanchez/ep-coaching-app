@@ -1,12 +1,10 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getClientMeasurements } from "@/utils/measurements";
 import { getNutritionProfile } from "@/utils/nutrition";
 import MeasurementCharts from "@/components/ui/MeasurementCharts";
-import { TrendingDown, TrendingUp, Minus, Camera } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus } from "lucide-react";
 import type { Measurement } from "@/utils/measurements";
-
-// ── Metric config ─────────────────────────────────────────────────────────────
 
 const KEY_METRICS: {
   key: keyof Measurement;
@@ -14,98 +12,79 @@ const KEY_METRICS: {
   unit: string;
   goodDir: "up" | "down" | "neutral";
 }[] = [
-  { key: "weight", label: "Poids", unit: "kg", goodDir: "neutral" },
-  { key: "waist", label: "Tour de taille", unit: "cm", goodDir: "down" },
-  { key: "hips", label: "Hanches", unit: "cm", goodDir: "down" },
-  { key: "arm_flexed", label: "Bras fléchi", unit: "cm", goodDir: "up" },
-  { key: "thigh", label: "Cuisse", unit: "cm", goodDir: "up" },
-  { key: "abdomen", label: "Abdomen", unit: "cm", goodDir: "down" },
+  { key: "weight",     label: "Poids",         unit: "kg", goodDir: "neutral" },
+  { key: "waist",      label: "Taille",         unit: "cm", goodDir: "down" },
+  { key: "hips",       label: "Hanches",        unit: "cm", goodDir: "down" },
+  { key: "arm_flexed", label: "Bras fléchi",    unit: "cm", goodDir: "up" },
+  { key: "thigh",      label: "Cuisse",         unit: "cm", goodDir: "up" },
+  { key: "abdomen",    label: "Abdomen",        unit: "cm", goodDir: "down" },
 ];
 
 function ProgressCard({
-  label,
-  unit,
-  current,
-  start,
-  goodDir,
+  label, unit, current, start, goodDir,
 }: {
-  label: string;
-  unit: string;
-  current: number | null;
-  start: number | null;
-  goodDir: "up" | "down" | "neutral";
+  label: string; unit: string; current: number | null;
+  start: number | null; goodDir: "up" | "down" | "neutral";
 }) {
-  const hasData = current != null;
-  const delta =
-    current != null && start != null
-      ? parseFloat((current - start).toFixed(1))
-      : null;
-  const pct =
-    delta != null && start != null && start !== 0
-      ? ((delta / start) * 100).toFixed(1)
-      : null;
+  const delta = current != null && start != null
+    ? parseFloat((current - start).toFixed(1))
+    : null;
 
-  let Icon = Minus;
-  let deltaColor = "text-[#F5EDED]/40";
+  let Icon: React.ElementType = Minus;
+  let deltaColor = "rgba(245,237,237,0.4)";
+  let goodColor  = "rgba(245,237,237,0.4)";
+
   if (delta != null && delta !== 0) {
     if (goodDir === "neutral") {
       Icon = delta > 0 ? TrendingUp : TrendingDown;
-      deltaColor = "text-[#F5EDED]/60";
+      deltaColor = "rgba(245,237,237,0.55)";
     } else if (goodDir === "down") {
       Icon = delta < 0 ? TrendingDown : TrendingUp;
-      deltaColor = delta < 0 ? "text-green-400" : "text-red-400";
+      deltaColor = delta < 0 ? "#4ade80" : "#E01E1E";
     } else {
       Icon = delta > 0 ? TrendingUp : TrendingDown;
-      deltaColor = delta > 0 ? "text-green-400" : "text-red-400";
+      deltaColor = delta > 0 ? "#4ade80" : "#E01E1E";
     }
+    goodColor = deltaColor;
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-        {label}
-      </p>
+    <div className="ep-card" style={{ padding: "16px 16px" }}>
+      <p className="ep-label" style={{ marginBottom: 8 }}>{label}</p>
 
-      {!hasData ? (
-        <p className="text-2xl font-black text-[#F5EDED]/25">—</p>
+      {current == null ? (
+        <p style={{ fontSize: 24, fontWeight: 900, color: "rgba(245,237,237,0.2)", margin: 0 }}>—</p>
       ) : (
         <>
-          <p className="text-2xl font-black text-white">
+          <p style={{
+            fontSize: 24, fontWeight: 900, color: "#F5EDED",
+            margin: "0 0 6px", lineHeight: 1, letterSpacing: "-0.03em",
+          }}>
             {current}
-            <span className="text-xs font-normal text-[#F5EDED]/40 ml-1">
+            <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(245,237,237,0.35)", marginLeft: 3 }}>
               {unit}
             </span>
           </p>
 
-          {start != null && start !== current && (
-            <div className={`flex items-center gap-1.5 mt-2 ${deltaColor}`}>
-              <Icon size={13} strokeWidth={2} />
-              <span className="text-xs font-bold">
-                {delta != null && delta > 0 ? "+" : ""}
-                {delta} {unit}
+          {delta != null && (
+            <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Icon size={12} strokeWidth={2} style={{ color: goodColor }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: goodColor }}>
+                {delta > 0 ? "+" : ""}{delta} {unit}
               </span>
-              {pct && (
-                <span className="text-[10px] text-[#F5EDED]/30">
-                  ({delta != null && delta > 0 ? "+" : ""}
-                  {pct}%)
-                </span>
-              )}
             </div>
           )}
 
-          <div className="mt-2 flex gap-3 text-[10px] text-[#F5EDED]/30">
-            <span>
-              Départ :{" "}
-              <span className="text-[#F5EDED]/50">{start ?? "—"}</span>
-            </span>
-          </div>
+          {start != null && (
+            <p style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", margin: "4px 0 0" }}>
+              Départ : {start} {unit}
+            </p>
+          )}
         </>
       )}
     </div>
   );
 }
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default async function ClientMeasurementsPage() {
   const user = await getUser();
@@ -119,126 +98,81 @@ export default async function ClientMeasurementsPage() {
     getNutritionProfile(user.id),
   ]);
 
-  // latest = [0], earliest = [length-1]
   const latest = measurements[0] ?? null;
-  const first = measurements[measurements.length - 1] ?? null;
+  const first  = measurements[measurements.length - 1] ?? null;
 
-  // Override weight direction from nutrition phase
   const weightDir: "up" | "down" | "neutral" =
-    nutritionProfile?.phase === "deficit"
-      ? "down"
-      : nutritionProfile?.phase === "surplus"
-      ? "up"
-      : "neutral";
+    nutritionProfile?.phase === "deficit"  ? "down"
+    : nutritionProfile?.phase === "surplus" ? "up"
+    : "neutral";
 
   const metrics = KEY_METRICS.map((m) =>
     m.key === "weight" ? { ...m, goodDir: weightDir } : m
   );
 
-  // Photo dates (measurement dates with photos placeholder)
-  const photoDates = measurements.slice(0, 6);
-
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
+    <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 700, margin: "0 auto" }}>
+
       {/* Header */}
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Suivi corporel
-        </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Suivi corporel</p>
+        <h1 style={{
+          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+          color: "#F5EDED", margin: 0, lineHeight: 1.05,
+        }}>
           Mes mensurations
         </h1>
         {latest && (
-          <p className="mt-1 text-xs text-[#F5EDED]/30">
-            {measurements.length} session{measurements.length !== 1 ? "s" : ""}{" "}
-            · Dernière :{" "}
-            {new Intl.DateTimeFormat("fr-FR", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            }).format(new Date(latest.measured_at + "T12:00:00"))}
+          <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+            {measurements.length} session{measurements.length !== 1 ? "s" : ""} &nbsp;·&nbsp; Dernière le{" "}
+            {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" })
+              .format(new Date(latest.measured_at + "T12:00:00"))}
           </p>
         )}
       </div>
 
       {measurements.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+        <div style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "60px 20px",
+          textAlign: "center",
+          gap: 10,
+        }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.35)", margin: 0 }}>
             Aucune mensuration disponible
           </p>
-          <p className="text-xs text-[#F5EDED]/25 mt-1">
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0 }}>
             Ton coach enregistrera tes mesures lors de chaque bilan.
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+
           {/* Progress cards */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              Progression globale
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <section>
+            <p className="ep-section-title">Progression globale</p>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {metrics.map((m) => (
                 <ProgressCard
                   key={m.key}
                   label={m.label}
                   unit={m.unit}
                   goodDir={m.goodDir}
-                  current={
-                    latest?.[m.key] as number | null
-                  }
-                  start={
-                    first?.[m.key] as number | null
-                  }
+                  current={latest?.[m.key] as number | null}
+                  start={first?.[m.key] as number | null}
                 />
               ))}
             </div>
-          </div>
+          </section>
 
           {/* Charts */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              Évolution
-            </p>
+          <section>
+            <p className="ep-section-title">Évolution</p>
             <MeasurementCharts measurements={measurements} />
-          </div>
-
-          {/* Photos placeholder */}
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-              Photos de progression
-            </p>
-            <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
-              {photoDates.map((m) => (
-                <div
-                  key={m.id}
-                  className="aspect-square bg-[#1f0101] border border-[#890404]/30 rounded-xl flex flex-col items-center justify-center gap-1.5 p-2"
-                >
-                  <Camera
-                    size={18}
-                    className="text-[#F5EDED]/15"
-                    strokeWidth={1.5}
-                  />
-                  <p className="text-[8px] text-[#F5EDED]/25 text-center font-semibold">
-                    {new Intl.DateTimeFormat("fr-FR", {
-                      day: "numeric",
-                      month: "short",
-                    }).format(new Date(m.measured_at + "T12:00:00"))}
-                  </p>
-                  <p className="text-[7px] text-[#F5EDED]/15 uppercase tracking-wider">
-                    À venir
-                  </p>
-                </div>
-              ))}
-              {photoDates.length === 0 && (
-                <div className="col-span-3 sm:col-span-6 flex items-center justify-center py-10 bg-[#1f0101] border border-dashed border-[#890404]/20 rounded-xl">
-                  <p className="text-xs text-[#F5EDED]/25 uppercase tracking-widest font-semibold">
-                    Photos disponibles prochainement
-                  </p>
-                </div>
-              )}
-            </div>
-          </div>
+          </section>
         </div>
       )}
     </div>

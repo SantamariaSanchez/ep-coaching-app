@@ -11,65 +11,182 @@ import {
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 
-// ── Nav items ─────────────────────────────────────────────────────────────────
+// ── Types ──────────────────────────────────────────────────────────────────────
 
-const COACH_ITEMS = [
-  { label: "Accueil",   icon: Home,          segment: "" },
-  { label: "Clients",   icon: Users,         segment: "clients" },
-  { label: "Nutrition", icon: Apple,         segment: "nutrition" },
-  { label: "Analytics", icon: BarChart2,     segment: "analytics" },
-  { label: "Bilan",     icon: ClipboardCheck,segment: "bilan" },
-  { label: "Messages",  icon: MessageCircle, segment: "messages" },
+type BadgeKey = "pending" | "messages" | "analytics";
+
+type TabItem = {
+  label: string;
+  icon: React.ElementType;
+  href: string;
+  matchSegments: string[];
+  exactMatch?: boolean;
+  badge?: BadgeKey;
+};
+
+type SidebarGroup = {
+  group: string;
+  items: Array<{
+    label: string;
+    icon: React.ElementType;
+    segment: string;
+    badge?: BadgeKey;
+  }>;
+};
+
+// ── Navigation data ─────────────────────────────────────────────────────────
+
+const CLIENT_TABS: TabItem[] = [
+  {
+    label: "Aujourd'hui",
+    icon: Home,
+    href: "/dashboard/client",
+    matchSegments: [],
+    exactMatch: true,
+  },
+  {
+    label: "Training",
+    icon: Dumbbell,
+    href: "/dashboard/client/program",
+    matchSegments: ["program", "logbook"],
+  },
+  {
+    label: "Suivi",
+    icon: TrendingUp,
+    href: "/dashboard/client/progress",
+    matchSegments: ["measurements", "photos", "nutrition", "progress", "roadmap"],
+  },
+  {
+    label: "Coach",
+    icon: MessageCircle,
+    href: "/dashboard/client/messages",
+    matchSegments: ["messages", "checkin", "reminders", "profile"],
+    badge: "messages",
+  },
 ];
 
-const CLIENT_ITEMS = [
-  { label: "Accueil",    icon: Home,          segment: "" },
-  { label: "Road Map",   icon: Map,           segment: "roadmap" },
-  { label: "Programme",  icon: Dumbbell,      segment: "program" },
-  { label: "Logbook",    icon: BookOpen,      segment: "logbook" },
-  { label: "Nutrition",  icon: Apple,         segment: "nutrition" },
-  { label: "Check-in",   icon: ClipboardList, segment: "checkin" },
-  { label: "Photos",     icon: Image,         segment: "photos" },
-  { label: "Messages",   icon: MessageCircle, segment: "messages" },
-  { label: "Progrès",    icon: TrendingUp,    segment: "progress" },
-  { label: "Profil",     icon: User,          segment: "profile" },
+const COACH_TABS: TabItem[] = [
+  {
+    label: "Aujourd'hui",
+    icon: Home,
+    href: "/dashboard/coach",
+    matchSegments: [],
+    exactMatch: true,
+  },
+  {
+    label: "Clients",
+    icon: Users,
+    href: "/dashboard/coach/clients",
+    matchSegments: ["clients"],
+    badge: "pending",
+  },
+  {
+    label: "Messages",
+    icon: MessageCircle,
+    href: "/dashboard/coach/messages",
+    matchSegments: ["messages"],
+    badge: "messages",
+  },
+  {
+    label: "Analytics",
+    icon: BarChart2,
+    href: "/dashboard/coach/analytics",
+    matchSegments: ["analytics", "bilan", "notes", "nutrition"],
+    badge: "analytics",
+  },
 ];
 
-const COACH_MOBILE  = ["", "clients", "analytics", "bilan", "messages"];
-const CLIENT_MOBILE = ["", "logbook", "nutrition", "checkin", "messages"];
+const COACH_SIDEBAR: SidebarGroup[] = [
+  {
+    group: "",
+    items: [{ label: "Tableau de bord", icon: Home, segment: "" }],
+  },
+  {
+    group: "Gestion",
+    items: [
+      { label: "Clients",  icon: Users,         segment: "clients",   badge: "pending" },
+      { label: "Messages", icon: MessageCircle, segment: "messages",  badge: "messages" },
+    ],
+  },
+  {
+    group: "Analyse",
+    items: [
+      { label: "Analytics", icon: BarChart2,      segment: "analytics", badge: "analytics" },
+      { label: "Bilan",     icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
+      { label: "Nutrition", icon: Apple,           segment: "nutrition" },
+    ],
+  },
+];
+
+const CLIENT_SIDEBAR: SidebarGroup[] = [
+  {
+    group: "",
+    items: [{ label: "Aujourd'hui", icon: Home, segment: "" }],
+  },
+  {
+    group: "Training",
+    items: [
+      { label: "Programme", icon: Dumbbell,  segment: "program" },
+      { label: "Logbook",   icon: BookOpen,  segment: "logbook" },
+      { label: "Road Map",  icon: Map,       segment: "roadmap" },
+    ],
+  },
+  {
+    group: "Suivi",
+    items: [
+      { label: "Progression",  icon: TrendingUp, segment: "progress" },
+      { label: "Nutrition",    icon: Apple,      segment: "nutrition" },
+      { label: "Mensurations", icon: User,       segment: "measurements" },
+      { label: "Photos",       icon: Image,      segment: "photos" },
+    ],
+  },
+  {
+    group: "Coach",
+    items: [
+      { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
+      { label: "Check-in", icon: ClipboardList, segment: "checkin" },
+      { label: "Profil",   icon: User,          segment: "profile" },
+    ],
+  },
+];
+
+// ── Hook ────────────────────────────────────────────────────────────────────
 
 function useNavState() {
   const pathname = usePathname();
-  const isCoach  = pathname.startsWith("/dashboard/coach");
-  const base     = isCoach ? "/dashboard/coach" : "/dashboard/client";
-  const items    = isCoach ? COACH_ITEMS : CLIENT_ITEMS;
-  const mobile   = isCoach ? COACH_MOBILE : CLIENT_MOBILE;
+  const isCoach = pathname.startsWith("/dashboard/coach");
+  const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
+  const tabs = isCoach ? COACH_TABS : CLIENT_TABS;
+  const sidebar = isCoach ? COACH_SIDEBAR : CLIENT_SIDEBAR;
 
-  return {
-    isCoach, base,
-    navItems: items.map((item) => ({
-      ...item,
-      href: item.segment ? `${base}/${item.segment}` : base,
-      active: item.segment
-        ? pathname.startsWith(`${base}/${item.segment}`)
-        : pathname === base,
-    })),
-    mobileItems: items
-      .filter((i) => mobile.includes(i.segment))
-      .map((item) => ({
-        ...item,
-        href: item.segment ? `${base}/${item.segment}` : base,
-        active: item.segment
-          ? pathname.startsWith(`${base}/${item.segment}`)
-          : pathname === base,
-      })),
-  };
+  function isTabActive(tab: TabItem): boolean {
+    if (tab.exactMatch) return pathname === tab.href;
+    return tab.matchSegments.some((seg) =>
+      pathname.startsWith(`${base}/${seg}`)
+    );
+  }
+
+  function isSidebarActive(segment: string): boolean {
+    if (segment === "") return pathname === base;
+    return pathname.startsWith(`${base}/${segment}`);
+  }
+
+  return { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive };
 }
 
+// ── Component ───────────────────────────────────────────────────────────────
+
 export default function DashboardNav() {
-  const { isCoach, navItems, mobileItems } = useNavState();
+  const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive } =
+    useNavState();
   const router = useRouter();
   const [isDesktop, setIsDesktop] = useState(false);
+
+  const [pendingCount,    setPendingCount]    = useState(0);
+  const [unreadMessages,  setUnreadMessages]  = useState(0);
+  const [analyticsAlerts, setAnalyticsAlerts] = useState(0);
+  const [userName,        setUserName]        = useState<string | null>(null);
+  const [userRole,        setUserRole]        = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -79,35 +196,40 @@ export default function DashboardNav() {
     return () => mq.removeEventListener("change", h);
   }, []);
 
-  const [pendingCount,    setPendingCount]    = useState(0);
-  const [unreadMessages,  setUnreadMessages]  = useState(0);
-  const [analyticsAlerts, setAnalyticsAlerts] = useState(0);
-  const [userName,        setUserName]        = useState<string | null>(null);
-  const [userRole,        setUserRole]        = useState<string | null>(null);
-
-  // ── Prefetch key routes ────────────────────────────────────────────────────
   useEffect(() => {
     const prefetch = isCoach
-      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/bilan", "/dashboard/coach/analytics"]
-      : ["/dashboard/client", "/dashboard/client/logbook", "/dashboard/client/nutrition", "/dashboard/client/messages"];
+      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/analytics", "/dashboard/coach/messages"]
+      : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/progress", "/dashboard/client/messages"];
     prefetch.forEach((p) => router.prefetch(p));
   }, [isCoach, router]);
 
-  // ── Badge counts ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (isCoach) {
-      fetch("/api/coach/pending-count").then((r) => r.json()).then((d) => setPendingCount(d.count ?? 0)).catch(() => {});
-      fetch("/api/coach/analytics-alerts").then((r) => r.json()).then((d) => setAnalyticsAlerts(d.count ?? 0)).catch(() => {});
+      fetch("/api/coach/pending-count")
+        .then((r) => r.json())
+        .then((d) => setPendingCount(d.count ?? 0))
+        .catch(() => {});
+      fetch("/api/coach/analytics-alerts")
+        .then((r) => r.json())
+        .then((d) => setAnalyticsAlerts(d.count ?? 0))
+        .catch(() => {});
     }
   }, [isCoach]);
 
   useEffect(() => {
-    fetch("/api/messages/unread").then((r) => r.json()).then((d) => setUnreadMessages(d.count ?? 0)).catch(() => {});
+    fetch("/api/messages/unread")
+      .then((r) => r.json())
+      .then((d) => setUnreadMessages(d.count ?? 0))
+      .catch(() => {});
 
     const supabase = createClientSupabase();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
-      supabase.from("profiles").select("full_name, role").eq("id", user.id).single()
+      supabase
+        .from("profiles")
+        .select("full_name, role")
+        .eq("id", user.id)
+        .single()
         .then(({ data }) => {
           if (data) {
             setUserName((data as { full_name: string | null }).full_name);
@@ -116,7 +238,8 @@ export default function DashboardNav() {
         });
     });
 
-    const ch = supabase.channel("nav-msgs")
+    const ch = supabase
+      .channel("nav-msgs")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () =>
         fetch("/api/messages/unread").then((r) => r.json()).then((d) => setUnreadMessages(d.count ?? 0)).catch(() => {})
       )
@@ -134,10 +257,10 @@ export default function DashboardNav() {
     router.refresh();
   }
 
-  function badgeFor(segment: string): number {
-    if (segment === "bilan"     && isCoach) return pendingCount;
-    if (segment === "analytics" && isCoach) return analyticsAlerts;
-    if (segment === "messages")             return unreadMessages;
+  function getBadgeCount(badge?: BadgeKey): number {
+    if (badge === "pending")   return pendingCount;
+    if (badge === "messages")  return unreadMessages;
+    if (badge === "analytics") return analyticsAlerts;
     return 0;
   }
 
@@ -145,7 +268,7 @@ export default function DashboardNav() {
     ? userName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "EP";
 
-  // ── Desktop sidebar ────────────────────────────────────────────────────────
+  // ── Desktop sidebar ─────────────────────────────────────────────────────────
   return (
     <>
       <aside
@@ -157,122 +280,144 @@ export default function DashboardNav() {
           height: "100%",
           zIndex: 40,
           width: 220,
-          background: "#0A0000",
+          background: "rgba(6,0,0,0.88)",
+          backdropFilter: "blur(32px)",
+          WebkitBackdropFilter: "blur(32px)",
           borderRight: "1px solid rgba(224,30,30,0.1)",
+          boxShadow: "4px 0 32px rgba(0,0,0,0.5)",
         }}
       >
         {/* Logo */}
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: 28, paddingBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "center", paddingTop: 28, paddingBottom: 24 }}>
           <EPLogo size="md" showCoaching />
         </div>
 
-        {/* Top separator */}
-        <div className="ep-divider" style={{ margin: "0 16px" }} />
+        <div className="ep-divider-subtle" style={{ margin: "0 16px 8px" }} />
 
-        {/* Nav items */}
-        <nav style={{ flex: 1, padding: "8px", overflowY: "auto" }}>
-          {navItems.map(({ label, icon: Icon, href, active, segment }, i) => {
-            const count = badgeFor(segment);
-            return (
-              <Link
-                key={href}
-                href={href}
-                className="animate-fade-up"
-                style={{
-                  animationDelay: `${i * 40}ms`,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  marginBottom: 2,
-                  marginLeft: active ? -2 : 0,
-                  borderLeft: active
-                    ? "2px solid #E01E1E"
-                    : "2px solid transparent",
-                  background: active
-                    ? "rgba(224,30,30,0.1)"
-                    : "transparent",
-                  color: active ? "#F5EDED" : "rgba(245,237,237,0.3)",
-                  fontWeight: active ? 700 : 600,
-                  fontSize: 13,
-                  letterSpacing: "0.01em",
-                  transition: "all 0.15s ease",
-                  textDecoration: "none",
-                }}
-                onMouseEnter={(e) => {
-                  if (active) return;
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  el.style.background = "rgba(224,30,30,0.06)";
-                  el.style.borderLeft = "2px solid rgba(224,30,30,0.5)";
-                  el.style.marginLeft = "-2px";
-                  el.style.color = "rgba(245,237,237,0.8)";
-                }}
-                onMouseLeave={(e) => {
-                  if (active) return;
-                  const el = e.currentTarget as HTMLAnchorElement;
-                  el.style.background = "transparent";
-                  el.style.borderLeft = "2px solid transparent";
-                  el.style.marginLeft = "0";
-                  el.style.color = "rgba(245,237,237,0.3)";
-                }}
-              >
-                <Icon
-                  size={18}
-                  strokeWidth={active ? 2.2 : 1.8}
-                  style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
-                />
-                <span style={{ flex: 1 }}>{label}</span>
-                {count > 0 && (
-                  <span
-                    className={count > 0 ? "animate-pulse-glow" : ""}
+        {/* Sidebar nav */}
+        <nav style={{ flex: 1, padding: "0 10px", overflowY: "auto" }}>
+          {sidebar.map((group, gi) => (
+            <div key={gi} style={{ marginBottom: 4 }}>
+              {group.group && (
+                <p style={{
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.18em",
+                  textTransform: "uppercase",
+                  color: "rgba(245,237,237,0.18)",
+                  padding: "14px 10px 5px",
+                  margin: 0,
+                }}>
+                  {group.group}
+                </p>
+              )}
+              {group.items.map(({ label, icon: Icon, segment, badge }, i) => {
+                const active = isSidebarActive(segment);
+                const href = segment ? `${base}/${segment}` : base;
+                const count = getBadgeCount(badge);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="animate-fade-up"
                     style={{
-                      background: "#E01E1E",
-                      color: "#fff",
-                      borderRadius: "50%",
-                      width: 18,
-                      height: 18,
+                      animationDelay: `${(gi * 3 + i) * 30}ms`,
                       display: "flex",
                       alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 10,
-                      fontWeight: 800,
-                      flexShrink: 0,
+                      gap: 10,
+                      padding: "9px 12px",
+                      borderRadius: 10,
+                      marginBottom: 1,
+                      background: active ? "rgba(224,30,30,0.1)" : "transparent",
+                      color: active ? "#F5EDED" : "rgba(245,237,237,0.32)",
+                      fontWeight: active ? 700 : 500,
+                      fontSize: 13,
+                      borderLeft: active ? "2px solid #E01E1E" : "2px solid transparent",
+                      marginLeft: active ? -2 : 0,
+                      transition: "all 0.15s ease",
+                      textDecoration: "none",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (active) return;
+                      const el = e.currentTarget as HTMLAnchorElement;
+                      el.style.background = "rgba(224,30,30,0.05)";
+                      el.style.color = "rgba(245,237,237,0.65)";
+                    }}
+                    onMouseLeave={(e) => {
+                      if (active) return;
+                      const el = e.currentTarget as HTMLAnchorElement;
+                      el.style.background = "transparent";
+                      el.style.color = "rgba(245,237,237,0.32)";
                     }}
                   >
-                    {count > 9 ? "9+" : count}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
+                    <Icon
+                      size={16}
+                      strokeWidth={active ? 2.2 : 1.7}
+                      style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
+                    />
+                    <span style={{ flex: 1 }}>{label}</span>
+                    {count > 0 && (
+                      <span
+                        className={count > 0 ? "animate-pulse-glow" : ""}
+                        style={{
+                          background: "#E01E1E",
+                          color: "#fff",
+                          borderRadius: "50%",
+                          width: 16,
+                          height: 16,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          fontSize: 9,
+                          fontWeight: 800,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {count > 9 ? "9+" : count}
+                      </span>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
         </nav>
 
-        {/* Bottom: user info + logout */}
-        <div style={{ borderTop: "1px solid rgba(224,30,30,0.1)", padding: "16px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-            <div
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 8,
-                background: "linear-gradient(135deg, #E01E1E, #890404)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 12,
-                fontWeight: 800,
-                color: "#F5EDED",
-                flexShrink: 0,
-              }}
-            >
+        {/* Bottom: user + logout */}
+        <div style={{ borderTop: "1px solid rgba(224,30,30,0.08)", padding: "14px 12px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+            <div style={{
+              width: 34,
+              height: 34,
+              borderRadius: 10,
+              background: "linear-gradient(135deg, #E01E1E, #890404)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: 12,
+              fontWeight: 800,
+              color: "#F5EDED",
+              flexShrink: 0,
+              boxShadow: "0 2px 8px rgba(224,30,30,0.25)",
+            }}>
               {initials}
             </div>
             <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#F5EDED",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}>
                 {userName ?? "…"}
               </div>
-              <div style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", textTransform: "capitalize" }}>
+              <div style={{
+                fontSize: 10,
+                color: "rgba(245,237,237,0.28)",
+                textTransform: "capitalize",
+              }}>
                 {userRole ?? "—"}
               </div>
             </div>
@@ -285,107 +430,126 @@ export default function DashboardNav() {
               alignItems: "center",
               gap: 8,
               width: "100%",
-              padding: "8px 10px",
+              padding: "7px 10px",
               borderRadius: 8,
               background: "transparent",
               border: "none",
-              color: "rgba(245,237,237,0.3)",
+              color: "rgba(245,237,237,0.22)",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
-              transition: "color 0.15s, background 0.15s",
+              transition: "all 0.15s",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
               el.style.color = "#E01E1E";
-              el.style.background = "rgba(224,30,30,0.06)";
+              el.style.background = "rgba(224,30,30,0.07)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "rgba(245,237,237,0.3)";
+              el.style.color = "rgba(245,237,237,0.22)";
               el.style.background = "transparent";
             }}
           >
-            <LogOut size={15} strokeWidth={1.8} />
+            <LogOut size={14} strokeWidth={1.7} />
             Déconnexion
           </button>
         </div>
       </aside>
 
-      {/* ── Mobile bottom nav ──────────────────────────────────────────────── */}
+      {/* ── Mobile bottom nav — Oura style ─────────────────────────────────── */}
       <nav
-        style={{
-          display: isDesktop ? "none" : "block",
-          position: "fixed",
-          bottom: 0, left: 0, right: 0,
-          zIndex: 40,
-          background: "#0A0000",
-          borderTop: "1px solid rgba(224,30,30,0.12)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
+        className="ep-bottom-nav"
+        style={{ display: isDesktop ? "none" : "block" }}
       >
-        <div style={{ display: "flex", alignItems: "stretch", justifyContent: "space-around", padding: "6px 4px 6px" }}>
-          {mobileItems.map(({ label, icon: Icon, href, active, segment }) => {
-            const count = badgeFor(segment);
+        <div style={{
+          display: "flex",
+          alignItems: "stretch",
+          padding: "6px 8px 8px",
+          height: 72,
+          gap: 4,
+        }}>
+          {tabs.map((tab) => {
+            const active = isTabActive(tab);
+            const Icon = tab.icon;
+            const count = getBadgeCount(tab.badge);
+
             return (
               <Link
-                key={href}
-                href={href}
+                key={tab.href}
+                href={tab.href}
                 style={{
+                  flex: 1,
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
-                  gap: 3,
-                  flex: 1,
-                  padding: "6px 4px 10px",
-                  textDecoration: "none",
-                  color: active ? "#E01E1E" : "rgba(245,237,237,0.3)",
-                  position: "relative",
-                  minHeight: 44,
                   justifyContent: "center",
+                  gap: 4,
+                  textDecoration: "none",
+                  borderRadius: 12,
+                  transition: "background 0.15s",
+                  minHeight: 56,
+                  position: "relative",
                 }}
               >
-                <div style={{ position: "relative" }}>
-                  <Icon size={20} strokeWidth={active ? 2.2 : 1.8} />
+                {/* Icon container with pill */}
+                <div
+                  style={{
+                    position: "relative",
+                    width: 48,
+                    height: 30,
+                    borderRadius: 15,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: active
+                      ? "rgba(224,30,30,0.14)"
+                      : "transparent",
+                    transition: "background 0.2s ease",
+                  }}
+                >
+                  <Icon
+                    size={20}
+                    strokeWidth={active ? 2.3 : 1.6}
+                    style={{
+                      color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
+                      transition: "color 0.2s, stroke-width 0.2s",
+                    }}
+                  />
                   {count > 0 && (
-                    <span
-                      style={{
-                        position: "absolute",
-                        top: -4,
-                        right: -6,
-                        background: "#E01E1E",
-                        color: "#fff",
-                        borderRadius: "50%",
-                        width: 14,
-                        height: 14,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 8,
-                        fontWeight: 800,
-                      }}
-                    >
+                    <span style={{
+                      position: "absolute",
+                      top: 1,
+                      right: 3,
+                      background: "#E01E1E",
+                      color: "#fff",
+                      borderRadius: "50%",
+                      width: 15,
+                      height: 15,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 8,
+                      fontWeight: 800,
+                      border: "1.5px solid #070000",
+                    }}>
                       {count > 9 ? "9+" : count}
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 9, fontWeight: active ? 700 : 600, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  {label}
+
+                {/* Label */}
+                <span style={{
+                  fontSize: 9,
+                  fontWeight: active ? 700 : 500,
+                  letterSpacing: "0.03em",
+                  color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
+                  transition: "color 0.2s",
+                  lineHeight: 1,
+                  whiteSpace: "nowrap",
+                }}>
+                  {tab.label}
                 </span>
-                {active && (
-                  <span
-                    style={{
-                      position: "absolute",
-                      bottom: 6,
-                      left: "50%",
-                      transform: "translateX(-50%)",
-                      width: 16,
-                      height: 2,
-                      borderRadius: 1,
-                      background: "#E01E1E",
-                    }}
-                  />
-                )}
               </Link>
             );
           })}

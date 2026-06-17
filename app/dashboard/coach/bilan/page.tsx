@@ -28,23 +28,31 @@ export default async function CoachBilanPage() {
   const totalPending = pendingBilans.length + pendingCorrections.length + pendingPhotos.length;
 
   return (
-    <div className="px-6 py-8 max-w-3xl mx-auto page-transition">
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Suivi clients
-        </p>
-        <div className="flex items-center gap-3">
-          <h1 className="text-3xl font-black uppercase tracking-tight">
+    <div className="page-transition" style={{ padding: "32px 24px 48px", maxWidth: 760, margin: "0 auto" }}>
+      <div className="animate-fade-up" style={{ marginBottom: 28 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Suivi clients</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h1 style={{
+            fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+            color: "#F5EDED", margin: 0, lineHeight: 1.05,
+          }}>
             Bilan
           </h1>
           {totalPending > 0 && (
-            <span className="text-sm font-black px-2.5 py-0.5 rounded-full bg-[#E01E1E] text-white">
+            <span className="animate-pulse-glow" style={{
+              background: "#E01E1E",
+              color: "#fff",
+              borderRadius: 20,
+              padding: "3px 12px",
+              fontSize: 13,
+              fontWeight: 800,
+            }}>
               {totalPending}
             </span>
           )}
         </div>
-        <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Check-ins sans bilan + corrections sans réponse.
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+          Check-ins sans bilan · corrections sans réponse
         </p>
       </div>
 
