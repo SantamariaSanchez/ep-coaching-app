@@ -101,24 +101,14 @@ export default async function CoachMessagesPage() {
               <Link
                 key={client.id}
                 href={`/dashboard/coach/messages/${client.id}`}
-                className="animate-fade-up"
+                className="ep-card animate-fade-up ep-msg-row"
                 style={{
                   animationDelay: `${i * 40}ms`,
                   display: "flex",
                   alignItems: "center",
                   gap: 14,
                   padding: "14px 16px",
-                  background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-                  border: "1px solid rgba(224,30,30,0.09)",
-                  borderRadius: "var(--radius-lg)",
                   textDecoration: "none",
-                  transition: "border-color 0.2s",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(224,30,30,0.25)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(224,30,30,0.09)";
                 }}
               >
                 {/* Avatar */}
