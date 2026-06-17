@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, BarChart2, Map,
+  MessageCircle, BarChart2, Map, GraduationCap,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -63,6 +63,12 @@ const CLIENT_TABS: TabItem[] = [
     matchSegments: ["messages", "checkin", "reminders", "profile"],
     badge: "messages",
   },
+  {
+    label: "Formation",
+    icon: GraduationCap,
+    href: "/dashboard/client/formations",
+    matchSegments: ["formations"],
+  },
 ];
 
 const COACH_TABS: TabItem[] = [
@@ -116,6 +122,12 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Nutrition", icon: Apple,           segment: "nutrition" },
     ],
   },
+  {
+    group: "Contenu",
+    items: [
+      { label: "Formations", icon: GraduationCap, segment: "formations" },
+    ],
+  },
 ];
 
 const CLIENT_SIDEBAR: SidebarGroup[] = [
@@ -146,6 +158,12 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
       { label: "Check-in", icon: ClipboardList, segment: "checkin" },
       { label: "Profil",   icon: User,          segment: "profile" },
+    ],
+  },
+  {
+    group: "Académie",
+    items: [
+      { label: "Formations", icon: GraduationCap, segment: "formations" },
     ],
   },
 ];
@@ -465,9 +483,9 @@ export default function DashboardNav() {
         <div style={{
           display: "flex",
           alignItems: "stretch",
-          padding: "6px 8px 8px",
+          padding: "6px 4px 8px",
           height: 72,
-          gap: 4,
+          gap: 2,
         }}>
           {tabs.map((tab) => {
             const active = isTabActive(tab);
@@ -509,7 +527,7 @@ export default function DashboardNav() {
                   }}
                 >
                   <Icon
-                    size={20}
+                    size={18}
                     strokeWidth={active ? 2.3 : 1.6}
                     style={{
                       color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
