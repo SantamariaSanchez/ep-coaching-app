@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Video, Check, ChevronDown, ChevronUp, Plus, Eye, EyeOff, Save } from "lucide-react";
+import { Video, Check, ChevronDown, ChevronUp, Plus, Eye, EyeOff, Save, Layers } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
 import {
   updateLessonYoutube,
   updateFormation,
   addModule,
+  addSection,
   addLesson,
 } from "../actions";
 
@@ -14,12 +15,22 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   const [saving, setSaving] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [openModules, setOpenModules] = useState<Set<string>>(new Set(formation.modules.map(m => m.id)));
+  const [openSections, setOpenSections] = useState<Set<string>>(
+    new Set(formation.modules.flatMap(m => m.sections.map(s => s.id)))
+  );
 
   function toggleModule(id: string) {
     setOpenModules(prev => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSection(id: string) {
+    setOpenSections(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
       return next;
     });
   }
@@ -47,10 +58,17 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
     window.location.reload();
   }
 
-  async function handleAddLesson(moduleId: string, currentCount: number) {
+  async function handleAddSection(moduleId: string, currentCount: number) {
+    const title = prompt("Titre de la section :");
+    if (!title?.trim()) return;
+    await addSection(moduleId, title.trim(), currentCount);
+    window.location.reload();
+  }
+
+  async function handleAddLesson(sectionId: string, currentCount: number) {
     const title = prompt("Titre de la vidéo :");
     if (!title?.trim()) return;
-    await addLesson(moduleId, title.trim(), currentCount);
+    await addLesson(sectionId, title.trim(), currentCount);
     window.location.reload();
   }
 
@@ -77,81 +95,147 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
       </div>
 
       {/* Modules */}
-      {formation.modules.map((mod, mi) => (
-        <div key={mod.id} className="ep-card" style={{ overflow: "hidden" }}>
-          {/* Module header */}
-          <button
-            onClick={() => toggleModule(mod.id)}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              padding: "14px 18px",
-              background: "none",
-              border: "none",
-              cursor: "pointer",
-              borderBottom: openModules.has(mod.id) ? "1px solid rgba(224,30,30,0.08)" : "none",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.55)" }}>
-                M{mi + 1}
-              </span>
-              <span style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}>
-                {mod.title}
-              </span>
-              <span style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 600 }}>
-                ({mod.lessons.length} vidéo{mod.lessons.length !== 1 ? "s" : ""})
-              </span>
-            </div>
-            {openModules.has(mod.id)
-              ? <ChevronUp size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
-              : <ChevronDown size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
-            }
-          </button>
-
-          {/* Lessons */}
-          {openModules.has(mod.id) && (
-            <div>
-              {mod.lessons.map((lesson, li) => (
-                <LessonEditor
-                  key={lesson.id}
-                  lesson={lesson}
-                  index={li + 1}
-                  saving={saving}
-                  saved={saved}
-                  onSave={saveYoutube}
-                />
-              ))}
-
-              {/* Add lesson */}
-              <div style={{ padding: "10px 18px", borderTop: "1px solid rgba(224,30,30,0.05)" }}>
-                <button
-                  onClick={() => handleAddLesson(mod.id, mod.lessons.length)}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    background: "none",
-                    border: "1px dashed rgba(224,30,30,0.18)",
-                    borderRadius: 8,
-                    color: "rgba(224,30,30,0.5)",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "7px 14px",
-                    cursor: "pointer",
-                    letterSpacing: "0.06em",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  <Plus size={12} /> Ajouter une vidéo
-                </button>
+      {formation.modules.map((mod, mi) => {
+        const totalLessons = mod.sections.reduce((acc, s) => acc + s.lessons.length, 0);
+        return (
+          <div key={mod.id} className="ep-card" style={{ overflow: "hidden" }}>
+            {/* Module header */}
+            <button
+              onClick={() => toggleModule(mod.id)}
+              style={{
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "14px 18px",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                borderBottom: openModules.has(mod.id) ? "1px solid rgba(224,30,30,0.08)" : "none",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.55)" }}>
+                  M{mi + 1}
+                </span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+                  {mod.title}
+                </span>
+                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 600 }}>
+                  ({mod.sections.length} section{mod.sections.length !== 1 ? "s" : ""} · {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""})
+                </span>
               </div>
-            </div>
-          )}
-        </div>
-      ))}
+              {openModules.has(mod.id)
+                ? <ChevronUp size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+                : <ChevronDown size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+              }
+            </button>
+
+            {/* Sections */}
+            {openModules.has(mod.id) && (
+              <div>
+                {mod.sections.map((sec, si) => (
+                  <div key={sec.id} style={{ borderBottom: "1px solid rgba(224,30,30,0.06)" }}>
+                    {/* Section header */}
+                    <button
+                      onClick={() => toggleSection(sec.id)}
+                      style={{
+                        width: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        padding: "10px 18px 10px 28px",
+                        background: "rgba(224,30,30,0.03)",
+                        border: "none",
+                        borderBottom: openSections.has(sec.id) ? "1px solid rgba(224,30,30,0.06)" : "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <Layers size={11} style={{ color: "rgba(224,30,30,0.4)", flexShrink: 0 }} />
+                        <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.04em", color: "rgba(245,237,237,0.65)" }}>
+                          {si + 1}. {sec.title}
+                        </span>
+                        <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
+                          ({sec.lessons.length})
+                        </span>
+                      </div>
+                      {openSections.has(sec.id)
+                        ? <ChevronUp size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+                        : <ChevronDown size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+                      }
+                    </button>
+
+                    {/* Lessons in section */}
+                    {openSections.has(sec.id) && (
+                      <div>
+                        {sec.lessons.map((lesson, li) => (
+                          <LessonEditor
+                            key={lesson.id}
+                            lesson={lesson}
+                            index={li + 1}
+                            saving={saving}
+                            saved={saved}
+                            onSave={saveYoutube}
+                          />
+                        ))}
+
+                        {/* Add lesson in section */}
+                        <div style={{ padding: "8px 18px 8px 36px" }}>
+                          <button
+                            onClick={() => handleAddLesson(sec.id, sec.lessons.length)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                              background: "none",
+                              border: "1px dashed rgba(224,30,30,0.14)",
+                              borderRadius: 6,
+                              color: "rgba(224,30,30,0.4)",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              padding: "5px 10px",
+                              cursor: "pointer",
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                            }}
+                          >
+                            <Plus size={10} /> Ajouter une vidéo
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Add section */}
+                <div style={{ padding: "10px 18px" }}>
+                  <button
+                    onClick={() => handleAddSection(mod.id, mod.sections.length)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      background: "none",
+                      border: "1px dashed rgba(224,30,30,0.18)",
+                      borderRadius: 8,
+                      color: "rgba(224,30,30,0.5)",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: "7px 14px",
+                      cursor: "pointer",
+                      letterSpacing: "0.06em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    <Plus size={12} /> Ajouter une section
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
 
       {/* Add module */}
       <button
@@ -187,13 +271,13 @@ function LessonEditor({
 
   return (
     <div style={{
-      padding: "12px 18px",
-      borderBottom: "1px solid rgba(224,30,30,0.05)",
+      padding: "10px 18px 10px 36px",
+      borderBottom: "1px solid rgba(224,30,30,0.04)",
       display: "flex",
       alignItems: "center",
       gap: 10,
     }}>
-      <span style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", fontWeight: 700, width: 22, flexShrink: 0 }}>
+      <span style={{ fontSize: 11, color: "rgba(245,237,237,0.18)", fontWeight: 700, width: 18, flexShrink: 0 }}>
         {index}
       </span>
 
@@ -202,7 +286,6 @@ function LessonEditor({
           {lesson.title}
         </p>
 
-        {/* YouTube URL input */}
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
           <div style={{ position: "relative", flex: 1 }}>
             <Video
@@ -230,7 +313,6 @@ function LessonEditor({
             />
           </div>
 
-          {/* Published toggle */}
           <button
             onClick={() => setPublished(!published)}
             title={published ? "Masquer" : "Publier"}
@@ -250,7 +332,6 @@ function LessonEditor({
             }
           </button>
 
-          {/* Save button */}
           {(hasChanged || isSaving || isSaved) && (
             <button
               onClick={() => onSave(lesson.id, url, published)}

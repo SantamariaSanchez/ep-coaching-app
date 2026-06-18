@@ -31,7 +31,7 @@ export default async function FormationsPage() {
       const withModules = await getFormationWithModules(f.id);
       const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, totalMin: 0 };
       const completedCount = withModules
-        ? withModules.modules.flatMap(m => m.lessons).filter(l => completed.has(l.id)).length
+        ? withModules.modules.flatMap(m => m.sections.flatMap(s => s.lessons)).filter(l => completed.has(l.id)).length
         : 0;
       return { formation: f, ...counts, completedCount };
     })

@@ -27,16 +27,19 @@ export default async function LessonPage({
 
   if (!lesson || !formation) notFound();
 
-  // Find previous and next lessons
-  const allLessons = formation.modules.flatMap((m) => m.lessons);
+  // Flatten all lessons across modules → sections
+  const allLessons = formation.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons));
   const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
-  // Find current module
+  // Find current module and section
   const currentModule = formation.modules.find((m) =>
-    m.lessons.some((l) => l.id === lessonId)
+    m.sections.some((s) => s.lessons.some((l) => l.id === lessonId))
   );
+  const currentSection = currentModule?.sections.find((s) =>
+    s.lessons.some((l) => l.id === lessonId)
+  ) ?? null;
 
   const isCompleted = completed.has(lessonId);
 
@@ -58,17 +61,22 @@ export default async function LessonPage({
         <ChevronLeft size={13} /> {formation.title}
       </Link>
 
-      {/* Breadcrumb module */}
+      {/* Breadcrumb: Module › Section */}
       {currentModule && (
-        <p style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
-          textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
-          margin: "0 0 10px",
-        }}
-          className="animate-fade-in"
-        >
-          {currentModule.title}
-        </p>
+        <div className="animate-fade-in" style={{ marginBottom: 10 }}>
+          <p style={{
+            fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
+            textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
+            margin: 0,
+          }}>
+            {currentModule.title}
+            {currentSection && (
+              <span style={{ color: "rgba(245,237,237,0.25)", fontWeight: 500, textTransform: "none", letterSpacing: "0.04em" }}>
+                {" › "}{currentSection.title}
+              </span>
+            )}
+          </p>
+        </div>
       )}
 
       {/* Video player or placeholder */}
@@ -183,15 +191,18 @@ export default async function LessonPage({
         )}
       </div>
 
-      {/* Lesson list in current module */}
-      {currentModule && currentModule.lessons.length > 1 && (
+      {/* Lesson list in current section */}
+      {currentSection && currentSection.lessons.length > 1 && (
         <div className="ep-card animate-fade-up" style={{ overflow: "hidden" }}>
           <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
-            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: 0 }}>
-              {currentModule.title}
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 1px" }}>
+              {currentModule?.title}
+            </p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.6)", margin: 0 }}>
+              {currentSection.title}
             </p>
           </div>
-          {currentModule.lessons.map((l, i) => {
+          {currentSection.lessons.map((l, i) => {
             const isCurrent = l.id === lessonId;
             const isDone = completed.has(l.id);
             const isAvail = !!(l.is_published && l.youtube_id);
@@ -219,9 +230,6 @@ export default async function LessonPage({
                     }}>
                       {l.title}
                     </span>
-                    {isDone && !isCurrent && (
-                      <ChevronRight size={12} style={{ color: "rgba(74,222,128,0.5)", flexShrink: 0 }} />
-                    )}
                     {isCurrent && (
                       <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#E01E1E", flexShrink: 0 }} />
                     )}

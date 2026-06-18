@@ -64,13 +64,26 @@ export async function addModule(formationId: string, title: string, orderIndex: 
   return { success: true };
 }
 
-export async function addLesson(moduleId: string, title: string, orderIndex: number) {
+export async function addSection(moduleId: string, title: string, orderIndex: number) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase
+    .from("formation_sections")
+    .insert({ module_id: moduleId, title, order_index: orderIndex });
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+export async function addLesson(sectionId: string, title: string, orderIndex: number) {
   await requireCoachForFormations();
   const supabase = await createServerSupabase();
 
   const { error } = await supabase
     .from("formation_lessons")
-    .insert({ module_id: moduleId, title, order_index: orderIndex, duration_min: 10 });
+    .insert({ section_id: sectionId, title, order_index: orderIndex, duration_min: 10 });
 
   if (error) return { error: error.message };
   revalidatePath("/dashboard/coach/formations", "layout");

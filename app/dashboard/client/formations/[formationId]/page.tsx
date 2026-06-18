@@ -27,7 +27,7 @@ export default async function FormationDetailPage({
 
   const { total, published, totalMin } = countLessons(formation.modules);
   const completedCount = formation.modules
-    .flatMap((m) => m.lessons)
+    .flatMap((m) => m.sections.flatMap((s) => s.lessons))
     .filter((l) => completed.has(l.id)).length;
   const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
 
@@ -67,7 +67,7 @@ export default async function FormationDetailPage({
           <div>
             <p className="ep-section-title" style={{ marginBottom: 2 }}>Formation</p>
             <h1 style={{
-              fontSize: 22, fontWeight: 900, letterSpacing: "-0.04em",
+              fontSize: 20, fontWeight: 900, letterSpacing: "-0.03em",
               color: "#F5EDED", margin: 0, lineHeight: 1.1,
             }}>
               {formation.title}
@@ -126,8 +126,9 @@ export default async function FormationDetailPage({
           </div>
         ) : (
           formation.modules.map((mod, mi) => {
-            const modCompleted = mod.lessons.filter((l) => completed.has(l.id)).length;
-            const modPublished = mod.lessons.filter((l) => l.is_published && l.youtube_id).length;
+            const allModLessons = mod.sections.flatMap((s) => s.lessons);
+            const modCompleted = allModLessons.filter((l) => completed.has(l.id)).length;
+            const modPublished = allModLessons.filter((l) => l.is_published && l.youtube_id).length;
 
             return (
               <div
@@ -151,7 +152,7 @@ export default async function FormationDetailPage({
                     }}>
                       Module {mi + 1}
                     </p>
-                    <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                       {mod.title}
                     </h3>
                   </div>
@@ -166,96 +167,123 @@ export default async function FormationDetailPage({
                   )}
                 </div>
 
-                {/* Lessons list */}
+                {/* Sections */}
                 <div>
-                  {mod.lessons.length === 0 && (
+                  {mod.sections.length === 0 && (
                     <div style={{ padding: "16px 18px" }}>
                       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
                         Vidéos bientôt disponibles
                       </p>
                     </div>
                   )}
-                  {mod.lessons.map((lesson, li) => {
-                    const isAvailable = !!(lesson.is_published && lesson.youtube_id);
-                    const isDone = completed.has(lesson.id);
+                  {mod.sections.map((sec, si) => {
+                    const secPublished = sec.lessons.filter((l) => l.is_published && l.youtube_id);
+                    if (secPublished.length === 0 && sec.lessons.length > 0) {
+                      return (
+                        <div key={sec.id} style={{ padding: "10px 18px", borderTop: si > 0 ? "1px solid rgba(224,30,30,0.05)" : "none" }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.35)", margin: "0 0 6px" }}>
+                            {sec.title}
+                          </p>
+                          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
+                            Bientôt disponible
+                          </p>
+                        </div>
+                      );
+                    }
+                    if (secPublished.length === 0) return null;
 
                     return (
-                      <div key={lesson.id}>
-                        {li > 0 && (
-                          <div style={{ height: 1, background: "rgba(224,30,30,0.05)", margin: "0 18px" }} />
-                        )}
-                        {isAvailable ? (
-                          <Link
-                            href={`/dashboard/client/formations/${formationId}/${lesson.id}`}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 12,
-                              padding: "13px 18px",
-                              textDecoration: "none",
-                              transition: "background 0.15s",
-                            }}
-                            className="ep-lesson-row"
-                          >
-                            {/* Status icon */}
-                            <div style={{
-                              width: 28, height: 28, borderRadius: "50%",
-                              background: isDone ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.08)",
-                              border: `1px solid ${isDone ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              flexShrink: 0,
-                            }}>
-                              {isDone
-                                ? <CheckCircle2 size={13} style={{ color: "#4ade80" }} />
-                                : <PlayCircle size={13} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-                              }
-                            </div>
-
-                            {/* Info */}
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <p style={{
-                                fontSize: 13, fontWeight: isDone ? 600 : 700,
-                                color: isDone ? "rgba(245,237,237,0.5)" : "#F5EDED",
-                                margin: 0, lineHeight: 1.3,
-                                textDecoration: isDone ? "line-through" : "none",
-                                textDecorationColor: "rgba(245,237,237,0.2)",
-                              }}>
-                                {lesson.title}
-                              </p>
-                            </div>
-
-                            {/* Duration + arrow */}
-                            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                              <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
-                                {lesson.duration_min}min
-                              </span>
-                              <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
-                            </div>
-                          </Link>
-                        ) : (
-                          <div style={{
-                            display: "flex", alignItems: "center", gap: 12,
-                            padding: "13px 18px", opacity: 0.45,
+                      <div key={sec.id} style={{ borderTop: si > 0 ? "1px solid rgba(224,30,30,0.06)" : "none" }}>
+                        {/* Section label */}
+                        <div style={{ padding: "10px 18px 4px" }}>
+                          <p style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
+                            textTransform: "uppercase", color: "rgba(224,30,30,0.4)",
+                            margin: 0,
                           }}>
-                            <div style={{
-                              width: 28, height: 28, borderRadius: "50%",
-                              background: "rgba(255,255,255,0.03)",
-                              border: "1px solid rgba(255,255,255,0.08)",
-                              display: "flex", alignItems: "center", justifyContent: "center",
-                              flexShrink: 0,
-                            }}>
-                              <Lock size={11} style={{ color: "rgba(245,237,237,0.3)" }} />
+                            {sec.title}
+                          </p>
+                        </div>
+
+                        {/* Lessons */}
+                        {sec.lessons.map((lesson, li) => {
+                          const isAvailable = !!(lesson.is_published && lesson.youtube_id);
+                          const isDone = completed.has(lesson.id);
+
+                          return (
+                            <div key={lesson.id}>
+                              {li > 0 && (
+                                <div style={{ height: 1, background: "rgba(224,30,30,0.04)", margin: "0 18px" }} />
+                              )}
+                              {isAvailable ? (
+                                <Link
+                                  href={`/dashboard/client/formations/${formationId}/${lesson.id}`}
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 12,
+                                    padding: "11px 18px",
+                                    textDecoration: "none",
+                                  }}
+                                  className="ep-lesson-row"
+                                >
+                                  <div style={{
+                                    width: 26, height: 26, borderRadius: "50%",
+                                    background: isDone ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.08)",
+                                    border: `1px solid ${isDone ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    flexShrink: 0,
+                                  }}>
+                                    {isDone
+                                      ? <CheckCircle2 size={12} style={{ color: "#4ade80" }} />
+                                      : <PlayCircle size={12} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                                    }
+                                  </div>
+                                  <div style={{ flex: 1, minWidth: 0 }}>
+                                    <p style={{
+                                      fontSize: 12, fontWeight: isDone ? 600 : 700,
+                                      color: isDone ? "rgba(245,237,237,0.45)" : "#F5EDED",
+                                      margin: 0, lineHeight: 1.3,
+                                      textDecoration: isDone ? "line-through" : "none",
+                                      textDecorationColor: "rgba(245,237,237,0.2)",
+                                    }}>
+                                      {lesson.title}
+                                    </p>
+                                  </div>
+                                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
+                                      {lesson.duration_min}min
+                                    </span>
+                                    <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
+                                  </div>
+                                </Link>
+                              ) : (
+                                <div style={{
+                                  display: "flex", alignItems: "center", gap: 12,
+                                  padding: "11px 18px", opacity: 0.4,
+                                }}>
+                                  <div style={{
+                                    width: 26, height: 26, borderRadius: "50%",
+                                    background: "rgba(255,255,255,0.03)",
+                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    display: "flex", alignItems: "center", justifyContent: "center",
+                                    flexShrink: 0,
+                                  }}>
+                                    <Lock size={10} style={{ color: "rgba(245,237,237,0.3)" }} />
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+                                      {lesson.title}
+                                    </p>
+                                  </div>
+                                  <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
+                                    {lesson.duration_min}min
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                            <div style={{ flex: 1 }}>
-                              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-                                {lesson.title}
-                              </p>
-                            </div>
-                            <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
-                              {lesson.duration_min}min
-                            </span>
-                          </div>
-                        )}
+                          );
+                        })}
                       </div>
                     );
                   })}
