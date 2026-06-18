@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import {
@@ -7,32 +9,9 @@ import {
   getWeekStart,
   type CheckIn,
 } from "@/utils/checkins";
+import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import CheckinForm from "@/components/ui/CheckinForm";
-import { CheckCircle2, Clock, Star } from "lucide-react";
-
-const FEELING_LABELS: Record<number, string> = {
-  1: "Épuisé", 2: "Fatigué", 3: "Correct", 4: "Bien", 5: "Au top",
-};
-const DIGESTION_LABELS: Record<number, string> = {
-  1: "Difficile", 2: "Inconfort", 3: "Correcte", 4: "Bien", 5: "Parfaite",
-};
-
-function DataRow({ label, value }: { label: string; value: string | null | undefined }) {
-  if (!value) return null;
-  return (
-    <div style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "flex-start",
-      gap: 16,
-      padding: "10px 0",
-      borderBottom: "1px solid rgba(137,4,4,0.08)",
-    }}>
-      <span className="ep-label">{label}</span>
-      <span style={{ fontSize: 13, fontWeight: 600, color: "#F5EDED", textAlign: "right" }}>{value}</span>
-    </div>
-  );
-}
+import { CheckCircle2, Clock, Star, ExternalLink } from "lucide-react";
 
 function BilanRating({ rating }: { rating: number }) {
   return (
@@ -44,9 +23,18 @@ function BilanRating({ rating }: { rating: number }) {
         }} />
       ))}
       <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 900, color: "#fbbf24" }}>
-        {rating}
-        <span style={{ fontSize: 10, fontWeight: 400, color: "rgba(251,191,36,0.4)" }}>/10</span>
+        {rating}<span style={{ fontSize: 10, fontWeight: 400, color: "rgba(251,191,36,0.4)" }}>/10</span>
       </span>
+    </div>
+  );
+}
+
+function QA({ q, a }: { q: string; a: string | null | undefined }) {
+  if (!a) return null;
+  return (
+    <div style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "1px solid rgba(137,4,4,0.06)" }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.45)", margin: "0 0 5px" }}>{q}</p>
+      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>{a}</p>
     </div>
   );
 }
@@ -78,13 +66,54 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         )}
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px" }}>
-        <DataRow label="Poids" value={checkin.weight != null ? `${checkin.weight} kg` : null} />
-        <DataRow label="Adhérence" value={checkin.nutrition_adherence != null ? `${checkin.nutrition_adherence}%` : null} />
-        <DataRow label="Sommeil" value={checkin.sleep_hours != null ? `${checkin.sleep_hours}h` : null} />
-        <DataRow label="HRV" value={checkin.hrv != null ? String(checkin.hrv) : null} />
-        <DataRow label="Ressenti" value={checkin.general_feeling != null ? `${checkin.general_feeling}/5 — ${FEELING_LABELS[checkin.general_feeling]}` : null} />
-      </div>
+      {/* Weight */}
+      {(checkin.weight != null || checkin.weight_avg != null) && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 12 }}>
+          {checkin.weight != null && (
+            <div>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight} kg</p>
+            </div>
+          )}
+          {checkin.weight_avg != null && (
+            <div>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight_avg} kg</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Qualitative questions */}
+      <QA q="Physique" a={checkin.physique_feeling} />
+      <QA q="Énergie / humeur / stress" a={checkin.energy_mood} />
+      <QA q="Plus grosse victoire" a={checkin.biggest_win} />
+      <QA q="Entraînement" a={checkin.training_review} />
+      <QA q="Nutrition" a={checkin.nutrition_review} />
+      <QA q="Digestion" a={checkin.digestion_review} />
+      <QA q="Travail / vie perso" a={checkin.work_impact} />
+      <QA q="Sommeil" a={checkin.sleep_review} />
+      <QA q="Obstacles à venir" a={checkin.upcoming_obstacles} />
+      <QA q="Questions coach" a={checkin.coach_questions} />
+      <QA q="Notes" a={checkin.additional_notes} />
+
+      {/* Media links */}
+      {(checkin.photo_drive_link || checkin.video_drive_link) && (
+        <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+          {checkin.photo_drive_link && (
+            <a href={checkin.photo_drive_link} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              <ExternalLink size={11} /> Photos
+            </a>
+          )}
+          {checkin.video_drive_link && (
+            <a href={checkin.video_drive_link} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              <ExternalLink size={11} /> Vidéo
+            </a>
+          )}
+        </div>
+      )}
 
       {hasBilan && (
         <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.1)" }}>
@@ -115,11 +144,14 @@ export default async function CheckinPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  const [existing, pastCheckins] = await Promise.all([
+  const [existing, pastCheckins, recentLogs] = await Promise.all([
     getThisWeekCheckin(user.id),
     getClientPastCheckins(user.id),
+    getClientDailyLogs(user.id, 7),
   ]);
+
   const weekNum = getISOWeek(new Date(getWeekStart()));
+  const avgWeight = computeWeeklyAverages(recentLogs).weight;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
@@ -162,23 +194,48 @@ export default async function CheckinPage() {
 
           {/* This week recap */}
           <div className="ep-card" style={{ padding: "18px" }}>
-            <p className="ep-section-title">Ton bilan de la semaine</p>
-            <DataRow label="Poids" value={existing.weight != null ? `${existing.weight} kg` : null} />
-            <DataRow label="Poids moyen" value={existing.weight_avg != null ? `${existing.weight_avg} kg` : null} />
-            <DataRow label="Adhérence nutrition" value={existing.nutrition_adherence != null ? `${existing.nutrition_adherence}%` : null} />
-            <DataRow label="Calories/jour" value={existing.calories_per_day != null ? `${existing.calories_per_day} kcal` : null} />
-            <DataRow label="Pas/jour" value={existing.steps_per_day != null ? existing.steps_per_day.toLocaleString("fr-FR") : null} />
-            <DataRow label="Sommeil" value={existing.sleep_hours != null ? `${existing.sleep_hours}h` : null} />
-            <DataRow label="HRV" value={existing.hrv != null ? String(existing.hrv) : null} />
-            <DataRow label="FC repos" value={existing.resting_hr != null ? `${existing.resting_hr} bpm` : null} />
-            <DataRow label="Digestion" value={existing.digestion != null ? `${existing.digestion}/5 — ${DIGESTION_LABELS[existing.digestion]}` : null} />
-            <DataRow label="Ressenti général" value={existing.general_feeling != null ? `${existing.general_feeling}/5 — ${FEELING_LABELS[existing.general_feeling]}` : null} />
-            {existing.client_notes && (
-              <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.08)" }}>
-                <p className="ep-label" style={{ marginBottom: 8 }}>Tes notes</p>
-                <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", lineHeight: 1.6, margin: 0 }}>
-                  {existing.client_notes}
-                </p>
+            <p className="ep-section-title" style={{ marginBottom: 14 }}>Ton bilan de la semaine</p>
+            {(existing.weight != null || existing.weight_avg != null) && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 14 }}>
+                {existing.weight != null && (
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight} kg</p>
+                  </div>
+                )}
+                {existing.weight_avg != null && (
+                  <div>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight_avg} kg</p>
+                  </div>
+                )}
+              </div>
+            )}
+            <QA q="Physique" a={existing.physique_feeling} />
+            <QA q="Énergie / humeur / stress" a={existing.energy_mood} />
+            <QA q="Plus grosse victoire" a={existing.biggest_win} />
+            <QA q="Entraînement" a={existing.training_review} />
+            <QA q="Nutrition" a={existing.nutrition_review} />
+            <QA q="Digestion" a={existing.digestion_review} />
+            <QA q="Travail / vie perso" a={existing.work_impact} />
+            <QA q="Sommeil" a={existing.sleep_review} />
+            <QA q="Obstacles à venir" a={existing.upcoming_obstacles} />
+            <QA q="Questions coach" a={existing.coach_questions} />
+            <QA q="Notes" a={existing.additional_notes} />
+            {(existing.photo_drive_link || existing.video_drive_link) && (
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                {existing.photo_drive_link && (
+                  <a href={existing.photo_drive_link} target="_blank" rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    <ExternalLink size={11} /> Photos
+                  </a>
+                )}
+                {existing.video_drive_link && (
+                  <a href={existing.video_drive_link} target="_blank" rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    <ExternalLink size={11} /> Vidéo
+                  </a>
+                )}
               </div>
             )}
           </div>
@@ -209,7 +266,7 @@ export default async function CheckinPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Clock size={14} style={{ color: "rgba(251,191,36,0.5)" }} />
                 <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-                  En attente du bilan coach...
+                  En attente du bilan coach…
                 </p>
               </div>
             </div>
@@ -217,7 +274,7 @@ export default async function CheckinPage() {
         </div>
       ) : (
         <div className="ep-card">
-          <CheckinForm />
+          <CheckinForm weightAvgFromLogs={avgWeight} />
         </div>
       )}
 

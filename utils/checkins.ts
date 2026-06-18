@@ -24,8 +24,21 @@ export interface CheckIn {
   bilan_text: string | null;
   bilan_rating: number | null;
   bilan_sent_at: string | null;
-  // Monthly measurements
-  includes_measurements: boolean | null;
+  // Qualitative check-in questions
+  physique_feeling: string | null;
+  energy_mood: string | null;
+  biggest_win: string | null;
+  training_review: string | null;
+  nutrition_review: string | null;
+  digestion_review: string | null;
+  work_impact: string | null;
+  sleep_review: string | null;
+  upcoming_obstacles: string | null;
+  coach_questions: string | null;
+  additional_notes: string | null;
+  // Media links
+  photo_drive_link: string | null;
+  video_drive_link: string | null;
 }
 
 export interface CheckInWithClient extends CheckIn {

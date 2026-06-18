@@ -2,57 +2,62 @@
 
 import { useActionState } from "react";
 import { submitCheckin } from "@/app/dashboard/client/checkin/actions";
+import { CheckCircle2 } from "lucide-react";
 
-const inputClass =
-  "w-full bg-[#2a0101] border border-[#890404]/50 rounded-lg px-4 py-2.5 text-white placeholder-[#F5EDED]/25 text-sm focus:outline-none focus:border-[#E01E1E] transition-colors";
+const inp =
+  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-4 py-3 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none";
 
-const labelClass =
-  "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/45 mb-1.5";
+const lbl =
+  "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
 
-function SectionHeader({ title }: { title: string }) {
-  return (
-    <h3 className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/60 mb-4 pb-2 border-b border-[#890404]/20">
-      {title}
-    </h3>
-  );
-}
-
-function ScaleInput({ name, label }: { name: string; label: string }) {
+function Q({
+  name,
+  question,
+  placeholder,
+  rows = 3,
+}: {
+  name: string;
+  question: string;
+  placeholder?: string;
+  rows?: number;
+}) {
   return (
     <div>
-      <label className={labelClass}>{label}</label>
-      <div className="flex gap-2">
-        {[1, 2, 3, 4, 5].map((v) => (
-          <label key={v} className="flex-1 cursor-pointer">
-            <input
-              type="radio"
-              name={name}
-              value={v}
-              className="peer sr-only"
-            />
-            <span className="flex items-center justify-center h-10 rounded-lg border border-[#890404]/40 text-sm font-bold text-[#F5EDED]/40 peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white transition-colors hover:border-[#E01E1E]/60 hover:text-[#F5EDED]/70">
-              {v}
-            </span>
-          </label>
-        ))}
-      </div>
+      <label className={lbl}>{question}</label>
+      <textarea name={name} rows={rows} placeholder={placeholder} className={inp} />
     </div>
   );
 }
 
-export default function CheckinForm() {
+function Section({ title }: { title: string }) {
+  return (
+    <p style={{
+      fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase",
+      color: "rgba(224,30,30,0.55)", margin: "0 0 14px",
+      borderBottom: "1px solid rgba(137,4,4,0.12)", paddingBottom: 6,
+    }}>
+      {title}
+    </p>
+  );
+}
+
+export default function CheckinForm({
+  weightAvgFromLogs,
+}: {
+  weightAvgFromLogs?: number | null;
+}) {
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
 
   if (state && "success" in state) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="w-14 h-14 rounded-full bg-green-500/15 border border-green-500/25 flex items-center justify-center mb-4">
-          <span className="text-2xl">✓</span>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px 20px", textAlign: "center", gap: 16 }}>
+        <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <CheckCircle2 size={24} style={{ color: "#4ade80" }} />
         </div>
-        <p className="text-lg font-black uppercase tracking-widest text-green-400">
+        <p style={{ fontSize: 16, fontWeight: 900, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
           Check-in envoyé
         </p>
-        <p className="text-xs text-[#F5EDED]/35 mt-2">
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
           Ton coach va recevoir ton bilan et te répondre rapidement.
         </p>
       </div>
@@ -60,13 +65,14 @@ export default function CheckinForm() {
   }
 
   return (
-    <form action={formAction} className="space-y-8">
-      {/* Poids */}
+    <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+
+      {/* ── Poids ───────────────────────────────────────────────────────────── */}
       <div>
-        <SectionHeader title="Poids" />
-        <div className="grid grid-cols-2 gap-4">
+        <Section title="Poids" />
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
-            <label className={labelClass}>Poids actuel (kg)</label>
+            <label className={lbl}>Poids fin de semaine (kg)</label>
             <input
               name="weight"
               type="number"
@@ -74,141 +80,140 @@ export default function CheckinForm() {
               min="30"
               max="300"
               placeholder="82.5"
-              className={inputClass}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
             />
           </div>
           <div>
-            <label className={labelClass}>Poids moyen semaine (kg)</label>
+            <label className={lbl}>
+              Poids moyen semaine (kg)
+              {weightAvgFromLogs && (
+                <span style={{ color: "rgba(224,30,30,0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
+              )}
+            </label>
             <input
               name="weight_avg"
               type="number"
               step="0.1"
               min="30"
               max="300"
+              defaultValue={weightAvgFromLogs ?? ""}
               placeholder="83.0"
-              className={inputClass}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
             />
           </div>
         </div>
       </div>
 
-      {/* Nutrition */}
+      {/* ── 12 questions qualitatives ──────────────────────────────────────── */}
       <div>
-        <SectionHeader title="Nutrition" />
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className={labelClass}>Adhérence au plan (%)</label>
-            <input
-              name="nutrition_adherence"
-              type="number"
-              min="0"
-              max="100"
-              placeholder="85"
-              className={inputClass}
-            />
-          </div>
-          <div>
-            <label className={labelClass}>Calories/jour (kcal)</label>
-            <input
-              name="calories_per_day"
-              type="number"
-              min="500"
-              max="10000"
-              placeholder="2200"
-              className={inputClass}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* Activité */}
-      <div>
-        <SectionHeader title="Activité" />
-        <div className="max-w-xs">
-          <label className={labelClass}>Pas/jour (moyenne)</label>
-          <input
-            name="steps_per_day"
-            type="number"
-            min="0"
-            max="100000"
-            placeholder="8500"
-            className={inputClass}
+        <Section title="Bilan de la semaine" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <Q
+            name="physique_feeling"
+            question="1. Comment tu te sens physiquement cette semaine ?"
+            placeholder="Morphologie, définition, rondeurs, eau… Qu'est-ce que tu observes ?"
+          />
+          <Q
+            name="energy_mood"
+            question="2. Énergie, humeur et stress"
+            placeholder="Niveaux d'énergie dans la journée, humeur générale, stress subi ou ressenti…"
+          />
+          <Q
+            name="biggest_win"
+            question="3. Ta plus grosse victoire de la semaine"
+            placeholder="Un moment de fierté, une progression, un comportement positif…"
+          />
+          <Q
+            name="training_review"
+            question="4. Entraînement"
+            placeholder="Performances, sensations, séances manquées, intensité ressentie…"
+          />
+          <Q
+            name="nutrition_review"
+            question="5. Nutrition"
+            placeholder="Respect du plan, écarts, faim, fringales, repas sociaux…"
+          />
+          <Q
+            name="digestion_review"
+            question="6. Digestion"
+            placeholder="Transit, ballonnements, inconforts, tolérance aux aliments…"
+          />
+          <Q
+            name="work_impact"
+            question="7. Travail / vie perso"
+            placeholder="Charge de travail, déplacements, horaires, contraintes extérieures…"
+          />
+          <Q
+            name="sleep_review"
+            question="8. Sommeil"
+            placeholder="Heures dormies, qualité, réveils nocturnes, réveil le matin…"
+          />
+          <Q
+            name="upcoming_obstacles"
+            question="9. Obstacles ou contraintes à venir"
+            placeholder="Semaine chargée, week-end spécial, déplacement, événement social…"
+          />
+          <Q
+            name="coach_questions"
+            question="10. Questions pour ton coach"
+            placeholder="Ce que tu veux clarifier, approfondir ou revoir…"
+          />
+          <Q
+            name="additional_notes"
+            question="11. Notes supplémentaires"
+            placeholder="Tout ce qui n'entre pas dans les cases ci-dessus…"
+            rows={2}
           />
         </div>
       </div>
 
-      {/* Récupération */}
+      {/* ── Médias ───────────────────────────────────────────────────────────── */}
       <div>
-        <SectionHeader title="Récupération" />
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <Section title="Photos & vidéo" />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label className={labelClass}>Heures de sommeil</label>
+            <label className={lbl}>Lien Google Drive — photos</label>
             <input
-              name="sleep_hours"
-              type="number"
-              step="0.5"
-              min="0"
-              max="24"
-              placeholder="7.5"
-              className={inputClass}
+              name="photo_drive_link"
+              type="url"
+              placeholder="https://drive.google.com/drive/folders/..."
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#F5EDED", outline: "none" }}
             />
           </div>
           <div>
-            <label className={labelClass}>HRV</label>
+            <label className={lbl}>Lien Google Drive — vidéo posing</label>
             <input
-              name="hrv"
-              type="number"
-              min="0"
-              max="300"
-              placeholder="55"
-              className={inputClass}
+              name="video_drive_link"
+              type="url"
+              placeholder="https://drive.google.com/file/d/..."
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#F5EDED", outline: "none" }}
             />
           </div>
-          <div>
-            <label className={labelClass}>FC repos (bpm)</label>
-            <input
-              name="resting_hr"
-              type="number"
-              min="30"
-              max="150"
-              placeholder="58"
-              className={inputClass}
-            />
-          </div>
-        </div>
-        <ScaleInput name="digestion" label="Digestion (1 = difficile, 5 = parfaite)" />
-      </div>
-
-      {/* Bien-être */}
-      <div>
-        <SectionHeader title="Bien-être" />
-        <div className="mb-4">
-          <ScaleInput
-            name="general_feeling"
-            label="Ressenti général (1 = épuisé, 5 = au top)"
-          />
-        </div>
-        <div>
-          <label className={labelClass}>Notes libres</label>
-          <textarea
-            name="client_notes"
-            rows={4}
-            placeholder="Comment tu te sens cette semaine ? Difficultés, points positifs..."
-            className={`${inputClass} resize-none`}
-          />
         </div>
       </div>
 
       {state && "error" in state && (
-        <p className="text-[#FDC4C4] text-xs text-center">{state.error}</p>
+        <p style={{ fontSize: 12, color: "#FDC4C4", textAlign: "center", margin: 0 }}>{state.error}</p>
       )}
 
       <button
         type="submit"
         disabled={isPending}
-        className="w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white font-bold uppercase tracking-widest text-sm py-4 rounded-xl transition-colors"
+        style={{
+          width: "100%",
+          background: isPending ? "rgba(224,30,30,0.5)" : "#E01E1E",
+          color: "#fff",
+          border: "none",
+          borderRadius: 12,
+          padding: "14px 0",
+          fontSize: 13,
+          fontWeight: 800,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          cursor: isPending ? "wait" : "pointer",
+        }}
       >
-        {isPending ? "Envoi..." : "Envoyer mon check-in"}
+        {isPending ? "Envoi…" : "Envoyer mon check-in"}
       </button>
     </form>
   );

@@ -54,7 +54,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan"],
   },
   {
     label: "Coach",
@@ -146,9 +146,10 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Suivi",
     items: [
-      { label: "Progression",  icon: TrendingUp, segment: "progress" },
-      { label: "Nutrition",    icon: Apple,      segment: "nutrition" },
-      { label: "Photos",       icon: Image,      segment: "photos" },
+      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Progression",    icon: TrendingUp,      segment: "progress" },
+      { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
+      { label: "Photos",         icon: Image,           segment: "photos" },
     ],
   },
   {

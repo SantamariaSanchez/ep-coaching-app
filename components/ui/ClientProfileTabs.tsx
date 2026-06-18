@@ -12,6 +12,7 @@ const TABS = [
   { key: "logbook",   label: "Logbook" },
   { key: "programme", label: "Programme" },
   { key: "nutrition", label: "Nutrition" },
+  { key: "bilans",    label: "Bilans" },
   { key: "photos",    label: "Photos" },
   { key: "notes",     label: "Notes" },
   { key: "checkins",  label: "Check-ins" },
@@ -162,6 +163,23 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
             >
               <ExternalLink size={13} />
               Voir le programme
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {activeTab === "bilans" && (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
+            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+              Bilans quotidiens
+            </p>
+            <Link
+              href={`/dashboard/coach/clients/${client.id}/bilan`}
+              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+            >
+              <ExternalLink size={13} />
+              Voir les bilans
             </Link>
           </div>
         </Card>

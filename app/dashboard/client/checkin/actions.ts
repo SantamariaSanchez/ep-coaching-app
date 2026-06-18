@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getWeekStart, getISOWeek } from "@/utils/checkins";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCheckin } from "@/app/actions/notifications";
@@ -13,49 +14,59 @@ function num(v: FormDataEntryValue | null): number | null {
   return isNaN(n) ? null : n;
 }
 
+function txt(v: FormDataEntryValue | null): string | null {
+  const s = (v as string | null)?.trim();
+  return s || null;
+}
+
 export async function submitCheckin(
   prevState: SubmitState,
   formData: FormData
 ): Promise<SubmitState> {
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
+  const serverClient = await createServerSupabase();
+  const { data: { user } } = await serverClient.auth.getUser();
   if (!user) return { error: "Non authentifié." };
+
+  const { data: profile } = await serverClient
+    .from("profiles")
+    .select("full_name, role")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile) return { error: "Profil introuvable." };
+  if (profile.role !== "client") return { error: "Accès refusé." };
 
   const weekStart = getWeekStart();
   const weekNumber = getISOWeek(new Date(weekStart));
 
-  const weight = num(formData.get("weight"));
+  const supabase = createAdminClient();
 
   const { error } = await supabase.from("check_ins").insert({
     client_id: user.id,
     week_start: weekStart,
     week_number: weekNumber,
-    weight,
+    weight: num(formData.get("weight")),
     weight_avg: num(formData.get("weight_avg")),
-    nutrition_adherence: num(formData.get("nutrition_adherence")),
-    calories_per_day: num(formData.get("calories_per_day")),
-    steps_per_day: num(formData.get("steps_per_day")),
-    sleep_hours: num(formData.get("sleep_hours")),
-    hrv: num(formData.get("hrv")),
-    resting_hr: num(formData.get("resting_hr")),
-    digestion: num(formData.get("digestion")),
-    general_feeling: num(formData.get("general_feeling")),
-    client_notes: (formData.get("client_notes") as string) || null,
+    // Qualitative questions
+    physique_feeling: txt(formData.get("physique_feeling")),
+    energy_mood: txt(formData.get("energy_mood")),
+    biggest_win: txt(formData.get("biggest_win")),
+    training_review: txt(formData.get("training_review")),
+    nutrition_review: txt(formData.get("nutrition_review")),
+    digestion_review: txt(formData.get("digestion_review")),
+    work_impact: txt(formData.get("work_impact")),
+    sleep_review: txt(formData.get("sleep_review")),
+    upcoming_obstacles: txt(formData.get("upcoming_obstacles")),
+    coach_questions: txt(formData.get("coach_questions")),
+    additional_notes: txt(formData.get("additional_notes")),
+    // Media links
+    photo_drive_link: txt(formData.get("photo_drive_link")),
+    video_drive_link: txt(formData.get("video_drive_link")),
   });
 
   if (error) return { error: error.message };
 
-  // Notify coach — fire-and-forget
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("full_name")
-    .eq("id", user.id)
-    .single();
-
-  const clientName = profile?.full_name ?? "Un client";
+  const clientName = profile.full_name ?? "Un client";
   notifyCoachNewCheckin(clientName).catch(() => {});
 
   revalidatePath("/dashboard/client/checkin");
