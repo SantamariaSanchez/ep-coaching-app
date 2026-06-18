@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
 import type { DailyLog } from "@/utils/daily-logs";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Download } from "lucide-react";
 import Link from "next/link";
 
 function capitalize(s: string) {
@@ -193,9 +193,27 @@ export default async function CoachClientBilanPage({
         <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: "0 0 4px" }}>
           Bilans quotidiens
         </p>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
-          {clientProfile.full_name ?? "Client"}
-        </h1>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
+            {clientProfile.full_name ?? "Client"}
+          </h1>
+          {logs.length > 0 && (
+            <a
+              href={`/api/export/daily-logs/${id}`}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                color: "#F5EDED", textDecoration: "none",
+                background: "rgba(137,4,4,0.2)", border: "1px solid rgba(137,4,4,0.35)",
+                borderRadius: 8, padding: "7px 14px",
+                transition: "background 0.15s",
+              }}
+            >
+              <Download size={13} />
+              Export CSV
+            </a>
+          )}
+        </div>
       </div>
 
       {weeks.length === 0 ? (

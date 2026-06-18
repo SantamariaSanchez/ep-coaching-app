@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { insertNotification, getCoachUserId } from "@/utils/insert-notification";
 import { revalidatePath } from "next/cache";
 
 function num(v: FormDataEntryValue | null): number | null {
@@ -24,10 +25,18 @@ export async function upsertDailyLog(
     const { data: { user } } = await serverClient.auth.getUser();
     if (!user) return { error: "Non authentifié." };
 
+    const { data: profile } = await serverClient
+      .from("profiles")
+      .select("full_name, role")
+      .eq("id", user.id)
+      .single();
+
+    if (!profile) return { error: "Profil introuvable." };
+    if (profile.role !== "client") return { error: "Accès refusé." };
+
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
-    // Only today is editable
     const today = new Date().toISOString().split("T")[0];
     if (log_date !== today) return { error: "Tu ne peux modifier que le bilan du jour." };
 
@@ -58,6 +67,19 @@ export async function upsertDailyLog(
     );
 
     if (error) return { error: error.message };
+
+    // Notify coach — fire-and-forget
+    const clientName = profile.full_name ?? "Un client";
+    getCoachUserId().then((coachId) => {
+      if (!coachId) return;
+      insertNotification({
+        userId: coachId,
+        type: "new_daily_log",
+        title: `Bilan quotidien — ${clientName}`,
+        body: `${clientName} a soumis son bilan du ${log_date}.`,
+        url: `/dashboard/coach/clients/${user.id}/bilan`,
+      }).catch(() => {});
+    }).catch(() => {});
 
     revalidatePath("/dashboard/client/bilan");
     return { success: true };
