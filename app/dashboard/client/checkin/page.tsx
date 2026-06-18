@@ -7,7 +7,6 @@ import {
   getWeekStart,
   type CheckIn,
 } from "@/utils/checkins";
-import { getLastMeasurementDate } from "@/utils/measurements";
 import CheckinForm from "@/components/ui/CheckinForm";
 import { CheckCircle2, Clock, Star } from "lucide-react";
 
@@ -116,20 +115,11 @@ export default async function CheckinPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  const [existing, pastCheckins, lastMeasurementDate] = await Promise.all([
+  const [existing, pastCheckins] = await Promise.all([
     getThisWeekCheckin(user.id),
     getClientPastCheckins(user.id),
-    getLastMeasurementDate(user.id),
   ]);
   const weekNum = getISOWeek(new Date(getWeekStart()));
-
-  const now = new Date();
-  const dayOfMonth = now.getDate();
-  const isFirstWeekOfMonth = dayOfMonth <= 7;
-  const daysSinceLastMeasurement = lastMeasurementDate
-    ? Math.floor((now.getTime() - new Date(lastMeasurementDate + "T12:00:00").getTime()) / 86400000)
-    : Infinity;
-  const showMeasurements = isFirstWeekOfMonth || daysSinceLastMeasurement > 28;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
@@ -227,7 +217,7 @@ export default async function CheckinPage() {
         </div>
       ) : (
         <div className="ep-card">
-          <CheckinForm showMeasurements={showMeasurements} />
+          <CheckinForm />
         </div>
       )}
 

@@ -54,7 +54,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["measurements", "photos", "nutrition", "progress", "roadmap"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap"],
   },
   {
     label: "Coach",
@@ -148,7 +148,6 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Progression",  icon: TrendingUp, segment: "progress" },
       { label: "Nutrition",    icon: Apple,      segment: "nutrition" },
-      { label: "Mensurations", icon: User,       segment: "measurements" },
       { label: "Photos",       icon: Image,      segment: "photos" },
     ],
   },

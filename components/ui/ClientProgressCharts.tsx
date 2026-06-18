@@ -13,7 +13,6 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import type { Measurement } from "@/utils/measurements";
 import type { CheckIn } from "@/utils/checkins";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -151,27 +150,22 @@ function AdherenceChart({ data }: { data: AdherencePoint[] }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function ClientProgressCharts({
-  measurements,
   checkins,
 }: {
-  measurements: Measurement[];
   checkins: CheckIn[];
 }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  // Weight data — chronological
-  const weightData: WeightPoint[] = measurements
-    .filter((m) => m.weight != null)
+  // Weight data from check-ins — chronological
+  const weightData: WeightPoint[] = checkins
+    .filter((c) => c.weight != null || c.weight_avg != null)
     .slice()
     .reverse()
-    .map((m) => ({
-      date: m.measured_at,
-      weight: m.weight!,
-      label: new Intl.DateTimeFormat("fr-FR", {
-        day: "numeric",
-        month: "short",
-      }).format(new Date(m.measured_at + "T12:00:00")),
+    .map((c) => ({
+      date: c.week_start,
+      weight: (c.weight_avg ?? c.weight)!,
+      label: `S${c.week_number}`,
     }));
 
   // Adherence data — chronological

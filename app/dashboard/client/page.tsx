@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { getLatestCoachNote } from "@/utils/notes";
-import { getClientMeasurements } from "@/utils/measurements";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
@@ -37,10 +36,9 @@ export default async function ClientDashboard() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  const [thisWeekCheckin, latestNote, measurements] = await Promise.all([
+  const [thisWeekCheckin, latestNote] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
-    getClientMeasurements(user.id),
   ]);
 
   const firstName = profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "";
@@ -53,7 +51,7 @@ export default async function ClientDashboard() {
   })();
   const weekNumber = getISOWeek(today);
 
-  const currentWeight = measurements[0]?.weight ?? thisWeekCheckin?.weight ?? null;
+  const currentWeight = thisWeekCheckin?.weight ?? null;
   const startWeight   = profile?.weight_start ?? null;
   const weightDelta   = currentWeight != null && startWeight != null
     ? parseFloat((currentWeight - startWeight).toFixed(1))

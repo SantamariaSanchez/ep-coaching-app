@@ -40,28 +40,7 @@ function ScaleInput({ name, label }: { name: string; label: string }) {
   );
 }
 
-function MeasurementInput({ name, label, placeholder }: {
-  name: string;
-  label: string;
-  placeholder: string;
-}) {
-  return (
-    <div>
-      <label className={labelClass}>{label} <span className="text-[#F5EDED]/25 font-normal normal-case tracking-normal">(cm)</span></label>
-      <input
-        name={name}
-        type="number"
-        step="0.1"
-        min="0"
-        max="999"
-        placeholder={placeholder}
-        className={inputClass}
-      />
-    </div>
-  );
-}
-
-export default function CheckinForm({ showMeasurements = false }: { showMeasurements?: boolean }) {
+export default function CheckinForm() {
   const [state, formAction, isPending] = useActionState(submitCheckin, null);
 
   if (state && "success" in state) {
@@ -82,11 +61,6 @@ export default function CheckinForm({ showMeasurements = false }: { showMeasurem
 
   return (
     <form action={formAction} className="space-y-8">
-      {/* Hidden flag for measurements */}
-      {showMeasurements && (
-        <input type="hidden" name="includes_measurements" value="true" />
-      )}
-
       {/* Poids */}
       <div>
         <SectionHeader title="Poids" />
@@ -117,31 +91,6 @@ export default function CheckinForm({ showMeasurements = false }: { showMeasurem
           </div>
         </div>
       </div>
-
-      {/* ── Mensurations mensuelles (conditionnel) ────────────────────────────── */}
-      {showMeasurements && (
-        <div className="border border-[#E01E1E]/25 rounded-xl p-5 bg-[#E01E1E]/5">
-          <div className="flex items-center gap-3 mb-4">
-            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest bg-[#E01E1E] text-white">
-              Bilan mensuel
-            </span>
-            <h3 className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/60">
-              Mensurations
-            </h3>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <MeasurementInput name="waist"      label="Tour de taille"  placeholder="75" />
-            <MeasurementInput name="hips"       label="Hanches"         placeholder="95" />
-            <MeasurementInput name="chest"      label="Poitrine"        placeholder="100" />
-            <MeasurementInput name="shoulders"  label="Épaules"         placeholder="120" />
-            <MeasurementInput name="arm_relaxed" label="Bras détendu"   placeholder="38" />
-            <MeasurementInput name="arm_flexed"  label="Bras fléchi"    placeholder="40" />
-            <MeasurementInput name="forearm"    label="Avant-bras"      placeholder="30" />
-            <MeasurementInput name="thigh"      label="Cuisse"          placeholder="58" />
-            <MeasurementInput name="calf"       label="Mollet"          placeholder="38" />
-          </div>
-        </div>
-      )}
 
       {/* Nutrition */}
       <div>

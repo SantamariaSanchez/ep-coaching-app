@@ -1,7 +1,7 @@
 "use server";
 
+import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getUser, getProfile } from "@/utils/auth";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewPhotoUpdate } from "@/app/actions/notifications";
 import type { SubmissionType } from "@/lib/posing-data";
@@ -27,16 +27,24 @@ export async function submitPhotoUpdate(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const user = await getUser();
+    // Verify user identity explicitly (RLS bypassed via adminClient)
+    const serverClient = await createServerSupabase();
+    const { data: { user } } = await serverClient.auth.getUser();
     if (!user) return { error: "Non authentifié" };
 
-    const profile = await getProfile(user.id);
+    const { data: profile } = await serverClient
+      .from("profiles")
+      .select("full_name, competition_category, role")
+      .eq("id", user.id)
+      .single();
+
     if (!profile) return { error: "Profil introuvable" };
+    if (profile.role !== "client") return { error: "Accès refusé." };
 
     const type = formData.get("type") as SubmissionType;
     const drive_link = (formData.get("drive_link") as string)?.trim();
     const notes = (formData.get("notes") as string)?.trim() || null;
-    const category = profile.competition_category ?? "Non définie";
+    const category = (profile as { competition_category?: string | null }).competition_category ?? "Non définie";
 
     if (!type) return { error: "Type requis." };
     if (!drive_link) return { error: "Lien Drive requis." };
@@ -45,7 +53,8 @@ export async function submitPhotoUpdate(
     const submitted_at = today.toISOString().split("T")[0];
     const week_number = getISOWeekNumber(today);
 
-    const supabase = await createServerSupabase();
+    // Use admin client to bypass RLS — user identity verified above
+    const supabase = createAdminClient();
     const { error } = await supabase.from("photo_updates").insert({
       client_id: user.id,
       submitted_at,
@@ -56,7 +65,7 @@ export async function submitPhotoUpdate(
       notes,
     });
 
-    if (error) return { error: "Erreur lors de l'envoi." };
+    if (error) return { error: `Erreur lors de l'envoi : ${error.message}` };
 
     notifyCoachNewPhotoUpdate(
       profile.full_name ?? "Un client",
@@ -66,7 +75,8 @@ export async function submitPhotoUpdate(
 
     revalidatePath("/dashboard/client/photos");
     return { success: true };
-  } catch {
+  } catch (e) {
+    console.error("submitPhotoUpdate error:", e);
     return { error: "Erreur inattendue." };
   }
 }

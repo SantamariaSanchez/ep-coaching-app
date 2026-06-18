@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Card from "./Card";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import { AlertCircle, Check, FlameKindling } from "lucide-react";
@@ -53,23 +53,51 @@ export default function NutritionForm({
     data: NutritionProfileInput
   ) => Promise<{ error?: string }>;
 }) {
-  const [form, setForm] = useState({
-    gender: "Homme" as "Homme" | "Femme",
-    weight: clientWeight ? String(clientWeight) : "",
-    height: "",
-    age: "",
-    trainingType: "Musculation",
-    sessionsPerWeek: "",
-    sessionDuration: "",
-    stepsPerDay: "",
-    activityLevel: "500",
-    phase: existingProfile?.phase ?? "maintenance",
-    adjustment: existingProfile?.phase === "deficit"
-      ? "-300"
-      : existingProfile?.phase === "surplus"
-      ? "200"
-      : "0",
+  const lsKey = `ep-tdee-${clientId}`;
+
+  const [form, setForm] = useState(() => {
+    return {
+      gender: "Homme" as "Homme" | "Femme",
+      weight: clientWeight ? String(clientWeight) : "",
+      height: "",
+      age: "",
+      trainingType: "Musculation",
+      sessionsPerWeek: "",
+      sessionDuration: "",
+      stepsPerDay: "",
+      activityLevel: "500",
+      phase: existingProfile?.phase ?? "maintenance",
+      adjustment: existingProfile?.phase === "deficit"
+        ? "-300"
+        : existingProfile?.phase === "surplus"
+        ? "200"
+        : "0",
+    };
   });
+
+  // Restore saved inputs from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(lsKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setForm((prev) => ({
+          ...prev,
+          ...parsed,
+          // Always prefer DB phase over stale local value if profile exists
+          phase: existingProfile?.phase ?? parsed.phase ?? prev.phase,
+        }));
+      }
+    } catch {}
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lsKey]);
+
+  // Persist inputs to localStorage on every change
+  useEffect(() => {
+    try {
+      localStorage.setItem(lsKey, JSON.stringify(form));
+    } catch {}
+  }, [form, lsKey]);
 
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
