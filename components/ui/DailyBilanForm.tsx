@@ -1,9 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
-import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import type { DailyLog } from "@/utils/daily-logs";
 import { CheckCircle2 } from "lucide-react";
+
+type BilanAction = (
+  prev: { error?: string; success?: boolean } | null,
+  formData: FormData
+) => Promise<{ error?: string; success?: boolean }>;
 
 const inp =
   "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -73,9 +77,9 @@ function RatingInput({ name, defaultValue }: { name: string; defaultValue?: numb
   );
 }
 
-export default function DailyBilanForm({ today, existing }: { today: string; existing: DailyLog | null }) {
+export default function DailyBilanForm({ today, existing, action: serverAction }: { today: string; existing: DailyLog | null; action: BilanAction }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [state, action, pending] = useActionState(upsertDailyLog, null);
+  const [state, action, pending] = useActionState(serverAction, null);
 
   useEffect(() => {
     if (state?.success) {

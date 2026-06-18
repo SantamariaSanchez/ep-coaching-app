@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, BarChart2, Map, GraduationCap,
+  MessageCircle, BarChart2, Map, GraduationCap, Activity,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -100,6 +100,12 @@ const COACH_TABS: TabItem[] = [
     matchSegments: ["analytics", "bilan", "notes", "nutrition"],
     badge: "analytics",
   },
+  {
+    label: "Moi",
+    icon: Activity,
+    href: "/dashboard/coach/moi/bilan",
+    matchSegments: ["moi"],
+  },
 ];
 
 const COACH_SIDEBAR: SidebarGroup[] = [
@@ -126,6 +132,17 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Contenu",
     items: [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
+    ],
+  },
+  {
+    group: "Mon Suivi",
+    items: [
+      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "moi/bilan" },
+      { label: "Progression",    icon: TrendingUp,     segment: "moi/progression" },
+      { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
+      { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
+      { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
+      { label: "Photos",         icon: Image,          segment: "moi/photos" },
     ],
   },
 ];

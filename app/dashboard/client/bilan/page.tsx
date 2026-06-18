@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getTodayLog, getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
+import { upsertDailyLog } from "./actions";
 
 function fmt(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(
@@ -130,7 +131,7 @@ export default async function ClientBilanPage() {
         padding: "20px 16px",
         marginBottom: 32,
       }}>
-        <DailyBilanForm today={today} existing={todayLog} />
+        <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} />
       </div>
 
       {/* Weekly history */}
