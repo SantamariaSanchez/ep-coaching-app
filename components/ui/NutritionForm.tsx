@@ -57,15 +57,15 @@ export default function NutritionForm({
 
   const [form, setForm] = useState(() => {
     return {
-      gender: "Homme" as "Homme" | "Femme",
+      gender: (existingProfile?.gender ?? "Homme") as "Homme" | "Femme",
       weight: clientWeight ? String(clientWeight) : "",
-      height: "",
-      age: "",
-      trainingType: "Musculation",
-      sessionsPerWeek: "",
-      sessionDuration: "",
-      stepsPerDay: "",
-      activityLevel: "500",
+      height: existingProfile?.height != null ? String(existingProfile.height) : "",
+      age: existingProfile?.age != null ? String(existingProfile.age) : "",
+      trainingType: existingProfile?.training_type ?? "Musculation",
+      sessionsPerWeek: existingProfile?.sessions_per_week != null ? String(existingProfile.sessions_per_week) : "",
+      sessionDuration: existingProfile?.session_duration != null ? String(existingProfile.session_duration) : "",
+      stepsPerDay: existingProfile?.steps_per_day != null ? String(existingProfile.steps_per_day) : "",
+      activityLevel: existingProfile?.activity_level != null ? String(existingProfile.activity_level) : "500",
       phase: existingProfile?.phase ?? "maintenance",
       adjustment: existingProfile?.phase === "deficit"
         ? "-300"
@@ -75,18 +75,15 @@ export default function NutritionForm({
     };
   });
 
-  // Restore saved inputs from localStorage on mount
+  // Restore saved inputs from localStorage on mount (only as a fallback when
+  // no profile is saved in the DB yet — DB values always take priority)
   useEffect(() => {
+    if (existingProfile) return;
     try {
       const saved = localStorage.getItem(lsKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        setForm((prev) => ({
-          ...prev,
-          ...parsed,
-          // Always prefer DB phase over stale local value if profile exists
-          phase: existingProfile?.phase ?? parsed.phase ?? prev.phase,
-        }));
+        setForm((prev) => ({ ...prev, ...parsed }));
       }
     } catch {}
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -177,6 +174,14 @@ export default function NutritionForm({
       tdee: calc.tdee,
       bmr: calc.bmr,
       phase: form.phase,
+      gender: form.gender,
+      height: parseFloat(form.height) || 0,
+      age: parseFloat(form.age) || 0,
+      training_type: form.trainingType,
+      sessions_per_week: parseFloat(form.sessionsPerWeek) || 0,
+      session_duration: parseFloat(form.sessionDuration) || 0,
+      steps_per_day: parseFloat(form.stepsPerDay) || 0,
+      activity_level: parseFloat(form.activityLevel) || 0,
     });
     setSaving(false);
     if (result.error) {

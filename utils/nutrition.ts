@@ -14,6 +14,14 @@ export interface NutritionProfile {
   tdee: number | null;
   bmr: number | null;
   phase: "deficit" | "maintenance" | "surplus" | null;
+  gender: "Homme" | "Femme" | null;
+  height: number | null;
+  age: number | null;
+  training_type: string | null;
+  sessions_per_week: number | null;
+  session_duration: number | null;
+  steps_per_day: number | null;
+  activity_level: number | null;
   updated_at: string;
 }
 
@@ -25,6 +33,14 @@ export interface NutritionProfileInput {
   tdee: number;
   bmr: number;
   phase: string;
+  gender: string;
+  height: number;
+  age: number;
+  training_type: string;
+  sessions_per_week: number;
+  session_duration: number;
+  steps_per_day: number;
+  activity_level: number;
 }
 
 export type MicroValues = Record<MicroKey, number>;

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Card from "./Card";
 import type { Profile } from "@/utils/auth";
+import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import { ExternalLink } from "lucide-react";
 
 const TABS = [
@@ -46,8 +48,24 @@ function InfoRow({
   );
 }
 
+interface RoadmapData {
+  roadmap: Roadmap;
+  phases: RoadmapPhase[];
+  objectives: RoadmapObjective[];
+}
+
 export default function ClientProfileTabs({ client }: { client: Profile }) {
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
+  const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
+  const [roadmapLoading, setRoadmapLoading] = useState(true);
+
+  useEffect(() => {
+    fetch(`/api/roadmap/${client.id}`)
+      .then((r) => r.json())
+      .then((data) => setRoadmapData(data.roadmap ? data : null))
+      .catch(() => setRoadmapData(null))
+      .finally(() => setRoadmapLoading(false));
+  }, [client.id]);
 
   return (
     <div>
@@ -121,16 +139,83 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
               className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               <ExternalLink size={12} />
-              {client.id ? "Modifier" : "Configurer"}
+              {roadmapData ? "Modifier" : "Configurer"}
             </Link>
           </div>
-          <Card>
-            <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-              <p className="text-xs text-[#F5EDED]/40">
-                Clique sur &laquo; Modifier &raquo; pour configurer ou modifier la road map de ce client.
-              </p>
+
+          {roadmapLoading ? (
+            <Card>
+              <div className="flex items-center justify-center py-8">
+                <p className="text-xs text-[#F5EDED]/40">Chargement…</p>
+              </div>
+            </Card>
+          ) : !roadmapData ? (
+            <Card>
+              <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                <p className="text-xs text-[#F5EDED]/40">
+                  Clique sur &laquo; Configurer &raquo; pour créer la road map de ce client.
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-4">
+              <Card title="Période">
+                <p className="text-sm text-white font-medium">
+                  {formatDate(roadmapData.roadmap.start_date)} → {formatDate(roadmapData.roadmap.end_date)}
+                </p>
+              </Card>
+
+              {roadmapData.phases.length > 0 && (
+                <Card title="Phases">
+                  <div className="flex flex-col gap-2">
+                    {roadmapData.phases.map((phase) => {
+                      const colors = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
+                      return (
+                        <div
+                          key={phase.id}
+                          className="flex items-center justify-between rounded-lg px-3 py-2"
+                          style={{ background: colors.bg, border: `1px solid ${colors.border}` }}
+                        >
+                          <span className="text-sm font-semibold" style={{ color: colors.solid }}>
+                            {colors.icon} {phase.label}
+                          </span>
+                          <span className="text-xs text-[#F5EDED]/40">
+                            {formatDate(phase.start_date)} → {formatDate(phase.end_date)}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </Card>
+              )}
+
+              {roadmapData.objectives.length > 0 && (
+                <Card title="Objectifs">
+                  <div className="flex flex-col gap-2">
+                    {roadmapData.objectives.map((obj) => (
+                      <div
+                        key={obj.id}
+                        className="flex items-center justify-between rounded-lg px-3 py-2"
+                        style={{
+                          background: "rgba(0,0,0,0.2)",
+                          border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
+                        }}
+                      >
+                        <span
+                          className="text-sm font-semibold"
+                          style={{ color: obj.is_achieved ? "#4ade80" : OBJECTIVE_TERM_COLORS[obj.term] }}
+                        >
+                          {obj.is_achieved ? "✓ " : ""}{obj.label}
+                          {obj.target_value ? ` — ${obj.target_value}${obj.target_unit ?? ""}` : ""}
+                        </span>
+                        <span className="text-xs text-[#F5EDED]/40">{formatDate(obj.target_date)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
-          </Card>
+          )}
         </div>
       )}
 

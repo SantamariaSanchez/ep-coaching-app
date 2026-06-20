@@ -16,6 +16,8 @@ import {
   BarChart2,
   Clock,
   Star,
+  Video,
+  Loader2,
 } from "lucide-react";
 import {
   BarChart,
@@ -32,6 +34,7 @@ import {
   EQUIPMENT_COLORS,
   detectWarmupType,
 } from "@/lib/warmup-data";
+import { createClientSupabase } from "@/lib/supabase-client";
 import { getTips } from "@/lib/execution-tips";
 import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { Exercise } from "@/utils/programs";
@@ -64,6 +67,7 @@ interface SetState {
   isPR: boolean;
   dbId: string | null;
   restDuration: number | null;
+  hasVideo: boolean;
 }
 
 interface ExerciseState {
@@ -162,6 +166,7 @@ function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): 
         isPR: s.is_pr,
         dbId: s.id,
         restDuration: s.rest_duration_seconds,
+        hasVideo: !!s.video_url,
       });
     }
     // Fill remaining empty slots up to target
@@ -178,6 +183,7 @@ function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): 
         isPR: false,
         dbId: null,
         restDuration: null,
+        hasVideo: false,
       });
     }
     return { exercise: ex, sets, showTips: false, showHistory: false };
@@ -568,6 +574,7 @@ function SetRow({
   exercise,
   prevWeight,
   prThreshold,
+  sessionId,
   onChange,
   onValidate,
 }: {
@@ -575,12 +582,40 @@ function SetRow({
   exercise: Exercise;
   prevWeight: PrevWeight | null;
   prThreshold: number | null;
+  sessionId: string;
   onChange: (patch: Partial<SetState>) => void;
   onValidate: () => void;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
   const isPRCandidate =
     prThreshold != null && weight > prThreshold && weight > 0;
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+
+  async function handleVideoSelect(file: File) {
+    if (!set.dbId) return;
+    setUploadingVideo(true);
+    try {
+      const supabase = createClientSupabase();
+      const ext = file.name.split(".").pop() || "mp4";
+      const path = `${sessionId}/${set.dbId}-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from("set-videos")
+        .upload(path, file, { contentType: file.type || "video/mp4", upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase
+        .from("session_sets")
+        .update({ video_url: path })
+        .eq("id", set.dbId);
+      if (updateError) throw updateError;
+
+      onChange({ hasVideo: true });
+    } catch (e) {
+      console.error("Video upload failed:", e);
+      alert("Échec de l'envoi de la vidéo. Réessaie.");
+    }
+    setUploadingVideo(false);
+  }
 
   return (
     <div
@@ -605,27 +640,59 @@ function SetRow({
       </div>
 
       {set.validated ? (
-        <div className="flex gap-4 text-sm font-black text-white">
-          <span>
-            {set.weightKg || "—"}
-            <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-              kg
+        <div className="space-y-2">
+          <div className="flex gap-4 text-sm font-black text-white">
+            <span>
+              {set.weightKg || "—"}
+              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
+                kg
+              </span>
             </span>
-          </span>
-          <span>
-            {set.repsActual || "—"}
-            <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-              reps
+            <span>
+              {set.repsActual || "—"}
+              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
+                reps
+              </span>
             </span>
-          </span>
-          <span>
-            RIR{" "}
-            <span className="text-[#E01E1E]">{set.rirActual || "—"}</span>
-          </span>
-          {set.standardizationScore && (
-            <span className="text-[10px] text-[#F5EDED]/40">
-              ★{set.standardizationScore}
+            <span>
+              RIR{" "}
+              <span className="text-[#E01E1E]">{set.rirActual || "—"}</span>
             </span>
+            {set.standardizationScore && (
+              <span className="text-[10px] text-[#F5EDED]/40">
+                ★{set.standardizationScore}
+              </span>
+            )}
+          </div>
+
+          {set.hasVideo ? (
+            <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
+              <Video size={11} /> Vidéo envoyée à ton coach
+            </span>
+          ) : (
+            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
+              {uploadingVideo ? (
+                <>
+                  <Loader2 size={11} className="animate-spin" /> Envoi…
+                </>
+              ) : (
+                <>
+                  <Video size={11} /> Filmer ce set
+                </>
+              )}
+              <input
+                type="file"
+                accept="video/*"
+                capture="environment"
+                className="hidden"
+                disabled={uploadingVideo}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleVideoSelect(file);
+                  e.target.value = "";
+                }}
+              />
+            </label>
           )}
         </div>
       ) : (
@@ -725,12 +792,14 @@ function ExerciseCard({
   exState,
   prevWeight,
   prThreshold,
+  sessionId,
   onUpdate,
   onValidateSet,
 }: {
   exState: ExerciseState;
   prevWeight: PrevWeight | null;
   prThreshold: number | null;
+  sessionId: string;
   onUpdate: (patch: Partial<ExerciseState>) => void;
   onValidateSet: (setIdx: number) => void;
 }) {
@@ -849,6 +918,7 @@ function ExerciseCard({
             exercise={exState.exercise}
             prevWeight={prevWeight}
             prThreshold={prThreshold}
+            sessionId={sessionId}
             onChange={(patch) => {
               const newSets = [...exState.sets];
               newSets[idx] = { ...newSets[idx], ...patch };
@@ -874,6 +944,7 @@ function ExerciseCard({
                 isPR: false,
                 dbId: null,
                 restDuration: null,
+                hasVideo: false,
               },
             ];
             onUpdate({ sets: newSets });
@@ -1071,6 +1142,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
             isPR: false,
             dbId: null,
             restDuration: null,
+            hasVideo: false,
           });
         }
         next[exIdx] = { ...next[exIdx], sets: newSets };
@@ -1550,6 +1622,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
             prThreshold={
               initData.prMap[exState.exercise.name.toLowerCase()] ?? null
             }
+            sessionId={sessionId}
             onUpdate={(patch) =>
               setExercises((prev) => {
                 const next = [...prev];

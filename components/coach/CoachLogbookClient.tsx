@@ -627,6 +627,18 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                     {s.reps_actual ?? "—"}
                     {s.rir_actual != null && ` RIR${s.rir_actual}`}
                     {s.is_pr && " 🏆"}
+                    {s.video_url && (
+                      <a
+                        href={s.video_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-1.5 text-[#E01E1E]"
+                        title="Voir la vidéo du set"
+                      >
+                        🎥
+                      </a>
+                    )}
                   </span>
                 ))}
               </div>

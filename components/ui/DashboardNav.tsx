@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, BarChart2, Map, GraduationCap, Activity,
+  MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -54,7 +54,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "notes"],
   },
   {
     label: "Coach",
@@ -167,6 +167,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Progression",    icon: TrendingUp,      segment: "progress" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       { label: "Photos",         icon: Image,           segment: "photos" },
+      { label: "Notes du coach", icon: StickyNote,      segment: "notes" },
     ],
   },
   {

@@ -35,6 +35,7 @@ export interface SessionSet {
   rest_duration_seconds: number | null;
   is_pr: boolean;
   notes: string | null;
+  video_url: string | null;
   created_at: string;
 }
 
@@ -163,8 +164,10 @@ export async function getAllClientSessions(
       .in("session_id", sessionIds)
       .order("created_at");
 
+    const resolvedSets = await resolveSetVideoUrls(supabase, (sets as SessionSet[]) ?? []);
+
     const setsMap: Record<string, SessionSet[]> = {};
-    for (const set of (sets as SessionSet[]) ?? []) {
+    for (const set of resolvedSets) {
       if (!setsMap[set.session_id]) setsMap[set.session_id] = [];
       setsMap[set.session_id].push(set);
     }
@@ -176,6 +179,32 @@ export async function getAllClientSessions(
   } catch {
     return [];
   }
+}
+
+// Set video_url holds a storage path ("sessionId/setId.webm"), not a playable
+// URL — exchange it for a short-lived signed URL right before rendering.
+async function resolveSetVideoUrls(
+  supabase: Awaited<ReturnType<typeof createServerSupabase>>,
+  sets: SessionSet[]
+): Promise<SessionSet[]> {
+  const withVideo = sets.filter((s) => s.video_url);
+  if (withVideo.length === 0) return sets;
+
+  const signed = await Promise.all(
+    withVideo.map((s) =>
+      supabase.storage.from("set-videos").createSignedUrl(s.video_url as string, 3600)
+    )
+  );
+
+  const urlByPath: Record<string, string> = {};
+  withVideo.forEach((s, i) => {
+    const url = signed[i].data?.signedUrl;
+    if (url) urlByPath[s.video_url as string] = url;
+  });
+
+  return sets.map((s) =>
+    s.video_url && urlByPath[s.video_url] ? { ...s, video_url: urlByPath[s.video_url] } : s
+  );
 }
 
 export async function getExerciseSessionHistory(
