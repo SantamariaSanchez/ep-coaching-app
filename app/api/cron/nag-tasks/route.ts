@@ -4,7 +4,9 @@ import { sendPushToUser } from "@/lib/push";
 import type { ClientTask } from "@/utils/tasks";
 
 // Re-notifies clients about pending tasks every `nag_minutes`, until checked
-// off as done. Triggered on a schedule (see vercel.json) — protected by a
+// off as done. Triggered every 10 min by Supabase pg_cron (see
+// supabase/migrations/20260622_nag_tasks_cron.sql) — Vercel Hobby plan only
+// allows daily cron jobs, which is too coarse for this. Protected by a
 // shared secret so it can't be hit by randoms to spam push notifications.
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
