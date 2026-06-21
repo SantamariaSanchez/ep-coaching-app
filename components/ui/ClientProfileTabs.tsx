@@ -18,6 +18,7 @@ const TABS = [
   { key: "photos",    label: "Photos" },
   { key: "notes",     label: "Notes" },
   { key: "checkins",  label: "Check-ins" },
+  { key: "rappels",   label: "Rappels" },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -316,6 +317,23 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
             >
               <ExternalLink size={13} />
               Voir les check-ins
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {activeTab === "rappels" && (
+        <Card>
+          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
+            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+              Rappels & messages de motivation
+            </p>
+            <Link
+              href={`/dashboard/coach/clients/${client.id}/tasks`}
+              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+            >
+              <ExternalLink size={13} />
+              Gérer les rappels
             </Link>
           </div>
         </Card>

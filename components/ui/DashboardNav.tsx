@@ -7,6 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
+  ListChecks,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -60,7 +61,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "profile"],
+    matchSegments: ["messages", "checkin", "reminders", "profile", "tasks"],
     badge: "messages",
   },
   {
@@ -174,6 +175,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     group: "Coach",
     items: [
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
+      { label: "Mes tâches", icon: ListChecks,  segment: "tasks" },
       { label: "Check-in", icon: ClipboardList, segment: "checkin" },
       { label: "Profil",   icon: User,          segment: "profile" },
     ],

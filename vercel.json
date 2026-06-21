@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/nag-tasks",
+      "schedule": "*/10 * * * *"
+    }
+  ]
+}
