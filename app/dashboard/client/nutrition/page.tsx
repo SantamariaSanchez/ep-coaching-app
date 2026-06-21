@@ -36,6 +36,7 @@ export default async function ClientNutritionPage() {
       historyLogs={historyLogs}
       initialFoods={foods}
       dietMode={activePlan?.mode ?? "flexible"}
+      activePlan={activePlan}
       addFoodLog={addFoodLog}
       removeFoodLog={removeFoodLog}
       createCustomFood={createCustomFood}

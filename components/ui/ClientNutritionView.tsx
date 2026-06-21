@@ -9,6 +9,7 @@ import type {
   Food,
   FoodLogWithFood,
   DietMode,
+  DietPlanWithMeals,
 } from "@/utils/nutrition";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -140,6 +141,7 @@ interface Props {
   historyLogs: FoodLogWithFood[];
   initialFoods: Food[];
   dietMode: DietMode;
+  activePlan: DietPlanWithMeals | null;
   addFoodLog: (params: {
     foodId: string;
     mealSlot: string;
@@ -169,6 +171,7 @@ export default function ClientNutritionView({
   historyLogs,
   initialFoods,
   dietMode,
+  activePlan,
   addFoodLog,
   removeFoodLog,
   createCustomFood,
@@ -416,6 +419,11 @@ export default function ClientNutritionView({
 
       {/* Mode selector */}
       <NutritionModeSelector activeMode={dietMode} />
+
+      {/* Coach's prescribed plan */}
+      {activePlan && activePlan.diet_plan_meals.length > 0 && (
+        <DietPlanCard plan={activePlan} />
+      )}
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
@@ -893,6 +901,76 @@ export default function ClientNutritionView({
               </button>
             </div>
           </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── DietPlanCard ──────────────────────────────────────────────────────────────
+
+function DietPlanCard({ plan }: { plan: DietPlanWithMeals }) {
+  const [expanded, setExpanded] = useState(true);
+
+  const bySlot = useMemo(() => {
+    const map: Record<string, typeof plan.diet_plan_meals> = {};
+    for (const m of plan.diet_plan_meals) {
+      const key = m.meal_slot;
+      if (!map[key]) map[key] = [];
+      map[key].push(m);
+    }
+    for (const key of Object.keys(map)) {
+      map[key].sort((a, b) => a.position - b.position);
+    }
+    return map;
+  }, [plan.diet_plan_meals]);
+
+  return (
+    <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl overflow-hidden mb-6">
+      <div
+        className="flex items-center justify-between px-4 py-3 cursor-pointer"
+        onClick={() => setExpanded((e) => !e)}
+      >
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
+            Plan de ton coach
+          </p>
+          <p className="text-sm font-black text-white">{plan.name}</p>
+        </div>
+        {expanded ? (
+          <ChevronUp size={14} className="text-[#F5EDED]/30" />
+        ) : (
+          <ChevronDown size={14} className="text-[#F5EDED]/30" />
+        )}
+      </div>
+
+      {expanded && (
+        <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
+          {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
+            <div key={slot.key}>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
+                {slot.label}
+              </p>
+              <div className="space-y-1">
+                {bySlot[slot.key].map((m) => (
+                  <div
+                    key={m.id}
+                    className="flex items-center justify-between py-1"
+                  >
+                    <p className="text-xs text-white font-medium">
+                      {m.foods?.name ?? "Aliment"}
+                    </p>
+                    <p className="text-[10px] text-[#F5EDED]/35">
+                      {m.quantity_g}g
+                      {m.foods
+                        ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
+                        : ""}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

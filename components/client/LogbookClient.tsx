@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { Session, PersonalRecord } from "@/utils/sessions";
+import TrainingSubNav from "@/components/ui/TrainingSubNav";
 
 interface Props {
   program: ProgramWithDays | null;
@@ -337,6 +338,8 @@ export default function LogbookClient({ program, sessions, records, prMap }: Pro
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <TrainingSubNav />
+
       {/* Header */}
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">

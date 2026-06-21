@@ -3,6 +3,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
+import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import { Dumbbell } from "lucide-react";
 
 export default async function ClientProgramPage() {
@@ -19,6 +20,8 @@ export default async function ClientProgramPage() {
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 900, margin: "0 auto" }}>
+
+      <TrainingSubNav />
 
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
