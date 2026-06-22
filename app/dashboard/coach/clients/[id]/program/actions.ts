@@ -14,15 +14,66 @@ export async function saveProgram(
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
-    // Delete existing active program — cascade removes days + exercises
-    const { error: deleteError } = await supabase
+    // Find existing active program(s) so we can delete children before the parent —
+    // the FK from program_days/exercises to programs isn't ON DELETE CASCADE in the DB,
+    // so deleting the program directly fails with a foreign key violation.
+    const { data: oldPrograms, error: oldProgramsError } = await supabase
       .from("programs")
-      .delete()
+      .select("id")
       .eq("client_id", clientId)
       .eq("is_active", true);
 
-    if (deleteError) {
+    if (oldProgramsError) {
+      console.error("saveProgram: failed to load old programs", oldProgramsError);
       return { error: "Erreur lors de la suppression de l'ancien programme." };
+    }
+
+    const oldProgramIds = (oldPrograms ?? []).map((p) => p.id);
+
+    if (oldProgramIds.length > 0) {
+      const { data: oldDays, error: oldDaysError } = await supabase
+        .from("program_days")
+        .select("id")
+        .in("program_id", oldProgramIds);
+
+      if (oldDaysError) {
+        console.error("saveProgram: failed to load old days", oldDaysError);
+        return { error: "Erreur lors de la suppression de l'ancien programme." };
+      }
+
+      const oldDayIds = (oldDays ?? []).map((d) => d.id);
+
+      if (oldDayIds.length > 0) {
+        const { error: deleteExercisesError } = await supabase
+          .from("exercises")
+          .delete()
+          .in("day_id", oldDayIds);
+
+        if (deleteExercisesError) {
+          console.error("saveProgram: failed to delete old exercises", deleteExercisesError);
+          return { error: "Erreur lors de la suppression de l'ancien programme." };
+        }
+      }
+
+      const { error: deleteDaysError } = await supabase
+        .from("program_days")
+        .delete()
+        .in("program_id", oldProgramIds);
+
+      if (deleteDaysError) {
+        console.error("saveProgram: failed to delete old days", deleteDaysError);
+        return { error: "Erreur lors de la suppression de l'ancien programme." };
+      }
+
+      const { error: deleteError } = await supabase
+        .from("programs")
+        .delete()
+        .in("id", oldProgramIds);
+
+      if (deleteError) {
+        console.error("saveProgram: failed to delete old program", deleteError);
+        return { error: "Erreur lors de la suppression de l'ancien programme." };
+      }
     }
 
     // Create new program
