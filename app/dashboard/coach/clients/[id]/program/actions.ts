@@ -76,6 +76,7 @@ export async function saveProgram(
           notes: ex.notes || null,
           position: j,
           muscle_group: ex.muscle_group || null,
+          muscle_subgroup: ex.muscle_subgroup || null,
           is_direct: ex.is_direct,
         });
         if (exError) {

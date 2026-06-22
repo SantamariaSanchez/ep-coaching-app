@@ -11,6 +11,7 @@ export interface Exercise {
   notes: string | null;
   position: number;
   muscle_group: string | null;
+  muscle_subgroup: string | null;
   is_direct: boolean;
 }
 
@@ -45,6 +46,7 @@ export interface ExerciseInput {
   rest_seconds: number | null;
   notes: string | null;
   muscle_group: string | null;
+  muscle_subgroup: string | null;
   is_direct: boolean;
 }
 

@@ -9,11 +9,13 @@ function VolumeGaugeRow({
   direct,
   indirect,
   landmark,
+  subgroups,
 }: {
   group: string;
   direct: number;
   indirect: number;
   landmark: { mev: number; mav: number; mrv: number };
+  subgroups: Record<string, number>;
 }) {
   const total = direct + indirect;
   const scale = Math.max(landmark.mrv + 4, total + 2);
@@ -114,6 +116,22 @@ function VolumeGaugeRow({
           MRV {landmark.mrv}
         </span>
       </div>
+
+      {/* Subgroup breakdown */}
+      {Object.keys(subgroups).length > 0 && (
+        <div className="flex flex-wrap gap-1.5 pt-0.5">
+          {Object.entries(subgroups)
+            .sort(([a], [b]) => a.localeCompare(b, "fr"))
+            .map(([sub, sets]) => (
+              <span
+                key={sub}
+                className="text-[8px] font-semibold text-[#F5EDED]/40 bg-[#150000] border border-[#890404]/15 rounded-full px-2 py-0.5"
+              >
+                {sub} · {sets}
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -181,19 +199,27 @@ export default function VolumeIntensitySection({
   program: ProgramWithDays;
   workoutLogs: WorkoutLog[];
 }) {
-  // ── Compute volume per muscle group ──
-  const volumeByGroup: Record<string, { direct: number; indirect: number }> = {};
+  // ── Compute volume per muscle group (+ subgroup breakdown) ──
+  const volumeByGroup: Record<
+    string,
+    { direct: number; indirect: number; subgroups: Record<string, number> }
+  > = {};
 
   for (const day of program.days) {
     for (const ex of day.exercises) {
       if (!ex.muscle_group) continue;
       const group = ex.muscle_group;
-      if (!volumeByGroup[group]) volumeByGroup[group] = { direct: 0, indirect: 0 };
+      if (!volumeByGroup[group])
+        volumeByGroup[group] = { direct: 0, indirect: 0, subgroups: {} };
       const sets = ex.sets ?? 0;
       if (ex.is_direct !== false) {
         volumeByGroup[group].direct += sets;
       } else {
         volumeByGroup[group].indirect += sets;
+      }
+      if (ex.muscle_subgroup) {
+        volumeByGroup[group].subgroups[ex.muscle_subgroup] =
+          (volumeByGroup[group].subgroups[ex.muscle_subgroup] ?? 0) + sets;
       }
     }
   }
@@ -230,7 +256,7 @@ export default function VolumeIntensitySection({
             Volume — Semaine planifiée
           </p>
           <div className="space-y-5">
-            {volumeEntries.map(([group, { direct, indirect }]) => {
+            {volumeEntries.map(([group, { direct, indirect, subgroups }]) => {
               const landmark = VOLUME_LANDMARKS[group];
               if (!landmark) return null;
               return (
@@ -240,6 +266,7 @@ export default function VolumeIntensitySection({
                   direct={direct}
                   indirect={indirect}
                   landmark={landmark}
+                  subgroups={subgroups}
                 />
               );
             })}

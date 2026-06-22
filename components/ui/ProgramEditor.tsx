@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
-import { MUSCLE_GROUPS } from "@/lib/volume-data";
+import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import {
   Plus,
   Trash2,
@@ -22,6 +22,7 @@ interface ExerciseRow {
   rest_seconds: string;
   notes: string;
   muscle_group: string;
+  muscle_subgroup: string;
   is_direct: string; // "true" | "false"
 }
 
@@ -45,6 +46,7 @@ function emptyExercise(): ExerciseRow {
     rest_seconds: "",
     notes: "",
     muscle_group: "",
+    muscle_subgroup: "",
     is_direct: "true",
   };
 }
@@ -69,6 +71,7 @@ function initFromProgram(program: ProgramWithDays | null) {
         rest_seconds: e.rest_seconds != null ? String(e.rest_seconds) : "",
         notes: e.notes ?? "",
         muscle_group: e.muscle_group ?? "",
+        muscle_subgroup: e.muscle_subgroup ?? "",
         is_direct: e.is_direct !== false ? "true" : "false",
       })),
     })),
@@ -182,6 +185,28 @@ export default function ProgramEditor({
     }));
   }
 
+  function updateExerciseMuscleGroup(
+    dayId: string,
+    exId: string,
+    value: string
+  ) {
+    setState((s) => ({
+      ...s,
+      days: s.days.map((d) =>
+        d.localId === dayId
+          ? {
+              ...d,
+              exercises: d.exercises.map((e) =>
+                e.localId === exId
+                  ? { ...e, muscle_group: value, muscle_subgroup: "" }
+                  : e
+              ),
+            }
+          : d
+      ),
+    }));
+  }
+
   function moveExercise(dayId: string, exId: string, dir: -1 | 1) {
     setState((s) => ({
       ...s,
@@ -222,6 +247,7 @@ export default function ProgramEditor({
             rest_seconds: e.rest_seconds ? parseInt(e.rest_seconds) : null,
             notes: e.notes.trim() || null,
             muscle_group: e.muscle_group || null,
+            muscle_subgroup: e.muscle_subgroup || null,
             is_direct: e.is_direct !== "false",
           })),
       })),
@@ -486,7 +512,7 @@ export default function ProgramEditor({
                             <select
                               value={ex.muscle_group}
                               onChange={(e) =>
-                                updateExercise(day.localId, ex.localId, "muscle_group", e.target.value)
+                                updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)
                               }
                               className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
                             >
@@ -521,6 +547,33 @@ export default function ProgramEditor({
                             </div>
                           </div>
                         </div>
+
+                        {/* Sous-groupe (chef musculaire) */}
+                        {ex.muscle_group &&
+                          MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup]?.length > 0 && (
+                            <div>
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                                Sous-groupe
+                              </label>
+                              <select
+                                value={ex.muscle_subgroup}
+                                onChange={(e) =>
+                                  updateExercise(
+                                    day.localId,
+                                    ex.localId,
+                                    "muscle_subgroup",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                              >
+                                <option value="">— Non défini —</option>
+                                {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
+                                  <option key={sg} value={sg}>{sg}</option>
+                                ))}
+                              </select>
+                            </div>
+                          )}
                       </div>
                     ))}
                   </div>
