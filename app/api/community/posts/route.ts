@@ -1,6 +1,23 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
+
+export async function GET(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { searchParams } = new URL(request.url);
+  const type = searchParams.get("type");
+  const cursor = searchParams.get("cursor");
+
+  if (type !== "victory" && type !== "question") {
+    return NextResponse.json({ error: "Type invalide." }, { status: 400 });
+  }
+
+  const page = await getCommunityPostsPage(type as CommunityPostType, cursor);
+  return NextResponse.json(page);
+}
 
 export async function POST(request: Request) {
   const user = await getUser();

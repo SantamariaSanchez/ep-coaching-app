@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { BookOpen } from "lucide-react";
+import { getResources } from "@/utils/resources";
+import ResourceManager from "@/components/resources/ResourceManager";
 
 export default async function CoachRessourcesPage() {
   const user = await getUser();
@@ -9,6 +10,8 @@ export default async function CoachRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/ressources");
 
+  const resources = await getResources();
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
@@ -16,14 +19,12 @@ export default async function CoachRessourcesPage() {
           Contenu
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
-      </div>
-
-      <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-        <BookOpen size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm text-[#F5EDED]/35">
-          Ajoute ici tes guides et lead magnets — visibles par tous les clients (gratuits et payants).
+        <p className="text-sm text-[#F5EDED]/45 mt-2">
+          Visibles par tous les clients, gratuits et payants.
         </p>
       </div>
+
+      <ResourceManager resources={resources} />
     </div>
   );
 }

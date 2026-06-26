@@ -1,6 +1,19 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getCommunityComments } from "@/utils/community";
+
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { id: postId } = await params;
+  const comments = await getCommunityComments(postId);
+  return NextResponse.json({ comments });
+}
 
 export async function POST(
   request: Request,

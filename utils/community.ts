@@ -23,19 +23,32 @@ export interface CommunityComment {
   created_at: string;
 }
 
-export async function getCommunityPosts(
-  type: CommunityPostType
-): Promise<CommunityPost[]> {
+export const COMMUNITY_PAGE_SIZE = 10;
+
+export interface CommunityPostsPage {
+  posts: CommunityPost[];
+  nextCursor: string | null;
+}
+
+export async function getCommunityPostsPage(
+  type: CommunityPostType,
+  cursor?: string | null,
+  limit: number = COMMUNITY_PAGE_SIZE
+): Promise<CommunityPostsPage> {
   try {
     const supabase = await createServerSupabase();
-    const { data: posts } = await supabase
+    let query = supabase
       .from("community_posts")
       .select("*")
       .eq("type", type)
       .order("created_at", { ascending: false })
-      .limit(100);
+      .limit(limit);
 
-    if (!posts || posts.length === 0) return [];
+    if (cursor) query = query.lt("created_at", cursor);
+
+    const { data: posts } = await query;
+
+    if (!posts || posts.length === 0) return { posts: [], nextCursor: null };
 
     const authorIds = [...new Set(posts.map((p) => p.author_id as string))];
     const postIds = posts.map((p) => p.id as string);
@@ -56,7 +69,7 @@ export async function getCommunityPosts(
       countMap[pid] = (countMap[pid] ?? 0) + 1;
     }
 
-    return posts.map((p) => ({
+    const mapped: CommunityPost[] = posts.map((p) => ({
       id: p.id,
       author_id: p.author_id,
       author_name: nameMap[p.author_id] ?? "Membre",
@@ -67,24 +80,26 @@ export async function getCommunityPosts(
       created_at: p.created_at,
       comment_count: countMap[p.id] ?? 0,
     }));
+
+    return {
+      posts: mapped,
+      nextCursor: posts.length === limit ? mapped[mapped.length - 1].created_at : null,
+    };
   } catch {
-    return [];
+    return { posts: [], nextCursor: null };
   }
 }
 
-export async function getCommunityCommentsForPosts(
-  postIds: string[]
-): Promise<Record<string, CommunityComment[]>> {
-  if (postIds.length === 0) return {};
+export async function getCommunityComments(postId: string): Promise<CommunityComment[]> {
   try {
     const supabase = await createServerSupabase();
     const { data: comments } = await supabase
       .from("community_comments")
       .select("*")
-      .in("post_id", postIds)
+      .eq("post_id", postId)
       .order("created_at", { ascending: true });
 
-    if (!comments || comments.length === 0) return {};
+    if (!comments || comments.length === 0) return [];
 
     const authorIds = [...new Set(comments.map((c) => c.author_id as string))];
     const { data: authors } = await supabase
@@ -97,22 +112,15 @@ export async function getCommunityCommentsForPosts(
       nameMap[(a as { id: string }).id] = (a as { full_name: string | null }).full_name ?? "Membre";
     }
 
-    const byPost: Record<string, CommunityComment[]> = {};
-    for (const c of comments) {
-      const comment: CommunityComment = {
-        id: c.id,
-        post_id: c.post_id,
-        author_id: c.author_id,
-        author_name: nameMap[c.author_id] ?? "Membre",
-        content: c.content,
-        created_at: c.created_at,
-      };
-      if (!byPost[c.post_id]) byPost[c.post_id] = [];
-      byPost[c.post_id].push(comment);
-    }
-    return byPost;
+    return comments.map((c) => ({
+      id: c.id,
+      post_id: c.post_id,
+      author_id: c.author_id,
+      author_name: nameMap[c.author_id] ?? "Membre",
+      content: c.content,
+      created_at: c.created_at,
+    }));
   } catch {
-    return {};
+    return [];
   }
 }
-

@@ -1,7 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   Image as ImageIcon,
@@ -11,7 +10,7 @@ import {
   Trophy,
   HelpCircle,
 } from "lucide-react";
-import type { CommunityPost, CommunityPostType } from "@/utils/community";
+import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -38,8 +37,13 @@ function initials(name: string): string {
 
 // ── Composer ────────────────────────────────────────────────────────────────
 
-function Composer({ type, onPosted }: { type: CommunityPostType; onPosted: () => void }) {
-  const router = useRouter();
+function Composer({
+  type,
+  onPosted,
+}: {
+  type: CommunityPostType;
+  onPosted: () => void;
+}) {
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
@@ -63,7 +67,6 @@ function Composer({ type, onPosted }: { type: CommunityPostType; onPosted: () =>
       if (res.ok) {
         setContent("");
         setImage(null);
-        router.refresh();
         onPosted();
       }
     } finally {
@@ -123,8 +126,17 @@ function Composer({ type, onPosted }: { type: CommunityPostType; onPosted: () =>
 
 // ── Comments ──────────────────────────────────────────────────────────────────
 
-function CommentsThread({ postId }: { postId: string }) {
-  const router = useRouter();
+function CommentsThread({
+  postId,
+  comments,
+  loading,
+  onAdded,
+}: {
+  postId: string;
+  comments: CommunityComment[] | undefined;
+  loading: boolean;
+  onAdded: (comment: CommunityComment) => void;
+}) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -138,8 +150,16 @@ function CommentsThread({ postId }: { postId: string }) {
         body: JSON.stringify({ content: content.trim() }),
       });
       if (res.ok) {
+        const data = await res.json();
+        onAdded({
+          id: data.id,
+          post_id: postId,
+          author_id: "",
+          author_name: "Toi",
+          content: content.trim(),
+          created_at: new Date().toISOString(),
+        });
         setContent("");
-        router.refresh();
       }
     } finally {
       setSending(false);
@@ -147,22 +167,40 @@ function CommentsThread({ postId }: { postId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#890404]/10">
-      <input
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSend()}
-        placeholder="Répondre..."
-        className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
-      />
-      <button
-        onClick={handleSend}
-        disabled={!content.trim() || sending}
-        className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
-      >
-        <Send size={15} strokeWidth={2} />
-      </button>
-    </div>
+    <>
+      {loading && (
+        <p className="text-[10px] text-[#F5EDED]/30 mt-3">Chargement des réponses...</p>
+      )}
+      {comments?.map((c) => (
+        <div key={c.id} className="flex items-start gap-2 mt-3">
+          <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
+            {initials(c.author_name)}
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-[#F5EDED]/60">
+              {c.author_name} <span className="text-[#F5EDED]/25 font-normal">· {timeAgo(c.created_at)}</span>
+            </p>
+            <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
+          </div>
+        </div>
+      ))}
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#890404]/10">
+        <input
+          value={content}
+          onChange={(e) => setContent(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder="Répondre..."
+          className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+        />
+        <button
+          onClick={handleSend}
+          disabled={!content.trim() || sending}
+          className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
+        >
+          <Send size={15} strokeWidth={2} />
+        </button>
+      </div>
+    </>
   );
 }
 
@@ -174,25 +212,31 @@ function PostCard({
   expanded,
   onToggleExpand,
   comments,
+  commentsLoading,
+  onCommentAdded,
+  onStatusChanged,
 }: {
   post: CommunityPost;
   isCoach: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
-  comments: { id: string; author_name: string; content: string; created_at: string }[];
+  comments: CommunityComment[] | undefined;
+  commentsLoading: boolean;
+  onCommentAdded: (comment: CommunityComment) => void;
+  onStatusChanged: (status: "open" | "answered") => void;
 }) {
-  const router = useRouter();
   const [updatingStatus, setUpdatingStatus] = useState(false);
 
   async function toggleAnswered() {
     setUpdatingStatus(true);
     try {
+      const nextStatus = post.status === "answered" ? "open" : "answered";
       const res = await fetch(`/api/community/posts/${post.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: post.status === "answered" ? "open" : "answered" }),
+        body: JSON.stringify({ status: nextStatus }),
       });
-      if (res.ok) router.refresh();
+      if (res.ok) onStatusChanged(nextStatus);
     } finally {
       setUpdatingStatus(false);
     }
@@ -253,22 +297,12 @@ function PostCard({
           </button>
 
           {expanded && (
-            <>
-              {comments.map((c) => (
-                <div key={c.id} className="flex items-start gap-2 mt-3">
-                  <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
-                    {initials(c.author_name)}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] font-bold text-[#F5EDED]/60">
-                      {c.author_name} <span className="text-[#F5EDED]/25 font-normal">· {timeAgo(c.created_at)}</span>
-                    </p>
-                    <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
-                  </div>
-                </div>
-              ))}
-              <CommentsThread postId={post.id} />
-            </>
+            <CommentsThread
+              postId={post.id}
+              comments={comments}
+              loading={commentsLoading}
+              onAdded={onCommentAdded}
+            />
           )}
         </div>
       </div>
@@ -280,21 +314,98 @@ function PostCard({
 
 export default function CommunityFeed({
   type,
-  posts,
+  initialPosts,
+  initialNextCursor,
   isCoach,
-  commentsByPost,
 }: {
   type: CommunityPostType;
-  posts: CommunityPost[];
+  initialPosts: CommunityPost[];
+  initialNextCursor: string | null;
   isCoach: boolean;
-  commentsByPost: Record<string, { id: string; author_name: string; content: string; created_at: string }[]>;
 }) {
+  const [posts, setPosts] = useState(initialPosts);
+  const [nextCursor, setNextCursor] = useState(initialNextCursor);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [commentsByPost, setCommentsByPost] = useState<Record<string, CommunityComment[]>>({});
+  const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !nextCursor) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(
+        `/api/community/posts?type=${type}&cursor=${encodeURIComponent(nextCursor)}`
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setPosts((prev) => [...prev, ...data.posts]);
+        setNextCursor(data.nextCursor);
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, nextCursor, type]);
+
+  // Infinite scroll — load the next page as the sentinel enters the viewport.
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) loadMore();
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [loadMore]);
+
+  async function reload() {
+    setExpandedId(null);
+    setCommentsByPost({});
+    const res = await fetch(`/api/community/posts?type=${type}`);
+    if (res.ok) {
+      const data = await res.json();
+      setPosts(data.posts);
+      setNextCursor(data.nextCursor);
+    }
+  }
+
+  async function handleToggleExpand(postId: string) {
+    const next = expandedId === postId ? null : postId;
+    setExpandedId(next);
+    if (next && !commentsByPost[next]) {
+      setLoadingComments((s) => ({ ...s, [next]: true }));
+      try {
+        const res = await fetch(`/api/community/posts/${next}/comments`);
+        if (res.ok) {
+          const data = await res.json();
+          setCommentsByPost((s) => ({ ...s, [next]: data.comments }));
+        }
+      } finally {
+        setLoadingComments((s) => ({ ...s, [next]: false }));
+      }
+    }
+  }
+
+  function handleCommentAdded(postId: string, comment: CommunityComment) {
+    setCommentsByPost((s) => ({ ...s, [postId]: [...(s[postId] ?? []), comment] }));
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, comment_count: p.comment_count + 1 } : p))
+    );
+  }
+
+  function handleStatusChanged(postId: string, status: "open" | "answered") {
+    setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status } : p)));
+  }
+
   const Icon = type === "victory" ? Trophy : HelpCircle;
 
   return (
     <div>
-      <Composer type={type} onPosted={() => {}} />
+      <Composer type={type} onPosted={reload} />
 
       {posts.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
@@ -306,16 +417,32 @@ export default function CommunityFeed({
           </p>
         </div>
       ) : (
-        posts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            isCoach={isCoach}
-            expanded={expandedId === post.id}
-            onToggleExpand={() => setExpandedId(expandedId === post.id ? null : post.id)}
-            comments={commentsByPost[post.id] ?? []}
-          />
-        ))
+        <>
+          {posts.map((post) => (
+            <PostCard
+              key={post.id}
+              post={post}
+              isCoach={isCoach}
+              expanded={expandedId === post.id}
+              onToggleExpand={() => handleToggleExpand(post.id)}
+              comments={commentsByPost[post.id]}
+              commentsLoading={loadingComments[post.id] ?? false}
+              onCommentAdded={(c) => handleCommentAdded(post.id, c)}
+              onStatusChanged={(s) => handleStatusChanged(post.id, s)}
+            />
+          ))}
+          <div ref={sentinelRef} className="h-1" />
+          {loadingMore && (
+            <div className="flex justify-center py-4">
+              <div className="w-5 h-5 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+          {!nextCursor && posts.length > 0 && (
+            <p className="text-center text-[10px] text-[#F5EDED]/20 py-4 uppercase tracking-widest font-bold">
+              Fin du fil
+            </p>
+          )}
+        </>
       )}
     </div>
   );

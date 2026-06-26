@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getCommunityPosts, getCommunityCommentsForPosts } from "@/utils/community";
+import { getCommunityPostsPage } from "@/utils/community";
 import CommunitySubNav from "@/components/community/CommunitySubNav";
 import CommunityFeed from "@/components/community/CommunityFeed";
 
@@ -11,8 +11,7 @@ export default async function ClientQuestionsPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/communaute/questions");
 
-  const posts = await getCommunityPosts("question");
-  const commentsByPost = await getCommunityCommentsForPosts(posts.map((p) => p.id));
+  const { posts, nextCursor } = await getCommunityPostsPage("question");
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -27,9 +26,9 @@ export default async function ClientQuestionsPage() {
 
       <CommunityFeed
         type="question"
-        posts={posts}
+        initialPosts={posts}
+        initialNextCursor={nextCursor}
         isCoach={false}
-        commentsByPost={commentsByPost}
       />
     </div>
   );
