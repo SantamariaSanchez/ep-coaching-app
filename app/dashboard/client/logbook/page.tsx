@@ -1,5 +1,5 @@
 ﻿import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import {
   getClientSessions,
@@ -29,6 +29,7 @@ export default async function LogbookPage() {
       sessions={sessions}
       records={records}
       prMap={prMap}
+      isFree={!isSubscribed(profile)}
     />
   );
 }

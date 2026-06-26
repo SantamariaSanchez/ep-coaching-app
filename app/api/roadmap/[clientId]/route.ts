@@ -43,12 +43,15 @@ export async function POST(
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const { clientId } = await params;
   const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") {
+  // Coach can edit any client's roadmap; a client can only edit their own
+  // (free community members build their own roadmap autonomously).
+  const isOwnRoadmap = profile?.role === "client" && user.id === clientId;
+  if (profile?.role !== "coach" && !isOwnRoadmap) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { clientId } = await params;
   const body = await req.json();
   const { start_date, end_date, phases, objectives } = body as {
     start_date: string;

@@ -81,7 +81,9 @@ const CLIENT_TABS: TabItem[] = [
 ];
 
 // Free community members get zero allusion to 1:1 coaching (no Messages,
-// Bilan, Check-in, Notes du coach, etc.) — just the autonomous tools.
+// Check-in, Mes tâches, Notes du coach...) but keep every self-tracking
+// tool (Programme, Nutrition, Logbook, Road Map, Bilan, Photos) — just
+// autonomous, unreviewed versions of each.
 const CLIENT_TABS_FREE: TabItem[] = [
   {
     label: "Bienvenue",
@@ -91,16 +93,16 @@ const CLIENT_TABS_FREE: TabItem[] = [
     exactMatch: true,
   },
   {
-    label: "Programme",
+    label: "Training",
     icon: Dumbbell,
     href: "/dashboard/client/program",
-    matchSegments: ["program"],
+    matchSegments: ["program", "logbook", "roadmap"],
   },
   {
-    label: "Nutrition",
-    icon: Apple,
+    label: "Suivi",
+    icon: TrendingUp,
     href: "/dashboard/client/nutrition",
-    matchSegments: ["nutrition"],
+    matchSegments: ["nutrition", "bilan", "photos"],
   },
   {
     label: "Communauté",
@@ -122,10 +124,19 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [{ label: "Bienvenue", icon: Home, segment: "" }],
   },
   {
-    group: "Mes outils",
+    group: "Training",
     items: [
       { label: "Programme", icon: Dumbbell, segment: "program" },
+      { label: "Logbook", icon: BookOpen, segment: "logbook" },
+      { label: "Road Map", icon: Map, segment: "roadmap" },
+    ],
+  },
+  {
+    group: "Suivi",
+    items: [
       { label: "Nutrition", icon: Apple, segment: "nutrition" },
+      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Photos", icon: Image, segment: "photos" },
     ],
   },
   {

@@ -7,6 +7,7 @@ import ClientDashboardStats from "@/components/client/DashboardStats";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
+  Map, ClipboardCheck, Image as ImageIcon,
 } from "lucide-react";
 
 // ── Free-tier welcome guide ──────────────────────────────────────────────────
@@ -20,10 +21,38 @@ const GUIDE_ITEMS = [
     locked: false,
   },
   {
+    href: "/dashboard/client/logbook",
+    icon: BookOpen,
+    title: "Logbook",
+    desc: "Enregistre tes séances, séries et records personnels.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/roadmap",
+    icon: Map,
+    title: "Road Map",
+    desc: "Construis tes phases et tes objectifs court/moyen/long terme.",
+    locked: false,
+  },
+  {
     href: "/dashboard/client/nutrition",
     icon: Apple,
     title: "Ma nutrition",
     desc: "Calcule tes besoins et suis tes repas au quotidien.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/bilan",
+    icon: ClipboardCheck,
+    title: "Bilan quotidien",
+    desc: "Note ton poids, ton sommeil et ton ressenti chaque jour.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/photos",
+    icon: ImageIcon,
+    title: "Photos",
+    desc: "Suis ta progression physique en photos.",
     locked: false,
   },
   {

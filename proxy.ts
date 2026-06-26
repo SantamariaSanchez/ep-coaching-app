@@ -43,15 +43,22 @@ export async function proxy(request: NextRequest) {
   }
 
   // Paths reachable by clients on the free tier (no active subscription).
-  // Programme/Nutrition are included because free members get a self-serve,
-  // unmonitored version of those tools — only the coached/reviewed features
-  // (logbook, bilan, checkin, messages, tasks, formations...) stay paid-only.
+  // Free members get self-serve, unmonitored versions of all the personal
+  // tracking tools (program, nutrition, logbook, roadmap, bilan, photos) —
+  // each page branches its own UI by subscription_status. Only the features
+  // that are inherently a channel TO the coach stay paid-only: messages,
+  // check-in (weekly report meant for coach review), tasks (coach-assigned),
+  // notes du coach, formations.
   const FREE_TIER_PREFIXES = [
     "/dashboard/client/communaute",
     "/dashboard/client/ressources",
     "/dashboard/client/abonnement",
     "/dashboard/client/program",
     "/dashboard/client/nutrition",
+    "/dashboard/client/logbook",
+    "/dashboard/client/roadmap",
+    "/dashboard/client/bilan",
+    "/dashboard/client/photos",
   ];
   const isFreeTierPath =
     pathname === "/dashboard/client" ||

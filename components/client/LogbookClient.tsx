@@ -34,6 +34,7 @@ interface Props {
   sessions: Session[];
   records: PersonalRecord[];
   prMap: Record<string, number>;
+  isFree?: boolean;
 }
 
 const TOOLTIP_STYLE = {
@@ -411,7 +412,7 @@ function RecordsSection({
   );
 }
 
-export default function LogbookClient({ program, sessions, records, prMap }: Props) {
+export default function LogbookClient({ program, sessions, records, prMap, isFree }: Props) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -466,8 +467,9 @@ export default function LogbookClient({ program, sessions, records, prMap }: Pro
           {(!program || program.days.length === 0) && (
             <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4 mb-2">
               <p className="text-xs text-[#F5EDED]/40">
-                Aucun programme actif — démarre une séance libre ou contacte
-                ton coach.
+                {isFree
+                  ? "Aucun programme actif — crée ton programme ou démarre une séance libre."
+                  : "Aucun programme actif — démarre une séance libre ou contacte ton coach."}
               </p>
             </div>
           )}
