@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function CommunitySubNav({ base }: { base: string }) {
+export default function CommunitySubNav({ base, isCoach }: { base: string; isCoach?: boolean }) {
   const pathname = usePathname();
   const items = [
     { label: "Victoires", href: `${base}/victoires` },
     { label: "Questions", href: `${base}/questions` },
+    ...(isCoach ? [{ label: "Membres", href: `${base}/membres` }] : []),
   ];
 
   return (

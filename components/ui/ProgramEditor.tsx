@@ -85,10 +85,12 @@ export default function ProgramEditor({
   clientId,
   program,
   saveProgram,
+  successRedirect,
 }: {
   clientId: string;
   program: ProgramWithDays | null;
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
+  successRedirect?: string;
 }) {
   const router = useRouter();
   const [state, setState] = useState(() => initFromProgram(program));
@@ -265,7 +267,7 @@ export default function ProgramEditor({
     } else {
       setSaved(true);
       setTimeout(() => {
-        router.push(`/dashboard/coach/clients/${clientId}/program`);
+        router.push(successRedirect ?? `/dashboard/coach/clients/${clientId}/program`);
         router.refresh();
       }, 700);
     }

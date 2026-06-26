@@ -2,7 +2,52 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getUser } from "@/utils/auth";
-import type { Food } from "@/utils/nutrition";
+import { requireClient } from "@/lib/auth-guards";
+import { revalidatePath } from "next/cache";
+import type { Food, NutritionProfileInput } from "@/utils/nutrition";
+
+// Self-serve nutrition targets — only available to free-tier community
+// members. They set and adjust their own targets, no coach review.
+export async function saveOwnNutritionProfile(
+  clientId: string,
+  data: NutritionProfileInput
+): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  if (guard.userId !== clientId) return { error: "Accès refusé." };
+
+  const supabase = await createServerSupabase();
+  const { error } = await supabase.from("nutrition_profiles").upsert(
+    {
+      client_id: clientId,
+      calories_target: data.calories_target,
+      proteins_target: data.proteins_target,
+      carbs_target: data.carbs_target,
+      fats_target: data.fats_target,
+      tdee: data.tdee,
+      bmr: data.bmr,
+      phase: data.phase,
+      gender: data.gender,
+      height: data.height,
+      age: data.age,
+      training_type: data.training_type,
+      sessions_per_week: data.sessions_per_week,
+      session_duration: data.session_duration,
+      steps_per_day: data.steps_per_day,
+      activity_level: data.activity_level,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: "client_id" }
+  );
+
+  if (error) {
+    console.error("saveOwnNutritionProfile error:", error);
+    return { error: "Erreur lors de la sauvegarde." };
+  }
+
+  revalidatePath(`/dashboard/client/nutrition`);
+  return {};
+}
 
 export async function addFoodLog(params: {
   foodId: string;

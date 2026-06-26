@@ -1,9 +1,10 @@
-﻿"use server";
+"use server";
 import { requireCoach } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ProgramInput } from "@/utils/programs";
+import { saveProgramForClient } from "@/utils/programs";
 
 export async function saveProgram(
   clientId: string,
@@ -11,87 +12,14 @@ export async function saveProgram(
 ): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
-  try {
-    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
-    // Deactivate the existing active program instead of deleting it — old exercises
-    // are referenced by logbook/session history (session_sets, personal_records),
-    // so a hard delete fails on a foreign key violation. getActiveProgram() only
-    // reads programs where is_active = true, so deactivating is enough.
-    const { error: deactivateError } = await supabase
-      .from("programs")
-      .update({ is_active: false })
-      .eq("client_id", clientId)
-      .eq("is_active", true);
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
+  const result = await saveProgramForClient(supabase, clientId, input);
+  if (result.error) return result;
 
-    if (deactivateError) {
-      console.error("saveProgram: failed to deactivate old program", deactivateError);
-      return { error: "Erreur lors de la suppression de l'ancien programme." };
-    }
-
-    // Create new program
-    const { data: program, error: programError } = await supabase
-      .from("programs")
-      .insert({
-        client_id: clientId,
-        name: input.name.trim(),
-        type: input.type || null,
-        frequency: input.frequency ?? null,
-        is_active: true,
-      })
-      .select()
-      .single();
-
-    if (programError || !program) {
-      return { error: "Erreur lors de la création du programme." };
-    }
-
-    // Insert days + exercises in order
-    for (let i = 0; i < input.days.length; i++) {
-      const day = input.days[i];
-
-      const { data: dayRow, error: dayError } = await supabase
-        .from("program_days")
-        .insert({
-          program_id: program.id,
-          day_label: day.day_label || `Séance ${i + 1}`,
-          position: i,
-        })
-        .select()
-        .single();
-
-      if (dayError || !dayRow) {
-        return { error: `Erreur lors de la création de la séance ${i + 1}.` };
-      }
-
-      for (let j = 0; j < day.exercises.length; j++) {
-        const ex = day.exercises[j];
-        const { error: exError } = await supabase.from("exercises").insert({
-          day_id: dayRow.id,
-          name: ex.name,
-          sets: ex.sets,
-          reps: ex.reps || null,
-          rir: ex.rir,
-          rest_seconds: ex.rest_seconds,
-          notes: ex.notes || null,
-          position: j,
-          muscle_group: ex.muscle_group || null,
-          muscle_subgroup: ex.muscle_subgroup || null,
-          is_direct: ex.is_direct,
-        });
-        if (exError) {
-          return { error: `Erreur lors de l'ajout de l'exercice "${ex.name}".` };
-        }
-      }
-    }
-
-    revalidatePath(`/dashboard/coach/clients/${clientId}/program`);
-    revalidatePath(`/dashboard/client/program`);
-    return {};
-  } catch (err) {
-    console.error("saveProgram error:", err);
-    return { error: "Une erreur inattendue est survenue." };
-  }
+  revalidatePath(`/dashboard/coach/clients/${clientId}/program`);
+  revalidatePath(`/dashboard/client/program`);
+  return {};
 }
 
 export async function submitCorrectionFeedback(

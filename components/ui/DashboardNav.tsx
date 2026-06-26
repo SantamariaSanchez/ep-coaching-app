@@ -159,6 +159,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Membres", icon: Heart, segment: "communaute/membres" },
     ],
   },
   {

@@ -36,10 +36,12 @@ export interface Profile {
   photo_frequency: "weekly" | "daily";
   subscription_status: "free" | "active" | "canceled";
   subscription_plan: string | null;
+  level: string | null;
+  source: string | null;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
@@ -57,13 +59,31 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 
 export async function getClients(): Promise<Profile[]> {
   try {
-    // Use admin client to bypass RLS — coach must see ALL clients regardless of policies
+    // Use admin client to bypass RLS — coach must see ALL clients regardless of policies.
+    // Only paying clients show up here — free community members are managed
+    // separately (see getCommunityMembers) since the coach has no oversight on them.
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
       .select(PROFILE_FIELDS)
       .eq("role", "client")
+      .eq("subscription_status", "active")
       .order("full_name");
+    return (data as Profile[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+export async function getCommunityMembers(): Promise<Profile[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(PROFILE_FIELDS)
+      .eq("role", "client")
+      .neq("subscription_status", "active")
+      .order("start_date", { ascending: false });
     return (data as Profile[]) ?? [];
   } catch {
     return [];

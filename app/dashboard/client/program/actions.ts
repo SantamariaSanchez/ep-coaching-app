@@ -3,6 +3,27 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCorrection } from "@/app/actions/notifications";
+import { requireClient } from "@/lib/auth-guards";
+import { saveProgramForClient } from "@/utils/programs";
+import type { ProgramInput } from "@/utils/programs";
+
+// Self-serve program editor — only available to free-tier community members.
+// They build and edit their own program with zero coach review.
+export async function saveOwnProgram(
+  clientId: string,
+  input: ProgramInput
+): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  if (guard.userId !== clientId) return { error: "Accès refusé." };
+
+  const supabase = await createServerSupabase();
+  const result = await saveProgramForClient(supabase, clientId, input);
+  if (result.error) return result;
+
+  revalidatePath(`/dashboard/client/program`);
+  return {};
+}
 
 export async function submitCorrection(
   _prev: { error?: string; success?: boolean } | null,

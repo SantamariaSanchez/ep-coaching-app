@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, User, ArrowRight, Zap, Target, TrendingUp } from "lucide-react";
+import { Shield, Heart, ArrowRight, Zap, Target, TrendingUp } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 
 export default function HomePage() {
@@ -80,7 +80,7 @@ export default function HomePage() {
             letterSpacing: "0.04em",
           }}
         >
-          Coaching personnalisé haut de gamme
+          La communauté fitness qui te pousse à aller plus loin
         </p>
       </div>
 
@@ -117,181 +117,80 @@ export default function HomePage() {
         ))}
       </div>
 
-      {/* ── Access cards ── */}
+      {/* ── Main CTA ── */}
       <div
         className="animate-fade-up stagger-4"
         style={{
-          display: "flex",
-          gap: 14,
-          flexWrap: "wrap",
-          justifyContent: "center",
           width: "100%",
-          maxWidth: 480,
+          maxWidth: 400,
           position: "relative",
           zIndex: 1,
         }}
       >
-        {/* Coach card */}
-        <Link
-          href="/auth/coach"
-          style={{
-            flex: "1 1 180px",
-            textDecoration: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-            padding: "28px 20px",
-            background: "rgba(16,1,1,0.60)",
-            backdropFilter: "blur(28px)",
-            WebkitBackdropFilter: "blur(28px)",
-            border: "1px solid rgba(224,30,30,0.14)",
-            borderRadius: "var(--radius-xl)",
-            cursor: "pointer",
-            transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)",
-            position: "relative",
-            overflow: "hidden",
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(224,30,30,0.45)";
-            el.style.transform = "translateY(-5px) scale(1.01)";
-            el.style.boxShadow = "0 24px 64px rgba(0,0,0,0.65), 0 0 60px rgba(137,4,4,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(224,30,30,0.14)";
-            el.style.transform = "translateY(0) scale(1)";
-            el.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)";
-          }}
-        >
-          {/* Card top shimmer */}
-          <div style={{
-            position: "absolute",
-            top: 0, left: "15%", right: "15%",
-            height: 1,
-            background: "linear-gradient(90deg, transparent, rgba(224,30,30,0.5), transparent)",
-          }} />
-          <div
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
-              background: "linear-gradient(135deg, rgba(224,30,30,0.15) 0%, rgba(137,4,4,0.08) 100%)",
-              border: "1px solid rgba(224,30,30,0.28)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "inset 0 1px 0 rgba(224,30,30,0.2), 0 4px 16px rgba(0,0,0,0.3)",
-            }}
-          >
-            <Shield size={22} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontWeight: 900, fontSize: 17, color: "#F5EDED", margin: "0 0 4px", letterSpacing: "-0.03em" }}>
-              Coach
-            </p>
-            <p style={{ fontSize: 11, color: "rgba(245,237,237,0.30)", margin: 0, fontWeight: 500 }}>
-              Espace privé
-            </p>
-          </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            color: "rgba(224,30,30,0.5)",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-          }}>
-            ACCÉDER <ArrowRight size={10} />
-          </div>
-        </Link>
-
-        {/* Client card */}
         <Link
           href="/auth/client"
           style={{
-            flex: "1 1 180px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 10,
+            width: "100%",
+            height: 56,
+            background: "linear-gradient(135deg, #E01E1E 0%, #B00202 100%)",
+            color: "#fff",
             textDecoration: "none",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-            padding: "28px 20px",
-            background: "rgba(16,1,1,0.60)",
-            backdropFilter: "blur(28px)",
-            WebkitBackdropFilter: "blur(28px)",
-            border: "1px solid rgba(224,30,30,0.14)",
             borderRadius: "var(--radius-xl)",
-            cursor: "pointer",
-            transition: "all 0.3s cubic-bezier(0.16,1,0.3,1)",
-            boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)",
-            position: "relative",
-            overflow: "hidden",
+            fontWeight: 800,
+            fontSize: 15,
+            letterSpacing: "-0.01em",
+            boxShadow: "0 12px 32px rgba(224,30,30,0.3)",
+            transition: "transform 0.2s ease",
           }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(224,30,30,0.45)";
-            el.style.transform = "translateY(-5px) scale(1.01)";
-            el.style.boxShadow = "0 24px 64px rgba(0,0,0,0.65), 0 0 60px rgba(137,4,4,0.12), inset 0 1px 0 rgba(255,255,255,0.06)";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget;
-            el.style.borderColor = "rgba(224,30,30,0.14)";
-            el.style.transform = "translateY(0) scale(1)";
-            el.style.boxShadow = "inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.5)";
-          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
         >
-          <div style={{
-            position: "absolute",
-            top: 0, left: "15%", right: "15%",
-            height: 1,
-            background: "linear-gradient(90deg, transparent, rgba(224,30,30,0.5), transparent)",
-          }} />
-          <div
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
-              background: "linear-gradient(135deg, rgba(224,30,30,0.15) 0%, rgba(137,4,4,0.08) 100%)",
-              border: "1px solid rgba(224,30,30,0.28)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              boxShadow: "inset 0 1px 0 rgba(224,30,30,0.2), 0 4px 16px rgba(0,0,0,0.3)",
-            }}
-          >
-            <User size={22} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-          </div>
-          <div style={{ textAlign: "center" }}>
-            <p style={{ fontWeight: 900, fontSize: 17, color: "#F5EDED", margin: "0 0 4px", letterSpacing: "-0.03em" }}>
-              Client
-            </p>
-            <p style={{ fontSize: 11, color: "rgba(245,237,237,0.30)", margin: 0, fontWeight: 500 }}>
-              Mon espace coaching
-            </p>
-          </div>
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            color: "rgba(224,30,30,0.5)",
-            fontSize: 10,
-            fontWeight: 700,
-            letterSpacing: "0.08em",
-          }}>
-            ACCÉDER <ArrowRight size={10} />
-          </div>
+          <Heart size={18} strokeWidth={2} />
+          Rejoindre la communauté
+          <ArrowRight size={16} />
         </Link>
+
+        <p style={{
+          textAlign: "center",
+          marginTop: 14,
+          fontSize: 11,
+          color: "rgba(245,237,237,0.3)",
+          fontWeight: 500,
+        }}>
+          Gratuit — ressources, victoires, questions entre membres
+        </p>
       </div>
+
+      {/* ── Coach link ── */}
+      <Link
+        href="/auth/coach"
+        className="animate-fade-up stagger-5"
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 32,
+          color: "rgba(245,237,237,0.25)",
+          textDecoration: "none",
+          fontSize: 11,
+          fontWeight: 600,
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
+        <Shield size={12} />
+        Espace coach
+      </Link>
 
       {/* ── Bottom line ── */}
       <p
         className="animate-fade-up stagger-5"
         style={{
-          marginTop: 40,
+          marginTop: 16,
           fontSize: 10,
           color: "rgba(245,237,237,0.12)",
           fontWeight: 600,

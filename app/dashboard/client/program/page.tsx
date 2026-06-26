@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
+import ProgramEditor from "@/components/ui/ProgramEditor";
+import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
 
 export default async function ClientProgramPage() {
@@ -17,6 +19,30 @@ export default async function ClientProgramPage() {
   ]);
 
   if (profile?.role === "coach") redirect("/dashboard/coach");
+
+  // Free community members build and edit their own program — no coach review.
+  if (!isSubscribed(profile)) {
+    return (
+      <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
+        <TrainingSubNav />
+        <div className="mb-6">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+            Entraînement — Communauté
+          </p>
+          <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
+          <p className="text-sm text-[#F5EDED]/45 mt-2">
+            Tu gères toi-même ton programme — autonome, sans suivi coach.
+          </p>
+        </div>
+        <ProgramEditor
+          clientId={user.id}
+          program={program}
+          saveProgram={saveOwnProgram}
+          successRedirect="/dashboard/client/program"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 900, margin: "0 auto" }}>

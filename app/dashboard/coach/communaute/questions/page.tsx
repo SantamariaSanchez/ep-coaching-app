@@ -15,7 +15,7 @@ export default async function CoachQuestionsPage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <CommunitySubNav base="/dashboard/coach/communaute" />
+      <CommunitySubNav base="/dashboard/coach/communaute" isCoach />
 
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
