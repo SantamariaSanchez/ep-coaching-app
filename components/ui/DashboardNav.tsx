@@ -7,7 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
-  ListChecks, Heart, Trophy, HelpCircle,
+  ListChecks, Heart, Trophy, HelpCircle, Crown,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -74,7 +74,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute"],
+    matchSegments: ["communaute", "abonnement"],
   },
 ];
 
@@ -219,6 +219,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
   },
 ];
@@ -517,6 +518,40 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               </div>
             </div>
           </div>
+
+          {userRole === "client" && (
+            <Link
+              href="/dashboard/client/abonnement"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                padding: "7px 10px",
+                borderRadius: 8,
+                background: "transparent",
+                color: "rgba(245,237,237,0.4)",
+                fontSize: 12,
+                fontWeight: 600,
+                textDecoration: "none",
+                transition: "all 0.15s",
+                marginBottom: 2,
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = "#E01E1E";
+                el.style.background = "rgba(224,30,30,0.07)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = "rgba(245,237,237,0.4)";
+                el.style.background = "transparent";
+              }}
+            >
+              <Crown size={14} strokeWidth={1.7} />
+              Abonnement
+            </Link>
+          )}
 
           <button
             onClick={handleSignOut}

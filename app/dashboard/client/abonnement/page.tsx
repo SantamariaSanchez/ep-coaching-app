@@ -1,14 +1,53 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
-import { Check, Crown, Users, MessageCircleQuestion } from "lucide-react";
+import {
+  Check,
+  Crown,
+  Users,
+  MessageCircleQuestion,
+  Dumbbell,
+  Apple,
+  HeartHandshake,
+  GraduationCap,
+} from "lucide-react";
 
-const COACHING_PERKS = [
-  "Programme d'entraînement personnalisé",
-  "Suivi nutrition adapté à ton objectif",
-  "Logbook complet (séances, records, progression)",
-  "Bilans hebdomadaires et échanges avec ton coach",
-  "Road map et accompagnement mental",
+const COACHING_CATEGORIES = [
+  {
+    title: "Entraînement",
+    icon: Dumbbell,
+    perks: [
+      "Programme 100% personnalisé, construit par ton coach",
+      "Logbook complet : séances, séries, records personnels",
+      "Suivi vidéo de tes exercices avec retours correctifs du coach",
+      "Road Map : objectifs court/moyen/long terme avec échéances",
+    ],
+  },
+  {
+    title: "Nutrition",
+    icon: Apple,
+    perks: [
+      "Calcul de tes besoins (TDEE/BMR) et macros par ton coach",
+      "Plan alimentaire adapté à ta phase (perte / prise / maintenance)",
+      "Suivi quotidien des repas et des écarts",
+    ],
+  },
+  {
+    title: "Suivi & accompagnement",
+    icon: HeartHandshake,
+    perks: [
+      "Bilans hebdomadaires avec ton coach (poids, adhérence, ressenti)",
+      "Check-in réguliers",
+      "Messagerie directe avec ton coach",
+      "Suivi photos de progression",
+      "Rappels personnalisés (pesée, compléments, etc.)",
+    ],
+  },
+  {
+    title: "Contenu",
+    icon: GraduationCap,
+    perks: ["Accès à toutes les Formations complètes"],
+  },
 ];
 
 export default async function AbonnementPage() {
@@ -84,13 +123,23 @@ export default async function AbonnementPage() {
       {/* ── Ce que débloque l'abonnement ── */}
       <section className="mb-10">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Inclus dans l&apos;abonnement
+          Tout ce que contient le coaching
         </p>
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 space-y-3">
-          {COACHING_PERKS.map((perk) => (
-            <div key={perk} className="flex items-start gap-2.5">
-              <Check size={14} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-              <p className="text-sm text-[#F5EDED]/70">{perk}</p>
+        <div className="space-y-3">
+          {COACHING_CATEGORIES.map(({ title, icon: Icon, perks }) => (
+            <div key={title} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
+              <div className="flex items-center gap-2.5 mb-3.5">
+                <Icon size={16} className="text-[#E01E1E] flex-shrink-0" strokeWidth={1.8} />
+                <p className="text-sm font-black text-white">{title}</p>
+              </div>
+              <div className="space-y-2.5">
+                {perks.map((perk) => (
+                  <div key={perk} className="flex items-start gap-2.5">
+                    <Check size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-[#F5EDED]/70">{perk}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
