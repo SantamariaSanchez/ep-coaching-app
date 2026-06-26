@@ -7,7 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
-  ListChecks, Heart, Trophy, HelpCircle, Crown,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -32,6 +32,8 @@ type SidebarGroup = {
     icon: React.ElementType;
     segment: string;
     badge?: BadgeKey;
+    href?: string; // overrides the computed `${base}/${segment}` link
+    locked?: boolean; // shows a small lock badge (premium teaser for free members)
   }>;
 };
 
@@ -75,6 +77,77 @@ const CLIENT_TABS: TabItem[] = [
     icon: Heart,
     href: "/dashboard/client/communaute",
     matchSegments: ["communaute", "abonnement"],
+  },
+];
+
+// Free community members get zero allusion to 1:1 coaching (no Messages,
+// Bilan, Check-in, Notes du coach, etc.) — just the autonomous tools.
+const CLIENT_TABS_FREE: TabItem[] = [
+  {
+    label: "Bienvenue",
+    icon: Home,
+    href: "/dashboard/client",
+    matchSegments: [],
+    exactMatch: true,
+  },
+  {
+    label: "Programme",
+    icon: Dumbbell,
+    href: "/dashboard/client/program",
+    matchSegments: ["program"],
+  },
+  {
+    label: "Nutrition",
+    icon: Apple,
+    href: "/dashboard/client/nutrition",
+    matchSegments: ["nutrition"],
+  },
+  {
+    label: "Communauté",
+    icon: Heart,
+    href: "/dashboard/client/communaute",
+    matchSegments: ["communaute", "abonnement"],
+  },
+  {
+    label: "Contenu",
+    icon: GraduationCap,
+    href: "/dashboard/client/ressources",
+    matchSegments: ["ressources", "formations"],
+  },
+];
+
+const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
+  {
+    group: "",
+    items: [{ label: "Bienvenue", icon: Home, segment: "" }],
+  },
+  {
+    group: "Mes outils",
+    items: [
+      { label: "Programme", icon: Dumbbell, segment: "program" },
+      { label: "Nutrition", icon: Apple, segment: "nutrition" },
+    ],
+  },
+  {
+    group: "Communauté",
+    items: [
+      { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
+      { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Abonnement", icon: Crown, segment: "abonnement" },
+    ],
+  },
+  {
+    group: "Contenu",
+    items: [
+      { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      {
+        label: "Formations",
+        icon: GraduationCap,
+        segment: "formations",
+        href: "/dashboard/client/abonnement",
+        locked: true,
+      },
+    ],
   },
 ];
 
@@ -226,12 +299,12 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-function useNavState() {
+function useNavState(isFreeTier: boolean) {
   const pathname = usePathname();
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
-  const tabs = isCoach ? COACH_TABS : CLIENT_TABS;
-  const sidebar = isCoach ? COACH_SIDEBAR : CLIENT_SIDEBAR;
+  const tabs = isCoach ? COACH_TABS : isFreeTier ? CLIENT_TABS_FREE : CLIENT_TABS;
+  const sidebar = isCoach ? COACH_SIDEBAR : isFreeTier ? CLIENT_SIDEBAR_FREE : CLIENT_SIDEBAR;
 
   function isTabActive(tab: TabItem): boolean {
     if (tab.exactMatch) return pathname === tab.href;
@@ -273,8 +346,9 @@ function useNavState() {
 // ── Component ───────────────────────────────────────────────────────────────
 
 export default function DashboardNav({ children }: { children: React.ReactNode }) {
+  const [isFreeTier, setIsFreeTier] = useState(false);
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
-    useNavState();
+    useNavState(isFreeTier);
   const router = useRouter();
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -323,13 +397,17 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
       if (!user) return;
       supabase
         .from("profiles")
-        .select("full_name, role")
+        .select("full_name, role, subscription_status")
         .eq("id", user.id)
         .single()
         .then(({ data }) => {
           if (data) {
             setUserName((data as { full_name: string | null }).full_name);
             setUserRole((data as { role: string }).role);
+            setIsFreeTier(
+              (data as { role: string; subscription_status: string }).role === "client" &&
+                (data as { subscription_status: string }).subscription_status !== "active"
+            );
           }
         });
     });
@@ -407,9 +485,9 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                   {group.group}
                 </p>
               )}
-              {group.items.map(({ label, icon: Icon, segment, badge }, i) => {
+              {group.items.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }, i) => {
                 const active = isSidebarActive(segment);
-                const href = segment ? `${base}/${segment}` : base;
+                const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
                 const count = getBadgeCount(badge);
                 return (
                   <Link
@@ -452,6 +530,9 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                       style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
                     />
                     <span style={{ flex: 1 }}>{label}</span>
+                    {locked && (
+                      <Lock size={11} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} strokeWidth={2} />
+                    )}
                     {count > 0 && (
                       <span
                         className={count > 0 ? "animate-pulse-glow" : ""}
@@ -618,9 +699,9 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               borderBottom: "1px solid rgba(224,30,30,0.1)",
             }}
           >
-            {mobileSubItems.map(({ label, icon: Icon, segment, badge }) => {
+            {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
               const active = isSidebarActive(segment);
-              const href = segment ? `${base}/${segment}` : base;
+              const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
               const count = getBadgeCount(badge);
               return (
                 <Link
@@ -645,6 +726,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                 >
                   <Icon size={13} strokeWidth={active ? 2.2 : 1.7} />
                   {label}
+                  {locked && <Lock size={10} style={{ flexShrink: 0 }} strokeWidth={2} />}
                   {count > 0 && (
                     <span
                       style={{

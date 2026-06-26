@@ -46,7 +46,10 @@ const COACHING_CATEGORIES = [
   {
     title: "Contenu",
     icon: GraduationCap,
-    perks: ["Accès à toutes les Formations complètes"],
+    perks: [
+      "80h+ de formations vidéo complètes (entraînement, nutrition, mental...)",
+      "Modules structurés, accessibles à vie, enrichis régulièrement",
+    ],
   },
 ];
 

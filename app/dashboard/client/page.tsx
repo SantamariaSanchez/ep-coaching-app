@@ -6,7 +6,7 @@ import { getLatestCoachNote } from "@/utils/notes";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
-  Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight,
+  Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
 } from "lucide-react";
 
 // ── Free-tier welcome guide ──────────────────────────────────────────────────
@@ -17,30 +17,42 @@ const GUIDE_ITEMS = [
     icon: Dumbbell,
     title: "Mon programme",
     desc: "Crée et gère ton programme d'entraînement, en autonomie.",
+    locked: false,
   },
   {
     href: "/dashboard/client/nutrition",
     icon: Apple,
     title: "Ma nutrition",
     desc: "Calcule tes besoins et suis tes repas au quotidien.",
+    locked: false,
   },
   {
     href: "/dashboard/client/communaute/victoires",
     icon: Trophy,
     title: "Victoires",
     desc: "Partage tes réussites (texte ou photo) avec la communauté.",
+    locked: false,
   },
   {
     href: "/dashboard/client/communaute/questions",
     icon: HelpCircle,
     title: "Questions",
-    desc: "Pose tes questions à la communauté et au coach.",
+    desc: "Pose tes questions et échange avec la communauté.",
+    locked: false,
   },
   {
     href: "/dashboard/client/ressources",
     icon: BookOpen,
     title: "Ressources",
     desc: "Guides et lead magnets gratuits, ajoutés régulièrement.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/abonnement",
+    icon: GraduationCap,
+    title: "Formations",
+    desc: "80h+ de contenu vidéo — débloquées avec le coaching premium.",
+    locked: true,
   },
 ];
 
@@ -91,14 +103,15 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
         <p className="ep-section-title">Ce qui est disponible</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {GUIDE_ITEMS.map(({ href, icon: Icon, title, desc }) => (
+          {GUIDE_ITEMS.map(({ href, icon: Icon, title, desc, locked }) => (
             <Link
               key={href}
               href={href}
               style={{
                 display: "flex", alignItems: "center", gap: 12,
                 padding: "14px 16px", borderRadius: 12,
-                background: "rgba(31,1,1,0.7)", border: "1px solid rgba(137,4,4,0.25)",
+                background: locked ? "rgba(224,30,30,0.06)" : "rgba(31,1,1,0.7)",
+                border: locked ? "1px solid rgba(224,30,30,0.25)" : "1px solid rgba(137,4,4,0.25)",
                 textDecoration: "none",
               }}
             >
@@ -110,7 +123,10 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
                 <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+                  {locked && <Lock size={11} style={{ color: "#E01E1E" }} strokeWidth={2} />}
+                </div>
                 <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
               </div>
               <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
