@@ -1061,17 +1061,27 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
   }, [step]);
 
   const handleWarmupValidate = useCallback(
-    async (seconds: number) => {
-      await fetch(`/api/client/sessions/${sessionId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          warmup_validated: true,
-          warmup_duration_seconds: seconds,
-        }),
-      });
+    (seconds: number) => {
+      // Move to the workout immediately — warmup_validated is just metadata
+      // for "resume where I left off" on reload, it must never block the
+      // transition if the network is slow/flaky.
       sessionStartRef.current = Date.now();
       setStep("session");
+
+      const patchWarmup = () =>
+        fetch(`/api/client/sessions/${sessionId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            warmup_validated: true,
+            warmup_duration_seconds: seconds,
+          }),
+        });
+
+      patchWarmup().catch(() => {
+        // one silent retry — best effort, doesn't affect the UI either way
+        patchWarmup().catch(() => {});
+      });
     },
     [sessionId]
   );

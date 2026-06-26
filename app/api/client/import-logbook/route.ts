@@ -1,0 +1,129 @@
+import { NextResponse } from "next/server";
+import { getUser } from "@/utils/auth";
+import { createServerSupabase } from "@/lib/supabase-server";
+import { parseWorkoutCsv } from "@/utils/csv-import";
+
+export async function POST(request: Request) {
+  const user = await getUser();
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const formData = await request.formData();
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return NextResponse.json({ error: "Fichier manquant." }, { status: 400 });
+  }
+
+  const text = await file.text();
+  const parsed = parseWorkoutCsv(text);
+  if ("error" in parsed) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+
+  const supabase = await createServerSupabase();
+  const sourceLabel = parsed.source === "hevy" ? "Hevy" : "Strong";
+  const importNote = `Importé depuis ${sourceLabel}`;
+
+  let sessionsImported = 0;
+  let setsImported = 0;
+  let sessionsSkipped = 0;
+
+  for (const session of parsed.sessions) {
+    // Avoid duplicating sessions on a re-upload of the same export.
+    const { data: existing } = await supabase
+      .from("sessions")
+      .select("id")
+      .eq("client_id", user.id)
+      .eq("session_date", session.date)
+      .eq("day_label", session.dayLabel)
+      .eq("notes", importNote)
+      .maybeSingle();
+
+    if (existing) {
+      sessionsSkipped++;
+      continue;
+    }
+
+    const { data: sessionRow, error: sessionError } = await supabase
+      .from("sessions")
+      .insert({
+        client_id: user.id,
+        program_id: null,
+        day_label: session.dayLabel,
+        session_date: session.date,
+        duration_minutes: session.durationMinutes,
+        is_completed: true,
+        warmup_validated: true,
+        notes: importNote,
+      })
+      .select("id")
+      .single();
+
+    if (sessionError || !sessionRow) continue;
+
+    const counters: Record<string, number> = {};
+    const setsPayload = session.sets.map((set) => {
+      counters[set.exerciseName] = (counters[set.exerciseName] ?? 0) + 1;
+      return {
+        session_id: (sessionRow as { id: string }).id,
+        exercise_name: set.exerciseName,
+        set_number: counters[set.exerciseName],
+        weight_kg: set.weightKg,
+        reps_actual: set.reps,
+        notes: set.note,
+      };
+    });
+
+    const { error: setsError } = await supabase.from("session_sets").insert(setsPayload);
+    if (!setsError) {
+      sessionsImported++;
+      setsImported += setsPayload.length;
+    }
+  }
+
+  // ── Backfill personal records from the imported history ──
+  // Only insert a PR if it beats whatever the client already has on record,
+  // so re-importing never overwrites a more recent real PR with an old one.
+  const bestByExercise = new Map<string, { weightKg: number; reps: number | null; date: string }>();
+  for (const session of parsed.sessions) {
+    for (const set of session.sets) {
+      if (set.weightKg == null) continue;
+      const current = bestByExercise.get(set.exerciseName);
+      if (!current || set.weightKg > current.weightKg) {
+        bestByExercise.set(set.exerciseName, {
+          weightKg: set.weightKg,
+          reps: set.reps,
+          date: session.date,
+        });
+      }
+    }
+  }
+
+  for (const [exerciseName, best] of bestByExercise) {
+    const { data: existingPr } = await supabase
+      .from("personal_records")
+      .select("weight_kg")
+      .eq("client_id", user.id)
+      .eq("exercise_name", exerciseName)
+      .order("weight_kg", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const existingBest = (existingPr as { weight_kg: number } | null)?.weight_kg ?? 0;
+    if (best.weightKg > existingBest) {
+      await supabase.from("personal_records").insert({
+        client_id: user.id,
+        exercise_name: exerciseName,
+        weight_kg: best.weightKg,
+        reps: best.reps,
+        achieved_at: best.date,
+      });
+    }
+  }
+
+  return NextResponse.json({
+    source: parsed.source,
+    sessionsImported,
+    setsImported,
+    sessionsSkipped,
+  });
+}

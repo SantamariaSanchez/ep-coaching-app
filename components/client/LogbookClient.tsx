@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -12,6 +12,9 @@ import {
   Star,
   Calendar,
   Plus,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react";
 import {
   LineChart,
@@ -193,6 +196,90 @@ function FreeSessionButton() {
   );
 }
 
+// ── Import depuis Hevy / Strong ──────────────────────────────────────────────
+
+function ImportLogbookButton() {
+  const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [importing, setImporting] = useState(false);
+  const [result, setResult] = useState<
+    { ok: true; sessionsImported: number; setsImported: number; sessionsSkipped: number; source: string }
+    | { ok: false; error: string }
+    | null
+  >(null);
+
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+
+    setImporting(true);
+    setResult(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/client/import-logbook", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setResult({ ok: false, error: json.error ?? "Import impossible." });
+      } else {
+        setResult({ ok: true, ...json });
+        router.refresh();
+      }
+    } catch {
+      setResult({ ok: false, error: "Import impossible — vérifie ta connexion." });
+    } finally {
+      setImporting(false);
+    }
+  }
+
+  return (
+    <div className="mb-8">
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv"
+        className="hidden"
+        onChange={handleFile}
+      />
+      <button
+        onClick={() => inputRef.current?.click()}
+        disabled={importing}
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
+      >
+        {importing ? (
+          <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Upload size={14} strokeWidth={1.8} />
+        )}
+        Importer mon historique (Hevy / Strong)
+      </button>
+
+      {result && result.ok && (
+        <div className="flex items-start gap-2.5 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 mt-2.5">
+          <CheckCircle2 size={14} className="text-green-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-green-400">
+            {result.sessionsImported} séance{result.sessionsImported !== 1 ? "s" : ""} importée
+            {result.sessionsImported !== 1 ? "s" : ""} ({result.setsImported} sets) depuis{" "}
+            {result.source === "hevy" ? "Hevy" : "Strong"}.
+            {result.sessionsSkipped > 0 &&
+              ` ${result.sessionsSkipped} déjà importée${result.sessionsSkipped !== 1 ? "s" : ""}, ignorée${result.sessionsSkipped !== 1 ? "s" : ""}.`}
+          </p>
+        </div>
+      )}
+      {result && !result.ok && (
+        <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 mt-2.5">
+          <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-red-400">{result.error}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Records chart — grouped by exercise
 function RecordsSection({
   records,
@@ -349,6 +436,8 @@ export default function LogbookClient({ program, sessions, records, prMap }: Pro
           Entraînement
         </h1>
       </div>
+
+      <ImportLogbookButton />
 
       {/* ── Démarrer une séance ── */}
       <section className="mb-8">
