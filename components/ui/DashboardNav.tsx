@@ -7,7 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
-  ListChecks,
+  ListChecks, Heart, Trophy, HelpCircle,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -65,10 +65,16 @@ const CLIENT_TABS: TabItem[] = [
     badge: "messages",
   },
   {
-    label: "Formation",
+    label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/formations",
-    matchSegments: ["formations"],
+    matchSegments: ["formations", "ressources"],
+  },
+  {
+    label: "Communauté",
+    icon: Heart,
+    href: "/dashboard/client/communaute",
+    matchSegments: ["communaute"],
   },
 ];
 
@@ -108,10 +114,16 @@ const COACH_TABS: TabItem[] = [
     matchSegments: ["moi"],
   },
   {
-    label: "Formation",
+    label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations"],
+    matchSegments: ["formations", "ressources"],
+  },
+  {
+    label: "Communauté",
+    icon: Heart,
+    href: "/dashboard/coach/communaute",
+    matchSegments: ["communaute"],
   },
 ];
 
@@ -139,6 +151,14 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Contenu",
     items: [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
+      { label: "Ressources", icon: BookOpen, segment: "ressources" },
+    ],
+  },
+  {
+    group: "Communauté",
+    items: [
+      { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
+      { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
     ],
   },
   {
@@ -187,9 +207,17 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     ],
   },
   {
-    group: "Académie",
+    group: "Contenu",
     items: [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
+      { label: "Ressources", icon: BookOpen, segment: "ressources" },
+    ],
+  },
+  {
+    group: "Communauté",
+    items: [
+      { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
+      { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
     ],
   },
 ];

@@ -42,6 +42,14 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
+  // Paths reachable by clients on the free tier (no active subscription).
+  const FREE_TIER_PREFIXES = [
+    "/dashboard/client/communaute",
+    "/dashboard/client/ressources",
+    "/dashboard/client/abonnement",
+  ];
+  const isFreeTierPath = FREE_TIER_PREFIXES.some((p) => pathname.startsWith(p));
+
   // Authenticated: enforce role-based access to dashboards
   if (user && isDashboard) {
     try {
@@ -50,7 +58,11 @@ export async function proxy(request: NextRequest) {
         process.env.SUPABASE_SERVICE_ROLE_KEY!,
         { cookies: { getAll() { return []; }, setAll() {} }, auth: { autoRefreshToken: false, persistSession: false } }
       );
-      const { data: prof } = await adminForRole.from("profiles").select("role").eq("id", user.id).single();
+      const { data: prof } = await adminForRole
+        .from("profiles")
+        .select("role, subscription_status")
+        .eq("id", user.id)
+        .single();
       const role = prof?.role ?? "client";
       // Coach trying to access client dashboard → redirect to coach dashboard
       if (role === "coach" && isClientDashboard) {
@@ -61,6 +73,18 @@ export async function proxy(request: NextRequest) {
       // Client trying to access coach dashboard → redirect to client dashboard
       if (role === "client" && isCoachDashboard) {
         const res = NextResponse.redirect(new URL("/dashboard/client", request.url));
+        supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
+        return res;
+      }
+      // Free-tier client hitting a coaching feature → paywall.
+      // The home dashboard redirects to the Community feed instead — friendlier
+      // than bouncing to the paywall every time the app opens.
+      if (role === "client" && isClientDashboard && prof?.subscription_status !== "active" && !isFreeTierPath) {
+        const dest =
+          pathname === "/dashboard/client"
+            ? "/dashboard/client/communaute/victoires"
+            : "/dashboard/client/abonnement";
+        const res = NextResponse.redirect(new URL(dest, request.url));
         supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
         return res;
       }

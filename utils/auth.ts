@@ -34,14 +34,19 @@ export interface Profile {
   competition_category: string | null;
   competition_date: string | null;
   photo_frequency: "weekly" | "daily";
+  subscription_status: "free" | "active" | "canceled";
+  subscription_plan: string | null;
 }
+
+const PROFILE_FIELDS =
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase
       .from("profiles")
-      .select("id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency")
+      .select(PROFILE_FIELDS)
       .eq("id", userId)
       .single();
     return (data as Profile) ?? null;
@@ -56,7 +61,7 @@ export async function getClients(): Promise<Profile[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select("id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency")
+      .select(PROFILE_FIELDS)
       .eq("role", "client")
       .order("full_name");
     return (data as Profile[]) ?? [];
@@ -70,7 +75,7 @@ export async function getClientById(id: string): Promise<Profile | null> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select("id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency")
+      .select(PROFILE_FIELDS)
       .eq("id", id)
       .eq("role", "client")
       .single();
@@ -78,6 +83,10 @@ export async function getClientById(id: string): Promise<Profile | null> {
   } catch {
     return null;
   }
+}
+
+export function isSubscribed(profile: Profile | null): boolean {
+  return profile?.subscription_status === "active";
 }
 
 export async function getUserRole(
