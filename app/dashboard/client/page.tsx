@@ -1,12 +1,149 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { getLatestCoachNote } from "@/utils/notes";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
+  Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight,
 } from "lucide-react";
+
+// ── Free-tier welcome guide ──────────────────────────────────────────────────
+
+const GUIDE_ITEMS = [
+  {
+    href: "/dashboard/client/program",
+    icon: Dumbbell,
+    title: "Mon programme",
+    desc: "Crée et gère ton programme d'entraînement, en autonomie.",
+  },
+  {
+    href: "/dashboard/client/nutrition",
+    icon: Apple,
+    title: "Ma nutrition",
+    desc: "Calcule tes besoins et suis tes repas au quotidien.",
+  },
+  {
+    href: "/dashboard/client/communaute/victoires",
+    icon: Trophy,
+    title: "Victoires",
+    desc: "Partage tes réussites (texte ou photo) avec la communauté.",
+  },
+  {
+    href: "/dashboard/client/communaute/questions",
+    icon: HelpCircle,
+    title: "Questions",
+    desc: "Pose tes questions à la communauté et au coach.",
+  },
+  {
+    href: "/dashboard/client/ressources",
+    icon: BookOpen,
+    title: "Ressources",
+    desc: "Guides et lead magnets gratuits, ajoutés régulièrement.",
+  },
+];
+
+function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: string | null; level: string | null }) {
+  return (
+    <div
+      className="page-transition"
+      style={{ padding: "32px 20px 100px", maxWidth: 480, margin: "0 auto" }}
+    >
+      {/* Header */}
+      <div className="animate-fade-up" style={{ marginBottom: 24 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Bienvenue</p>
+        <h1 style={{
+          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
+          color: "#F5EDED", margin: 0, lineHeight: 1.1,
+        }}>
+          Salut {firstName} 👋
+        </h1>
+        <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
+          Tu fais partie de la communauté EP Coaching. Ici, tu as accès à des
+          outils gratuits pour avancer en autonomie — et tu peux passer
+          premium quand tu veux pour un vrai accompagnement coaché.
+        </p>
+      </div>
+
+      {/* État des lieux */}
+      {(goal || level) && (
+        <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
+          <p className="ep-section-title">Ton profil</p>
+          <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 20 }}>
+            {goal && (
+              <div>
+                <p className="ep-label" style={{ marginBottom: 4 }}>Objectif</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{goal}</p>
+              </div>
+            )}
+            {level && (
+              <div>
+                <p className="ep-label" style={{ marginBottom: 4 }}>Niveau</p>
+                <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{level}</p>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
+      {/* Mini-guide */}
+      <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
+        <p className="ep-section-title">Ce qui est disponible</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {GUIDE_ITEMS.map(({ href, icon: Icon, title, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "14px 16px", borderRadius: 12,
+                background: "rgba(31,1,1,0.7)", border: "1px solid rgba(137,4,4,0.25)",
+                textDecoration: "none",
+              }}
+            >
+              <div style={{
+                width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
+              </div>
+              <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Premium CTA */}
+      <Link
+        href="/dashboard/client/abonnement"
+        className="animate-fade-up stagger-4"
+        style={{
+          display: "flex", alignItems: "center", gap: 14,
+          padding: "18px 20px", borderRadius: 14,
+          background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
+          border: "1px solid rgba(224,30,30,0.3)", textDecoration: "none",
+        }}
+      >
+        <Crown size={22} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            Envie d&apos;aller plus loin ?
+          </p>
+          <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            Découvre le coaching premium — programme et nutrition coachés, suivi, bilans...
+          </p>
+        </div>
+        <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
+      </Link>
+    </div>
+  );
+}
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
@@ -35,6 +172,18 @@ export default async function ClientDashboard() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
+
+  // Free community members get a welcome guide instead of the coached
+  // dashboard (weight tracking, coach notes...) which doesn't apply to them.
+  if (!isSubscribed(profile)) {
+    return (
+      <WelcomeGuide
+        firstName={profile?.full_name?.split(" ")[0] ?? ""}
+        goal={profile?.goal ?? null}
+        level={profile?.level ?? null}
+      />
+    );
+  }
 
   const [thisWeekCheckin, latestNote] = await Promise.all([
     getThisWeekCheckin(user.id),

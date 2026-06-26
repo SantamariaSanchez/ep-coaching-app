@@ -53,7 +53,9 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/program",
     "/dashboard/client/nutrition",
   ];
-  const isFreeTierPath = FREE_TIER_PREFIXES.some((p) => pathname.startsWith(p));
+  const isFreeTierPath =
+    pathname === "/dashboard/client" ||
+    FREE_TIER_PREFIXES.some((p) => pathname.startsWith(p));
 
   // Authenticated: enforce role-based access to dashboards
   if (user && isDashboard) {
@@ -81,15 +83,11 @@ export async function proxy(request: NextRequest) {
         supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
         return res;
       }
-      // Free-tier client hitting a coaching feature → paywall.
-      // The home dashboard redirects to the Community feed instead — friendlier
-      // than bouncing to the paywall every time the app opens.
+      // Free-tier client hitting a coaching feature → paywall. The home
+      // dashboard renders its own welcome guide for free members instead
+      // of redirecting away (see app/dashboard/client/page.tsx).
       if (role === "client" && isClientDashboard && prof?.subscription_status !== "active" && !isFreeTierPath) {
-        const dest =
-          pathname === "/dashboard/client"
-            ? "/dashboard/client/communaute/victoires"
-            : "/dashboard/client/abonnement";
-        const res = NextResponse.redirect(new URL(dest, request.url));
+        const res = NextResponse.redirect(new URL("/dashboard/client/abonnement", request.url));
         supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
         return res;
       }
