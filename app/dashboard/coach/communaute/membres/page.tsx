@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getUser, getProfile, getCommunityMembers } from "@/utils/auth";
 import CommunitySubNav from "@/components/community/CommunitySubNav";
 import { Heart, Mail } from "lucide-react";
@@ -35,18 +36,24 @@ export default async function CoachMembresPage() {
       ) : (
         <div className="space-y-2">
           {members.map((m) => (
-            <div
+            <Link
               key={m.id}
-              className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5"
+              href={`/dashboard/coach/profile/${m.id}`}
+              className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors"
             >
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
-                {(m.full_name ?? "?")
-                  .split(" ")
-                  .map((n) => n[0])
-                  .join("")
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </div>
+              {m.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={m.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+                  {(m.full_name ?? "?")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </div>
+              )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white truncate">{m.full_name}</p>
                 <div className="flex items-center gap-1.5 text-[10px] text-[#F5EDED]/35">
@@ -66,7 +73,7 @@ export default async function CoachMembresPage() {
                   </span>
                 )}
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}

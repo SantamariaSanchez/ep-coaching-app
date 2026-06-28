@@ -108,7 +108,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement"],
+    matchSegments: ["communaute", "abonnement", "profile"],
   },
   {
     label: "Contenu",
@@ -144,6 +144,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Mon profil", icon: User, segment: "profile" },
       { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
   },
@@ -208,7 +209,7 @@ const COACH_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/coach/communaute",
-    matchSegments: ["communaute"],
+    matchSegments: ["communaute", "profile"],
   },
 ];
 
@@ -246,6 +247,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
+      { label: "Mon profil", icon: User, segment: "profile" },
     ],
   },
   {

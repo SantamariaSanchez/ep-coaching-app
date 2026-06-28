@@ -6,6 +6,9 @@ export interface CommunityPost {
   id: string;
   author_id: string;
   author_name: string;
+  author_role: "coach" | "client";
+  author_subscription_status: string;
+  author_avatar_url: string | null;
   type: CommunityPostType;
   content: string;
   image_url: string | null;
@@ -19,6 +22,9 @@ export interface CommunityComment {
   post_id: string;
   author_id: string;
   author_name: string;
+  author_role: "coach" | "client";
+  author_subscription_status: string;
+  author_avatar_url: string | null;
   content: string;
   created_at: string;
 }
@@ -54,13 +60,23 @@ export async function getCommunityPostsPage(
     const postIds = posts.map((p) => p.id as string);
 
     const [{ data: authors }, { data: comments }] = await Promise.all([
-      supabase.from("profiles").select("id, full_name").in("id", authorIds),
+      supabase
+        .from("profiles")
+        .select("id, full_name, role, subscription_status, avatar_url")
+        .in("id", authorIds),
       supabase.from("community_comments").select("post_id").in("post_id", postIds),
     ]);
 
-    const nameMap: Record<string, string> = {};
-    for (const a of authors ?? []) {
-      nameMap[(a as { id: string }).id] = (a as { full_name: string | null }).full_name ?? "Membre";
+    type AuthorRow = {
+      id: string;
+      full_name: string | null;
+      role: "coach" | "client";
+      subscription_status: string;
+      avatar_url: string | null;
+    };
+    const authorMap: Record<string, AuthorRow> = {};
+    for (const a of (authors ?? []) as AuthorRow[]) {
+      authorMap[a.id] = a;
     }
 
     const countMap: Record<string, number> = {};
@@ -69,17 +85,23 @@ export async function getCommunityPostsPage(
       countMap[pid] = (countMap[pid] ?? 0) + 1;
     }
 
-    const mapped: CommunityPost[] = posts.map((p) => ({
-      id: p.id,
-      author_id: p.author_id,
-      author_name: nameMap[p.author_id] ?? "Membre",
-      type: p.type,
-      content: p.content,
-      image_url: p.image_url,
-      status: p.status,
-      created_at: p.created_at,
-      comment_count: countMap[p.id] ?? 0,
-    }));
+    const mapped: CommunityPost[] = posts.map((p) => {
+      const author = authorMap[p.author_id];
+      return {
+        id: p.id,
+        author_id: p.author_id,
+        author_name: author?.full_name ?? "Membre",
+        author_role: author?.role ?? "client",
+        author_subscription_status: author?.subscription_status ?? "free",
+        author_avatar_url: author?.avatar_url ?? null,
+        type: p.type,
+        content: p.content,
+        image_url: p.image_url,
+        status: p.status,
+        created_at: p.created_at,
+        comment_count: countMap[p.id] ?? 0,
+      };
+    });
 
     return {
       posts: mapped,
@@ -104,23 +126,50 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
     const authorIds = [...new Set(comments.map((c) => c.author_id as string))];
     const { data: authors } = await supabase
       .from("profiles")
-      .select("id, full_name")
+      .select("id, full_name, role, subscription_status, avatar_url")
       .in("id", authorIds);
 
-    const nameMap: Record<string, string> = {};
-    for (const a of authors ?? []) {
-      nameMap[(a as { id: string }).id] = (a as { full_name: string | null }).full_name ?? "Membre";
+    type AuthorRow = {
+      id: string;
+      full_name: string | null;
+      role: "coach" | "client";
+      subscription_status: string;
+      avatar_url: string | null;
+    };
+    const authorMap: Record<string, AuthorRow> = {};
+    for (const a of (authors ?? []) as AuthorRow[]) {
+      authorMap[a.id] = a;
     }
 
-    return comments.map((c) => ({
-      id: c.id,
-      post_id: c.post_id,
-      author_id: c.author_id,
-      author_name: nameMap[c.author_id] ?? "Membre",
-      content: c.content,
-      created_at: c.created_at,
-    }));
+    return comments.map((c) => {
+      const author = authorMap[c.author_id];
+      return {
+        id: c.id,
+        post_id: c.post_id,
+        author_id: c.author_id,
+        author_name: author?.full_name ?? "Membre",
+        author_role: author?.role ?? "client",
+        author_subscription_status: author?.subscription_status ?? "free",
+        author_avatar_url: author?.avatar_url ?? null,
+        content: c.content,
+        created_at: c.created_at,
+      };
+    });
   } catch {
     return [];
+  }
+}
+
+// Used on profile pages to show how many things a member has shared.
+export async function getCommunityPostCount(authorId: string): Promise<number> {
+  try {
+    const supabase = await createServerSupabase();
+    const { count } = await supabase
+      .from("community_posts")
+      .select("id", { count: "exact", head: true })
+      .eq("author_id", authorId);
+    return count ?? 0;
+  } catch {
+    return 0;
   }
 }

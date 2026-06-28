@@ -5,6 +5,18 @@ import type { NextRequest } from "next/server";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Next.js fires speculative prefetch requests for every link that scrolls
+  // into view (and via router.prefetch()). Running Supabase's session refresh
+  // on each of these causes concurrent refresh-token-rotation races — two
+  // prefetches can race to swap the same refresh token, the loser gets an
+  // "already used" error, and its (stale) Set-Cookie can overwrite the
+  // winner's, silently logging the user out. Prefetches don't need auth
+  // enforcement (the real navigation request re-runs this middleware), so
+  // skip straight through.
+  if (request.headers.get("next-router-prefetch")) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -52,6 +64,7 @@ export async function proxy(request: NextRequest) {
   const FREE_TIER_PREFIXES = [
     "/dashboard/client/communaute",
     "/dashboard/client/ressources",
+    "/dashboard/client/recettes",
     "/dashboard/client/abonnement",
     "/dashboard/client/program",
     "/dashboard/client/nutrition",
@@ -59,6 +72,7 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/roadmap",
     "/dashboard/client/bilan",
     "/dashboard/client/photos",
+    "/dashboard/client/profile",
   ];
   const isFreeTierPath =
     pathname === "/dashboard/client" ||

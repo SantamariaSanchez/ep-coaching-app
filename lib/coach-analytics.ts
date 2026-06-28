@@ -487,7 +487,12 @@ export async function getCoachDashboardData(): Promise<CoachDashboardData> {
       "id, full_name, status, competition_date, competition_category"
     )
     .eq("role", "client")
-    .eq("status", "active");
+    .eq("status", "active")
+    // Only paying coaching clients are tracked here — free community members
+    // have no program/check-ins/nutrition plan set by a coach, so scanning
+    // them for "missed check-in" / "nutrition not logged" alerts produces
+    // false positives for people who were never meant to be monitored.
+    .eq("subscription_status", "active");
 
   if (!clients || clients.length === 0) {
     return {
@@ -577,7 +582,8 @@ export async function getTopUrgentAlerts(limit = 3): Promise<TopAlert[]> {
     .from("profiles")
     .select("id, full_name")
     .eq("role", "client")
-    .eq("status", "active");
+    .eq("status", "active")
+    .eq("subscription_status", "active");
 
   if (!clients || clients.length === 0) return [];
 

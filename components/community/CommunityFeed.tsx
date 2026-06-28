@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Image as ImageIcon,
   Send,
@@ -11,6 +12,49 @@ import {
   HelpCircle,
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
+
+function badgeLabel(role: "coach" | "client", subscriptionStatus: string): string {
+  if (role === "coach") return "Coach";
+  if (subscriptionStatus === "active") return "Premium";
+  return "Membre gratuit";
+}
+
+function AuthorAvatarLink({
+  basePath,
+  authorId,
+  authorName,
+  authorAvatarUrl,
+  size,
+}: {
+  basePath: string;
+  authorId: string;
+  authorName: string;
+  authorAvatarUrl: string | null;
+  size: number;
+}) {
+  return (
+    <Link href={`${basePath}/profile/${authorId}`} className="flex-shrink-0" style={{ width: size, height: size }}>
+      {authorAvatarUrl ? (
+        <Image
+          src={authorAvatarUrl}
+          alt=""
+          width={size}
+          height={size}
+          unoptimized
+          className="rounded-full object-cover"
+          style={{ width: size, height: size }}
+        />
+      ) : (
+        <div
+          className="rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center font-black text-white"
+          style={{ width: size, height: size, fontSize: size * 0.32 }}
+        >
+          {initials(authorName)}
+        </div>
+      )}
+    </Link>
+  );
+}
 
 function timeAgo(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
@@ -47,6 +91,7 @@ function Composer({
   const [content, setContent] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const placeholder =
@@ -57,6 +102,7 @@ function Composer({
   async function handleSubmit() {
     if (!content.trim() || posting) return;
     setPosting(true);
+    setError(null);
     try {
       const formData = new FormData();
       formData.append("type", type);
@@ -68,7 +114,12 @@ function Composer({
         setContent("");
         setImage(null);
         onPosted();
+      } else {
+        const json = await res.json().catch(() => null);
+        setError(json?.error ?? "La publication a échoué. Réessaie.");
       }
+    } catch {
+      setError("La publication a échoué. Vérifie ta connexion et réessaie.");
     } finally {
       setPosting(false);
     }
@@ -120,6 +171,9 @@ function Composer({
           Publier
         </button>
       </div>
+      {error && (
+        <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>
+      )}
     </div>
   );
 }
@@ -128,21 +182,25 @@ function Composer({
 
 function CommentsThread({
   postId,
+  basePath,
   comments,
   loading,
   onAdded,
 }: {
   postId: string;
+  basePath: string;
   comments: CommunityComment[] | undefined;
   loading: boolean;
   onAdded: (comment: CommunityComment) => void;
 }) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSend() {
     if (!content.trim() || sending) return;
     setSending(true);
+    setError(null);
     try {
       const res = await fetch(`/api/community/posts/${postId}/comments`, {
         method: "POST",
@@ -156,11 +214,19 @@ function CommentsThread({
           post_id: postId,
           author_id: "",
           author_name: "Toi",
+          author_role: "client",
+          author_subscription_status: "free",
+          author_avatar_url: null,
           content: content.trim(),
           created_at: new Date().toISOString(),
         });
         setContent("");
+      } else {
+        const json = await res.json().catch(() => null);
+        setError(json?.error ?? "L'envoi a échoué. Réessaie.");
       }
+    } catch {
+      setError("L'envoi a échoué. Vérifie ta connexion et réessaie.");
     } finally {
       setSending(false);
     }
@@ -173,12 +239,32 @@ function CommentsThread({
       )}
       {comments?.map((c) => (
         <div key={c.id} className="flex items-start gap-2 mt-3">
-          <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
-            {initials(c.author_name)}
-          </div>
+          {c.author_id ? (
+            <AuthorAvatarLink
+              basePath={basePath}
+              authorId={c.author_id}
+              authorName={c.author_name}
+              authorAvatarUrl={c.author_avatar_url}
+              size={24}
+            />
+          ) : (
+            <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
+              {initials(c.author_name)}
+            </div>
+          )}
           <div className="min-w-0">
             <p className="text-[10px] font-bold text-[#F5EDED]/60">
-              {c.author_name} <span className="text-[#F5EDED]/25 font-normal">· {timeAgo(c.created_at)}</span>
+              {c.author_id ? (
+                <Link href={`${basePath}/profile/${c.author_id}`} className="hover:text-[#F5EDED]/90">
+                  {c.author_name}
+                </Link>
+              ) : (
+                c.author_name
+              )}{" "}
+              <span className="text-[8px] font-bold uppercase tracking-wide text-[#F5EDED]/25">
+                · {badgeLabel(c.author_role, c.author_subscription_status)}
+              </span>
+              <span className="text-[#F5EDED]/25 font-normal"> · {timeAgo(c.created_at)}</span>
             </p>
             <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
           </div>
@@ -200,6 +286,9 @@ function CommentsThread({
           <Send size={15} strokeWidth={2} />
         </button>
       </div>
+      {error && (
+        <p className="text-[10px] text-red-400 font-semibold mt-1.5">⚠ {error}</p>
+      )}
     </>
   );
 }
@@ -208,6 +297,7 @@ function CommentsThread({
 
 function PostCard({
   post,
+  basePath,
   isCoach,
   expanded,
   onToggleExpand,
@@ -217,6 +307,7 @@ function PostCard({
   onStatusChanged,
 }: {
   post: CommunityPost;
+  basePath: string;
   isCoach: boolean;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -245,14 +336,23 @@ function PostCard({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 mb-3">
       <div className="flex items-start gap-3">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
-          {initials(post.author_name)}
-        </div>
+        <AuthorAvatarLink
+          basePath={basePath}
+          authorId={post.author_id}
+          authorName={post.author_name}
+          authorAvatarUrl={post.author_avatar_url}
+          size={32}
+        />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-xs font-bold text-white truncate">{post.author_name}</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={`${basePath}/profile/${post.author_id}`} className="text-xs font-bold text-white truncate hover:underline">
+              {post.author_name}
+            </Link>
+            <span className="text-[9px] font-bold uppercase tracking-wide text-[#F5EDED]/30 flex-shrink-0">
+              {badgeLabel(post.author_role, post.author_subscription_status)}
+            </span>
             <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
-              {timeAgo(post.created_at)}
+              · {timeAgo(post.created_at)}
             </span>
           </div>
           <p className="text-sm text-[#F5EDED]/75 mt-1 whitespace-pre-wrap leading-relaxed">
@@ -299,6 +399,7 @@ function PostCard({
           {expanded && (
             <CommentsThread
               postId={post.id}
+              basePath={basePath}
               comments={comments}
               loading={commentsLoading}
               onAdded={onCommentAdded}
@@ -330,6 +431,7 @@ export default function CommunityFeed({
   const [commentsByPost, setCommentsByPost] = useState<Record<string, CommunityComment[]>>({});
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
 
   const loadMore = useCallback(async () => {
     if (loadingMore || !nextCursor) return;
@@ -422,6 +524,7 @@ export default function CommunityFeed({
             <PostCard
               key={post.id}
               post={post}
+              basePath={basePath}
               isCoach={isCoach}
               expanded={expandedId === post.id}
               onToggleExpand={() => handleToggleExpand(post.id)}

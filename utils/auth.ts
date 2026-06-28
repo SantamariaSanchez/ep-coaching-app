@@ -38,10 +38,12 @@ export interface Profile {
   subscription_plan: string | null;
   level: string | null;
   source: string | null;
+  bio: string | null;
+  avatar_url: string | null;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source, bio, avatar_url";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
@@ -107,6 +109,20 @@ export async function getClientById(id: string): Promise<Profile | null> {
 
 export function isSubscribed(profile: Profile | null): boolean {
   return profile?.subscription_status === "active";
+}
+
+export type RoleBadge = "Coach" | "Premium" | "Membre gratuit";
+
+// Single source of truth for how a member's status is displayed app-wide:
+// coach -> "Coach", paying client -> "Premium", everyone else (free
+// community member) -> "Membre gratuit".
+export function roleBadge(
+  profile: Pick<Profile, "role" | "subscription_status"> | null | undefined
+): RoleBadge {
+  if (!profile) return "Membre gratuit";
+  if (profile.role === "coach") return "Coach";
+  if (profile.subscription_status === "active") return "Premium";
+  return "Membre gratuit";
 }
 
 export async function getUserRole(
