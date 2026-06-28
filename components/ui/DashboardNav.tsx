@@ -7,7 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -70,7 +70,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/formations",
-    matchSegments: ["formations", "ressources"],
+    matchSegments: ["formations", "ressources", "recettes"],
   },
   {
     label: "Communauté",
@@ -114,7 +114,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations"],
+    matchSegments: ["ressources", "formations", "recettes"],
   },
 ];
 
@@ -151,6 +151,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     group: "Contenu",
     items: [
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
       {
         label: "Formations",
         icon: GraduationCap,
@@ -201,7 +202,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources"],
+    matchSegments: ["formations", "ressources", "recettes"],
   },
   {
     label: "Communauté",
@@ -236,6 +237,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
     ],
   },
   {
@@ -296,6 +298,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
     ],
   },
   {
