@@ -7,7 +7,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -63,7 +63,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "profile", "tasks"],
+    matchSegments: ["messages", "checkin", "reminders", "profile", "tasks", "live"],
     badge: "messages",
   },
   {
@@ -108,7 +108,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement", "profile"],
+    matchSegments: ["communaute", "abonnement", "profile", "live"],
   },
   {
     label: "Contenu",
@@ -147,6 +147,10 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
       { label: "Mon profil", icon: User, segment: "profile" },
       { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
+  },
+  {
+    group: "Live",
+    items: [{ label: "Lives & appels", icon: Video, segment: "live" }],
   },
   {
     group: "Contenu",
@@ -209,7 +213,7 @@ const COACH_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/coach/communaute",
-    matchSegments: ["communaute", "profile"],
+    matchSegments: ["communaute", "profile", "live"],
   },
 ];
 
@@ -249,6 +253,10 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
       { label: "Mon profil", icon: User, segment: "profile" },
     ],
+  },
+  {
+    group: "Live",
+    items: [{ label: "Lives & appels", icon: Video, segment: "live" }],
   },
   {
     group: "Mon Suivi",
@@ -293,6 +301,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Mes tâches", icon: ListChecks,  segment: "tasks" },
       { label: "Check-in", icon: ClipboardList, segment: "checkin" },
       { label: "Profil",   icon: User,          segment: "profile" },
+      { label: "Lives & appels", icon: Video,   segment: "live" },
     ],
   },
   {

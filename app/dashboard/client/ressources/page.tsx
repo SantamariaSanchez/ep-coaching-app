@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
+import { getResourceRequests } from "@/utils/resource-requests";
 import { getResourceHref } from "@/lib/resource-href";
 import { BookOpen, FileText, Download } from "lucide-react";
+import ResourceRequests from "@/components/resources/ResourceRequests";
+import { createResourceRequest, respondToResourceRequest, deleteResourceRequest } from "./request-actions";
 
 export default async function ClientRessourcesPage() {
   const user = await getUser();
@@ -11,7 +14,10 @@ export default async function ClientRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/ressources");
 
-  const resources = await getResources();
+  const [resources, requests] = await Promise.all([
+    getResources(),
+    getResourceRequests(),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -57,6 +63,16 @@ export default async function ClientRessourcesPage() {
           ))}
         </div>
       )}
+
+      <div className="mt-8 pt-6 border-t border-[#890404]/15">
+        <ResourceRequests
+          initialRequests={requests}
+          isCoach={false}
+          createRequest={createResourceRequest}
+          respondToRequest={respondToResourceRequest}
+          deleteRequest={deleteResourceRequest}
+        />
+      </div>
     </div>
   );
 }
