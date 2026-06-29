@@ -44,7 +44,10 @@ export async function proxy(request: NextRequest) {
   const isCoachDashboard  = pathname.startsWith("/dashboard/coach");
   const isClientDashboard = pathname.startsWith("/dashboard/client");
   const isDashboard = isCoachDashboard || isClientDashboard;
-  const isAuthPage  = pathname === "/auth/coach" || pathname === "/auth/client";
+  // The marketing homepage is treated like an auth page for already-logged-in
+  // visitors: nobody who's already signed in should land back on "rejoindre
+  // la communauté" — they should go straight into their dashboard.
+  const isAuthPage  = pathname === "/auth/coach" || pathname === "/auth/client" || pathname === "/";
 
   // Unauthenticated on protected route → appropriate login page
   if (!user && isDashboard) {
@@ -157,5 +160,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/dashboard/:path*", "/auth/:path*"],
+    matcher: ["/", "/dashboard/:path*", "/auth/:path*"],
 };

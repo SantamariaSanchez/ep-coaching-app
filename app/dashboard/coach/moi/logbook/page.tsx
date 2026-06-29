@@ -9,7 +9,7 @@ import LogbookClient from "@/components/client/LogbookClient";
 export default async function CoachMonLogbookPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
@@ -28,6 +28,7 @@ export default async function CoachMonLogbookPage() {
       sessions={sessions}
       records={records}
       prMap={prMap}
+      subNavScope="coach-moi"
     />
   );
 }

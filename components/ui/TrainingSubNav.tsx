@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const ITEMS = [
+const CLIENT_ITEMS = [
   { label: "Programme", href: "/dashboard/client/program" },
   { label: "Logbook", href: "/dashboard/client/logbook" },
   { label: "Road Map", href: "/dashboard/client/roadmap" },
 ];
 
-export default function TrainingSubNav() {
+const COACH_MOI_ITEMS = [
+  { label: "Programme", href: "/dashboard/coach/moi/programme" },
+  { label: "Logbook", href: "/dashboard/coach/moi/logbook" },
+];
+
+export default function TrainingSubNav({ scope = "client" }: { scope?: "client" | "coach-moi" }) {
   const pathname = usePathname();
+  const items = scope === "coach-moi" ? COACH_MOI_ITEMS : CLIENT_ITEMS;
 
   return (
     <div className="flex gap-1 mb-6 border-b border-[#890404]/20 -mx-1 px-1 overflow-x-auto">
-      {ITEMS.map(({ label, href }) => {
+      {items.map(({ label, href }) => {
         const active = pathname === href || pathname.startsWith(`${href}/`);
         return (
           <Link

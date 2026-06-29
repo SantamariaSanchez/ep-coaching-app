@@ -35,6 +35,7 @@ interface Props {
   records: PersonalRecord[];
   prMap: Record<string, number>;
   isFree?: boolean;
+  subNavScope?: "client" | "coach-moi";
 }
 
 const TOOLTIP_STYLE = {
@@ -79,11 +80,13 @@ function StartSessionButton({
   programId,
   muscleGroups,
   lastSession,
+  sessionBasePath,
 }: {
   dayLabel: string;
   programId: string;
   muscleGroups: string[];
   lastSession: Session | null;
+  sessionBasePath: string;
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -103,7 +106,7 @@ function StartSessionButton({
         setLoading(false);
         return;
       }
-      router.push(`/dashboard/client/logbook/session/${sessionId}`);
+      router.push(`${sessionBasePath}/session/${sessionId}`);
     } catch (e) {
       console.error("Erreur création session:", e);
       setLoading(false);
@@ -155,7 +158,7 @@ function StartSessionButton({
   );
 }
 
-function FreeSessionButton() {
+function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -174,7 +177,7 @@ function FreeSessionButton() {
         setLoading(false);
         return;
       }
-      router.push(`/dashboard/client/logbook/session/${sessionId}`);
+      router.push(`${sessionBasePath}/session/${sessionId}`);
     } catch (e) {
       console.error("Erreur création session libre:", e);
       setLoading(false);
@@ -412,9 +415,11 @@ function RecordsSection({
   );
 }
 
-export default function LogbookClient({ program, sessions, records, prMap, isFree }: Props) {
+export default function LogbookClient({ program, sessions, records, prMap, isFree, subNavScope = "client" }: Props) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sessionBasePath =
+    subNavScope === "coach-moi" ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
 
   // Map day_label → last session
   const lastSessionByDay: Record<string, Session> = {};
@@ -426,7 +431,7 @@ export default function LogbookClient({ program, sessions, records, prMap, isFre
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <TrainingSubNav />
+      <TrainingSubNav scope={subNavScope} />
 
       {/* Header */}
       <div className="mb-8">
@@ -460,6 +465,7 @@ export default function LogbookClient({ program, sessions, records, prMap, isFre
                 programId={program.id}
                 muscleGroups={muscleGroups}
                 lastSession={lastSession}
+                sessionBasePath={sessionBasePath}
               />
             );
           })}
@@ -474,7 +480,7 @@ export default function LogbookClient({ program, sessions, records, prMap, isFre
             </div>
           )}
 
-          <FreeSessionButton />
+          <FreeSessionButton sessionBasePath={sessionBasePath} />
         </div>
       </section>
 
@@ -488,7 +494,7 @@ export default function LogbookClient({ program, sessions, records, prMap, isFre
               return (
                 <Link
                   key={s.id}
-                  href={`/dashboard/client/logbook/session/${s.id}`}
+                  href={`${sessionBasePath}/session/${s.id}`}
                   className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
                 >
                   <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">

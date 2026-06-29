@@ -40,10 +40,11 @@ export interface Profile {
   source: string | null;
   bio: string | null;
   avatar_url: string | null;
+  onboarding_completed_at: string | null;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source, bio, avatar_url";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {

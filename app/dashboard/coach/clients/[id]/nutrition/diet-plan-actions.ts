@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { getUser } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { DietMode } from "@/utils/nutrition";
 
@@ -19,8 +19,8 @@ export async function createDietPlan(
   meals: DietPlanMealInput[]
 ): Promise<{ error?: string; id?: string }> {
   try {
-    const user = await getUser();
-    if (!user) return { error: "Non authentifié" };
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
@@ -39,7 +39,7 @@ export async function createDietPlan(
         name,
         mode,
         is_active: true,
-        created_by: user.id,
+        created_by: guard.userId,
       })
       .select("id")
       .single();
@@ -57,6 +57,7 @@ export async function createDietPlan(
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
     return { id: plan.id };
   } catch {
     return { error: "Erreur inattendue." };
@@ -68,6 +69,9 @@ export async function deactivateDietPlan(
   planId: string
 ): Promise<{ error?: string }> {
   try {
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
+
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     await supabase
       .from("diet_plans")
@@ -75,6 +79,7 @@ export async function deactivateDietPlan(
       .eq("id", planId);
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
     return {};
   } catch {
     return { error: "Erreur inattendue." };

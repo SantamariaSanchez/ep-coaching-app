@@ -996,7 +996,13 @@ function SliderInput({
 
 // ── Main SessionView ──────────────────────────────────────────────────────────
 
-export default function SessionView({ sessionId }: { sessionId: string }) {
+export default function SessionView({
+  sessionId,
+  returnPath = "/dashboard/client/logbook",
+}: {
+  sessionId: string;
+  returnPath?: string;
+}) {
   const router = useRouter();
 
   // Init state
@@ -1271,7 +1277,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
         }),
       });
 
-      router.push("/dashboard/client/logbook");
+      router.push(returnPath);
     } catch {
       setSaving(false);
     }
@@ -1285,6 +1291,7 @@ export default function SessionView({ sessionId }: { sessionId: string }) {
     sessionNotes,
     sessionPRs,
     router,
+    returnPath,
   ]);
 
   if (loading) {

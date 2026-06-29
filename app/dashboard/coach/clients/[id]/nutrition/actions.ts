@@ -45,6 +45,7 @@ export async function saveNutritionProfile(
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
     return {};
   } catch (e) {
     console.error("saveNutritionProfile exception:", e);

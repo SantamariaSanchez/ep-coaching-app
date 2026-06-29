@@ -2,40 +2,75 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getNutritionProfile, getTodayLogs, getLast30DaysLogs, getAllFoods, getActiveDietPlan } from "@/utils/nutrition";
-import ClientNutritionView from "@/components/ui/ClientNutritionView";
+import {
+  getNutritionProfile,
+  getTodayLogs,
+  getLast30DaysLogs,
+  getAllFoods,
+  getActiveDietPlan,
+  getAllDietPlans,
+} from "@/utils/nutrition";
+import CoachMoiNutritionTabs from "@/components/ui/CoachMoiNutritionTabs";
 import { addFoodLog, removeFoodLog, createCustomFood } from "@/app/dashboard/client/nutrition/actions";
+import { saveNutritionProfile } from "@/app/dashboard/coach/clients/[id]/nutrition/actions";
+import { createDietPlan, deactivateDietPlan } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 export default async function CoachMonNutritionPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
-  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, weight_start").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan] = await Promise.all([
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans] = await Promise.all([
     getNutritionProfile(user.id),
     getTodayLogs(user.id, today),
     getLast30DaysLogs(user.id),
     getAllFoods(),
     getActiveDietPlan(user.id),
+    getAllDietPlans(user.id),
   ]);
 
   return (
-    <ClientNutritionView
-      today={today}
-      nutritionProfile={nutritionProfile}
-      initialTodayLogs={todayLogs}
-      historyLogs={historyLogs}
-      initialFoods={foods}
-      dietMode={activePlan?.mode ?? "flexible"}
-      activePlan={activePlan}
-      addFoodLog={addFoodLog}
-      removeFoodLog={removeFoodLog}
-      createCustomFood={createCustomFood}
-    />
+    <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
+      <div className="mb-6">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Mon suivi
+        </p>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Ma nutrition</h1>
+      </div>
+
+      <CoachMoiNutritionTabs
+        clientView={{
+          today,
+          nutritionProfile,
+          initialTodayLogs: todayLogs,
+          historyLogs,
+          initialFoods: foods,
+          dietMode: activePlan?.mode ?? "flexible",
+          activePlan,
+          addFoodLog,
+          removeFoodLog,
+          createCustomFood,
+        }}
+        manageProps={{
+          clientId: user.id,
+          clientWeight: profile?.weight_start ?? null,
+          nutritionProfile,
+          todayLogs,
+          historyLogs,
+          foods,
+          activePlan,
+          allPlans,
+          today,
+          saveNutritionProfile,
+          createDietPlan,
+          deactivateDietPlan,
+        }}
+      />
+    </div>
   );
 }

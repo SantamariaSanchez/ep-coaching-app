@@ -218,6 +218,11 @@ export default async function ClientDashboard() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
+  // Brand-new signups get a one-time animated tour before anything else —
+  // existing profiles were grandfathered in via migration (onboarding_completed_at
+  // backfilled), so this only ever fires once per new member.
+  if (profile && !profile.onboarding_completed_at) redirect("/onboarding");
+
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
