@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
+import { getResourceHref } from "@/lib/resource-href";
 import { BookOpen, FileText, Download } from "lucide-react";
 
 export default async function ClientRessourcesPage() {
@@ -33,7 +34,7 @@ export default async function ClientRessourcesPage() {
           {resources.map((r) => (
             <a
               key={r.id}
-              href={r.file_url}
+              href={getResourceHref(r)}
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"

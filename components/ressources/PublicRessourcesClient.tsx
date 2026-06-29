@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, FileText, Download, Heart } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ResourceItem } from "@/utils/resources";
+import { getResourceHref } from "@/lib/resource-href";
 import SignupGateModal from "@/components/ressources/SignupGateModal";
 
 const FREE_PREVIEW_SECONDS = 60;
@@ -119,7 +120,7 @@ export default function PublicRessourcesClient({
             {filtered.map((r) => (
               <a
                 key={r.id}
-                href={r.file_url}
+                href={getResourceHref(r)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"

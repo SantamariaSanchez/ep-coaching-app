@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, Trash2, Download } from "lucide-react";
 import type { ResourceItem } from "@/utils/resources";
+import { getResourceHref } from "@/lib/resource-href";
 
 export default function ResourceManager({ resources }: { resources: ResourceItem[] }) {
   const router = useRouter();
@@ -120,11 +121,11 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
                 )}
               </div>
               <a
-                href={r.file_url}
+                href={getResourceHref(r)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors p-1.5"
-                title="Voir le PDF"
+                title="Voir le fichier"
               >
                 <Download size={15} strokeWidth={1.8} />
               </a>
