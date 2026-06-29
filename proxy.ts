@@ -116,6 +116,7 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/steps",
     "/dashboard/client/mindset",
     "/dashboard/client/exercises",
+    "/dashboard/client/gyms",
   ];
   const isFreeTierPath =
     pathname === "/dashboard/client" ||
