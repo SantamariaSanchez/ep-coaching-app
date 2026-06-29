@@ -157,7 +157,7 @@ export default async function CoachClientBilanPage({
 
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
   const { data: coachProfile } = await supabase
     .from("profiles")

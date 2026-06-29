@@ -39,7 +39,7 @@ function AvgRow({ label, value, unit = "" }: { label: string; value: number | nu
 export default async function CoachMonBilanPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");

@@ -100,7 +100,7 @@ function KV({ k, v }: { k: string; v: string }) {
 export default async function ClientBilanPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/client");
 
   const today = new Date().toISOString().split("T")[0];
   const [todayLog, allLogs] = await Promise.all([

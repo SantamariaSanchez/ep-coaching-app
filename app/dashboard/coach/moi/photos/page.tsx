@@ -9,7 +9,7 @@ import { submitPhotoUpdate } from "./actions";
 export default async function CoachMonPhotosPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
   const { data: profile } = await supabase.from("profiles").select("role, photo_frequency").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");

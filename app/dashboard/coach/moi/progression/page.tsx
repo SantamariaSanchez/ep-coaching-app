@@ -25,7 +25,7 @@ function StatCard({ label, value, unit = "" }: { label: string; value: number | 
 export default async function CoachProgressionPage() {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
+  if (!user) redirect("/auth/coach");
 
   const { data: profile } = await supabase.from("profiles").select("role, id").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");

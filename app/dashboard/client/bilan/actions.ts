@@ -37,8 +37,17 @@ export async function upsertDailyLog(
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
-    const today = new Date().toISOString().split("T")[0];
-    if (log_date !== today) return { error: "Tu ne peux modifier que le bilan du jour." };
+    // Compare against today AND yesterday (UTC) — the page renders its hidden
+    // log_date at page-load time, and the server's UTC "today" can roll over
+    // while the form is still open (e.g. a French client filling it in just
+    // after midnight local time), which would otherwise reject a legitimate
+    // same-session submission with a confusing error.
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+    if (log_date !== today && log_date !== yesterday) {
+      return { error: "Tu ne peux modifier que le bilan du jour." };
+    }
 
     const supabase = createAdminClient();
 
