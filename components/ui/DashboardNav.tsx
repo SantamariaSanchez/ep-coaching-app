@@ -274,6 +274,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Pas & routine",  icon: Footprints,     segment: "moi/steps" },
       { label: "Tracking",       icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
+      { label: "Mindset",        icon: Brain,          segment: "moi/mindset" },
     ],
   },
 ];

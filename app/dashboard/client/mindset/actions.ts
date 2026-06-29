@@ -1,12 +1,12 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
-import { requireClient } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { QuizResult } from "@/lib/mindset-content";
 
 export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -50,6 +50,7 @@ export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: str
     if (error) return { error: "Erreur lors de la sauvegarde." };
 
     revalidatePath("/dashboard/client/mindset");
+    revalidatePath("/dashboard/coach/moi/mindset");
     return {};
   } catch {
     return { error: "Erreur inattendue." };
@@ -61,7 +62,7 @@ export async function toggleHabitLog(
   date: string,
   checked: boolean
 ): Promise<{ error?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -82,6 +83,7 @@ export async function toggleHabitLog(
     }
 
     revalidatePath("/dashboard/client/mindset");
+    revalidatePath("/dashboard/coach/moi/mindset");
     return {};
   } catch {
     return { error: "Erreur inattendue." };
@@ -93,7 +95,7 @@ export async function addJournalEntry(params: {
   content: string;
   mood: number | null;
 }): Promise<{ error?: string; id?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
   if (!params.content.trim()) return { error: "Le contenu ne peut pas être vide." };
 
@@ -113,6 +115,7 @@ export async function addJournalEntry(params: {
     if (error || !data) return { error: "Erreur lors de l'enregistrement." };
 
     revalidatePath("/dashboard/client/mindset");
+    revalidatePath("/dashboard/coach/moi/mindset");
     return { id: data.id };
   } catch {
     return { error: "Erreur inattendue." };
@@ -120,7 +123,7 @@ export async function addJournalEntry(params: {
 }
 
 export async function deleteJournalEntry(entryId: string): Promise<{ error?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -132,6 +135,7 @@ export async function deleteJournalEntry(entryId: string): Promise<{ error?: str
       .eq("client_id", guard.userId);
 
     revalidatePath("/dashboard/client/mindset");
+    revalidatePath("/dashboard/coach/moi/mindset");
     return {};
   } catch {
     return { error: "Erreur inattendue." };
