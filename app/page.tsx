@@ -1,8 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { Shield, Heart, ArrowRight, Zap, Target, TrendingUp } from "lucide-react";
+import {
+  Shield,
+  Heart,
+  ArrowRight,
+  Dumbbell,
+  Utensils,
+  LineChart,
+  ClipboardList,
+  BookOpen,
+  Video,
+  Users,
+  Activity,
+  MessageCircle,
+} from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+
+const FEATURES = [
+  { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
+  { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et recettes personnalisées" },
+  { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
+  { icon: ClipboardList, title: "Logbook séances", desc: "Enregistre tes performances en temps réel" },
+  { icon: BookOpen, title: "Formations vidéo", desc: "80h+ de contenu pour progresser sérieusement" },
+  { icon: Video, title: "Lives & coaching vidéo", desc: "Sessions en direct avec ton coach" },
+  { icon: Activity, title: "Tracker quotidien", desc: "Pas, sommeil, biométrie au jour le jour" },
+  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
+  { icon: Users, title: "Communauté", desc: "Échange avec des membres aussi motivés que toi" },
+];
+
+const STATS = [
+  { value: "80h+", label: "Formations" },
+  { value: "100%", label: "Personnalisé" },
+  { value: "∞", label: "Suivi" },
+];
 
 export default function HomePage() {
   return (
@@ -12,196 +43,253 @@ export default function HomePage() {
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        padding: "40px 24px 48px",
+        padding: "44px 20px 56px",
         position: "relative",
         zIndex: 1,
         overflow: "hidden",
       }}
     >
-      {/* Extra local glow behind logo */}
+      {/* Ambient glows */}
       <div
         aria-hidden
         style={{
           position: "absolute",
-          top: "10%",
+          top: "4%",
           left: "50%",
           transform: "translateX(-50%)",
-          width: 500,
-          height: 500,
+          width: 560,
+          height: 560,
           background: "radial-gradient(circle, rgba(176,2,2,0.22) 0%, transparent 65%)",
           pointerEvents: "none",
           zIndex: 0,
           filter: "blur(40px)",
         }}
       />
-
-      {/* ── Logo ── */}
       <div
-        className="ep-logo-glow animate-fade-up"
-        style={{ marginBottom: 36, position: "relative", zIndex: 1 }}
-      >
-        <EPLogo size="lg" showCoaching />
-      </div>
-
-      {/* ── Headline ── */}
-      <div
-        className="animate-fade-up stagger-2"
-        style={{ textAlign: "center", marginBottom: 12, position: "relative", zIndex: 1 }}
-      >
-        <h1
-          style={{
-            fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
-            fontWeight: 900,
-            fontSize: "clamp(26px, 6vw, 40px)",
-            letterSpacing: "-0.05em",
-            color: "#F5EDED",
-            margin: "0 0 10px",
-            lineHeight: 1.05,
-          }}
-        >
-          TON CORPS.
-          <br />
-          <span style={{
-            background: "linear-gradient(135deg, #E01E1E 0%, #FDC4C4 100%)",
-            WebkitBackgroundClip: "text",
-            WebkitTextFillColor: "transparent",
-            backgroundClip: "text",
-          }}>
-            TES RÈGLES.
-          </span>
-        </h1>
-        <p
-          style={{
-            fontSize: 13,
-            color: "rgba(245,237,237,0.35)",
-            fontWeight: 500,
-            margin: 0,
-            letterSpacing: "0.04em",
-          }}
-        >
-          L'espace coaching musculation : programmes, nutrition, suivi & communauté
-        </p>
-      </div>
-
-      {/* ── 3 pilliers ── */}
-      <div
-        className="animate-fade-up stagger-3"
+        aria-hidden
         style={{
-          display: "flex",
-          gap: 24,
-          marginBottom: 48,
-          position: "relative",
-          zIndex: 1,
+          position: "absolute",
+          bottom: "0%",
+          right: "-10%",
+          width: 420,
+          height: 420,
+          background: "radial-gradient(circle, rgba(124,30,30,0.14) 0%, transparent 70%)",
+          pointerEvents: "none",
+          zIndex: 0,
+          filter: "blur(60px)",
         }}
-      >
-        {[
-          { icon: Target, label: "Programmes" },
-          { icon: Zap,    label: "Nutrition" },
-          { icon: TrendingUp, label: "Suivi" },
-        ].map(({ icon: Icon, label }) => (
-          <div
-            key={label}
+      />
+
+      <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
+
+        {/* ── Logo ── */}
+        <div
+          className="ep-logo-glow animate-fade-up"
+          style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}
+        >
+          <EPLogo size="lg" showCoaching />
+        </div>
+
+        {/* ── Badge ── */}
+        <div className="animate-fade-up stagger-1" style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+          <span className="ep-badge-red">Coaching Bodybuilding</span>
+        </div>
+
+        {/* ── Headline ── */}
+        <div
+          className="animate-fade-up stagger-2"
+          style={{ textAlign: "center", marginBottom: 14 }}
+        >
+          <h1
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: 6,
+              fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
+              fontWeight: 900,
+              fontSize: "clamp(28px, 7vw, 42px)",
+              letterSpacing: "-0.05em",
+              color: "#F5EDED",
+              margin: "0 0 10px",
+              lineHeight: 1.05,
             }}
           >
-            <Icon size={16} style={{ color: "rgba(224,30,30,0.7)" }} strokeWidth={2} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>
-              {label}
+            TA TRANSFORMATION
+            <br />
+            <span style={{
+              background: "linear-gradient(135deg, #E01E1E 0%, #FDC4C4 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              backgroundClip: "text",
+            }}>
+              COMMENCE ICI
             </span>
-          </div>
-        ))}
-      </div>
+          </h1>
+          <p
+            style={{
+              fontSize: 13.5,
+              color: "rgba(245,237,237,0.40)",
+              fontWeight: 500,
+              margin: "0 auto",
+              maxWidth: 360,
+              lineHeight: 1.5,
+            }}
+          >
+            L'espace de coaching bodybuilding tout-en-un : programmes, nutrition, suivi et formations pour progresser sérieusement.
+          </p>
+        </div>
 
-      {/* ── Main CTA ── */}
-      <div
-        className="animate-fade-up stagger-4"
-        style={{
-          width: "100%",
-          maxWidth: 400,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <Link
-          href="/auth/client"
+        {/* ── Stats strip ── */}
+        <div
+          className="animate-fade-up stagger-3"
           style={{
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            gap: 10,
-            width: "100%",
-            height: 56,
-            background: "linear-gradient(135deg, #E01E1E 0%, #B00202 100%)",
-            color: "#fff",
-            textDecoration: "none",
-            borderRadius: "var(--radius-xl)",
-            fontWeight: 800,
-            fontSize: 15,
-            letterSpacing: "-0.01em",
-            boxShadow: "0 12px 32px rgba(224,30,30,0.3)",
-            transition: "transform 0.2s ease",
+            gap: 0,
+            margin: "26px 0 32px",
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
         >
-          <Heart size={18} strokeWidth={2} />
-          Rejoindre la communauté
-          <ArrowRight size={16} />
-        </Link>
+          {STATS.map((s, i) => (
+            <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ textAlign: "center", padding: "0 20px" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.03em" }}>
+                  {s.value}
+                </div>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.30)", marginTop: 2 }}>
+                  {s.label}
+                </div>
+              </div>
+              {i < STATS.length - 1 && (
+                <div style={{ width: 1, height: 28, background: "rgba(224,30,30,0.18)" }} />
+              )}
+            </div>
+          ))}
+        </div>
 
-        <p style={{
-          textAlign: "center",
-          marginTop: 14,
-          fontSize: 11,
-          color: "rgba(245,237,237,0.3)",
-          fontWeight: 500,
-        }}>
-          Gratuit — programmes, nutrition, suivi, logbook & communauté
+        {/* ── Feature grid ── */}
+        <div
+          className="animate-fade-up stagger-4"
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(3, 1fr)",
+            gap: 10,
+            marginBottom: 32,
+          }}
+        >
+          {FEATURES.map(({ icon: Icon, title, desc }, i) => (
+            <div
+              key={title}
+              className="ep-card"
+              style={{
+                padding: "16px 10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                textAlign: "center",
+                gap: 8,
+                animationDelay: `${i * 35}ms`,
+              }}
+            >
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, rgba(224,30,30,0.18) 0%, rgba(137,4,4,0.10) 100%)",
+                border: "1px solid rgba(224,30,30,0.22)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexShrink: 0,
+              }}>
+                <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.9} />
+              </div>
+              <div>
+                <p style={{ fontSize: 11.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+                  {title}
+                </p>
+                <p style={{ fontSize: 9.5, color: "rgba(245,237,237,0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
+                  {desc}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── Main CTA ── */}
+        <div className="animate-fade-up stagger-5">
+          <Link
+            href="/auth/client"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              width: "100%",
+              height: 56,
+              background: "linear-gradient(135deg, #E01E1E 0%, #B00202 100%)",
+              color: "#fff",
+              textDecoration: "none",
+              borderRadius: "var(--radius-xl)",
+              fontWeight: 800,
+              fontSize: 15,
+              letterSpacing: "-0.01em",
+              boxShadow: "0 12px 32px rgba(224,30,30,0.3)",
+              transition: "transform 0.2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            <Heart size={18} strokeWidth={2} />
+            Rejoindre la communauté
+            <ArrowRight size={16} />
+          </Link>
+
+          <p style={{
+            textAlign: "center",
+            marginTop: 14,
+            fontSize: 11,
+            color: "rgba(245,237,237,0.3)",
+            fontWeight: 500,
+          }}>
+            Accès gratuit · Sans engagement
+          </p>
+        </div>
+
+        {/* ── Coach link ── */}
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <Link
+            href="/auth/coach"
+            className="animate-fade-up stagger-6"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 32,
+              color: "rgba(245,237,237,0.25)",
+              textDecoration: "none",
+              fontSize: 11,
+              fontWeight: 600,
+            }}
+          >
+            <Shield size={12} />
+            Espace coach
+          </Link>
+        </div>
+
+        {/* ── Bottom line ── */}
+        <p
+          className="animate-fade-up stagger-6"
+          style={{
+            marginTop: 16,
+            textAlign: "center",
+            fontSize: 10,
+            color: "rgba(245,237,237,0.12)",
+            fontWeight: 600,
+            letterSpacing: "0.2em",
+            textTransform: "uppercase",
+          }}
+        >
+          EP Coaching · Coaching Bodybuilding & Performance
         </p>
       </div>
-
-      {/* ── Coach link ── */}
-      <Link
-        href="/auth/coach"
-        className="animate-fade-up stagger-5"
-        style={{
-          display: "inline-flex",
-          alignItems: "center",
-          gap: 6,
-          marginTop: 32,
-          color: "rgba(245,237,237,0.25)",
-          textDecoration: "none",
-          fontSize: 11,
-          fontWeight: 600,
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        <Shield size={12} />
-        Espace coach
-      </Link>
-
-      {/* ── Bottom line ── */}
-      <p
-        className="animate-fade-up stagger-5"
-        style={{
-          marginTop: 16,
-          fontSize: 10,
-          color: "rgba(245,237,237,0.12)",
-          fontWeight: 600,
-          letterSpacing: "0.2em",
-          textTransform: "uppercase",
-          position: "relative",
-          zIndex: 1,
-        }}
-      >
-        EP Coaching · Coaching Musculation & Performance
-      </p>
     </div>
   );
 }
