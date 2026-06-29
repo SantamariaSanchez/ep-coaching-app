@@ -2,9 +2,12 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
+import { getRecentWorkoutLogs } from "@/utils/workout-logs";
+import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ProgramEditor from "@/components/ui/ProgramEditor";
+import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
 
@@ -12,10 +15,12 @@ export default async function ClientProgramPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, program, corrections] = await Promise.all([
+  const [profile, program, corrections, workoutLogs, sessionsThisWeek] = await Promise.all([
     getProfile(user.id),
     getActiveProgram(user.id),
     getClientCorrections(user.id),
+    getRecentWorkoutLogs(user.id),
+    getSessionsThisWeekCount(user.id),
   ]);
 
   if (profile?.role === "coach") redirect("/dashboard/coach");
@@ -34,6 +39,9 @@ export default async function ClientProgramPage() {
             Tu gères toi-même ton programme — autonome, sans suivi coach.
           </p>
         </div>
+        {program && program.days.length > 0 && (
+          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+        )}
         <ProgramEditor
           clientId={user.id}
           program={program}
@@ -66,6 +74,10 @@ export default async function ClientProgramPage() {
           </p>
         )}
       </div>
+
+      {program && program.days.length > 0 && (
+        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+      )}
 
       {!program || program.days.length === 0 ? (
         <div style={{

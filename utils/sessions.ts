@@ -74,6 +74,30 @@ export async function getClientSessions(
   }
 }
 
+// Used by the Programme pages to show live "X/Y séances cette semaine"
+// adherence as sessions get logged, instead of only the static plan.
+export async function getSessionsThisWeekCount(clientId: string): Promise<number> {
+  try {
+    const supabase = await createServerSupabase();
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+    const weekStartStr = weekStart.toISOString().split("T")[0];
+
+    const { count } = await supabase
+      .from("sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("client_id", clientId)
+      .eq("is_completed", true)
+      .gte("session_date", weekStartStr);
+
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getSessionById(sessionId: string): Promise<Session | null> {
   try {
     const supabase = await createServerSupabase();

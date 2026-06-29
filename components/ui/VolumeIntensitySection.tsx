@@ -2,6 +2,14 @@ import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
 
+function currentWeekStart(): string {
+  const today = new Date();
+  const dayOfWeek = today.getDay();
+  const weekStart = new Date(today);
+  weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
+  return weekStart.toISOString().split("T")[0];
+}
+
 // ── Volume gauge ──────────────────────────────────────────────────────────────
 
 function VolumeGaugeRow({
@@ -195,9 +203,11 @@ function IntensityRow({
 export default function VolumeIntensitySection({
   program,
   workoutLogs,
+  sessionsThisWeek,
 }: {
   program: ProgramWithDays;
   workoutLogs: WorkoutLog[];
+  sessionsThisWeek?: number;
 }) {
   // ── Compute volume per muscle group (+ subgroup breakdown) ──
   const volumeByGroup: Record<
@@ -228,6 +238,31 @@ export default function VolumeIntensitySection({
     a.localeCompare(b, "fr")
   );
 
+  // ── Actual logged volume this week (real progress, not the static plan) ──
+  const weekStart = currentWeekStart();
+  const loggedThisWeek = workoutLogs.filter((w) => w.week_start === weekStart);
+
+  const realizedByGroup: Record<
+    string,
+    { direct: number; indirect: number; subgroups: Record<string, number> }
+  > = {};
+  for (const log of loggedThisWeek) {
+    const group = log.muscle_group;
+    if (!group) continue;
+    if (!realizedByGroup[group])
+      realizedByGroup[group] = { direct: 0, indirect: 0, subgroups: {} };
+    const sets = log.sets_completed ?? 0;
+    if (log.is_direct !== false) {
+      realizedByGroup[group].direct += sets;
+    } else {
+      realizedByGroup[group].indirect += sets;
+    }
+  }
+  const realizedEntries = Object.entries(realizedByGroup).sort(([a], [b]) =>
+    a.localeCompare(b, "fr")
+  );
+  const hasRealized = realizedEntries.length > 0;
+
   // ── Build weight map from workout logs ──
   const weightMap: Record<string, number | null> = {};
   for (const log of workoutLogs) {
@@ -247,8 +282,54 @@ export default function VolumeIntensitySection({
 
   if (!hasVolume && !hasExercises) return null;
 
+  const frequency = program.frequency;
+
   return (
     <div className="space-y-5 mb-8">
+      {/* ── Adherence this week ── */}
+      {sessionsThisWeek != null && frequency != null && (
+        <div className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-3.5">
+          <p className="text-xs font-bold text-white">
+            {sessionsThisWeek}/{frequency} séances cette semaine
+          </p>
+          <div className="flex gap-1">
+            {Array.from({ length: frequency }).map((_, i) => (
+              <div
+                key={i}
+                className={`w-5 h-1.5 rounded-full ${
+                  i < sessionsThisWeek ? "bg-[#E01E1E]" : "bg-[#890404]/20"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── Volume réalisé cette semaine (logué en temps réel) ── */}
+      {hasRealized && (
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
+            Volume — Réalisé cette semaine
+          </p>
+          <div className="space-y-5">
+            {realizedEntries.map(([group, { direct, indirect, subgroups }]) => {
+              const landmark = VOLUME_LANDMARKS[group];
+              if (!landmark) return null;
+              return (
+                <VolumeGaugeRow
+                  key={group}
+                  group={group}
+                  direct={direct}
+                  indirect={indirect}
+                  landmark={landmark}
+                  subgroups={subgroups}
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Volume section ── */}
       {hasVolume && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">

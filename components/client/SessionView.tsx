@@ -36,7 +36,7 @@ import {
 } from "@/lib/warmup-data";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { getTips } from "@/lib/execution-tips";
-import { VOLUME_LANDMARKS } from "@/lib/volume-data";
+import { VOLUME_LANDMARKS, MUSCLE_GROUPS } from "@/lib/volume-data";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 
@@ -788,6 +788,80 @@ function SetRow({
   );
 }
 
+function AddExerciseForm({
+  onAdd,
+}: {
+  onAdd: (input: { name: string; muscleGroup: string | null }) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [muscleGroup, setMuscleGroup] = useState("");
+
+  function submit() {
+    if (!name.trim()) return;
+    onAdd({ name: name.trim(), muscleGroup: muscleGroup || null });
+    setName("");
+    setMuscleGroup("");
+    setOpen(false);
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+      >
+        <Plus size={15} strokeWidth={2} />
+        Ajouter un exercice
+      </button>
+    );
+  }
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
+      <input
+        autoFocus
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        onKeyDown={(e) => e.key === "Enter" && submit()}
+        placeholder="Nom de l'exercice (ex. Développé couché)"
+        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+      />
+      <select
+        value={muscleGroup}
+        onChange={(e) => setMuscleGroup(e.target.value)}
+        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
+      >
+        <option value="">Groupe musculaire (optionnel)</option>
+        {MUSCLE_GROUPS.map((g) => (
+          <option key={g} value={g}>
+            {g}
+          </option>
+        ))}
+      </select>
+      <div className="flex gap-2">
+        <button
+          onClick={submit}
+          disabled={!name.trim()}
+          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+        >
+          Ajouter
+        </button>
+        <button
+          onClick={() => {
+            setOpen(false);
+            setName("");
+            setMuscleGroup("");
+          }}
+          className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 transition-colors"
+        >
+          Annuler
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function ExerciseCard({
   exState,
   prevWeight,
@@ -1112,7 +1186,10 @@ export default function SessionView({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            exercise_id: ex.id ?? null,
+            // Locally-added exercises (free sessions) use a synthetic
+            // "local-…" id with no matching row in the exercises table —
+            // sending that as exercise_id would fail the uuid column check.
+            exercise_id: ex.id && !ex.id.startsWith("local-") ? ex.id : null,
             exercise_name: ex.name,
             muscle_group: ex.muscle_group ?? null,
             set_number: set.setNumber,
@@ -1202,6 +1279,44 @@ export default function SessionView({
       return null;
     });
   }, []);
+
+  const handleAddExercise = useCallback(
+    (input: { name: string; muscleGroup: string | null }) => {
+      const defaultSets = 3;
+      const newExercise: Exercise = {
+        id: `local-${newLocalId()}`,
+        day_id: "",
+        name: input.name,
+        sets: defaultSets,
+        reps: null,
+        rir: null,
+        rest_seconds: null,
+        notes: null,
+        position: exercises.length,
+        muscle_group: input.muscleGroup,
+        muscle_subgroup: null,
+        is_direct: true,
+      };
+      const sets: SetState[] = Array.from({ length: defaultSets }, (_, i) => ({
+        localId: newLocalId(),
+        setNumber: i + 1,
+        weightKg: "",
+        repsActual: "",
+        rirActual: "",
+        standardizationScore: "",
+        validated: false,
+        isPR: false,
+        dbId: null,
+        restDuration: null,
+        hasVideo: false,
+      }));
+      setExercises((prev) => [
+        ...prev,
+        { exercise: newExercise, sets, showTips: false, showHistory: false },
+      ]);
+    },
+    [exercises.length]
+  );
 
   // Compute volume per muscle group
   const volumeByMuscle: Record<string, number> = {};
@@ -1650,6 +1765,8 @@ export default function SessionView({
             onValidateSet={(setIdx) => handleValidateSet(exIdx, setIdx)}
           />
         ))}
+
+        <AddExerciseForm onAdd={handleAddExercise} />
       </div>
 
       {/* Terminate button (fixed bottom) */}

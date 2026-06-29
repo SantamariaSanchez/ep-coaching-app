@@ -4,6 +4,7 @@ import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientCorrections } from "@/utils/corrections";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
+import { getSessionsThisWeekCount } from "@/utils/sessions";
 import CoachCorrectionsSection from "@/components/ui/CoachCorrectionsSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { ChevronLeft, Pencil, Plus } from "lucide-react";
@@ -18,12 +19,13 @@ export default async function CoachClientProgramPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client, program, corrections, workoutLogs] = await Promise.all([
+  const [profile, client, program, corrections, workoutLogs, sessionsThisWeek] = await Promise.all([
     getProfile(user.id),
     getClientById(id),
     getActiveProgram(id),
     getClientCorrections(id),
     getRecentWorkoutLogs(id),
+    getSessionsThisWeekCount(id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
@@ -76,7 +78,7 @@ export default async function CoachClientProgramPage({
 
       {/* ── Volume & Intensité ─────────────────────────────────────────────── */}
       {program && program.days.length > 0 && (
-        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} />
+        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
       )}
 
       {!program || program.days.length === 0 ? (

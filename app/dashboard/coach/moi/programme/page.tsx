@@ -3,8 +3,11 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getActiveProgram } from "@/utils/programs";
+import { getRecentWorkoutLogs } from "@/utils/workout-logs";
+import { getSessionsThisWeekCount } from "@/utils/sessions";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ProgramEditor from "@/components/ui/ProgramEditor";
+import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnCoachProgram } from "./actions";
 
 export default async function CoachMonProgrammePage() {
@@ -15,7 +18,11 @@ export default async function CoachMonProgrammePage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const program = await getActiveProgram(user.id);
+  const [program, workoutLogs, sessionsThisWeek] = await Promise.all([
+    getActiveProgram(user.id),
+    getRecentWorkoutLogs(user.id),
+    getSessionsThisWeekCount(user.id),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -27,6 +34,10 @@ export default async function CoachMonProgrammePage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
       </div>
+
+      {program && program.days.length > 0 && (
+        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+      )}
 
       <ProgramEditor
         clientId={user.id}
