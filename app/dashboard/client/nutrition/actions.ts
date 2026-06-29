@@ -18,28 +18,51 @@ export async function saveOwnNutritionProfile(
   if (guard.userId !== clientId) return { error: "Accès refusé." };
 
   const supabase = await createServerSupabase();
-  const { error } = await supabase.from("nutrition_profiles").upsert(
-    {
-      client_id: clientId,
-      calories_target: data.calories_target,
-      proteins_target: data.proteins_target,
-      carbs_target: data.carbs_target,
-      fats_target: data.fats_target,
-      tdee: data.tdee,
-      bmr: data.bmr,
-      phase: data.phase,
-      gender: data.gender,
-      height: data.height,
-      age: data.age,
-      training_type: data.training_type,
-      sessions_per_week: data.sessions_per_week,
-      session_duration: data.session_duration,
-      steps_per_day: data.steps_per_day,
-      activity_level: data.activity_level,
-      updated_at: new Date().toISOString(),
-    },
-    { onConflict: "client_id" }
-  );
+
+  const fields = {
+    calories_target: data.calories_target,
+    proteins_target: data.proteins_target,
+    carbs_target: data.carbs_target,
+    fats_target: data.fats_target,
+    tdee: data.tdee,
+    bmr: data.bmr,
+    phase: data.phase,
+    gender: data.gender,
+    height: data.height,
+    age: data.age,
+    training_type: data.training_type,
+    sessions_per_week: data.sessions_per_week,
+    session_duration: data.session_duration,
+    steps_per_day: data.steps_per_day,
+    activity_level: data.activity_level,
+    updated_at: new Date().toISOString(),
+  };
+
+  // Explicit select-then-update-or-insert instead of upsert(onConflict): see
+  // the coach-side saveNutritionProfile action for why.
+  const { data: existingRows } = await supabase
+    .from("nutrition_profiles")
+    .select("id")
+    .eq("client_id", clientId)
+    .order("updated_at", { ascending: false });
+
+  let error;
+  if (existingRows && existingRows.length > 0) {
+    ({ error } = await supabase
+      .from("nutrition_profiles")
+      .update(fields)
+      .eq("id", existingRows[0].id));
+    if (existingRows.length > 1) {
+      await supabase
+        .from("nutrition_profiles")
+        .delete()
+        .in("id", existingRows.slice(1).map((r) => r.id));
+    }
+  } else {
+    ({ error } = await supabase
+      .from("nutrition_profiles")
+      .insert({ client_id: clientId, ...fields }));
+  }
 
   if (error) {
     console.error("saveOwnNutritionProfile error:", error);

@@ -180,12 +180,16 @@ export async function getNutritionProfile(
 ): Promise<NutritionProfile | null> {
   try {
     const supabase = await createServerSupabase();
+    // .order + .limit(1) instead of .maybeSingle(): if a stray duplicate row
+    // ever exists for this client, always return the most recently saved one
+    // instead of erroring out (maybeSingle throws on >1 rows).
     const { data } = await supabase
       .from("nutrition_profiles")
       .select("*")
       .eq("client_id", clientId)
-      .maybeSingle();
-    return (data as NutritionProfile) ?? null;
+      .order("updated_at", { ascending: false })
+      .limit(1);
+    return (data?.[0] as NutritionProfile) ?? null;
   } catch {
     return null;
   }

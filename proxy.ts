@@ -1,6 +1,19 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import type { User } from "@supabase/supabase-js";
+
+// Concurrent requests sharing the same (soon-to-be-rotated) refresh token
+// race to refresh it: the loser gets an "already used" error and its stale
+// Set-Cookie can overwrite the winner's, silently logging the user out.
+// This module-level lock makes concurrent requests share a single in-flight
+// auth check/refresh instead of each racing to rotate the same token —
+// mirrors the prefetch-skip mitigation below but covers real navigations
+// too (e.g. reopening the PWA while another tab/device session is alive).
+const pendingAuthChecks = new Map<
+  string,
+  Promise<{ user: User | null; cookies: { name: string; value: string }[] }>
+>();
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,7 +49,30 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const authCookies = request.cookies
+    .getAll()
+    .filter((c) => c.name.startsWith("sb-"));
+  const lockKey = authCookies.map((c) => `${c.name}=${c.value}`).sort().join("&");
+
+  let user: User | null;
+  if (lockKey && pendingAuthChecks.has(lockKey)) {
+    // Another concurrent request already kicked off the auth check/refresh
+    // for this exact token — reuse its result instead of racing it.
+    const result = await pendingAuthChecks.get(lockKey)!;
+    user = result.user;
+    result.cookies.forEach((c) => supabaseResponse.cookies.set(c.name, c.value, c));
+  } else {
+    const promise = supabase.auth.getUser().then(({ data }) => ({
+      user: data.user,
+      cookies: supabaseResponse.cookies.getAll(),
+    }));
+    if (lockKey) {
+      pendingAuthChecks.set(lockKey, promise);
+      promise.finally(() => { pendingAuthChecks.delete(lockKey); });
+    }
+    const result = await promise;
+    user = result.user;
+  }
 
   // Always pass through the Supabase callback
   if (pathname === "/auth/callback") return supabaseResponse;
@@ -78,6 +114,7 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/profile",
     "/dashboard/client/live",
     "/dashboard/client/steps",
+    "/dashboard/client/mindset",
   ];
   const isFreeTierPath =
     pathname === "/dashboard/client" ||

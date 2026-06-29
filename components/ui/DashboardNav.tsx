@@ -8,6 +8,7 @@ import {
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
+  Brain,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -57,7 +58,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset"],
   },
   {
     label: "Coach",
@@ -102,7 +103,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/nutrition",
-    matchSegments: ["nutrition", "bilan", "photos", "steps"],
+    matchSegments: ["nutrition", "bilan", "photos", "steps", "mindset"],
   },
   {
     label: "Communauté",
@@ -138,6 +139,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
       { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
       { label: "Pas & routine", icon: Footprints, segment: "steps" },
       { label: "Photos", icon: Image, segment: "photos" },
+      { label: "Mindset", icon: Brain, segment: "mindset" },
     ],
   },
   {
@@ -296,6 +298,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Pas & routine",  icon: Footprints,      segment: "steps" },
       { label: "Tracking",      icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
+      { label: "Mindset",        icon: Brain,           segment: "mindset" },
     ],
   },
   {
