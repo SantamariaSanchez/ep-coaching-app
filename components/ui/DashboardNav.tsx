@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, BarChart2, Map, GraduationCap, Activity, StickyNote,
+  MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -57,7 +57,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "notes"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking"],
   },
   {
     label: "Coach",
@@ -102,7 +102,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/nutrition",
-    matchSegments: ["nutrition", "bilan", "photos"],
+    matchSegments: ["nutrition", "bilan", "photos", "steps"],
   },
   {
     label: "Communauté",
@@ -136,6 +136,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [
       { label: "Nutrition", icon: Apple, segment: "nutrition" },
       { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Pas & routine", icon: Footprints, segment: "steps" },
       { label: "Photos", icon: Image, segment: "photos" },
     ],
   },
@@ -266,6 +267,8 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
+      { label: "Pas & routine",  icon: Footprints,     segment: "moi/steps" },
+      { label: "Tracking",       icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
     ],
   },
@@ -290,8 +293,9 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
       { label: "Progression",    icon: TrendingUp,      segment: "progress" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
+      { label: "Pas & routine",  icon: Footprints,      segment: "steps" },
+      { label: "Tracking",      icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
-      { label: "Notes du coach", icon: StickyNote,      segment: "notes" },
     ],
   },
   {
