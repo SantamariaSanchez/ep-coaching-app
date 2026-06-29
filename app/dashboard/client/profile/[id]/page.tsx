@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCommunityPostCount } from "@/utils/community";
+import { getTotalPoints } from "@/lib/gamification";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import BackButton from "@/components/ui/BackButton";
 
@@ -18,7 +19,10 @@ export default async function ClientPublicProfilePage({
   const profile = await getProfile(id);
   if (!profile) notFound();
 
-  const postCount = await getCommunityPostCount(id);
+  const [postCount, points] = await Promise.all([
+    getCommunityPostCount(id),
+    profile.role === "client" ? getTotalPoints(id) : Promise.resolve(undefined),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -31,7 +35,7 @@ export default async function ClientPublicProfilePage({
         <h1 className="text-3xl font-black uppercase tracking-tight">Profil</h1>
       </div>
 
-      <ProfileHeader profile={profile} postCount={postCount} />
+      <ProfileHeader profile={profile} postCount={postCount} points={points} />
     </div>
   );
 }

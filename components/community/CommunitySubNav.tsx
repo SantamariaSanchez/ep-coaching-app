@@ -8,6 +8,7 @@ export default function CommunitySubNav({ base, isCoach }: { base: string; isCoa
   const items = [
     { label: "Victoires", href: `${base}/victoires` },
     { label: "Questions", href: `${base}/questions` },
+    { label: "Mot du coach", href: `${base}/coach` },
     ...(isCoach ? [{ label: "Membres", href: `${base}/membres` }] : []),
   ];
 

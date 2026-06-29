@@ -3,13 +3,13 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
-import type { Food, DietPlanWithMeals, DietMode } from "@/utils/nutrition";
+import type { Food, DietPlanWithMeals, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 interface Props {
   foods: Food[];
   plans: DietPlanWithMeals[];
-  createOwnDietPlan: (name: string, mode: DietMode, meals: DietPlanMealInput[]) => Promise<{ error?: string; id?: string }>;
+  createOwnDietPlan: (name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
   activateOwnDietPlan: (planId: string) => Promise<{ error?: string }>;
   deactivateOwnDietPlan: (planId: string) => Promise<{ error?: string }>;
   deleteOwnDietPlan: (planId: string) => Promise<{ error?: string }>;
@@ -49,8 +49,8 @@ export default function OwnDietPlansSection({
         <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
           <PlanBuilder
             foods={foods}
-            onCreate={async (name, mode, meals) => {
-              await createOwnDietPlan(name, mode, meals);
+            onCreate={async (name, mode, meals, structure) => {
+              await createOwnDietPlan(name, mode, meals, structure);
               setShowBuilder(false);
             }}
           />

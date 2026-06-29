@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
+import { awardPoints, POINTS } from "@/lib/gamification";
 
 export async function GET(request: Request) {
   const user = await getUser();
@@ -65,6 +66,14 @@ export async function POST(request: Request) {
   if (error) {
     return NextResponse.json({ error: "Erreur lors de la publication." }, { status: 500 });
   }
+
+  awardPoints(
+    user.id,
+    type === "victory" ? POINTS.community_victory : POINTS.community_question,
+    type === "victory" ? "Victoire partagée" : "Question posée",
+    `community_${type}`,
+    data.id
+  );
 
   return NextResponse.json({ id: data.id });
 }

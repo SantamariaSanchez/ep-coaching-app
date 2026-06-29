@@ -13,7 +13,7 @@ import {
   ChevronUp,
   PlayCircle,
 } from "lucide-react";
-import type { Food, DietPlanWithMeals, DietMode } from "@/utils/nutrition";
+import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { calculateNutrients } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
@@ -25,6 +25,17 @@ export const MEAL_SLOTS = [
   { key: "preworkout", label: "Pré-entraînement" },
   { key: "postworkout", label: "Post-entraînement" },
   { key: "dinner", label: "Dîner" },
+];
+
+export const DAY_TABS: { key: DayOfWeek; label: string }[] = [
+  { key: "lun", label: "Lun" },
+  { key: "mar", label: "Mar" },
+  { key: "mer", label: "Mer" },
+  { key: "jeu", label: "Jeu" },
+  { key: "ven", label: "Ven" },
+  { key: "sam", label: "Sam" },
+  { key: "dim", label: "Dim" },
+  { key: "high", label: "🔥 High" },
 ];
 
 const MODES: { key: DietMode; label: string; icon: React.ElementType; desc: string }[] = [
@@ -43,6 +54,7 @@ interface PlanMealRow {
   foodId: string;
   foodName: string;
   quantityG: number;
+  day: DayOfWeek | null;
 }
 
 export function PlanBuilder({
@@ -50,10 +62,12 @@ export function PlanBuilder({
   onCreate,
 }: {
   foods: Food[];
-  onCreate: (name: string, mode: DietMode, meals: DietPlanMealInput[]) => Promise<void>;
+  onCreate: (name: string, mode: DietMode, meals: DietPlanMealInput[], structure: DietStructure) => Promise<void>;
 }) {
   const [planName, setPlanName] = useState("");
   const [mode, setMode] = useState<DietMode>("fixed");
+  const [structure, setStructure] = useState<DietStructure>("daily");
+  const [activeDay, setActiveDay] = useState<DayOfWeek>("lun");
   const [meals, setMeals] = useState<PlanMealRow[]>([]);
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -63,6 +77,8 @@ export function PlanBuilder({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  const currentDay = structure === "weekly" ? activeDay : null;
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     if (!q) return foods.slice(0, 30);
@@ -71,8 +87,13 @@ export function PlanBuilder({
       .slice(0, 30);
   }, [foods, search]);
 
+  const dayMeals = useMemo(
+    () => meals.filter((m) => m.day === currentDay),
+    [meals, currentDay]
+  );
+
   const planTotals = useMemo(() => {
-    return meals.reduce(
+    return dayMeals.reduce(
       (acc, m) => {
         const food = foods.find((f) => f.id === m.foodId);
         if (!food) return acc;
@@ -86,7 +107,7 @@ export function PlanBuilder({
       },
       { calories: 0, proteins: 0, carbs: 0, fats: 0 }
     );
-  }, [meals, foods]);
+  }, [dayMeals, foods]);
 
   function addMeal() {
     if (!selectedFood || !addingToSlot) return;
@@ -100,6 +121,7 @@ export function PlanBuilder({
         foodId: selectedFood.id,
         foodName: selectedFood.name,
         quantityG: q,
+        day: currentDay,
       },
     ]);
     setAddingToSlot(null);
@@ -117,8 +139,9 @@ export function PlanBuilder({
       food_id: m.foodId,
       quantity_g: m.quantityG,
       position: i,
+      day_of_week: m.day,
     }));
-    await onCreate(planName.trim(), mode, inputs);
+    await onCreate(planName.trim(), mode, inputs, structure);
     setSaving(false);
     setSuccess(true);
     setPlanName("");
@@ -178,6 +201,61 @@ export function PlanBuilder({
         </div>
       </div>
 
+      {/* Structure: daily (simple) vs weekly (different days, optional) */}
+      {mode !== "flexible" && (
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Structure <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+          </label>
+          <div className="flex gap-2 mb-2">
+            {[
+              { key: "daily" as const, label: "Journalier", desc: "Mêmes repas chaque jour" },
+              { key: "weekly" as const, label: "Hebdomadaire", desc: "Repas différents par jour + jour high" },
+            ].map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setStructure(key)}
+                className={`flex-1 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                  structure === key
+                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
+                    : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30 hover:border-[#890404]/40"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-[#F5EDED]/30">
+            {structure === "weekly"
+              ? "Construis chaque jour séparément — utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique."
+              : "Un seul jour-type, répété tous les jours."}
+          </p>
+        </div>
+      )}
+
+      {/* Day tabs — only in weekly structure */}
+      {mode !== "flexible" && structure === "weekly" && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          {DAY_TABS.map((d) => {
+            const count = meals.filter((m) => m.day === d.key).length;
+            return (
+              <button
+                key={d.key}
+                onClick={() => setActiveDay(d.key)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                  activeDay === d.key
+                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
+                    : "border-[#890404]/25 text-[#F5EDED]/40"
+                }`}
+              >
+                {d.label}
+                {count > 0 && <span className="ml-1 opacity-60">· {count}</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Mode flexible: no meals needed */}
       {mode === "flexible" && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 text-center">
@@ -192,7 +270,7 @@ export function PlanBuilder({
         <>
           <div className="space-y-3">
             {MEAL_SLOTS.map((slot) => {
-              const slotMeals = meals.filter((m) => m.slotKey === slot.key);
+              const slotMeals = dayMeals.filter((m) => m.slotKey === slot.key);
               return (
                 <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -232,7 +310,8 @@ export function PlanBuilder({
                                     !(
                                       meal.slotKey === m.slotKey &&
                                       meal.foodId === m.foodId &&
-                                      meal.quantityG === m.quantityG
+                                      meal.quantityG === m.quantityG &&
+                                      meal.day === m.day
                                     )
                                 )
                               )
@@ -254,7 +333,7 @@ export function PlanBuilder({
           {meals.length > 0 && (
             <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-                Total du plan
+                {structure === "weekly" ? `Total — ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : "Total du plan"}
               </p>
               <div className="flex gap-4">
                 <div>
@@ -419,19 +498,27 @@ function PlanDetailRow({
 }) {
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
+  const isWeekly = plan.structure === "weekly";
+  const firstDayWithMeals = plan.diet_plan_meals.find((m) => m.day_of_week)?.day_of_week ?? "lun";
+  const [viewDay, setViewDay] = useState<DayOfWeek>(firstDayWithMeals);
+
+  const visibleMeals = useMemo(
+    () => (isWeekly ? plan.diet_plan_meals.filter((m) => m.day_of_week === viewDay) : plan.diet_plan_meals),
+    [plan.diet_plan_meals, isWeekly, viewDay]
+  );
 
   const bySlot = useMemo(() => {
     const map: Record<string, typeof plan.diet_plan_meals> = {};
-    for (const m of plan.diet_plan_meals) {
+    for (const m of visibleMeals) {
       if (!map[m.meal_slot]) map[m.meal_slot] = [];
       map[m.meal_slot].push(m);
     }
     for (const key of Object.keys(map)) map[key].sort((a, b) => a.position - b.position);
     return map;
-  }, [plan.diet_plan_meals]);
+  }, [visibleMeals]);
 
   const totals = useMemo(() => {
-    return plan.diet_plan_meals.reduce(
+    return visibleMeals.reduce(
       (acc, m) => {
         const food = m.foods ?? foods.find((f) => f.id === m.food_id);
         if (!food) return acc;
@@ -445,7 +532,7 @@ function PlanDetailRow({
       },
       { calories: 0, proteins: 0, carbs: 0, fats: 0 }
     );
-  }, [plan.diet_plan_meals, foods]);
+  }, [visibleMeals, foods]);
 
   return (
     <div
@@ -462,7 +549,7 @@ function PlanDetailRow({
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">{plan.name}</p>
             <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
-              {plan.mode} · {plan.diet_plan_meals.length} aliment{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
+              {plan.mode} {isWeekly && "· hebdo"} · {plan.diet_plan_meals.length} aliment{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
               {new Date(plan.created_at).toLocaleDateString("fr-FR")}
             </p>
           </div>
@@ -476,8 +563,27 @@ function PlanDetailRow({
 
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+          {isWeekly && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1">
+              {DAY_TABS.map((d) => (
+                <button
+                  key={d.key}
+                  onClick={() => setViewDay(d.key)}
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest transition-colors ${
+                    viewDay === d.key
+                      ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
+                      : "border-[#890404]/25 text-[#F5EDED]/35"
+                  }`}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          )}
           {plan.diet_plan_meals.length === 0 ? (
             <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible — aucun aliment prédéfini.</p>
+          ) : visibleMeals.length === 0 ? (
+            <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun aliment pour ce jour.</p>
           ) : (
             <>
               {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (

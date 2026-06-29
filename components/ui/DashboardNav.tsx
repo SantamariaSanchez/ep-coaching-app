@@ -8,7 +8,7 @@ import {
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
-  Brain,
+  Brain, MessageSquareText,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -147,6 +147,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Mon profil", icon: User, segment: "profile" },
       { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
@@ -253,6 +254,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
       { label: "Mon profil", icon: User, segment: "profile" },
     ],
@@ -324,6 +326,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
   },

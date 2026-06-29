@@ -11,6 +11,7 @@ import {
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
 import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
+import SeasonModeToggle from "@/components/ui/SeasonModeToggle";
 import {
   addFoodLog,
   removeFoodLog,
@@ -20,6 +21,7 @@ import {
   activateOwnDietPlan,
   deactivateOwnDietPlan,
   deleteOwnDietPlan,
+  setOwnSeasonMode,
 } from "./actions";
 
 export default async function ClientNutritionPage() {
@@ -53,6 +55,10 @@ export default async function ClientNutritionPage() {
           <p className="text-sm text-[#F5EDED]/45 mb-4">
             Calcule et ajuste toi-même tes besoins — autonome, sans suivi coach.
           </p>
+          <SeasonModeToggle
+            currentMode={profile?.season_mode ?? "off_season"}
+            setSeasonMode={setOwnSeasonMode}
+          />
           <NutritionForm
             clientId={user.id}
             existingProfile={nutritionProfile}
@@ -78,6 +84,7 @@ export default async function ClientNutritionPage() {
           initialFoods={foods}
           dietMode={activePlan?.mode ?? "flexible"}
           activePlan={activePlan}
+          seasonMode={profile?.season_mode}
           addFoodLog={addFoodLog}
           removeFoodLog={removeFoodLog}
           createCustomFood={createCustomFood}
@@ -104,6 +111,7 @@ export default async function ClientNutritionPage() {
       initialFoods={foods}
       dietMode={activePlan?.mode ?? "flexible"}
       activePlan={activePlan}
+      seasonMode={profile?.season_mode}
       addFoodLog={addFoodLog}
       removeFoodLog={removeFoodLog}
       createCustomFood={createCustomFood}

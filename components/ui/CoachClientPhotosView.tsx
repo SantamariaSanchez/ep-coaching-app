@@ -1,8 +1,10 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ExternalLink, CheckCircle2, Clock, Camera } from "lucide-react";
+import { ExternalLink, CheckCircle2, Clock, Camera, Pencil, Eraser } from "lucide-react";
 import { ALL_CATEGORIES, TYPE_LABELS } from "@/lib/posing-data";
+import { driveImageUrl } from "@/lib/drive-utils";
+import DrawableImage from "@/components/ui/DrawableImage";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 
@@ -59,6 +61,30 @@ function CompetitionSettings({
             defaultValue={client.competition_date ?? ""}
             className={inputCls}
           />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelCls}>Phase actuelle</label>
+        <div className="flex gap-2">
+          {[
+            { value: "off_season", label: "Off-season" },
+            { value: "prep", label: "Prep" },
+          ].map((opt) => (
+            <label
+              key={opt.value}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#890404]/25 cursor-pointer text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 has-[:checked]:bg-[#E01E1E]/15 has-[:checked]:border-[#E01E1E]/50 has-[:checked]:text-[#E01E1E] transition-colors"
+            >
+              <input
+                type="radio"
+                name="season_mode"
+                value={opt.value}
+                defaultChecked={(client.season_mode ?? "off_season") === opt.value}
+                className="sr-only"
+              />
+              {opt.label}
+            </label>
+          ))}
         </div>
       </div>
 
@@ -218,10 +244,15 @@ function PhotoCard({
 }
 
 // ── Comparison section ────────────────────────────────────────────────────────
+// Real in-app side-by-side viewer (not just opening two Drive tabs), with a
+// telestrator-style draw tool: strokes fade out ~5s after being drawn — handy
+// for pointing things out live while recording a feedback video for the client.
 
 function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
   const [leftId, setLeftId] = useState<string>(photos[0]?.id ?? "");
   const [rightId, setRightId] = useState<string>(photos[1]?.id ?? "");
+  const [drawMode, setDrawMode] = useState(false);
+  const [clearKey, setClearKey] = useState(0);
 
   const leftPhoto = photos.find((p) => p.id === leftId);
   const rightPhoto = photos.find((p) => p.id === rightId);
@@ -230,63 +261,90 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 space-y-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-        Comparaison
-      </p>
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          Comparaison
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDrawMode((v) => !v)}
+            className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors ${
+              drawMode
+                ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
+                : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            }`}
+          >
+            <Pencil size={11} />
+            {drawMode ? "Dessin actif" : "Mode dessin"}
+          </button>
+          {drawMode && (
+            <button
+              onClick={() => setClearKey((k) => k + 1)}
+              title="Effacer les traits"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+            >
+              <Eraser size={12} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {drawMode && (
+        <p className="text-[10px] text-[#F5EDED]/30 italic">
+          Trace directement sur les photos pour pointer un détail à l&apos;oral — chaque trait s&apos;efface automatiquement au bout de 5 secondes.
+        </p>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         {[
           { id: leftId, setId: setLeftId, photo: leftPhoto, label: "Avant" },
           { id: rightId, setId: setRightId, photo: rightPhoto, label: "Après" },
-        ].map(({ id, setId, photo, label }) => (
-          <div key={label} className="space-y-2">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-              {label}
-            </p>
-            <select
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              className={inputCls}
-            >
-              {photos.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {formatDate(p.submitted_at)} — {TYPE_LABELS[p.type] ?? p.type}
-                </option>
-              ))}
-            </select>
-            {photo && (
-              <div className="bg-[#150000] border border-[#890404]/15 rounded-lg p-3 space-y-1.5">
-                <p className="text-xs text-white font-bold">
-                  {TYPE_LABELS[photo.type] ?? photo.type}
-                </p>
-                <p className="text-[10px] text-[#F5EDED]/40">{formatDate(photo.submitted_at)}</p>
-                {photo.notes && (
-                  <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>
-                )}
-                <a
-                  href={photo.drive_link}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
-                >
-                  <ExternalLink size={10} />
-                  Ouvrir Drive
-                </a>
-              </div>
-            )}
-          </div>
-        ))}
+        ].map(({ id, setId, photo, label }) => {
+          const imgUrl = photo ? driveImageUrl(photo.drive_link) : null;
+          return (
+            <div key={label} className="space-y-2">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+                {label}
+              </p>
+              <select value={id} onChange={(e) => setId(e.target.value)} className={inputCls}>
+                {photos.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {formatDate(p.submitted_at)} — {TYPE_LABELS[p.type] ?? p.type}
+                  </option>
+                ))}
+              </select>
+
+              {photo && imgUrl && (
+                <DrawableImage key={`${id}-${clearKey}`} src={imgUrl} alt={label} drawMode={drawMode} />
+              )}
+              {photo && !imgUrl && (
+                <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
+                  <p className="text-[10px] text-[#F5EDED]/30">
+                    Aperçu indisponible — le lien Drive doit être partagé en &quot;Tous les utilisateurs disposant du lien&quot;.
+                  </p>
+                </div>
+              )}
+
+              {photo && (
+                <div className="bg-[#150000] border border-[#890404]/15 rounded-lg p-3 space-y-1.5">
+                  <p className="text-xs text-white font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
+                  <p className="text-[10px] text-[#F5EDED]/40">{formatDate(photo.submitted_at)}</p>
+                  {photo.notes && <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>}
+                  <a
+                    href={photo.drive_link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                  >
+                    <ExternalLink size={10} />
+                    Ouvrir Drive
+                  </a>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
-      {leftPhoto && rightPhoto && (
-        <button
-          onClick={() => {
-            window.open(leftPhoto.drive_link, "_blank");
-            setTimeout(() => window.open(rightPhoto.drive_link, "_blank"), 300);
-          }}
-          className="w-full py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 hover:border-[#890404]/70 rounded-xl transition-colors"
-        >
-          Ouvrir les deux dans Drive
-        </button>
-      )}
     </div>
   );
 }

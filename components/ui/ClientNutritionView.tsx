@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, Check } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
+import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
 import type {
   NutritionProfile,
   Food,
@@ -143,6 +144,7 @@ interface Props {
   initialFoods: Food[];
   dietMode: DietMode;
   activePlan: DietPlanWithMeals | null;
+  seasonMode?: "off_season" | "prep" | null;
   addFoodLog: (params: {
     foodId: string;
     mealSlot: string;
@@ -173,6 +175,7 @@ export default function ClientNutritionView({
   initialFoods,
   dietMode,
   activePlan,
+  seasonMode,
   addFoodLog,
   removeFoodLog,
   createCustomFood,
@@ -442,8 +445,9 @@ export default function ClientNutritionView({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Nutrition
           </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">
+          <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
             Mon suivi
+            {seasonMode && <SeasonModeBadge mode={seasonMode} />}
           </h1>
           <p className="mt-1 text-xs text-[#F5EDED]/30">
             {new Intl.DateTimeFormat("fr-FR", {
@@ -969,10 +973,25 @@ function DietPlanCard({
 }) {
   const [expanded, setExpanded] = useState(true);
   const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
+  const isWeekly = plan.structure === "weekly";
+  const hasHighDay = useMemo(() => plan.diet_plan_meals.some((m) => m.day_of_week === "high"), [plan.diet_plan_meals]);
+  const [useHighDay, setUseHighDay] = useState(false);
+
+  const todayDow = useMemo(() => {
+    const map = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"] as const;
+    return map[new Date().getDay()];
+  }, []);
+
+  const activeDay = isWeekly ? (useHighDay ? "high" : todayDow) : null;
+
+  const dayMeals = useMemo(
+    () => (isWeekly ? plan.diet_plan_meals.filter((m) => m.day_of_week === activeDay) : plan.diet_plan_meals),
+    [plan.diet_plan_meals, isWeekly, activeDay]
+  );
 
   const bySlot = useMemo(() => {
     const map: Record<string, typeof plan.diet_plan_meals> = {};
-    for (const m of plan.diet_plan_meals) {
+    for (const m of dayMeals) {
       const key = m.meal_slot;
       if (!map[key]) map[key] = [];
       map[key].push(m);
@@ -981,13 +1000,13 @@ function DietPlanCard({
       map[key].sort((a, b) => a.position - b.position);
     }
     return map;
-  }, [plan.diet_plan_meals]);
+  }, [dayMeals]);
 
   // Match each plan item to an unclaimed log of the same food/slot/quantity logged today
   const checkedMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
     const used = new Set<string>();
-    for (const m of plan.diet_plan_meals) {
+    for (const m of dayMeals) {
       const match = todayLogs.find(
         (l) =>
           !used.has(l.id) &&
@@ -1001,7 +1020,7 @@ function DietPlanCard({
       }
     }
     return map;
-  }, [plan.diet_plan_meals, todayLogs]);
+  }, [dayMeals, todayLogs]);
 
   const doneCount = Object.values(checkedMap).filter(Boolean).length;
 
@@ -1014,9 +1033,9 @@ function DietPlanCard({
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
             Plan de ton coach
-            {checkable && (
+            {checkable && dayMeals.length > 0 && (
               <span className="ml-2 text-[#F5EDED]/30 font-normal">
-                {doneCount}/{plan.diet_plan_meals.length} cochés
+                {doneCount}/{dayMeals.length} cochés
               </span>
             )}
           </p>
@@ -1028,6 +1047,27 @@ function DietPlanCard({
           <ChevronDown size={14} className="text-[#F5EDED]/30" />
         )}
       </div>
+
+      {expanded && hasHighDay && (
+        <div className="px-4 pt-3 flex items-center gap-2">
+          <button
+            onClick={(e) => { e.stopPropagation(); setUseHighDay((v) => !v); }}
+            className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors ${
+              useHighDay
+                ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
+                : "border-[#890404]/25 text-[#F5EDED]/35"
+            }`}
+          >
+            🔥 Aujourd&apos;hui = jour high
+          </button>
+        </div>
+      )}
+
+      {expanded && dayMeals.length === 0 && isWeekly && (
+        <p className="px-4 pt-3 text-[10px] text-[#F5EDED]/25 italic">
+          Aucun repas prévu pour aujourd&apos;hui dans ce plan — jour libre / off.
+        </p>
+      )}
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">

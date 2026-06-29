@@ -16,12 +16,13 @@ export async function saveCompetitionSettings(
   if (!guard.ok) return { error: guard.error };
   const competition_category = (formData.get("competition_category") as string) || null;
   const competition_date = (formData.get("competition_date") as string) || null;
+  const season_mode = (formData.get("season_mode") as string) || "off_season";
 
   const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
   const { error } = await supabase
     .from("profiles")
-    .update({ competition_category, competition_date })
+    .update({ competition_category, competition_date, season_mode })
     .eq("id", clientId);
 
   if (error) return { error: "Erreur lors de la sauvegarde." };
@@ -30,6 +31,8 @@ export async function saveCompetitionSettings(
   try { await supabase.rpc("update_photo_frequency"); } catch {}
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/photos`);
+  revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+  revalidatePath("/dashboard/client/nutrition");
   return { success: true };
 }
 

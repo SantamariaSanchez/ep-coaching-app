@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { awardPoints, POINTS } from "@/lib/gamification";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -101,6 +102,8 @@ export async function POST(
       }))
     );
   }
+
+  awardPoints(user.id, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
 
   // 4. Email notification to coach
   const profile = await getProfile(user.id);

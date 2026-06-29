@@ -1,11 +1,7 @@
 ﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
-import {
-  getClientSessions,
-  getClientPersonalRecords,
-  buildPRMap,
-} from "@/utils/sessions";
+import { getAllClientSessions, getClientPersonalRecords } from "@/utils/sessions";
 import LogbookClient from "@/components/client/LogbookClient";
 
 export default async function LogbookPage() {
@@ -17,18 +13,15 @@ export default async function LogbookPage() {
 
   const [program, sessions, records] = await Promise.all([
     getActiveProgram(user.id),
-    getClientSessions(user.id, 5),
+    getAllClientSessions(user.id, 10),
     getClientPersonalRecords(user.id),
   ]);
-
-  const prMap = buildPRMap(records);
 
   return (
     <LogbookClient
       program={program}
       sessions={sessions}
       records={records}
-      prMap={prMap}
       isFree={!isSubscribed(profile)}
     />
   );

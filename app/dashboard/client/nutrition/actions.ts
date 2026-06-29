@@ -3,8 +3,9 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient } from "@/lib/auth-guards";
+import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
-import type { Food, NutritionProfileInput, DietMode } from "@/utils/nutrition";
+import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 // Self-serve nutrition targets — only available to free-tier community
@@ -109,6 +110,9 @@ export async function addFoodLog(params: {
       return { error: error.message ?? "Erreur lors de l'ajout." };
     }
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
+
+    awardPoints(user.id, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
+
     return { id: data.id };
   } catch {
     return { error: "Erreur inattendue." };
@@ -181,7 +185,8 @@ async function guardFreeMember(): Promise<{ ok: true; userId: string } | { ok: f
 export async function createOwnDietPlan(
   name: string,
   mode: DietMode,
-  meals: DietPlanMealInput[]
+  meals: DietPlanMealInput[],
+  structure: DietStructure = "daily"
 ): Promise<{ error?: string; id?: string }> {
   const guard = await guardFreeMember();
   if (!guard.ok) return { error: guard.error };
@@ -201,6 +206,7 @@ export async function createOwnDietPlan(
         client_id: guard.userId,
         name,
         mode,
+        structure,
         is_active: true,
         created_by: guard.userId,
       })
@@ -258,6 +264,25 @@ export async function deactivateOwnDietPlan(planId: string): Promise<{ error?: s
       .update({ is_active: false })
       .eq("id", planId)
       .eq("client_id", guard.userId);
+
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function setOwnSeasonMode(mode: "off_season" | "prep"): Promise<{ error?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ season_mode: mode })
+      .eq("id", guard.userId);
+    if (error) return { error: "Erreur lors de la sauvegarde." };
 
     revalidatePath("/dashboard/client/nutrition");
     return {};

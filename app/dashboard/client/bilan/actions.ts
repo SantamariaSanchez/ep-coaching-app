@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { insertNotification, getCoachUserId } from "@/utils/insert-notification";
+import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 
 function num(v: FormDataEntryValue | null): number | null {
@@ -76,6 +77,8 @@ export async function upsertDailyLog(
     );
 
     if (error) return { error: error.message };
+
+    awardPoints(user.id, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
 
     // Notify coach — fire-and-forget
     const clientName = profile.full_name ?? "Un client";

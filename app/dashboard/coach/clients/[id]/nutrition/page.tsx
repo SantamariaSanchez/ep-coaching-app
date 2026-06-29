@@ -17,6 +17,7 @@ import {
   deleteDietPlan,
 } from "./diet-plan-actions";
 import CoachClientNutritionTabs from "@/components/ui/CoachClientNutritionTabs";
+import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
 import { ChevronLeft } from "lucide-react";
 
 export default async function CoachClientNutritionPage({
@@ -63,8 +64,9 @@ export default async function CoachClientNutritionPage({
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Nutrition
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
+        <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
           {client.full_name}
+          {client.competition_category && <SeasonModeBadge mode={client.season_mode} />}
         </h1>
       </div>
 

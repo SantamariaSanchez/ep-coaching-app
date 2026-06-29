@@ -128,12 +128,15 @@ export interface FoodLogWithFood extends FoodLog {
 // ── Diet Plan ─────────────────────────────────────────────────────────────────
 
 export type DietMode = "flexible" | "fixed" | "fixed_flexible";
+export type DietStructure = "daily" | "weekly";
+export type DayOfWeek = "lun" | "mar" | "mer" | "jeu" | "ven" | "sam" | "dim" | "high";
 
 export interface DietPlan {
   id: string;
   client_id: string;
   name: string;
   mode: DietMode;
+  structure: DietStructure;
   is_active: boolean;
   created_by: string | null;
   created_at: string;
@@ -146,6 +149,7 @@ export interface DietPlanMeal {
   food_id: string;
   quantity_g: number;
   position: number;
+  day_of_week: DayOfWeek | null;
   foods?: Food;
 }
 

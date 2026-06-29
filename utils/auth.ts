@@ -34,6 +34,7 @@ export interface Profile {
   competition_category: string | null;
   competition_date: string | null;
   photo_frequency: "weekly" | "daily";
+  season_mode: "off_season" | "prep" | null;
   subscription_status: "free" | "active" | "canceled";
   subscription_plan: string | null;
   level: string | null;
@@ -44,7 +45,7 @@ export interface Profile {
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {

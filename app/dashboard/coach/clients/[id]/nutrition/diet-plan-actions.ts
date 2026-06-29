@@ -3,20 +3,22 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
-import type { DietMode } from "@/utils/nutrition";
+import type { DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 
 export interface DietPlanMealInput {
   meal_slot: string;
   food_id: string;
   quantity_g: number;
   position: number;
+  day_of_week?: DayOfWeek | null;
 }
 
 export async function createDietPlan(
   clientId: string,
   name: string,
   mode: DietMode,
-  meals: DietPlanMealInput[]
+  meals: DietPlanMealInput[],
+  structure: DietStructure = "daily"
 ): Promise<{ error?: string; id?: string }> {
   try {
     const guard = await requireCoach();
@@ -38,6 +40,7 @@ export async function createDietPlan(
         client_id: clientId,
         name,
         mode,
+        structure,
         is_active: true,
         created_by: guard.userId,
       })

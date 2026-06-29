@@ -7,49 +7,25 @@ import {
   Dumbbell,
   Clock,
   Zap,
-  Trophy,
   ChevronRight,
-  Star,
   Calendar,
   Plus,
   Upload,
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
 import type { ProgramWithDays } from "@/utils/programs";
-import type { Session, PersonalRecord } from "@/utils/sessions";
+import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
+import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
 
 interface Props {
   program: ProgramWithDays | null;
-  sessions: Session[];
+  sessions: SessionWithSets[];
   records: PersonalRecord[];
-  prMap: Record<string, number>;
   isFree?: boolean;
   subNavScope?: "client" | "coach-moi";
 }
-
-const TOOLTIP_STYLE = {
-  contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137,4,4,0.4)",
-    borderRadius: "8px",
-    color: "#F5EDED",
-    fontSize: "11px",
-  },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
-};
-
-const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -283,139 +259,7 @@ function ImportLogbookButton() {
     </div>
   );
 }
-
-// Records chart — grouped by exercise
-function RecordsSection({
-  records,
-  prMap,
-}: {
-  records: PersonalRecord[];
-  prMap: Record<string, number>;
-}) {
-  const [selectedExercise, setSelectedExercise] = useState<string | null>(null);
-
-  // Get unique exercises from records
-  const exercises = [...new Set(records.map((r) => r.exercise_name))];
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  if (exercises.length === 0) {
-    return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
-        <Trophy size={28} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm text-[#F5EDED]/40">
-          Tes records personnels apparaîtront ici après ta première séance
-        </p>
-      </div>
-    );
-  }
-
-  const current = selectedExercise ?? exercises[0];
-  const exerciseRecords = records
-    .filter((r) => r.exercise_name === current)
-    .sort((a, b) => a.achieved_at.localeCompare(b.achieved_at));
-
-  const bestWeight = prMap[current.toLowerCase()] ?? null;
-  const latestPR = records.find((r) => r.exercise_name === current);
-  const isRecentPR =
-    latestPR && new Date(latestPR.achieved_at) > sevenDaysAgo;
-
-  const chartData = exerciseRecords.map((r) => ({
-    date: new Intl.DateTimeFormat("fr-FR", {
-      day: "numeric",
-      month: "short",
-    }).format(new Date(r.achieved_at + "T12:00:00")),
-    poids: r.weight_kg,
-  }));
-
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-      {/* Exercise selector */}
-      <div className="flex flex-wrap gap-1.5 mb-5">
-        {exercises.map((ex) => {
-          const hasRecentPR =
-            !!records.find(
-              (r) =>
-                r.exercise_name === ex &&
-                new Date(r.achieved_at) > sevenDaysAgo
-            );
-          return (
-            <button
-              key={ex}
-              onClick={() => setSelectedExercise(ex)}
-              className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors flex items-center gap-1 ${
-                current === ex
-                  ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/30"
-                  : "text-[#F5EDED]/40 border-[#890404]/20 hover:border-[#890404]/40"
-              }`}
-            >
-              {ex}
-              {hasRecentPR && (
-                <Star size={9} fill="#fbbf24" className="text-amber-400" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Best weight */}
-      <div className="flex items-center gap-3 mb-4">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">
-            Record personnel
-          </p>
-          <div className="flex items-center gap-2">
-            <p className="text-3xl font-black text-white">
-              {bestWeight != null ? bestWeight : "—"}
-              {bestWeight != null && (
-                <span className="text-sm font-normal text-[#F5EDED]/40 ml-1">
-                  kg
-                </span>
-              )}
-            </p>
-            {isRecentPR && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 animate-pulse">
-                🏆 Nouveau PR
-              </span>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Chart */}
-      {chartData.length > 1 && (
-        <div className="h-32">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="rgba(137,4,4,0.15)"
-              />
-              <XAxis dataKey="date" tick={TICK_STYLE} axisLine={false} tickLine={false} />
-              <YAxis
-                tick={TICK_STYLE}
-                axisLine={false}
-                tickLine={false}
-                domain={["auto", "auto"]}
-              />
-              <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`${v} kg`, "Charge"]} />
-              <Line
-                type="monotone"
-                dataKey="poids"
-                stroke="#E01E1E"
-                strokeWidth={2}
-                dot={{ fill: "#E01E1E", r: 3 }}
-                activeDot={{ r: 5 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      )}
-    </div>
-  );
-}
-
-export default function LogbookClient({ program, sessions, records, prMap, isFree, subNavScope = "client" }: Props) {
+export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client" }: Props) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sessionBasePath =
@@ -553,10 +397,10 @@ export default function LogbookClient({ program, sessions, records, prMap, isFre
         </section>
       )}
 
-      {/* ── Mes records ── */}
+      {/* ── Mes performances ── */}
       <section>
-        <SectionLabel>Mes records</SectionLabel>
-        <RecordsSection records={records} prMap={prMap} />
+        <SectionLabel>Mes performances</SectionLabel>
+        <ExerciseProgressionChart sessions={sessions} records={records} />
       </section>
     </div>
   );

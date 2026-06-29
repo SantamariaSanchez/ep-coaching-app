@@ -12,6 +12,7 @@ import type {
   FoodLogWithFood,
   DietPlanWithMeals,
   DietMode,
+  DietStructure,
 } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
@@ -250,7 +251,7 @@ interface Props {
   allPlans: DietPlanWithMeals[];
   today: string;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
-  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[]) => Promise<{ error?: string; id?: string }>;
+  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
@@ -354,8 +355,8 @@ export default function CoachClientNutritionTabs({
             <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
               <PlanBuilder
                 foods={foods}
-                onCreate={async (name, mode, meals) => {
-                  await createDietPlan(clientId, name, mode, meals);
+                onCreate={async (name, mode, meals, structure) => {
+                  await createDietPlan(clientId, name, mode, meals, structure);
                   setShowBuilder(false);
                 }}
               />
