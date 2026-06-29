@@ -1,10 +1,11 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getUser } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
-import type { Food, NutritionProfileInput } from "@/utils/nutrition";
+import type { Food, NutritionProfileInput, DietMode } from "@/utils/nutrition";
+import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 // Self-serve nutrition targets — only available to free-tier community
 // members. They set and adjust their own targets, no coach review.
@@ -137,6 +138,126 @@ export async function createCustomFood(params: {
 
     if (error || !data) return { error: "Erreur lors de la création." };
     return { food: data as Food };
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Self-serve diet plans — free-tier community members build and manage
+// their own plans, no coach involved. Paying clients' plans stay coach-only.
+async function guardFreeMember(): Promise<{ ok: true; userId: string } | { ok: false; error: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { ok: false, error: guard.error };
+  const profile = await getProfile(guard.userId);
+  if (isSubscribed(profile)) {
+    return { ok: false, error: "Ton plan est géré par ton coach." };
+  }
+  return { ok: true, userId: guard.userId };
+}
+
+export async function createOwnDietPlan(
+  name: string,
+  mode: DietMode,
+  meals: DietPlanMealInput[]
+): Promise<{ error?: string; id?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: false })
+      .eq("client_id", guard.userId)
+      .eq("is_active", true);
+
+    const { data: plan, error: planError } = await supabase
+      .from("diet_plans")
+      .insert({
+        client_id: guard.userId,
+        name,
+        mode,
+        is_active: true,
+        created_by: guard.userId,
+      })
+      .select("id")
+      .single();
+
+    if (planError || !plan) return { error: "Erreur lors de la création du plan." };
+
+    if (meals.length > 0) {
+      const { error: mealsError } = await supabase
+        .from("diet_plan_meals")
+        .insert(meals.map((m) => ({ ...m, plan_id: plan.id })));
+      if (mealsError) return { error: "Erreur lors de l'ajout des repas." };
+    }
+
+    revalidatePath("/dashboard/client/nutrition");
+    return { id: plan.id };
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function activateOwnDietPlan(planId: string): Promise<{ error?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: false })
+      .eq("client_id", guard.userId)
+      .eq("is_active", true);
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: true })
+      .eq("id", planId)
+      .eq("client_id", guard.userId);
+
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deactivateOwnDietPlan(planId: string): Promise<{ error?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: false })
+      .eq("id", planId)
+      .eq("client_id", guard.userId);
+
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deleteOwnDietPlan(planId: string): Promise<{ error?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("diet_plans")
+      .delete()
+      .eq("id", planId)
+      .eq("client_id", guard.userId);
+    if (error) return { error: "Erreur lors de la suppression." };
+
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
   } catch {
     return { error: "Erreur inattendue." };
   }

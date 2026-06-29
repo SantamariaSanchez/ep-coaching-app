@@ -79,6 +79,59 @@ export async function deactivateDietPlan(
       .eq("id", planId);
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/client/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function activateDietPlan(
+  clientId: string,
+  planId: string
+): Promise<{ error?: string }> {
+  try {
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
+
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
+
+    // Only one active plan per client at a time
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: false })
+      .eq("client_id", clientId)
+      .eq("is_active", true);
+
+    await supabase
+      .from("diet_plans")
+      .update({ is_active: true })
+      .eq("id", planId);
+
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/client/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deleteDietPlan(
+  clientId: string,
+  planId: string
+): Promise<{ error?: string }> {
+  try {
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
+
+    const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
+    const { error } = await supabase.from("diet_plans").delete().eq("id", planId);
+    if (error) return { error: "Erreur lors de la suppression." };
+
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/client/nutrition`);
     revalidatePath(`/dashboard/coach/moi/nutrition`);
     return {};
   } catch {

@@ -8,12 +8,17 @@ import {
   getLast30DaysLogs,
   getAllFoods,
   getActiveDietPlan,
-  getAllDietPlans,
+  getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import CoachMoiNutritionTabs from "@/components/ui/CoachMoiNutritionTabs";
 import { addFoodLog, removeFoodLog, createCustomFood } from "@/app/dashboard/client/nutrition/actions";
 import { saveNutritionProfile } from "@/app/dashboard/coach/clients/[id]/nutrition/actions";
-import { createDietPlan, deactivateDietPlan } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import {
+  createDietPlan,
+  deactivateDietPlan,
+  activateDietPlan,
+  deleteDietPlan,
+} from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 export default async function CoachMonNutritionPage() {
   const supabase = await createServerSupabase();
@@ -31,7 +36,7 @@ export default async function CoachMonNutritionPage() {
     getLast30DaysLogs(user.id),
     getAllFoods(),
     getActiveDietPlan(user.id),
-    getAllDietPlans(user.id),
+    getAllDietPlansWithMeals(user.id),
   ]);
 
   return (
@@ -69,6 +74,8 @@ export default async function CoachMonNutritionPage() {
           saveNutritionProfile,
           createDietPlan,
           deactivateDietPlan,
+          activateDietPlan,
+          deleteDietPlan,
         }}
       />
     </div>

@@ -6,10 +6,21 @@ import {
   getLast30DaysLogs,
   getAllFoods,
   getActiveDietPlan,
+  getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
-import { addFoodLog, removeFoodLog, createCustomFood, saveOwnNutritionProfile } from "./actions";
+import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
+import {
+  addFoodLog,
+  removeFoodLog,
+  createCustomFood,
+  saveOwnNutritionProfile,
+  createOwnDietPlan,
+  activateOwnDietPlan,
+  deactivateOwnDietPlan,
+  deleteOwnDietPlan,
+} from "./actions";
 
 export default async function ClientNutritionPage() {
   const user = await getUser();
@@ -20,17 +31,18 @@ export default async function ClientNutritionPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan] =
-    await Promise.all([
-      getNutritionProfile(user.id),
-      getTodayLogs(user.id, today),
-      getLast30DaysLogs(user.id),
-      getAllFoods(),
-      getActiveDietPlan(user.id),
-    ]);
-
   // Free community members set and adjust their own targets — no coach review.
   if (!isSubscribed(profile)) {
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans] =
+      await Promise.all([
+        getNutritionProfile(user.id),
+        getTodayLogs(user.id, today),
+        getLast30DaysLogs(user.id),
+        getAllFoods(),
+        getActiveDietPlan(user.id),
+        getAllDietPlansWithMeals(user.id),
+      ]);
+
     return (
       <div>
         <div className="px-6 pt-8 max-w-2xl mx-auto">
@@ -49,6 +61,15 @@ export default async function ClientNutritionPage() {
           />
         </div>
 
+        <OwnDietPlansSection
+          foods={foods}
+          plans={allPlans}
+          createOwnDietPlan={createOwnDietPlan}
+          activateOwnDietPlan={activateOwnDietPlan}
+          deactivateOwnDietPlan={deactivateOwnDietPlan}
+          deleteOwnDietPlan={deleteOwnDietPlan}
+        />
+
         <ClientNutritionView
           today={today}
           nutritionProfile={nutritionProfile}
@@ -64,6 +85,15 @@ export default async function ClientNutritionPage() {
       </div>
     );
   }
+
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan] =
+    await Promise.all([
+      getNutritionProfile(user.id),
+      getTodayLogs(user.id, today),
+      getLast30DaysLogs(user.id),
+      getAllFoods(),
+      getActiveDietPlan(user.id),
+    ]);
 
   return (
     <ClientNutritionView

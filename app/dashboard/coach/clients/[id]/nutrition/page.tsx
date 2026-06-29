@@ -7,10 +7,15 @@ import {
   getLast30DaysLogs,
   getAllFoods,
   getActiveDietPlan,
-  getAllDietPlans,
+  getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import { saveNutritionProfile } from "./actions";
-import { createDietPlan, deactivateDietPlan } from "./diet-plan-actions";
+import {
+  createDietPlan,
+  deactivateDietPlan,
+  activateDietPlan,
+  deleteDietPlan,
+} from "./diet-plan-actions";
 import CoachClientNutritionTabs from "@/components/ui/CoachClientNutritionTabs";
 import { ChevronLeft } from "lucide-react";
 
@@ -41,7 +46,7 @@ export default async function CoachClientNutritionPage({
       getLast30DaysLogs(id),
       getAllFoods(),
       getActiveDietPlan(id),
-      getAllDietPlans(id),
+      getAllDietPlansWithMeals(id),
     ]);
 
   return (
@@ -76,6 +81,8 @@ export default async function CoachClientNutritionPage({
         saveNutritionProfile={saveNutritionProfile}
         createDietPlan={createDietPlan}
         deactivateDietPlan={deactivateDietPlan}
+        activateDietPlan={activateDietPlan}
+        deleteDietPlan={deleteDietPlan}
       />
     </div>
   );

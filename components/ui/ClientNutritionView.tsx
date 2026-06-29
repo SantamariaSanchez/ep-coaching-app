@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import type {
@@ -10,6 +10,7 @@ import type {
   FoodLogWithFood,
   DietMode,
   DietPlanWithMeals,
+  DietPlanMeal,
 } from "@/utils/nutrition";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -333,6 +334,50 @@ export default function ClientNutritionView({
     }
   }
 
+  async function handleTogglePlanItem(meal: DietPlanMeal, matchedLogId: string | undefined) {
+    if (matchedLogId) {
+      setTodayLogs((prev) => prev.filter((l) => l.id !== matchedLogId));
+      await removeFoodLog(matchedLogId);
+      return;
+    }
+    if (!meal.foods) return;
+    const macros = calcMacros(meal.foods, meal.quantity_g);
+    const optimisticId = `optimistic-${Date.now()}`;
+    const optimisticLog: FoodLogWithFood = {
+      id: optimisticId,
+      client_id: "",
+      food_id: meal.food_id,
+      meal_slot: meal.meal_slot,
+      quantity_g: meal.quantity_g,
+      logged_at: today,
+      calories: macros.calories,
+      proteins: macros.proteins,
+      carbs: macros.carbs,
+      fats: macros.fats,
+      foods: meal.foods,
+    };
+    setTodayLogs((prev) => [...prev, optimisticLog]);
+
+    const result = await addFoodLog({
+      foodId: meal.food_id,
+      mealSlot: meal.meal_slot,
+      quantityG: meal.quantity_g,
+      calories: macros.calories,
+      proteins: macros.proteins,
+      carbs: macros.carbs,
+      fats: macros.fats,
+      loggedAt: today,
+    });
+
+    if (result.error) {
+      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticId));
+    } else if (result.id) {
+      setTodayLogs((prev) =>
+        prev.map((l) => (l.id === optimisticId ? { ...l, id: result.id! } : l))
+      );
+    }
+  }
+
   async function handleDelete(logId: string) {
     const idx = todayLogs.findIndex((l) => l.id === logId);
     const backup = todayLogs[idx];
@@ -422,7 +467,11 @@ export default function ClientNutritionView({
 
       {/* Coach's prescribed plan */}
       {activePlan && activePlan.diet_plan_meals.length > 0 && (
-        <DietPlanCard plan={activePlan} />
+        <DietPlanCard
+          plan={activePlan}
+          todayLogs={todayLogs}
+          onToggle={handleTogglePlanItem}
+        />
       )}
 
       {/* Tabs */}
@@ -909,8 +958,17 @@ export default function ClientNutritionView({
 
 // ── DietPlanCard ──────────────────────────────────────────────────────────────
 
-function DietPlanCard({ plan }: { plan: DietPlanWithMeals }) {
+function DietPlanCard({
+  plan,
+  todayLogs,
+  onToggle,
+}: {
+  plan: DietPlanWithMeals;
+  todayLogs: FoodLogWithFood[];
+  onToggle: (meal: DietPlanMeal, matchedLogId: string | undefined) => void;
+}) {
   const [expanded, setExpanded] = useState(true);
+  const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
 
   const bySlot = useMemo(() => {
     const map: Record<string, typeof plan.diet_plan_meals> = {};
@@ -925,6 +983,28 @@ function DietPlanCard({ plan }: { plan: DietPlanWithMeals }) {
     return map;
   }, [plan.diet_plan_meals]);
 
+  // Match each plan item to an unclaimed log of the same food/slot/quantity logged today
+  const checkedMap = useMemo(() => {
+    const map: Record<string, string | undefined> = {};
+    const used = new Set<string>();
+    for (const m of plan.diet_plan_meals) {
+      const match = todayLogs.find(
+        (l) =>
+          !used.has(l.id) &&
+          l.food_id === m.food_id &&
+          l.meal_slot === m.meal_slot &&
+          l.quantity_g === m.quantity_g
+      );
+      if (match) {
+        map[m.id] = match.id;
+        used.add(match.id);
+      }
+    }
+    return map;
+  }, [plan.diet_plan_meals, todayLogs]);
+
+  const doneCount = Object.values(checkedMap).filter(Boolean).length;
+
   return (
     <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl overflow-hidden mb-6">
       <div
@@ -934,6 +1014,11 @@ function DietPlanCard({ plan }: { plan: DietPlanWithMeals }) {
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
             Plan de ton coach
+            {checkable && (
+              <span className="ml-2 text-[#F5EDED]/30 font-normal">
+                {doneCount}/{plan.diet_plan_meals.length} cochés
+              </span>
+            )}
           </p>
           <p className="text-sm font-black text-white">{plan.name}</p>
         </div>
@@ -952,22 +1037,48 @@ function DietPlanCard({ plan }: { plan: DietPlanWithMeals }) {
                 {slot.label}
               </p>
               <div className="space-y-1">
-                {bySlot[slot.key].map((m) => (
-                  <div
-                    key={m.id}
-                    className="flex items-center justify-between py-1"
-                  >
-                    <p className="text-xs text-white font-medium">
-                      {m.foods?.name ?? "Aliment"}
-                    </p>
-                    <p className="text-[10px] text-[#F5EDED]/35">
-                      {m.quantity_g}g
-                      {m.foods
-                        ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
-                        : ""}
-                    </p>
-                  </div>
-                ))}
+                {bySlot[slot.key].map((m) => {
+                  const matchedLogId = checkedMap[m.id];
+                  const isChecked = !!matchedLogId;
+                  return (
+                    <div
+                      key={m.id}
+                      className={`flex items-center gap-3 py-1.5 ${
+                        checkable ? "cursor-pointer" : ""
+                      }`}
+                      onClick={
+                        checkable ? () => onToggle(m, matchedLogId) : undefined
+                      }
+                    >
+                      {checkable && (
+                        <span
+                          className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                            isChecked
+                              ? "bg-[#E01E1E] border-[#E01E1E]"
+                              : "border-[#890404]/40 bg-transparent"
+                          }`}
+                        >
+                          {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
+                        </span>
+                      )}
+                      <div className="flex-1 flex items-center justify-between min-w-0">
+                        <p
+                          className={`text-xs font-medium truncate ${
+                            isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
+                          }`}
+                        >
+                          {m.foods?.name ?? "Aliment"}
+                        </p>
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                          {m.quantity_g}g
+                          {m.foods
+                            ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ))}

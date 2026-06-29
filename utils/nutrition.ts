@@ -296,6 +296,22 @@ export async function getAllDietPlans(
   }
 }
 
+export async function getAllDietPlansWithMeals(
+  clientId: string
+): Promise<DietPlanWithMeals[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data } = await supabase
+      .from("diet_plans")
+      .select("*, diet_plan_meals(*, foods(*))")
+      .eq("client_id", clientId)
+      .order("created_at", { ascending: false });
+    return (data as DietPlanWithMeals[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // ── Adherence ─────────────────────────────────────────────────────────────────
 
 export async function calculateWeeklyAdherence(
