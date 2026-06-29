@@ -8,7 +8,7 @@ import {
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
-  Brain, MessageSquareText,
+  Brain, MessageSquareText, LibraryBig,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -52,7 +52,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Training",
     icon: Dumbbell,
     href: "/dashboard/client/program",
-    matchSegments: ["program", "logbook"],
+    matchSegments: ["program", "logbook", "exercises"],
   },
   {
     label: "Suivi",
@@ -97,7 +97,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Training",
     icon: Dumbbell,
     href: "/dashboard/client/program",
-    matchSegments: ["program", "logbook", "roadmap"],
+    matchSegments: ["program", "logbook", "roadmap", "exercises"],
   },
   {
     label: "Suivi",
@@ -130,6 +130,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
       { label: "Programme", icon: Dumbbell, segment: "program" },
       { label: "Logbook", icon: BookOpen, segment: "logbook" },
       { label: "Road Map", icon: Map, segment: "roadmap" },
+      { label: "Bibliothèque", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
@@ -211,7 +212,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises"],
   },
   {
     label: "Communauté",
@@ -247,6 +248,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
       { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
+      { label: "Bibliothèque d'exercices", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
@@ -290,6 +292,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Programme", icon: Dumbbell,  segment: "program" },
       { label: "Logbook",   icon: BookOpen,  segment: "logbook" },
       { label: "Road Map",  icon: Map,       segment: "roadmap" },
+      { label: "Bibliothèque", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
