@@ -93,7 +93,14 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
 // ── Main page ─────────────────────────────────────────────────────────────────
 
 export default function ClientAuthPage() {
-  const [tab, setTab] = useState<"inscription" | "connexion">("inscription");
+  // Lead-magnet links can deep-link straight to the login tab (?mode=login)
+  // — read synchronously via a lazy initializer instead of an effect, no
+  // Suspense boundary needed since this skips useSearchParams() entirely.
+  const [tab, setTab] = useState<"inscription" | "connexion">(() =>
+    typeof window !== "undefined" && new URLSearchParams(window.location.search).get("mode") === "login"
+      ? "connexion"
+      : "inscription"
+  );
 
   return (
     <div
