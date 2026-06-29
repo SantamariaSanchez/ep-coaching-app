@@ -1,0 +1,67 @@
+import { createServerSupabase } from "@/lib/supabase-server";
+import type {
+  Allergen,
+  Diet,
+  MealType,
+  Phase,
+  Season,
+  Temp,
+} from "@/lib/recipes-data";
+
+export interface CommunityRecipe {
+  id: string;
+  author_id: string;
+  author_name: string;
+  author_avatar_url: string | null;
+  name: string;
+  meal: MealType;
+  diet: Diet[];
+  phases: Phase[];
+  season: Season[];
+  temp: Temp;
+  texture: string[];
+  price: 1 | 2 | 3;
+  region: string | null;
+  prep_minutes: number;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  allergens: Allergen[];
+  ingredients: string[];
+  steps: string[];
+  tip: string | null;
+  created_at: string;
+}
+
+export async function getCommunityRecipes(): Promise<CommunityRecipe[]> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data: recipes } = await supabase
+      .from("community_recipes")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!recipes || recipes.length === 0) return [];
+
+    const authorIds = [...new Set(recipes.map((r) => r.author_id as string))];
+    const { data: authors } = await supabase
+      .from("profiles")
+      .select("id, full_name, avatar_url")
+      .in("id", authorIds);
+
+    type AuthorRow = { id: string; full_name: string | null; avatar_url: string | null };
+    const authorMap: Record<string, AuthorRow> = {};
+    for (const a of (authors ?? []) as AuthorRow[]) {
+      authorMap[a.id] = a;
+    }
+
+    return recipes.map((r) => ({
+      ...r,
+      author_name: authorMap[r.author_id]?.full_name ?? "Membre",
+      author_avatar_url: authorMap[r.author_id]?.avatar_url ?? null,
+    })) as CommunityRecipe[];
+  } catch {
+    return [];
+  }
+}
