@@ -135,6 +135,7 @@ export async function getAllClientsNotesSummary(): Promise<ClientNoteSummary[]> 
         .from("profiles")
         .select("id, full_name")
         .eq("role", "client")
+        .eq("subscription_status", "active")
         .order("full_name"),
       supabase
         .from("coach_notes")

@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCommunityPostCount } from "@/utils/community";
 import ProfileHeader from "@/components/profile/ProfileHeader";
+import BackButton from "@/components/ui/BackButton";
 
 export default async function ClientPublicProfilePage({
   params,
@@ -21,6 +22,8 @@ export default async function ClientPublicProfilePage({
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <BackButton fallbackHref="/dashboard/client/communaute/victoires" />
+
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Communauté

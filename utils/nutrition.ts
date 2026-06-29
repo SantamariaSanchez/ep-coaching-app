@@ -361,11 +361,13 @@ export async function getAllClientsNutritionSummary(
     const { createAdminClient } = await import("@/lib/supabase-admin");
     const supabase = createAdminClient();
 
-    // Get all clients
+    // Get all paying clients — free community members aren't coached and
+    // shouldn't show up in the coach's nutrition overview.
     const { data: clients } = await supabase
       .from("profiles")
       .select("id, full_name")
-      .eq("role", "client");
+      .eq("role", "client")
+      .eq("subscription_status", "active");
 
     if (!clients || clients.length === 0) return [];
 
