@@ -80,7 +80,7 @@ export default function HomePage() {
             letterSpacing: "0.04em",
           }}
         >
-          La communauté fitness qui te pousse à aller plus loin
+          L'espace coaching musculation : programmes, nutrition, suivi & communauté
         </p>
       </div>
 
@@ -96,9 +96,9 @@ export default function HomePage() {
         }}
       >
         {[
-          { icon: Target, label: "Objectifs" },
-          { icon: Zap,    label: "Intensité" },
-          { icon: TrendingUp, label: "Résultats" },
+          { icon: Target, label: "Programmes" },
+          { icon: Zap,    label: "Nutrition" },
+          { icon: TrendingUp, label: "Suivi" },
         ].map(({ icon: Icon, label }) => (
           <div
             key={label}
@@ -161,7 +161,7 @@ export default function HomePage() {
           color: "rgba(245,237,237,0.3)",
           fontWeight: 500,
         }}>
-          Gratuit — ressources, victoires, questions entre membres
+          Gratuit — programmes, nutrition, suivi, logbook & communauté
         </p>
       </div>
 
@@ -200,7 +200,7 @@ export default function HomePage() {
           zIndex: 1,
         }}
       >
-        EP Coaching · Performance & Résultats
+        EP Coaching · Coaching Musculation & Performance
       </p>
     </div>
   );
