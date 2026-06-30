@@ -1,12 +1,15 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import type { ScienceArticle, ScienceStudy } from "@/utils/science-types";
 
 export type { ScienceArticleType, ScienceArticle, ScienceStudy } from "@/utils/science-types";
 export { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, STUDY_STATUS_LABELS } from "@/utils/science-types";
 
+// Contenu de référence partagé (pas scopé à l'utilisateur) — lu via le
+// client admin pour que l'affichage ne dépende jamais de la config RLS sur
+// ces tables (même fix que exercise_library/gyms/foods, voir 28c1d21).
 export async function getScienceArticles(opts: { actualiteOnly?: boolean } = {}): Promise<ScienceArticle[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     let query = supabase
       .from("science_articles")
       .select("*")
@@ -21,7 +24,7 @@ export async function getScienceArticles(opts: { actualiteOnly?: boolean } = {})
 
 export async function getScienceStudies(): Promise<ScienceStudy[]> {
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("science_studies")
       .select("*")
