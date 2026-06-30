@@ -66,7 +66,7 @@ Qu'est-ce qui s'est passé cette semaine ? Dis-moi franchement, qu'on puisse aju
       id: "calories",
       label: "Ajustement calorique",
       icon: Flame,
-      color: "#E01E1E",
+      color: "var(--color-ep-red)",
       subject: "Ajustement de tes calories",
       body: `${first} 👋
 
@@ -132,7 +132,7 @@ function CopyButton({ text }: { text: string }) {
       className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${
         copied
           ? "bg-green-500/20 text-green-400 border border-green-500/30"
-          : "bg-[#F5EDED]/5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 hover:bg-[#F5EDED]/10 border border-[#890404]/20"
+          : "bg-[var(--color-ep-light)]/5 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 hover:bg-[var(--color-ep-light)]/10 border border-[var(--color-ep-dark-red)]/20"
       }`}
     >
       {copied ? (
@@ -159,7 +159,7 @@ function TemplateCard({
   const Icon = template.icon;
 
   return (
-    <div className="bg-[#1f0101]/60 border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className="bg-[var(--color-ep-card)]/60 border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center justify-between px-5 py-4 text-left hover:bg-white/[0.02] transition-colors"
@@ -173,7 +173,7 @@ function TemplateCard({
           </div>
           <div>
             <p className="text-sm font-bold text-white">{template.label}</p>
-            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest mt-0.5 font-semibold">
+            <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest mt-0.5 font-semibold">
               {template.subject}
             </p>
           </div>
@@ -183,7 +183,7 @@ function TemplateCard({
           height="14"
           viewBox="0 0 14 14"
           fill="none"
-          className={`flex-shrink-0 transition-transform text-[#F5EDED]/30 ${expanded ? "rotate-180" : ""}`}
+          className={`flex-shrink-0 transition-transform text-[var(--color-ep-light)]/30 ${expanded ? "rotate-180" : ""}`}
         >
           <path
             d="M2.5 5L7 9.5L11.5 5"
@@ -196,8 +196,8 @@ function TemplateCard({
       </button>
 
       {expanded && (
-        <div className="px-5 pb-5 border-t border-[#890404]/20">
-          <pre className="mt-4 text-sm text-[#F5EDED]/75 whitespace-pre-wrap leading-relaxed font-sans bg-black/20 rounded-lg px-4 py-3 border border-[#890404]/15">
+        <div className="px-5 pb-5 border-t border-[var(--color-ep-dark-red)]/20">
+          <pre className="mt-4 text-sm text-[var(--color-ep-light)]/75 whitespace-pre-wrap leading-relaxed font-sans bg-black/20 rounded-lg px-4 py-3 border border-[var(--color-ep-dark-red)]/15">
             {template.body}
           </pre>
           <div className="mt-3 flex justify-end">

@@ -79,7 +79,7 @@ export default function ClientDashboardStats() {
   const adherenceColor =
     stats.adherence >= 80 ? "#4ade80"
     : stats.adherence >= 50 ? "#fbbf24"
-    : "#E01E1E";
+    : "var(--color-ep-red)";
 
   return (
     <>
@@ -127,8 +127,8 @@ export default function ClientDashboardStats() {
             max={100}
             size={110}
             strokeWidth={9}
-            color="#E01E1E"
-            trackColor="rgba(224,30,30,0.07)"
+            color="var(--color-ep-red)"
+            trackColor="rgba(var(--color-ep-red-rgb),0.07)"
             label="Nutrition"
             unit="%"
             sublabel={`${stats.consumedCals} / ${stats.targetCals} kcal`}
@@ -164,8 +164,8 @@ export default function ClientDashboardStats() {
             alignItems: "center",
             gap: 14,
             padding: "16px 20px",
-            background: "linear-gradient(135deg, rgba(224,30,30,0.12) 0%, rgba(137,4,4,0.08) 100%)",
-            border: "1px solid rgba(224,30,30,0.22)",
+            background: "linear-gradient(135deg, rgba(var(--color-ep-red-rgb),0.12) 0%, rgba(var(--color-ep-dark-red-rgb),0.08) 100%)",
+            border: "1px solid rgba(var(--color-ep-red-rgb),0.22)",
             borderRadius: "var(--radius-lg)",
             textDecoration: "none",
             marginBottom: 16,
@@ -176,23 +176,23 @@ export default function ClientDashboardStats() {
             width: 40,
             height: 40,
             borderRadius: 12,
-            background: "rgba(224,30,30,0.15)",
+            background: "rgba(var(--color-ep-red-rgb),0.15)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             flexShrink: 0,
           }}>
-            <ClipboardList size={18} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            <ClipboardList size={18} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.8} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--color-ep-light)" }}>
               Check-in semaine {stats.weekNumber}
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
               Partage ton ressenti avec ton coach
             </p>
           </div>
-          <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />
+          <ChevronRight size={16} style={{ color: "rgba(var(--color-ep-light-rgb),0.25)", flexShrink: 0 }} />
         </Link>
       )}
     </>

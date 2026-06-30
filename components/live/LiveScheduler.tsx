@@ -6,7 +6,7 @@ import { LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
 import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
 export default function LiveScheduler({
   clients,
@@ -59,7 +59,7 @@ export default function LiveScheduler({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mb-5"
+        className="flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mb-5"
       >
         <Plus size={13} /> Programmer un live
       </button>
@@ -67,8 +67,8 @@ export default function LiveScheduler({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-3 mb-5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">Programmer un live</p>
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 space-y-3 mb-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">Programmer un live</p>
 
       <select value={type} onChange={(e) => setType(e.target.value as LiveType)} className={inputCls}>
         {Object.entries(LIVE_TYPE_LABELS).map(([k, l]) => (
@@ -110,11 +110,11 @@ export default function LiveScheduler({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {submitting ? <Loader2 size={13} className="animate-spin" /> : "Programmer"}
         </button>
-        <button onClick={() => setOpen(false)} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+        <button onClick={() => setOpen(false)} className="text-xs text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors">
           Annuler
         </button>
       </div>

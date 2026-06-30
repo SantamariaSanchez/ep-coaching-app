@@ -26,7 +26,7 @@ export default function SeedLibraryButton({
       <button
         onClick={handleClick}
         disabled={loading}
-        className="inline-flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 hover:border-[#890404]/60 rounded-lg transition-colors disabled:opacity-50"
+        className="inline-flex items-center gap-1.5 px-3 py-2 text-[10px] font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/30 text-[var(--color-ep-light)]/50 hover:text-[var(--color-ep-light)]/80 hover:border-[var(--color-ep-dark-red)]/60 rounded-lg transition-colors disabled:opacity-50"
       >
         <DatabaseZap size={12} />
         {loading ? "Import en cours…" : label}

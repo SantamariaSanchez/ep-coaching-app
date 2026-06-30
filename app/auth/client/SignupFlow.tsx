@@ -9,9 +9,9 @@ import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--color-ep-light)",
   padding: "11px 14px",
   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
   fontWeight: 500,
@@ -25,7 +25,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.8)",
+  color: "rgba(var(--color-ep-red-rgb),0.8)",
   marginBottom: 7,
 };
 
@@ -54,9 +54,9 @@ function ChoiceGrid({
             style={{
               padding: "16px 12px",
               borderRadius: 10,
-              border: `1px solid ${active ? "rgba(224,30,30,0.5)" : "rgba(224,30,30,0.15)"}`,
-              background: active ? "rgba(224,30,30,0.12)" : "rgba(0,0,0,0.3)",
-              color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
+              border: `1px solid ${active ? "rgba(var(--color-ep-red-rgb),0.5)" : "rgba(var(--color-ep-red-rgb),0.15)"}`,
+              background: active ? "rgba(var(--color-ep-red-rgb),0.12)" : "rgba(0,0,0,0.3)",
+              color: active ? "var(--color-ep-light)" : "rgba(var(--color-ep-light-rgb),0.55)",
               fontWeight: active ? 700 : 600,
               fontSize: 13,
               cursor: "pointer",
@@ -148,7 +148,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               flex: 1,
               height: 3,
               borderRadius: 2,
-              background: i <= stepIndex ? "#E01E1E" : "rgba(224,30,30,0.15)",
+              background: i <= stepIndex ? "var(--color-ep-red)" : "rgba(var(--color-ep-red-rgb),0.15)",
               transition: "background 0.2s",
             }}
           />
@@ -157,7 +157,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
       {step === "info" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
+          <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--color-ep-light)", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
             Crée ton compte
           </h2>
           <div>
@@ -177,7 +177,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
       {step === "objectif" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
+          <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--color-ep-light)", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
             Quel est ton objectif principal ?
           </h2>
           <ChoiceGrid options={OBJECTIFS} value={objectif} onChange={setObjectif} />
@@ -186,7 +186,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
       {step === "niveau" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
+          <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--color-ep-light)", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
             Ton niveau actuel ?
           </h2>
           <ChoiceGrid options={NIVEAUX} value={niveau} onChange={setNiveau} />
@@ -195,7 +195,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
       {step === "source" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
+          <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--color-ep-light)", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
             Comment as-tu connu EP Coaching ?
           </h2>
           <ChoiceGrid options={SOURCES} value={source} onChange={setSource} />
@@ -205,10 +205,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
       {step === "choix" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
-            <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
+            <h2 style={{ fontWeight: 800, fontSize: 19, color: "var(--color-ep-light)", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
               Dernière étape
             </h2>
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.4)", margin: 0 }}>
               Rejoins la communauté gratuitement, ou passe directement en coaching premium.
             </p>
           </div>
@@ -220,29 +220,29 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "16px 18px", borderRadius: 12,
-              border: "1px solid rgba(245,237,237,0.15)",
-              background: "rgba(245,237,237,0.04)",
-              color: "#F5EDED", cursor: "pointer", textAlign: "left",
+              border: "1px solid rgba(var(--color-ep-light-rgb),0.15)",
+              background: "rgba(var(--color-ep-light-rgb),0.04)",
+              color: "var(--color-ep-light)", cursor: "pointer", textAlign: "left",
             }}
           >
-            <Heart size={20} style={{ color: "rgba(245,237,237,0.5)", flexShrink: 0 }} strokeWidth={1.8} />
+            <Heart size={20} style={{ color: "rgba(var(--color-ep-light-rgb),0.5)", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Rejoindre la communauté</span>
-              <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
+              <span style={{ display: "block", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.35)", marginTop: 2 }}>
                 Gratuit — Victoires, Questions, Ressources
               </span>
             </span>
             {submitting === "free" ? (
-              <div style={{ width: 16, height: 16, border: "2px solid #F5EDED", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+              <div style={{ width: 16, height: 16, border: "2px solid var(--color-ep-light)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
             ) : (
-              <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+              <ChevronRight size={16} style={{ color: "rgba(var(--color-ep-light-rgb),0.3)" }} />
             )}
           </button>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10, margin: "2px 0" }}>
-            <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(245,237,237,0.25)", textTransform: "uppercase" }}>ou</span>
-            <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
+            <div style={{ flex: 1, height: 1, background: "rgba(var(--color-ep-light-rgb),0.08)" }} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", color: "rgba(var(--color-ep-light-rgb),0.25)", textTransform: "uppercase" }}>ou</span>
+            <div style={{ flex: 1, height: 1, background: "rgba(var(--color-ep-light-rgb),0.08)" }} />
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -255,15 +255,15 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
                 style={{
                   display: "flex", alignItems: "center", gap: 12,
                   padding: "14px 16px", borderRadius: 12,
-                  border: plan.highlight ? "1px solid rgba(224,30,30,0.45)" : "1px solid rgba(224,30,30,0.18)",
-                  background: plan.highlight ? "rgba(224,30,30,0.12)" : "rgba(224,30,30,0.05)",
-                  color: "#F5EDED", cursor: "pointer", textAlign: "left",
+                  border: plan.highlight ? "1px solid rgba(var(--color-ep-red-rgb),0.45)" : "1px solid rgba(var(--color-ep-red-rgb),0.18)",
+                  background: plan.highlight ? "rgba(var(--color-ep-red-rgb),0.12)" : "rgba(var(--color-ep-red-rgb),0.05)",
+                  color: "var(--color-ep-light)", cursor: "pointer", textAlign: "left",
                 }}
               >
-                {plan.highlight && <Crown size={16} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />}
+                {plan.highlight && <Crown size={16} style={{ color: "var(--color-ep-red)", flexShrink: 0 }} strokeWidth={1.8} />}
                 <span style={{ flex: 1 }}>
                   <span style={{ display: "block", fontWeight: 800, fontSize: 13 }}>EP Coaching — {plan.label}</span>
-                  <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.35)", marginTop: 1 }}>{plan.sublabel}</span>
+                  <span style={{ display: "block", fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.35)", marginTop: 1 }}>{plan.sublabel}</span>
                 </span>
                 <span style={{ fontWeight: 900, fontSize: 13, whiteSpace: "nowrap" }}>
                   {submitting === plan.id ? "…" : plan.priceLabel}
@@ -277,8 +277,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
       {error && (
         <div style={{
           marginTop: 14, padding: "12px 16px",
-          background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
-          borderRadius: 8, fontSize: 13, color: "#FDC4C4",
+          background: "rgba(var(--color-ep-red-rgb),0.08)", border: "1px solid rgba(var(--color-ep-red-rgb),0.25)",
+          borderRadius: 8, fontSize: 13, color: "var(--color-ep-pink)",
         }}>
           ⚠ {error}
         </div>
@@ -293,8 +293,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 width: 48, height: 48, borderRadius: 10,
-                border: "1px solid rgba(245,237,237,0.12)", background: "transparent",
-                color: "rgba(245,237,237,0.4)", cursor: "pointer", flexShrink: 0,
+                border: "1px solid rgba(var(--color-ep-light-rgb),0.12)", background: "transparent",
+                color: "rgba(var(--color-ep-light-rgb),0.4)", cursor: "pointer", flexShrink: 0,
               }}
             >
               <ChevronLeft size={18} />
@@ -312,10 +312,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
         style={{
           display: "block", width: "100%", textAlign: "center",
           marginTop: 18, background: "none", border: "none",
-          color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          color: "rgba(var(--color-ep-light-rgb),0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
         }}
       >
-        Déjà membre ? <span style={{ color: "#E01E1E" }}>Me connecter</span>
+        Déjà membre ? <span style={{ color: "var(--color-ep-red)" }}>Me connecter</span>
       </button>
     </div>
   );

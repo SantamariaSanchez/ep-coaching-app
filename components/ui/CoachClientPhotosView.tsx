@@ -9,9 +9,9 @@ import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 const labelCls =
-  "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "block text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
 
 type ActionState = { error?: string; success?: boolean } | null;
 
@@ -73,7 +73,7 @@ function CompetitionSettings({
           ].map((opt) => (
             <label
               key={opt.value}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[#890404]/25 cursor-pointer text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 has-[:checked]:bg-[#E01E1E]/15 has-[:checked]:border-[#E01E1E]/50 has-[:checked]:text-[#E01E1E] transition-colors"
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg border border-[var(--color-ep-dark-red)]/25 cursor-pointer text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 has-[:checked]:bg-[var(--color-ep-red)]/15 has-[:checked]:border-[var(--color-ep-red)]/50 has-[:checked]:text-[var(--color-ep-red)] transition-colors"
             >
               <input
                 type="radio"
@@ -90,12 +90,12 @@ function CompetitionSettings({
 
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] text-[#F5EDED]/35">
+          <p className="text-[10px] text-[var(--color-ep-light)]/35">
             Fréquence actuelle :{" "}
             <span
               className={
                 client.photo_frequency === "daily"
-                  ? "text-[#E01E1E] font-bold"
+                  ? "text-[var(--color-ep-red)] font-bold"
                   : "text-green-400 font-bold"
               }
             >
@@ -104,14 +104,14 @@ function CompetitionSettings({
                 : "📅 Hebdomadaire"}
             </span>
           </p>
-          <p className="text-[9px] text-[#F5EDED]/20 mt-0.5">
+          <p className="text-[9px] text-[var(--color-ep-light)]/20 mt-0.5">
             Passe automatiquement en quotidien à J-30 avant la compétition.
           </p>
         </div>
         <button
           type="submit"
           disabled={isPending}
-          className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
+          className="px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-lg disabled:opacity-50 transition-colors"
         >
           {isPending ? "Sauvegarde…" : "Sauvegarder"}
         </button>
@@ -141,14 +141,14 @@ function PhotoFeedbackForm({
 
   if (state?.success) {
     return (
-      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
+      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[var(--color-ep-dark-red)]/15">
         ✓ Retour envoyé — le client a été notifié.
       </p>
     );
   }
 
   return (
-    <form action={formAction} className="pt-3 border-t border-[#890404]/15 space-y-3">
+    <form action={formAction} className="pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-3">
       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">
         Envoyer un retour
       </p>
@@ -163,7 +163,7 @@ function PhotoFeedbackForm({
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+        className="bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
       >
         {isPending ? "Envoi…" : "Envoyer le retour"}
       </button>
@@ -188,16 +188,16 @@ function PhotoCard({
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
 
   return (
-    <div className={`rounded-xl p-4 space-y-3 border ${pending ? "bg-[#1f0101] border-amber-500/20" : "bg-[#1a0000] border-[#890404]/20"}`}>
+    <div className={`rounded-xl p-4 space-y-3 border ${pending ? "bg-[var(--color-ep-card)] border-amber-500/20" : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20"}`}>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-white">{typeLabel}</p>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30">
             {formatDate(photo.submitted_at)}
             {photo.week_number != null && ` · Semaine ${photo.week_number}`}
           </p>
           {photo.category && (
-            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/40 border border-[#890404]/15 mt-1">
+            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/15 mt-1">
               {photo.category}
             </span>
           )}
@@ -214,25 +214,25 @@ function PhotoCard({
         href={photo.drive_link}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors"
       >
         <ExternalLink size={11} />
         Ouvrir dans Drive
       </a>
 
       {photo.notes && (
-        <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Notes — </span>
+        <p className="text-xs text-[var(--color-ep-light)]/50 leading-relaxed border-t border-[var(--color-ep-dark-red)]/10 pt-2">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25">Notes — </span>
           {photo.notes}
         </p>
       )}
 
       {hasFeedback && photo.coach_feedback && (
-        <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
+        <div className="pt-2 border-t border-[var(--color-ep-dark-red)]/10 space-y-1.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/60">
             Ton retour envoyé
           </p>
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{photo.coach_feedback}</p>
+          <p className="text-xs text-[var(--color-ep-light)]/55 leading-relaxed">{photo.coach_feedback}</p>
         </div>
       )}
 
@@ -260,9 +260,9 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
   if (photos.length < 2) return null;
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 space-y-4">
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5 space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
           Comparaison
         </p>
         <div className="flex items-center gap-2">
@@ -270,8 +270,8 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
             onClick={() => setDrawMode((v) => !v)}
             className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full border transition-colors ${
               drawMode
-                ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
+                : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
             }`}
           >
             <Pencil size={11} />
@@ -281,7 +281,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
             <button
               onClick={() => setClearKey((k) => k + 1)}
               title="Effacer les traits"
-              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
             >
               <Eraser size={12} />
             </button>
@@ -290,7 +290,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
       </div>
 
       {drawMode && (
-        <p className="text-[10px] text-[#F5EDED]/30 italic">
+        <p className="text-[10px] text-[var(--color-ep-light)]/30 italic">
           Trace directement sur les photos pour pointer un détail à l&apos;oral — chaque trait s&apos;efface automatiquement au bout de 5 secondes.
         </p>
       )}
@@ -303,7 +303,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
           const imgUrl = photo ? driveImageUrl(photo.drive_link) : null;
           return (
             <div key={label} className="space-y-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
                 {label}
               </p>
               <select value={id} onChange={(e) => setId(e.target.value)} className={inputCls}>
@@ -318,23 +318,23 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                 <DrawableImage key={`${id}-${clearKey}`} src={imgUrl} alt={label} drawMode={drawMode} />
               )}
               {photo && !imgUrl && (
-                <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
-                  <p className="text-[10px] text-[#F5EDED]/30">
+                <div className="aspect-[3/4] flex items-center justify-center bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-lg text-center px-4">
+                  <p className="text-[10px] text-[var(--color-ep-light)]/30">
                     Aperçu indisponible — le lien Drive doit être partagé en &quot;Tous les utilisateurs disposant du lien&quot;.
                   </p>
                 </div>
               )}
 
               {photo && (
-                <div className="bg-[#150000] border border-[#890404]/15 rounded-lg p-3 space-y-1.5">
+                <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-lg p-3 space-y-1.5">
                   <p className="text-xs text-white font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
-                  <p className="text-[10px] text-[#F5EDED]/40">{formatDate(photo.submitted_at)}</p>
-                  {photo.notes && <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>}
+                  <p className="text-[10px] text-[var(--color-ep-light)]/40">{formatDate(photo.submitted_at)}</p>
+                  {photo.notes && <p className="text-[10px] text-[var(--color-ep-light)]/40 italic">{photo.notes}</p>}
                   <a
                     href={photo.drive_link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors"
                   >
                     <ExternalLink size={10} />
                     Ouvrir Drive
@@ -371,8 +371,8 @@ export default function CoachClientPhotosView({
   return (
     <div className="space-y-8">
       {/* Paramètres */}
-      <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
           Paramètres photo
         </p>
         <CompetitionSettings client={client} save={saveCompetitionSettings} />
@@ -395,9 +395,9 @@ export default function CoachClientPhotosView({
         </div>
 
         {pendingPhotos.length === 0 ? (
-          <div className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-4">
             <CheckCircle2 size={16} className="text-green-400" />
-            <p className="text-xs text-[#F5EDED]/40">Tout à jour — aucune photo en attente.</p>
+            <p className="text-xs text-[var(--color-ep-light)]/40">Tout à jour — aucune photo en attente.</p>
           </div>
         ) : (
           <div className="space-y-3">
@@ -419,7 +419,7 @@ export default function CoachClientPhotosView({
         <div>
           <button
             onClick={() => setShowDone((v) => !v)}
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/50 transition-colors mb-3"
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/50 transition-colors mb-3"
           >
             <Camera size={12} />
             Retours envoyés ({donePhotos.length})
@@ -442,8 +442,8 @@ export default function CoachClientPhotosView({
       )}
 
       {photos.length === 0 && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-8 text-center">
-          <p className="text-xs text-[#F5EDED]/25 italic">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-8 text-center">
+          <p className="text-xs text-[var(--color-ep-light)]/25 italic">
             Aucune photo soumise pour ce client.
           </p>
         </div>

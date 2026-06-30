@@ -38,7 +38,7 @@ export default async function CoachDashboard() {
           fontWeight: 900,
           fontSize: 34,
           letterSpacing: "-0.04em",
-          color: "#F5EDED",
+          color: "var(--color-ep-light)",
           margin: 0,
           lineHeight: 1.05,
         }}>

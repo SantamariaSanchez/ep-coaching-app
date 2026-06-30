@@ -21,11 +21,11 @@ export default async function CoachPostsPage() {
       <CommunitySubNav base="/dashboard/coach/communaute" isCoach />
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Communauté
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Mot du coach</h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40">
+        <p className="mt-1 text-sm text-[var(--color-ep-light)]/40">
           Réflexions, conseils, retours d&apos;expérience — visibles par tous les membres.
         </p>
       </div>

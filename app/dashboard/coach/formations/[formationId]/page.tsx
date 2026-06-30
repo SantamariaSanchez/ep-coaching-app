@@ -31,7 +31,7 @@ export default async function CoachFormationDetailPage({
         href="/dashboard/coach/formations"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: "rgba(245,237,237,0.3)", textDecoration: "none",
+          color: "rgba(var(--color-ep-light-rgb),0.3)", textDecoration: "none",
           fontSize: 11, fontWeight: 600, marginBottom: 20, letterSpacing: "0.05em",
         }}
         className="animate-fade-in"
@@ -41,7 +41,7 @@ export default async function CoachFormationDetailPage({
 
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{formation.emoji} Formation</p>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.04em", color: "#F5EDED", margin: 0 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.04em", color: "var(--color-ep-light)", margin: 0 }}>
           {formation.title}
         </h1>
       </div>

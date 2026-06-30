@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
+import { THEME_INIT_SCRIPT } from "@/lib/theme";
+import { ThemeProvider } from "@/components/ui/ThemeProvider";
 
 const montserrat = Montserrat({
   variable: "--font-montserrat",
@@ -34,7 +37,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#E01E1E",
+  themeColor: "var(--color-ep-red)",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -47,7 +50,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      <head>
+        <Script id="ep-theme-init" strategy="beforeInteractive">
+          {THEME_INIT_SCRIPT}
+        </Script>
+      </head>
+      <body className="min-h-full">
+        <ThemeProvider>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

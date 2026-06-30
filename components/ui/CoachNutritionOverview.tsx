@@ -42,16 +42,16 @@ function MacroBar({
   const pct = target > 0 ? Math.min((current / target) * 100, 100) : 0;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 w-6">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 w-6">
         {label}
       </span>
-      <div className="flex-1 bg-[#890404]/15 rounded-full h-1.5">
+      <div className="flex-1 bg-[var(--color-ep-dark-red)]/15 rounded-full h-1.5">
         <div
           className="h-1.5 rounded-full transition-all"
           style={{ width: `${pct}%`, backgroundColor: color }}
         />
       </div>
-      <span className="text-[9px] text-[#F5EDED]/40 w-10 text-right">
+      <span className="text-[9px] text-[var(--color-ep-light)]/40 w-10 text-right">
         {current}g
       </span>
     </div>
@@ -65,8 +65,8 @@ export default function CoachNutritionOverview({
 }) {
   if (clients.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-8 text-center">
-        <p className="text-sm text-[#F5EDED]/30">Aucun client trouvé.</p>
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-8 text-center">
+        <p className="text-sm text-[var(--color-ep-light)]/30">Aucun client trouvé.</p>
       </div>
     );
   }
@@ -92,19 +92,19 @@ export default function CoachNutritionOverview({
           <Link
             key={c.clientId}
             href={`/dashboard/coach/clients/${c.clientId}/nutrition`}
-            className="block bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/50 rounded-xl p-4 space-y-3 transition-colors group"
+            className="block bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/50 rounded-xl p-4 space-y-3 transition-colors group"
           >
             {/* Header */}
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-black text-white truncate group-hover:text-[#E01E1E] transition-colors">
+                <p className="text-sm font-black text-white truncate group-hover:text-[var(--color-ep-red)] transition-colors">
                   {c.clientName}
                 </p>
                 {c.phase && (
                   <span
                     className={`inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border mt-1 ${
                       PHASE_COLORS[c.phase] ??
-                      "text-[#F5EDED]/40 bg-white/5 border-white/10"
+                      "text-[var(--color-ep-light)]/40 bg-white/5 border-white/10"
                     }`}
                   >
                     {PHASE_LABELS[c.phase] ?? c.phase}
@@ -112,7 +112,7 @@ export default function CoachNutritionOverview({
                 )}
               </div>
               {c.dietMode && (
-                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full bg-[#890404]/20 text-[#F5EDED]/50 border border-[#890404]/20 flex-shrink-0">
+                <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-full bg-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/50 border border-[var(--color-ep-dark-red)]/20 flex-shrink-0">
                   <ModeIcon size={9} />
                   {MODE_LABELS[c.dietMode]}
                 </span>
@@ -122,19 +122,19 @@ export default function CoachNutritionOverview({
             {/* Calories progress */}
             <div>
               <div className="flex items-end justify-between mb-1.5">
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
                   Calories
                 </span>
                 <div className="text-right">
                   <span className="text-sm font-black text-white">
                     {c.todayCalories}
                   </span>
-                  <span className="text-[10px] text-[#F5EDED]/30">
+                  <span className="text-[10px] text-[var(--color-ep-light)]/30">
                     /{c.caloriesTarget} kcal
                   </span>
                 </div>
               </div>
-              <div className="bg-[#890404]/15 rounded-full h-2">
+              <div className="bg-[var(--color-ep-dark-red)]/15 rounded-full h-2">
                 <div
                   className="h-2 rounded-full transition-all"
                   style={{ width: `${calPct}%`, backgroundColor: calColor }}
@@ -168,16 +168,16 @@ export default function CoachNutritionOverview({
 
             {/* No profile */}
             {c.caloriesTarget === 0 && (
-              <p className="text-[10px] text-[#F5EDED]/25 italic">
+              <p className="text-[10px] text-[var(--color-ep-light)]/25 italic">
                 Pas d&apos;objectif défini
               </p>
             )}
 
             {/* Adherence badge */}
             {c.weeklyAdherence > 0 && (
-              <div className="flex items-center gap-1.5 pt-1 border-t border-[#890404]/10">
-                <TrendingUp size={10} className="text-[#F5EDED]/30" />
-                <span className="text-[9px] text-[#F5EDED]/35">
+              <div className="flex items-center gap-1.5 pt-1 border-t border-[var(--color-ep-dark-red)]/10">
+                <TrendingUp size={10} className="text-[var(--color-ep-light)]/30" />
+                <span className="text-[9px] text-[var(--color-ep-light)]/35">
                   Adhésion 7j :{" "}
                   <span className="text-white font-bold">
                     {c.weeklyAdherence}%

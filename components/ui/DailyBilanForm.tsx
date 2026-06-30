@@ -10,14 +10,14 @@ type BilanAction = (
 ) => Promise<{ error?: string; success?: boolean }>;
 
 const inp =
-  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(var(--color-ep-dark-red-rgb),0.3)] rounded-lg px-3 py-2.5 text-sm text-[var(--color-ep-light)] placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
-const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
 
 function Section({ title }: { title: string }) {
   return (
-    <div style={{ borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 4, marginBottom: 16 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
+    <div style={{ borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.15)", paddingBottom: 4, marginBottom: 16 }}>
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", margin: 0 }}>
         {title}
       </p>
     </div>
@@ -38,13 +38,13 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
           <span style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             height: 38, borderRadius: 8,
-            border: "1px solid rgba(137,4,4,0.3)",
+            border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)",
             fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
-            color: "rgba(245,237,237,0.4)",
+            color: "rgba(var(--color-ep-light-rgb),0.4)",
             cursor: "pointer",
             transition: "all 0.15s",
           }}
-          className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
+          className="peer-checked:bg-[var(--color-ep-red)] peer-checked:border-[var(--color-ep-red)] peer-checked:text-white"
           >
             {fr}
           </span>
@@ -63,11 +63,11 @@ function RatingInput({ name, defaultValue }: { name: string; defaultValue?: numb
           <span style={{
             display: "flex", alignItems: "center", justifyContent: "center",
             height: 32, borderRadius: 6,
-            border: "1px solid rgba(137,4,4,0.25)",
+            border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.25)",
             fontSize: 10, fontWeight: 700,
-            color: "rgba(245,237,237,0.35)",
+            color: "rgba(var(--color-ep-light-rgb),0.35)",
           }}
-          className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
+          className="peer-checked:bg-[var(--color-ep-red)] peer-checked:border-[var(--color-ep-red)] peer-checked:text-white"
           >
             {v}
           </span>
@@ -96,12 +96,12 @@ export default function DailyBilanForm({ today, existing, action: serverAction }
         <p style={{ fontSize: 14, fontWeight: 800, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
           Bilan enregistré
         </p>
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+        <p style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.3)", margin: 0 }}>
           Tu peux le modifier jusqu&apos;à la fin de la journée.
         </p>
         <button
           onClick={() => window.location.reload()}
-          style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#E01E1E", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
+          style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
         >
           Modifier
         </button>
@@ -203,7 +203,7 @@ export default function DailyBilanForm({ today, existing, action: serverAction }
       </div>
 
       {state?.error && (
-        <p style={{ fontSize: 12, color: "#FDC4C4", textAlign: "center", margin: 0 }}>{state.error}</p>
+        <p style={{ fontSize: 12, color: "var(--color-ep-pink)", textAlign: "center", margin: 0 }}>{state.error}</p>
       )}
 
       <button
@@ -211,7 +211,7 @@ export default function DailyBilanForm({ today, existing, action: serverAction }
         disabled={pending}
         style={{
           width: "100%",
-          background: pending ? "rgba(224,30,30,0.5)" : "#E01E1E",
+          background: pending ? "rgba(var(--color-ep-red-rgb),0.5)" : "var(--color-ep-red)",
           color: "#fff",
           border: "none",
           borderRadius: 12,

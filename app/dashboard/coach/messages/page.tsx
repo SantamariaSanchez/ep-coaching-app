@@ -68,13 +68,13 @@ export default async function CoachMessagesPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h1 style={{
             fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-            color: "#F5EDED", margin: 0, lineHeight: 1.05,
+            color: "var(--color-ep-light)", margin: 0, lineHeight: 1.05,
           }}>
             Messages
           </h1>
           {totalUnread > 0 && (
             <span className="animate-pulse-glow" style={{
-              background: "#E01E1E",
+              background: "var(--color-ep-red)",
               color: "#fff",
               borderRadius: 20,
               padding: "3px 10px",
@@ -89,7 +89,7 @@ export default async function CoachMessagesPage() {
 
       {clients.length === 0 ? (
         <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Aucun client encore</p>
+          <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.35)", margin: 0 }}>Aucun client encore</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -116,13 +116,13 @@ export default async function CoachMessagesPage() {
                   width: 42,
                   height: 42,
                   borderRadius: 14,
-                  background: "linear-gradient(135deg, #E01E1E, #890404)",
+                  background: "linear-gradient(135deg, var(--color-ep-red), var(--color-ep-dark-red))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontSize: 13,
                   fontWeight: 800,
-                  color: "#F5EDED",
+                  color: "var(--color-ep-light)",
                   flexShrink: 0,
                   position: "relative",
                 }}>
@@ -131,8 +131,8 @@ export default async function CoachMessagesPage() {
                     <span style={{
                       position: "absolute",
                       top: -4, right: -4,
-                      background: "#E01E1E",
-                      border: "2px solid #0D0000",
+                      background: "var(--color-ep-red)",
+                      border: "2px solid var(--color-ep-deep)",
                       borderRadius: "50%",
                       width: 16, height: 16,
                       display: "flex", alignItems: "center", justifyContent: "center",
@@ -145,14 +145,14 @@ export default async function CoachMessagesPage() {
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "var(--color-ep-light)" }}>
                     {client.full_name ?? "Client"}
                   </p>
                   {client.msg ? (
                     <p style={{
                       margin: "2px 0 0",
                       fontSize: 11,
-                      color: "rgba(245,237,237,0.35)",
+                      color: "rgba(var(--color-ep-light-rgb),0.35)",
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
@@ -160,7 +160,7 @@ export default async function CoachMessagesPage() {
                       {client.msg.content}
                     </p>
                   ) : (
-                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.18)", fontStyle: "italic" }}>
+                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.18)", fontStyle: "italic" }}>
                       Aucun message
                     </p>
                   )}
@@ -169,11 +169,11 @@ export default async function CoachMessagesPage() {
                 {/* Right */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
                   {client.msg && (
-                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.22)" }}>
+                    <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.22)" }}>
                       {client.msg.time}
                     </span>
                   )}
-                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+                  <ChevronRight size={14} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} />
                 </div>
               </Link>
             );

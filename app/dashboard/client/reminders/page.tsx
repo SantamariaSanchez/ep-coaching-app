@@ -106,9 +106,9 @@ function DayPills({
               width: 34,
               height: 34,
               borderRadius: 8,
-              border: `1px solid ${active ? "#E01E1E" : "rgba(224,30,30,0.15)"}`,
-              background: active ? "rgba(224,30,30,0.15)" : "rgba(0,0,0,0.3)",
-              color: active ? "#E01E1E" : "rgba(245,237,237,0.3)",
+              border: `1px solid ${active ? "var(--color-ep-red)" : "rgba(var(--color-ep-red-rgb),0.15)"}`,
+              background: active ? "rgba(var(--color-ep-red-rgb),0.15)" : "rgba(0,0,0,0.3)",
+              color: active ? "var(--color-ep-red)" : "rgba(var(--color-ep-light-rgb),0.3)",
               fontWeight: 700,
               fontSize: 11,
               cursor: "pointer",
@@ -149,9 +149,9 @@ function ReminderForm({
   const inputStyle: React.CSSProperties = {
     width: "100%",
     background: "rgba(0,0,0,0.4)",
-    border: "1px solid rgba(224,30,30,0.15)",
+    border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
     borderRadius: 8,
-    color: "#F5EDED",
+    color: "var(--color-ep-light)",
     padding: "10px 14px",
     fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
     fontWeight: 500,
@@ -161,8 +161,8 @@ function ReminderForm({
 
   return (
     <div style={{
-      background: "linear-gradient(135deg,#1A0101 0%,#0D0000 100%)",
-      border: "1px solid rgba(224,30,30,0.25)",
+      background: "linear-gradient(135deg,var(--color-ep-card) 0%,var(--color-ep-deep) 100%)",
+      border: "1px solid rgba(var(--color-ep-red-rgb),0.25)",
       borderRadius: 14,
       padding: 20,
       marginBottom: 16,
@@ -170,7 +170,7 @@ function ReminderForm({
       <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {/* Label */}
         <div>
-          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
+          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.7)", display: "block", marginBottom: 8 }}>
             Nom du rappel
           </label>
           <input
@@ -183,7 +183,7 @@ function ReminderForm({
 
         {/* Time */}
         <div>
-          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
+          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.7)", display: "block", marginBottom: 8 }}>
             Heure
           </label>
           <input
@@ -196,7 +196,7 @@ function ReminderForm({
 
         {/* Days */}
         <div>
-          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
+          <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.7)", display: "block", marginBottom: 8 }}>
             Jours
           </label>
           <DayPills selected={days} onChange={setDays} />
@@ -248,8 +248,8 @@ function ReminderCard({
   return (
     <div
       style={{
-        background: "linear-gradient(135deg,#1A0101 0%,#0D0000 100%)",
-        border: `1px solid ${reminder.is_active ? "rgba(224,30,30,0.2)" : "rgba(245,237,237,0.06)"}`,
+        background: "linear-gradient(135deg,var(--color-ep-card) 0%,var(--color-ep-deep) 100%)",
+        border: `1px solid ${reminder.is_active ? "rgba(var(--color-ep-red-rgb),0.2)" : "rgba(var(--color-ep-light-rgb),0.06)"}`,
         borderRadius: 14,
         padding: 16,
         opacity: reminder.is_active ? 1 : 0.55,
@@ -262,26 +262,26 @@ function ReminderCard({
           width: 40,
           height: 40,
           borderRadius: 10,
-          background: reminder.is_active ? "rgba(224,30,30,0.1)" : "rgba(245,237,237,0.04)",
-          border: `1px solid ${reminder.is_active ? "rgba(224,30,30,0.2)" : "rgba(245,237,237,0.06)"}`,
+          background: reminder.is_active ? "rgba(var(--color-ep-red-rgb),0.1)" : "rgba(var(--color-ep-light-rgb),0.04)",
+          border: `1px solid ${reminder.is_active ? "rgba(var(--color-ep-red-rgb),0.2)" : "rgba(var(--color-ep-light-rgb),0.06)"}`,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
           flexShrink: 0,
         }}>
           {reminder.is_active
-            ? <Bell size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-            : <BellOff size={17} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.8} />
+            ? <Bell size={17} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.8} />
+            : <BellOff size={17} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} strokeWidth={1.8} />
           }
         </div>
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={onEdit}>
-          <p style={{ fontWeight: 700, fontSize: 15, color: "#F5EDED", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
+          <p style={{ fontWeight: 700, fontSize: 15, color: "var(--color-ep-light)", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
             {reminder.label}
           </p>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: "#E01E1E" }}>{reminder.time}</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: "var(--color-ep-red)" }}>{reminder.time}</span>
             <div style={{ display: "flex", gap: 3 }}>
               {ALL_DAYS.map((day) => {
                 const active = reminder.days.includes(day);
@@ -289,8 +289,8 @@ function ReminderCard({
                   <span key={day} style={{
                     width: 22, height: 22,
                     borderRadius: 5,
-                    background: active ? "rgba(224,30,30,0.15)" : "rgba(245,237,237,0.04)",
-                    color: active ? "#E01E1E" : "rgba(245,237,237,0.2)",
+                    background: active ? "rgba(var(--color-ep-red-rgb),0.15)" : "rgba(var(--color-ep-light-rgb),0.04)",
+                    color: active ? "var(--color-ep-red)" : "rgba(var(--color-ep-light-rgb),0.2)",
                     fontSize: 9, fontWeight: 700,
                     display: "flex", alignItems: "center", justifyContent: "center",
                   }}>
@@ -310,14 +310,14 @@ function ReminderCard({
             title={reminder.is_active ? "Désactiver" : "Activer"}
             style={{
               width: 36, height: 36, borderRadius: 8,
-              background: reminder.is_active ? "rgba(74,222,128,0.1)" : "rgba(245,237,237,0.04)",
-              border: `1px solid ${reminder.is_active ? "rgba(74,222,128,0.2)" : "rgba(245,237,237,0.06)"}`,
+              background: reminder.is_active ? "rgba(74,222,128,0.1)" : "rgba(var(--color-ep-light-rgb),0.04)",
+              border: `1px solid ${reminder.is_active ? "rgba(74,222,128,0.2)" : "rgba(var(--color-ep-light-rgb),0.06)"}`,
               cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
               transition: "all 0.15s",
             }}
           >
-            <Check size={14} style={{ color: reminder.is_active ? "#4ade80" : "rgba(245,237,237,0.2)" }} strokeWidth={2.5} />
+            <Check size={14} style={{ color: reminder.is_active ? "#4ade80" : "rgba(var(--color-ep-light-rgb),0.2)" }} strokeWidth={2.5} />
           </button>
 
           {/* Delete */}
@@ -326,9 +326,9 @@ function ReminderCard({
               onClick={onDelete}
               style={{
                 height: 36, padding: "0 12px", borderRadius: 8,
-                background: "rgba(224,30,30,0.15)",
-                border: "1px solid rgba(224,30,30,0.3)",
-                color: "#E01E1E", fontSize: 11, fontWeight: 700,
+                background: "rgba(var(--color-ep-red-rgb),0.15)",
+                border: "1px solid rgba(var(--color-ep-red-rgb),0.3)",
+                color: "var(--color-ep-red)", fontSize: 11, fontWeight: 700,
                 cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase",
               }}
               onBlur={() => setConfirmDelete(false)}
@@ -341,12 +341,12 @@ function ReminderCard({
               style={{
                 width: 36, height: 36, borderRadius: 8,
                 background: "transparent",
-                border: "1px solid rgba(245,237,237,0.06)",
+                border: "1px solid rgba(var(--color-ep-light-rgb),0.06)",
                 cursor: "pointer",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
-              <Trash2 size={14} style={{ color: "rgba(245,237,237,0.25)" }} strokeWidth={1.8} />
+              <Trash2 size={14} style={{ color: "rgba(var(--color-ep-light-rgb),0.25)" }} strokeWidth={1.8} />
             </button>
           )}
         </div>
@@ -457,10 +457,10 @@ export default function RemindersPage() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: "0 0 4px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", margin: "0 0 4px" }}>
             Notifications
           </p>
-          <h1 style={{ fontWeight: 800, fontSize: 28, letterSpacing: "-0.04em", color: "#F5EDED", margin: 0 }}>
+          <h1 style={{ fontWeight: 800, fontSize: 28, letterSpacing: "-0.04em", color: "var(--color-ep-light)", margin: 0 }}>
             Mes rappels
           </h1>
         </div>
@@ -493,7 +493,7 @@ export default function RemindersPage() {
             <p style={{ fontSize: 13, fontWeight: 600, color: "#fbbf24", margin: "0 0 2px" }}>
               Active les notifications
             </p>
-            <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+            <p style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.4)", margin: 0 }}>
               Pour recevoir tes rappels sur ton téléphone.
             </p>
           </div>
@@ -561,7 +561,7 @@ export default function RemindersPage() {
       ) : !showForm ? (
         /* Suggestions */
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 12px" }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 12px" }}>
             Rappels recommandés
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -574,21 +574,21 @@ export default function RemindersPage() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   padding: "14px 16px",
-                  background: "linear-gradient(135deg,#1A0101 0%,#0D0000 100%)",
-                  border: "1px solid rgba(224,30,30,0.1)",
+                  background: "linear-gradient(135deg,var(--color-ep-card) 0%,var(--color-ep-deep) 100%)",
+                  border: "1px solid rgba(var(--color-ep-red-rgb),0.1)",
                   borderRadius: 12,
                   cursor: "pointer",
                   textAlign: "left",
                   transition: "border-color 0.15s",
                   width: "100%",
                 }}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(224,30,30,0.3)"; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(224,30,30,0.1)"; }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(var(--color-ep-red-rgb),0.3)"; }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(var(--color-ep-red-rgb),0.1)"; }}
               >
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#F5EDED" }}>{s.label}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "var(--color-ep-light)" }}>{s.label}</span>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "#E01E1E" }}>{s.time}</span>
-                  <Plus size={14} style={{ color: "rgba(245,237,237,0.25)" }} />
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "var(--color-ep-red)" }}>{s.time}</span>
+                  <Plus size={14} style={{ color: "rgba(var(--color-ep-light-rgb),0.25)" }} />
                 </div>
               </button>
             ))}

@@ -16,6 +16,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import InstallAppHint from "@/components/ui/InstallAppHint";
 
 const FEATURES = [
   { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
@@ -59,7 +60,7 @@ export default function HomePage() {
           transform: "translateX(-50%)",
           width: 560,
           height: 560,
-          background: "radial-gradient(circle, rgba(176,2,2,0.22) 0%, transparent 65%)",
+          background: "radial-gradient(circle, rgba(var(--color-ep-med-red-rgb),0.22) 0%, transparent 65%)",
           pointerEvents: "none",
           zIndex: 0,
           filter: "blur(40px)",
@@ -106,7 +107,7 @@ export default function HomePage() {
               fontWeight: 900,
               fontSize: "clamp(28px, 7vw, 42px)",
               letterSpacing: "-0.05em",
-              color: "#F5EDED",
+              color: "var(--color-ep-light)",
               margin: "0 0 10px",
               lineHeight: 1.05,
             }}
@@ -114,7 +115,7 @@ export default function HomePage() {
             TA TRANSFORMATION
             <br />
             <span style={{
-              background: "linear-gradient(135deg, #E01E1E 0%, #FDC4C4 100%)",
+              background: "linear-gradient(135deg, var(--color-ep-red) 0%, var(--color-ep-pink) 100%)",
               WebkitBackgroundClip: "text",
               WebkitTextFillColor: "transparent",
               backgroundClip: "text",
@@ -125,7 +126,7 @@ export default function HomePage() {
           <p
             style={{
               fontSize: 13.5,
-              color: "rgba(245,237,237,0.40)",
+              color: "rgba(var(--color-ep-light-rgb),0.40)",
               fontWeight: 500,
               margin: "0 auto",
               maxWidth: 360,
@@ -150,15 +151,15 @@ export default function HomePage() {
           {STATS.map((s, i) => (
             <div key={s.label} style={{ display: "flex", alignItems: "center" }}>
               <div style={{ textAlign: "center", padding: "0 20px" }}>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.03em" }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "var(--color-ep-light)", letterSpacing: "-0.03em" }}>
                   {s.value}
                 </div>
-                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.30)", marginTop: 2 }}>
+                <div style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.30)", marginTop: 2 }}>
                   {s.label}
                 </div>
               </div>
               {i < STATS.length - 1 && (
-                <div style={{ width: 1, height: 28, background: "rgba(224,30,30,0.18)" }} />
+                <div style={{ width: 1, height: 28, background: "rgba(var(--color-ep-red-rgb),0.18)" }} />
               )}
             </div>
           ))}
@@ -192,20 +193,20 @@ export default function HomePage() {
                 width: 36,
                 height: 36,
                 borderRadius: 10,
-                background: "linear-gradient(135deg, rgba(224,30,30,0.18) 0%, rgba(137,4,4,0.10) 100%)",
-                border: "1px solid rgba(224,30,30,0.22)",
+                background: "linear-gradient(135deg, rgba(var(--color-ep-red-rgb),0.18) 0%, rgba(var(--color-ep-dark-red-rgb),0.10) 100%)",
+                border: "1px solid rgba(var(--color-ep-red-rgb),0.22)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 flexShrink: 0,
               }}>
-                <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.9} />
+                <Icon size={17} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.9} />
               </div>
               <div>
-                <p style={{ fontSize: 11.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+                <p style={{ fontSize: 11.5, fontWeight: 800, color: "var(--color-ep-light)", margin: "0 0 3px", letterSpacing: "-0.01em", lineHeight: 1.2 }}>
                   {title}
                 </p>
-                <p style={{ fontSize: 9.5, color: "rgba(245,237,237,0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
+                <p style={{ fontSize: 9.5, color: "rgba(var(--color-ep-light-rgb),0.32)", margin: 0, lineHeight: 1.35, fontWeight: 500 }}>
                   {desc}
                 </p>
               </div>
@@ -224,14 +225,14 @@ export default function HomePage() {
               gap: 10,
               width: "100%",
               height: 56,
-              background: "linear-gradient(135deg, #E01E1E 0%, #B00202 100%)",
+              background: "linear-gradient(135deg, var(--color-ep-red) 0%, var(--color-ep-med-red) 100%)",
               color: "#fff",
               textDecoration: "none",
               borderRadius: "var(--radius-xl)",
               fontWeight: 800,
               fontSize: 15,
               letterSpacing: "-0.01em",
-              boxShadow: "0 12px 32px rgba(224,30,30,0.3)",
+              boxShadow: "0 12px 32px rgba(var(--color-ep-red-rgb),0.3)",
               transition: "transform 0.2s ease",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
@@ -246,7 +247,7 @@ export default function HomePage() {
             textAlign: "center",
             marginTop: 14,
             fontSize: 11,
-            color: "rgba(245,237,237,0.3)",
+            color: "rgba(var(--color-ep-light-rgb),0.3)",
             fontWeight: 500,
           }}>
             Accès gratuit · Sans engagement
@@ -263,7 +264,7 @@ export default function HomePage() {
               alignItems: "center",
               gap: 6,
               marginTop: 32,
-              color: "rgba(245,237,237,0.25)",
+              color: "rgba(var(--color-ep-light-rgb),0.25)",
               textDecoration: "none",
               fontSize: 11,
               fontWeight: 600,
@@ -274,6 +275,8 @@ export default function HomePage() {
           </Link>
         </div>
 
+        <InstallAppHint />
+
         {/* ── Bottom line ── */}
         <p
           className="animate-fade-up stagger-6"
@@ -281,7 +284,7 @@ export default function HomePage() {
             marginTop: 16,
             textAlign: "center",
             fontSize: 10,
-            color: "rgba(245,237,237,0.12)",
+            color: "rgba(var(--color-ep-light-rgb),0.12)",
             fontWeight: 600,
             letterSpacing: "0.2em",
             textTransform: "uppercase",

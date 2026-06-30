@@ -15,7 +15,7 @@ const STATUS_BADGE = {
   },
   ended: {
     label: "Terminé",
-    className: "bg-[#F5EDED]/10 text-[#F5EDED]/40 border border-[#F5EDED]/10",
+    className: "bg-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-light)]/10",
   },
 };
 
@@ -43,7 +43,7 @@ export default async function ClientDetailPage({
     <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
       <Link
         href="/dashboard/coach/clients"
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         Tous les clients

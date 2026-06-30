@@ -9,7 +9,7 @@ import {
 import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actions";
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
 function Chip<T extends string>({
   options,
@@ -33,8 +33,8 @@ function Chip<T extends string>({
             onClick={() => toggle(opt)}
             className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition-colors ${
               active
-                ? "bg-[#E01E1E] border-[#E01E1E] text-white"
-                : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
+                ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)] text-white"
+                : "bg-[var(--color-ep-input)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/50 hover:border-[var(--color-ep-dark-red)]/50"
             }`}
           >
             {labels[opt]}
@@ -126,8 +126,8 @@ export default function AddRecipeForm({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 space-y-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
         Ajouter ma recette
       </p>
 
@@ -139,7 +139,7 @@ export default function AddRecipeForm({
       />
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Type de repas</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Type de repas</p>
         <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} className={inputCls}>
           {Object.entries(MEAL_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
@@ -148,22 +148,22 @@ export default function AddRecipeForm({
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Régime(s) compatible(s)</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Régime(s) compatible(s)</p>
         <Chip options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diet} toggle={(v) => toggleSet(setDiet, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Phase(s)</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Phase(s)</p>
         <Chip options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Saison</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Saison</p>
         <Chip options={Object.keys(SEASON_LABELS) as Season[]} labels={SEASON_LABELS} selected={season} toggle={(v) => toggleSet(setSeason, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Allergènes présents</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Allergènes présents</p>
         <Chip options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={(v) => toggleSet(setAllergens, v)} />
       </div>
 
@@ -197,7 +197,7 @@ export default function AddRecipeForm({
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Ingrédients</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Ingrédients</p>
         <div className="space-y-1.5">
           {ingredients.map((ing, i) => (
             <div key={i} className="flex gap-1.5">
@@ -208,7 +208,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {ingredients.length > 1 && (
-                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} className="text-[var(--color-ep-light)]/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -218,14 +218,14 @@ export default function AddRecipeForm({
         <button
           type="button"
           onClick={() => setIngredients([...ingredients, ""])}
-          className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
+          className="flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-red)] mt-1.5"
         >
           <Plus size={11} /> Ajouter un ingrédient
         </button>
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Préparation</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">Préparation</p>
         <div className="space-y-1.5">
           {steps.map((s, i) => (
             <div key={i} className="flex gap-1.5">
@@ -236,7 +236,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {steps.length > 1 && (
-                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} className="text-[var(--color-ep-light)]/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -246,7 +246,7 @@ export default function AddRecipeForm({
         <button
           type="button"
           onClick={() => setSteps([...steps, ""])}
-          className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
+          className="flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-red)] mt-1.5"
         >
           <Plus size={11} /> Ajouter une étape
         </button>
@@ -264,11 +264,11 @@ export default function AddRecipeForm({
         <button
           onClick={handleSubmit}
           disabled={submitting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {submitting ? <Loader2 size={13} className="animate-spin" /> : "Publier ma recette"}
         </button>
-        <button onClick={onDone} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+        <button onClick={onDone} className="text-xs text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors">
           Annuler
         </button>
       </div>

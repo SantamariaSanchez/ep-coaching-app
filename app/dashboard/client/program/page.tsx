@@ -6,7 +6,7 @@ import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
-import ProgramEditor from "@/components/ui/ProgramEditor";
+import ProgramBuilderTabs from "@/components/ui/ProgramBuilderTabs";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
@@ -31,18 +31,18 @@ export default async function ClientProgramPage() {
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
         <TrainingSubNav />
         <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
             Entraînement — Communauté
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
-          <p className="text-sm text-[#F5EDED]/45 mt-2">
+          <p className="text-sm text-[var(--color-ep-light)]/45 mt-2">
             Tu gères toi-même ton programme — autonome, sans suivi coach.
           </p>
         </div>
         {program && program.days.length > 0 && (
           <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         )}
-        <ProgramEditor
+        <ProgramBuilderTabs
           clientId={user.id}
           program={program}
           saveProgram={saveOwnProgram}
@@ -62,12 +62,12 @@ export default async function ClientProgramPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Entraînement</p>
         <h1 style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0, lineHeight: 1.05,
+          color: "var(--color-ep-light)", margin: 0, lineHeight: 1.05,
         }}>
           Mon programme
         </h1>
         {program && (
-          <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+          <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 500 }}>
             {program.name}
             {program.frequency ? ` · ${program.frequency}×/semaine` : ""}
             {program.type ? ` · ${program.type}` : ""}
@@ -93,17 +93,17 @@ export default async function ClientProgramPage() {
             width: 56,
             height: 56,
             borderRadius: 18,
-            background: "rgba(137,4,4,0.1)",
+            background: "rgba(var(--color-ep-dark-red-rgb),0.1)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
           }}>
-            <Dumbbell size={22} style={{ color: "rgba(245,237,237,0.2)" }} strokeWidth={1.5} />
+            <Dumbbell size={22} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} strokeWidth={1.5} />
           </div>
-          <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(245,237,237,0.35)", margin: 0 }}>
+          <p style={{ fontSize: 13, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.35)", margin: 0 }}>
             Aucun programme disponible
           </p>
-          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0 }}>
+          <p style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.2)", margin: 0 }}>
             Ton coach le créera prochainement.
           </p>
         </div>
@@ -130,16 +130,16 @@ export default async function ClientProgramPage() {
                   fontWeight: 800,
                   letterSpacing: "0.12em",
                   textTransform: "uppercase",
-                  color: "#E01E1E",
+                  color: "var(--color-ep-red)",
                   marginBottom: 14,
                   paddingBottom: 10,
-                  borderBottom: "1px solid rgba(224,30,30,0.1)",
+                  borderBottom: "1px solid rgba(var(--color-ep-red-rgb),0.1)",
                 }}>
                   {day.day_label}
                 </p>
 
                 {day.exercises.length === 0 ? (
-                  <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>
+                  <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.22)", fontStyle: "italic" }}>
                     Aucun exercice
                   </p>
                 ) : (
@@ -149,7 +149,7 @@ export default async function ClientProgramPage() {
                         key={ex.id}
                         style={{
                           background: "rgba(0,0,0,0.35)",
-                          border: "1px solid rgba(137,4,4,0.2)",
+                          border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.2)",
                           borderRadius: 12,
                           padding: "11px 14px",
                         }}
@@ -157,7 +157,7 @@ export default async function ClientProgramPage() {
                         <p style={{
                           fontSize: 13,
                           fontWeight: 700,
-                          color: "#F5EDED",
+                          color: "var(--color-ep-light)",
                           margin: "0 0 6px",
                           lineHeight: 1.3,
                         }}>
@@ -165,17 +165,17 @@ export default async function ClientProgramPage() {
                         </p>
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
                           {ex.sets != null && ex.reps && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
+                            <span style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.5)", fontWeight: 600 }}>
                               {ex.sets} × {ex.reps}
                             </span>
                           )}
                           {ex.rir !== null && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+                            <span style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
                               RIR {ex.rir}
                             </span>
                           )}
                           {ex.rest_seconds != null && ex.rest_seconds > 0 && (
-                            <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+                            <span style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
                               {ex.rest_seconds >= 60
                                 ? `${Math.floor(ex.rest_seconds / 60)}min`
                                 : `${ex.rest_seconds}s`} repos
@@ -185,7 +185,7 @@ export default async function ClientProgramPage() {
                         {ex.notes && (
                           <p style={{
                             fontSize: 11,
-                            color: "rgba(245,237,237,0.3)",
+                            color: "rgba(var(--color-ep-light-rgb),0.3)",
                             marginTop: 6,
                             fontStyle: "italic",
                             lineHeight: 1.4,

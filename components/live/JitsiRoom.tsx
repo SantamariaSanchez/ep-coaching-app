@@ -21,15 +21,15 @@ export default function JitsiRoom({
   const src = `https://meet.jit.si/${roomSlug}#config.prejoinPageEnabled=true&config.disableDeepLinking=true`;
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#070000", zIndex: 50, display: "flex", flexDirection: "column" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid rgba(137,4,4,0.25)" }}>
+    <div style={{ position: "fixed", inset: 0, background: "var(--color-ep-deep)", zIndex: 50, display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.25)" }}>
         <button
           onClick={() => router.push(backHref)}
-          style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "rgba(245,237,237,0.5)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+          style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", color: "rgba(var(--color-ep-light-rgb),0.5)", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
         >
           <ChevronLeft size={14} /> Quitter
         </button>
-        <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: 0, flex: 1, textAlign: "center" }}>
+        <p style={{ fontSize: 12, fontWeight: 800, color: "var(--color-ep-light)", margin: 0, flex: 1, textAlign: "center" }}>
           {title}
         </p>
         <div style={{ width: 60 }} />

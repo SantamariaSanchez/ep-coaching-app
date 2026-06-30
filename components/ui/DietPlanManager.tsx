@@ -45,7 +45,7 @@ const MODES: { key: DietMode; label: string; icon: React.ElementType; desc: stri
 ];
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
 // ── Plan builder ──────────────────────────────────────────────────────────────
 
@@ -153,7 +153,7 @@ export function PlanBuilder({
       <div className="flex flex-col items-center gap-3 py-10">
         <CheckCircle2 size={40} className="text-green-400" />
         <p className="text-sm font-bold text-white">Plan activé avec succès !</p>
-        <button onClick={() => setSuccess(false)} className="text-xs text-[#E01E1E] hover:underline">
+        <button onClick={() => setSuccess(false)} className="text-xs text-[var(--color-ep-red)] hover:underline">
           Créer un autre plan
         </button>
       </div>
@@ -165,7 +165,7 @@ export function PlanBuilder({
       {/* Plan name + mode */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
             Nom du plan
           </label>
           <input
@@ -176,7 +176,7 @@ export function PlanBuilder({
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
             Mode
           </label>
           <div className="flex gap-2">
@@ -186,8 +186,8 @@ export function PlanBuilder({
                 onClick={() => setMode(key)}
                 className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-lg border text-[9px] font-bold uppercase tracking-widest transition-colors ${
                   mode === key
-                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                    : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30 hover:border-[#890404]/40"
+                    ? "bg-[var(--color-ep-red)]/15 border-[var(--color-ep-red)]/40 text-[var(--color-ep-red)]"
+                    : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/30 hover:border-[var(--color-ep-dark-red)]/40"
                 }`}
               >
                 <Icon size={14} />
@@ -195,7 +195,7 @@ export function PlanBuilder({
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/30 mt-1.5">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30 mt-1.5">
             {MODES.find((m) => m.key === mode)?.desc}
           </p>
         </div>
@@ -204,8 +204,8 @@ export function PlanBuilder({
       {/* Structure: daily (simple) vs weekly (different days, optional) */}
       {mode !== "flexible" && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-            Structure <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+            Structure <span className="text-[var(--color-ep-light)]/25 font-normal">(optionnel)</span>
           </label>
           <div className="flex gap-2 mb-2">
             {[
@@ -217,15 +217,15 @@ export function PlanBuilder({
                 onClick={() => setStructure(key)}
                 className={`flex-1 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   structure === key
-                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                    : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30 hover:border-[#890404]/40"
+                    ? "bg-[var(--color-ep-red)]/15 border-[var(--color-ep-red)]/40 text-[var(--color-ep-red)]"
+                    : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/30 hover:border-[var(--color-ep-dark-red)]/40"
                 }`}
               >
                 {label}
               </button>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30">
             {structure === "weekly"
               ? "Construis chaque jour séparément — utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique."
               : "Un seul jour-type, répété tous les jours."}
@@ -244,8 +244,8 @@ export function PlanBuilder({
                 onClick={() => setActiveDay(d.key)}
                 className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   activeDay === d.key
-                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                    : "border-[#890404]/25 text-[#F5EDED]/40"
+                    ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
+                    : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
                 }`}
               >
                 {d.label}
@@ -258,8 +258,8 @@ export function PlanBuilder({
 
       {/* Mode flexible: no meals needed */}
       {mode === "flexible" && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 text-center">
-          <p className="text-xs text-[#F5EDED]/40">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5 text-center">
+          <p className="text-xs text-[var(--color-ep-light)]/40">
             En mode Flexible, tu logues librement tes repas — aucun plan prédéfini nécessaire.
           </p>
         </div>
@@ -272,9 +272,9 @@ export function PlanBuilder({
             {MEAL_SLOTS.map((slot) => {
               const slotMeals = dayMeals.filter((m) => m.slotKey === slot.key);
               return (
-                <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+                <div key={slot.key} className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/70">
+                    <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/70">
                       {slot.label}
                     </p>
                     <button
@@ -284,23 +284,23 @@ export function PlanBuilder({
                         setSearch("");
                         setQty("100");
                       }}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors"
                     >
                       <Plus size={11} /> Ajouter
                     </button>
                   </div>
                   {slotMeals.length === 0 ? (
-                    <p className="text-[10px] text-[#F5EDED]/20 italic">Aucun aliment</p>
+                    <p className="text-[10px] text-[var(--color-ep-light)]/20 italic">Aucun aliment</p>
                   ) : (
                     <div className="space-y-1">
                       {slotMeals.map((m, i) => (
                         <div
                           key={i}
-                          className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
+                          className="flex items-center justify-between py-1 border-b border-[var(--color-ep-dark-red)]/10 last:border-0"
                         >
                           <div>
                             <p className="text-xs text-white">{m.foodName}</p>
-                            <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
+                            <p className="text-[10px] text-[var(--color-ep-light)]/35">{m.quantityG}g</p>
                           </div>
                           <button
                             onClick={() =>
@@ -316,7 +316,7 @@ export function PlanBuilder({
                                 )
                               )
                             }
-                            className="text-[#F5EDED]/20 hover:text-red-500 transition-colors"
+                            className="text-[var(--color-ep-light)]/20 hover:text-red-500 transition-colors"
                           >
                             <Trash2 size={12} />
                           </button>
@@ -331,34 +331,34 @@ export function PlanBuilder({
 
           {/* Plan totals */}
           {meals.length > 0 && (
-            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
                 {structure === "weekly" ? `Total — ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : "Total du plan"}
               </p>
               <div className="flex gap-4">
                 <div>
-                  <p className="text-lg font-black text-[#E01E1E]">
+                  <p className="text-lg font-black text-[var(--color-ep-red)]">
                     {Math.round(planTotals.calories)}
                   </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">kcal</p>
+                  <p className="text-[9px] text-[var(--color-ep-light)]/35">kcal</p>
                 </div>
                 <div>
                   <p className="text-base font-bold text-blue-300">
                     {Math.round(planTotals.proteins)}g
                   </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Prot.</p>
+                  <p className="text-[9px] text-[var(--color-ep-light)]/35">Prot.</p>
                 </div>
                 <div>
                   <p className="text-base font-bold text-amber-300">
                     {Math.round(planTotals.carbs)}g
                   </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Gluc.</p>
+                  <p className="text-[9px] text-[var(--color-ep-light)]/35">Gluc.</p>
                 </div>
                 <div>
                   <p className="text-base font-bold text-rose-300">
                     {Math.round(planTotals.fats)}g
                   </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Lip.</p>
+                  <p className="text-[9px] text-[var(--color-ep-light)]/35">Lip.</p>
                 </div>
               </div>
             </div>
@@ -371,7 +371,7 @@ export function PlanBuilder({
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
+        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-xl disabled:opacity-50 transition-colors"
       >
         {saving ? "Activation…" : "Activer ce plan"}
       </button>
@@ -380,12 +380,12 @@ export function PlanBuilder({
       {addingToSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setAddingToSlot(null)} />
-          <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col z-10">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
+          <div className="relative w-full sm:max-w-md bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/40 rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col z-10">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--color-ep-dark-red)]/20 flex-shrink-0">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 {selectedFood ? selectedFood.name : MEAL_SLOTS.find((s) => s.key === addingToSlot)?.label}
               </p>
-              <button onClick={() => setAddingToSlot(null)} className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={() => setAddingToSlot(null)} className="text-[var(--color-ep-light)]/40 hover:text-white">
                 <X size={16} />
               </button>
             </div>
@@ -406,10 +406,10 @@ export function PlanBuilder({
                     <button
                       key={food.id}
                       onClick={() => { setSelectedFood(food); setQty("100"); }}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+                      className="w-full text-left px-3 py-2.5 hover:bg-[var(--color-ep-card)] rounded-lg transition-colors"
                     >
                       <p className="text-sm text-white font-medium">{food.name}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35">
+                      <p className="text-[10px] text-[var(--color-ep-light)]/35">
                         {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
                       </p>
                     </button>
@@ -419,7 +419,7 @@ export function PlanBuilder({
             ) : (
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
                     Quantité (g)
                   </label>
                   <input
@@ -432,26 +432,26 @@ export function PlanBuilder({
                   />
                 </div>
                 {qty && parseFloat(qty) > 0 && (
-                  <div className="bg-[#1f0101] rounded-lg p-3 flex gap-4 text-xs">
+                  <div className="bg-[var(--color-ep-card)] rounded-lg p-3 flex gap-4 text-xs">
                     {(() => {
                       const n = calculateNutrients(selectedFood, parseFloat(qty));
                       return (
                         <>
                           <div>
-                            <p className="text-[#E01E1E] font-black text-base">{Math.round(n.calories)}</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">kcal</p>
+                            <p className="text-[var(--color-ep-red)] font-black text-base">{Math.round(n.calories)}</p>
+                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">kcal</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{Math.round(n.proteins)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Prot.</p>
+                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Prot.</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{Math.round(n.carbs)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Gluc.</p>
+                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Gluc.</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{Math.round(n.fats)}g</p>
-                            <p className="text-[#F5EDED]/40 text-[9px]">Lip.</p>
+                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Lip.</p>
                           </div>
                         </>
                       );
@@ -461,13 +461,13 @@ export function PlanBuilder({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedFood(null)}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 rounded-lg text-[var(--color-ep-light)]/60"
                   >
                     Retour
                   </button>
                   <button
                     onClick={addMeal}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[var(--color-ep-red)] text-white rounded-lg"
                   >
                     Ajouter
                   </button>
@@ -537,7 +537,7 @@ function PlanDetailRow({
   return (
     <div
       className={`rounded-xl border overflow-hidden ${
-        plan.is_active ? "border-[#E01E1E]/40 bg-[#1f0101]" : "border-[#890404]/20 bg-[#150000]"
+        plan.is_active ? "border-[var(--color-ep-red)]/40 bg-[var(--color-ep-card)]" : "border-[var(--color-ep-dark-red)]/20 bg-[var(--color-ep-input)]"
       }`}
     >
       <button
@@ -548,21 +548,21 @@ function PlanDetailRow({
           {plan.is_active && <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />}
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">{plan.name}</p>
-            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
+            <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest">
               {plan.mode} {isWeekly && "· hebdo"} · {plan.diet_plan_meals.length} aliment{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
               {new Date(plan.created_at).toLocaleDateString("fr-FR")}
             </p>
           </div>
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronUp size={14} className="text-[var(--color-ep-light)]/30 flex-shrink-0" />
         ) : (
-          <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+          <ChevronDown size={14} className="text-[var(--color-ep-light)]/30 flex-shrink-0" />
         )}
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+        <div className="px-4 pb-4 border-t border-[var(--color-ep-dark-red)]/15 pt-3 space-y-3">
           {isWeekly && (
             <div className="flex gap-1.5 overflow-x-auto pb-1">
               {DAY_TABS.map((d) => (
@@ -571,8 +571,8 @@ function PlanDetailRow({
                   onClick={() => setViewDay(d.key)}
                   className={`flex-shrink-0 px-2.5 py-1 rounded-full border text-[9px] font-bold uppercase tracking-widest transition-colors ${
                     viewDay === d.key
-                      ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                      : "border-[#890404]/25 text-[#F5EDED]/35"
+                      ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
+                      : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/35"
                   }`}
                 >
                   {d.label}
@@ -581,28 +581,28 @@ function PlanDetailRow({
             </div>
           )}
           {plan.diet_plan_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible — aucun aliment prédéfini.</p>
+            <p className="text-[10px] text-[var(--color-ep-light)]/25 italic">Plan flexible — aucun aliment prédéfini.</p>
           ) : visibleMeals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun aliment pour ce jour.</p>
+            <p className="text-[10px] text-[var(--color-ep-light)]/25 italic">Aucun aliment pour ce jour.</p>
           ) : (
             <>
               {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
                 <div key={slot.key}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5">
                     {slot.label}
                   </p>
                   <div className="space-y-1">
                     {bySlot[slot.key].map((m) => (
                       <div key={m.id} className="flex items-center justify-between py-1">
                         <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
-                        <p className="text-[10px] text-[#F5EDED]/35">{m.quantity_g}g</p>
+                        <p className="text-[10px] text-[var(--color-ep-light)]/35">{m.quantity_g}g</p>
                       </div>
                     ))}
                   </div>
                 </div>
               ))}
-              <div className="flex gap-4 pt-2 border-t border-[#890404]/15 text-xs">
-                <span className="text-[#E01E1E] font-black">{Math.round(totals.calories)} kcal</span>
+              <div className="flex gap-4 pt-2 border-t border-[var(--color-ep-dark-red)]/15 text-xs">
+                <span className="text-[var(--color-ep-red)] font-black">{Math.round(totals.calories)} kcal</span>
                 <span className="text-blue-300">P {Math.round(totals.proteins)}g</span>
                 <span className="text-amber-300">G {Math.round(totals.carbs)}g</span>
                 <span className="text-rose-300">L {Math.round(totals.fats)}g</span>
@@ -615,7 +615,7 @@ function PlanDetailRow({
               <button
                 disabled={busy}
                 onClick={async () => { setBusy(true); await onDeactivate(); setBusy(false); }}
-                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors disabled:opacity-50"
+                className="flex-1 py-2 text-[10px] font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 rounded-lg text-[var(--color-ep-light)]/60 hover:text-[var(--color-ep-light)]/80 transition-colors disabled:opacity-50"
               >
                 Désactiver
               </button>
@@ -623,7 +623,7 @@ function PlanDetailRow({
               <button
                 disabled={busy}
                 onClick={async () => { setBusy(true); await onActivate(); setBusy(false); }}
-                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors disabled:opacity-50"
+                className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[var(--color-ep-red)]/15 border border-[var(--color-ep-red)]/40 rounded-lg text-[var(--color-ep-red)] hover:bg-[var(--color-ep-red)]/25 transition-colors disabled:opacity-50"
               >
                 <PlayCircle size={12} /> Activer
               </button>
@@ -636,7 +636,7 @@ function PlanDetailRow({
                 await onDelete();
                 setBusy(false);
               }}
-              className="px-3 py-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="px-3 py-2 text-[var(--color-ep-light)]/30 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <Trash2 size={13} />
             </button>
@@ -662,7 +662,7 @@ export function PlansListView({
 }) {
   if (plans.length === 0) {
     return (
-      <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">
+      <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-6">
         Aucun plan créé pour l&apos;instant.
       </p>
     );

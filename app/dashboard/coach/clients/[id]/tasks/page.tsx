@@ -29,14 +29,14 @@ export default async function CoachClientTasksPage({
     <div className="px-6 py-8 max-w-2xl mx-auto">
       <Link
         href={`/dashboard/coach/clients/${id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {client.full_name ?? "Client"}
       </Link>
 
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Rappels & motivation
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">

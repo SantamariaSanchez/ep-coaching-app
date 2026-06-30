@@ -35,7 +35,7 @@ export function ClientCard({
     .slice(0, 2);
 
   const phaseColor =
-    phase === "deficit"  ? "#E01E1E"
+    phase === "deficit"  ? "var(--color-ep-red)"
     : phase === "surplus"  ? "#4ade80"
     : "#fb923c";
   const phaseLabel =
@@ -45,10 +45,10 @@ export function ClientCard({
     : null;
 
   const adherenceColor =
-    adherence == null   ? "rgba(245,237,237,0.4)"
+    adherence == null   ? "rgba(var(--color-ep-light-rgb),0.4)"
     : adherence >= 80   ? "#4ade80"
     : adherence >= 50   ? "#fbbf24"
-    : "#E01E1E";
+    : "var(--color-ep-red)";
 
   return (
     <div
@@ -56,8 +56,8 @@ export function ClientCard({
       className="animate-fade-up"
       style={{
         animationDelay: `${delay}ms`,
-        background: "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-        border: "1px solid rgba(224,30,30,0.09)",
+        background: "linear-gradient(160deg, var(--color-ep-deep) 0%, var(--color-ep-deep) 100%)",
+        border: "1px solid rgba(var(--color-ep-red-rgb),0.09)",
         borderRadius: "var(--radius-lg)",
         padding: 20,
         cursor: onClick ? "pointer" : "default",
@@ -68,14 +68,14 @@ export function ClientCard({
       onMouseEnter={(e) => {
         if (!onClick) return;
         const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(224,30,30,0.28)";
+        el.style.borderColor = "rgba(var(--color-ep-red-rgb),0.28)";
         el.style.transform = "translateY(-2px)";
         el.style.boxShadow = "0 12px 40px rgba(0,0,0,0.5)";
       }}
       onMouseLeave={(e) => {
         if (!onClick) return;
         const el = e.currentTarget as HTMLDivElement;
-        el.style.borderColor = "rgba(224,30,30,0.09)";
+        el.style.borderColor = "rgba(var(--color-ep-red-rgb),0.09)";
         el.style.transform = "translateY(0)";
         el.style.boxShadow = "none";
       }}
@@ -85,7 +85,7 @@ export function ClientCard({
         position: "absolute",
         top: 0, left: 0, right: 0,
         height: 1,
-        background: "linear-gradient(90deg, transparent, rgba(224,30,30,0.25), transparent)",
+        background: "linear-gradient(90deg, transparent, rgba(var(--color-ep-red-rgb),0.25), transparent)",
       }} />
 
       {/* Oura Ring eligibility badge */}
@@ -115,7 +115,7 @@ export function ClientCard({
           style={{
             position: "absolute",
             top: 14, right: 14,
-            background: "#E01E1E",
+            background: "var(--color-ep-red)",
             color: "#fff",
             borderRadius: "50%",
             width: 20, height: 20,
@@ -136,7 +136,7 @@ export function ClientCard({
           width: 46,
           height: 46,
           borderRadius: 14,
-          background: "linear-gradient(135deg, #E01E1E, #890404)",
+          background: "linear-gradient(135deg, var(--color-ep-red), var(--color-ep-dark-red))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -144,9 +144,9 @@ export function ClientCard({
           fontStyle: "italic",
           fontWeight: 800,
           fontSize: 16,
-          color: "#F5EDED",
+          color: "var(--color-ep-light)",
           flexShrink: 0,
-          boxShadow: "0 4px 12px rgba(224,30,30,0.2)",
+          boxShadow: "0 4px 12px rgba(var(--color-ep-red-rgb),0.2)",
         }}>
           {initials}
         </div>
@@ -154,7 +154,7 @@ export function ClientCard({
           <div style={{
             fontWeight: 700,
             fontSize: 15,
-            color: "#F5EDED",
+            color: "var(--color-ep-light)",
             letterSpacing: "-0.02em",
             lineHeight: 1.2,
           }}>
@@ -201,7 +201,7 @@ export function ClientCard({
             <div style={{
               fontSize: 14,
               fontWeight: 800,
-              color: (stat as { color?: string }).color ?? "#F5EDED",
+              color: (stat as { color?: string }).color ?? "var(--color-ep-light)",
               letterSpacing: "-0.02em",
               lineHeight: 1,
             }}>
@@ -212,7 +212,7 @@ export function ClientCard({
               fontWeight: 600,
               letterSpacing: "0.1em",
               textTransform: "uppercase",
-              color: "rgba(245,237,237,0.28)",
+              color: "rgba(var(--color-ep-light-rgb),0.28)",
               marginTop: 4,
             }}>
               {stat.label}

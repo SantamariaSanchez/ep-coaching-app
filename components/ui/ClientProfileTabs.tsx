@@ -41,7 +41,7 @@ function InfoRow({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
         {label}
       </span>
       <span className="text-sm text-white font-medium">{value || "—"}</span>
@@ -70,15 +70,15 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
 
   return (
     <div>
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 pb-0">
+      <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20 pb-0">
         {TABS.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
+                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
             }`}
           >
             {label}
@@ -123,7 +123,7 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
 
           {client.goal && (
             <Card title="Objectif">
-              <p className="text-sm text-[#F5EDED]/80 leading-relaxed">
+              <p className="text-sm text-[var(--color-ep-light)]/80 leading-relaxed">
                 {client.goal}
               </p>
             </Card>
@@ -134,10 +134,10 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "roadmap" && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">Road Map client</p>
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">Road Map client</p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/roadmap`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
             >
               <ExternalLink size={12} />
               {roadmapData ? "Modifier" : "Configurer"}
@@ -147,13 +147,13 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
           {roadmapLoading ? (
             <Card>
               <div className="flex items-center justify-center py-8">
-                <p className="text-xs text-[#F5EDED]/40">Chargement…</p>
+                <p className="text-xs text-[var(--color-ep-light)]/40">Chargement…</p>
               </div>
             </Card>
           ) : !roadmapData ? (
             <Card>
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-                <p className="text-xs text-[#F5EDED]/40">
+                <p className="text-xs text-[var(--color-ep-light)]/40">
                   Clique sur &laquo; Configurer &raquo; pour créer la road map de ce client.
                 </p>
               </div>
@@ -180,7 +180,7 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
                           <span className="text-sm font-semibold" style={{ color: colors.solid }}>
                             {colors.icon} {phase.label}
                           </span>
-                          <span className="text-xs text-[#F5EDED]/40">
+                          <span className="text-xs text-[var(--color-ep-light)]/40">
                             {formatDate(phase.start_date)} → {formatDate(phase.end_date)}
                           </span>
                         </div>
@@ -199,7 +199,7 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
                         className="flex items-center justify-between rounded-lg px-3 py-2"
                         style={{
                           background: "rgba(0,0,0,0.2)",
-                          border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
+                          border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.3)" : "rgba(var(--color-ep-red-rgb),0.15)"}`,
                         }}
                       >
                         <span
@@ -209,7 +209,7 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
                           {obj.is_achieved ? "✓ " : ""}{obj.label}
                           {obj.target_value ? ` — ${obj.target_value}${obj.target_unit ?? ""}` : ""}
                         </span>
-                        <span className="text-xs text-[#F5EDED]/40">{formatDate(obj.target_date)}</span>
+                        <span className="text-xs text-[var(--color-ep-light)]/40">{formatDate(obj.target_date)}</span>
                       </div>
                     ))}
                   </div>
@@ -223,12 +223,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "logbook" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Logbook d&apos;entraînement
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/logbook`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir le logbook
@@ -240,12 +240,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "programme" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Programme d&apos;entraînement
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/program`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir le programme
@@ -257,12 +257,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "bilans" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Bilans quotidiens
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/bilan`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir les bilans
@@ -274,12 +274,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "photos" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Suivi photos &amp; posing
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/photos`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir les photos
@@ -291,12 +291,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "notes" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Journal de suivi
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/notes`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir les notes
@@ -308,12 +308,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "checkins" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Historique des check-ins
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/checkins`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir les check-ins
@@ -325,12 +325,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "rappels" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Rappels & messages de motivation
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/tasks`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Gérer les rappels
@@ -342,12 +342,12 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
       {activeTab === "nutrition" && (
         <Card>
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
+            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">
               Plan nutritionnel
             </p>
             <Link
               href={`/dashboard/coach/clients/${client.id}/nutrition`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
             >
               <ExternalLink size={13} />
               Voir la nutrition

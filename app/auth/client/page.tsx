@@ -10,9 +10,9 @@ import SignupFlow from "./SignupFlow";
 const inputStyle: React.CSSProperties = {
   width: "100%",
   background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(224,30,30,0.15)",
+  border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
   borderRadius: 8,
-  color: "#F5EDED",
+  color: "var(--color-ep-light)",
   padding: "11px 14px",
   fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
   fontWeight: 500,
@@ -26,7 +26,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.18em",
   textTransform: "uppercase",
-  color: "rgba(224,30,30,0.8)",
+  color: "rgba(var(--color-ep-red-rgb),0.8)",
   marginBottom: 7,
 };
 
@@ -37,7 +37,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
 
   return (
     <>
-      <h2 style={{ fontWeight: 800, fontSize: 20, color: "#F5EDED", letterSpacing: "-0.03em", margin: "0 0 20px" }}>
+      <h2 style={{ fontWeight: 800, fontSize: 20, color: "var(--color-ep-light)", letterSpacing: "-0.03em", margin: "0 0 20px" }}>
         Me connecter
       </h2>
       <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
@@ -56,12 +56,12 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
             alignItems: "center",
             gap: 10,
             padding: "12px 16px",
-            background: "rgba(224,30,30,0.08)",
-            border: "1px solid rgba(224,30,30,0.25)",
+            background: "rgba(var(--color-ep-red-rgb),0.08)",
+            border: "1px solid rgba(var(--color-ep-red-rgb),0.25)",
             borderRadius: 8,
           }}>
-            <span style={{ color: "#E01E1E", flexShrink: 0 }}>⚠</span>
-            <p style={{ fontSize: 13, color: "#FDC4C4", margin: 0, fontWeight: 500 }}>{state.error}</p>
+            <span style={{ color: "var(--color-ep-red)", flexShrink: 0 }}>⚠</span>
+            <p style={{ fontSize: 13, color: "var(--color-ep-pink)", margin: 0, fontWeight: 500 }}>{state.error}</p>
           </div>
         )}
 
@@ -81,10 +81,10 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
         style={{
           display: "block", width: "100%", textAlign: "center",
           marginTop: 18, background: "none", border: "none",
-          color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          color: "rgba(var(--color-ep-light-rgb),0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
         }}
       >
-        Nouveau ici ? <span style={{ color: "#E01E1E" }}>Rejoindre la communauté</span>
+        Nouveau ici ? <span style={{ color: "var(--color-ep-red)" }}>Rejoindre la communauté</span>
       </button>
     </>
   );
@@ -111,14 +111,14 @@ export default function ClientAuthPage() {
         justifyContent: "center",
         padding: "24px 20px",
         background:
-          "radial-gradient(ellipse 70% 60% at 50% 30%, #3D0505 0%, #1A0101 40%, #0D0000 100%)",
+          "radial-gradient(ellipse 70% 60% at 50% 30%, var(--color-ep-card) 0%, var(--color-ep-card) 40%, var(--color-ep-deep) 100%)",
       }}
     >
       <div style={{ width: "100%", maxWidth: 420 }}>
         {/* Back */}
         <Link href="/" style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: "rgba(245,237,237,0.3)", textDecoration: "none",
+          color: "rgba(var(--color-ep-light-rgb),0.3)", textDecoration: "none",
           fontSize: 12, fontWeight: 600, marginBottom: 28,
         }}>
           <ChevronLeft size={14} />
@@ -131,8 +131,8 @@ export default function ClientAuthPage() {
             <EPLogo size="md" showCoaching />
           </div>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
-            <Heart size={13} style={{ color: "rgba(224,30,30,0.7)" }} strokeWidth={2} />
-            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)" }}>
+            <Heart size={13} style={{ color: "rgba(var(--color-ep-red-rgb),0.7)" }} strokeWidth={2} />
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.7)" }}>
               Communauté
             </span>
           </div>

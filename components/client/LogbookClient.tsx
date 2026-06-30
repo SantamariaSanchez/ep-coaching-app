@@ -29,21 +29,21 @@ interface Props {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
       {children}
     </p>
   );
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">—</span>;
+  if (value == null) return <span className="text-[var(--color-ep-light)]/25">—</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
         <div
           key={i}
           className={`w-1.5 h-1.5 rounded-full ${
-            i < value ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"
+            i < value ? "bg-[var(--color-ep-red)]" : "bg-[var(--color-ep-light)]/15"
           }`}
         />
       ))}
@@ -93,20 +93,20 @@ function StartSessionButton({
     <button
       onClick={handleStart}
       disabled={loading}
-      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 hover:border-[#E01E1E]/50 rounded-xl px-4 py-4 transition-all group disabled:opacity-50 text-left"
+      className="w-full flex items-center gap-3 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 hover:border-[var(--color-ep-red)]/50 rounded-xl px-4 py-4 transition-all group disabled:opacity-50 text-left"
     >
-      <div className="w-10 h-10 rounded-xl bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
-        <Dumbbell size={18} className="text-[#E01E1E]" strokeWidth={1.8} />
+      <div className="w-10 h-10 rounded-xl bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/20 flex items-center justify-center flex-shrink-0">
+        <Dumbbell size={18} className="text-[var(--color-ep-red)]" strokeWidth={1.8} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-black text-white">{dayLabel}</p>
         {muscleGroups.length > 0 && (
-          <p className="text-[10px] text-[#F5EDED]/40 truncate">
+          <p className="text-[10px] text-[var(--color-ep-light)]/40 truncate">
             {muscleGroups.join(" · ")}
           </p>
         )}
         {lastSession && (
-          <p className="text-[9px] text-[#F5EDED]/25 mt-0.5">
+          <p className="text-[9px] text-[var(--color-ep-light)]/25 mt-0.5">
             Dernier passage :{" "}
             {new Intl.DateTimeFormat("fr-FR", {
               day: "numeric",
@@ -117,15 +117,15 @@ function StartSessionButton({
       </div>
       <div className="flex items-center gap-2">
         {loading ? (
-          <div className="w-4 h-4 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--color-ep-red)] border-t-transparent rounded-full animate-spin" />
         ) : (
           <>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] opacity-0 group-hover:opacity-100 transition-opacity">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] opacity-0 group-hover:opacity-100 transition-opacity">
               Démarrer
             </span>
             <ChevronRight
               size={14}
-              className="text-[#F5EDED]/25 group-hover:text-[#E01E1E] transition-colors"
+              className="text-[var(--color-ep-light)]/25 group-hover:text-[var(--color-ep-red)] transition-colors"
             />
           </>
         )}
@@ -164,10 +164,10 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
     <button
       onClick={handleStart}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
+      className="w-full flex items-center justify-center gap-2 border border-dashed border-[var(--color-ep-dark-red)]/30 hover:border-[var(--color-ep-dark-red)]/60 rounded-xl px-4 py-3.5 text-sm text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors disabled:opacity-50"
     >
       {loading ? (
-        <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
+        <div className="w-4 h-4 border-2 border-[var(--color-ep-light)]/40 border-t-transparent rounded-full animate-spin" />
       ) : (
         <Plus size={15} strokeWidth={1.8} />
       )}
@@ -228,10 +228,10 @@ function ImportLogbookButton() {
       <button
         onClick={() => inputRef.current?.click()}
         disabled={importing}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-[var(--color-ep-dark-red)]/30 hover:border-[var(--color-ep-dark-red)]/60 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors disabled:opacity-50"
       >
         {importing ? (
-          <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--color-ep-light)]/40 border-t-transparent rounded-full animate-spin" />
         ) : (
           <Upload size={14} strokeWidth={1.8} />
         )}
@@ -279,7 +279,7 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
 
       {/* Header */}
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Logbook
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
@@ -315,8 +315,8 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
           })}
 
           {(!program || program.days.length === 0) && (
-            <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4 mb-2">
-              <p className="text-xs text-[#F5EDED]/40">
+            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-4 mb-2">
+              <p className="text-xs text-[var(--color-ep-light)]/40">
                 {isFree
                   ? "Aucun programme actif — crée ton programme ou démarre une séance libre."
                   : "Aucun programme actif — démarre une séance libre ou contacte ton coach."}
@@ -339,16 +339,16 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
                 <Link
                   key={s.id}
                   href={`${sessionBasePath}/session/${s.id}`}
-                  className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
+                  className="flex items-center gap-3 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40 rounded-xl px-4 py-3.5 transition-colors group"
                 >
-                  <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-                    <Calendar size={15} className="text-[#890404]" strokeWidth={1.8} />
+                  <div className="w-9 h-9 rounded-lg bg-[var(--color-ep-dark-red)]/10 flex items-center justify-center flex-shrink-0">
+                    <Calendar size={15} className="text-[var(--color-ep-dark-red)]" strokeWidth={1.8} />
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-black text-white truncate">
                       {s.day_label}
                     </p>
-                    <p className="text-[10px] text-[#F5EDED]/35">
+                    <p className="text-[10px] text-[var(--color-ep-light)]/35">
                       {new Intl.DateTimeFormat("fr-FR", {
                         weekday: "long",
                         day: "numeric",
@@ -362,7 +362,7 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
                     {s.general_feeling != null && (
                       <div className="flex flex-col items-end gap-0.5">
                         <FeelingDots value={s.general_feeling} />
-                        <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
+                        <span className="text-[8px] text-[var(--color-ep-light)]/25 uppercase tracking-wider">
                           feeling
                         </span>
                       </div>
@@ -387,7 +387,7 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
                     </div>
                     <ChevronRight
                       size={14}
-                      className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/50 transition-colors"
+                      className="text-[var(--color-ep-light)]/25 group-hover:text-[var(--color-ep-light)]/50 transition-colors"
                     />
                   </div>
                 </Link>

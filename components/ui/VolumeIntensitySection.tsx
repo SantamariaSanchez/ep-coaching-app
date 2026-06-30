@@ -66,10 +66,10 @@ function VolumeGaugeRow({
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-xs font-bold text-white flex-shrink-0">{group}</span>
-          <span className="text-[10px] text-[#F5EDED]/35 truncate">
+          <span className="text-[10px] text-[var(--color-ep-light)]/35 truncate">
             {direct} directs
             {indirect > 0 && ` + ${indirect} indirects`}
-            {" "}= <strong className="text-[#F5EDED]/60">{total} sets</strong>
+            {" "}= <strong className="text-[var(--color-ep-light)]/60">{total} sets</strong>
           </span>
         </div>
         <span
@@ -80,7 +80,7 @@ function VolumeGaugeRow({
       </div>
 
       {/* Progress bar */}
-      <div className="relative h-2.5 bg-[#150000] rounded-full overflow-visible border border-[#890404]/20">
+      <div className="relative h-2.5 bg-[var(--color-ep-input)] rounded-full overflow-visible border border-[var(--color-ep-dark-red)]/20">
         {/* Fill */}
         <div
           className={`absolute left-0 top-0 h-full rounded-full ${fillColor}`}
@@ -88,12 +88,12 @@ function VolumeGaugeRow({
         />
         {/* MEV marker */}
         <div
-          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[#F5EDED]/25"
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[var(--color-ep-light)]/25"
           style={{ left: `${mevPct}%` }}
         />
         {/* MAV marker */}
         <div
-          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[#F5EDED]/25"
+          className="absolute top-[-2px] h-[calc(100%+4px)] w-px bg-[var(--color-ep-light)]/25"
           style={{ left: `${mavPct}%` }}
         />
         {/* MRV marker */}
@@ -106,13 +106,13 @@ function VolumeGaugeRow({
       {/* Scale labels */}
       <div className="relative h-3">
         <span
-          className="absolute text-[8px] text-[#F5EDED]/25 font-bold -translate-x-1/2"
+          className="absolute text-[8px] text-[var(--color-ep-light)]/25 font-bold -translate-x-1/2"
           style={{ left: `${mevPct}%` }}
         >
           MEV {landmark.mev}
         </span>
         <span
-          className="absolute text-[8px] text-[#F5EDED]/25 font-bold -translate-x-1/2"
+          className="absolute text-[8px] text-[var(--color-ep-light)]/25 font-bold -translate-x-1/2"
           style={{ left: `${mavPct}%` }}
         >
           MAV {landmark.mav}
@@ -133,7 +133,7 @@ function VolumeGaugeRow({
             .map(([sub, sets]) => (
               <span
                 key={sub}
-                className="text-[8px] font-semibold text-[#F5EDED]/40 bg-[#150000] border border-[#890404]/15 rounded-full px-2 py-0.5"
+                className="text-[8px] font-semibold text-[var(--color-ep-light)]/40 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-full px-2 py-0.5"
               >
                 {sub} · {sets}
               </span>
@@ -162,13 +162,13 @@ function IntensityRow({
   if (currentWeight === undefined) {
     // No log found for this exercise
     badge = (
-      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#F5EDED]/5 border border-[#F5EDED]/10 text-[#F5EDED]/30">
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-ep-light)]/5 border border-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/30">
         Première session
       </span>
     );
   } else if (currentWeight === null) {
     badge = (
-      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[#F5EDED]/5 border border-[#F5EDED]/10 text-[#F5EDED]/30">
+      <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-ep-light)]/5 border border-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/30">
         = Stable
       </span>
     );
@@ -181,14 +181,14 @@ function IntensityRow({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 py-2 border-b border-[#890404]/10 last:border-0">
+    <div className="flex items-center justify-between gap-3 py-2 border-b border-[var(--color-ep-dark-red)]/10 last:border-0">
       <div className="min-w-0">
         <p className="text-xs font-semibold text-white truncate">{name}</p>
-        <p className="text-[9px] text-[#F5EDED]/30">{dayLabel}</p>
+        <p className="text-[9px] text-[var(--color-ep-light)]/30">{dayLabel}</p>
       </div>
       <div className="flex items-center gap-2 flex-shrink-0">
         {rir !== null && (
-          <span className="text-[9px] font-bold text-[#F5EDED]/40 border border-[#890404]/20 px-1.5 py-0.5 rounded">
+          <span className="text-[9px] font-bold text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/20 px-1.5 py-0.5 rounded">
             RIR {rir}
           </span>
         )}
@@ -288,7 +288,7 @@ export default function VolumeIntensitySection({
     <div className="space-y-5 mb-8">
       {/* ── Adherence this week ── */}
       {sessionsThisWeek != null && frequency != null && (
-        <div className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-3.5">
+        <div className="flex items-center justify-between bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-3.5">
           <p className="text-xs font-bold text-white">
             {sessionsThisWeek}/{frequency} séances cette semaine
           </p>
@@ -297,7 +297,7 @@ export default function VolumeIntensitySection({
               <div
                 key={i}
                 className={`w-5 h-1.5 rounded-full ${
-                  i < sessionsThisWeek ? "bg-[#E01E1E]" : "bg-[#890404]/20"
+                  i < sessionsThisWeek ? "bg-[var(--color-ep-red)]" : "bg-[var(--color-ep-dark-red)]/20"
                 }`}
               />
             ))}
@@ -307,8 +307,8 @@ export default function VolumeIntensitySection({
 
       {/* ── Volume réalisé cette semaine (logué en temps réel) ── */}
       {hasRealized && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-5">
             Volume — Réalisé cette semaine
           </p>
           <div className="space-y-5">
@@ -332,8 +332,8 @@ export default function VolumeIntensitySection({
 
       {/* ── Volume section ── */}
       {hasVolume && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-5">
             Volume — Semaine planifiée
           </p>
           <div className="space-y-5">
@@ -357,8 +357,8 @@ export default function VolumeIntensitySection({
 
       {/* ── Intensity section ── */}
       {hasExercises && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
             Intensité — RIR & Progression
           </p>
           <div>

@@ -16,7 +16,7 @@ export default function SignOutButton() {
   return (
     <button
       onClick={handleSignOut}
-      className="text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/60 hover:text-[#E01E1E] transition-colors cursor-pointer"
+      className="text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/60 hover:text-[var(--color-ep-red)] transition-colors cursor-pointer"
     >
       Déconnexion
     </button>

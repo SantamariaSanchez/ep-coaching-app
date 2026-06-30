@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Bell, Lock, LogOut, ChevronRight } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
+import InstallAppHint from "@/components/ui/InstallAppHint";
 
 export default function AccountActions({
   email,
@@ -56,13 +57,13 @@ export default function AccountActions({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">Compte</p>
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">Compte</p>
 
-      <div className="flex items-center justify-between gap-3 pb-4 mb-1 border-b border-[#890404]/10">
+      <div className="flex items-center justify-between gap-3 pb-4 mb-1 border-b border-[var(--color-ep-dark-red)]/10">
         <div>
           <p className="text-sm font-semibold text-white">Notifications push</p>
-          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+          <p className="text-[11px] text-[var(--color-ep-light)]/35 mt-0.5">
             {push ? "Activées sur cet appareil" : "Non activées"}
           </p>
         </div>
@@ -73,7 +74,7 @@ export default function AccountActions({
         ) : (
           <button
             onClick={enablePush}
-            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
+            className="flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
           >
             <Bell size={12} /> Activer
           </button>
@@ -82,23 +83,27 @@ export default function AccountActions({
 
       <button
         onClick={resetPwd}
-        className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+        className="flex items-center justify-between w-full py-3 border-b border-[var(--color-ep-dark-red)]/10"
       >
         <div className="flex items-center gap-2.5">
-          <Lock size={14} className="text-[#F5EDED]/40" />
+          <Lock size={14} className="text-[var(--color-ep-light)]/40" />
           <span className="text-sm text-white font-medium">
             {resetSent ? "Email envoyé !" : "Changer mon mot de passe"}
           </span>
         </div>
-        <ChevronRight size={13} className="text-[#F5EDED]/20" />
+        <ChevronRight size={13} className="text-[var(--color-ep-light)]/20" />
       </button>
 
       <button
         onClick={signOut}
-        className="flex items-center justify-center gap-2 w-full mt-4 bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
+        className="flex items-center justify-center gap-2 w-full mt-4 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/25 hover:bg-[var(--color-ep-red)]/20 rounded-lg py-3 text-[var(--color-ep-red)] font-bold text-xs uppercase tracking-widest transition-colors"
       >
         <LogOut size={13} /> Se déconnecter
       </button>
+
+      <div className="mt-3">
+        <InstallAppHint />
+      </div>
     </div>
   );
 }

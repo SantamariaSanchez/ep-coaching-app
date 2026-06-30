@@ -26,15 +26,15 @@ function fmtLong(dateStr: string) {
 
 const lbl = {
   fontSize: 9, fontWeight: 800 as const, letterSpacing: "0.1em",
-  textTransform: "uppercase" as const, color: "rgba(245,237,237,0.25)", margin: "0 0 3px",
+  textTransform: "uppercase" as const, color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 3px",
 };
 
 const val = {
-  fontSize: 13, fontWeight: 700 as const, color: "#F5EDED", margin: 0,
+  fontSize: 13, fontWeight: 700 as const, color: "var(--color-ep-light)", margin: 0,
 };
 
 function StressChip({ v }: { v: "low" | "medium" | "high" | null }) {
-  if (!v) return <span style={{ color: "rgba(245,237,237,0.15)" }}>—</span>;
+  if (!v) return <span style={{ color: "rgba(var(--color-ep-light-rgb),0.15)" }}>—</span>;
   const colors: Record<string, string> = { low: "#4ade80", medium: "#facc15", high: "#f87171" };
   const labels: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
   return (
@@ -50,9 +50,9 @@ function StressChip({ v }: { v: "low" | "medium" | "high" | null }) {
 
 function Avg({ label, value, unit = "" }: { label: string; value: number | null; unit?: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
-      <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.12)" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.07)" }}>
+      <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "var(--color-ep-light)" : "rgba(var(--color-ep-light-rgb),0.12)" }}>
         {value !== null ? `${value}${unit}` : "—"}
       </span>
     </div>
@@ -64,16 +64,16 @@ function DayRow({ log }: { log: DailyLog }) {
   return (
     <div style={{
       background: "rgba(0,0,0,0.2)",
-      border: "1px solid rgba(137,4,4,0.1)",
+      border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.1)",
       borderRadius: 10,
       padding: "12px 14px",
     }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.5)" }}>
           {fmt(log.log_date)}
         </span>
         {log.training_name && (
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-ep-light)" }}>{log.training_name}</span>
         )}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px 14px" }}>
@@ -186,15 +186,15 @@ export default async function CoachClientBilanPage({
       <div style={{ marginBottom: 28 }}>
         <Link
           href={`/dashboard/coach/clients/${id}`}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "rgba(var(--color-ep-light-rgb),0.3)", textDecoration: "none", marginBottom: 14, letterSpacing: "0.06em", textTransform: "uppercase" }}
         >
           <ArrowLeft size={13} /> Retour
         </Link>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: "0 0 4px" }}>
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.5)", margin: "0 0 4px" }}>
           Bilans quotidiens
         </p>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
+          <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--color-ep-light)", margin: 0 }}>
             {clientProfile.full_name ?? "Client"}
           </h1>
           {logs.length > 0 && (
@@ -203,8 +203,8 @@ export default async function CoachClientBilanPage({
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
                 fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
-                color: "#F5EDED", textDecoration: "none",
-                background: "rgba(137,4,4,0.2)", border: "1px solid rgba(137,4,4,0.35)",
+                color: "var(--color-ep-light)", textDecoration: "none",
+                background: "rgba(var(--color-ep-dark-red-rgb),0.2)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.35)",
                 borderRadius: 8, padding: "7px 14px",
                 transition: "background 0.15s",
               }}
@@ -218,10 +218,10 @@ export default async function CoachClientBilanPage({
 
       {weeks.length === 0 ? (
         <div style={{
-          background: "rgba(255,255,255,0.02)", border: "1px solid rgba(137,4,4,0.12)",
+          background: "rgba(255,255,255,0.02)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.12)",
           borderRadius: 14, padding: "48px 20px", textAlign: "center",
         }}>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.25)", margin: 0 }}>Aucun bilan quotidien pour ce client.</p>
+          <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.25)", margin: 0 }}>Aucun bilan quotidien pour ce client.</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
@@ -230,25 +230,25 @@ export default async function CoachClientBilanPage({
               {/* Week header */}
               <div style={{
                 display: "flex", alignItems: "baseline", gap: 10,
-                borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 10, marginBottom: 14,
+                borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.15)", paddingBottom: 10, marginBottom: 14,
               }}>
-                <span style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED" }}>
+                <span style={{ fontSize: 14, fontWeight: 900, color: "var(--color-ep-light)" }}>
                   Semaine du {fmtLong(weekStart)}
                 </span>
-                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
+                <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.2)", fontWeight: 600 }}>
                   {wLogs.length} jour{wLogs.length > 1 ? "s" : ""}
                 </span>
               </div>
 
               {/* Averages card */}
               <div style={{
-                background: "rgba(224,30,30,0.04)",
-                border: "1px solid rgba(137,4,4,0.15)",
+                background: "rgba(var(--color-ep-red-rgb),0.04)",
+                border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.15)",
                 borderRadius: 12,
                 padding: "14px 16px",
                 marginBottom: 12,
               }}>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 10px" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.4)", margin: "0 0 10px" }}>
                   Moyennes de la semaine
                 </p>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 20px" }}>

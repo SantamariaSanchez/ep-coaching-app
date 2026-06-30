@@ -36,15 +36,15 @@ export default async function CoachClientMessagesPage({
       <PushPermission userId={user.id} />
 
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[#890404]/20 flex items-center gap-3">
+      <div className="px-5 py-4 border-b border-[var(--color-ep-dark-red)]/20 flex items-center gap-3">
         <Link
           href="/dashboard/coach/messages"
-          className="p-1.5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+          className="p-1.5 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
         >
           <ChevronLeft size={18} />
         </Link>
-        <div className="w-8 h-8 rounded-full bg-[#890404]/20 border border-[#890404]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-[10px] font-black text-[#E01E1E] uppercase">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-ep-dark-red)]/20 border border-[var(--color-ep-dark-red)]/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-[10px] font-black text-[var(--color-ep-red)] uppercase">
             {(client.full_name ?? "?")
               .split(" ")
               .map((n) => n[0])
@@ -56,7 +56,7 @@ export default async function CoachClientMessagesPage({
           <p className="text-sm font-black text-white">
             {client.full_name ?? "Client"}
           </p>
-          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
+          <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest">
             Client
           </p>
         </div>

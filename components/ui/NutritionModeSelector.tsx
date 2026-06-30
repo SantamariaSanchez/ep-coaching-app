@@ -43,8 +43,8 @@ export default function NutritionModeSelector({ activeMode }: Props) {
             key={key}
             className={`flex-1 flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border transition-all ${
               isActive
-                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
-                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/30"
+                ? "bg-[var(--color-ep-red)]/12 border-[var(--color-ep-red)]/40 text-[var(--color-ep-red)]"
+                : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/30"
             }`}
           >
             <Icon size={16} strokeWidth={isActive ? 2.5 : 1.8} />
@@ -52,7 +52,7 @@ export default function NutritionModeSelector({ activeMode }: Props) {
               {label}
             </span>
             {isActive && (
-              <span className="text-[8px] text-[#E01E1E]/70 text-center leading-tight hidden sm:block">
+              <span className="text-[8px] text-[var(--color-ep-red)]/70 text-center leading-tight hidden sm:block">
                 {description}
               </span>
             )}

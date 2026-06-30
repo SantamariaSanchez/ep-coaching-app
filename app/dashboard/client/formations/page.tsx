@@ -7,7 +7,7 @@ import { BookOpen, Lock, PlayCircle, ChevronRight, Clock } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 const FORMATION_COLORS = [
-  { from: "#E01E1E", to: "#890404", shadow: "rgba(224,30,30,0.25)" },
+  { from: "var(--color-ep-red)", to: "var(--color-ep-dark-red)", shadow: "rgba(var(--color-ep-red-rgb),0.25)" },
   { from: "#7c3aed", to: "#4c1d95", shadow: "rgba(124,58,237,0.25)" },
   { from: "#0891b2", to: "#164e63", shadow: "rgba(8,145,178,0.25)" },
   { from: "#059669", to: "#064e3b", shadow: "rgba(5,150,105,0.25)" },
@@ -51,13 +51,13 @@ export default async function FormationsPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Académie EP</p>
         <h1 style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0, lineHeight: 1.05,
+          color: "var(--color-ep-light)", margin: 0, lineHeight: 1.05,
           display: "flex", alignItems: "center", gap: 12,
         }}>
-          <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+          <BookOpen size={26} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.8} />
           Formations
         </h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 500 }}>
           {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponibles
           {totalMin > 0 && ` · ${Math.round(totalMin / 60)}h de contenu`}
         </p>
@@ -68,15 +68,15 @@ export default async function FormationsPage() {
         <div className="ep-card animate-fade-up stagger-2" style={{ padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span className="ep-label">Progression globale</span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+            <span style={{ fontSize: 12, fontWeight: 800, color: "var(--color-ep-light)" }}>
               {totalCompleted} / {totalLessons}
             </span>
           </div>
-          <div style={{ height: 4, background: "rgba(224,30,30,0.12)", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: 4, background: "rgba(var(--color-ep-red-rgb),0.12)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%",
               width: `${totalLessons > 0 ? Math.round((totalCompleted / totalLessons) * 100) : 0}%`,
-              background: "linear-gradient(90deg, #E01E1E, #B00202)",
+              background: "linear-gradient(90deg, var(--color-ep-red), var(--color-ep-med-red))",
               borderRadius: 2,
               transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)",
             }} />
@@ -87,11 +87,11 @@ export default async function FormationsPage() {
       {/* Formations grid */}
       {formations.length === 0 ? (
         <div className="ep-card" style={{ padding: "48px 24px", textAlign: "center" }}>
-          <BookOpen size={36} style={{ color: "rgba(224,30,30,0.25)", margin: "0 auto 16px" }} strokeWidth={1.3} />
-          <p style={{ fontSize: 14, fontWeight: 700, color: "rgba(245,237,237,0.5)", margin: "0 0 6px" }}>
+          <BookOpen size={36} style={{ color: "rgba(var(--color-ep-red-rgb),0.25)", margin: "0 auto 16px" }} strokeWidth={1.3} />
+          <p style={{ fontSize: 14, fontWeight: 700, color: "rgba(var(--color-ep-light-rgb),0.5)", margin: "0 0 6px" }}>
             Formations à venir
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.25)", margin: 0 }}>
+          <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.25)", margin: 0 }}>
             Le contenu sera disponible très prochainement
           </p>
         </div>
@@ -114,7 +114,7 @@ export default async function FormationsPage() {
                   background: "rgba(16,1,1,0.60)",
                   backdropFilter: "blur(28px)",
                   WebkitBackdropFilter: "blur(28px)",
-                  border: "1px solid rgba(224,30,30,0.13)",
+                  border: "1px solid rgba(var(--color-ep-red-rgb),0.13)",
                   borderRadius: "var(--radius-xl)",
                   overflow: "hidden",
                   opacity: isAvailable ? 1 : 0.65,
@@ -154,26 +154,26 @@ export default async function FormationsPage() {
                           Formation {i + 1}
                         </p>
                         {!isAvailable && (
-                          <Lock size={10} style={{ color: "rgba(245,237,237,0.2)" }} />
+                          <Lock size={10} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} />
                         )}
                       </div>
-                      <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.2 }}>
+                      <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "var(--color-ep-light)", margin: "0 0 4px", lineHeight: 1.2 }}>
                         {formation.title}
                       </h3>
                       {formation.subtitle && (
-                        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "0 0 10px", lineHeight: 1.4 }}>
+                        <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.4)", margin: "0 0 10px", lineHeight: 1.4 }}>
                           {formation.subtitle}
                         </p>
                       )}
 
                       {/* Meta */}
                       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.3)" }}>
                           <PlayCircle size={10} />
                           {published} vidéo{published !== 1 ? "s" : ""}
                         </span>
                         {fMin > 0 && (
-                          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.3)" }}>
                             <Clock size={10} />
                             {Math.round(fMin / 60)}h{fMin % 60 > 0 ? `${fMin % 60}min` : ""}
                           </span>
@@ -183,9 +183,9 @@ export default async function FormationsPage() {
 
                     {/* Arrow or lock */}
                     {isAvailable ? (
-                      <ChevronRight size={18} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0, marginTop: 4 }} />
+                      <ChevronRight size={18} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)", flexShrink: 0, marginTop: 4 }} />
                     ) : (
-                      <Lock size={16} style={{ color: "rgba(245,237,237,0.15)", flexShrink: 0, marginTop: 4 }} />
+                      <Lock size={16} style={{ color: "rgba(var(--color-ep-light-rgb),0.15)", flexShrink: 0, marginTop: 4 }} />
                     )}
                   </div>
 
@@ -193,10 +193,10 @@ export default async function FormationsPage() {
                   {isAvailable && (
                     <div style={{ marginTop: 14 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.25)", letterSpacing: "0.08em" }}>
+                        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.25)", letterSpacing: "0.08em" }}>
                           PROGRESSION
                         </span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.4)" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(var(--color-ep-light-rgb),0.4)" }}>
                           {completedCount}/{published}
                         </span>
                       </div>

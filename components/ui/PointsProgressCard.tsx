@@ -18,13 +18,13 @@ export default function PointsProgressCard({
   const legendEligible = isEligibleForLegendReward(points, isSubscribed);
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4">
       <div className="flex items-center justify-between mb-1">
         <div className="flex items-center gap-2">
           <span className="text-2xl leading-none">{rank.emoji}</span>
           <div>
             <p className="text-sm font-black text-white">{rank.label}</p>
-            <p className="text-[10px] text-[#F5EDED]/35">{points} pts cumulés</p>
+            <p className="text-[10px] text-[var(--color-ep-light)]/35">{points} pts cumulés</p>
           </div>
         </div>
         {legendEligible && (
@@ -43,17 +43,17 @@ export default function PointsProgressCard({
             showPercent
             height={5}
           />
-          <p className="text-[10px] text-[#F5EDED]/30 mt-1.5">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30 mt-1.5">
             Encore {next.minPoints - points} pts avant le prochain rang.
           </p>
         </div>
       ) : (
-        <p className="text-[10px] text-[#F5EDED]/30 mt-2">Rang maximum atteint. Respect.</p>
+        <p className="text-[10px] text-[var(--color-ep-light)]/30 mt-2">Rang maximum atteint. Respect.</p>
       )}
 
       {showLadder && (
-        <div className="mt-4 pt-3 border-t border-[#890404]/15 space-y-1.5">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-1.5">
+        <div className="mt-4 pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-1.5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 mb-1.5">
             Paliers à débloquer
           </p>
           {RANKS.filter((r) => r.unlocks || r.reward).map((r) => {
@@ -63,9 +63,9 @@ export default function PointsProgressCard({
                 {reached ? (
                   <Check size={12} className="text-green-400 flex-shrink-0 mt-0.5" />
                 ) : (
-                  <Lock size={11} className="text-[#F5EDED]/20 flex-shrink-0 mt-0.5" />
+                  <Lock size={11} className="text-[var(--color-ep-light)]/20 flex-shrink-0 mt-0.5" />
                 )}
-                <p className={`text-[11px] leading-snug ${reached ? "text-[#F5EDED]/60" : "text-[#F5EDED]/30"}`}>
+                <p className={`text-[11px] leading-snug ${reached ? "text-[var(--color-ep-light)]/60" : "text-[var(--color-ep-light)]/30"}`}>
                   <span className="font-bold">{r.emoji} {r.label}</span>
                   {" — "}
                   {r.unlocks?.join(", ")}
@@ -75,7 +75,7 @@ export default function PointsProgressCard({
             );
           })}
           {!isSubscribed && (
-            <p className="text-[10px] text-[#F5EDED]/25 italic pt-1">
+            <p className="text-[10px] text-[var(--color-ep-light)]/25 italic pt-1">
               Ou débloque tout immédiatement avec l&apos;abonnement.
             </p>
           )}

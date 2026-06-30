@@ -18,7 +18,7 @@ export default async function ClientQuestionsPage() {
       <CommunitySubNav base="/dashboard/client/communaute" />
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Communauté
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Questions</h1>

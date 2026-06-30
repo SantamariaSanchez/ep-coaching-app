@@ -18,13 +18,13 @@ export default async function CoachNutritionPage() {
   return (
     <div className="px-6 py-8 max-w-5xl mx-auto page-transition">
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Suivi nutritionnel
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           Nutrition
         </h1>
-        <p className="mt-1 text-xs text-[#F5EDED]/30 mb-3">
+        <p className="mt-1 text-xs text-[var(--color-ep-light)]/30 mb-3">
           Vue d&apos;ensemble · Aujourd&apos;hui
         </p>
         <SeedLibraryButton label="Importer la base d'aliments officielle" action={seedOfficialFoods} />

@@ -79,7 +79,7 @@ function initFromProgram(program: ProgramWithDays | null) {
 }
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
 export default function ProgramEditor({
   clientId,
@@ -278,13 +278,13 @@ export default function ProgramEditor({
   return (
     <div className="space-y-6">
       {/* Program meta */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
           Informations
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
               Nom du programme
             </label>
             <input
@@ -295,7 +295,7 @@ export default function ProgramEditor({
             />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
               Type
             </label>
             <select
@@ -310,7 +310,7 @@ export default function ProgramEditor({
             </select>
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
               Fréquence (séances/semaine)
             </label>
             <input
@@ -328,13 +328,13 @@ export default function ProgramEditor({
 
       {/* Days */}
       {state.days.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
-          <p className="text-xs text-[#F5EDED]/35 font-semibold uppercase tracking-widest">
+        <div className="flex flex-col items-center justify-center py-14 bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/30 rounded-xl gap-4">
+          <p className="text-xs text-[var(--color-ep-light)]/35 font-semibold uppercase tracking-widest">
             Aucune séance
           </p>
           <button
             onClick={addDay}
-            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 hover:bg-[var(--color-ep-red)]/20 text-[var(--color-ep-red)] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
             Ajouter une séance
@@ -352,22 +352,22 @@ export default function ProgramEditor({
               {state.days.map((day, dayIdx) => (
                 <div
                   key={day.localId}
-                  className="w-72 flex-shrink-0 bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
+                  className="w-72 flex-shrink-0 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-4"
                 >
                   {/* Day header */}
-                  <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-[#890404]/20">
+                  <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-[var(--color-ep-dark-red)]/20">
                     <input
                       value={day.day_label}
                       onChange={(e) =>
                         updateDayLabel(day.localId, e.target.value)
                       }
-                      className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
+                      className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[var(--color-ep-red)] focus:outline-none border-b border-transparent focus:border-[var(--color-ep-red)]/40 pb-0.5 min-w-0"
                     />
                     <button
                       onClick={() => moveDay(day.localId, -1)}
                       disabled={dayIdx === 0}
                       title="Déplacer à gauche"
-                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                      className="text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronLeft size={14} />
                     </button>
@@ -375,14 +375,14 @@ export default function ProgramEditor({
                       onClick={() => moveDay(day.localId, 1)}
                       disabled={dayIdx === state.days.length - 1}
                       title="Déplacer à droite"
-                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
+                      className="text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronRight size={14} />
                     </button>
                     <button
                       onClick={() => removeDay(day.localId)}
                       title="Supprimer la séance"
-                      className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                      className="text-[var(--color-ep-light)]/25 hover:text-red-500 transition-colors flex-shrink-0"
                     >
                       <Trash2 size={13} />
                     </button>
@@ -393,7 +393,7 @@ export default function ProgramEditor({
                     {day.exercises.map((ex, exIdx) => (
                       <div
                         key={ex.localId}
-                        className="bg-[#150000] border border-[#890404]/20 rounded-lg p-2.5 space-y-2"
+                        className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg p-2.5 space-y-2"
                       >
                         {/* Name + controls */}
                         <div className="flex items-center gap-1.5">
@@ -408,7 +408,7 @@ export default function ProgramEditor({
                               )
                             }
                             placeholder="Exercice"
-                            className="flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
+                            className="flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none border-b border-transparent focus:border-[var(--color-ep-light)]/20 pb-0.5 min-w-0"
                           />
                           <div className="flex items-center gap-0.5 flex-shrink-0">
                             <button
@@ -417,7 +417,7 @@ export default function ProgramEditor({
                               }
                               disabled={exIdx === 0}
                               title="Monter"
-                              className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                              className="text-[var(--color-ep-light)]/25 hover:text-[var(--color-ep-light)]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
                                 width="9"
@@ -434,7 +434,7 @@ export default function ProgramEditor({
                               }
                               disabled={exIdx === day.exercises.length - 1}
                               title="Descendre"
-                              className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
+                              className="text-[var(--color-ep-light)]/25 hover:text-[var(--color-ep-light)]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
                                 width="9"
@@ -450,7 +450,7 @@ export default function ProgramEditor({
                                 removeExercise(day.localId, ex.localId)
                               }
                               title="Supprimer"
-                              className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
+                              className="text-[var(--color-ep-light)]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
                             >
                               <Trash2 size={11} />
                             </button>
@@ -468,7 +468,7 @@ export default function ProgramEditor({
                             ] as const
                           ).map(({ field, label, type, placeholder }) => (
                             <div key={field}>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 block mb-0.5">
                                 {label}
                               </label>
                               <input
@@ -484,7 +484,7 @@ export default function ProgramEditor({
                                   )
                                 }
                                 placeholder={placeholder}
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-[var(--color-ep-card)]/80 border border-[var(--color-ep-dark-red)]/20 rounded px-2 py-1 text-xs text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-dark-red)]/50 transition-colors"
                               />
                             </div>
                           ))}
@@ -502,13 +502,13 @@ export default function ProgramEditor({
                             )
                           }
                           placeholder="Notes (optionnel)"
-                          className="w-full bg-transparent text-[10px] text-[#F5EDED]/40 placeholder:text-[#F5EDED]/20 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/10 pb-0.5 transition-colors"
+                          className="w-full bg-transparent text-[10px] text-[var(--color-ep-light)]/40 placeholder:text-[var(--color-ep-light)]/20 focus:outline-none border-b border-transparent focus:border-[var(--color-ep-light)]/10 pb-0.5 transition-colors"
                         />
 
                         {/* Muscle group + Direct/Indirect */}
-                        <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[#890404]/10">
+                        <div className="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-[var(--color-ep-dark-red)]/10">
                           <div>
-                            <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                            <label className="text-[7px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 block mb-0.5">
                               Groupe musculaire
                             </label>
                             <select
@@ -516,7 +516,7 @@ export default function ProgramEditor({
                               onChange={(e) =>
                                 updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)
                               }
-                              className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                              className="w-full bg-[var(--color-ep-card)]/80 border border-[var(--color-ep-dark-red)]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[var(--color-ep-dark-red)]/50 transition-colors"
                             >
                               <option value="">— Non défini —</option>
                               {MUSCLE_GROUPS.map((g) => (
@@ -525,7 +525,7 @@ export default function ProgramEditor({
                             </select>
                           </div>
                           <div>
-                            <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                            <label className="text-[7px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 block mb-0.5">
                               Type
                             </label>
                             <div className="flex gap-1.5 pt-1">
@@ -541,7 +541,7 @@ export default function ProgramEditor({
                                     }
                                     className="sr-only peer"
                                   />
-                                  <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-[#890404]/20 text-[#F5EDED]/30 peer-checked:border-[#E01E1E]/50 peer-checked:text-[#E01E1E] transition-colors cursor-pointer">
+                                  <span className="text-[9px] font-bold px-2 py-0.5 rounded border border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/30 peer-checked:border-[var(--color-ep-red)]/50 peer-checked:text-[var(--color-ep-red)] transition-colors cursor-pointer">
                                     {val === "true" ? "Direct" : "Indirect"}
                                   </span>
                                 </label>
@@ -554,7 +554,7 @@ export default function ProgramEditor({
                         {ex.muscle_group &&
                           MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup]?.length > 0 && (
                             <div>
-                              <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
+                              <label className="text-[7px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 block mb-0.5">
                                 Sous-groupe
                               </label>
                               <select
@@ -567,7 +567,7 @@ export default function ProgramEditor({
                                     e.target.value
                                   )
                                 }
-                                className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
+                                className="w-full bg-[var(--color-ep-card)]/80 border border-[var(--color-ep-dark-red)]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[var(--color-ep-dark-red)]/50 transition-colors"
                               >
                                 <option value="">— Non défini —</option>
                                 {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
@@ -583,7 +583,7 @@ export default function ProgramEditor({
                   {/* Add exercise */}
                   <button
                     onClick={() => addExercise(day.localId)}
-                    className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 border border-dashed border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40 rounded-lg transition-colors"
                   >
                     <Plus size={11} />
                     Exercice
@@ -596,7 +596,7 @@ export default function ProgramEditor({
           {/* Add day */}
           <button
             onClick={addDay}
-            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 hover:bg-[var(--color-ep-red)]/20 text-[var(--color-ep-red)] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
             Ajouter une séance
@@ -613,10 +613,10 @@ export default function ProgramEditor({
       )}
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--color-ep-dark-red)]/15">
         <button
           onClick={() => router.back()}
-          className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2.5 transition-colors"
+          className="text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 px-4 py-2.5 transition-colors"
         >
           Annuler
         </button>
@@ -626,7 +626,7 @@ export default function ProgramEditor({
           className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
+              : "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-60"
           }`}
         >
           {saved ? (

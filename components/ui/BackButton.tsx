@@ -14,7 +14,7 @@ export default function BackButton({ fallbackHref, label = "Retour" }: { fallbac
   return (
     <button
       onClick={handleClick}
-      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+      className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors mb-6"
     >
       <ChevronLeft size={14} />
       {label}

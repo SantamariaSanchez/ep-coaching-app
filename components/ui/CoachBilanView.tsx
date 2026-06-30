@@ -23,9 +23,9 @@ import {
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const inputClass =
-  "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 focus:border-[var(--color-ep-red)]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[var(--color-ep-light)]/20 outline-none transition-colors";
 const labelClass =
-  "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "block text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
 
 // ── Bilan reply form ──────────────────────────────────────────────────────────
 
@@ -35,7 +35,7 @@ function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
 
   if (state?.success)
     return (
-      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
+      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[var(--color-ep-dark-red)]/15">
         ✓ Bilan envoyé — le client a été notifié par email.
       </p>
     );
@@ -43,14 +43,14 @@ function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
   return (
     <form
       action={action}
-      className="pt-3 border-t border-[#890404]/15 space-y-3"
+      className="pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-3"
     >
       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">
         Envoyer le bilan
       </p>
       <div>
         <label className={labelClass}>
-          Retour écrit <span className="text-[#E01E1E]">*</span>
+          Retour écrit <span className="text-[var(--color-ep-red)]">*</span>
         </label>
         <textarea
           name="bilan_text"
@@ -72,12 +72,12 @@ function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
         />
       </div>
       {state?.error && (
-        <p className="text-[#FDC4C4] text-xs">{state.error}</p>
+        <p className="text-[var(--color-ep-pink)] text-xs">{state.error}</p>
       )}
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+        className="bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
       >
         {isPending ? "Envoi…" : "Envoyer le bilan"}
       </button>
@@ -101,7 +101,7 @@ function CorrectionReplyForm({
 
   if (state?.success)
     return (
-      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
+      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[var(--color-ep-dark-red)]/15">
         ✓ Retour envoyé.
       </p>
     );
@@ -109,14 +109,14 @@ function CorrectionReplyForm({
   return (
     <form
       action={action}
-      className="pt-3 border-t border-[#890404]/15 space-y-3"
+      className="pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-3"
     >
       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">
         Répondre
       </p>
       <div>
         <label className={labelClass}>
-          Retour écrit <span className="text-[#E01E1E]">*</span>
+          Retour écrit <span className="text-[var(--color-ep-red)]">*</span>
         </label>
         <textarea
           name="coach_feedback"
@@ -136,12 +136,12 @@ function CorrectionReplyForm({
         />
       </div>
       {state?.error && (
-        <p className="text-[#FDC4C4] text-xs">{state.error}</p>
+        <p className="text-[var(--color-ep-pink)] text-xs">{state.error}</p>
       )}
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+        className="bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
       >
         {isPending ? "Envoi…" : "Envoyer le retour"}
       </button>
@@ -161,8 +161,8 @@ const FEELING_LABELS: Record<number, string> = {
 
 function DataChip({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2 text-center">
-      <p className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+    <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-lg px-3 py-2 text-center">
+      <p className="text-[8px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
         {label}
       </p>
       <p className="text-sm font-black text-white mt-0.5">{value}</p>
@@ -187,8 +187,8 @@ function BilanCard({
     <div
       className={`rounded-xl p-4 space-y-3 border ${
         pending
-          ? "bg-[#1f0101] border-amber-500/20"
-          : "bg-[#1a0000] border-[#890404]/20"
+          ? "bg-[var(--color-ep-card)] border-amber-500/20"
+          : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -196,7 +196,7 @@ function BilanCard({
           <p className="text-sm font-bold text-white">
             {checkin.profiles?.full_name ?? "Client"}
           </p>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30">
             Semaine {checkin.week_number} · {date}
           </p>
         </div>
@@ -232,8 +232,8 @@ function BilanCard({
 
       {/* Client notes */}
       {checkin.client_notes && (
-        <p className="text-xs text-[#F5EDED]/55 leading-relaxed border-t border-[#890404]/10 pt-2">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+        <p className="text-xs text-[var(--color-ep-light)]/55 leading-relaxed border-t border-[var(--color-ep-dark-red)]/10 pt-2">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
             Notes —{" "}
           </span>
           {checkin.client_notes}
@@ -242,7 +242,7 @@ function BilanCard({
 
       {/* Bilan sent — show what was sent */}
       {!pending && checkin.bilan_text && (
-        <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
+        <div className="pt-2 border-t border-[var(--color-ep-dark-red)]/10 space-y-1.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/60">
             Ton bilan envoyé
             {checkin.bilan_rating != null && (
@@ -251,7 +251,7 @@ function BilanCard({
               </span>
             )}
           </p>
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
+          <p className="text-xs text-[var(--color-ep-light)]/55 leading-relaxed">
             {checkin.bilan_text}
           </p>
         </div>
@@ -280,18 +280,18 @@ function CorrectionCard({
     <div
       className={`rounded-xl p-4 space-y-3 border ${
         pending
-          ? "bg-[#1f0101] border-amber-500/20"
-          : "bg-[#1a0000] border-[#890404]/20"
+          ? "bg-[var(--color-ep-card)] border-amber-500/20"
+          : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20"
       }`}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-white">
             {correction.profiles?.full_name ?? "Client"}
-            <span className="font-normal text-[#F5EDED]/40"> — </span>
+            <span className="font-normal text-[var(--color-ep-light)]/40"> — </span>
             {correction.exercise_name}
           </p>
-          <p className="text-[10px] text-[#F5EDED]/30">{date}</p>
+          <p className="text-[10px] text-[var(--color-ep-light)]/30">{date}</p>
         </div>
         {!pending && (
           <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25">
@@ -301,16 +301,16 @@ function CorrectionCard({
         )}
       </div>
 
-      <div className="space-y-1 text-xs text-[#F5EDED]/55">
+      <div className="space-y-1 text-xs text-[var(--color-ep-light)]/55">
         <p>
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
             Objectif —{" "}
           </span>
           {correction.objective}
         </p>
         {correction.client_question && (
           <p>
-            <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
               Question —{" "}
             </span>
             {correction.client_question}
@@ -320,7 +320,7 @@ function CorrectionCard({
           href={correction.video_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium"
+          className="inline-flex items-center gap-1.5 text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors font-medium"
         >
           <Video size={11} />
           Vidéo Drive
@@ -329,11 +329,11 @@ function CorrectionCard({
       </div>
 
       {!pending && correction.coach_feedback && (
-        <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
+        <div className="pt-2 border-t border-[var(--color-ep-dark-red)]/10 space-y-1.5">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/60">
             Ton retour envoyé
           </p>
-          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
+          <p className="text-xs text-[var(--color-ep-light)]/55 leading-relaxed">
             {correction.coach_feedback}
           </p>
           {correction.coach_video_link && (
@@ -370,14 +370,14 @@ function PhotoFeedbackFormBilan({
 
   if (state?.success) {
     return (
-      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
+      <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[var(--color-ep-dark-red)]/15">
         ✓ Retour envoyé — le client a été notifié.
       </p>
     );
   }
 
   return (
-    <form action={action} className="pt-3 border-t border-[#890404]/15 space-y-3">
+    <form action={action} className="pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-3">
       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70">
         Envoyer un retour
       </p>
@@ -388,11 +388,11 @@ function PhotoFeedbackFormBilan({
         placeholder="Points positifs, axes d'amélioration, corrections à apporter…"
         className={`${inputClass} resize-none`}
       />
-      {state?.error && <p className="text-[#FDC4C4] text-xs">{state.error}</p>}
+      {state?.error && <p className="text-[var(--color-ep-pink)] text-xs">{state.error}</p>}
       <button
         type="submit"
         disabled={isPending}
-        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
+        className="bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
       >
         {isPending ? "Envoi…" : "Envoyer le retour"}
       </button>
@@ -409,20 +409,20 @@ function PhotoBilanCard({ photo }: { photo: PhotoUpdateWithClient }) {
   }).format(new Date(photo.submitted_at + "T12:00:00"));
 
   return (
-    <div className="rounded-xl p-4 space-y-3 border bg-[#1f0101] border-amber-500/20">
+    <div className="rounded-xl p-4 space-y-3 border bg-[var(--color-ep-card)] border-amber-500/20">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-bold text-white">
             {photo.profiles?.full_name ?? "Client"}
-            <span className="font-normal text-[#F5EDED]/40"> — </span>
+            <span className="font-normal text-[var(--color-ep-light)]/40"> — </span>
             {typeLabel}
           </p>
-          <p className="text-[10px] text-[#F5EDED]/30">
+          <p className="text-[10px] text-[var(--color-ep-light)]/30">
             {date}
             {photo.week_number != null && ` · Semaine ${photo.week_number}`}
           </p>
           {photo.category && (
-            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/40 border border-[#890404]/15 mt-1">
+            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/15 mt-1">
               {photo.category}
             </span>
           )}
@@ -433,15 +433,15 @@ function PhotoBilanCard({ photo }: { photo: PhotoUpdateWithClient }) {
         href={photo.drive_link}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors"
       >
         <ExternalLink size={11} />
         Ouvrir dans Drive
       </a>
 
       {photo.notes && (
-        <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+        <p className="text-xs text-[var(--color-ep-light)]/50 leading-relaxed border-t border-[var(--color-ep-dark-red)]/10 pt-2">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25">
             Notes —{" "}
           </span>
           {photo.notes}
@@ -470,7 +470,7 @@ function DoneSection({
     <div className="mt-10">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/50 transition-colors"
+        className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/50 transition-colors"
       >
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
         Traités — 30 derniers jours ({total})
@@ -480,7 +480,7 @@ function DoneSection({
         <div className="mt-4 space-y-6">
           {doneBilans.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25">
                 Bilans envoyés ({doneBilans.length})
               </p>
               {doneBilans.map((c) => (
@@ -490,7 +490,7 @@ function DoneSection({
           )}
           {doneCorrections.length > 0 && (
             <div className="space-y-2">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25">
                 Corrections traitées ({doneCorrections.length})
               </p>
               {doneCorrections.map((c) => (
@@ -530,19 +530,19 @@ export default function CoachBilanView({
             À faire
           </h2>
           {totalPending > 0 && (
-            <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#E01E1E] text-white">
+            <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[var(--color-ep-red)] text-white">
               {totalPending}
             </span>
           )}
         </div>
 
         {totalPending === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 bg-[#1f0101] border border-[#890404]/20 rounded-xl text-center">
+          <div className="flex flex-col items-center justify-center py-16 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl text-center">
             <CheckCircle2 size={28} className="text-green-400 mb-3" strokeWidth={1.5} />
-            <p className="text-sm font-bold text-[#F5EDED]/60 uppercase tracking-widest">
+            <p className="text-sm font-bold text-[var(--color-ep-light)]/60 uppercase tracking-widest">
               Tout à jour
             </p>
-            <p className="text-xs text-[#F5EDED]/25 mt-1">
+            <p className="text-xs text-[var(--color-ep-light)]/25 mt-1">
               Aucun bilan, correction ni photo en attente.
             </p>
           </div>

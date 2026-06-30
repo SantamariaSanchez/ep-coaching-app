@@ -84,13 +84,13 @@ export default async function AbonnementPage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 page-transition">
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
           Abonnement
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           Passer Premium
         </h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
+        <p className="text-sm text-[var(--color-ep-light)]/45 mt-2 leading-relaxed">
           Avec l&apos;offre gratuite, tu as déjà accès à tous les outils d&apos;entraînement et de
           nutrition en autonomie, à la bibliothèque, à Science et à la Communauté. Deux chemins
           pour débloquer le reste : prendre l&apos;abonnement tout de suite, ou accumuler des
@@ -121,17 +121,17 @@ export default async function AbonnementPage() {
               rel="noopener noreferrer"
               className={`flex items-center justify-between gap-4 rounded-xl px-5 py-4 transition-colors border ${
                 plan.highlight
-                  ? "bg-[#E01E1E]/10 border-[#E01E1E]/40 hover:bg-[#E01E1E]/15"
-                  : "bg-[#1f0101] border-[#890404]/25 hover:border-[#890404]/45"
+                  ? "bg-[var(--color-ep-red)]/10 border-[var(--color-ep-red)]/40 hover:bg-[var(--color-ep-red)]/15"
+                  : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/25 hover:border-[var(--color-ep-dark-red)]/45"
               }`}
             >
               <div className="flex items-center gap-3">
                 {plan.highlight && (
-                  <Crown size={18} className="text-[#E01E1E] flex-shrink-0" strokeWidth={1.8} />
+                  <Crown size={18} className="text-[var(--color-ep-red)] flex-shrink-0" strokeWidth={1.8} />
                 )}
                 <div>
                   <p className="text-sm font-black text-white">{plan.label}</p>
-                  <p className="text-[10px] text-[#F5EDED]/40">{plan.sublabel}</p>
+                  <p className="text-[10px] text-[var(--color-ep-light)]/40">{plan.sublabel}</p>
                 </div>
               </div>
               <p className="text-base font-black text-white whitespace-nowrap">
@@ -144,21 +144,21 @@ export default async function AbonnementPage() {
 
       {/* ── Ce que débloque l'abonnement ── */}
       <section className="mb-10">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
           Tout ce que contient le coaching
         </p>
         <div className="space-y-3">
           {COACHING_CATEGORIES.map(({ title, icon: Icon, perks }) => (
-            <div key={title} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
+            <div key={title} className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-5">
               <div className="flex items-center gap-2.5 mb-3.5">
-                <Icon size={16} className="text-[#E01E1E] flex-shrink-0" strokeWidth={1.8} />
+                <Icon size={16} className="text-[var(--color-ep-red)] flex-shrink-0" strokeWidth={1.8} />
                 <p className="text-sm font-black text-white">{title}</p>
               </div>
               <div className="space-y-2.5">
                 {perks.map((perk) => (
                   <div key={perk} className="flex items-start gap-2.5">
-                    <Check size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-[#F5EDED]/70">{perk}</p>
+                    <Check size={13} className="text-[var(--color-ep-red)] flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-[var(--color-ep-light)]/70">{perk}</p>
                   </div>
                 ))}
               </div>
@@ -169,15 +169,15 @@ export default async function AbonnementPage() {
 
       {/* ── Toujours gratuit ── */}
       <section className="mb-10">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
           Toujours gratuit, dès l&apos;inscription
         </p>
         <div className="grid grid-cols-2 gap-3">
           {ALWAYS_FREE.map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-              <Icon size={18} className="text-[#F5EDED]/40" strokeWidth={1.8} />
+            <div key={label} className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
+              <Icon size={18} className="text-[var(--color-ep-light)]/40" strokeWidth={1.8} />
               <p className="text-xs font-bold text-white">{label}</p>
-              <p className="text-[10px] text-[#F5EDED]/35">{sub}</p>
+              <p className="text-[10px] text-[var(--color-ep-light)]/35">{sub}</p>
             </div>
           ))}
         </div>
@@ -185,10 +185,10 @@ export default async function AbonnementPage() {
 
       {/* ── Débloque en jouant le jeu (points/rang) ── */}
       <section>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 flex items-center gap-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1.5 flex items-center gap-1.5">
           <Sparkles size={11} /> Ou débloque en l&apos;utilisant
         </p>
-        <p className="text-sm text-[#F5EDED]/45 mb-3 leading-relaxed">
+        <p className="text-sm text-[var(--color-ep-light)]/45 mb-3 leading-relaxed">
           Chaque bilan loggé, séance complétée, leçon vue ou victoire publiée dans la Communauté
           te rapporte des points (lentement — c&apos;est une récompense de fidélité, pas un
           raccourci). En cumulant assez de points, tu débloques certains contenus sans payer.

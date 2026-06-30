@@ -34,10 +34,10 @@ const PHASE_ADJUSTMENTS: Record<string, { label: string; value: number }[]> = {
 };
 
 const inputCls =
-  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
 
 const labelCls =
-  "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
+  "text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block";
 
 export default function NutritionForm({
   clientId,
@@ -196,7 +196,7 @@ export default function NutritionForm({
     <div className="space-y-5">
       {/* Current targets banner */}
       {existingProfile && (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
           <p className={labelCls}>Objectifs actuels</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
@@ -206,19 +206,19 @@ export default function NutritionForm({
               { label: "Lipides", value: existingProfile.fats_target, unit: "g" },
             ].map(({ label, value, unit }) => (
               <div key={label}>
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+                <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold">
                   {label}
                 </p>
                 <p className="text-2xl font-black text-white">
                   {value ?? "—"}
-                  <span className="text-xs font-normal text-[#F5EDED]/40 ml-1">{unit}</span>
+                  <span className="text-xs font-normal text-[var(--color-ep-light)]/40 ml-1">{unit}</span>
                 </p>
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-[#F5EDED]/25 mt-3">
+          <p className="text-[10px] text-[var(--color-ep-light)]/25 mt-3">
             Phase :{" "}
-            <span className="text-[#E01E1E] font-semibold capitalize">
+            <span className="text-[var(--color-ep-red)] font-semibold capitalize">
               {existingProfile.phase ?? "—"}
             </span>{" "}
             · TDEE :{" "}
@@ -230,7 +230,7 @@ export default function NutritionForm({
       )}
 
       {/* Section: Données de base */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
         <p className={labelCls + " mb-4"}>Données de base</p>
 
         {/* Gender */}
@@ -243,8 +243,8 @@ export default function NutritionForm({
                 onClick={() => set("gender", g)}
                 className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
                   form.gender === g
-                    ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                    : "border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                    ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
+                    : "border-[var(--color-ep-dark-red)]/30 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
                 }`}
               >
                 {g}
@@ -288,7 +288,7 @@ export default function NutritionForm({
       </div>
 
       {/* Section: Activité sportive */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
         <p className={labelCls + " mb-4"}>Activité sportive</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
@@ -332,7 +332,7 @@ export default function NutritionForm({
       </div>
 
       {/* Section: Activité quotidienne */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
         <p className={labelCls + " mb-4"}>Activité quotidienne</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -364,7 +364,7 @@ export default function NutritionForm({
       </div>
 
       {/* Section: Objectif */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
         <p className={labelCls + " mb-4"}>Objectif</p>
         <div className="grid grid-cols-3 gap-2 mb-4">
           {(["deficit", "maintenance", "surplus"] as const).map((p) => (
@@ -373,8 +373,8 @@ export default function NutritionForm({
               onClick={() => set("phase", p)}
               className={`py-2.5 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors ${
                 form.phase === p
-                  ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
-                  : "border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                  ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
+                  : "border-[var(--color-ep-dark-red)]/30 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
               }`}
             >
               {p === "deficit" ? "Déficit" : p === "maintenance" ? "Maintenance" : "Surplus"}
@@ -400,14 +400,14 @@ export default function NutritionForm({
 
       {/* Results */}
       {calc ? (
-        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
           <div className="flex items-center gap-2 mb-4">
-            <FlameKindling size={14} className="text-[#E01E1E]" />
+            <FlameKindling size={14} className="text-[var(--color-ep-red)]" />
             <p className={labelCls + " mb-0"}>Résultats calculés</p>
           </div>
 
           {/* TDEE breakdown */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 pb-5 border-b border-[#890404]/20">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 pb-5 border-b border-[var(--color-ep-dark-red)]/20">
             {[
               { label: "BMR", value: calc.bmr },
               { label: "EAT", value: calc.eat },
@@ -416,14 +416,14 @@ export default function NutritionForm({
             ].map(({ label, value }) => (
               <div
                 key={label}
-                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
+                className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-3 py-2.5"
               >
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+                <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold">
                   {label}
                 </p>
                 <p className="text-xl font-black text-white">
                   {value}
-                  <span className="text-[10px] text-[#F5EDED]/40 ml-1">kcal</span>
+                  <span className="text-[10px] text-[var(--color-ep-light)]/40 ml-1">kcal</span>
                 </p>
               </div>
             ))}
@@ -431,13 +431,13 @@ export default function NutritionForm({
 
           {/* Targets */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-[#890404]/15 border border-[#890404]/30 rounded-lg px-3 py-2.5 sm:col-span-4">
-              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+            <div className="bg-[var(--color-ep-dark-red)]/15 border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2.5 sm:col-span-4">
+              <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold">
                 TDEE total
               </p>
-              <p className="text-3xl font-black text-[#E01E1E]">
+              <p className="text-3xl font-black text-[var(--color-ep-red)]">
                 {calc.tdee}
-                <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">kcal/j</span>
+                <span className="text-sm text-[var(--color-ep-light)]/40 ml-1 font-normal">kcal/j</span>
               </p>
             </div>
             {[
@@ -448,22 +448,22 @@ export default function NutritionForm({
             ].map(({ label, value, unit, color }) => (
               <div
                 key={label}
-                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
+                className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-3 py-2.5"
               >
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+                <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold">
                   {label}
                 </p>
                 <p className={`text-2xl font-black ${color}`}>
                   {value}
-                  <span className="text-[10px] text-[#F5EDED]/40 ml-1 font-normal">{unit}</span>
+                  <span className="text-[10px] text-[var(--color-ep-light)]/40 ml-1 font-normal">{unit}</span>
                 </p>
               </div>
             ))}
           </div>
         </div>
       ) : (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl p-8 text-center">
-          <p className="text-xs text-[#F5EDED]/30 font-semibold uppercase tracking-widest">
+        <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl p-8 text-center">
+          <p className="text-xs text-[var(--color-ep-light)]/30 font-semibold uppercase tracking-widest">
             Remplis poids, taille et âge pour voir le calcul
           </p>
         </div>
@@ -483,7 +483,7 @@ export default function NutritionForm({
           className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50"
+              : "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50"
           }`}
         >
           {saved ? (

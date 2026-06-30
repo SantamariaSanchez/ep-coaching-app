@@ -53,15 +53,15 @@ export default function LiveEventCard({
   const cancelled = event.status === "cancelled";
 
   return (
-    <div className={`bg-[#1f0101] border rounded-xl p-4 ${cancelled ? "border-[#890404]/10 opacity-50" : "border-[#890404]/20"}`}>
+    <div className={`bg-[var(--color-ep-card)] border rounded-xl p-4 ${cancelled ? "border-[var(--color-ep-dark-red)]/10 opacity-50" : "border-[var(--color-ep-dark-red)]/20"}`}>
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
-          <Icon size={17} className="text-[#E01E1E]" strokeWidth={1.8} />
+        <div className="w-10 h-10 rounded-xl bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/20 flex items-center justify-center flex-shrink-0">
+          <Icon size={17} className="text-[var(--color-ep-red)]" strokeWidth={1.8} />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-bold text-white">{event.title}</p>
-            <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/55">
+            <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/55">
               {LIVE_TYPE_LABELS[event.type]}
             </span>
             {cancelled && (
@@ -70,16 +70,16 @@ export default function LiveEventCard({
               </span>
             )}
           </div>
-          <p className="text-[11px] text-[#F5EDED]/40 mt-1 flex items-center gap-1.5">
+          <p className="text-[11px] text-[var(--color-ep-light)]/40 mt-1 flex items-center gap-1.5">
             <Clock size={11} /> {formatDateTime(event.starts_at)} · {event.duration_minutes} min
           </p>
           {event.type === "1to1" && event.invited_client_name && (
-            <p className="text-[11px] text-[#F5EDED]/30 flex items-center gap-1.5 mt-0.5">
+            <p className="text-[11px] text-[var(--color-ep-light)]/30 flex items-center gap-1.5 mt-0.5">
               <Users size={11} /> Avec {event.invited_client_name}
             </p>
           )}
           {event.description && (
-            <p className="text-xs text-[#F5EDED]/55 mt-2">{event.description}</p>
+            <p className="text-xs text-[var(--color-ep-light)]/55 mt-2">{event.description}</p>
           )}
 
           <div className="flex items-center gap-2 mt-3 flex-wrap">
@@ -89,8 +89,8 @@ export default function LiveEventCard({
                 aria-disabled={!canJoin}
                 className={`text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-colors ${
                   canJoin
-                    ? "bg-[#E01E1E] hover:bg-[#B00202] text-white"
-                    : "bg-[#890404]/10 text-[#F5EDED]/30 cursor-not-allowed pointer-events-none"
+                    ? "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white"
+                    : "bg-[var(--color-ep-dark-red)]/10 text-[var(--color-ep-light)]/30 cursor-not-allowed pointer-events-none"
                 }`}
               >
                 {canJoin ? "Rejoindre" : isSoon ? "Ouvre bientôt" : "Pas encore ouvert"}
@@ -101,7 +101,7 @@ export default function LiveEventCard({
                 {onCancel && (
                   <button
                     onClick={onCancel}
-                    className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-amber-400 transition-colors"
+                    className="flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-light)]/35 hover:text-amber-400 transition-colors"
                   >
                     <Ban size={11} /> Annuler
                   </button>
@@ -111,7 +111,7 @@ export default function LiveEventCard({
             {isCoach && onDelete && (
               <button
                 onClick={onDelete}
-                className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+                className="flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-light)]/25 hover:text-red-400 transition-colors"
               >
                 <Trash2 size={11} /> Supprimer
               </button>

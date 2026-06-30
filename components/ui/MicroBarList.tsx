@@ -25,7 +25,7 @@ export default function MicroBarList({ logs }: { logs: FoodLogWithFood[] }) {
 
   if (stats.every((s) => s.consumed === 0)) {
     return (
-      <p className="text-xs text-[#F5EDED]/25 italic">
+      <p className="text-xs text-[var(--color-ep-light)]/25 italic">
         Données micronutriments non disponibles pour les aliments loggés.
       </p>
     );
@@ -36,12 +36,12 @@ export default function MicroBarList({ logs }: { logs: FoodLogWithFood[] }) {
       {stats.map((s) => (
         <div key={s.key} className="flex items-center gap-3">
           {/* Name */}
-          <span className="text-[10px] font-semibold text-[#F5EDED]/50 w-28 flex-shrink-0 truncate">
+          <span className="text-[10px] font-semibold text-[var(--color-ep-light)]/50 w-28 flex-shrink-0 truncate">
             {s.name}
           </span>
 
           {/* Bar */}
-          <div className="flex-1 bg-[#890404]/15 rounded-full h-1.5">
+          <div className="flex-1 bg-[var(--color-ep-dark-red)]/15 rounded-full h-1.5">
             <div
               className="h-1.5 rounded-full transition-all"
               style={{
@@ -53,7 +53,7 @@ export default function MicroBarList({ logs }: { logs: FoodLogWithFood[] }) {
 
           {/* Value + % */}
           <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-[9px] text-[#F5EDED]/30 w-20 text-right">
+            <span className="text-[9px] text-[var(--color-ep-light)]/30 w-20 text-right">
               {s.consumed}
               {s.unit} / {s.target}
               {s.unit}
@@ -67,7 +67,7 @@ export default function MicroBarList({ logs }: { logs: FoodLogWithFood[] }) {
 
           {/* No data indicator */}
           {!s.hasData && s.consumed === 0 && (
-            <span className="text-[8px] text-[#F5EDED]/20 italic flex-shrink-0">
+            <span className="text-[8px] text-[var(--color-ep-light)]/20 italic flex-shrink-0">
               n/a
             </span>
           )}

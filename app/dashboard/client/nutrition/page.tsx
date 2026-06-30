@@ -48,11 +48,11 @@ export default async function ClientNutritionPage() {
     return (
       <div>
         <div className="px-6 pt-8 max-w-2xl mx-auto">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
             Nutrition — Communauté
           </p>
           <h1 className="text-2xl font-black uppercase tracking-tight mb-1">Mes objectifs</h1>
-          <p className="text-sm text-[#F5EDED]/45 mb-4">
+          <p className="text-sm text-[var(--color-ep-light)]/45 mb-4">
             Calcule et ajuste toi-même tes besoins — autonome, sans suivi coach.
           </p>
           <SeasonModeToggle

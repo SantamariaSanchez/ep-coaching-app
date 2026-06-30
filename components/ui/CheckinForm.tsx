@@ -5,10 +5,10 @@ import { submitCheckin } from "@/app/dashboard/client/checkin/actions";
 import { CheckCircle2 } from "lucide-react";
 
 const inp =
-  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-4 py-3 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none";
+  "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(var(--color-ep-dark-red-rgb),0.3)] rounded-lg px-4 py-3 text-sm text-[var(--color-ep-light)] placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors resize-none";
 
 const lbl =
-  "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+  "block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
 
 function Q({
   name,
@@ -33,8 +33,8 @@ function Section({ title }: { title: string }) {
   return (
     <p style={{
       fontSize: 9, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase",
-      color: "rgba(224,30,30,0.55)", margin: "0 0 14px",
-      borderBottom: "1px solid rgba(137,4,4,0.12)", paddingBottom: 6,
+      color: "rgba(var(--color-ep-red-rgb),0.55)", margin: "0 0 14px",
+      borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.12)", paddingBottom: 6,
     }}>
       {title}
     </p>
@@ -57,7 +57,7 @@ export default function CheckinForm({
         <p style={{ fontSize: 16, fontWeight: 900, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
           Check-in envoyé
         </p>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+        <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", margin: 0 }}>
           Ton coach va recevoir ton bilan et te répondre rapidement.
         </p>
       </div>
@@ -80,14 +80,14 @@ export default function CheckinForm({
               min="30"
               max="300"
               placeholder="82.5"
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--color-ep-light)", outline: "none" }}
             />
           </div>
           <div>
             <label className={lbl}>
               Poids moyen semaine (kg)
               {weightAvgFromLogs && (
-                <span style={{ color: "rgba(224,30,30,0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
+                <span style={{ color: "rgba(var(--color-ep-red-rgb),0.6)", marginLeft: 6 }}>≈ {weightAvgFromLogs}</span>
               )}
             </label>
             <input
@@ -98,7 +98,7 @@ export default function CheckinForm({
               max="300"
               defaultValue={weightAvgFromLogs ?? ""}
               placeholder="83.0"
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "var(--color-ep-light)", outline: "none" }}
             />
           </div>
         </div>
@@ -177,7 +177,7 @@ export default function CheckinForm({
               name="photo_drive_link"
               type="url"
               placeholder="https://drive.google.com/drive/folders/..."
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "var(--color-ep-light)", outline: "none" }}
             />
           </div>
           <div>
@@ -186,14 +186,14 @@ export default function CheckinForm({
               name="video_drive_link"
               type="url"
               placeholder="https://drive.google.com/file/d/..."
-              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "#F5EDED", outline: "none" }}
+              style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 13, color: "var(--color-ep-light)", outline: "none" }}
             />
           </div>
         </div>
       </div>
 
       {state && "error" in state && (
-        <p style={{ fontSize: 12, color: "#FDC4C4", textAlign: "center", margin: 0 }}>{state.error}</p>
+        <p style={{ fontSize: 12, color: "var(--color-ep-pink)", textAlign: "center", margin: 0 }}>{state.error}</p>
       )}
 
       <button
@@ -201,7 +201,7 @@ export default function CheckinForm({
         disabled={isPending}
         style={{
           width: "100%",
-          background: isPending ? "rgba(224,30,30,0.5)" : "#E01E1E",
+          background: isPending ? "rgba(var(--color-ep-red-rgb),0.5)" : "var(--color-ep-red)",
           color: "#fff",
           border: "none",
           borderRadius: 12,

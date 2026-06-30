@@ -23,8 +23,8 @@ export default function SignupGateModal() {
         style={{
           width: "100%",
           maxWidth: 420,
-          background: "#0D0000",
-          border: "1px solid rgba(224,30,30,0.3)",
+          background: "var(--color-ep-deep)",
+          border: "1px solid rgba(var(--color-ep-red-rgb),0.3)",
           borderRadius: 18,
           padding: "36px 28px",
           textAlign: "center",
@@ -40,14 +40,14 @@ export default function SignupGateModal() {
             fontSize: 22,
             fontWeight: 900,
             letterSpacing: "-0.03em",
-            color: "#F5EDED",
+            color: "var(--color-ep-light)",
             margin: "0 0 10px",
             lineHeight: 1.25,
           }}
         >
           Accède à toutes les ressources gratuitement.
         </h2>
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, margin: "0 0 26px" }}>
+        <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.45)", lineHeight: 1.6, margin: "0 0 26px" }}>
           Crée ton compte EP Coaching en 30 secondes.
         </p>
 
@@ -66,7 +66,7 @@ export default function SignupGateModal() {
             marginTop: 16,
             fontSize: 12,
             fontWeight: 600,
-            color: "rgba(245,237,237,0.3)",
+            color: "rgba(var(--color-ep-light-rgb),0.3)",
             textDecoration: "none",
           }}
         >

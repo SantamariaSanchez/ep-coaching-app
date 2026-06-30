@@ -47,7 +47,7 @@ function AuthorAvatarLink({
         />
       ) : (
         <div
-          className="rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center font-black text-white"
+          className="rounded-full bg-gradient-to-br from-[var(--color-ep-red)] to-[var(--color-ep-dark-red)] flex items-center justify-center font-black text-white"
           style={{ width: size, height: size, fontSize: size * 0.32 }}
         >
           {initials(authorName)}
@@ -127,18 +127,18 @@ function Composer({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-6">
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4 mb-6">
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
         rows={3}
-        className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none"
+        className="w-full bg-transparent text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none resize-none"
       />
       {image && (
-        <p className="text-[10px] text-[#F5EDED]/40 mb-2 truncate">📎 {image.name}</p>
+        <p className="text-[10px] text-[var(--color-ep-light)]/40 mb-2 truncate">📎 {image.name}</p>
       )}
-      <div className="flex items-center justify-between pt-2 border-t border-[#890404]/15">
+      <div className="flex items-center justify-between pt-2 border-t border-[var(--color-ep-dark-red)]/15">
         {type === "victory" ? (
           <>
             <input
@@ -150,7 +150,7 @@ function Composer({
             />
             <button
               onClick={() => fileRef.current?.click()}
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 hover:text-[var(--color-ep-light)]/60 transition-colors"
             >
               <ImageIcon size={14} strokeWidth={1.8} />
               Photo
@@ -162,7 +162,7 @@ function Composer({
         <button
           onClick={handleSubmit}
           disabled={!content.trim() || posting}
-          className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
+          className="flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
         >
           {posting ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -237,7 +237,7 @@ function CommentsThread({
   return (
     <>
       {loading && (
-        <p className="text-[10px] text-[#F5EDED]/30 mt-3">Chargement des réponses...</p>
+        <p className="text-[10px] text-[var(--color-ep-light)]/30 mt-3">Chargement des réponses...</p>
       )}
       {comments?.map((c) => (
         <div key={c.id} className="flex items-start gap-2 mt-3">
@@ -250,41 +250,41 @@ function CommentsThread({
               size={24}
             />
           ) : (
-            <div className="w-6 h-6 rounded-full bg-[#890404]/20 flex items-center justify-center text-[8px] font-black text-[#F5EDED]/60 flex-shrink-0">
+            <div className="w-6 h-6 rounded-full bg-[var(--color-ep-dark-red)]/20 flex items-center justify-center text-[8px] font-black text-[var(--color-ep-light)]/60 flex-shrink-0">
               {initials(c.author_name)}
             </div>
           )}
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[#F5EDED]/60">
+            <p className="text-[10px] font-bold text-[var(--color-ep-light)]/60">
               {c.author_id ? (
-                <Link href={`${basePath}/profile/${c.author_id}`} className="hover:text-[#F5EDED]/90">
+                <Link href={`${basePath}/profile/${c.author_id}`} className="hover:text-[var(--color-ep-light)]/90">
                   {c.author_name}
                 </Link>
               ) : (
                 c.author_name
               )}{" "}
-              <span className="text-[8px] font-bold uppercase tracking-wide text-[#F5EDED]/25">
+              <span className="text-[8px] font-bold uppercase tracking-wide text-[var(--color-ep-light)]/25">
                 · {badgeLabel(c.author_role, c.author_subscription_status)}
               </span>{" "}
               {c.author_points != null && <RankBadge points={c.author_points} />}
-              <span className="text-[#F5EDED]/25 font-normal"> · {timeAgo(c.created_at)}</span>
+              <span className="text-[var(--color-ep-light)]/25 font-normal"> · {timeAgo(c.created_at)}</span>
             </p>
-            <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
+            <p className="text-xs text-[var(--color-ep-light)]/70">{c.content}</p>
           </div>
         </div>
       ))}
-      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[#890404]/10">
+      <div className="flex items-center gap-2 mt-3 pt-3 border-t border-[var(--color-ep-dark-red)]/10">
         <input
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
           placeholder="Répondre..."
-          className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+          className="flex-1 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/40"
         />
         <button
           onClick={handleSend}
           disabled={!content.trim() || sending}
-          className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
+          className="text-[var(--color-ep-red)] disabled:opacity-30 transition-opacity"
         >
           <Send size={15} strokeWidth={2} />
         </button>
@@ -337,7 +337,7 @@ function PostCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 mb-3">
+    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4 mb-3">
       <div className="flex items-start gap-3">
         <AuthorAvatarLink
           basePath={basePath}
@@ -351,20 +351,20 @@ function PostCard({
             <Link href={`${basePath}/profile/${post.author_id}`} className="text-xs font-bold text-white truncate hover:underline">
               {post.author_name}
             </Link>
-            <span className="text-[9px] font-bold uppercase tracking-wide text-[#F5EDED]/30 flex-shrink-0">
+            <span className="text-[9px] font-bold uppercase tracking-wide text-[var(--color-ep-light)]/30 flex-shrink-0">
               {badgeLabel(post.author_role, post.author_subscription_status)}
             </span>
             {post.author_points != null && <RankBadge points={post.author_points} />}
-            <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
+            <span className="text-[10px] text-[var(--color-ep-light)]/30 flex-shrink-0">
               · {timeAgo(post.created_at)}
             </span>
           </div>
-          <p className="text-sm text-[#F5EDED]/75 mt-1 whitespace-pre-wrap leading-relaxed">
+          <p className="text-sm text-[var(--color-ep-light)]/75 mt-1 whitespace-pre-wrap leading-relaxed">
             {post.content}
           </p>
 
           {post.image_url && (
-            <div className="relative w-full mt-3 rounded-lg overflow-hidden border border-[#890404]/15" style={{ aspectRatio: "4/3" }}>
+            <div className="relative w-full mt-3 rounded-lg overflow-hidden border border-[var(--color-ep-dark-red)]/15" style={{ aspectRatio: "4/3" }}>
               <Image src={post.image_url} alt="" fill className="object-cover" unoptimized />
             </div>
           )}
@@ -384,7 +384,7 @@ function PostCard({
                 <button
                   onClick={toggleAnswered}
                   disabled={updatingStatus}
-                  className="ml-2 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+                  className="ml-2 text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 hover:text-[var(--color-ep-light)]/60 transition-colors"
                 >
                   Marquer {post.status === "answered" ? "non répondu" : "répondu"}
                 </button>
@@ -394,7 +394,7 @@ function PostCard({
 
           <button
             onClick={onToggleExpand}
-            className="flex items-center gap-1.5 mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
+            className="flex items-center gap-1.5 mt-3 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 hover:text-[var(--color-ep-light)]/55 transition-colors"
           >
             <MessageCircle size={12} strokeWidth={1.8} />
             {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : "Répondre"}
@@ -514,9 +514,9 @@ export default function CommunityFeed({
       <Composer type={type} onPosted={reload} />
 
       {posts.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
-          <Icon size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
+        <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl py-12 text-center">
+          <Icon size={26} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-[var(--color-ep-light)]/35">
             {type === "victory"
               ? "Sois le premier à partager une victoire !"
               : "Sois le premier à poser une question !"}
@@ -541,11 +541,11 @@ export default function CommunityFeed({
           <div ref={sentinelRef} className="h-1" />
           {loadingMore && (
             <div className="flex justify-center py-4">
-              <div className="w-5 h-5 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-[var(--color-ep-red)] border-t-transparent rounded-full animate-spin" />
             </div>
           )}
           {!nextCursor && posts.length > 0 && (
-            <p className="text-center text-[10px] text-[#F5EDED]/20 py-4 uppercase tracking-widest font-bold">
+            <p className="text-center text-[10px] text-[var(--color-ep-light)]/20 py-4 uppercase tracking-widest font-bold">
               Fin du fil
             </p>
           )}

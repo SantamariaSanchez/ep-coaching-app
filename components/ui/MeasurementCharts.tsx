@@ -15,23 +15,23 @@ import type { Measurement } from "@/utils/measurements";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "#1f0101",
-    border: "1px solid rgba(137,4,4,0.4)",
+    backgroundColor: "var(--color-ep-card)",
+    border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.4)",
     borderRadius: "8px",
-    color: "#F5EDED",
+    color: "var(--color-ep-light)",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(var(--color-ep-light-rgb),0.6)", fontSize: "10px" },
 };
 
 const TICK_STYLE = {
-  fill: "rgba(245,237,237,0.35)",
+  fill: "rgba(var(--color-ep-light-rgb),0.35)",
   fontSize: 9,
 };
 
 function ChartSkeleton() {
   return (
-    <div className="h-52 bg-[#1f0101]/60 rounded-xl animate-pulse" />
+    <div className="h-52 bg-[var(--color-ep-card)]/60 rounded-xl animate-pulse" />
   );
 }
 
@@ -90,12 +90,12 @@ export default function MeasurementCharts({
   return (
     <div className="space-y-6">
       {/* Weight chart */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
           Poids — 12 dernières semaines (kg)
         </p>
         {weightData.length < 2 ? (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">
+          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-10">
             Minimum 2 mesures pour afficher le graphique
           </p>
         ) : (
@@ -103,17 +103,17 @@ export default function MeasurementCharts({
             <LineChart data={weightData}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(137,4,4,0.12)"
+                stroke="rgba(var(--color-ep-dark-red-rgb),0.12)"
               />
               <XAxis
                 dataKey="date"
                 tick={TICK_STYLE}
-                axisLine={{ stroke: "rgba(137,4,4,0.2)" }}
+                axisLine={{ stroke: "rgba(var(--color-ep-dark-red-rgb),0.2)" }}
                 tickLine={false}
               />
               <YAxis
                 tick={TICK_STYLE}
-                axisLine={{ stroke: "rgba(137,4,4,0.2)" }}
+                axisLine={{ stroke: "rgba(var(--color-ep-dark-red-rgb),0.2)" }}
                 tickLine={false}
                 domain={["auto", "auto"]}
                 width={38}
@@ -122,9 +122,9 @@ export default function MeasurementCharts({
               <Line
                 type="monotone"
                 dataKey="Poids"
-                stroke="#E01E1E"
+                stroke="var(--color-ep-red)"
                 strokeWidth={2}
-                dot={{ fill: "#E01E1E", strokeWidth: 0, r: 3 }}
+                dot={{ fill: "var(--color-ep-red)", strokeWidth: 0, r: 3 }}
                 activeDot={{ r: 5 }}
                 connectNulls
               />
@@ -134,12 +134,12 @@ export default function MeasurementCharts({
       </div>
 
       {/* Body measurements chart */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
+      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
           Mensurations — 12 dernières semaines (cm)
         </p>
         {bodyData.length < 2 ? (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">
+          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-10">
             Minimum 2 mesures pour afficher le graphique
           </p>
         ) : (
@@ -147,17 +147,17 @@ export default function MeasurementCharts({
             <LineChart data={bodyData}>
               <CartesianGrid
                 strokeDasharray="3 3"
-                stroke="rgba(137,4,4,0.12)"
+                stroke="rgba(var(--color-ep-dark-red-rgb),0.12)"
               />
               <XAxis
                 dataKey="date"
                 tick={TICK_STYLE}
-                axisLine={{ stroke: "rgba(137,4,4,0.2)" }}
+                axisLine={{ stroke: "rgba(var(--color-ep-dark-red-rgb),0.2)" }}
                 tickLine={false}
               />
               <YAxis
                 tick={TICK_STYLE}
-                axisLine={{ stroke: "rgba(137,4,4,0.2)" }}
+                axisLine={{ stroke: "rgba(var(--color-ep-dark-red-rgb),0.2)" }}
                 tickLine={false}
                 domain={["auto", "auto"]}
                 width={38}
@@ -166,7 +166,7 @@ export default function MeasurementCharts({
               <Legend
                 wrapperStyle={{
                   fontSize: "10px",
-                  color: "rgba(245,237,237,0.5)",
+                  color: "rgba(var(--color-ep-light-rgb),0.5)",
                 }}
               />
               <Line

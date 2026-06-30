@@ -43,14 +43,14 @@ function StatTile({
       style={{
         animationDelay: `${delay}ms`,
         background: isAlert
-          ? "linear-gradient(160deg, #1c0101 0%, #0e0000 100%)"
-          : "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-        border: `1px solid ${isAlert ? "rgba(224,30,30,0.28)" : "rgba(224,30,30,0.09)"}`,
+          ? "linear-gradient(160deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)"
+          : "linear-gradient(160deg, var(--color-ep-deep) 0%, var(--color-ep-deep) 100%)",
+        border: `1px solid ${isAlert ? "rgba(var(--color-ep-red-rgb),0.28)" : "rgba(var(--color-ep-red-rgb),0.09)"}`,
         borderRadius: "var(--radius-lg)",
         padding: "20px 18px 16px",
         position: "relative",
         overflow: "hidden",
-        boxShadow: isAlert ? "0 0 24px rgba(224,30,30,0.08)" : "none",
+        boxShadow: isAlert ? "0 0 24px rgba(var(--color-ep-red-rgb),0.08)" : "none",
       }}
     >
       {/* Top accent */}
@@ -59,15 +59,15 @@ function StatTile({
         top: 0, left: 0, right: 0,
         height: 1,
         background: isAlert
-          ? "linear-gradient(90deg, transparent, #E01E1E, transparent)"
-          : "linear-gradient(90deg, transparent, rgba(224,30,30,0.2), transparent)",
+          ? "linear-gradient(90deg, transparent, var(--color-ep-red), transparent)"
+          : "linear-gradient(90deg, transparent, rgba(var(--color-ep-red-rgb),0.2), transparent)",
       }} />
 
       {/* Icon */}
       <div style={{
         position: "absolute",
         top: 14, right: 14,
-        color: isAlert ? "rgba(224,30,30,0.7)" : "rgba(224,30,30,0.3)",
+        color: isAlert ? "rgba(var(--color-ep-red-rgb),0.7)" : "rgba(var(--color-ep-red-rgb),0.3)",
       }}>
         <Icon size={16} strokeWidth={1.8} />
       </div>
@@ -78,7 +78,7 @@ function StatTile({
         fontSize: 40,
         fontWeight: 900,
         letterSpacing: "-0.05em",
-        color: isAlert ? "#E01E1E" : "#F5EDED",
+        color: isAlert ? "var(--color-ep-red)" : "var(--color-ep-light)",
         margin: 0,
         lineHeight: 1,
         marginBottom: 6,
@@ -88,7 +88,7 @@ function StatTile({
 
       <p style={{
         fontSize: 11,
-        color: "rgba(245,237,237,0.35)",
+        color: "rgba(var(--color-ep-light-rgb),0.35)",
         margin: 0,
         fontWeight: 500,
       }}>
@@ -166,7 +166,7 @@ export default function DashboardStats() {
                   alignItems: "center",
                   gap: 14,
                   padding: "14px 18px",
-                  background: "linear-gradient(160deg, #160101 0%, #0e0000 100%)",
+                  background: "linear-gradient(160deg, #160101 0%, var(--color-ep-deep) 100%)",
                   border: "1px solid rgba(251,191,36,0.14)",
                   borderRadius: "var(--radius-lg)",
                   textDecoration: "none",
@@ -184,23 +184,23 @@ export default function DashboardStats() {
                   width: 38,
                   height: 38,
                   borderRadius: 12,
-                  background: "linear-gradient(135deg, #890404, #270101)",
+                  background: "linear-gradient(135deg, var(--color-ep-dark-red), var(--color-ep-black))",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   fontWeight: 800,
                   fontSize: 13,
-                  color: "#F5EDED",
+                  color: "var(--color-ep-light)",
                   flexShrink: 0,
                 }}>
                   {(c.profiles?.full_name ?? "?").split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--color-ep-light)" }}>
                     {c.profiles?.full_name ?? "Client"}
                   </p>
-                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.35)" }}>
                     Sem. {c.week_number} &nbsp;·&nbsp;{" "}
                     {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.created_at))}
                   </p>
@@ -208,7 +208,7 @@ export default function DashboardStats() {
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                   <span className="ep-badge-amber">Répondre</span>
-                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
+                  <ChevronRight size={14} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} />
                 </div>
               </Link>
             ))}

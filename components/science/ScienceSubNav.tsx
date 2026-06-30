@@ -14,7 +14,7 @@ export default function ScienceSubNav({ base }: { base: "/dashboard/client/scien
   const pathname = usePathname();
 
   return (
-    <div className="flex gap-1 mb-6 border-b border-[#890404]/20 -mx-1 px-1 overflow-x-auto">
+    <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20 -mx-1 px-1 overflow-x-auto">
       {ITEMS.map(({ label, segment }) => {
         const href = `${base}/${segment}`;
         const active = pathname === href || pathname.startsWith(`${href}/`);
@@ -24,8 +24,8 @@ export default function ScienceSubNav({ base }: { base: "/dashboard/client/scien
             href={href}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               active
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
+                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
             }`}
           >
             {label}
