@@ -9,6 +9,7 @@ import {
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
+  Search, Newspaper, FlaskConical, Microscope,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -71,7 +72,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/formations",
-    matchSegments: ["formations", "ressources", "recettes"],
+    matchSegments: ["formations", "ressources", "recettes", "science"],
   },
   {
     label: "Communauté",
@@ -115,7 +116,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes"],
+    matchSegments: ["ressources", "formations", "recettes", "science"],
   },
 ];
 
@@ -177,6 +178,15 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
       },
     ],
   },
+  {
+    group: "Science",
+    items: [
+      { label: "Recherche", icon: Search, segment: "science/recherche" },
+      { label: "Actualité", icon: Newspaper, segment: "science/actualite" },
+      { label: "Bibliothèque", icon: FlaskConical, segment: "science/bibliotheque" },
+      { label: "Nos études", icon: Microscope, segment: "science/etudes" },
+    ],
+  },
 ];
 
 const COACH_TABS: TabItem[] = [
@@ -218,7 +228,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science"],
   },
   {
     label: "Communauté",
@@ -261,6 +271,15 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Exercices", icon: LibraryBig, segment: "exercises" },
       { label: "Salles", icon: MapPin, segment: "gyms" },
+    ],
+  },
+  {
+    group: "Science",
+    items: [
+      { label: "Recherche", icon: Search, segment: "science/recherche" },
+      { label: "Actualité", icon: Newspaper, segment: "science/actualite" },
+      { label: "Bibliothèque", icon: FlaskConical, segment: "science/bibliotheque" },
+      { label: "Nos études", icon: Microscope, segment: "science/etudes" },
     ],
   },
   {
@@ -341,6 +360,15 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
       { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
+    ],
+  },
+  {
+    group: "Science",
+    items: [
+      { label: "Recherche", icon: Search, segment: "science/recherche" },
+      { label: "Actualité", icon: Newspaper, segment: "science/actualite" },
+      { label: "Bibliothèque", icon: FlaskConical, segment: "science/bibliotheque" },
+      { label: "Nos études", icon: Microscope, segment: "science/etudes" },
     ],
   },
   {
