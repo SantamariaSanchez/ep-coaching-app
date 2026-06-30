@@ -1,8 +1,10 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import { GYMS_SEED } from "@/lib/gyms-seed";
 
 function refresh() {
   revalidatePath("/dashboard/client/gyms");
@@ -66,6 +68,41 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
     if (error) return { error: "Erreur lors de la mise à jour." };
     refresh();
     return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Imports the official gym chains straight from the app's code (see
+// lib/gyms-seed.ts) instead of pasting SQL by hand — safe to click more
+// than once.
+export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = createAdminClient();
+    const { data: existing, error: fetchError } = await supabase.from("gyms").select("name");
+    if (fetchError) return { error: "Erreur lors de la lecture de l'annuaire." };
+
+    const existingNames = new Set((existing ?? []).map((r) => r.name));
+    const missing = GYMS_SEED.filter((g) => !existingNames.has(g.name));
+    if (missing.length === 0) return { inserted: 0 };
+
+    const { error } = await supabase.from("gyms").insert(
+      missing.map((g) => ({
+        name: g.name,
+        city: g.city,
+        address: g.address,
+        equipment_notes: g.equipment_notes,
+        website: g.website,
+        created_by: null,
+      }))
+    );
+    if (error) return { error: "Erreur lors de l'import." };
+
+    refresh();
+    return { inserted: missing.length };
   } catch {
     return { error: "Erreur inattendue." };
   }

@@ -1,9 +1,11 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
+import { EXERCISE_LIBRARY_SEED } from "@/lib/exercise-library-seed";
 
 export interface CreateExerciseInput {
   name: string;
@@ -78,6 +80,48 @@ export async function updateExercise(
     revalidatePath("/dashboard/client/exercises");
     revalidatePath("/dashboard/coach/exercises");
     return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Imports the official exercise list straight from the app's code (see
+// lib/exercise-library-seed.ts) instead of relying on pasting hundreds of
+// SQL rows by hand in the Supabase editor — far less error-prone, and safe
+// to click more than once (only inserts names that don't already exist).
+export async function seedOfficialExercises(): Promise<{ error?: string; inserted?: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = createAdminClient();
+    const { data: existing, error: fetchError } = await supabase
+      .from("exercise_library")
+      .select("name");
+    if (fetchError) return { error: "Erreur lors de la lecture de la bibliothèque." };
+
+    const existingNames = new Set((existing ?? []).map((r) => r.name));
+    const missing = EXERCISE_LIBRARY_SEED.filter((e) => !existingNames.has(e.name));
+    if (missing.length === 0) return { inserted: 0 };
+
+    const { error } = await supabase.from("exercise_library").insert(
+      missing.map((e) => ({
+        name: e.name,
+        muscle_group: e.muscle_group,
+        muscle_subgroup: e.muscle_subgroup,
+        equipment: e.equipment,
+        category: e.category,
+        difficulty: e.difficulty,
+        instructions: e.instructions,
+        created_by: null,
+        is_official: true,
+      }))
+    );
+    if (error) return { error: "Erreur lors de l'import." };
+
+    revalidatePath("/dashboard/client/exercises");
+    revalidatePath("/dashboard/coach/exercises");
+    return { inserted: missing.length };
   } catch {
     return { error: "Erreur inattendue." };
   }

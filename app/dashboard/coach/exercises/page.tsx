@@ -2,7 +2,13 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getExerciseLibrary } from "@/utils/exercise-library";
 import ExerciseLibraryView from "@/components/ui/ExerciseLibraryView";
-import { createExercise, updateExercise, deleteExercise } from "@/app/dashboard/client/exercises/actions";
+import SeedLibraryButton from "@/components/ui/SeedLibraryButton";
+import {
+  createExercise,
+  updateExercise,
+  deleteExercise,
+  seedOfficialExercises,
+} from "@/app/dashboard/client/exercises/actions";
 import { Dumbbell } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -26,9 +32,10 @@ export default async function CoachExercisesPage() {
           <Dumbbell size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
           Bibliothèque d&apos;exercices
         </h1>
-        <p className="mt-1 text-sm text-[#F5EDED]/40">
+        <p className="mt-1 text-sm text-[#F5EDED]/40 mb-3">
           Modifie une entrée ou ajoute le lien vidéo d&apos;exécution — tes membres peuvent aussi enrichir la liste.
         </p>
+        <SeedLibraryButton label="Importer la bibliothèque officielle" action={seedOfficialExercises} />
       </div>
 
       <ExerciseLibraryView
