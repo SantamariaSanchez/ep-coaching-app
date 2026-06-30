@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
@@ -152,7 +153,9 @@ export async function createCustomFood(params: {
     const user = await getUser();
     if (!user) return { error: "Non authentifié" };
 
-    const supabase = await createServerSupabase();
+    // Admin client — bypasses RLS regardless of how the foods table was set
+    // up, since this is shared reference content.
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("foods")
       .insert({

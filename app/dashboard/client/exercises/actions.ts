@@ -1,6 +1,5 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
@@ -26,7 +25,9 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
   if (!input.muscle_group) return { error: "Le groupe musculaire est requis." };
 
   try {
-    const supabase = await createServerSupabase();
+    // Admin client — bypasses RLS regardless of how the table was set up,
+    // since this is shared reference content, not user-scoped data.
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("exercise_library")
       .insert({
@@ -63,7 +64,7 @@ export async function updateExercise(
   if (!guard.ok) return { error: guard.error };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const updateData: Record<string, unknown> = {};
     if (fields.name !== undefined) updateData.name = fields.name.trim();
     if (fields.muscle_group !== undefined) updateData.muscle_group = fields.muscle_group;
@@ -132,7 +133,7 @@ export async function deleteExercise(id: string): Promise<{ error?: string }> {
   if (!guard.ok) return { error: guard.error };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { error } = await supabase.from("exercise_library").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
 

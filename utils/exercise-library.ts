@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export type ExerciseCategory = "compose" | "isolation";
 export type ExerciseDifficulty = "debutant" | "intermediaire" | "avance";
@@ -20,7 +20,10 @@ export interface LibraryExercise {
 
 export async function getExerciseLibrary(): Promise<LibraryExercise[]> {
   try {
-    const supabase = await createServerSupabase();
+    // Shared reference content (not user-scoped) — read via the admin client
+    // so display never depends on RLS being configured a particular way on
+    // this table (it's meant to be world-readable for every signed-in member).
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("exercise_library")
       .select("*")

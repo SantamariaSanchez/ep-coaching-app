@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { MICRO_KEYS, type MicroKey } from "@/lib/micro-references";
 export { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
 
@@ -261,7 +262,10 @@ export async function getLast7DaysLogs(
 
 export async function getAllFoods(): Promise<Food[]> {
   try {
-    const supabase = await createServerSupabase();
+    // Shared reference content (not user-scoped) — read via the admin
+    // client so display never depends on RLS being configured a particular
+    // way on this table.
+    const supabase = createAdminClient();
     const { data } = await supabase.from("foods").select("*").order("name");
     return (data as Food[]) ?? [];
   } catch {

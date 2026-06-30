@@ -1,6 +1,5 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
@@ -26,7 +25,7 @@ export async function createGym(input: CreateGymInput): Promise<{ error?: string
   if (!input.name.trim()) return { error: "Le nom de la salle est requis." };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("gyms")
       .insert({
@@ -53,7 +52,7 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
   if (!guard.ok) return { error: guard.error };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { error } = await supabase
       .from("gyms")
       .update({
@@ -113,7 +112,7 @@ export async function deleteGym(id: string): Promise<{ error?: string }> {
   if (!guard.ok) return { error: guard.error };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { error } = await supabase.from("gyms").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
     refresh();
@@ -134,7 +133,7 @@ export async function upsertGymReview(
   if (rating < 1 || rating > 5) return { error: "Note invalide." };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     const { error } = await supabase
       .from("gym_reviews")
       .upsert(
@@ -155,7 +154,7 @@ export async function deleteGymReview(reviewId: string): Promise<{ error?: strin
   if (!guard.ok) return { error: guard.error };
 
   try {
-    const supabase = await createServerSupabase();
+    const supabase = createAdminClient();
     await supabase.from("gym_reviews").delete().eq("id", reviewId).eq("author_id", guard.userId);
     refresh();
     return {};

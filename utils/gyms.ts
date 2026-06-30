@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export interface Gym {
   id: string;
@@ -28,7 +28,10 @@ export interface GymWithReviews extends Gym {
 
 export async function getGymsWithReviews(): Promise<GymWithReviews[]> {
   try {
-    const supabase = await createServerSupabase();
+    // Shared reference content (not user-scoped) — read via the admin client
+    // so display never depends on RLS being configured a particular way on
+    // these tables.
+    const supabase = createAdminClient();
     const [{ data: gyms }, { data: reviews }] = await Promise.all([
       supabase.from("gyms").select("*").order("created_at", { ascending: false }),
       supabase.from("gym_reviews").select("*, profiles(full_name)").order("created_at", { ascending: false }),
