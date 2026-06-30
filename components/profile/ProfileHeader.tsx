@@ -1,37 +1,7 @@
 import { Crown, ShieldCheck, Heart, Calendar } from "lucide-react";
 import type { Profile } from "@/utils/auth";
-import { roleBadge } from "@/utils/auth";
-import { getRankForPoints } from "@/lib/gamification";
-
-function RankBadge({ points }: { points: number }) {
-  const { rank, next, progressPct } = getRankForPoints(points);
-  return (
-    <div className="mt-3 bg-[#150000] border border-[#890404]/20 rounded-xl px-3.5 py-3">
-      <div className="flex items-center justify-between mb-1.5">
-        <span className="inline-flex items-center gap-1.5 text-xs font-black text-white">
-          <span className="text-base">{rank.emoji}</span>
-          {rank.label}
-        </span>
-        <span className="text-[10px] font-bold text-[#F5EDED]/35">{points} pts</span>
-      </div>
-      {next ? (
-        <>
-          <div className="h-1.5 bg-[#1f0101] rounded-full overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-[#E01E1E] to-[#B00202] rounded-full transition-all"
-              style={{ width: `${progressPct}%` }}
-            />
-          </div>
-          <p className="text-[9px] text-[#F5EDED]/25 mt-1">
-            {next.minPoints - points} pts avant {next.label} {next.emoji}
-          </p>
-        </>
-      ) : (
-        <p className="text-[9px] text-[#F5EDED]/25">Rang maximum atteint</p>
-      )}
-    </div>
-  );
-}
+import { roleBadge, isSubscribed } from "@/utils/auth";
+import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
 function BadgePill({ badge }: { badge: ReturnType<typeof roleBadge> }) {
   const styles =
@@ -108,9 +78,13 @@ export default function ProfileHeader({
           <p className="text-[11px] text-[#F5EDED]/30 mt-3">
             {postCount} publication{postCount !== 1 ? "s" : ""} dans la communauté
           </p>
-          {points != null && <RankBadge points={points} />}
         </div>
       </div>
+      {points != null && (
+        <div className="mt-4">
+          <PointsProgressCard points={points} isSubscribed={isSubscribed(profile)} />
+        </div>
+      )}
       {children}
     </div>
   );

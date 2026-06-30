@@ -7,7 +7,13 @@ import type { Profile } from "@/utils/auth";
 import AddClientModal from "./AddClientModal";
 import { ClientCard } from "./ClientCard";
 
-export default function ClientsSection({ clients }: { clients: Profile[] }) {
+export default function ClientsSection({
+  clients,
+  ouraEligibleIds = [],
+}: {
+  clients: Profile[];
+  ouraEligibleIds?: string[];
+}) {
   const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
 
@@ -91,6 +97,7 @@ export default function ClientsSection({ clients }: { clients: Profile[] }) {
               alerts={0}
               delay={i * 60}
               onClick={() => router.push(`/dashboard/coach/clients/${client.id}`)}
+              ouraEligible={ouraEligibleIds.includes(client.id)}
             />
           ))}
         </div>

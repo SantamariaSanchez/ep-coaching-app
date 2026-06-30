@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile, getClients } from "@/utils/auth";
+import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
+import { getPointsMap } from "@/lib/gamification";
+import { isEligibleForLegendReward } from "@/lib/gamification-types";
 import ClientsSection from "@/components/ui/ClientsSection";
 
 export default async function ClientsPage() {
@@ -12,6 +14,11 @@ export default async function ClientsPage() {
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
+
+  const pointsMap = await getPointsMap(clients.map((c) => c.id));
+  const ouraEligibleIds = clients
+    .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
+    .map((c) => c.id);
 
   return (
     <div className="page-transition" style={{ padding: "32px 24px 48px", maxWidth: 900, margin: "0 auto" }}>
@@ -28,7 +35,7 @@ export default async function ClientsPage() {
         </p>
       </div>
 
-      <ClientsSection clients={clients} />
+      <ClientsSection clients={clients} ouraEligibleIds={ouraEligibleIds} />
     </div>
   );
 }

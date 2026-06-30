@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getAllFoods } from "@/utils/nutrition";
+import { getTotalPoints } from "@/lib/gamification";
 import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "./actions";
 
@@ -12,9 +13,10 @@ export default async function ClientRecettesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/recettes");
 
-  const [communityRecipes, foods] = await Promise.all([
+  const [communityRecipes, foods, points] = await Promise.all([
     getCommunityRecipes(),
     getAllFoods(),
+    getTotalPoints(user.id),
   ]);
 
   return (
@@ -36,6 +38,8 @@ export default async function ClientRecettesPage() {
         foods={foods}
         currentUserId={user.id}
         isCoach={false}
+        points={points}
+        isSubscribed={isSubscribed(profile)}
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
       />

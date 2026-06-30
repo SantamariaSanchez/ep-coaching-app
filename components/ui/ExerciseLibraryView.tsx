@@ -11,7 +11,9 @@ import {
   Video,
   ExternalLink,
   Dumbbell,
+  Lock,
 } from "lucide-react";
+import { hasUnlocked, FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import {
   LIBRARY_MUSCLE_GROUPS,
   EQUIPMENT_OPTIONS,
@@ -219,11 +221,13 @@ function ExerciseForm({
 function ExerciseCard({
   exercise,
   isCoach,
+  videosUnlocked,
   onUpdate,
   onDelete,
 }: {
   exercise: LibraryExercise;
   isCoach: boolean;
+  videosUnlocked: boolean;
   onUpdate: (input: CreateExerciseInput & { video_url?: string }) => Promise<void>;
   onDelete: () => Promise<void>;
 }) {
@@ -242,11 +246,15 @@ function ExerciseCard({
     );
   }
 
+  const hasLockedVideo = !!exercise.video_url && !videosUnlocked && !isCoach;
+
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
         <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
-          {exercise.video_url ? (
+          {hasLockedVideo ? (
+            <Lock size={14} className="text-amber-400" />
+          ) : exercise.video_url ? (
             <PlayCircle size={16} className="text-[#E01E1E]" />
           ) : (
             <Dumbbell size={15} className="text-[#F5EDED]/25" />
@@ -297,7 +305,16 @@ function ExerciseCard({
           )}
 
           {exercise.video_url ? (
-            <VideoBlock url={exercise.video_url} />
+            hasLockedVideo ? (
+              <div className="flex items-center gap-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2.5 mt-2">
+                <Lock size={14} className="text-amber-400 flex-shrink-0" strokeWidth={1.8} />
+                <p className="text-[11px] text-amber-300/80">
+                  Vidéo de démonstration débloquée à {FEATURE_UNLOCK_POINTS.exercise_videos} pts ou avec l&apos;abonnement.
+                </p>
+              </div>
+            ) : (
+              <VideoBlock url={exercise.video_url} />
+            )
           ) : (
             <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
               <Video size={11} /> Vidéo d&apos;exécution à venir
@@ -337,6 +354,8 @@ function ExerciseCard({
 interface Props {
   exercises: LibraryExercise[];
   isCoach: boolean;
+  points?: number;
+  isSubscribed?: boolean;
   createExercise: (input: CreateExerciseInput) => Promise<{ error?: string; id?: string }>;
   updateExercise: (id: string, fields: Partial<CreateExerciseInput> & { video_url?: string | null }) => Promise<{ error?: string }>;
   deleteExercise: (id: string) => Promise<{ error?: string }>;
@@ -345,10 +364,13 @@ interface Props {
 export default function ExerciseLibraryView({
   exercises: initialExercises,
   isCoach,
+  points = 0,
+  isSubscribed = false,
   createExercise,
   updateExercise,
   deleteExercise,
 }: Props) {
+  const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
   const [exercises, setExercises] = useState(initialExercises);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
@@ -493,6 +515,7 @@ export default function ExerciseLibraryView({
                   key={ex.id}
                   exercise={ex}
                   isCoach={isCoach}
+                  videosUnlocked={videosUnlocked}
                   onUpdate={async (input) => {
                     await updateExercise(ex.id, input);
                     setExercises((prev) => prev.map((e) => (e.id === ex.id ? { ...e, ...input, muscle_subgroup: input.muscle_subgroup ?? null, video_url: input.video_url ?? e.video_url } : e)));

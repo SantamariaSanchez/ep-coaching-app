@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search, Clock, MapPin, Flame, ChevronDown, X, UtensilsCrossed,
-  Plus, Heart, Trash2, Wand2, BookOpen,
+  Plus, Heart, Trash2, Wand2, BookOpen, Lock, Sparkles,
 } from "lucide-react";
+import { hasUnlocked, FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import {
   RECIPES,
   MEAL_LABELS,
@@ -131,6 +132,7 @@ function RecipeCard({
   basePath,
   canDelete,
   onDelete,
+  locked,
 }: {
   recipe: DisplayRecipe;
   expanded: boolean;
@@ -138,7 +140,25 @@ function RecipeCard({
   basePath: string;
   canDelete: boolean;
   onDelete: () => void;
+  locked: boolean;
 }) {
+  if (locked) {
+    return (
+      <div className="bg-[#1f0101] border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
+          <Lock size={15} className="text-amber-400" strokeWidth={1.8} />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold text-white/80 truncate">{recipe.name}</p>
+          <p className="text-[10px] text-amber-300/70">
+            Recette exclusive — débloquée à {FEATURE_UNLOCK_POINTS.exclusive_recipes} pts ou avec l&apos;abonnement
+          </p>
+        </div>
+        <Sparkles size={14} className="text-amber-500/40 flex-shrink-0" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={onToggle} className="w-full text-left p-4">
@@ -149,6 +169,11 @@ function RecipeCard({
               {recipe.isCommunity && (
                 <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/25 flex-shrink-0">
                   Communauté
+                </span>
+              )}
+              {recipe.exclusive && (
+                <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 flex-shrink-0">
+                  <Sparkles size={9} /> Exclusive
                 </span>
               )}
             </div>
@@ -272,6 +297,8 @@ export default function RecipesClient({
   foods,
   currentUserId,
   isCoach,
+  points,
+  isSubscribed,
   createRecipe,
   deleteRecipe,
 }: {
@@ -279,10 +306,13 @@ export default function RecipesClient({
   foods: Food[];
   currentUserId: string;
   isCoach: boolean;
+  points: number;
+  isSubscribed: boolean;
   createRecipe: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
   deleteRecipe: (id: string) => Promise<{ error?: string }>;
 }) {
   const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
+  const recipesUnlocked = isCoach || hasUnlocked("exclusive_recipes", points, isSubscribed);
   const [tab, setTab] = useState<"bibliotheque" | "creer">("bibliotheque");
   const [showAddForm, setShowAddForm] = useState(false);
   const [recipes, setRecipes] = useState<DisplayRecipe[]>([
@@ -512,6 +542,7 @@ export default function RecipesClient({
                   basePath={basePath}
                   canDelete={r.isCommunity && (r.authorId === currentUserId || isCoach)}
                   onDelete={() => handleDelete(r.id)}
+                  locked={!!r.exclusive && !recipesUnlocked}
                 />
               ))}
             </div>

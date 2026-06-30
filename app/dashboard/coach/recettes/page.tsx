@@ -35,6 +35,8 @@ export default async function CoachRecettesPage() {
         foods={foods}
         currentUserId={user.id}
         isCoach={true}
+        points={0}
+        isSubscribed={false}
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
       />

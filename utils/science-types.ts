@@ -53,12 +53,17 @@ export interface ScienceStudy {
   hypothesis: string | null;
   protocol: string | null;
   status: "idee" | "en_cours" | "terminee";
+  /** Objectif cible fixé par le coach (pas le compteur réel d'inscrits). */
   participant_count: number | null;
   start_date: string | null;
   end_date: string | null;
   results: string | null;
   created_at: string;
   updated_at: string;
+  /** Nombre réel de membres inscrits (table science_study_participants). */
+  joined_count: number;
+  /** L'utilisateur courant a-t-il rejoint cette étude. */
+  is_joined: boolean;
 }
 
 export const STUDY_STATUS_LABELS: Record<ScienceStudy["status"], string> = {

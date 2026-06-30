@@ -12,6 +12,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
+import RankBadge from "@/components/ui/RankBadge";
 
 function badgeLabel(role: "coach" | "client", subscriptionStatus: string): string {
   if (role === "coach") return "Coach";
@@ -217,6 +218,7 @@ function CommentsThread({
           author_role: "client",
           author_subscription_status: "free",
           author_avatar_url: null,
+          author_points: null,
           content: content.trim(),
           created_at: new Date().toISOString(),
         });
@@ -263,7 +265,8 @@ function CommentsThread({
               )}{" "}
               <span className="text-[8px] font-bold uppercase tracking-wide text-[#F5EDED]/25">
                 · {badgeLabel(c.author_role, c.author_subscription_status)}
-              </span>
+              </span>{" "}
+              {c.author_points != null && <RankBadge points={c.author_points} />}
               <span className="text-[#F5EDED]/25 font-normal"> · {timeAgo(c.created_at)}</span>
             </p>
             <p className="text-xs text-[#F5EDED]/70">{c.content}</p>
@@ -351,6 +354,7 @@ function PostCard({
             <span className="text-[9px] font-bold uppercase tracking-wide text-[#F5EDED]/30 flex-shrink-0">
               {badgeLabel(post.author_role, post.author_subscription_status)}
             </span>
+            {post.author_points != null && <RankBadge points={post.author_points} />}
             <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
               · {timeAgo(post.created_at)}
             </span>

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Dumbbell, Apple, Heart, Crown, ArrowRight, X,
-  Image as ImageIcon, Sparkles,
+  Image as ImageIcon, Sparkles, FlaskConical, Trophy,
+  GraduationCap,
 } from "lucide-react";
 import { completeOnboarding } from "@/app/onboarding/actions";
 
@@ -22,40 +23,60 @@ const SLIDES: Slide[] = [
     icon: Sparkles,
     eyebrow: "Bienvenue",
     title: "T'es officiellement dans la place 👋",
-    desc: "30 secondes, 5 écrans, et tu sauras exactement tout ce que tu peux faire ici. Let's go.",
+    desc: "1 minute, 9 écrans, et tu sauras exactement tout ce que tu peux faire ici — gratuitement et en payant. Let's go.",
   },
   {
     icon: Dumbbell,
     eyebrow: "Training",
     title: "Construis ton entraînement",
-    desc: "Crée ton programme, logue chaque séance en temps réel, et garde tes records personnels sous la main.",
-    bullets: ["Programme sur-mesure", "Logbook de séance", "Records personnels"],
+    desc: "Crée ton programme, logue chaque séance en temps réel, garde tes records personnels sous la main, et pioche dans la bibliothèque d'exercices et de salles partenaires.",
+    bullets: ["Programme sur-mesure", "Logbook de séance", "Road Map d'objectifs", "Bibliothèque d'exercices & salles"],
   },
   {
     icon: Apple,
     eyebrow: "Nutrition",
     title: "Maîtrise ton assiette",
-    desc: "Calcule tes besoins caloriques, logue tes repas en 2 clics, et choisis le mode qui te convient.",
-    bullets: ["Calcul TDEE & macros", "Journal alimentaire", "Mode flexible ou plan fixe"],
+    desc: "Calcule tes besoins caloriques, logue tes repas en 2 clics, et pioche dans des centaines de recettes triées par régime, phase et macros.",
+    bullets: ["Calcul TDEE & macros", "Journal alimentaire", "Bibliothèque de recettes", "Créateur de repas"],
   },
   {
     icon: ImageIcon,
     eyebrow: "Suivi",
     title: "Vois ta progression",
-    desc: "Un bilan quotidien (poids, sommeil, ressenti) et des photos pour suivre ta transformation, semaine après semaine.",
+    desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation, pas & routine, mindset — tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
+  },
+  {
+    icon: FlaskConical,
+    eyebrow: "Science",
+    title: "Vérifie ce qu'on te raconte",
+    desc: "Recherche en direct sur PubMed, actualité scientifique, bibliothèque de méta-analyses sur l'entraînement et la nutrition — fais-toi ton propre avis, sourcé.",
+    bullets: ["Recherche PubMed live", "Actualité scientifique", "Bibliothèque de méta-analyses", "Nos propres études"],
   },
   {
     icon: Heart,
     eyebrow: "Communauté",
     title: "T'es plus seul·e",
-    desc: "Partage tes victoires, pose tes questions — toute la communauté (et le coach) peut te répondre.",
+    desc: "Partage tes victoires, pose tes questions — toute la communauté (et le coach) peut te répondre. Et chaque publication te rapporte des points.",
     bullets: ["Victoires", "Questions", "Ressources gratuites"],
+  },
+  {
+    icon: Trophy,
+    eyebrow: "Points & rang",
+    title: "Plus tu joues le jeu, plus tu débloques",
+    desc: "Bilan loggé, séance complétée, leçon vue, victoire publiée : chaque action te rapporte un peu de points. En grimpant les rangs (🌱 Débutant → 🐐 Légende), tu débloques progressivement du contenu sans jamais payer.",
+    bullets: ["Recettes exclusives", "Vidéos de démonstration", "Participer à \"Nos études\""],
+  },
+  {
+    icon: GraduationCap,
+    eyebrow: "Contenu",
+    title: "80h+ de formations",
+    desc: "Entraînement, nutrition, mental — des modules vidéo complets, accessibles à vie. C'est le seul contenu réservé à l'abonnement (le reste est gratuit ou débloquable par points).",
   },
   {
     icon: Crown,
     eyebrow: "Pour aller plus loin",
     title: "Le coaching premium, quand tu veux",
-    desc: "Programme et nutrition coachés sur-mesure, bilans hebdo, messages directs avec ton coach. Accessible à tout moment depuis Abonnement.",
+    desc: "Programme et nutrition coachés sur-mesure, bilans hebdo, messages directs avec ton coach, formations complètes. Accessible à tout moment depuis Abonnement.",
   },
 ];
 

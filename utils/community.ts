@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getPointsMap } from "@/lib/gamification";
 
 export type CommunityPostType = "victory" | "question";
 
@@ -9,6 +10,7 @@ export interface CommunityPost {
   author_role: "coach" | "client";
   author_subscription_status: string;
   author_avatar_url: string | null;
+  author_points: number | null;
   type: CommunityPostType;
   content: string;
   image_url: string | null;
@@ -25,6 +27,7 @@ export interface CommunityComment {
   author_role: "coach" | "client";
   author_subscription_status: string;
   author_avatar_url: string | null;
+  author_points: number | null;
   content: string;
   created_at: string;
 }
@@ -79,6 +82,9 @@ export async function getCommunityPostsPage(
       authorMap[a.id] = a;
     }
 
+    const clientAuthorIds = (authors ?? []).filter((a) => a.role === "client").map((a) => a.id as string);
+    const pointsMap = await getPointsMap(clientAuthorIds);
+
     const countMap: Record<string, number> = {};
     for (const c of comments ?? []) {
       const pid = (c as { post_id: string }).post_id;
@@ -94,6 +100,7 @@ export async function getCommunityPostsPage(
         author_role: author?.role ?? "client",
         author_subscription_status: author?.subscription_status ?? "free",
         author_avatar_url: author?.avatar_url ?? null,
+        author_points: author?.role === "client" ? pointsMap[p.author_id] ?? 0 : null,
         type: p.type,
         content: p.content,
         image_url: p.image_url,
@@ -141,6 +148,9 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
       authorMap[a.id] = a;
     }
 
+    const clientAuthorIds = (authors ?? []).filter((a) => a.role === "client").map((a) => a.id as string);
+    const pointsMap = await getPointsMap(clientAuthorIds);
+
     return comments.map((c) => {
       const author = authorMap[c.author_id];
       return {
@@ -151,6 +161,7 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
         author_role: author?.role ?? "client",
         author_subscription_status: author?.subscription_status ?? "free",
         author_avatar_url: author?.avatar_url ?? null,
+        author_points: author?.role === "client" ? pointsMap[c.author_id] ?? 0 : null,
         content: c.content,
         created_at: c.created_at,
       };

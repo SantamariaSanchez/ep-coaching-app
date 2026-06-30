@@ -22,14 +22,34 @@ export async function getScienceArticles(opts: { actualiteOnly?: boolean } = {})
   }
 }
 
-export async function getScienceStudies(): Promise<ScienceStudy[]> {
+export async function getScienceStudies(userId?: string): Promise<ScienceStudy[]> {
   try {
     const supabase = createAdminClient();
-    const { data } = await supabase
+    const { data: studies } = await supabase
       .from("science_studies")
       .select("*")
       .order("created_at", { ascending: false });
-    return (data as ScienceStudy[]) ?? [];
+    if (!studies || studies.length === 0) return [];
+
+    const studyIds = studies.map((s) => s.id as string);
+    const { data: participants } = await supabase
+      .from("science_study_participants")
+      .select("study_id, participant_id")
+      .in("study_id", studyIds);
+
+    const countMap: Record<string, number> = {};
+    const joinedSet = new Set<string>();
+    for (const p of participants ?? []) {
+      const sid = p.study_id as string;
+      countMap[sid] = (countMap[sid] ?? 0) + 1;
+      if (userId && p.participant_id === userId) joinedSet.add(sid);
+    }
+
+    return studies.map((s) => ({
+      ...s,
+      joined_count: countMap[s.id] ?? 0,
+      is_joined: joinedSet.has(s.id),
+    })) as ScienceStudy[];
   } catch {
     return [];
   }

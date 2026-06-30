@@ -1,10 +1,13 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { ScienceArticleType } from "@/utils/science";
 import { SCIENCE_LIBRARY_SEED } from "@/lib/science-library-seed";
+import { getProfile, isSubscribed } from "@/utils/auth";
+import { getTotalPoints } from "@/lib/gamification";
+import { hasUnlocked } from "@/lib/gamification-types";
 
 function revalidateScience() {
   revalidatePath("/dashboard/client/science", "layout");
@@ -185,6 +188,54 @@ export async function deleteStudy(id: string): Promise<{ error?: string }> {
     const supabase = createAdminClient();
     const { error } = await supabase.from("science_studies").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
+
+    revalidateScience();
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Rejoindre/quitter une étude — réservé aux membres ayant débloqué la
+// participation (rang Vétéran ou abonnement, voir FEATURE_UNLOCK_POINTS).
+export async function joinStudy(studyId: string): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (guard.role !== "client") return { error: "Réservé aux membres." };
+
+  try {
+    const [profile, points] = await Promise.all([
+      getProfile(guard.userId),
+      getTotalPoints(guard.userId),
+    ]);
+    if (!hasUnlocked("study_participation", points, isSubscribed(profile))) {
+      return { error: "Pas encore débloqué — continue à cumuler des points ou abonne-toi." };
+    }
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("science_study_participants")
+      .insert({ study_id: studyId, participant_id: guard.userId });
+    if (error) return { error: "Erreur lors de l'inscription." };
+
+    revalidateScience();
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function leaveStudy(studyId: string): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = createAdminClient();
+    await supabase
+      .from("science_study_participants")
+      .delete()
+      .eq("study_id", studyId)
+      .eq("participant_id", guard.userId);
 
     revalidateScience();
     return {};

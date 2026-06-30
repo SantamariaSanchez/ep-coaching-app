@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getScienceStudies } from "@/utils/science";
+import { getTotalPoints } from "@/lib/gamification";
+import { hasUnlocked } from "@/lib/gamification-types";
 import { FlaskConical } from "lucide-react";
 import ScienceSubNav from "@/components/science/ScienceSubNav";
 import StudiesView from "@/components/science/StudiesView";
-import { createStudy, updateStudy, deleteStudy } from "@/app/dashboard/client/science/actions";
+import { createStudy, updateStudy, deleteStudy, joinStudy, leaveStudy } from "@/app/dashboard/client/science/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,11 @@ export default async function ClientScienceEtudesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/science/etudes");
 
-  const studies = await getScienceStudies();
+  const [studies, points] = await Promise.all([
+    getScienceStudies(user.id),
+    getTotalPoints(user.id),
+  ]);
+  const participationUnlocked = hasUnlocked("study_participation", points, isSubscribed(profile));
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -34,9 +40,12 @@ export default async function ClientScienceEtudesPage() {
       <StudiesView
         studies={studies}
         isCoach={false}
+        participationUnlocked={participationUnlocked}
         createStudy={createStudy}
         updateStudy={updateStudy}
         deleteStudy={deleteStudy}
+        joinStudy={joinStudy}
+        leaveStudy={leaveStudy}
       />
     </div>
   );

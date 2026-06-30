@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { getTotalPoints } from "@/lib/gamification";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import {
   Check,
@@ -10,7 +11,13 @@ import {
   Apple,
   HeartHandshake,
   GraduationCap,
+  FlaskConical,
+  UtensilsCrossed,
+  LibraryBig,
+  Gift,
+  Sparkles,
 } from "lucide-react";
+import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
 const COACHING_CATEGORIES = [
   {
@@ -41,6 +48,7 @@ const COACHING_CATEGORIES = [
       "Messagerie directe avec ton coach",
       "Suivi photos de progression",
       "Rappels personnalisés (pesée, compléments, etc.)",
+      "Lives & appels coaching",
     ],
   },
   {
@@ -53,6 +61,16 @@ const COACHING_CATEGORIES = [
   },
 ];
 
+const ALWAYS_FREE = [
+  { icon: Dumbbell, label: "Training autonome", sub: "Programme, Logbook, Road Map" },
+  { icon: Apple, label: "Nutrition autonome", sub: "Calcul, journal, bilan, photos" },
+  { icon: LibraryBig, label: "Bibliothèque", sub: "Exercices & salles de sport" },
+  { icon: FlaskConical, label: "Science", sub: "Recherche, actualité, bibliothèque PubMed" },
+  { icon: UtensilsCrossed, label: "Recettes", sub: "Base de recettes & créateur de repas" },
+  { icon: Users, label: "Communauté", sub: "Victoires, Questions, profils" },
+  { icon: MessageCircleQuestion, label: "Ressources", sub: "Guides & lead magnets" },
+];
+
 export default async function AbonnementPage() {
   const user = await getUser();
   if (!user) redirect("/");
@@ -61,6 +79,7 @@ export default async function AbonnementPage() {
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
   const alreadySubscribed = isSubscribed(profile);
+  const points = await getTotalPoints(user.id);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 page-transition">
@@ -72,10 +91,10 @@ export default async function AbonnementPage() {
           Passer Premium
         </h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
-          Avec l&apos;offre gratuite, tu as accès à la Communauté (Victoires,
-          Questions) et aux Ressources. Pour débloquer le coaching complet
-          (programme, nutrition, logbook, bilans...), choisis une formule
-          ci-dessous.
+          Avec l&apos;offre gratuite, tu as déjà accès à tous les outils d&apos;entraînement et de
+          nutrition en autonomie, à la bibliothèque, à Science et à la Communauté. Deux chemins
+          pour débloquer le reste : prendre l&apos;abonnement tout de suite, ou accumuler des
+          points en utilisant l&apos;appli et en publiant — voir plus bas.
         </p>
       </div>
 
@@ -149,22 +168,39 @@ export default async function AbonnementPage() {
       </section>
 
       {/* ── Toujours gratuit ── */}
-      <section>
+      <section className="mb-10">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Toujours gratuit
+          Toujours gratuit, dès l&apos;inscription
         </p>
         <div className="grid grid-cols-2 gap-3">
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-            <Users size={18} className="text-[#F5EDED]/40" strokeWidth={1.8} />
-            <p className="text-xs font-bold text-white">Communauté</p>
-            <p className="text-[10px] text-[#F5EDED]/35">Victoires & Questions</p>
-          </div>
-          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-            <MessageCircleQuestion size={18} className="text-[#F5EDED]/40" strokeWidth={1.8} />
-            <p className="text-xs font-bold text-white">Ressources</p>
-            <p className="text-[10px] text-[#F5EDED]/35">Guides & lead magnets</p>
-          </div>
+          {ALWAYS_FREE.map(({ icon: Icon, label, sub }) => (
+            <div key={label} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
+              <Icon size={18} className="text-[#F5EDED]/40" strokeWidth={1.8} />
+              <p className="text-xs font-bold text-white">{label}</p>
+              <p className="text-[10px] text-[#F5EDED]/35">{sub}</p>
+            </div>
+          ))}
         </div>
+      </section>
+
+      {/* ── Débloque en jouant le jeu (points/rang) ── */}
+      <section>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 flex items-center gap-1.5">
+          <Sparkles size={11} /> Ou débloque en l&apos;utilisant
+        </p>
+        <p className="text-sm text-[#F5EDED]/45 mb-3 leading-relaxed">
+          Chaque bilan loggé, séance complétée, leçon vue ou victoire publiée dans la Communauté
+          te rapporte des points (lentement — c&apos;est une récompense de fidélité, pas un
+          raccourci). En cumulant assez de points, tu débloques certains contenus sans payer.
+          Tout ce qui demande du temps réel de ton coach (messages, bilans coachés, programme
+          construit pour toi, etc.) reste réservé à l&apos;abonnement.
+        </p>
+        <PointsProgressCard points={points} isSubscribed={alreadySubscribed} />
+        {!alreadySubscribed && (
+          <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] text-amber-300/70">
+            <Gift size={11} /> Au rang Légende, les membres abonnés reçoivent une Oura Ring offerte par le coach.
+          </p>
+        )}
       </section>
     </div>
   );

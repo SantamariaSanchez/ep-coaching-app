@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getExerciseLibrary } from "@/utils/exercise-library";
+import { getTotalPoints } from "@/lib/gamification";
 import ExerciseLibraryView from "@/components/ui/ExerciseLibraryView";
 import { createExercise, updateExercise, deleteExercise } from "./actions";
 import { Dumbbell } from "lucide-react";
@@ -14,7 +15,10 @@ export default async function ClientExercisesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/exercises");
 
-  const exercises = await getExerciseLibrary();
+  const [exercises, points] = await Promise.all([
+    getExerciseLibrary(),
+    getTotalPoints(user.id),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -31,6 +35,8 @@ export default async function ClientExercisesPage() {
       <ExerciseLibraryView
         exercises={exercises}
         isCoach={false}
+        points={points}
+        isSubscribed={isSubscribed(profile)}
         createExercise={createExercise}
         updateExercise={updateExercise}
         deleteExercise={deleteExercise}

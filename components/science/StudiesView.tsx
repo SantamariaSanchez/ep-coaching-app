@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical, Plus, X, Pencil, Trash2 } from "lucide-react";
+import { FlaskConical, Plus, X, Pencil, Trash2, Lock, Users, LogOut } from "lucide-react";
 import { STUDY_STATUS_LABELS, type ScienceStudy } from "@/utils/science-types";
+import { FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import type { StudyInput } from "@/app/dashboard/client/science/actions";
 
 const inputCls =
@@ -107,15 +108,19 @@ function StudyForm({ initial, onSave, onCancel }: {
   );
 }
 
-function StudyCard({ study, isCoach, onUpdate, onDelete }: {
+function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, onJoin, onLeave }: {
   study: ScienceStudy;
   isCoach: boolean;
+  participationUnlocked: boolean;
   onUpdate: (input: StudyInput) => Promise<void>;
   onDelete: () => Promise<void>;
+  onJoin: () => Promise<void>;
+  onLeave: () => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [joining, setJoining] = useState(false);
 
   if (editing) {
     return <StudyForm initial={study} onSave={async (input) => { await onUpdate(input); setEditing(false); }} onCancel={() => setEditing(false)} />;
@@ -124,14 +129,47 @@ function StudyCard({ study, isCoach, onUpdate, onDelete }: {
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full text-left px-4 py-3.5">
-        <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border mb-1.5 ${STATUS_COLORS[study.status]}`}>
-          {STUDY_STATUS_LABELS[study.status]}
-        </span>
+        <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
+          <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${STATUS_COLORS[study.status]}`}>
+            {STUDY_STATUS_LABELS[study.status]}
+          </span>
+          {study.is_joined && (
+            <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-green-300">
+              <Users size={9} /> Tu participes
+            </span>
+          )}
+        </div>
         <p className="text-sm font-bold text-white leading-snug">{study.title}</p>
-        {study.participant_count != null && (
-          <p className="text-[10px] text-[#F5EDED]/35 mt-1">{study.participant_count} participant{study.participant_count > 1 ? "s" : ""}</p>
-        )}
+        <p className="text-[10px] text-[#F5EDED]/35 mt-1">
+          {study.joined_count} inscrit{study.joined_count > 1 ? "s" : ""}
+          {study.participant_count != null ? ` · objectif ${study.participant_count}` : ""}
+        </p>
       </button>
+      {!isCoach && (
+        <div className="px-4 pb-3">
+          {!participationUnlocked ? (
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-amber-300/80">
+              <Lock size={11} /> Participation débloquée à {FEATURE_UNLOCK_POINTS.study_participation} pts ou avec l&apos;abonnement
+            </p>
+          ) : study.is_joined ? (
+            <button
+              onClick={async () => { setJoining(true); await onLeave(); setJoining(false); }}
+              disabled={joining}
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-red-400 transition-colors disabled:opacity-50"
+            >
+              <LogOut size={11} /> Quitter l&apos;étude
+            </button>
+          ) : (
+            <button
+              onClick={async () => { setJoining(true); await onJoin(); setJoining(false); }}
+              disabled={joining}
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Users size={11} /> {joining ? "…" : "Rejoindre l'étude"}
+            </button>
+          )}
+        </div>
+      )}
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
           {study.hypothesis && (
@@ -175,15 +213,21 @@ function StudyCard({ study, isCoach, onUpdate, onDelete }: {
 export default function StudiesView({
   studies: initial,
   isCoach,
+  participationUnlocked = false,
   createStudy,
   updateStudy,
   deleteStudy,
+  joinStudy,
+  leaveStudy,
 }: {
   studies: ScienceStudy[];
   isCoach: boolean;
+  participationUnlocked?: boolean;
   createStudy: (input: StudyInput) => Promise<{ error?: string; id?: string }>;
   updateStudy: (id: string, input: Partial<StudyInput>) => Promise<{ error?: string }>;
   deleteStudy: (id: string) => Promise<{ error?: string }>;
+  joinStudy?: (studyId: string) => Promise<{ error?: string }>;
+  leaveStudy?: (studyId: string) => Promise<{ error?: string }>;
 }) {
   const [studies, setStudies] = useState(initial);
   const [showCreate, setShowCreate] = useState(false);
@@ -212,7 +256,14 @@ export default function StudiesView({
             const result = await createStudy(input);
             if (!result.error) {
               setStudies((prev) => [
-                { ...input, id: result.id ?? `optimistic-${Date.now()}`, created_at: new Date().toISOString(), updated_at: new Date().toISOString() } as ScienceStudy,
+                {
+                  ...input,
+                  id: result.id ?? `optimistic-${Date.now()}`,
+                  created_at: new Date().toISOString(),
+                  updated_at: new Date().toISOString(),
+                  joined_count: 0,
+                  is_joined: false,
+                } as ScienceStudy,
                 ...prev,
               ]);
               setShowCreate(false);
@@ -228,6 +279,7 @@ export default function StudiesView({
             key={s.id}
             study={s}
             isCoach={isCoach}
+            participationUnlocked={participationUnlocked}
             onUpdate={async (input) => {
               await updateStudy(s.id, input);
               setStudies((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...input } : x)));
@@ -235,6 +287,24 @@ export default function StudiesView({
             onDelete={async () => {
               await deleteStudy(s.id);
               setStudies((prev) => prev.filter((x) => x.id !== s.id));
+            }}
+            onJoin={async () => {
+              if (!joinStudy) return;
+              const res = await joinStudy(s.id);
+              if (!res.error) {
+                setStudies((prev) =>
+                  prev.map((x) => (x.id === s.id ? { ...x, is_joined: true, joined_count: x.joined_count + 1 } : x))
+                );
+              }
+            }}
+            onLeave={async () => {
+              if (!leaveStudy) return;
+              const res = await leaveStudy(s.id);
+              if (!res.error) {
+                setStudies((prev) =>
+                  prev.map((x) => (x.id === s.id ? { ...x, is_joined: false, joined_count: Math.max(0, x.joined_count - 1) } : x))
+                );
+              }
             }}
           />
         ))}

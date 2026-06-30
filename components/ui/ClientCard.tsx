@@ -1,5 +1,7 @@
 "use client";
 
+import { Gift } from "lucide-react";
+
 interface ClientCardProps {
   name: string;
   phase?: string | null;
@@ -10,6 +12,8 @@ interface ClientCardProps {
   href?: string;
   delay?: number;
   onClick?: () => void;
+  /** Abonné ayant atteint le rang Légende — récompense Oura Ring à remettre. */
+  ouraEligible?: boolean;
 }
 
 export function ClientCard({
@@ -21,6 +25,7 @@ export function ClientCard({
   alerts = 0,
   delay = 0,
   onClick,
+  ouraEligible = false,
 }: ClientCardProps) {
   const initials = name
     .split(" ")
@@ -82,6 +87,26 @@ export function ClientCard({
         height: 1,
         background: "linear-gradient(90deg, transparent, rgba(224,30,30,0.25), transparent)",
       }} />
+
+      {/* Oura Ring eligibility badge */}
+      {ouraEligible && (
+        <div
+          title="Rang Légende atteint — Oura Ring à offrir"
+          style={{
+            position: "absolute",
+            top: 14, left: 14,
+            background: "rgba(250,204,21,0.12)",
+            border: "1px solid rgba(250,204,21,0.35)",
+            borderRadius: "50%",
+            width: 26, height: 26,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Gift size={12} style={{ color: "#FACC15" }} strokeWidth={2} />
+        </div>
+      )}
 
       {/* Alert badge */}
       {alerts > 0 && (

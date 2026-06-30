@@ -1,10 +1,32 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 
-// Purely cosmetic points/rank system — visible on a member's profile, no
-// functional advantage anywhere. Points are an append-only ledger so the
-// same event (one lesson, one day's bilan, one session...) can only ever
-// be rewarded once, thanks to the unique (client_id, source_type, source_id)
-// constraint — calling awardPoints again with the same source is a no-op.
+// Points/rang : gagnés en utilisant l'appli ou en publiant dans la
+// communauté (jamais en payant). Append-only ledger, donc le même
+// événement (une leçon, un bilan du jour, une séance...) n'est récompensé
+// qu'une fois grâce à la contrainte unique (client_id, source_type,
+// source_id) — rappeler awardPoints avec la même source est un no-op.
+//
+// Le rang sert à deux choses : un badge cosmétique visible sur le profil,
+// ET le déblocage progressif de quelques contenus (voir FEATURE_UNLOCKS
+// dans lib/gamification-types.ts) pour les membres qui n'ont pas (encore)
+// pris l'abonnement. Tout ce qui demande du temps réel du coach (messages,
+// bilans coachés, programme construit par le coach, retours vidéo
+// personnalisés, check-in, lives, formations) reste exclusivement réservé
+// à l'abonnement payant, quel que soit le rang — ça ne scale pas de donner
+// du temps de coaching gratuit.
+
+export type {
+  RankDef,
+  UnlockableFeature,
+} from "@/lib/gamification-types";
+export {
+  RANKS,
+  getRankForPoints,
+  FEATURE_UNLOCK_POINTS,
+  hasUnlocked,
+  LEGEND_RANK_KEY,
+  isEligibleForLegendReward,
+} from "@/lib/gamification-types";
 
 export const POINTS = {
   formation_lesson: 15,
@@ -52,38 +74,23 @@ export async function getTotalPoints(clientId: string): Promise<number> {
   }
 }
 
-export interface RankDef {
-  key: string;
-  label: string;
-  minPoints: number;
-  emoji: string;
-}
-
-export const RANKS: RankDef[] = [
-  { key: "debutant", label: "Débutant", minPoints: 0, emoji: "🌱" },
-  { key: "espoir", label: "Espoir", minPoints: 100, emoji: "💪" },
-  { key: "confirme", label: "Confirmé", minPoints: 300, emoji: "🔥" },
-  { key: "veteran", label: "Vétéran", minPoints: 700, emoji: "⚡" },
-  { key: "elite", label: "Élite", minPoints: 1500, emoji: "🏆" },
-  { key: "champion", label: "Champion", minPoints: 3000, emoji: "👑" },
-  { key: "legende", label: "Légende", minPoints: 6000, emoji: "🐐" },
-];
-
-export function getRankForPoints(points: number): {
-  rank: RankDef;
-  next: RankDef | null;
-  progressPct: number;
-} {
-  let current = RANKS[0];
-  let next: RankDef | null = null;
-  for (let i = 0; i < RANKS.length; i++) {
-    if (points >= RANKS[i].minPoints) {
-      current = RANKS[i];
-      next = RANKS[i + 1] ?? null;
+// Version batch — pour afficher un badge de rang à côté de plusieurs auteurs
+// d'un coup (fil Communauté) sans une requête par auteur.
+export async function getPointsMap(clientIds: string[]): Promise<Record<string, number>> {
+  if (clientIds.length === 0) return {};
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("gamification_points")
+      .select("client_id, points")
+      .in("client_id", clientIds);
+    const map: Record<string, number> = {};
+    for (const row of data ?? []) {
+      const id = row.client_id as string;
+      map[id] = (map[id] ?? 0) + (row.points as number);
     }
+    return map;
+  } catch {
+    return {};
   }
-  const progressPct = next
-    ? Math.round(((points - current.minPoints) / (next.minPoints - current.minPoints)) * 100)
-    : 100;
-  return { rank: current, next, progressPct };
 }
