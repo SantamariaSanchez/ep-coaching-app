@@ -3,7 +3,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
-import { GYMS_SEED } from "@/lib/gyms-seed";
+import { GYMS_SEED, type GymType } from "@/lib/gyms-seed";
 
 function refresh() {
   revalidatePath("/dashboard/client/gyms");
@@ -16,6 +16,7 @@ export interface CreateGymInput {
   address: string | null;
   equipment_notes: string | null;
   website: string | null;
+  type: GymType;
 }
 
 // Open to everyone — coach and members (free or paying) build this directory together.
@@ -34,6 +35,7 @@ export async function createGym(input: CreateGymInput): Promise<{ error?: string
         address: input.address?.trim() || null,
         equipment_notes: input.equipment_notes?.trim() || null,
         website: input.website?.trim() || null,
+        type: input.type,
         created_by: guard.userId,
       })
       .select("id")
@@ -61,6 +63,7 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
         address: input.address?.trim() || null,
         equipment_notes: input.equipment_notes?.trim() || null,
         website: input.website?.trim() || null,
+        type: input.type,
       })
       .eq("id", id);
 
@@ -95,6 +98,7 @@ export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: n
         address: g.address,
         equipment_notes: g.equipment_notes,
         website: g.website,
+        type: g.type,
         created_by: null,
       }))
     );

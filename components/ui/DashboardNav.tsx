@@ -130,8 +130,13 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
       { label: "Programme", icon: Dumbbell, segment: "program" },
       { label: "Logbook", icon: BookOpen, segment: "logbook" },
       { label: "Road Map", icon: Map, segment: "roadmap" },
-      { label: "Bibliothèque", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles de sport", icon: MapPin, segment: "gyms" },
+    ],
+  },
+  {
+    group: "Bibliothèque",
+    items: [
+      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
+      { label: "Salles", icon: MapPin, segment: "gyms" },
     ],
   },
   {
@@ -249,8 +254,13 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
       { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
-      { label: "Bibliothèque d'exercices", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles de sport", icon: MapPin, segment: "gyms" },
+    ],
+  },
+  {
+    group: "Bibliothèque",
+    items: [
+      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
+      { label: "Salles", icon: MapPin, segment: "gyms" },
     ],
   },
   {
@@ -294,8 +304,13 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Programme", icon: Dumbbell,  segment: "program" },
       { label: "Logbook",   icon: BookOpen,  segment: "logbook" },
       { label: "Road Map",  icon: Map,       segment: "roadmap" },
-      { label: "Bibliothèque", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles de sport", icon: MapPin, segment: "gyms" },
+    ],
+  },
+  {
+    group: "Bibliothèque",
+    items: [
+      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
+      { label: "Salles", icon: MapPin, segment: "gyms" },
     ],
   },
   {

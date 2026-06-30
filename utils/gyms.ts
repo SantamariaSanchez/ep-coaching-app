@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import type { GymType } from "@/lib/gyms-seed";
 
 export interface Gym {
   id: string;
@@ -7,6 +8,7 @@ export interface Gym {
   address: string | null;
   equipment_notes: string | null;
   website: string | null;
+  type: GymType | null;
   created_by: string | null;
   created_at: string;
 }

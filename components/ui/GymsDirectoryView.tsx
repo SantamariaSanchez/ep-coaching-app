@@ -4,10 +4,18 @@ import { useState, useMemo } from "react";
 import { Search, Plus, X, Star, MapPin, Pencil, Trash2, Globe, Dumbbell } from "lucide-react";
 import type { GymWithReviews } from "@/utils/gyms";
 import type { CreateGymInput } from "@/app/dashboard/client/gyms/actions";
+import type { GymType } from "@/lib/gyms-seed";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
+
+const GYM_TYPE_LABELS: Record<GymType, string> = {
+  commerciale: "Commerciale",
+  independante: "Indépendante",
+  associative: "Associative",
+};
+const GYM_TYPE_OPTIONS: GymType[] = ["commerciale", "independante", "associative"];
 
 function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(new Date(dateStr));
@@ -51,6 +59,7 @@ function GymForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [city, setCity] = useState(initial?.city ?? "");
   const [address, setAddress] = useState(initial?.address ?? "");
+  const [type, setType] = useState<GymType>(initial?.type ?? "independante");
   const [equipmentNotes, setEquipmentNotes] = useState(initial?.equipment_notes ?? "");
   const [website, setWebsite] = useState(initial?.website ?? "");
   const [saving, setSaving] = useState(false);
@@ -60,7 +69,7 @@ function GymForm({
     if (!name.trim()) { setError("Le nom est requis."); return; }
     setSaving(true);
     setError(null);
-    await onSave({ name, city: city || null, address: address || null, equipment_notes: equipmentNotes || null, website: website || null });
+    await onSave({ name, city: city || null, address: address || null, equipment_notes: equipmentNotes || null, website: website || null, type });
     setSaving(false);
   }
 
@@ -78,6 +87,23 @@ function GymForm({
         <div>
           <label className={labelCls}>Adresse (optionnel)</label>
           <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue…" className={inputCls} />
+        </div>
+      </div>
+      <div>
+        <label className={labelCls}>Type de salle</label>
+        <div className="flex gap-2">
+          {GYM_TYPE_OPTIONS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setType(t)}
+              className={`flex-1 py-2 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                type === t ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              }`}
+            >
+              {GYM_TYPE_LABELS[t]}
+            </button>
+          ))}
         </div>
       </div>
       <div>
@@ -188,7 +214,20 @@ function GymCard({
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{gym.name}</p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {gym.type && (
+              <span
+                className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+                  gym.type === "independante"
+                    ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
+                    : gym.type === "associative"
+                    ? "bg-green-500/10 border-green-500/25 text-green-300"
+                    : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
+                }`}
+              >
+                {GYM_TYPE_LABELS[gym.type]}
+              </span>
+            )}
             {gym.city && (
               <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/35">
                 <MapPin size={10} /> {gym.city}
@@ -299,12 +338,22 @@ export default function GymsDirectoryView({
 }: Props) {
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [activeType, setActiveType] = useState<GymType | null>(null);
+
+  const typeCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const g of gyms) if (g.type) map[g.type] = (map[g.type] ?? 0) + 1;
+    return map;
+  }, [gyms]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return gyms;
-    return gyms.filter((g) => g.name.toLowerCase().includes(q) || (g.city ?? "").toLowerCase().includes(q));
-  }, [gyms, search]);
+    return gyms.filter((g) => {
+      if (activeType && g.type !== activeType) return false;
+      if (!q) return true;
+      return g.name.toLowerCase().includes(q) || (g.city ?? "").toLowerCase().includes(q);
+    });
+  }, [gyms, search, activeType]);
 
   return (
     <div className="space-y-5">
@@ -324,6 +373,28 @@ export default function GymsDirectoryView({
       <p className="text-[10px] text-[#F5EDED]/25">
         {gyms.length} salle{gyms.length !== 1 ? "s" : ""} référencée{gyms.length !== 1 ? "s" : ""} — partage la tienne et note celles que tu connais.
       </p>
+
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <button
+          onClick={() => setActiveType(null)}
+          className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+            activeType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+          }`}
+        >
+          Toutes ({gyms.length})
+        </button>
+        {GYM_TYPE_OPTIONS.filter((t) => typeCounts[t]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveType(t)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+              activeType === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            }`}
+          >
+            {GYM_TYPE_LABELS[t]} ({typeCounts[t]})
+          </button>
+        ))}
+      </div>
 
       {showCreate && (
         <GymForm
