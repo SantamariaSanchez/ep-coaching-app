@@ -77,35 +77,53 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
 
 // Imports the official gym chains straight from the app's code (see
 // lib/gyms-seed.ts) instead of pasting SQL by hand — safe to click more
-// than once.
-export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: number }> {
+// than once. Also re-syncs fields (notably `type`) on entries that already
+// exist by name, so a later seed-list correction (e.g. fixing a chain
+// wrongly tagged "independante" by a column default) actually takes effect
+// instead of being silently skipped because the name already exists.
+export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: number; updated?: number }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
 
   try {
     const supabase = createAdminClient();
-    const { data: existing, error: fetchError } = await supabase.from("gyms").select("name");
+    const { data: existing, error: fetchError } = await supabase.from("gyms").select("id, name, type");
     if (fetchError) return { error: "Erreur lors de la lecture de l'annuaire." };
 
-    const existingNames = new Set((existing ?? []).map((r) => r.name));
-    const missing = GYMS_SEED.filter((g) => !existingNames.has(g.name));
-    if (missing.length === 0) return { inserted: 0 };
+    const existingByName = new Map((existing ?? []).map((r) => [r.name, r]));
+    const missing = GYMS_SEED.filter((g) => !existingByName.has(g.name));
+    const toSync = GYMS_SEED.filter((g) => {
+      const row = existingByName.get(g.name);
+      return row && row.type !== g.type;
+    });
 
-    const { error } = await supabase.from("gyms").insert(
-      missing.map((g) => ({
-        name: g.name,
-        city: g.city,
-        address: g.address,
-        equipment_notes: g.equipment_notes,
-        website: g.website,
-        type: g.type,
-        created_by: null,
-      }))
-    );
-    if (error) return { error: "Erreur lors de l'import." };
+    if (missing.length > 0) {
+      const { error } = await supabase.from("gyms").insert(
+        missing.map((g) => ({
+          name: g.name,
+          city: g.city,
+          address: g.address,
+          equipment_notes: g.equipment_notes,
+          website: g.website,
+          type: g.type,
+          created_by: null,
+        }))
+      );
+      if (error) return { error: "Erreur lors de l'import." };
+    }
+
+    for (const g of toSync) {
+      const row = existingByName.get(g.name)!;
+      await supabase
+        .from("gyms")
+        .update({ type: g.type, equipment_notes: g.equipment_notes, website: g.website, city: g.city, address: g.address })
+        .eq("id", row.id);
+    }
+
+    if (missing.length === 0 && toSync.length === 0) return { inserted: 0, updated: 0 };
 
     refresh();
-    return { inserted: missing.length };
+    return { inserted: missing.length, updated: toSync.length };
   } catch {
     return { error: "Erreur inattendue." };
   }

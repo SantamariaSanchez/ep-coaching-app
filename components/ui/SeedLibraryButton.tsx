@@ -8,10 +8,10 @@ export default function SeedLibraryButton({
   action,
 }: {
   label: string;
-  action: () => Promise<{ error?: string; inserted?: number }>;
+  action: () => Promise<{ error?: string; inserted?: number; updated?: number }>;
 }) {
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<{ error?: string; inserted?: number } | null>(null);
+  const [result, setResult] = useState<{ error?: string; inserted?: number; updated?: number } | null>(null);
 
   async function handleClick() {
     setLoading(true);
@@ -34,7 +34,14 @@ export default function SeedLibraryButton({
       {result && !result.error && (
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-green-400">
           <CheckCircle2 size={12} />
-          {result.inserted === 0 ? "Déjà à jour" : `${result.inserted} ajouté${result.inserted! > 1 ? "s" : ""}`}
+          {(result.inserted ?? 0) === 0 && (result.updated ?? 0) === 0
+            ? "Déjà à jour"
+            : [
+                (result.inserted ?? 0) > 0 ? `${result.inserted} ajouté${result.inserted! > 1 ? "s" : ""}` : null,
+                (result.updated ?? 0) > 0 ? `${result.updated} corrigé${result.updated! > 1 ? "s" : ""}` : null,
+              ]
+                .filter(Boolean)
+                .join(" · ")}
         </span>
       )}
       {result?.error && <span className="text-[10px] font-semibold text-red-400">{result.error}</span>}
