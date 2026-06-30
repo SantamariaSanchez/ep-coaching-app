@@ -21,6 +21,23 @@ export const EQUIPMENT_OPTIONS = [
   "Autre",
 ] as const;
 
+// Grandes marques de machines de musculation qu'on retrouve dans la plupart
+// des salles — sélectionnable pour préciser le modèle de machine utilisé.
+export const MACHINE_BRANDS = [
+  "Hammer Strength",
+  "Cybex",
+  "Nautilus",
+  "Life Fitness",
+  "Technogym",
+  "Matrix",
+  "Panatta",
+  "Gym80",
+  "Prime Fitness",
+  "Arsenal Strength",
+  "BH Fitness",
+  "Atlantis",
+] as const;
+
 export const CATEGORY_LABELS: Record<string, string> = {
   compose: "Polyarticulaire",
   isolation: "Isolation",

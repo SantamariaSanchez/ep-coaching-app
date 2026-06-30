@@ -11,6 +11,7 @@ export interface CreateExerciseInput {
   muscle_group: string;
   muscle_subgroup: string | null;
   equipment: string | null;
+  brand: string | null;
   category: ExerciseCategory | null;
   difficulty: ExerciseDifficulty | null;
   instructions: string | null;
@@ -35,6 +36,7 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
         muscle_group: input.muscle_group,
         muscle_subgroup: input.muscle_subgroup,
         equipment: input.equipment,
+        brand: input.brand,
         category: input.category,
         difficulty: input.difficulty,
         instructions: input.instructions?.trim() || null,
@@ -70,6 +72,7 @@ export async function updateExercise(
     if (fields.muscle_group !== undefined) updateData.muscle_group = fields.muscle_group;
     if (fields.muscle_subgroup !== undefined) updateData.muscle_subgroup = fields.muscle_subgroup;
     if (fields.equipment !== undefined) updateData.equipment = fields.equipment;
+    if (fields.brand !== undefined) updateData.brand = fields.brand;
     if (fields.category !== undefined) updateData.category = fields.category;
     if (fields.difficulty !== undefined) updateData.difficulty = fields.difficulty;
     if (fields.instructions !== undefined) updateData.instructions = fields.instructions?.trim() || null;
@@ -111,6 +114,7 @@ export async function seedOfficialExercises(): Promise<{ error?: string; inserte
         muscle_group: e.muscle_group,
         muscle_subgroup: e.muscle_subgroup,
         equipment: e.equipment,
+        brand: e.brand,
         category: e.category,
         difficulty: e.difficulty,
         instructions: e.instructions,

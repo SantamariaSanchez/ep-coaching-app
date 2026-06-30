@@ -15,6 +15,7 @@ import {
 import {
   LIBRARY_MUSCLE_GROUPS,
   EQUIPMENT_OPTIONS,
+  MACHINE_BRANDS,
   CATEGORY_LABELS,
   DIFFICULTY_LABELS,
   getSubgroupsFor,
@@ -79,6 +80,7 @@ function ExerciseForm({
   const [muscleGroup, setMuscleGroup] = useState(initial?.muscle_group ?? LIBRARY_MUSCLE_GROUPS[0]);
   const [muscleSubgroup, setMuscleSubgroup] = useState(initial?.muscle_subgroup ?? "");
   const [equipment, setEquipment] = useState(initial?.equipment ?? "");
+  const [brand, setBrand] = useState(initial?.brand ?? "");
   const [category, setCategory] = useState<ExerciseCategory | "">(initial?.category ?? "");
   const [difficulty, setDifficulty] = useState<ExerciseDifficulty | "">(initial?.difficulty ?? "");
   const [instructions, setInstructions] = useState(initial?.instructions ?? "");
@@ -97,6 +99,7 @@ function ExerciseForm({
       muscle_group: muscleGroup,
       muscle_subgroup: muscleSubgroup || null,
       equipment: equipment || null,
+      brand: brand || null,
       category: category || null,
       difficulty: difficulty || null,
       instructions: instructions.trim() || null,
@@ -136,13 +139,22 @@ function ExerciseForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <label className={labelCls}>Matériel</label>
           <select value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
             <option value="">—</option>
             {EQUIPMENT_OPTIONS.map((e) => (
               <option key={e} value={e}>{e}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className={labelCls}>Marque de machine (optionnel)</label>
+          <select value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
+            <option value="">—</option>
+            {MACHINE_BRANDS.map((b) => (
+              <option key={b} value={b}>{b}</option>
             ))}
           </select>
         </div>
@@ -251,6 +263,11 @@ function ExerciseCard({
                 {exercise.equipment}
               </span>
             )}
+            {exercise.brand && (
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
+                {exercise.brand}
+              </span>
+            )}
             {!exercise.is_official && (
               <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300">
                 Communauté
@@ -335,6 +352,7 @@ export default function ExerciseLibraryView({
   const [exercises, setExercises] = useState(initialExercises);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const groupCounts = useMemo(() => {
@@ -343,18 +361,26 @@ export default function ExerciseLibraryView({
     return map;
   }, [exercises]);
 
+  const brandCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of exercises) if (e.brand) map[e.brand] = (map[e.brand] ?? 0) + 1;
+    return map;
+  }, [exercises]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return exercises.filter((e) => {
       if (activeGroup && e.muscle_group !== activeGroup) return false;
+      if (activeBrand && e.brand !== activeBrand) return false;
       if (!q) return true;
       return (
         e.name.toLowerCase().includes(q) ||
         (e.muscle_subgroup ?? "").toLowerCase().includes(q) ||
-        (e.equipment ?? "").toLowerCase().includes(q)
+        (e.equipment ?? "").toLowerCase().includes(q) ||
+        (e.brand ?? "").toLowerCase().includes(q)
       );
     });
-  }, [exercises, search, activeGroup]);
+  }, [exercises, search, activeGroup, activeBrand]);
 
   const byGroup = useMemo(() => {
     const map: Record<string, LibraryExercise[]> = {};
@@ -427,6 +453,33 @@ export default function ExerciseLibraryView({
           </button>
         ))}
       </div>
+
+      {Object.keys(brandCounts).length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
+            Marque :
+          </span>
+          <button
+            onClick={() => setActiveBrand(null)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+              activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
+            }`}
+          >
+            Toutes
+          </button>
+          {MACHINE_BRANDS.filter((b) => brandCounts[b]).map((b) => (
+            <button
+              key={b}
+              onClick={() => setActiveBrand(b)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                activeBrand === b ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
+              }`}
+            >
+              {b} ({brandCounts[b]})
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="space-y-6">
         {Object.entries(byGroup).map(([group, list]) => (

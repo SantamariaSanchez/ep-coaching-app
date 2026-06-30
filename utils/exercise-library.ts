@@ -9,6 +9,7 @@ export interface LibraryExercise {
   muscle_group: string;
   muscle_subgroup: string | null;
   equipment: string | null;
+  brand: string | null;
   category: ExerciseCategory | null;
   difficulty: ExerciseDifficulty | null;
   instructions: string | null;
