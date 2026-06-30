@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -134,6 +134,29 @@ function MacroRing({
   );
 }
 
+function FoodResultButton({ food, onClick }: { food: Food; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+    >
+      <p className="text-sm text-white font-medium leading-tight">
+        {food.name}
+        {food.is_custom && (
+          <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
+            custom
+          </span>
+        )}
+      </p>
+      <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+        {food.calories_per_100} kcal/100g · P{" "}
+        {food.proteins_per_100}g · G {food.carbs_per_100}g ·
+        L {food.fats_per_100}g
+      </p>
+    </button>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -207,6 +230,22 @@ export default function ClientNutritionView({
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Quick add (calories-only, for restaurants / unknown foods)
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false);
+  const [quickAddSlot, setQuickAddSlot] = useState<string | null>(null);
+  const [quickAddForm, setQuickAddForm] = useState({
+    name: "",
+    calories: "",
+    proteins: "",
+    carbs: "",
+    fats: "",
+  });
+  const [quickAdding, setQuickAdding] = useState(false);
+  const [quickAddError, setQuickAddError] = useState<string | null>(null);
+
+  // Copy yesterday
+  const [copyingYesterday, setCopyingYesterday] = useState(false);
+
   // History
   const [historySelectedDate, setHistorySelectedDate] = useState<string | null>(null);
 
@@ -243,6 +282,47 @@ export default function ClientNutritionView({
       )
       .slice(0, 40);
   }, [foods, searchQuery]);
+
+  // Most recently logged distinct foods — surfaced first so re-logging a
+  // usual meal is one tap instead of a fresh search every time.
+  const recentFoods = useMemo(() => {
+    const seen = new Set<string>();
+    const list: Food[] = [];
+    for (const log of historyLogs) {
+      if (!log.food_id || !log.foods || seen.has(log.food_id)) continue;
+      seen.add(log.food_id);
+      list.push(log.foods);
+      if (list.length >= 10) break;
+    }
+    return list;
+  }, [historyLogs]);
+
+  // historyLogs is ordered most-recent-first, so the first hit per food is
+  // the last quantity actually eaten — used to pre-fill the quantity field.
+  const lastQuantityByFood = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const log of historyLogs) {
+      if (!log.food_id || map[log.food_id] != null) continue;
+      map[log.food_id] = log.quantity_g;
+    }
+    return map;
+  }, [historyLogs]);
+
+  const yesterday = useMemo(() => {
+    const d = new Date(today + "T12:00:00");
+    d.setDate(d.getDate() - 1);
+    return d.toISOString().split("T")[0];
+  }, [today]);
+
+  const yesterdayLogs = useMemo(
+    () => historyLogs.filter((l) => l.logged_at === yesterday),
+    [historyLogs, yesterday]
+  );
+
+  const yesterdayCals = useMemo(
+    () => yesterdayLogs.reduce((s, l) => s + (l.calories ?? 0), 0),
+    [yesterdayLogs]
+  );
 
   const calsByDate = useMemo(() => {
     const map: Record<string, number> = {};
@@ -284,6 +364,11 @@ export default function ClientNutritionView({
     setSearchQuery("");
     setQuantityInput("");
     setAddingError(null);
+  }
+
+  function selectFoodForLogging(food: Food) {
+    setSelectedFood(food);
+    setQuantityInput(String(lastQuantityByFood[food.id] ?? 100));
   }
 
   async function handleAddFood() {
@@ -394,6 +479,137 @@ export default function ClientNutritionView({
         return next;
       });
     }
+  }
+
+  async function handleCopyYesterday() {
+    if (yesterdayLogs.length === 0) return;
+    setCopyingYesterday(true);
+
+    const entries = yesterdayLogs.map((log) => ({
+      optimisticId: `optimistic-copy-${log.id}`,
+      log,
+    }));
+    setTodayLogs((prev) => [
+      ...prev,
+      ...entries.map(({ optimisticId, log }) => ({
+        ...log,
+        id: optimisticId,
+        logged_at: today,
+      })),
+    ]);
+
+    const results = await Promise.all(
+      entries.map(({ log }) =>
+        addFoodLog({
+          foodId: log.food_id!,
+          mealSlot: log.meal_slot ?? "lunch",
+          quantityG: log.quantity_g,
+          calories: log.calories ?? 0,
+          proteins: log.proteins ?? 0,
+          carbs: log.carbs ?? 0,
+          fats: log.fats ?? 0,
+          loggedAt: today,
+        })
+      )
+    );
+
+    setTodayLogs((prev) => {
+      let next = [...prev];
+      results.forEach((result, i) => {
+        const { optimisticId } = entries[i];
+        if (result.error) {
+          next = next.filter((l) => l.id !== optimisticId);
+        } else if (result.id) {
+          next = next.map((l) => (l.id === optimisticId ? { ...l, id: result.id! } : l));
+        }
+      });
+      return next;
+    });
+
+    setCopyingYesterday(false);
+  }
+
+  function openQuickAdd(slot: string) {
+    setQuickAddSlot(slot);
+    setQuickAddForm({ name: "", calories: "", proteins: "", carbs: "", fats: "" });
+    setQuickAddError(null);
+    setShowQuickAddModal(true);
+  }
+
+  async function handleQuickAdd() {
+    const calories = parseFloat(quickAddForm.calories) || 0;
+    if (!quickAddSlot || calories <= 0) {
+      setQuickAddError("Indique au moins les calories.");
+      return;
+    }
+    setQuickAdding(true);
+    setQuickAddError(null);
+
+    const proteins = parseFloat(quickAddForm.proteins) || 0;
+    const carbs = parseFloat(quickAddForm.carbs) || 0;
+    const fats = parseFloat(quickAddForm.fats) || 0;
+    const name = quickAddForm.name.trim() || "Ajout rapide";
+
+    // Quick-add is logged as a one-off custom food whose per-100g values
+    // are the entered totals, paired with a fixed 100g quantity — avoids
+    // needing a separate "absolute amount" log schema.
+    const foodResult = await createCustomFood({
+      name,
+      category: "Divers",
+      calories_per_100: calories,
+      proteins_per_100: proteins,
+      carbs_per_100: carbs,
+      fats_per_100: fats,
+      fibers_per_100: 0,
+    });
+
+    if (foodResult.error || !foodResult.food) {
+      setQuickAdding(false);
+      setQuickAddError(foodResult.error ?? "Erreur lors de la création.");
+      return;
+    }
+
+    setFoods((prev) => [foodResult.food!, ...prev]);
+
+    const optimisticLog: FoodLogWithFood = {
+      id: `optimistic-${Date.now()}`,
+      client_id: "",
+      food_id: foodResult.food.id,
+      meal_slot: quickAddSlot,
+      quantity_g: 100,
+      logged_at: today,
+      calories,
+      proteins,
+      carbs,
+      fats,
+      foods: foodResult.food,
+    };
+    setTodayLogs((prev) => [...prev, optimisticLog]);
+
+    const logResult = await addFoodLog({
+      foodId: foodResult.food.id,
+      mealSlot: quickAddSlot,
+      quantityG: 100,
+      calories,
+      proteins,
+      carbs,
+      fats,
+      loggedAt: today,
+    });
+
+    setQuickAdding(false);
+
+    if (logResult.error) {
+      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
+      setQuickAddError(logResult.error);
+      return;
+    }
+    if (logResult.id) {
+      setTodayLogs((prev) =>
+        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: logResult.id! } : l))
+      );
+    }
+    setShowQuickAddModal(false);
   }
 
   async function handleCreateFood() {
@@ -535,6 +751,31 @@ export default function ClientNutritionView({
                 />
               </div>
             </div>
+          )}
+
+          {/* Copy yesterday — the single biggest friction-killer for an empty day */}
+          {todayLogs.length === 0 && yesterdayLogs.length > 0 && (
+            <button
+              onClick={handleCopyYesterday}
+              disabled={copyingYesterday}
+              className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 rounded-xl px-4 py-3.5 transition-colors disabled:opacity-50"
+            >
+              <span className="flex items-center gap-2.5 text-left">
+                <Copy size={14} className="text-[#E01E1E] flex-shrink-0" />
+                <span>
+                  <span className="block text-xs font-bold text-white">
+                    Copier la journée d&apos;hier
+                  </span>
+                  <span className="block text-[10px] text-[#F5EDED]/40">
+                    {yesterdayLogs.length} aliment{yesterdayLogs.length > 1 ? "s" : ""} ·{" "}
+                    {fmt(yesterdayCals)} kcal
+                  </span>
+                </span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+                {copyingYesterday ? "…" : "Copier"}
+              </span>
+            </button>
           )}
 
           {/* Error banner — shown when optimistic add fails after modal closes */}
@@ -727,38 +968,52 @@ export default function ClientNutritionView({
                   />
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
+                  {!searchQuery && recentFoods.length > 0 && (
+                    <div className="mb-1">
+                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
+                        <Clock size={10} />
+                        Récents
+                      </p>
+                      {recentFoods.map((food) => (
+                        <FoodResultButton
+                          key={`recent-${food.id}`}
+                          food={food}
+                          onClick={() => selectFoodForLogging(food)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {!searchQuery && recentFoods.length > 0 && (
+                    <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+                      Tous les aliments
+                    </p>
+                  )}
                   {filteredFoods.length === 0 ? (
                     <p className="text-center text-xs text-[#F5EDED]/30 py-8">
                       Aucun résultat
                     </p>
                   ) : (
                     filteredFoods.map((food) => (
-                      <button
+                      <FoodResultButton
                         key={food.id}
-                        onClick={() => {
-                          setSelectedFood(food);
-                          setQuantityInput("100");
-                        }}
-                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
-                      >
-                        <p className="text-sm text-white font-medium leading-tight">
-                          {food.name}
-                          {food.is_custom && (
-                            <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
-                              custom
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-                          {food.calories_per_100} kcal/100g · P{" "}
-                          {food.proteins_per_100}g · G {food.carbs_per_100}g ·
-                          L {food.fats_per_100}g
-                        </p>
-                      </button>
+                        food={food}
+                        onClick={() => selectFoodForLogging(food)}
+                      />
                     ))
                   )}
                 </div>
-                <div className="px-5 py-4 border-t border-[#890404]/20 flex-shrink-0">
+                <div className="px-5 py-4 border-t border-[#890404]/20 flex-shrink-0 flex flex-col gap-1">
+                  <button
+                    onClick={() => {
+                      const slot = addingToSlot!;
+                      closeModal();
+                      openQuickAdd(slot);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors py-2"
+                  >
+                    <Zap size={11} />
+                    Ajout rapide (juste les calories)
+                  </button>
                   <button
                     onClick={() => {
                       closeModal();
@@ -951,6 +1206,94 @@ export default function ClientNutritionView({
                 className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
               >
                 {creating ? "Création…" : "Créer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── QUICK ADD MODAL (calories-only, for restaurants / unknown foods) ── */}
+      {showQuickAddModal && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setShowQuickAddModal(false)}
+          />
+          <div className="relative w-full sm:max-w-md bg-[#150000] border border-amber-500/30 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5">
+                <Zap size={12} className="text-amber-400" />
+                Ajout rapide
+              </p>
+              <button
+                onClick={() => setShowQuickAddModal(false)}
+                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-[10px] text-[#F5EDED]/35 mb-5">
+              Au resto, pas le temps de chercher l&apos;aliment exact ? Indique juste les calories
+              (et les macros si tu les connais) — ça compte direct dans ton suivi.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  Nom (optionnel)
+                </label>
+                <input
+                  value={quickAddForm.name}
+                  onChange={(e) =>
+                    setQuickAddForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  placeholder="Ex. Repas au restaurant"
+                  className={inputCls}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { key: "calories", label: "Calories *" },
+                  { key: "proteins", label: "Protéines (g)" },
+                  { key: "carbs", label: "Glucides (g)" },
+                  { key: "fats", label: "Lipides (g)" },
+                ].map(({ key, label }) => (
+                  <div key={key}>
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                      {label}
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      value={quickAddForm[key as keyof typeof quickAddForm]}
+                      onChange={(e) =>
+                        setQuickAddForm((p) => ({ ...p, [key]: e.target.value }))
+                      }
+                      placeholder="0"
+                      className={inputCls}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {quickAddError && (
+              <p className="text-xs text-red-400 mt-3">{quickAddError}</p>
+            )}
+
+            <div className="flex gap-2 mt-5">
+              <button
+                onClick={() => setShowQuickAddModal(false)}
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleQuickAdd}
+                disabled={quickAdding}
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-amber-500 hover:bg-amber-400 text-black rounded-lg disabled:opacity-50 transition-colors"
+              >
+                {quickAdding ? "Ajout…" : "Ajouter"}
               </button>
             </div>
           </div>
