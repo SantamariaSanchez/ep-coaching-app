@@ -147,14 +147,17 @@ export default function OnboardingTour() {
           onClick={finish}
           disabled={finishing}
           style={{
-            display: "flex", alignItems: "center", gap: 4,
-            background: "none", border: "none", cursor: "pointer",
-            color: "rgba(var(--color-ep-light-rgb),0.3)", fontSize: 11, fontWeight: 700,
-            textTransform: "uppercase", letterSpacing: "0.08em",
-            flexShrink: 0, padding: "4px 0 4px 8px",
+            display: "flex", alignItems: "center", gap: 5,
+            background: "rgba(var(--color-ep-light-rgb),0.06)",
+            border: "1px solid rgba(var(--color-ep-light-rgb),0.18)",
+            borderRadius: 999,
+            cursor: "pointer",
+            color: "rgba(var(--color-ep-light-rgb),0.75)", fontSize: 12, fontWeight: 700,
+            textTransform: "uppercase", letterSpacing: "0.06em",
+            flexShrink: 0, padding: "7px 12px",
           }}
         >
-          Passer <X size={12} />
+          Passer <X size={13} />
         </button>
       </div>
 

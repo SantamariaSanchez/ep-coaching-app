@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { parseWorkoutCsv } from "@/utils/csv-import";
+import { parseWorkoutCsv, deriveProgramDaysFromSessions } from "@/utils/csv-import";
+import { saveProgramForClient } from "@/utils/programs";
 
 export async function POST(request: Request) {
   const user = await getUser();
@@ -120,10 +121,41 @@ export async function POST(request: Request) {
     }
   }
 
+  // ── Rebuild the active Programme from the imported split ──
+  // Hevy/Strong exports only contain history, no program definition — but a
+  // client switching apps still expects "their split" to show up in the
+  // Programme tab instead of staying empty. One day per distinct day_label,
+  // exercises/sets/reps taken from each label's most recent occurrence.
+  let programCreated = false;
+  const derivedDays = deriveProgramDaysFromSessions(parsed.sessions);
+  if (derivedDays.length > 0) {
+    const programResult = await saveProgramForClient(supabase, user.id, {
+      name: `Programme importé (${sourceLabel})`,
+      type: sourceLabel,
+      frequency: derivedDays.length,
+      days: derivedDays.map((d) => ({
+        day_label: d.day_label,
+        exercises: d.exercises.map((e) => ({
+          name: e.name,
+          sets: e.sets,
+          reps: e.reps,
+          rir: null,
+          rest_seconds: null,
+          notes: null,
+          muscle_group: null,
+          muscle_subgroup: null,
+          is_direct: true,
+        })),
+      })),
+    });
+    programCreated = !programResult.error;
+  }
+
   return NextResponse.json({
     source: parsed.source,
     sessionsImported,
     setsImported,
     sessionsSkipped,
+    programCreated,
   });
 }

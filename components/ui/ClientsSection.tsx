@@ -46,7 +46,7 @@ export default function ClientsSection({
             alignItems: "center",
             justifyContent: "center",
             padding: "48px 24px",
-            background: "linear-gradient(160deg, var(--color-ep-deep) 0%, var(--color-ep-deep) 100%)",
+            background: "linear-gradient(160deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
             border: "1px solid var(--ep-border)",
             borderRadius: "var(--radius-lg)",
             textAlign: "center",

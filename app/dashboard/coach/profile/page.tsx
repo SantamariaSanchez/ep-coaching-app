@@ -4,7 +4,6 @@ import { getCommunityPostCount } from "@/utils/community";
 import { createServerSupabase } from "@/lib/supabase-server";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileEditor from "@/components/profile/ProfileEditor";
-import AppearanceSettings from "@/components/profile/AppearanceSettings";
 import AccountActions from "@/components/profile/AccountActions";
 
 export default async function CoachProfilePage() {
@@ -37,8 +36,6 @@ export default async function CoachProfilePage() {
       <ProfileHeader profile={profile} postCount={postCount} />
 
       <ProfileEditor fullName={profile.full_name ?? ""} phone={profile.phone} bio={profile.bio} />
-
-      <AppearanceSettings />
 
       <AccountActions
         email={profile.email}

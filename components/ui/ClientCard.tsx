@@ -56,7 +56,7 @@ export function ClientCard({
       className="animate-fade-up"
       style={{
         animationDelay: `${delay}ms`,
-        background: "linear-gradient(160deg, var(--color-ep-deep) 0%, var(--color-ep-deep) 100%)",
+        background: "linear-gradient(160deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
         border: "1px solid rgba(var(--color-ep-red-rgb),0.09)",
         borderRadius: "var(--radius-lg)",
         padding: 20,

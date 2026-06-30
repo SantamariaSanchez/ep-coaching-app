@@ -184,6 +184,82 @@ function mapStrong(rows: Record<string, string>[]): ParsedSession[] {
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
+// ── Derive a Program template from imported history ─────────────────────────
+// Hevy/Strong only export *history* (what was actually done), not a program
+// definition — but a client switching apps still wants to see "their split"
+// in the Programme tab, not an empty page. We rebuild one day per distinct
+// day_label, using the most recent session of that label as the template.
+
+function mode(values: number[]): number | null {
+  if (values.length === 0) return null;
+  const counts = new Map<number, number>();
+  for (const v of values) counts.set(v, (counts.get(v) ?? 0) + 1);
+  let best = values[0];
+  let bestCount = 0;
+  for (const [v, c] of counts) {
+    if (c > bestCount) { best = v; bestCount = c; }
+  }
+  return best;
+}
+
+export interface DerivedExercise {
+  name: string;
+  sets: number;
+  reps: string | null;
+}
+
+export interface DerivedDay {
+  day_label: string;
+  exercises: DerivedExercise[];
+}
+
+export function deriveProgramDaysFromSessions(sessions: ParsedSession[]): DerivedDay[] {
+  const byLabel = new Map<string, ParsedSession[]>();
+  const firstSeen = new Map<string, string>();
+  for (const s of sessions) {
+    if (!byLabel.has(s.dayLabel)) {
+      byLabel.set(s.dayLabel, []);
+      firstSeen.set(s.dayLabel, s.date);
+    } else if (s.date < firstSeen.get(s.dayLabel)!) {
+      firstSeen.set(s.dayLabel, s.date);
+    }
+    byLabel.get(s.dayLabel)!.push(s);
+  }
+
+  const orderedLabels = [...byLabel.keys()].sort((a, b) =>
+    firstSeen.get(a)!.localeCompare(firstSeen.get(b)!)
+  );
+
+  return orderedLabels.map((label) => {
+    const sessionsForLabel = byLabel.get(label)!;
+    // Most recent occurrence of this day = best template of "what it looks like now".
+    const template = sessionsForLabel.reduce((latest, s) => (s.date > latest.date ? s : latest));
+
+    const order: string[] = [];
+    const repsByExercise = new Map<string, number[]>();
+    const setCountByExercise = new Map<string, number>();
+    for (const set of template.sets) {
+      if (!setCountByExercise.has(set.exerciseName)) {
+        order.push(set.exerciseName);
+        repsByExercise.set(set.exerciseName, []);
+      }
+      setCountByExercise.set(set.exerciseName, (setCountByExercise.get(set.exerciseName) ?? 0) + 1);
+      if (set.reps != null) repsByExercise.get(set.exerciseName)!.push(set.reps);
+    }
+
+    const exercises: DerivedExercise[] = order.map((name) => {
+      const repsMode = mode(repsByExercise.get(name) ?? []);
+      return {
+        name,
+        sets: setCountByExercise.get(name) ?? 1,
+        reps: repsMode != null ? String(repsMode) : null,
+      };
+    });
+
+    return { day_label: label, exercises };
+  });
+}
+
 export function parseWorkoutCsv(text: string): ParseResult {
   const rows = parseCsvObjects(text);
   if (rows.length === 0) {

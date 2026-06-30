@@ -2,14 +2,10 @@
 
 /* ── EP Coaching — design tokens ─────────────────────────────────────────── */
 
-/* Dark = default/base values. Registered via @theme so Tailwind both (a)
-   generates utilities (bg-ep-red, text-ep-light/35, etc.) and (b) emits
-   these as real CSS custom properties on :root — which [data-theme="light"]
-   below can then override at runtime (official Tailwind v4 theming
-   pattern: @theme sets the default, a later selector overrides per-theme).
-   Every component references these via var(--color-ep-*) / the bg-ep-*
-   utilities instead of literal hex, so the light/dark/custom-accent
-   switcher (components/ui/ThemeProvider.tsx) actually re-themes the app. */
+/* Registered via @theme so Tailwind both (a) generates utilities (bg-ep-red,
+   text-ep-light/35, etc.) and (b) emits these as real CSS custom properties
+   — every component references these via var(--color-ep-*) instead of
+   literal hex, so the whole palette stays defined in one place. */
 @theme {
   --color-ep-red:      #E01E1E;
   --color-ep-dark-red: #890404;
@@ -74,37 +70,6 @@
   --color-ep-input-rgb:    21 0 0;
   --color-ep-light-rgb:    245 237 237;
   --color-ep-pink-rgb:     253 196 196;
-}
-
-/* ── Light theme overrides ───────────────────────────────────────────────
-   Same token names, light-appropriate values. --color-ep-light is the
-   "foreground text" token — in light mode it intentionally flips to a dark
-   value (it's used as `text-[var(--color-ep-light)]/NN` everywhere, i.e.
-   "primary text color", not literally "a light-colored swatch"). Accent
-   reds stay the same hue for brand consistency unless a custom accent is
-   applied (components/ui/ThemeProvider.tsx overrides --color-ep-red et al.
-   directly when set, in both modes). Must come after @theme in source order
-   so the cascade (same specificity, later wins) picks this up when active. */
-/* Tailwind v4 treats bare top-level --color-* redeclarations as
-   duplicate theme-variable definitions and silently drops them — wrapping
-   in @layer base keeps this as a normal CSS cascade override instead. */
-@layer base {
-  [data-theme="light"] {
-    --color-ep-black:        #FFFFFF;
-    --color-ep-deep:         #F3ECEC;
-    --color-ep-card:         #FFFFFF;
-    --color-ep-input:        #F6EFEF;
-    --color-ep-light:        #20100F;
-    --color-ep-pink:         #B00202;
-    --color-ep-page-bg:      #F3ECEC;
-
-    --color-ep-black-rgb:    255 255 255;
-    --color-ep-deep-rgb:     243 236 236;
-    --color-ep-card-rgb:     255 255 255;
-    --color-ep-input-rgb:    246 239 239;
-    --color-ep-light-rgb:    32 16 15;
-    --color-ep-pink-rgb:     176 2 2;
-  }
 }
 
 /* ── Keyframes ────────────────────────────────────────────────────────────── */
@@ -216,12 +181,6 @@
     transition: opacity 0.25s ease;
   }
 
-  /* Light mode: the deep red blobs + heavy grain read as "dirty" on a
-     white page — keep just a faint brand tint instead. */
-  [data-theme="light"] body::before {
-    opacity: 0.18;
-  }
-
   /* ── Grain film ── */
   body::after {
     content: '';
@@ -232,10 +191,6 @@
     pointer-events: none;
     z-index: 9999;
     animation: grain 0.65s steps(2) infinite;
-  }
-
-  [data-theme="light"] body::after {
-    opacity: 0.012;
   }
 
   input, select, textarea { font-size: max(16px, 1em); }
@@ -693,19 +648,6 @@
     width: 240px; height: 240px;
     background: radial-gradient(circle, rgba(var(--color-ep-med-red-rgb), 0.14) 0%, transparent 70%);
     pointer-events: none;
-  }
-}
-
-/* ── Light theme: shadows read heavy on a white page, soften the biggest ones
-   (always a literal black, never an ep-black token — that token means "card
-   foil" in dark mode and flips to white in light mode, wrong for a shadow). ── */
-@layer components {
-  [data-theme="light"] {
-    .ep-card:hover    { box-shadow: inset 0 1px 0 rgba(255,255,255,0.5), 0 16px 32px rgba(0,0,0,0.10), 0 0 24px rgba(var(--color-ep-dark-red-rgb), 0.05); }
-    .ep-card-highlighted,
-    .ep-card-hero     { box-shadow: 0 8px 32px rgba(0,0,0,0.10), inset 0 1px 0 rgba(var(--color-ep-red-rgb), 0.15); }
-    .ep-bottom-nav    { box-shadow: inset 0 1px 0 rgba(var(--color-ep-red-rgb), 0.10), 0 -8px 24px rgba(0,0,0,0.06); }
-    .ep-auth-card     { box-shadow: inset 0 1px 0 rgba(255,255,255,0.6), inset 0 0 0 1px rgba(var(--color-ep-red-rgb), 0.05), 0 16px 48px rgba(0,0,0,0.12); }
   }
 }
 

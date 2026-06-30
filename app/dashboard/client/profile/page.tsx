@@ -5,7 +5,6 @@ import { getTotalPoints } from "@/lib/gamification";
 import { createServerSupabase } from "@/lib/supabase-server";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileEditor from "@/components/profile/ProfileEditor";
-import AppearanceSettings from "@/components/profile/AppearanceSettings";
 import AccountActions from "@/components/profile/AccountActions";
 
 function weeksSince(dateStr: string): number {
@@ -73,8 +72,6 @@ export default async function ClientProfilePage() {
           )}
         </div>
       )}
-
-      <AppearanceSettings />
 
       <AccountActions
         email={profile.email}

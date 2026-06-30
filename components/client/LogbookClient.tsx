@@ -183,7 +183,7 @@ function ImportLogbookButton() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [importing, setImporting] = useState(false);
   const [result, setResult] = useState<
-    { ok: true; sessionsImported: number; setsImported: number; sessionsSkipped: number; source: string }
+    { ok: true; sessionsImported: number; setsImported: number; sessionsSkipped: number; source: string; programCreated: boolean }
     | { ok: false; error: string }
     | null
   >(null);
@@ -247,6 +247,14 @@ function ImportLogbookButton() {
             {result.source === "hevy" ? "Hevy" : "Strong"}.
             {result.sessionsSkipped > 0 &&
               ` ${result.sessionsSkipped} déjà importée${result.sessionsSkipped !== 1 ? "s" : ""}, ignorée${result.sessionsSkipped !== 1 ? "s" : ""}.`}
+            {result.programCreated && (
+              <>
+                {" "}Ton programme a été reconstruit à partir de ton historique —{" "}
+                <Link href="/dashboard/client/program" className="underline font-bold">
+                  va le voir
+                </Link>.
+              </>
+            )}
           </p>
         </div>
       )}

@@ -44,7 +44,7 @@ function StatTile({
         animationDelay: `${delay}ms`,
         background: isAlert
           ? "linear-gradient(160deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)"
-          : "linear-gradient(160deg, var(--color-ep-deep) 0%, var(--color-ep-deep) 100%)",
+          : "linear-gradient(160deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
         border: `1px solid ${isAlert ? "rgba(var(--color-ep-red-rgb),0.28)" : "rgba(var(--color-ep-red-rgb),0.09)"}`,
         borderRadius: "var(--radius-lg)",
         padding: "20px 18px 16px",
