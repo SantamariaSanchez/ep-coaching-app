@@ -1,11 +1,30 @@
 "use server"
 
 import { sendBrevoEmail } from "@/utils/brevo"
+import { getCoachUserId } from "@/utils/insert-notification"
+import { notifyUser } from "@/lib/notify"
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 
+// En plus de l'email (seul canal historique), pousse aussi une notif
+// in-app + push au coach — fire-and-forget, ne doit jamais faire échouer
+// l'action appelante.
+function notifyCoach(params: { type: string; title: string; body: string; url: string }) {
+  getCoachUserId()
+    .then((coachId) => {
+      if (coachId) notifyUser(coachId, params);
+    })
+    .catch(() => {});
+}
+
 export async function notifyCoachNewCheckin(clientName: string) {
+  notifyCoach({
+    type: "coach_checkin",
+    title: "Nouveau check-in",
+    body: `${clientName} vient d'envoyer son check-in hebdomadaire.`,
+    url: "/dashboard/coach/bilan",
+  });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
     subject: `Nouveau check-in de ${clientName}`,
@@ -24,6 +43,12 @@ export async function notifyCoachNewCheckin(clientName: string) {
 }
 
 export async function notifyCoachNewCheckinWithMeasurements(clientName: string) {
+  notifyCoach({
+    type: "coach_checkin",
+    title: "📏 Check-in mensuel reçu",
+    body: `${clientName} a envoyé son check-in mensuel avec ses mensurations.`,
+    url: "/dashboard/coach/bilan",
+  });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
     subject: `Check-in mensuel avec mensurations de ${clientName}`,
@@ -45,6 +70,12 @@ export async function notifyCoachNewCorrection(
   clientName: string,
   exerciseName: string
 ) {
+  notifyCoach({
+    type: "coach_correction",
+    title: "Correction demandée",
+    body: `${clientName} demande une correction sur ${exerciseName}.`,
+    url: "/dashboard/coach/bilan",
+  });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
     subject: `Correction demandée par ${clientName}`,
@@ -68,6 +99,12 @@ export async function notifyCoachNewPhotoUpdate(
   type: string,
   category: string
 ) {
+  notifyCoach({
+    type: "coach_photo",
+    title: "Nouvelle photo update",
+    body: `${clientName} — ${type} (${category})`,
+    url: "/dashboard/coach/bilan",
+  });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
     subject: `Nouvelle photo update de ${clientName}`,
@@ -89,8 +126,17 @@ export async function notifyCoachNewPhotoUpdate(
 
 export async function notifyClientPhotoFeedback(
   clientEmail: string,
-  clientName: string
+  clientName: string,
+  clientId?: string
 ) {
+  if (clientId) {
+    notifyUser(clientId, {
+      type: "client_photo_feedback",
+      title: "Retour photo disponible",
+      body: "Ton coach a répondu à ta photo update.",
+      url: "/dashboard/client/photos",
+    }).catch(() => {});
+  }
   await sendBrevoEmail({
     to: clientEmail,
     subject: "Ton coach a répondu à ta photo update",
@@ -113,6 +159,12 @@ export async function notifyCoachNewResourceRequest(
   clientName: string,
   title: string
 ) {
+  notifyCoach({
+    type: "coach_resource_request",
+    title: "Demande de guide",
+    body: `${clientName} demande un guide sur « ${title} ».`,
+    url: "/dashboard/coach/ressources",
+  });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
     subject: `Demande de guide — ${clientName}`,
@@ -133,8 +185,17 @@ export async function notifyCoachNewResourceRequest(
 export async function notifyClientRequestAnswered(
   clientEmail: string,
   clientName: string,
-  title: string
+  title: string,
+  clientId?: string
 ) {
+  if (clientId) {
+    notifyUser(clientId, {
+      type: "client_request_answered",
+      title: "Réponse disponible",
+      body: `Ton coach a répondu à ta demande de guide « ${title} ».`,
+      url: "/dashboard/client/ressources",
+    }).catch(() => {});
+  }
   await sendBrevoEmail({
     to: clientEmail,
     subject: "Ton coach a répondu à ta demande de guide",
@@ -183,8 +244,17 @@ export async function notifyClientNewLiveEvent(
 
 export async function notifyClientBilanReady(
   clientEmail: string,
-  clientName: string
+  clientName: string,
+  clientId?: string
 ) {
+  if (clientId) {
+    notifyUser(clientId, {
+      type: "client_bilan_ready",
+      title: "Ton bilan est prêt",
+      body: "Ton coach a répondu à ton check-in.",
+      url: "/dashboard/client/checkin",
+    }).catch(() => {});
+  }
   await sendBrevoEmail({
     to: clientEmail,
     subject: "Ton bilan est prêt",

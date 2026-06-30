@@ -78,7 +78,8 @@ export async function respondToResourceRequest(
         notifyClientRequestAnswered(
           authorProfile.email,
           authorProfile.full_name ?? "",
-          request.title
+          request.title,
+          request.author_id
         ).catch(() => {});
       }
     }

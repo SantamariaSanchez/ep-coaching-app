@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
+import NotificationBell from "@/components/ui/NotificationBell";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -547,8 +548,11 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
         }}
       >
         {/* Logo */}
-        <div style={{ display: "flex", justifyContent: "center", paddingTop: 28, paddingBottom: 24 }}>
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: 28, paddingBottom: 24, position: "relative" }}>
           <EPLogo size="md" showCoaching />
+          <div style={{ position: "absolute", right: 14, top: 24 }}>
+            <NotificationBell />
+          </div>
         </div>
 
         <div className="ep-divider-subtle" style={{ margin: "0 16px 8px" }} />
@@ -764,6 +768,12 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
           zIndex: 1,
         }}
       >
+        {!isDesktop && (
+          <div style={{ position: "fixed", top: "calc(14px + env(safe-area-inset-top, 0px))", right: 14, zIndex: 101 }}>
+            <NotificationBell variant="mobile" />
+          </div>
+        )}
+
         {/* Mobile secondary tab strip — exposes every sidebar destination
             within the active section, since the bottom nav only has room
             for the top-level sections. */}

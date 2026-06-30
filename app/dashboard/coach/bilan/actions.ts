@@ -54,7 +54,7 @@ export async function sendBilan(
     .single();
 
   if (profile?.email && profile?.full_name) {
-    notifyClientBilanReady(profile.email, profile.full_name).catch(() => {});
+    notifyClientBilanReady(profile.email, profile.full_name, clientId).catch(() => {});
   }
 
   revalidatePath("/dashboard/coach/bilan");
@@ -123,7 +123,7 @@ export async function sendPhotoFeedbackBilan(
     .single();
 
   if (profile?.email && profile?.full_name) {
-    notifyClientPhotoFeedback(profile.email, profile.full_name).catch(() => {});
+    notifyClientPhotoFeedback(profile.email, profile.full_name, clientId).catch(() => {});
   }
 
   revalidatePath("/dashboard/coach/bilan");

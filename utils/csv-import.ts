@@ -23,7 +23,16 @@ export type ParseResult =
 
 // ── Low-level CSV tokenizer (handles quoted fields with commas/newlines) ─────
 
-function parseCsvRows(text: string): string[][] {
+// Excel re-saves (especially with a European locale) commonly turn a comma
+// export into a semicolon-delimited file — detect whichever appears more
+// often on the header line rather than assuming comma.
+function detectDelimiter(firstLine: string): "," | ";" {
+  const commas = (firstLine.match(/,/g) ?? []).length;
+  const semicolons = (firstLine.match(/;/g) ?? []).length;
+  return semicolons > commas ? ";" : ",";
+}
+
+function parseCsvRows(text: string, delimiter: "," | ";" = ","): string[][] {
   const t = text.replace(/^﻿/, ""); // strip BOM
   const rows: string[][] = [];
   let row: string[] = [];
@@ -47,7 +56,7 @@ function parseCsvRows(text: string): string[][] {
     }
     if (c === '"') {
       inQuotes = true;
-    } else if (c === ",") {
+    } else if (c === delimiter) {
       row.push(field);
       field = "";
     } else if (c === "\n") {
@@ -76,17 +85,20 @@ function normalizeHeader(h: string): string {
     .replace(/[^a-z0-9_]/g, "");
 }
 
-function parseCsvObjects(text: string): Record<string, string>[] {
-  const rows = parseCsvRows(text);
-  if (rows.length === 0) return [];
+function parseCsvObjects(text: string): { rows: Record<string, string>[]; headers: string[] } {
+  const firstLine = text.split(/\r?\n/, 1)[0] ?? "";
+  const delimiter = detectDelimiter(firstLine);
+  const rows = parseCsvRows(text, delimiter);
+  if (rows.length === 0) return { rows: [], headers: [] };
   const headers = rows[0].map(normalizeHeader);
-  return rows.slice(1).map((r) => {
+  const objects = rows.slice(1).map((r) => {
     const obj: Record<string, string> = {};
     headers.forEach((h, idx) => {
       obj[h] = (r[idx] ?? "").trim();
     });
     return obj;
   });
+  return { rows: objects, headers };
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -138,9 +150,11 @@ function mapHevy(rows: Record<string, string>[]): ParsedSession[] {
       order.push(key);
     }
     if (!row.exercise_title) continue;
+    const weightKgRaw = toFloat(row.weight_kg);
+    const weightLbs = toFloat(row.weight_lbs);
     sessions.get(key)!.sets.push({
       exerciseName: row.exercise_title,
-      weightKg: toFloat(row.weight_kg),
+      weightKg: weightKgRaw ?? (weightLbs != null ? Math.round(weightLbs * 0.453592 * 100) / 100 : null),
       reps: toInt(row.reps),
       note: row.exercise_notes || (row.rpe ? `RPE ${row.rpe}` : null),
     });
@@ -168,8 +182,8 @@ function mapStrong(rows: Record<string, string>[]): ParsedSession[] {
       order.push(key);
     }
     if (!row.exercise_name) continue;
-    const weight = toFloat(row.weight);
-    const unit = (row.weight_unit || "kg").toLowerCase();
+    const weight = toFloat(row.weight) ?? toFloat(row.weight_kg);
+    const unit = row.weight_kg ? "kg" : (row.weight_unit || "kg").toLowerCase();
     const weightKg = weight == null ? null : unit.startsWith("lb") ? weight * 0.453592 : weight;
     sessions.get(key)!.sets.push({
       exerciseName: row.exercise_name,
@@ -261,22 +275,27 @@ export function deriveProgramDaysFromSessions(sessions: ParsedSession[]): Derive
 }
 
 export function parseWorkoutCsv(text: string): ParseResult {
-  const rows = parseCsvObjects(text);
+  const { rows, headers } = parseCsvObjects(text);
   if (rows.length === 0) {
     return { error: "Le fichier CSV est vide ou illisible." };
   }
 
-  const headers = Object.keys(rows[0]);
+  // Hevy's export always has exercise_title; Strong's always has
+  // exercise_name. Some Strong exports use "weight_kg" instead of "weight"
+  // depending on the app's unit setting, so don't require one specific
+  // weight column name — any exercise+weight pairing is enough to route it.
+  const hasWeightColumn = headers.some((h) => h === "weight" || h === "weight_kg" || h === "weight_lbs");
 
-  if (headers.includes("exercise_title") && headers.includes("weight_kg")) {
+  if (headers.includes("exercise_title") && hasWeightColumn) {
     return { source: "hevy", sessions: mapHevy(rows) };
   }
-  if (headers.includes("exercise_name") && headers.includes("weight")) {
+  if (headers.includes("exercise_name") && hasWeightColumn) {
     return { source: "strong", sessions: mapStrong(rows) };
   }
 
   return {
     error:
-      "Format de fichier non reconnu. Seuls les exports CSV de Hevy et Strong sont supportés pour le moment.",
+      `Format de fichier non reconnu (colonnes détectées : ${headers.slice(0, 8).join(", ") || "aucune"}). ` +
+      "Seuls les exports CSV de Hevy et Strong sont supportés pour le moment.",
   };
 }

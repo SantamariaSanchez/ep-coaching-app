@@ -1140,6 +1140,38 @@ export default function SessionView({
     };
   }, [step]);
 
+  // Keep the screen awake during the workout — the OS auto-locking the
+  // phone between sets was the main reason a séance "felt" interrupted.
+  // The Wake Lock is released by the browser whenever the tab loses
+  // visibility, so it's re-acquired on visibilitychange (e.g. switching
+  // back from another app) rather than just once on mount.
+  useEffect(() => {
+    if (step !== "session" || typeof navigator === "undefined" || !("wakeLock" in navigator)) return;
+
+    let sentinel: WakeLockSentinel | null = null;
+
+    async function acquire() {
+      try {
+        sentinel = await navigator.wakeLock.request("screen");
+      } catch {
+        // Unsupported / denied — degrade silently, the session itself
+        // still resumes correctly on reopen regardless of screen lock.
+      }
+    }
+
+    acquire();
+
+    function handleVisibility() {
+      if (document.visibilityState === "visible" && !sentinel) acquire();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+      sentinel?.release().catch(() => {});
+    };
+  }, [step]);
+
   const handleWarmupValidate = useCallback(
     (seconds: number) => {
       // Move to the workout immediately — warmup_validated is just metadata
