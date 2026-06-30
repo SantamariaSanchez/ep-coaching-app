@@ -204,7 +204,7 @@ function VoiceRecorderButton({
       className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 transition-all select-none ${
         recording
           ? "bg-red-500 scale-110 shadow-lg shadow-red-500/30"
-          : "bg-[var(--color-ep-dark-red)]/30 hover:bg-[var(--color-ep-dark-red)]/50 text-[var(--color-ep-light)]/60"
+          : "bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60"
       }`}
       title={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"}
     >
@@ -241,8 +241,8 @@ function MessageBubble({
       <div
         className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
           isOwn
-            ? "bg-[var(--color-ep-red)] rounded-br-sm"
-            : "bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-bl-sm"
+            ? "bg-[#E01E1E] rounded-br-sm"
+            : "bg-[#3a0a0a] border border-[#890404]/30 rounded-bl-sm"
         }`}
       >
         {msg.type === "voice" && msg.voice_url && !isExpired ? (
@@ -454,7 +454,7 @@ export default function ConversationView({
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
-            <p className="text-sm text-[var(--color-ep-light)]/25 text-center">
+            <p className="text-sm text-[#F5EDED]/25 text-center">
               Aucun message pour l&apos;instant.
               <br />
               Démarre la conversation 👋
@@ -472,7 +472,7 @@ export default function ConversationView({
       </div>
 
       {/* Input zone */}
-      <div className="border-t border-[var(--color-ep-dark-red)]/20 bg-[var(--color-ep-input)] px-3 py-3 flex items-center gap-2">
+      <div className="border-t border-[#890404]/20 bg-[#150000] px-3 py-3 flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
 
         <input
@@ -486,13 +486,13 @@ export default function ConversationView({
             }
           }}
           placeholder={`Message à ${peerName.split(" ")[0]}…`}
-          className="flex-1 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-dark-red)]/60"
+          className="flex-1 bg-[#1f0101] border border-[#890404]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/60"
         />
 
         <button
           onClick={sendText}
           disabled={!text.trim() || sending}
-          className="w-10 h-10 rounded-xl bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:bg-[var(--color-ep-dark-red)]/30 flex items-center justify-center flex-shrink-0 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-colors"
         >
           {sending ? (
             <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />

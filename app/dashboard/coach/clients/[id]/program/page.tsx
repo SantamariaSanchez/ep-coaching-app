@@ -35,7 +35,7 @@ export default async function CoachClientProgramPage({
     <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
       <Link
         href={`/dashboard/coach/clients/${id}`}
-        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors mb-6"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
         {client.full_name}
@@ -43,14 +43,14 @@ export default async function CoachClientProgramPage({
 
       <div className="flex items-start justify-between mb-8">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Programme
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">
             {client.full_name}
           </h1>
           {program && (
-            <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">
+            <p className="mt-1 text-xs text-[#F5EDED]/30">
               {program.name}
               {program.frequency ? ` · ${program.frequency}×/semaine` : ""}
               {program.type ? ` · ${program.type}` : ""}
@@ -60,7 +60,7 @@ export default async function CoachClientProgramPage({
 
         <Link
           href={`/dashboard/coach/clients/${id}/program/edit`}
-          className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           {program ? (
             <>
@@ -83,10 +83,10 @@ export default async function CoachClientProgramPage({
 
       {!program || program.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-sm font-semibold text-[var(--color-ep-light)]/40 uppercase tracking-widest">
+          <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
             Aucun programme actif
           </p>
-          <p className="text-xs text-[var(--color-ep-light)]/25 mt-1">
+          <p className="text-xs text-[#F5EDED]/25 mt-1">
             Crée le premier programme d&apos;entraînement pour ce client.
           </p>
         </div>
@@ -99,14 +99,14 @@ export default async function CoachClientProgramPage({
             {program.days.map((day) => (
               <div
                 key={day.id}
-                className="flex-1 min-w-[260px] bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-4"
+                className="flex-1 min-w-[260px] bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-[var(--color-ep-red)] mb-4 pb-2 border-b border-[var(--color-ep-dark-red)]/20">
+                <p className="text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4 pb-2 border-b border-[#890404]/20">
                   {day.day_label}
                 </p>
 
                 {day.exercises.length === 0 ? (
-                  <p className="text-xs text-[var(--color-ep-light)]/25 italic">
+                  <p className="text-xs text-[#F5EDED]/25 italic">
                     Aucun exercice
                   </p>
                 ) : (
@@ -114,24 +114,24 @@ export default async function CoachClientProgramPage({
                     {day.exercises.map((ex) => (
                       <div
                         key={ex.id}
-                        className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-3 py-2.5"
+                        className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
                       >
                         <p className="text-sm font-semibold text-white leading-tight">
                           {ex.name}
                         </p>
                         <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                           {ex.sets != null && ex.reps && (
-                            <span className="text-[10px] text-[var(--color-ep-light)]/50">
+                            <span className="text-[10px] text-[#F5EDED]/50">
                               {ex.sets} × {ex.reps}
                             </span>
                           )}
                           {ex.rir !== null && (
-                            <span className="text-[10px] text-[var(--color-ep-light)]/50">
+                            <span className="text-[10px] text-[#F5EDED]/50">
                               RIR {ex.rir}
                             </span>
                           )}
                           {ex.rest_seconds != null && ex.rest_seconds > 0 && (
-                            <span className="text-[10px] text-[var(--color-ep-light)]/50">
+                            <span className="text-[10px] text-[#F5EDED]/50">
                               {ex.rest_seconds >= 60
                                 ? `${Math.floor(ex.rest_seconds / 60)}min`
                                 : `${ex.rest_seconds}s`}{" "}
@@ -140,7 +140,7 @@ export default async function CoachClientProgramPage({
                           )}
                         </div>
                         {ex.notes && (
-                          <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-1 italic">
+                          <p className="text-[10px] text-[#F5EDED]/35 mt-1 italic">
                             {ex.notes}
                           </p>
                         )}

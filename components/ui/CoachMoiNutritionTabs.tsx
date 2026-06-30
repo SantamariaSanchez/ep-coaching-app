@@ -19,7 +19,7 @@ export default function CoachMoiNutritionTabs({
 
   return (
     <div>
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         {([
           { key: "suivi" as const, label: "Suivi du jour" },
           { key: "gerer" as const, label: "Mes objectifs & plan" },
@@ -29,8 +29,8 @@ export default function CoachMoiNutritionTabs({
             onClick={() => setTab(key)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               tab === key
-                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
-                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
+                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             {label}

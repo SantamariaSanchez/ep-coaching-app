@@ -32,7 +32,7 @@ export default async function ClientMessagesPage() {
   if (!coachId) {
     return (
       <div className="px-6 py-8 text-center">
-        <p className="text-[var(--color-ep-light)]/40 text-sm">
+        <p className="text-[#F5EDED]/40 text-sm">
           Ton coach n&apos;est pas encore configuré.
         </p>
       </div>
@@ -49,13 +49,13 @@ export default async function ClientMessagesPage() {
       <PushPermission userId={user.id} />
 
       {/* Header */}
-      <div className="px-5 py-4 border-b border-[var(--color-ep-dark-red)]/20 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-[var(--color-ep-red)]/20 border border-[var(--color-ep-red)]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-black text-[var(--color-ep-red)]">EP</span>
+      <div className="px-5 py-4 border-b border-[#890404]/20 flex items-center gap-3">
+        <div className="w-9 h-9 rounded-full bg-[#E01E1E]/20 border border-[#E01E1E]/30 flex items-center justify-center flex-shrink-0">
+          <span className="text-xs font-black text-[#E01E1E]">EP</span>
         </div>
         <div>
           <p className="text-sm font-black text-white">{coachName}</p>
-          <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest">
+          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
             Coach
           </p>
         </div>

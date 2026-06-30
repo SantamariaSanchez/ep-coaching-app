@@ -27,27 +27,27 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
   }).format(new Date(c.created_at));
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4 space-y-3">
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 space-y-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-bold text-white truncate">
             {c.exercise_name}
           </p>
-          <p className="text-[10px] text-[var(--color-ep-light)]/30 mt-0.5">{date}</p>
+          <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">{date}</p>
         </div>
         <StatusBadge status={c.status} />
       </div>
 
-      <div className="space-y-1.5 text-xs text-[var(--color-ep-light)]/60">
+      <div className="space-y-1.5 text-xs text-[#F5EDED]/60">
         <p>
-          <span className="text-[var(--color-ep-light)]/35 font-semibold uppercase tracking-widest text-[9px]">
+          <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
             Objectif —{" "}
           </span>
           {c.objective}
         </p>
         {c.client_question && (
           <p>
-            <span className="text-[var(--color-ep-light)]/35 font-semibold uppercase tracking-widest text-[9px]">
+            <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
               Question —{" "}
             </span>
             {c.client_question}
@@ -57,7 +57,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
           href={c.video_link}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors font-medium"
+          className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium"
         >
           <Video size={11} />
           Voir ma vidéo
@@ -66,11 +66,11 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
       </div>
 
       {c.status === "answered" && (
-        <div className="pt-3 border-t border-[var(--color-ep-dark-red)]/15 space-y-2">
+        <div className="pt-3 border-t border-[#890404]/15 space-y-2">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70">
             Retour de ton coach
           </p>
-          <p className="text-xs text-[var(--color-ep-light)]/75 leading-relaxed">
+          <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
             {c.coach_feedback}
           </p>
           {c.coach_video_link && (
@@ -110,32 +110,32 @@ export default function ClientCorrectionsSection({
   }
 
   const inputClass =
-    "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 focus:border-[var(--color-ep-red)]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[var(--color-ep-light)]/20 outline-none transition-colors";
+    "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
   const labelClass =
-    "block text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
+    "block text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
 
   return (
     <section className="mt-12 max-w-2xl mx-auto">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Technique
         </p>
         <h2 className="text-xl font-black uppercase tracking-tight">
           Corrections &amp; Questions
         </h2>
-        <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">
+        <p className="mt-1 text-xs text-[#F5EDED]/30">
           Envoie une vidéo de ton exercice — ton coach te donne un retour.
         </p>
       </div>
 
       {/* Form */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-6">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
         <form ref={formRef} action={formAction} className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>
-                Exercice <span className="text-[var(--color-ep-red)]">*</span>
+                Exercice <span className="text-[#E01E1E]">*</span>
               </label>
               <input
                 name="exercise_name"
@@ -147,7 +147,7 @@ export default function ClientCorrectionsSection({
             </div>
             <div>
               <label className={labelClass}>
-                Objectif <span className="text-[var(--color-ep-red)]">*</span>
+                Objectif <span className="text-[#E01E1E]">*</span>
               </label>
               <input
                 name="objective"
@@ -161,7 +161,7 @@ export default function ClientCorrectionsSection({
 
           <div>
             <label className={labelClass}>
-              Lien Google Drive (vidéo) <span className="text-[var(--color-ep-red)]">*</span>
+              Lien Google Drive (vidéo) <span className="text-[#E01E1E]">*</span>
             </label>
             <input
               name="video_link"
@@ -183,7 +183,7 @@ export default function ClientCorrectionsSection({
           </div>
 
           {state?.error && (
-            <p className="text-[var(--color-ep-pink)] text-xs">{state.error}</p>
+            <p className="text-[#FDC4C4] text-xs">{state.error}</p>
           )}
           {state?.success && (
             <p className="text-green-400 text-xs">
@@ -194,7 +194,7 @@ export default function ClientCorrectionsSection({
           <button
             type="submit"
             disabled={isPending}
-            className="w-full bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
+            className="w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
           >
             {isPending ? "Envoi…" : "Envoyer"}
           </button>
@@ -204,7 +204,7 @@ export default function ClientCorrectionsSection({
       {/* Past submissions */}
       {corrections.length > 0 && (
         <div className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
             Mes dépôts ({corrections.length})
           </p>
           {corrections.map((c) => (

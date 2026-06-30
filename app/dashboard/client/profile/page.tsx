@@ -15,9 +15,9 @@ function weeksSince(dateStr: string): number {
 
 function InfoRow({ label, value }: { label: string; value: string | null | undefined }) {
   return (
-    <div className="flex items-center justify-between py-2.5 border-b border-[var(--color-ep-dark-red)]/10 last:border-0">
-      <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">{label}</span>
-      <span className="text-sm font-semibold text-[var(--color-ep-light)]/75">{value ?? "—"}</span>
+    <div className="flex items-center justify-between py-2.5 border-b border-[#890404]/10 last:border-0">
+      <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{label}</span>
+      <span className="text-sm font-semibold text-[#F5EDED]/75">{value ?? "—"}</span>
     </div>
   );
 }
@@ -46,7 +46,7 @@ export default async function ClientProfilePage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon espace
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon profil</h1>
@@ -57,8 +57,8 @@ export default async function ClientProfilePage() {
       <ProfileEditor fullName={profile.full_name ?? ""} phone={profile.phone} bio={profile.bio} />
 
       {profile.subscription_status === "active" && (
-        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-2">
+        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             Mon coaching
           </p>
           {weeks !== null && <InfoRow label="Semaines de coaching" value={`${weeks} semaines`} />}

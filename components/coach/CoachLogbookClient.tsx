@@ -28,34 +28,34 @@ interface Props {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "var(--color-ep-card)",
-    border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.4)",
+    backgroundColor: "#1f0101",
+    border: "1px solid rgba(137,4,4,0.4)",
     borderRadius: "8px",
-    color: "var(--color-ep-light)",
+    color: "#F5EDED",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(var(--color-ep-light-rgb),0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(var(--color-ep-light-rgb),0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
       {children}
     </p>
   );
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[var(--color-ep-light)]/25">—</span>;
+  if (value == null) return <span className="text-[#F5EDED]/25">—</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
         <div
           key={i}
           className={`w-2 h-2 rounded-full ${
-            i < value ? "bg-[var(--color-ep-red)]" : "bg-[var(--color-ep-light)]/15"
+            i < value ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"
           }`}
         />
       ))}
@@ -95,9 +95,9 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
     : null;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
           7 derniers jours
         </p>
         {daysSinceLastSession != null && daysSinceLastSession > 2 && (
@@ -117,20 +117,20 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
           ];
           return (
             <div key={i} className="flex flex-col items-center gap-1">
-              <span className="text-[8px] text-[var(--color-ep-light)]/30 uppercase">
+              <span className="text-[8px] text-[#F5EDED]/30 uppercase">
                 {dayLabel}
               </span>
               <div
                 className={`w-8 h-8 rounded-lg flex items-center justify-center ${
                   session
-                    ? "bg-[var(--color-ep-red)]/20 border border-[var(--color-ep-red)]/30"
-                    : "bg-[var(--color-ep-dark-red)]/10 border border-[var(--color-ep-dark-red)]/15"
+                    ? "bg-[#E01E1E]/20 border border-[#E01E1E]/30"
+                    : "bg-[#890404]/10 border border-[#890404]/15"
                 }`}
               >
                 {session ? (
-                  <CheckCircle2 size={14} className="text-[var(--color-ep-red)]" />
+                  <CheckCircle2 size={14} className="text-[#E01E1E]" />
                 ) : (
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--color-ep-light)]/15" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#F5EDED]/15" />
                 )}
               </div>
             </div>
@@ -143,13 +143,13 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
           <p className="text-2xl font-black text-white">
             {recentSessions.length}
           </p>
-          <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
             Cette semaine
           </p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-black text-white">{sessions.length}</p>
-          <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
             Total sessions
           </p>
         </div>
@@ -164,7 +164,7 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
                 )
               : "—"}
           </p>
-          <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+          <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
             Dernière
           </p>
         </div>
@@ -196,8 +196,8 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
 
   if (avgScores.length === 0) {
     return (
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-8 text-center">
-        <p className="text-sm text-[var(--color-ep-light)]/40">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
+        <p className="text-sm text-[#F5EDED]/40">
           Les scores de standardisation apparaîtront ici
         </p>
       </div>
@@ -229,8 +229,8 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
         </div>
       )}
 
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
           Score d&apos;exécution moyen
         </p>
         <div className="h-48">
@@ -296,10 +296,10 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
   const prCount = session.sets.filter((s) => s.is_pr).length;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[var(--color-ep-dark-red)]/5 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -312,7 +312,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
               </span>
             )}
           </div>
-          <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-0.5">
+          <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
             {new Intl.DateTimeFormat("fr-FR", {
               weekday: "short",
               day: "numeric",
@@ -334,45 +334,45 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                     key={i}
                     className={`w-1.5 h-1.5 rounded-full ${
                       i < (session.general_feeling ?? 0)
-                        ? "bg-[var(--color-ep-red)]"
-                        : "bg-[var(--color-ep-light)]/15"
+                        ? "bg-[#E01E1E]"
+                        : "bg-[#F5EDED]/15"
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-[8px] text-[var(--color-ep-light)]/25 uppercase tracking-wider">
+              <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
                 feeling
               </span>
             </div>
           )}
           {expanded ? (
-            <ChevronUp size={14} className="text-[var(--color-ep-light)]/30" />
+            <ChevronUp size={14} className="text-[#F5EDED]/30" />
           ) : (
-            <ChevronDown size={14} className="text-[var(--color-ep-light)]/30" />
+            <ChevronDown size={14} className="text-[#F5EDED]/30" />
           )}
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-[var(--color-ep-dark-red)]/15 px-4 py-3 space-y-3">
+        <div className="border-t border-[#890404]/15 px-4 py-3 space-y-3">
           {/* Feeling row */}
           {(session.general_feeling || session.energy_level || session.pump) && (
             <div className="flex gap-4">
               {session.general_feeling != null && (
                 <div>
-                  <p className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider mb-0.5">Feeling</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Feeling</p>
                   <FeelingDots value={session.general_feeling} />
                 </div>
               )}
               {session.energy_level != null && (
                 <div>
-                  <p className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider mb-0.5">Énergie</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Énergie</p>
                   <FeelingDots value={session.energy_level} />
                 </div>
               )}
               {session.pump != null && (
                 <div>
-                  <p className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider mb-0.5">Pump</p>
+                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Pump</p>
                   <FeelingDots value={session.pump} />
                 </div>
               )}
@@ -380,7 +380,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
           )}
 
           {session.notes && (
-            <p className="text-xs text-[var(--color-ep-light)]/50 italic leading-relaxed">
+            <p className="text-xs text-[#F5EDED]/50 italic leading-relaxed">
               {session.notes}
             </p>
           )}
@@ -388,7 +388,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
           {/* Exercises */}
           {Object.entries(byExercise).map(([name, sets]) => (
             <div key={name}>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
                 {name}
               </p>
               <div className="flex flex-wrap gap-1.5">
@@ -398,7 +398,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                     className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${
                       s.is_pr
                         ? "bg-amber-500/15 text-amber-300 border-amber-500/25"
-                        : "bg-[var(--color-ep-dark-red)]/10 text-[var(--color-ep-light)]/60 border-[var(--color-ep-dark-red)]/20"
+                        : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
                     }`}
                   >
                     {s.weight_kg != null ? `${s.weight_kg}kg` : "—"}
@@ -412,7 +412,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="ml-1.5 text-[var(--color-ep-red)]"
+                        className="ml-1.5 text-[#E01E1E]"
                         title="Voir la vidéo du set"
                       >
                         🎥
@@ -444,15 +444,15 @@ export default function CoachLogbookClient({ clientId, sessions, records }: Prop
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
         {tabs.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === key
-                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
-                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
+                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             {label}
@@ -491,9 +491,9 @@ export default function CoachLogbookClient({ clientId, sessions, records }: Prop
         <div className="space-y-4">
           <SectionLabel>Historique des séances</SectionLabel>
           {sessions.length === 0 ? (
-            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-8 text-center">
-              <Clock size={24} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[var(--color-ep-light)]/40">
+            <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
+              <Clock size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-sm text-[#F5EDED]/40">
                 Aucune séance enregistrée
               </p>
             </div>

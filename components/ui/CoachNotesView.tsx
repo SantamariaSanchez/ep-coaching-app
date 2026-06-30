@@ -33,7 +33,7 @@ const DECISION_TYPE_COLORS: Record<string, string> = {
   nutrition: "bg-blue-500/15 text-blue-400 border-blue-500/25",
   programme: "bg-green-500/15 text-green-400 border-green-500/25",
   "stratégie": "bg-purple-500/15 text-purple-400 border-purple-500/25",
-  autre: "bg-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/40 border-[var(--color-ep-light)]/15",
+  autre: "bg-[#F5EDED]/10 text-[#F5EDED]/40 border-[#F5EDED]/15",
 };
 
 const RATING_COLORS: Record<number, string> = {
@@ -43,9 +43,9 @@ const RATING_COLORS: Record<number, string> = {
 };
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 const labelCls =
-  "text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block";
+  "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
 const textareaCls = inputCls + " resize-none";
 
 function formatDate(dateStr: string) {
@@ -60,7 +60,7 @@ function PhaseBadge({ phase }: { phase: string | null }) {
   if (!phase) return null;
   return (
     <span
-      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${PHASE_COLORS[phase] ?? "bg-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/40 border-[var(--color-ep-light)]/15"}`}
+      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border ${PHASE_COLORS[phase] ?? "bg-[#F5EDED]/10 text-[#F5EDED]/40 border-[#F5EDED]/15"}`}
     >
       {phase}
     </span>
@@ -71,7 +71,7 @@ function RatingBadge({ rating }: { rating: number | null }) {
   if (!rating) return null;
   return (
     <span
-      className={`text-[9px] font-black px-2 py-0.5 rounded-full text-white ${RATING_COLORS[rating] ?? "bg-[var(--color-ep-light)]/20"}`}
+      className={`text-[9px] font-black px-2 py-0.5 rounded-full text-white ${RATING_COLORS[rating] ?? "bg-[#F5EDED]/20"}`}
     >
       {rating}/10
     </span>
@@ -183,13 +183,13 @@ function WeeklyNoteForm({
   const isEditing = !!currentNote;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5 space-y-5">
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-5">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
           Semaine {weekNumber} — {formatDate(weekStart)}
         </p>
         {isEditing && (
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/25 px-2 py-0.5 rounded-full">
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/25 px-2 py-0.5 rounded-full">
             Édition
           </span>
         )}
@@ -243,7 +243,7 @@ function WeeklyNoteForm({
                 className={`w-7 h-7 rounded text-[10px] font-black transition-colors ${
                   form.rating === n
                     ? `${RATING_COLORS[n]} text-white`
-                    : "bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 text-[var(--color-ep-light)]/40 hover:text-white"
+                    : "bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/40 hover:text-white"
                 }`}
               >
                 {n}
@@ -288,7 +288,7 @@ function WeeklyNoteForm({
           className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-60"
+              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
           }`}
         >
           {saved ? <><Check size={13} /> Enregistré</> : saving ? "Enregistrement…" : "Enregistrer la note"}
@@ -311,24 +311,24 @@ function NoteCard({ note }: { note: CoachNote }) {
   ].filter((f) => f.value);
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((e) => !e)}
-        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[var(--color-ep-dark-red)]/5 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
       >
         <div className="flex items-center gap-3">
           <span className="text-sm font-bold text-white">
             S{note.week_number ?? "?"}
           </span>
-          <span className="text-xs text-[var(--color-ep-light)]/40">
+          <span className="text-xs text-[#F5EDED]/40">
             {formatDate(note.week_start)}
           </span>
           {note.weight != null && (
-            <span className="text-[10px] text-[var(--color-ep-light)]/50">
+            <span className="text-[10px] text-[#F5EDED]/50">
               {note.weight} kg
               {note.weight_variation != null && (
                 <span
-                  className={`ml-1 font-semibold ${note.weight_variation < 0 ? "text-blue-400" : note.weight_variation > 0 ? "text-amber-400" : "text-[var(--color-ep-light)]/40"}`}
+                  className={`ml-1 font-semibold ${note.weight_variation < 0 ? "text-blue-400" : note.weight_variation > 0 ? "text-amber-400" : "text-[#F5EDED]/40"}`}
                 >
                   ({note.weight_variation > 0 ? "+" : ""}
                   {note.weight_variation})
@@ -340,18 +340,18 @@ function NoteCard({ note }: { note: CoachNote }) {
           <RatingBadge rating={note.rating} />
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[var(--color-ep-light)]/30 flex-shrink-0" />
+          <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
         ) : (
-          <ChevronDown size={14} className="text-[var(--color-ep-light)]/30 flex-shrink-0" />
+          <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
         )}
       </button>
 
       {expanded && fields.length > 0 && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[var(--color-ep-dark-red)]/15">
+        <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15">
           {fields.map(({ label, value }) => (
             <div key={label}>
               <p className={labelCls + " mt-3"}>{label}</p>
-              <p className="text-sm text-[var(--color-ep-light)]/75 whitespace-pre-wrap leading-relaxed">
+              <p className="text-sm text-[#F5EDED]/75 whitespace-pre-wrap leading-relaxed">
                 {value}
               </p>
             </div>
@@ -422,14 +422,14 @@ function KeyDecisionForm({
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 hover:bg-[var(--color-ep-red)]/20 text-[var(--color-ep-red)] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           <Plus size={13} />
           Ajouter une décision
         </button>
       ) : (
-        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5 space-y-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-4">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
             Nouvelle décision clé
           </p>
           <div className="grid grid-cols-2 gap-3">
@@ -493,14 +493,14 @@ function KeyDecisionForm({
           <div className="flex gap-2 justify-end">
             <button
               onClick={() => setOpen(false)}
-              className="text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 px-4 py-2 transition-colors"
+              className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 py-2 transition-colors"
             >
               Annuler
             </button>
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg disabled:opacity-60 transition-colors"
+              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg disabled:opacity-60 transition-colors"
             >
               {saved ? <><Check size={13} /> Ajouté</> : saving ? "Enregistrement…" : "Enregistrer"}
             </button>
@@ -541,14 +541,14 @@ function DecisionCard({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl overflow-hidden">
       <div className="flex items-start gap-3 px-4 py-3">
         <button
           onClick={() => setExpanded((e) => !e)}
           className="flex-1 text-left"
         >
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] text-[var(--color-ep-light)]/35">
+            <span className="text-[10px] text-[#F5EDED]/35">
               {formatDate(decision.decision_date)}
             </span>
             {decision.type && (
@@ -564,32 +564,32 @@ function DecisionCard({
           </p>
           {expanded && decision.reason && (
             <div className="mt-2">
-              <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
                 Raison
               </p>
-              <p className="text-xs text-[var(--color-ep-light)]/60">{decision.reason}</p>
+              <p className="text-xs text-[#F5EDED]/60">{decision.reason}</p>
             </div>
           )}
           {expanded && decision.result && (
             <div className="mt-2">
-              <p className="text-[10px] text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold mb-0.5">
+              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold mb-0.5">
                 Résultat observé
               </p>
-              <p className="text-xs text-[var(--color-ep-light)]/60">{decision.result}</p>
+              <p className="text-xs text-[#F5EDED]/60">{decision.result}</p>
             </div>
           )}
         </button>
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="text-[var(--color-ep-light)]/25 hover:text-[var(--color-ep-light)]/60 transition-colors"
+            className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
           >
             {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
           </button>
           <button
             onClick={handleDelete}
             disabled={deleting}
-            className="text-[var(--color-ep-light)]/20 hover:text-red-500 transition-colors disabled:opacity-40"
+            className="text-[#F5EDED]/20 hover:text-red-500 transition-colors disabled:opacity-40"
           >
             <Trash2 size={12} />
           </button>
@@ -642,15 +642,15 @@ export default function CoachNotesView({
   return (
     <div className="space-y-6">
       {/* Tabs */}
-      <div className="flex gap-1 border-b border-[var(--color-ep-dark-red)]/20">
+      <div className="flex gap-1 border-b border-[#890404]/20">
         {(["journal", "decisions"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === tab
-                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
-                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
+                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             {tab === "journal"
@@ -676,7 +676,7 @@ export default function CoachNotesView({
           {/* Past notes */}
           {pastNotes.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
                 Historique
               </p>
               <div className="space-y-2">
@@ -687,7 +687,7 @@ export default function CoachNotesView({
               {pastNotes.length > INITIAL_NOTES_SHOWN && (
                 <button
                   onClick={() => setShowAllNotes((s) => !s)}
-                  className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+                  className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
                 >
                   {showAllNotes ? (
                     <><ChevronUp size={13} /> Réduire</>
@@ -710,8 +710,8 @@ export default function CoachNotesView({
           />
 
           {decisions.length === 0 ? (
-            <div className="flex items-center justify-center py-12 bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl">
-              <p className="text-xs text-[var(--color-ep-light)]/30 uppercase tracking-widest font-semibold">
+            <div className="flex items-center justify-center py-12 bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl">
+              <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
                 Aucune décision enregistrée
               </p>
             </div>

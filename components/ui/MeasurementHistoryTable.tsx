@@ -18,10 +18,10 @@ function formatDate(dateStr: string): string {
 }
 
 function DeltaBadge({ delta }: { delta: number | null }) {
-  if (delta == null) return <span className="text-[var(--color-ep-light)]/25">—</span>;
+  if (delta == null) return <span className="text-[#F5EDED]/25">—</span>;
   const positive = delta > 0;
   const zero = delta === 0;
-  if (zero) return <span className="text-[var(--color-ep-light)]/40">±0</span>;
+  if (zero) return <span className="text-[#F5EDED]/40">±0</span>;
   return (
     <span
       className={`font-semibold ${positive ? "text-amber-400" : "text-blue-400"}`}
@@ -43,8 +43,8 @@ export default function MeasurementHistoryTable({
 
   if (measurements.length === 0) {
     return (
-      <div className="flex items-center justify-center py-12 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl">
-        <p className="text-xs text-[var(--color-ep-light)]/30 uppercase tracking-widest font-semibold">
+      <div className="flex items-center justify-center py-12 bg-[#1f0101] border border-[#890404]/30 rounded-xl">
+        <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
           Aucune mensuration enregistrée
         </p>
       </div>
@@ -65,11 +65,11 @@ export default function MeasurementHistoryTable({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-left min-w-[600px]">
           <thead>
-            <tr className="border-b border-[var(--color-ep-dark-red)]/20">
+            <tr className="border-b border-[#890404]/20">
               {[
                 "Date",
                 "Poids (kg)",
@@ -80,7 +80,7 @@ export default function MeasurementHistoryTable({
               ].map((h) => (
                 <th
                   key={h}
-                  className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35"
+                  className="px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35"
                 >
                   {h}
                 </th>
@@ -91,21 +91,21 @@ export default function MeasurementHistoryTable({
             {visible.map((m, idx) => (
               <tr
                 key={m.id}
-                className="border-b border-[var(--color-ep-dark-red)]/10 last:border-0 hover:bg-[var(--color-ep-dark-red)]/5 transition-colors"
+                className="border-b border-[#890404]/10 last:border-0 hover:bg-[#890404]/5 transition-colors"
               >
                 <td className="px-4 py-3 text-sm text-white font-medium">
                   {formatDate(m.measured_at)}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-ep-light)]/80">
+                <td className="px-4 py-3 text-sm text-[#F5EDED]/80">
                   {fmt(m.weight, " kg")}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-ep-light)]/80">
+                <td className="px-4 py-3 text-sm text-[#F5EDED]/80">
                   {fmt(m.waist)}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-ep-light)]/80">
+                <td className="px-4 py-3 text-sm text-[#F5EDED]/80">
                   {fmt(m.arm_flexed)}
                 </td>
-                <td className="px-4 py-3 text-sm text-[var(--color-ep-light)]/80">
+                <td className="px-4 py-3 text-sm text-[#F5EDED]/80">
                   {fmt(m.thigh)}
                 </td>
                 <td className="px-4 py-3 text-xs">
@@ -118,10 +118,10 @@ export default function MeasurementHistoryTable({
       </div>
 
       {measurements.length > INITIAL_ROWS && (
-        <div className="border-t border-[var(--color-ep-dark-red)]/15">
+        <div className="border-t border-[#890404]/15">
           <button
             onClick={() => setExpanded((e) => !e)}
-            className="w-full flex items-center justify-center gap-2 py-3 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+            className="w-full flex items-center justify-center gap-2 py-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
           >
             {expanded ? (
               <>

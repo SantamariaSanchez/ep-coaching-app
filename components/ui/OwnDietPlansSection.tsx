@@ -29,16 +29,16 @@ export default function OwnDietPlansSection({
     <div className="max-w-2xl mx-auto px-6 mb-8 space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Mes plans alimentaires
           </p>
-          <p className="text-sm text-[var(--color-ep-light)]/40">
+          <p className="text-sm text-[#F5EDED]/40">
             Crée ton propre plan, ou logue librement en mode flexible.
           </p>
         </div>
         <button
           onClick={() => setShowBuilder((v) => !v)}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors flex-shrink-0 ml-3"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0 ml-3"
         >
           <Plus size={12} />
           {showBuilder ? "Fermer" : "Nouveau plan"}
@@ -46,7 +46,7 @@ export default function OwnDietPlansSection({
       </div>
 
       {showBuilder && (
-        <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4">
+        <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
           <PlanBuilder
             foods={foods}
             onCreate={async (name, mode, meals, structure) => {

@@ -33,7 +33,7 @@ const ICON_MAP: Record<string, React.ElementType> = {
 
 function AlertIcon({ name, severity }: { name: string; severity: string }) {
   const Icon = ICON_MAP[name] ?? AlertCircle;
-  const color = severity === "high" ? "text-red-400" : severity === "medium" ? "text-amber-400" : "text-[var(--color-ep-light)]/30";
+  const color = severity === "high" ? "text-red-400" : severity === "medium" ? "text-amber-400" : "text-[#F5EDED]/30";
   return <Icon size={13} className={`${color} flex-shrink-0 mt-0.5`} strokeWidth={2} />;
 }
 
@@ -60,19 +60,19 @@ function StatCard({ label, value, sub, color = "text-white", icon: Icon }: {
   label: string; value: string | number; sub?: string; color?: string; icon: React.ElementType;
 }) {
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl p-5">
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-5">
       <div className="flex items-start justify-between mb-3">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">{label}</p>
-        <Icon size={14} className="text-[var(--color-ep-dark-red)]" strokeWidth={1.8} />
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{label}</p>
+        <Icon size={14} className="text-[#890404]" strokeWidth={1.8} />
       </div>
       <p className={`text-4xl font-black ${color}`}>{value}</p>
-      {sub && <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">{sub}</p>}
+      {sub && <p className="mt-1 text-xs text-[#F5EDED]/30">{sub}</p>}
     </div>
   );
 }
 
 function cellColor(value: number | null, thresholds: { ok: number; warn: number }): string {
-  if (value == null) return "text-[var(--color-ep-light)]/25";
+  if (value == null) return "text-[#F5EDED]/25";
   if (value >= thresholds.ok) return "text-green-400 font-bold";
   if (value >= thresholds.warn) return "text-amber-400 font-bold";
   return "text-red-400 font-bold";
@@ -84,26 +84,26 @@ function AlertCard({ client }: { client: ClientAnalytics }) {
   const med = alerts.filter((a) => a.severity === "medium").length;
   const low = alerts.length - high - med;
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-ep-dark-red)]/15">
-        <Link href={`/dashboard/coach/clients/${client.id}`} className="text-sm font-black text-white hover:text-[var(--color-ep-red)] transition-colors">
+    <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#890404]/15">
+        <Link href={`/dashboard/coach/clients/${client.id}`} className="text-sm font-black text-white hover:text-[#E01E1E] transition-colors">
           {client.full_name ?? "Client"}
         </Link>
         <div className="flex items-center gap-1.5">
           {high > 0 && <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/25">{high} critique{high > 1 ? "s" : ""}</span>}
           {med > 0 && <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25">{med} moyen</span>}
-          {low > 0 && <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[var(--color-ep-light)]/10 text-[var(--color-ep-light)]/30 border border-[var(--color-ep-light)]/10">{low} faible</span>}
+          {low > 0 && <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-[#F5EDED]/10 text-[#F5EDED]/30 border border-[#F5EDED]/10">{low} faible</span>}
         </div>
       </div>
-      <div className="divide-y divide-[var(--color-ep-dark-red)]/10">
+      <div className="divide-y divide-[#890404]/10">
         {(client.alerts ?? []).map((alert, i) => (
           <div key={i} className="flex items-start gap-3 px-4 py-3">
             <AlertIcon name={alert.icon} severity={alert.severity} />
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold text-[var(--color-ep-light)]/80 leading-snug">{alert.label}</p>
-              <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-0.5 leading-snug">💡 {alert.suggestion}</p>
+              <p className="text-xs font-semibold text-[#F5EDED]/80 leading-snug">{alert.label}</p>
+              <p className="text-[10px] text-[#F5EDED]/35 mt-0.5 leading-snug">💡 {alert.suggestion}</p>
             </div>
-            <Link href={alertHref(client.id, alert.type)} className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[var(--color-ep-dark-red)]/20 hover:bg-[var(--color-ep-dark-red)]/40 text-[var(--color-ep-light)]/50 hover:text-[var(--color-ep-light)]/80 transition-colors flex-shrink-0">
+            <Link href={alertHref(client.id, alert.type)} className="text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-[#890404]/20 hover:bg-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors flex-shrink-0">
               Agir
             </Link>
           </div>
@@ -126,8 +126,8 @@ function HighlightCard({ client }: { client: ClientAnalytics }) {
           <div key={i} className="flex items-start gap-3 px-4 py-2.5">
             <HighlightIcon name={h.icon} />
             <div>
-              <p className="text-xs text-[var(--color-ep-light)]/75 leading-snug">{h.label}</p>
-              {h.detail && <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-0.5">{h.detail}</p>}
+              <p className="text-xs text-[#F5EDED]/75 leading-snug">{h.label}</p>
+              {h.detail && <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">{h.detail}</p>}
             </div>
           </div>
         ))}
@@ -192,19 +192,19 @@ export default function AnalyticsClient() {
       {/* Header — compact on mobile */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isDesktop ? 28 : 16 }}>
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Analytics — 21 jours
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
             Tableau de Bord
             {totalAlerts > 0 && (
-              <span className="text-lg font-black px-2.5 py-0.5 rounded-full bg-[var(--color-ep-red)] text-white">
+              <span className="text-lg font-black px-2.5 py-0.5 rounded-full bg-[#E01E1E] text-white">
                 {totalAlerts}
               </span>
             )}
           </h1>
           {loadedAt && (
-            <p className="text-[9px] text-[var(--color-ep-light)]/20 mt-1">
+            <p className="text-[9px] text-[#F5EDED]/20 mt-1">
               Mis à jour {new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(loadedAt)}
             </p>
           )}
@@ -212,7 +212,7 @@ export default function AnalyticsClient() {
         <button
           onClick={load}
           disabled={loading}
-          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 transition-colors disabled:opacity-30"
+          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors disabled:opacity-30"
         >
           <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
           Actualiser
@@ -222,7 +222,7 @@ export default function AnalyticsClient() {
       {loading && !data ? (
         <SkeletonAnalytics />
       ) : !data ? (
-        <div className="text-center py-16 text-[var(--color-ep-light)]/30">Erreur de chargement</div>
+        <div className="text-center py-16 text-[#F5EDED]/30">Erreur de chargement</div>
       ) : (
         <>
           {/* Global stats */}
@@ -243,10 +243,10 @@ export default function AnalyticsClient() {
               )}
             </div>
             {clientsWithAlerts.length === 0 ? (
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-8 text-center">
+              <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
                 <CheckCircle2 size={24} className="text-green-400 mx-auto mb-3" strokeWidth={1.5} />
                 <p className="text-sm font-bold text-green-400">Aucune alerte — tout roule !</p>
-                <p className="text-xs text-[var(--color-ep-light)]/30 mt-1">Tous tes clients sont dans les clous</p>
+                <p className="text-xs text-[#F5EDED]/30 mt-1">Tous tes clients sont dans les clous</p>
               </div>
             ) : (
               <div className="space-y-3">{clientsWithAlerts.map((c) => <AlertCard key={c.id} client={c} />)}</div>
@@ -265,8 +265,8 @@ export default function AnalyticsClient() {
               )}
             </div>
             {clientsWithHighlights.length === 0 ? (
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-6 text-center">
-                <p className="text-xs text-[var(--color-ep-light)]/30">Les points positifs apparaîtront ici</p>
+              <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-6 text-center">
+                <p className="text-xs text-[#F5EDED]/30">Les points positifs apparaîtront ici</p>
               </div>
             ) : (
               <div className="space-y-3">{clientsWithHighlights.map((c) => <HighlightCard key={c.id} client={c} />)}</div>
@@ -276,42 +276,42 @@ export default function AnalyticsClient() {
           {/* Overview table */}
           <section>
             <div className="flex items-center gap-2 mb-4">
-              <BarChart2 size={14} className="text-[var(--color-ep-light)]/50" />
-              <h2 className="text-sm font-black uppercase tracking-widest text-[var(--color-ep-light)]/50">Vue d&apos;ensemble — 21 jours</h2>
+              <BarChart2 size={14} className="text-[#F5EDED]/50" />
+              <h2 className="text-sm font-black uppercase tracking-widest text-[#F5EDED]/50">Vue d&apos;ensemble — 21 jours</h2>
             </div>
             {clients.length === 0 ? (
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-8 text-center">
-                <p className="text-xs text-[var(--color-ep-light)]/30">Aucun client actif</p>
+              <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
+                <p className="text-xs text-[#F5EDED]/30">Aucun client actif</p>
               </div>
             ) : (
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl overflow-hidden">
+              <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl overflow-hidden">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="border-b border-[var(--color-ep-dark-red)]/20">
+                      <tr className="border-b border-[#890404]/20">
                         {["Client", "Alertes", "Highlights", "Poids 21j", "Adhésion", "Séances/sem", "Dernière activité"].map((h) => (
-                          <th key={h} className="text-[8px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 py-3 px-3 text-left whitespace-nowrap">{h}</th>
+                          <th key={h} className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDED]/30 py-3 px-3 text-left whitespace-nowrap">{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {clients.map((c) => (
-                        <tr key={c.id} className="border-b border-[var(--color-ep-dark-red)]/10 hover:bg-[var(--color-ep-dark-red)]/5 transition-colors">
+                        <tr key={c.id} className="border-b border-[#890404]/10 hover:bg-[#890404]/5 transition-colors">
                           <td className="py-3 px-3">
-                            <Link href={`/dashboard/coach/clients/${c.id}`} className="font-black text-white hover:text-[var(--color-ep-red)] transition-colors whitespace-nowrap">
+                            <Link href={`/dashboard/coach/clients/${c.id}`} className="font-black text-white hover:text-[#E01E1E] transition-colors whitespace-nowrap">
                               {c.full_name ?? "—"}
                             </Link>
                           </td>
                           <td className="py-3 px-3">{c.alerts.length > 0 ? <span className="font-black text-red-400">{c.alerts.length}</span> : <span className="text-green-400 font-bold">0 ✓</span>}</td>
-                          <td className="py-3 px-3">{c.highlights.length > 0 ? <span className="font-black text-green-400">{c.highlights.length}</span> : <span className="text-[var(--color-ep-light)]/25">—</span>}</td>
+                          <td className="py-3 px-3">{c.highlights.length > 0 ? <span className="font-black text-green-400">{c.highlights.length}</span> : <span className="text-[#F5EDED]/25">—</span>}</td>
                           <td className="py-3 px-3">
                             {c.weightVar21d != null ? (
-                              <span className="text-[var(--color-ep-light)]/70 font-bold">{c.weightVar21d > 0 ? "+" : ""}{c.weightVar21d} kg</span>
-                            ) : <span className="text-[var(--color-ep-light)]/25">—</span>}
+                              <span className="text-[#F5EDED]/70 font-bold">{c.weightVar21d > 0 ? "+" : ""}{c.weightVar21d} kg</span>
+                            ) : <span className="text-[#F5EDED]/25">—</span>}
                           </td>
                           <td className="py-3 px-3"><span className={cellColor(c.nutritionAdherence7d, { ok: 80, warn: 60 })}>{c.nutritionAdherence7d != null ? `${c.nutritionAdherence7d}%` : "—"}</span></td>
                           <td className="py-3 px-3"><span className={cellColor(c.sessionsThisWeek, { ok: 3, warn: 1 })}>{c.sessionsThisWeek}</span></td>
-                          <td className="py-3 px-3 text-[var(--color-ep-light)]/40 whitespace-nowrap">
+                          <td className="py-3 px-3 text-[#F5EDED]/40 whitespace-nowrap">
                             {c.lastActivity ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.lastActivity + "T12:00:00")) : "—"}
                           </td>
                         </tr>

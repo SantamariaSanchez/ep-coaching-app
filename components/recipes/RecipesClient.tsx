@@ -85,8 +85,8 @@ function Chip({
       onClick={onClick}
       className={`flex-shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap border transition-colors ${
         active
-          ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)] text-white"
-          : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/50 hover:border-[var(--color-ep-dark-red)]/50 hover:text-[var(--color-ep-light)]/75"
+          ? "bg-[#E01E1E] border-[#E01E1E] text-white"
+          : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50 hover:text-[#F5EDED]/75"
       }`}
     >
       {children}
@@ -109,7 +109,7 @@ function FilterGroup<T extends string>({
 }) {
   return (
     <div className="mb-3">
-      <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1.5">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
         {label}
       </p>
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
@@ -144,7 +144,7 @@ function RecipeCard({
 }) {
   if (locked) {
     return (
-      <div className="bg-[var(--color-ep-card)] border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+      <div className="bg-[#1f0101] border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
         <div className="w-9 h-9 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center flex-shrink-0">
           <Lock size={15} className="text-amber-400" strokeWidth={1.8} />
         </div>
@@ -160,14 +160,14 @@ function RecipeCard({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={onToggle} className="w-full text-left p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <p className="text-sm font-bold text-white">{recipe.name}</p>
               {recipe.isCommunity && (
-                <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[var(--color-ep-red)]/15 text-[var(--color-ep-red)] border border-[var(--color-ep-red)]/25 flex-shrink-0">
+                <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/25 flex-shrink-0">
                   Communauté
                 </span>
               )}
@@ -181,42 +181,42 @@ function RecipeCard({
               <Link
                 href={`${basePath}/profile/${recipe.authorId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[10px] text-[var(--color-ep-light)]/35 hover:text-[var(--color-ep-light)]/60 transition-colors"
+                className="text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
               >
                 par {recipe.authorName}
               </Link>
             )}
             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-              <span className="text-[10px] text-[var(--color-ep-light)]/40 flex items-center gap-1">
+              <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
                 <Clock size={11} strokeWidth={1.8} /> {recipe.prepMinutes} min
               </span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/40 flex items-center gap-1">
+              <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
                 <MapPin size={11} strokeWidth={1.8} /> {recipe.region}
               </span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/40">{PRICE_LABELS[recipe.price]}</span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/40 capitalize">{TEMP_LABELS[recipe.temp]}</span>
+              <span className="text-[10px] text-[#F5EDED]/40">{PRICE_LABELS[recipe.price]}</span>
+              <span className="text-[10px] text-[#F5EDED]/40 capitalize">{TEMP_LABELS[recipe.temp]}</span>
             </div>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-              <span className="text-[10px] font-bold text-[var(--color-ep-red)] flex items-center gap-1">
+              <span className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1">
                 <Flame size={11} strokeWidth={2} /> {recipe.kcal} kcal
               </span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/50">P {recipe.protein}g</span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/50">G {recipe.carbs}g</span>
-              <span className="text-[10px] text-[var(--color-ep-light)]/50">L {recipe.fat}g</span>
+              <span className="text-[10px] text-[#F5EDED]/50">P {recipe.protein}g</span>
+              <span className="text-[10px] text-[#F5EDED]/50">G {recipe.carbs}g</span>
+              <span className="text-[10px] text-[#F5EDED]/50">L {recipe.fat}g</span>
             </div>
           </div>
           <ChevronDown
             size={16}
-            className={`text-[var(--color-ep-light)]/30 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
+            className={`text-[#F5EDED]/30 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""}`}
           />
         </div>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[var(--color-ep-dark-red)]/15 pt-3">
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3">
           <div className="flex items-center gap-1.5 flex-wrap mb-3">
             {recipe.diet.map((d) => (
-              <span key={d} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/55">
+              <span key={d} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/55">
                 {DIET_LABELS[d]}
               </span>
             ))}
@@ -231,36 +231,36 @@ function RecipeCard({
               </span>
             ))}
             {recipe.texture.map((t) => (
-              <span key={t} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[var(--color-ep-light)]/5 text-[var(--color-ep-light)]/40">
+              <span key={t} className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-[#F5EDED]/5 text-[#F5EDED]/40">
                 {t}
               </span>
             ))}
           </div>
 
           {recipe.allergens.length > 0 && (
-            <p className="text-[10px] text-[var(--color-ep-light)]/35 mb-3">
-              <span className="font-bold text-[var(--color-ep-light)]/50">Allergènes : </span>
+            <p className="text-[10px] text-[#F5EDED]/35 mb-3">
+              <span className="font-bold text-[#F5EDED]/50">Allergènes : </span>
               {recipe.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
             </p>
           )}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1.5">Ingrédients</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">Ingrédients</p>
               <ul className="space-y-1">
                 {recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="text-xs text-[var(--color-ep-light)]/65 flex gap-2">
-                    <span className="text-[var(--color-ep-red)]">•</span> {ing}
+                  <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
+                    <span className="text-[#E01E1E]">•</span> {ing}
                   </li>
                 ))}
               </ul>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1.5">Préparation</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">Préparation</p>
               <ol className="space-y-1">
                 {recipe.steps.map((step, i) => (
-                  <li key={i} className="text-xs text-[var(--color-ep-light)]/65 flex gap-2">
-                    <span className="text-[var(--color-ep-red)] font-bold">{i + 1}.</span> {step}
+                  <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
+                    <span className="text-[#E01E1E] font-bold">{i + 1}.</span> {step}
                   </li>
                 ))}
               </ol>
@@ -268,7 +268,7 @@ function RecipeCard({
           </div>
 
           {recipe.tip && (
-            <p className="text-xs text-[var(--color-ep-light)]/45 italic mt-3 pt-3 border-t border-[var(--color-ep-dark-red)]/10">
+            <p className="text-xs text-[#F5EDED]/45 italic mt-3 pt-3 border-t border-[#890404]/10">
               💡 {recipe.tip}
             </p>
           )}
@@ -279,7 +279,7 @@ function RecipeCard({
                 e.stopPropagation();
                 onDelete();
               }}
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-red-400 transition-colors mt-3"
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors mt-3"
             >
               <Trash2 size={11} /> Supprimer ma recette
             </button>
@@ -375,7 +375,7 @@ export default function RecipesClient({
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-5 border-b border-[var(--color-ep-dark-red)]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-5 border-b border-[#890404]/20 overflow-x-auto">
         {[
           { key: "bibliotheque" as const, label: "Bibliothèque", icon: BookOpen },
           { key: "creer" as const, label: "Créateur de repas", icon: Wand2 },
@@ -385,8 +385,8 @@ export default function RecipesClient({
             onClick={() => setTab(key)}
             className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               tab === key
-                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
-                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
+                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             <Icon size={13} /> {label}
@@ -462,7 +462,7 @@ export default function RecipesClient({
           ) : (
             <button
               onClick={() => setShowAddForm(true)}
-              className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[var(--color-ep-red)] mb-4"
+              className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4"
             >
               <Plus size={13} /> Ajouter ma recette
             </button>
@@ -470,21 +470,21 @@ export default function RecipesClient({
 
           {/* Search */}
           <div className="relative mb-4">
-            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-ep-light)]/30" strokeWidth={1.8} />
+            <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" strokeWidth={1.8} />
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Rechercher une recette ou un ingrédient..."
-              className="w-full bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/40"
+              className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
             />
           </div>
 
           {/* Filter toggle */}
           <button
             onClick={() => setShowFilters((s) => !s)}
-            className="flex items-center justify-between w-full bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-4 py-2.5 mb-3"
+            className="flex items-center justify-between w-full bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-3"
           >
-            <span className="text-xs font-bold text-[var(--color-ep-light)]/60">
+            <span className="text-xs font-bold text-[#F5EDED]/60">
               Filtres {activeFilterCount > 0 && `(${activeFilterCount})`}
             </span>
             <div className="flex items-center gap-2">
@@ -494,20 +494,20 @@ export default function RecipesClient({
                     e.stopPropagation();
                     resetFilters();
                   }}
-                  className="text-[10px] font-bold text-[var(--color-ep-red)] flex items-center gap-1"
+                  className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1"
                 >
                   <X size={11} /> Réinitialiser
                 </span>
               )}
               <ChevronDown
                 size={14}
-                className={`text-[var(--color-ep-light)]/40 transition-transform ${showFilters ? "rotate-180" : ""}`}
+                className={`text-[#F5EDED]/40 transition-transform ${showFilters ? "rotate-180" : ""}`}
               />
             </div>
           </button>
 
           {showFilters && (
-            <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-xl p-4 mb-4">
+            <div className="bg-[#150000] border border-[#890404]/15 rounded-xl p-4 mb-4">
               <FilterGroup label="Type de repas" options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} selected={meals} toggle={(v) => toggleSet(setMeals, v)} />
               <FilterGroup label="Régime alimentaire" options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diets} toggle={(v) => toggleSet(setDiets, v)} />
               <FilterGroup label="Phase nutritionnelle" options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
@@ -517,19 +517,19 @@ export default function RecipesClient({
             </div>
           )}
 
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-3 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-3 flex items-center gap-1.5">
             {filtered.length} recette{filtered.length > 1 ? "s" : ""}
             {communityRecipes.length > 0 && (
-              <span className="flex items-center gap-1 text-[var(--color-ep-red)]/70">
+              <span className="flex items-center gap-1 text-[#E01E1E]/70">
                 <Heart size={10} /> dont {communityRecipes.length} de la communauté
               </span>
             )}
           </p>
 
           {filtered.length === 0 ? (
-            <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl py-16 text-center">
-              <UtensilsCrossed size={26} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[var(--color-ep-light)]/35">Aucune recette ne correspond à ces filtres.</p>
+            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
+              <UtensilsCrossed size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+              <p className="text-sm text-[#F5EDED]/35">Aucune recette ne correspond à ces filtres.</p>
             </div>
           ) : (
             <div className="space-y-2">

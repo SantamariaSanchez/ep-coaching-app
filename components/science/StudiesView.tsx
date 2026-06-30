@@ -7,11 +7,11 @@ import { FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import type { StudyInput } from "@/app/dashboard/client/science/actions";
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
 
 const STATUS_COLORS: Record<ScienceStudy["status"], string> = {
-  idee: "bg-[var(--color-ep-input)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/45",
+  idee: "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/45",
   en_cours: "bg-amber-500/10 border-amber-500/25 text-amber-300",
   terminee: "bg-green-500/10 border-green-500/25 text-green-300",
 };
@@ -50,7 +50,7 @@ function StudyForm({ initial, onSave, onCancel }: {
   }
 
   return (
-    <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Titre de l&apos;étude</label>
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex. Impact du volume d'entraînement sur la prise de masse à 8 semaines" className={inputCls} />
@@ -96,11 +96,11 @@ function StudyForm({ initial, onSave, onCancel }: {
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
           {saving ? "Enregistrement…" : initial ? "Mettre à jour" : "Créer l'étude"}
         </button>
-        <button onClick={onCancel} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 text-[var(--color-ep-light)]/50 hover:text-[var(--color-ep-light)]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -127,7 +127,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full text-left px-4 py-3.5">
         <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
           <span className={`inline-block text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${STATUS_COLORS[study.status]}`}>
@@ -140,7 +140,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
           )}
         </div>
         <p className="text-sm font-bold text-white leading-snug">{study.title}</p>
-        <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-1">
+        <p className="text-[10px] text-[#F5EDED]/35 mt-1">
           {study.joined_count} inscrit{study.joined_count > 1 ? "s" : ""}
           {study.participant_count != null ? ` · objectif ${study.participant_count}` : ""}
         </p>
@@ -155,7 +155,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
             <button
               onClick={async () => { setJoining(true); await onLeave(); setJoining(false); }}
               disabled={joining}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-red-400 transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <LogOut size={11} /> Quitter l&apos;étude
             </button>
@@ -163,7 +163,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
             <button
               onClick={async () => { setJoining(true); await onJoin(); setJoining(false); }}
               disabled={joining}
-              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors"
             >
               <Users size={11} /> {joining ? "…" : "Rejoindre l'étude"}
             </button>
@@ -171,34 +171,34 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
         </div>
       )}
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[var(--color-ep-dark-red)]/15 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
           {study.hypothesis && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-0.5">Hypothèse</p>
-              <p className="text-sm text-[var(--color-ep-light)]/60 leading-relaxed">{study.hypothesis}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">Hypothèse</p>
+              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.hypothesis}</p>
             </div>
           )}
           {study.protocol && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-0.5">Protocole</p>
-              <p className="text-sm text-[var(--color-ep-light)]/60 leading-relaxed">{study.protocol}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">Protocole</p>
+              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.protocol}</p>
             </div>
           )}
           {study.results && (
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-0.5">Résultats</p>
-              <p className="text-sm text-[var(--color-ep-light)]/60 leading-relaxed">{study.results}</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-0.5">Résultats</p>
+              <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{study.results}</p>
             </div>
           )}
           {isCoach && (
-            <div className="flex gap-2 pt-2 border-t border-[var(--color-ep-dark-red)]/10">
-              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors">
+            <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
+              <button onClick={() => setEditing(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
                 <Pencil size={11} /> Modifier
               </button>
               {confirmDelete ? (
                 <button onClick={onDelete} className="text-[10px] font-bold uppercase tracking-widest text-red-400">Confirmer la suppression</button>
               ) : (
-                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-red-400 transition-colors ml-auto">
+                <button onClick={() => setConfirmDelete(true)} className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto">
                   <Trash2 size={11} /> Supprimer
                 </button>
               )}
@@ -234,8 +234,8 @@ export default function StudiesView({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4">
-        <p className="text-sm text-[var(--color-ep-light)]/55 leading-relaxed">
+      <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+        <p className="text-sm text-[#F5EDED]/55 leading-relaxed">
           Nos propres études, menées à l&apos;échelle de la communauté EP Coaching : on teste des protocoles
           sur nos membres pour valider (ou réfuter) ce que dit la littérature dans des conditions réelles.
         </p>
@@ -244,7 +244,7 @@ export default function StudiesView({
       {isCoach && (
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
         >
           <Plus size={13} /> {showCreate ? "Fermer" : "Nouvelle étude"}
         </button>
@@ -309,9 +309,9 @@ export default function StudiesView({
           />
         ))}
         {studies.length === 0 && (
-          <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl py-16 text-center">
-            <FlaskConical size={26} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-[var(--color-ep-light)]/35">Aucune étude interne pour l&apos;instant.</p>
+          <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
+            <FlaskConical size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+            <p className="text-sm text-[#F5EDED]/35">Aucune étude interne pour l&apos;instant.</p>
           </div>
         )}
       </div>

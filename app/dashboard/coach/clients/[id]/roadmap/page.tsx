@@ -23,16 +23,16 @@ export default function CoachRoadmapPage() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
         <Link
           href={`/dashboard/coach/clients/${clientId}`}
-          style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(var(--color-ep-light-rgb),0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
+          style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(245,237,237,0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
         >
           <ChevronLeft size={14} />
           {clientName || "Client"}
         </Link>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", margin: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
             Road Map Coach
           </p>
-          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--color-ep-light)", margin: "2px 0 0" }}>
+          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", color: "#F5EDED", margin: "2px 0 0" }}>
             {clientName || "Client"}
           </h1>
         </div>

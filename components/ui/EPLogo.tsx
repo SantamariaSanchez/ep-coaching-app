@@ -19,15 +19,15 @@ export function EPLogo({ size = "md", showCoaching = true }: EPLogoProps) {
           fontStyle: "italic",
           fontWeight: 800,
           fontSize: s.ep,
-          color: "var(--color-ep-light)",
+          color: "#F5EDED",
           lineHeight: 1,
           letterSpacing: "-0.02em",
           textShadow: [
-            "2px 2px 0 var(--color-ep-red)",
-            "4px 4px 0 var(--color-ep-dark-red)",
+            "2px 2px 0 #E01E1E",
+            "4px 4px 0 #890404",
             "6px 6px 16px rgba(0,0,0,0.9)",
-            "0 0 40px rgba(var(--color-ep-red-rgb),0.25)",
-            "0 0 80px rgba(var(--color-ep-dark-red-rgb),0.12)",
+            "0 0 40px rgba(224,30,30,0.25)",
+            "0 0 80px rgba(137,4,4,0.12)",
           ].join(", "),
           animation: size === "lg" ? "logoBreathe 4s ease-in-out infinite" : undefined,
         }}
@@ -37,10 +37,10 @@ export function EPLogo({ size = "md", showCoaching = true }: EPLogoProps) {
       {showCoaching && (
         <>
           <span style={{
-            color: "var(--color-ep-red)",
+            color: "#E01E1E",
             fontSize: s.dot,
             lineHeight: 1,
-            filter: "drop-shadow(0 0 4px rgba(var(--color-ep-red-rgb),0.6))",
+            filter: "drop-shadow(0 0 4px rgba(224,30,30,0.6))",
           }}>
             ◆
           </span>
@@ -50,7 +50,7 @@ export function EPLogo({ size = "md", showCoaching = true }: EPLogoProps) {
               fontWeight: 700,
               fontSize: s.coaching,
               letterSpacing: "0.36em",
-              color: "rgba(var(--color-ep-light-rgb),0.60)",
+              color: "rgba(245,237,237,0.60)",
               textTransform: "uppercase",
             }}
           >

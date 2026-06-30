@@ -59,8 +59,8 @@ function ObjectiveCard({
   return (
     <div
       style={{
-        background: "linear-gradient(135deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
-        border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.2)" : "rgba(var(--color-ep-red-rgb),0.12)"}`,
+        background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
+        border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.2)" : "rgba(224,30,30,0.12)"}`,
         borderRadius: 12,
         padding: 16,
         opacity: obj.is_achieved ? 0.7 : 1,
@@ -86,7 +86,7 @@ function ObjectiveCard({
             {termLabel}
           </span>
           <p style={{
-            fontSize: 15, fontWeight: 700, color: obj.is_achieved ? "#4ade80" : "var(--color-ep-light)",
+            fontSize: 15, fontWeight: 700, color: obj.is_achieved ? "#4ade80" : "#F5EDED",
             margin: "4px 0 0", letterSpacing: "-0.01em",
           }}>
             {obj.is_achieved ? "✓ " : ""}{obj.label}
@@ -96,7 +96,7 @@ function ObjectiveCard({
           <div style={{ textAlign: "right" }}>
             <p style={{ fontSize: 18, fontWeight: 800, color, margin: 0, letterSpacing: "-0.03em" }}>
               {obj.target_value}
-              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
+              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(245,237,237,0.4)" }}>
                 {" "}{obj.target_unit ?? ""}
               </span>
             </p>
@@ -128,7 +128,7 @@ function ObjectiveCard({
           </span>
         )}
         {!obj.is_achieved && (
-          <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.35)" }}>
+          <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)" }}>
             {daysLeft > 0
               ? `Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`
               : daysLeft === 0
@@ -136,7 +136,7 @@ function ObjectiveCard({
               : `Dépassé de ${Math.abs(daysLeft)} jour${Math.abs(daysLeft) > 1 ? "s" : ""}`}
           </span>
         )}
-        <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.2)", marginLeft: "auto" }}>
+        <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", marginLeft: "auto" }}>
           {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(
             new Date(obj.target_date + "T12:00:00")
           )}
@@ -178,13 +178,13 @@ export default function ClientRoadmapPage() {
       <div style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
         <TrainingSubNav />
         <div style={{ marginBottom: 20 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
             Road Map — Communauté
           </span>
-          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.04em", color: "var(--color-ep-light)", margin: "4px 0 6px" }}>
+          <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.04em", color: "#F5EDED", margin: "4px 0 6px" }}>
             Ma Road Map
           </h1>
-          <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.45)" }}>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>
             Construis toi-même tes phases et tes objectifs — autonome, sans suivi coach.
           </p>
         </div>
@@ -212,11 +212,11 @@ export default function ClientRoadmapPage() {
     return (
       <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
         <TrainingSubNav />
-        <MapPin size={40} style={{ color: "rgba(var(--color-ep-red-rgb),0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "var(--color-ep-light)", letterSpacing: "-0.02em", marginBottom: 8 }}>
+        <MapPin size={40} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", marginBottom: 8 }}>
           Road Map non configurée
         </h1>
-        <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
+        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>
           Ton coach n&apos;a pas encore configuré ta road map.
         </p>
       </div>
@@ -247,17 +247,17 @@ export default function ClientRoadmapPage() {
       <TrainingSubNav />
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
           Road Map
         </span>
         <h1 style={{
           fontSize: 28, fontWeight: 800, letterSpacing: "-0.04em",
-          color: "var(--color-ep-light)", margin: "4px 0 6px",
+          color: "#F5EDED", margin: "4px 0 6px",
         }}>
           Ma Road Map
         </h1>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.4)" }}>
+          <span style={{ fontSize: 12, color: "rgba(245,237,237,0.4)" }}>
             Semaine {weekNumber}
           </span>
           {activePhaseCols && (
@@ -281,7 +281,7 @@ export default function ClientRoadmapPage() {
       {/* Objectives summary — 3 columns */}
       {(nextShort || nextMedium || nextLong) && (
         <section style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", marginBottom: 10 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 10 }}>
             <Target size={11} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
             Mes objectifs
           </p>
@@ -298,7 +298,7 @@ export default function ClientRoadmapPage() {
 
       {/* Calendar */}
       <section>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
           Calendrier
         </p>
         <div className="ep-card" style={{ padding: 16 }}>

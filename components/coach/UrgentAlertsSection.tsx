@@ -50,7 +50,7 @@ export default function UrgentAlertsSection() {
         </div>
         <Link
           href="/dashboard/coach/analytics"
-          className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 hover:text-[var(--color-ep-light)]/70 transition-colors"
+          className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
           Voir tout
           <ChevronRight size={12} />
@@ -62,7 +62,7 @@ export default function UrgentAlertsSection() {
           <Link
             key={i}
             href={`/dashboard/coach/clients/${item.clientId}`}
-            className="flex items-start gap-3 bg-[var(--color-ep-card)] border border-red-500/15 hover:border-red-500/30 rounded-xl px-4 py-3.5 transition-colors group"
+            className="flex items-start gap-3 bg-[#1f0101] border border-red-500/15 hover:border-red-500/30 rounded-xl px-4 py-3.5 transition-colors group"
           >
             {item.alert.severity === "high" ? (
               <AlertTriangle size={13} className="text-red-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
@@ -71,7 +71,7 @@ export default function UrgentAlertsSection() {
             )}
             <div className="flex-1 min-w-0">
               <p className="text-xs font-black text-white">{item.clientName ?? "Client"}</p>
-              <p className="text-[10px] text-[var(--color-ep-light)]/50 mt-0.5 leading-snug">{item.alert.label}</p>
+              <p className="text-[10px] text-[#F5EDED]/50 mt-0.5 leading-snug">{item.alert.label}</p>
             </div>
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border flex-shrink-0 ${
               item.alert.severity === "high"
@@ -87,7 +87,7 @@ export default function UrgentAlertsSection() {
       <div className="mt-3 text-center">
         <Link
           href="/dashboard/coach/analytics"
-          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-red)] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
         >
           <BarChart2 size={12} />
           Tableau de bord analytique complet

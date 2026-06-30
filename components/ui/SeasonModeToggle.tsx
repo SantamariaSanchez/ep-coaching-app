@@ -32,8 +32,8 @@ export default function SeasonModeToggle({
           disabled={saving}
           className={`flex-1 py-2 text-xs font-bold uppercase tracking-widest rounded-lg border transition-colors disabled:opacity-60 ${
             mode === opt.value
-              ? "bg-[var(--color-ep-red)]/15 border-[var(--color-ep-red)]/45 text-[var(--color-ep-red)]"
-              : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+              ? "bg-[#E01E1E]/15 border-[#E01E1E]/45 text-[#E01E1E]"
+              : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
           {opt.label}

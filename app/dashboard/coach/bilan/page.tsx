@@ -34,13 +34,13 @@ export default async function CoachBilanPage() {
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <h1 style={{
             fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-            color: "var(--color-ep-light)", margin: 0, lineHeight: 1.05,
+            color: "#F5EDED", margin: 0, lineHeight: 1.05,
           }}>
             Bilan
           </h1>
           {totalPending > 0 && (
             <span className="animate-pulse-glow" style={{
-              background: "var(--color-ep-red)",
+              background: "#E01E1E",
               color: "#fff",
               borderRadius: 20,
               padding: "3px 12px",
@@ -51,7 +51,7 @@ export default async function CoachBilanPage() {
             </span>
           )}
         </div>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 500 }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
           Check-ins sans bilan · corrections sans réponse
         </p>
       </div>

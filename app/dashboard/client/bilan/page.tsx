@@ -23,7 +23,7 @@ function capitalize(s: string) {
 }
 
 function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
-  if (!val) return <span style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }}>—</span>;
+  if (!val) return <span style={{ color: "rgba(245,237,237,0.2)" }}>—</span>;
   const colors: Record<string, string> = {
     low: "#4ade80",
     medium: "#facc15",
@@ -45,9 +45,9 @@ function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
 
 function AvgRow({ label, value, unit = "" }: { label: string; value: number | null; unit?: string }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.08)" }}>
-      <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.35)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "var(--color-ep-light)" : "rgba(var(--color-ep-light-rgb),0.15)" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
+      <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)" }}>
         {value !== null ? `${value}${unit}` : "—"}
       </span>
     </div>
@@ -58,7 +58,7 @@ function DayCard({ log }: { log: Awaited<ReturnType<typeof getClientDailyLogs>>[
   return (
     <div style={{
       background: "rgba(255,255,255,0.025)",
-      border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.12)",
+      border: "1px solid rgba(137,4,4,0.12)",
       borderRadius: 10,
       padding: "10px 14px",
       display: "grid",
@@ -66,11 +66,11 @@ function DayCard({ log }: { log: Awaited<ReturnType<typeof getClientDailyLogs>>[
       gap: "6px 16px",
     }}>
       <div style={{ gridColumn: "1 / -1", marginBottom: 4 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.5)" }}>
+        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
           {capitalize(fmtShort(log.log_date))}
         </span>
         {log.training_name && (
-          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "var(--color-ep-light)" }}>{log.training_name}</span>
+          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
         )}
       </div>
       {log.weight_morning != null && <KV k="Poids" v={`${log.weight_morning} kg`} />}
@@ -80,7 +80,7 @@ function DayCard({ log }: { log: Awaited<ReturnType<typeof getClientDailyLogs>>[
       {log.proteins_g != null && <KV k="Prot" v={`${log.proteins_g}g`} />}
       {log.stress && (
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)" }}>Stress</span>
+          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>Stress</span>
           <StressChip val={log.stress} />
         </div>
       )}
@@ -91,8 +91,8 @@ function DayCard({ log }: { log: Awaited<ReturnType<typeof getClientDailyLogs>>[
 function KV({ k, v }: { k: string; v: string }) {
   return (
     <div style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
-      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)" }}>{k}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: "var(--color-ep-light)" }}>{v}</span>
+      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>{k}</span>
+      <span style={{ fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{v}</span>
     </div>
   );
 }
@@ -115,10 +115,10 @@ export default async function ClientBilanPage() {
 
       {/* Header */}
       <div style={{ marginBottom: 24, paddingTop: 8 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "var(--color-ep-light)", margin: 0 }}>
+        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
           Bilan du jour
         </h1>
-        <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", margin: "4px 0 0", fontWeight: 600 }}>
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: "4px 0 0", fontWeight: 600 }}>
           {capitalize(fmt(today))}
         </p>
       </div>
@@ -126,7 +126,7 @@ export default async function ClientBilanPage() {
       {/* Form */}
       <div style={{
         background: "rgba(255,255,255,0.03)",
-        border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.2)",
+        border: "1px solid rgba(137,4,4,0.2)",
         borderRadius: 16,
         padding: "20px 16px",
         marginBottom: 32,
@@ -137,7 +137,7 @@ export default async function ClientBilanPage() {
       {/* Weekly history */}
       {weeks.length > 0 && (
         <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.3)", marginBottom: 16 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", marginBottom: 16 }}>
             Historique
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -146,12 +146,12 @@ export default async function ClientBilanPage() {
                 {/* Week header */}
                 <div style={{
                   display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
-                  borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.15)", paddingBottom: 8,
+                  borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 8,
                 }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.5)" }}>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
                     Semaine du {capitalize(fmtShort(weekStart))}
                   </span>
-                  <span style={{ fontSize: 9, color: "rgba(var(--color-ep-light-rgb),0.2)", fontWeight: 600 }}>
+                  <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
                     {logs.length} jour{logs.length > 1 ? "s" : ""}
                   </span>
                 </div>
@@ -159,12 +159,12 @@ export default async function ClientBilanPage() {
                 {/* Averages */}
                 <div style={{
                   background: "rgba(0,0,0,0.25)",
-                  border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.1)",
+                  border: "1px solid rgba(137,4,4,0.1)",
                   borderRadius: 10,
                   padding: "10px 14px",
                   marginBottom: 10,
                 }}>
-                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.4)", margin: "0 0 8px" }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 8px" }}>
                     Moyennes
                   </p>
                   <AvgRow label="Poids" value={averages.weight} unit=" kg" />

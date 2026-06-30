@@ -27,7 +27,7 @@ export default async function NoteTemplatesPage({
       <div className="flex items-center gap-4 mb-8">
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
         >
           <ChevronLeft size={14} />
           Notes
@@ -35,13 +35,13 @@ export default async function NoteTemplatesPage({
       </div>
 
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Templates messages
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
-        <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">
+        <p className="mt-1 text-xs text-[#F5EDED]/30">
           Cliquez sur un template pour le développer et copier le message
         </p>
       </div>

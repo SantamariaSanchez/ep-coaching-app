@@ -11,10 +11,10 @@ interface AddClientModalProps {
 }
 
 const inputClass =
-  "w-full bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/60 rounded-lg px-4 py-2.5 text-white placeholder-[var(--color-ep-light)]/25 text-sm focus:outline-none focus:border-[var(--color-ep-red)] transition-colors";
+  "w-full bg-[#2a0101] border border-[#890404]/60 rounded-lg px-4 py-2.5 text-white placeholder-[#F5EDED]/25 text-sm focus:outline-none focus:border-[#E01E1E] transition-colors";
 
 const labelClass =
-  "block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/50 mb-1.5";
+  "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/50 mb-1.5";
 
 export default function AddClientModal({ isOpen, onClose }: AddClientModalProps) {
   const [state, formAction, isPending] = useActionState(addClient, null);
@@ -37,14 +37,14 @@ export default function AddClientModal({ isOpen, onClose }: AddClientModalProps)
         className="absolute inset-0 bg-black/75 backdrop-blur-sm"
         onClick={onClose}
       />
-      <div className="relative w-full max-w-md bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
+      <div className="relative w-full max-w-md bg-[#1a0000] border border-[#890404]/40 rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-base font-black uppercase tracking-widest">
             Nouveau client
           </h2>
           <button
             onClick={onClose}
-            className="text-[var(--color-ep-light)]/40 hover:text-white transition-colors"
+            className="text-[#F5EDED]/40 hover:text-white transition-colors"
           >
             <X size={18} />
           </button>
@@ -129,21 +129,21 @@ export default function AddClientModal({ isOpen, onClose }: AddClientModalProps)
           </div>
 
           {state && "error" in state && (
-            <p className="text-[var(--color-ep-pink)] text-xs text-center">{state.error}</p>
+            <p className="text-[#FDC4C4] text-xs text-center">{state.error}</p>
           )}
 
           <div className="flex gap-3 pt-2">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 border border-[var(--color-ep-dark-red)]/50 text-[var(--color-ep-light)]/60 hover:text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
+              className="flex-1 border border-[#890404]/50 text-[#F5EDED]/60 hover:text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="flex-1 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
+              className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
             >
               {isPending ? "Création..." : "Créer le client"}
             </button>

@@ -6,9 +6,9 @@ import { Check, AlertCircle } from "lucide-react";
 import type { MeasurementInput } from "@/app/dashboard/coach/clients/[id]/measurements/actions";
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 const labelCls =
-  "text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block";
+  "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
 
 function numOrNull(v: string): number | null {
   const n = parseFloat(v);
@@ -128,8 +128,8 @@ export default function MeasurementForm({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5 space-y-5">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
         Nouvelle session
       </p>
 
@@ -207,7 +207,7 @@ export default function MeasurementForm({
           className={`inline-flex items-center gap-2 text-white text-xs font-bold uppercase tracking-widest px-6 py-2.5 rounded-lg transition-colors ${
             saved
               ? "bg-green-800/60 border border-green-600/30"
-              : "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-60"
+              : "bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60"
           }`}
         >
           {saved ? (

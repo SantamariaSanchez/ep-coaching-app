@@ -48,14 +48,14 @@ export default async function CoachClientNotesPage({
       <div className="flex items-center justify-between mb-6">
         <Link
           href={`/dashboard/coach/clients/${id}`}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
         >
           <ChevronLeft size={14} />
           {client.full_name}
         </Link>
         <Link
           href={`/dashboard/coach/clients/${id}/notes/templates`}
-          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 border border-[var(--color-ep-dark-red)]/30 hover:border-[var(--color-ep-dark-red)]/60 px-3 py-2 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-[#890404]/30 hover:border-[#890404]/60 px-3 py-2 rounded-lg transition-colors"
         >
           <FileText size={12} />
           Templates messages
@@ -63,13 +63,13 @@ export default async function CoachClientNotesPage({
       </div>
 
       <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Notes coach
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
-        <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">
+        <p className="mt-1 text-xs text-[#F5EDED]/30">
           Semaine {weekNumber} · {notes.length} note{notes.length !== 1 ? "s" : ""}{" "}
           · {decisions.length} décision{decisions.length !== 1 ? "s" : ""}
         </p>

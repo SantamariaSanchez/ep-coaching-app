@@ -32,13 +32,13 @@ export default async function CoachFormationsPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
         <h1 style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "var(--color-ep-light)", margin: 0,
+          color: "#F5EDED", margin: 0,
           display: "flex", alignItems: "center", gap: 12,
         }}>
-          <BookOpen size={26} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.8} />
+          <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
           Formations
         </h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)" }}>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)" }}>
           {formations.length} formation{formations.length !== 1 ? "s" : ""} · Clique pour gérer le contenu
         </p>
       </div>
@@ -60,8 +60,8 @@ export default async function CoachFormationsPage() {
           >
             <div style={{
               width: 48, height: 48, borderRadius: 13,
-              background: "rgba(var(--color-ep-red-rgb),0.10)",
-              border: "1px solid rgba(var(--color-ep-red-rgb),0.18)",
+              background: "rgba(224,30,30,0.10)",
+              border: "1px solid rgba(224,30,30,0.18)",
               display: "flex", alignItems: "center", justifyContent: "center",
               fontSize: 22, flexShrink: 0,
             }}>
@@ -70,32 +70,32 @@ export default async function CoachFormationsPage() {
 
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--color-ep-light)", margin: 0 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                   {formation.title}
                 </h3>
                 {formation.is_published
                   ? <Eye size={12} style={{ color: "#4ade80" }} />
-                  : <EyeOff size={12} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} />
+                  : <EyeOff size={12} style={{ color: "rgba(245,237,237,0.2)" }} />
                 }
               </div>
               <div style={{ display: "flex", gap: 12 }}>
-                <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 600 }}>
+                <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
                   {moduleCount} module{moduleCount !== 1 ? "s" : ""}
                 </span>
-                <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.3)", fontWeight: 600 }}>
+                <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
                   <PlayCircle size={9} />
                   {published}/{total} vidéos publiées
                 </span>
               </div>
             </div>
 
-            <ChevronRight size={16} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)", flexShrink: 0 }} />
+            <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
           </Link>
         ))}
 
         {formations.length === 0 && (
           <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
-            <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.35)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
               Aucune formation. Crée les tables en BDD d&apos;abord.
             </p>
           </div>

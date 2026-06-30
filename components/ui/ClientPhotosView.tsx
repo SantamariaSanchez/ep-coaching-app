@@ -7,7 +7,7 @@ import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 const TYPES: { key: SubmissionType; label: string; icon: React.ElementType; desc: string }[] = [
   { key: "mandatory_poses", label: "Poses Obligatoires", icon: Camera, desc: "Photos des poses imposées par ta catégorie" },
@@ -80,10 +80,10 @@ function SubmissionForm({
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <CheckCircle2 size={40} className="text-green-400" strokeWidth={1.5} />
         <p className="text-sm font-black text-white uppercase tracking-wider">Photo update envoyée !</p>
-        <p className="text-xs text-[var(--color-ep-light)]/35">Ton coach recevra une notification.</p>
+        <p className="text-xs text-[#F5EDED]/35">Ton coach recevra une notification.</p>
         <button
           onClick={() => { setSuccess(false); setDriveLink(""); setNotes(""); }}
-          className="text-xs text-[var(--color-ep-red)] hover:underline mt-2"
+          className="text-xs text-[#E01E1E] hover:underline mt-2"
         >
           Envoyer une autre update
         </button>
@@ -102,35 +102,35 @@ function SubmissionForm({
             onClick={() => setType(key)}
             className={`flex flex-col items-center gap-1.5 px-2 py-3 rounded-xl border transition-all text-center ${
               type === key
-                ? "bg-[var(--color-ep-red)]/12 border-[var(--color-ep-red)]/40 text-[var(--color-ep-red)]"
-                : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/35 hover:border-[var(--color-ep-dark-red)]/50"
+                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
+                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/35 hover:border-[#890404]/50"
             }`}
           >
             <Icon size={18} strokeWidth={type === key ? 2.5 : 1.8} />
             <span className="text-[9px] font-black uppercase tracking-widest leading-tight">{label}</span>
-            <span className="text-[8px] text-[var(--color-ep-light)]/30 leading-tight hidden sm:block">{desc}</span>
+            <span className="text-[8px] text-[#F5EDED]/30 leading-tight hidden sm:block">{desc}</span>
           </button>
         ))}
       </div>
 
       {/* Type-specific content */}
       {type === "mandatory_poses" && posingData && (
-        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
             Poses obligatoires — {category}
           </p>
           <div className="space-y-1.5">
             {posingData.mandatory_poses.map((pose, i) => (
               <div key={i} className="flex items-center gap-2">
-                <div className="w-4 h-4 rounded border border-[var(--color-ep-dark-red)]/30 bg-[var(--color-ep-dark-red)]/10 flex-shrink-0 flex items-center justify-center">
-                  <span className="text-[8px] text-[var(--color-ep-light)]/40">{i + 1}</span>
+                <div className="w-4 h-4 rounded border border-[#890404]/30 bg-[#890404]/10 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-[8px] text-[#F5EDED]/40">{i + 1}</span>
                 </div>
-                <span className="text-xs text-[var(--color-ep-light)]/70">{pose}</span>
+                <span className="text-xs text-[#F5EDED]/70">{pose}</span>
               </div>
             ))}
           </div>
           {posingData.notes && (
-            <p className="mt-3 text-[10px] text-[var(--color-ep-light)]/30 italic border-t border-[var(--color-ep-dark-red)]/15 pt-2">
+            <p className="mt-3 text-[10px] text-[#F5EDED]/30 italic border-t border-[#890404]/15 pt-2">
               {posingData.notes}
             </p>
           )}
@@ -147,14 +147,14 @@ function SubmissionForm({
       )}
 
       {type === "posing_routine" && posingData && (
-        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4 space-y-2">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
             Instructions — {category}
           </p>
-          <p className="text-xs text-[var(--color-ep-light)]/60 leading-relaxed">
+          <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
             {posingData.posing_routine.instructions}
           </p>
-          <p className="text-[10px] text-[var(--color-ep-red)]/70 font-bold">
+          <p className="text-[10px] text-[#E01E1E]/70 font-bold">
             ⏱ Durée : {posingData.posing_routine.duration}
           </p>
         </div>
@@ -162,7 +162,7 @@ function SubmissionForm({
 
       {type === "posing_routine" && (
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
             Durée de ta routine
           </label>
           <input
@@ -177,8 +177,8 @@ function SubmissionForm({
       {type === "video_perf" && (
         <>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
-              Nom de l&apos;exercice ou contexte <span className="text-[var(--color-ep-red)]">*</span>
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+              Nom de l&apos;exercice ou contexte <span className="text-[#E01E1E]">*</span>
             </label>
             <input
               value={exerciseName}
@@ -189,8 +189,8 @@ function SubmissionForm({
             />
           </div>
           <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
-              Objectif de la vidéo <span className="text-[var(--color-ep-red)]">*</span>
+            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+              Objectif de la vidéo <span className="text-[#E01E1E]">*</span>
             </label>
             <input
               value={videoGoal}
@@ -205,9 +205,9 @@ function SubmissionForm({
 
       {/* Drive link */}
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
           Lien Google Drive{type === "posing_routine" ? " ou YouTube" : ""}{" "}
-          <span className="text-[var(--color-ep-red)]">*</span>
+          <span className="text-[#E01E1E]">*</span>
         </label>
         <input
           type="url"
@@ -217,14 +217,14 @@ function SubmissionForm({
           className={inputCls}
           required
         />
-        <p className="text-[9px] text-[var(--color-ep-light)]/20 mt-1">
+        <p className="text-[9px] text-[#F5EDED]/20 mt-1">
           Assure-toi que le partage est activé (Tout le monde avec le lien).
         </p>
       </div>
 
       {/* Notes */}
       <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
           Notes / Ressenti (facultatif)
         </label>
         <textarea
@@ -241,7 +241,7 @@ function SubmissionForm({
       <button
         type="submit"
         disabled={submitting}
-        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-xl disabled:opacity-50 transition-colors"
+        className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
       >
         {submitting ? "Envoi…" : "Envoyer"}
       </button>
@@ -257,16 +257,16 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4 space-y-2">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-xs font-bold text-white">{typeLabel}</p>
-          <p className="text-[10px] text-[var(--color-ep-light)]/30">
+          <p className="text-[10px] text-[#F5EDED]/30">
             {date}
             {photo.week_number != null && ` · Semaine ${photo.week_number}`}
           </p>
           {photo.category && (
-            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/15 mt-1">
+            <span className="inline-block text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/40 border border-[#890404]/15 mt-1">
               {photo.category}
             </span>
           )}
@@ -288,14 +288,14 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
         href={photo.drive_link}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[var(--color-ep-red)]/80 hover:text-[var(--color-ep-red)] transition-colors"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
       >
         <ExternalLink size={11} />
         Ouvrir dans Drive
       </a>
 
       {photo.notes && (
-        <p className="text-[10px] text-[var(--color-ep-light)]/45 leading-relaxed border-t border-[var(--color-ep-dark-red)]/10 pt-2">
+        <p className="text-[10px] text-[#F5EDED]/45 leading-relaxed border-t border-[#890404]/10 pt-2">
           {photo.notes}
         </p>
       )}
@@ -305,7 +305,7 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70 mb-1">
             Retour de ton coach
           </p>
-          <p className="text-xs text-[var(--color-ep-light)]/75 leading-relaxed">
+          <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
             {photo.coach_feedback}
           </p>
         </div>
@@ -336,9 +336,9 @@ export default function ClientPhotosView({
     return (
       <div className="px-6 py-8 max-w-2xl mx-auto">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 w-24 bg-[var(--color-ep-card)] rounded" />
-          <div className="h-8 w-48 bg-[var(--color-ep-card)] rounded" />
-          <div className="h-40 bg-[var(--color-ep-card)] rounded-xl" />
+          <div className="h-4 w-24 bg-[#1A0101] rounded" />
+          <div className="h-8 w-48 bg-[#1A0101] rounded" />
+          <div className="h-40 bg-[#1A0101] rounded-xl" />
         </div>
       </div>
     );
@@ -353,7 +353,7 @@ export default function ClientPhotosView({
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8">
       {/* Header */}
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Suivi
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Photos</h1>
@@ -362,17 +362,17 @@ export default function ClientPhotosView({
       {/* Frequency badge */}
       <div className="mb-6">
         {isDaily ? (
-          <div className="flex items-center gap-3 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 rounded-xl px-4 py-3">
+          <div className="flex items-center gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-xl px-4 py-3">
             <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--color-ep-red)] opacity-75" />
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[var(--color-ep-red)]" />
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#E01E1E] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#E01E1E]" />
             </span>
             <div>
-              <p className="text-xs font-black text-[var(--color-ep-red)] uppercase tracking-widest">
+              <p className="text-xs font-black text-[#E01E1E] uppercase tracking-widest">
                 Suivi Quotidien — Compétition
               </p>
               {daysLeft != null && daysLeft > 0 && (
-                <p className="text-[10px] text-[var(--color-ep-light)]/50 mt-0.5">
+                <p className="text-[10px] text-[#F5EDED]/50 mt-0.5">
                   J-{daysLeft} avant la compétition
                 </p>
               )}
@@ -394,9 +394,9 @@ export default function ClientPhotosView({
       </div>
 
       {/* Submission section */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5 mb-8">
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8">
         <div className="mb-4">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             {isDaily ? "Photo du jour" : "Photo de la semaine"}
           </p>
           <h2 className="text-lg font-black uppercase tracking-tight">
@@ -420,7 +420,7 @@ export default function ClientPhotosView({
       {(photoHistory ?? []).length > 0 && (
         <section>
           <div className="mb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
               Historique
             </p>
             <h2 className="text-xl font-black uppercase tracking-tight">

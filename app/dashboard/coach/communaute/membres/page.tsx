@@ -18,20 +18,20 @@ export default async function CoachMembresPage() {
       <CommunitySubNav base="/dashboard/coach/communaute" isCoach />
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Communauté
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Membres</h1>
-        <p className="text-sm text-[var(--color-ep-light)]/45 mt-2">
+        <p className="text-sm text-[#F5EDED]/45 mt-2">
           Membres gratuits de la communauté — autonomes, sans suivi coaching.
           Ils n&apos;apparaissent pas dans tes clients.
         </p>
       </div>
 
       {members.length === 0 ? (
-        <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl py-12 text-center">
-          <Heart size={26} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[var(--color-ep-light)]/35">Aucun membre pour l&apos;instant.</p>
+        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
+          <Heart size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-[#F5EDED]/35">Aucun membre pour l&apos;instant.</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -39,13 +39,13 @@ export default async function CoachMembresPage() {
             <Link
               key={m.id}
               href={`/dashboard/coach/profile/${m.id}`}
-              className="flex items-center gap-3 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40 rounded-xl px-4 py-3.5 transition-colors"
+              className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors"
             >
               {m.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={m.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0" />
               ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--color-ep-red)] to-[var(--color-ep-dark-red)] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
                   {(m.full_name ?? "?")
                     .split(" ")
                     .map((n) => n[0])
@@ -56,19 +56,19 @@ export default async function CoachMembresPage() {
               )}
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-white truncate">{m.full_name}</p>
-                <div className="flex items-center gap-1.5 text-[10px] text-[var(--color-ep-light)]/35">
+                <div className="flex items-center gap-1.5 text-[10px] text-[#F5EDED]/35">
                   <Mail size={10} />
                   <span className="truncate">{m.email}</span>
                 </div>
               </div>
               <div className="flex flex-wrap gap-1 justify-end max-w-[40%]">
                 {m.goal && (
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/50 border border-[var(--color-ep-dark-red)]/20">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20">
                     {m.goal}
                   </span>
                 )}
                 {m.level && (
-                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/50 border border-[var(--color-ep-dark-red)]/20">
+                  <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20">
                     {m.level}
                   </span>
                 )}

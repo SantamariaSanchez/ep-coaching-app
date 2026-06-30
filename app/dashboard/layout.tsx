@@ -6,7 +6,7 @@ import { NavigationProgress } from "@/components/ui/NavigationProgress";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ minHeight: "100vh", background: "var(--color-ep-deep)" }}>
+    <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <NavigationProgress />
       <DashboardNav>{children}</DashboardNav>
     </div>

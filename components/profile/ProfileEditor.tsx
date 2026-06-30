@@ -64,8 +64,8 @@ export default function ProfileEditor({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
         Modifier mon profil
       </p>
 
@@ -73,7 +73,7 @@ export default function ProfileEditor({
       <button
         onClick={() => fileRef.current?.click()}
         disabled={uploading}
-        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/45 hover:text-[var(--color-ep-light)]/75 mb-4 disabled:opacity-40"
+        className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/75 mb-4 disabled:opacity-40"
       >
         <Camera size={13} strokeWidth={1.8} />
         {uploading ? "Envoi..." : "Changer ma photo"}
@@ -81,17 +81,17 @@ export default function ProfileEditor({
 
       <div className="space-y-3">
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
             Prénom et nom
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full bg-black/30 border border-[var(--color-ep-dark-red)]/30 focus:border-[var(--color-ep-red)]/50 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none transition-colors"
+            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none transition-colors"
           />
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
             Bio
           </label>
           <textarea
@@ -100,12 +100,12 @@ export default function ProfileEditor({
             placeholder="Parle un peu de toi, tes objectifs, ton parcours..."
             rows={3}
             maxLength={280}
-            className="w-full bg-black/30 border border-[var(--color-ep-dark-red)]/30 focus:border-[var(--color-ep-red)]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[var(--color-ep-light)]/20 focus:outline-none transition-colors resize-none"
+            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors resize-none"
           />
-          <p className="text-[10px] text-[var(--color-ep-light)]/20 mt-1 text-right">{bioVal.length}/280</p>
+          <p className="text-[10px] text-[#F5EDED]/20 mt-1 text-right">{bioVal.length}/280</p>
         </div>
         <div>
-          <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 block mb-1.5">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
             Téléphone
           </label>
           <input
@@ -113,7 +113,7 @@ export default function ProfileEditor({
             value={phoneVal}
             onChange={(e) => setPhoneVal(e.target.value)}
             placeholder="06 12 34 56 78"
-            className="w-full bg-black/30 border border-[var(--color-ep-dark-red)]/30 focus:border-[var(--color-ep-red)]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[var(--color-ep-light)]/20 focus:outline-none transition-colors"
+            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
           />
         </div>
       </div>
@@ -121,7 +121,7 @@ export default function ProfileEditor({
       <button
         onClick={handleSave}
         disabled={isPending}
-        className="bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mt-4"
+        className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mt-4"
       >
         {isPending ? "Enregistrement…" : "Enregistrer"}
       </button>

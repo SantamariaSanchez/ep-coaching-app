@@ -73,7 +73,7 @@ export default function VideoPlayer({
               fontSize: 18,
               fontWeight: 800,
               letterSpacing: "-0.03em",
-              color: "var(--color-ep-light)",
+              color: "#F5EDED",
               margin: "0 0 6px",
               lineHeight: 1.2,
             }}>
@@ -82,7 +82,7 @@ export default function VideoPlayer({
             <span style={{
               fontSize: 10,
               fontWeight: 600,
-              color: "rgba(var(--color-ep-light-rgb),0.3)",
+              color: "rgba(245,237,237,0.3)",
               letterSpacing: "0.1em",
               textTransform: "uppercase",
             }}>
@@ -100,9 +100,9 @@ export default function VideoPlayer({
               gap: 8,
               padding: "10px 16px",
               borderRadius: 10,
-              border: `1px solid ${completed ? "rgba(74,222,128,0.3)" : "rgba(var(--color-ep-red-rgb),0.2)"}`,
-              background: completed ? "rgba(74,222,128,0.08)" : "rgba(var(--color-ep-red-rgb),0.06)",
-              color: completed ? "#4ade80" : "rgba(var(--color-ep-light-rgb),0.5)",
+              border: `1px solid ${completed ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.2)"}`,
+              background: completed ? "rgba(74,222,128,0.08)" : "rgba(224,30,30,0.06)",
+              color: completed ? "#4ade80" : "rgba(245,237,237,0.5)",
               fontSize: 11,
               fontWeight: 700,
               letterSpacing: "0.06em",
@@ -122,7 +122,7 @@ export default function VideoPlayer({
         {description && (
           <>
             <div className="ep-divider-subtle" style={{ margin: "14px 0" }} />
-            <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.55)", lineHeight: 1.65, margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.65, margin: 0 }}>
               {description}
             </p>
           </>
@@ -143,7 +143,7 @@ export function VideoComingSoon({ title, durationMin = 10 }: { title: string; du
           aspectRatio: "16/9",
           borderRadius: "var(--radius-xl)",
           background: "rgba(14,1,1,0.90)",
-          border: "1px solid rgba(var(--color-ep-red-rgb),0.10)",
+          border: "1px solid rgba(224,30,30,0.10)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -155,24 +155,24 @@ export function VideoComingSoon({ title, durationMin = 10 }: { title: string; du
           width: 64,
           height: 64,
           borderRadius: "50%",
-          background: "rgba(var(--color-ep-red-rgb),0.08)",
-          border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
+          background: "rgba(224,30,30,0.08)",
+          border: "1px solid rgba(224,30,30,0.15)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
         }}>
-          <Play size={26} style={{ color: "rgba(var(--color-ep-red-rgb),0.4)" }} strokeWidth={1.5} />
+          <Play size={26} style={{ color: "rgba(224,30,30,0.4)" }} strokeWidth={1.5} />
         </div>
-        <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.25)", margin: 0, fontWeight: 600 }}>
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.25)", margin: 0, fontWeight: 600 }}>
           Vidéo bientôt disponible
         </p>
       </div>
 
       <div className="ep-card" style={{ padding: "20px" }}>
-        <h2 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.03em", color: "var(--color-ep-light)", margin: "0 0 6px" }}>
+        <h2 style={{ fontSize: 18, fontWeight: 800, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 6px" }}>
           {title}
         </h2>
-        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
+        <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
           {durationMin} min · En cours de production
         </span>
       </div>

@@ -7,7 +7,7 @@ import SeedLibraryButton from "@/components/ui/SeedLibraryButton";
 import { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, type ScienceArticle, type ScienceArticleType } from "@/utils/science-types";
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 interface Props {
   articles: ScienceArticle[];
@@ -53,7 +53,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-ep-light)]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -77,7 +77,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
         <button
           onClick={() => setActiveTopic(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeTopic === null ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+            activeTopic === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
           Tout ({articles.length})
@@ -87,7 +87,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
             key={t}
             onClick={() => setActiveTopic(t)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeTopic === t ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+              activeTopic === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
             {t} ({topicCounts[t]})
@@ -112,7 +112,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-10">{emptyLabel}</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{emptyLabel}</p>
         )}
       </div>
     </div>

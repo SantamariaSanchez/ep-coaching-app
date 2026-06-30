@@ -28,14 +28,14 @@ export default function ArticleCard({
   const [deleting, setDeleting] = useState(false);
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full text-left px-4 py-3.5">
         <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
-          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/45">
+          <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/45">
             {article.topic}
           </span>
           {article.article_type && (
-            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 text-[var(--color-ep-red)]">
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/10 border border-[#E01E1E]/30 text-[#E01E1E]">
               {ARTICLE_TYPE_LABELS[article.article_type]}
             </span>
           )}
@@ -46,35 +46,35 @@ export default function ArticleCard({
           )}
         </div>
         <p className="text-sm font-bold text-white leading-snug">{article.title}</p>
-        <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-1">
+        <p className="text-[10px] text-[#F5EDED]/35 mt-1">
           {article.journal}
           {article.pub_date ? ` · ${formatDate(article.pub_date)}` : ""}
         </p>
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[var(--color-ep-dark-red)]/15 pt-3 space-y-2">
-          {article.authors && <p className="text-[11px] text-[var(--color-ep-light)]/40 italic">{article.authors}</p>}
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
+          {article.authors && <p className="text-[11px] text-[#F5EDED]/40 italic">{article.authors}</p>}
 
           {article.summary_fr && (
-            <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg p-3">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-1">
+            <div className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
                 À retenir
               </p>
-              <p className="text-sm text-[var(--color-ep-light)]/70 leading-relaxed">{article.summary_fr}</p>
+              <p className="text-sm text-[#F5EDED]/70 leading-relaxed">{article.summary_fr}</p>
             </div>
           )}
 
           {article.abstract && (
-            <p className="text-xs text-[var(--color-ep-light)]/45 leading-relaxed">{article.abstract}</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed">{article.abstract}</p>
           )}
 
-          <div className="flex items-center gap-3 pt-2 border-t border-[var(--color-ep-dark-red)]/10">
+          <div className="flex items-center gap-3 pt-2 border-t border-[#890404]/10">
             <a
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors"
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
             >
               <ExternalLink size={11} /> Voir sur PubMed
             </a>
@@ -83,7 +83,7 @@ export default function ArticleCard({
                 href={`https://doi.org/${article.doi}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[10px] font-semibold text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/55 transition-colors"
+                className="text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
               >
                 DOI: {article.doi}
               </a>
@@ -100,7 +100,7 @@ export default function ArticleCard({
                   setDeleting(false);
                 }}
                 disabled={deleting}
-                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-red-400 transition-colors disabled:opacity-40"
+                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-40"
               >
                 <Trash2 size={11} /> {confirmDelete ? "Confirmer" : "Supprimer"}
               </button>

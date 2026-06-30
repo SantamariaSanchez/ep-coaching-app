@@ -27,8 +27,8 @@ import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/ut
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
-const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
 
 // ── Video player ──────────────────────────────────────────────────────────────
 
@@ -58,7 +58,7 @@ function VideoBlock({ url }: { url: string }) {
       href={video.src}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors mt-3"
+      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors mt-3"
     >
       <ExternalLink size={12} /> Voir la vidéo
     </a>
@@ -111,7 +111,7 @@ function ExerciseForm({
   }
 
   return (
-    <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Nom de l&apos;exercice</label>
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" className={inputCls} />
@@ -204,11 +204,11 @@ function ExerciseForm({
         <button
           onClick={handleSubmit}
           disabled={saving}
-          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white rounded-lg transition-colors"
+          className="flex-1 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
           {saving ? "Enregistrement…" : initial ? "Mettre à jour" : "Ajouter à la bibliothèque"}
         </button>
-        <button onClick={onCancel} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 text-[var(--color-ep-light)]/50 hover:text-[var(--color-ep-light)]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -249,25 +249,25 @@ function ExerciseCard({
   const hasLockedVideo = !!exercise.video_url && !videosUnlocked && !isCoach;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
-        <div className="w-9 h-9 rounded-lg bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 flex items-center justify-center flex-shrink-0">
+        <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
           {hasLockedVideo ? (
             <Lock size={14} className="text-amber-400" />
           ) : exercise.video_url ? (
-            <PlayCircle size={16} className="text-[var(--color-ep-red)]" />
+            <PlayCircle size={16} className="text-[#E01E1E]" />
           ) : (
-            <Dumbbell size={15} className="text-[var(--color-ep-light)]/25" />
+            <Dumbbell size={15} className="text-[#F5EDED]/25" />
           )}
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{exercise.name}</p>
           <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
             {exercise.muscle_subgroup && (
-              <span className="text-[9px] font-semibold text-[var(--color-ep-light)]/35">{exercise.muscle_subgroup}</span>
+              <span className="text-[9px] font-semibold text-[#F5EDED]/35">{exercise.muscle_subgroup}</span>
             )}
             {exercise.equipment && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/40">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
                 {exercise.equipment}
               </span>
             )}
@@ -286,22 +286,22 @@ function ExerciseCard({
       </button>
 
       {expanded && (
-        <div className="px-4 pb-4 border-t border-[var(--color-ep-dark-red)]/15 pt-3 space-y-2">
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             {exercise.category && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/45">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/45">
                 {CATEGORY_LABELS[exercise.category]}
               </span>
             )}
             {exercise.difficulty && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/45">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/45">
                 {DIFFICULTY_LABELS[exercise.difficulty]}
               </span>
             )}
           </div>
 
           {exercise.instructions && (
-            <p className="text-sm text-[var(--color-ep-light)]/60 leading-relaxed">{exercise.instructions}</p>
+            <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{exercise.instructions}</p>
           )}
 
           {exercise.video_url ? (
@@ -316,16 +316,16 @@ function ExerciseCard({
               <VideoBlock url={exercise.video_url} />
             )
           ) : (
-            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/25 mt-2">
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
               <Video size={11} /> Vidéo d&apos;exécution à venir
             </p>
           )}
 
           {isCoach && (
-            <div className="flex gap-2 pt-2 border-t border-[var(--color-ep-dark-red)]/10">
+            <div className="flex gap-2 pt-2 border-t border-[#890404]/10">
               <button
                 onClick={() => setEditing(true)}
-                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+                className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
               >
                 <Pencil size={11} /> Modifier / ajouter la vidéo
               </button>
@@ -336,7 +336,7 @@ function ExerciseCard({
               ) : (
                 <button
                   onClick={() => setConfirmDelete(true)}
-                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-red-400 transition-colors ml-auto"
+                  className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors ml-auto"
                 >
                   <Trash2 size={11} /> Supprimer
                 </button>
@@ -417,7 +417,7 @@ export default function ExerciseLibraryView({
     <div className="space-y-5">
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-ep-light)]/25" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -427,13 +427,13 @@ export default function ExerciseLibraryView({
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-lg transition-colors flex-shrink-0"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors flex-shrink-0"
         >
           <Plus size={13} /> {showCreate ? "Fermer" : "Créer un exercice"}
         </button>
       </div>
 
-      <p className="text-[10px] text-[var(--color-ep-light)]/25">
+      <p className="text-[10px] text-[#F5EDED]/25">
         {exercises.length} exercice{exercises.length !== 1 ? "s" : ""} dans la bibliothèque — enrichis-la en ajoutant les tiens.
       </p>
 
@@ -458,7 +458,7 @@ export default function ExerciseLibraryView({
         <button
           onClick={() => setActiveGroup(null)}
           className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-            activeGroup === null ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+            activeGroup === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
           Tout ({exercises.length})
@@ -468,7 +468,7 @@ export default function ExerciseLibraryView({
             key={g}
             onClick={() => setActiveGroup(g)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeGroup === g ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+              activeGroup === g ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
             {g} ({groupCounts[g]})
@@ -478,13 +478,13 @@ export default function ExerciseLibraryView({
 
       {Object.keys(brandCounts).length > 0 && (
         <div className="flex gap-1.5 overflow-x-auto pb-1">
-          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 mr-1">
+          <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
             Marque :
           </span>
           <button
             onClick={() => setActiveBrand(null)}
             className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-              activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+              activeBrand === null ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
             Toutes
@@ -494,7 +494,7 @@ export default function ExerciseLibraryView({
               key={b}
               onClick={() => setActiveBrand(b)}
               className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
-                activeBrand === b ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+                activeBrand === b ? "bg-amber-500/20 border-amber-500/50 text-amber-300" : "border-[#890404]/25 text-[#F5EDED]/40"
               }`}
             >
               {b} ({brandCounts[b]})
@@ -507,7 +507,7 @@ export default function ExerciseLibraryView({
         {Object.entries(byGroup).map(([group, list]) => (
           <div key={group}>
             {!activeGroup && (
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 mb-2">{group}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">{group}</p>
             )}
             <div className="space-y-2">
               {list.map((ex) => (
@@ -530,7 +530,7 @@ export default function ExerciseLibraryView({
           </div>
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-10">Aucun exercice ne correspond à ta recherche.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">Aucun exercice ne correspond à ta recherche.</p>
         )}
       </div>
     </div>

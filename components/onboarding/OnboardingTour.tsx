@@ -86,7 +86,7 @@ function BulletRow({ items }: { items: string[] }) {
       {items.map((b) => (
         <span
           key={b}
-          className="text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/25 text-[var(--color-ep-light)]/70"
+          className="text-[11px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-full bg-[#E01E1E]/10 border border-[#E01E1E]/25 text-[#F5EDED]/70"
         >
           {b}
         </span>
@@ -137,7 +137,7 @@ export default function OnboardingTour() {
                 flex: 1,
                 height: 3,
                 borderRadius: 2,
-                background: i <= step ? "var(--color-ep-red)" : "rgba(var(--color-ep-red-rgb),0.15)",
+                background: i <= step ? "#E01E1E" : "rgba(224,30,30,0.15)",
                 transition: "background 0.3s",
               }}
             />
@@ -148,11 +148,11 @@ export default function OnboardingTour() {
           disabled={finishing}
           style={{
             display: "flex", alignItems: "center", gap: 5,
-            background: "rgba(var(--color-ep-light-rgb),0.06)",
-            border: "1px solid rgba(var(--color-ep-light-rgb),0.18)",
+            background: "rgba(245,237,237,0.06)",
+            border: "1px solid rgba(245,237,237,0.18)",
             borderRadius: 999,
             cursor: "pointer",
-            color: "rgba(var(--color-ep-light-rgb),0.75)", fontSize: 12, fontWeight: 700,
+            color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.06em",
             flexShrink: 0, padding: "7px 12px",
           }}
@@ -185,30 +185,30 @@ export default function OnboardingTour() {
             <div
               style={{
                 width: 72, height: 72, borderRadius: 22, margin: "0 auto 24px",
-                background: "linear-gradient(135deg, rgba(var(--color-ep-red-rgb),0.18), rgba(var(--color-ep-dark-red-rgb),0.1))",
-                border: "1px solid rgba(var(--color-ep-red-rgb),0.3)",
+                background: "linear-gradient(135deg, rgba(224,30,30,0.18), rgba(137,4,4,0.1))",
+                border: "1px solid rgba(224,30,30,0.3)",
                 display: "flex", alignItems: "center", justifyContent: "center",
               }}
             >
-              <Icon size={30} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.6} />
+              <Icon size={30} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
             </div>
 
             <p style={{
               fontSize: 11, fontWeight: 800, letterSpacing: "0.18em",
-              textTransform: "uppercase", color: "var(--color-ep-red)", margin: "0 0 10px",
+              textTransform: "uppercase", color: "#E01E1E", margin: "0 0 10px",
             }}>
               {slide.eyebrow}
             </p>
 
             <h1 style={{
               fontSize: "clamp(22px, 5vw, 30px)", fontWeight: 900,
-              letterSpacing: "-0.03em", color: "var(--color-ep-light)", margin: "0 0 14px",
+              letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 14px",
               lineHeight: 1.15,
             }}>
               {slide.title}
             </h1>
 
-            <p style={{ fontSize: 14, color: "rgba(var(--color-ep-light-rgb),0.5)", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0 }}>
               {slide.desc}
             </p>
 
@@ -224,8 +224,8 @@ export default function OnboardingTour() {
             onClick={() => go(step - 1, -1)}
             style={{
               width: 52, height: 52, borderRadius: 14, flexShrink: 0,
-              border: "1px solid rgba(var(--color-ep-light-rgb),0.12)", background: "transparent",
-              color: "rgba(var(--color-ep-light-rgb),0.4)", cursor: "pointer", fontSize: 18,
+              border: "1px solid rgba(245,237,237,0.12)", background: "transparent",
+              color: "rgba(245,237,237,0.4)", cursor: "pointer", fontSize: 18,
             }}
           >
             ←

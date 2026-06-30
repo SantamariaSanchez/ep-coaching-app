@@ -14,18 +14,18 @@ const sectionLbl = {
   fontWeight: 800 as const,
   letterSpacing: "0.18em",
   textTransform: "uppercase" as const,
-  color: "rgba(var(--color-ep-red-rgb),0.45)",
+  color: "rgba(224,30,30,0.45)",
   margin: "0 0 10px",
 };
 
 function QA({ q, a }: { q: string; a: string | null | undefined }) {
   if (!a) return null;
   return (
-    <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.07)" }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.28)", margin: "0 0 4px" }}>
+    <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "0 0 4px" }}>
         {q}
       </p>
-      <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.78)", lineHeight: 1.6, margin: 0 }}>{a}</p>
+      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.78)", lineHeight: 1.6, margin: 0 }}>{a}</p>
     </div>
   );
 }
@@ -33,9 +33,9 @@ function QA({ q, a }: { q: string; a: string | null | undefined }) {
 function NumRow({ label, value }: { label: string; value: string | null | undefined }) {
   if (!value) return null;
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.07)" }}>
-      <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.28)" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 700, color: "var(--color-ep-light)" }}>{value}</span>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
+      <span style={{ fontSize: 10, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)" }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#F5EDED" }}>{value}</span>
     </div>
   );
 }
@@ -49,12 +49,12 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
   }, [state]);
 
   return (
-    <form ref={formRef} action={formAction} style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(var(--color-ep-dark-red-rgb),0.15)" }}>
+    <form ref={formRef} action={formAction} style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(137,4,4,0.15)" }}>
       <input type="hidden" name="checkin_id" value={checkin.id} />
       <input type="hidden" name="client_id" value={checkin.client_id} />
 
       <div style={{ marginBottom: 12 }}>
-        <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.35)", marginBottom: 6 }}>
+        <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 6 }}>
           Ton retour au client
         </label>
         <textarea
@@ -63,8 +63,8 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
           required
           placeholder="Analyse, conseils, encouragements…"
           style={{
-            width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.35)",
-            borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "var(--color-ep-light)",
+            width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
+            borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#F5EDED",
             resize: "none", outline: "none", boxSizing: "border-box",
           }}
         />
@@ -72,14 +72,14 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
 
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
         <div style={{ width: 110 }}>
-          <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.35)", marginBottom: 6 }}>
+          <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 6 }}>
             Note (/10)
           </label>
           <select
             name="coach_rating"
             style={{
-              width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.35)",
-              borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "var(--color-ep-light)", outline: "none",
+              width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
+              borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#F5EDED", outline: "none",
             }}
           >
             <option value="">—</option>
@@ -92,7 +92,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
           type="submit"
           disabled={isPending}
           style={{
-            flex: 1, background: isPending ? "rgba(var(--color-ep-red-rgb),0.5)" : "var(--color-ep-red)",
+            flex: 1, background: isPending ? "rgba(224,30,30,0.5)" : "#E01E1E",
             color: "#fff", border: "none", borderRadius: 10, padding: "10px 0",
             fontSize: 11, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
             cursor: isPending ? "wait" : "pointer",
@@ -103,7 +103,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
       </div>
 
       {state && "error" in state && (
-        <p style={{ fontSize: 11, color: "var(--color-ep-pink)", marginTop: 8 }}>{state.error}</p>
+        <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>
       )}
     </form>
   );
@@ -130,8 +130,8 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
 
   return (
     <div style={{
-      background: "rgba(var(--color-ep-card-rgb),0.6)",
-      border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.35)",
+      background: "rgba(31,1,1,0.6)",
+      border: "1px solid rgba(137,4,4,0.35)",
       borderRadius: 14,
       overflow: "hidden",
       backdropFilter: "blur(8px)",
@@ -147,10 +147,10 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "var(--color-ep-light)" }}>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
               Semaine {checkin.week_number}
             </p>
-            <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.28)" }}>
+            <p style={{ margin: "2px 0 0", fontSize: 10, color: "rgba(245,237,237,0.28)" }}>
               {weekDate}
             </p>
           </div>
@@ -158,8 +158,8 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
           {/* Weight pill */}
           {(checkin.weight_avg ?? checkin.weight) && (
             <span style={{
-              fontSize: 11, fontWeight: 800, color: "var(--color-ep-light)",
-              background: "rgba(var(--color-ep-dark-red-rgb),0.2)", border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.3)",
+              fontSize: 11, fontWeight: 800, color: "#F5EDED",
+              background: "rgba(137,4,4,0.2)", border: "1px solid rgba(137,4,4,0.3)",
               borderRadius: 8, padding: "2px 10px",
             }}>
               {(checkin.weight_avg ?? checkin.weight)} kg
@@ -187,8 +187,8 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
         </div>
 
         {expanded
-          ? <ChevronUp size={15} style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", flexShrink: 0 }} />
-          : <ChevronDown size={15} style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", flexShrink: 0 }} />
+          ? <ChevronUp size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+          : <ChevronDown size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
         }
       </button>
 
@@ -245,7 +245,7 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
           {checkin.client_notes && !hasQualitative && (
             <div style={{ marginBottom: 16 }}>
               <p style={sectionLbl}>Notes client</p>
-              <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.7)", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.client_notes}
               </p>
             </div>
@@ -261,8 +261,8 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
                   rel="noopener noreferrer"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 5,
-                    fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)",
-                    background: "rgba(var(--color-ep-red-rgb),0.08)", border: "1px solid rgba(var(--color-ep-red-rgb),0.2)",
+                    fontSize: 11, fontWeight: 700, color: "#E01E1E",
+                    background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none",
                   }}
                 >
@@ -276,8 +276,8 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
                   rel="noopener noreferrer"
                   style={{
                     display: "inline-flex", alignItems: "center", gap: 5,
-                    fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)",
-                    background: "rgba(var(--color-ep-red-rgb),0.08)", border: "1px solid rgba(var(--color-ep-red-rgb),0.2)",
+                    fontSize: 11, fontWeight: 700, color: "#E01E1E",
+                    background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none",
                   }}
                 >
@@ -289,11 +289,11 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
 
           {/* ── Coach reply ───────────────────────────────────────────────── */}
           {checkin.coach_replied_at && checkin.coach_notes ? (
-            <div style={{ paddingTop: 14, borderTop: "1px solid rgba(var(--color-ep-dark-red-rgb),0.12)" }}>
+            <div style={{ paddingTop: 14, borderTop: "1px solid rgba(137,4,4,0.12)" }}>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: "0 0 8px" }}>
                 Ton retour{checkin.coach_rating ? ` — ${checkin.coach_rating}/10` : ""}
               </p>
-              <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.coach_notes}
               </p>
             </div>

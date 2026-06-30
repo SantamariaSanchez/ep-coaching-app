@@ -23,7 +23,7 @@ const MOTIVATION_SUGGESTIONS = [
 ];
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return "jamais";
@@ -115,8 +115,8 @@ export default function CoachClientTasksView({
   return (
     <div className="space-y-6">
       {/* ── Create task ── */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           Nouveau rappel
         </p>
 
@@ -128,7 +128,7 @@ export default function CoachClientTasksView({
                 setLabel(s.label);
                 setIcon(s.icon);
               }}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/60 hover:border-[var(--color-ep-red)]/50 hover:text-white transition-colors"
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#E01E1E]/50 hover:text-white transition-colors"
             >
               {s.icon} {s.label}
             </button>
@@ -152,7 +152,7 @@ export default function CoachClientTasksView({
 
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
               Relance toutes les
             </span>
             <select
@@ -170,7 +170,7 @@ export default function CoachClientTasksView({
           <button
             onClick={handleCreate}
             disabled={!label.trim() || creating}
-            className="inline-flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors"
+            className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors"
           >
             <Plus size={13} />
             {creating ? "Envoi…" : "Envoyer"}
@@ -181,30 +181,30 @@ export default function CoachClientTasksView({
 
       {/* ── Pending tasks ── */}
       <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           En attente ({pending.length})
         </p>
         {pending.length === 0 ? (
-          <p className="text-xs text-[var(--color-ep-light)]/30 italic">Aucun rappel en attente.</p>
+          <p className="text-xs text-[#F5EDED]/30 italic">Aucun rappel en attente.</p>
         ) : (
           <div className="space-y-2">
             {pending.map((t) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl px-4 py-3"
+                className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg">{t.icon}</span>
                   <div>
                     <p className="text-sm font-semibold text-white">{t.label}</p>
-                    <p className="text-[10px] text-[var(--color-ep-light)]/35 flex items-center gap-1">
+                    <p className="text-[10px] text-[#F5EDED]/35 flex items-center gap-1">
                       <Bell size={9} /> relance / {t.nag_minutes} min · dernière {timeAgo(t.last_notified_at)}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => handleDelete(t.id)}
-                  className="text-[var(--color-ep-light)]/20 hover:text-red-500 transition-colors"
+                  className="text-[#F5EDED]/20 hover:text-red-500 transition-colors"
                 >
                   <Trash2 size={14} />
                 </button>
@@ -217,20 +217,20 @@ export default function CoachClientTasksView({
       {/* ── Done tasks ── */}
       {done.length > 0 && (
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
             Terminés ({done.length})
           </p>
           <div className="space-y-2">
             {done.slice(0, 10).map((t) => (
               <div
                 key={t.id}
-                className="flex items-center justify-between bg-[var(--color-ep-card)]/50 border border-green-500/15 rounded-xl px-4 py-2.5 opacity-70"
+                className="flex items-center justify-between bg-[#1f0101]/50 border border-green-500/15 rounded-xl px-4 py-2.5 opacity-70"
               >
                 <div className="flex items-center gap-3">
                   <CheckCircle2 size={15} className="text-green-400" />
                   <p className="text-sm text-white/70">{t.label}</p>
                 </div>
-                <span className="text-[10px] text-[var(--color-ep-light)]/30 flex items-center gap-1">
+                <span className="text-[10px] text-[#F5EDED]/30 flex items-center gap-1">
                   <Clock size={9} /> {timeAgo(t.completed_at)}
                 </span>
               </div>
@@ -240,8 +240,8 @@ export default function CoachClientTasksView({
       )}
 
       {/* ── Motivation message ── */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           Message de motivation
         </p>
         <div className="flex flex-wrap gap-2 mb-3">
@@ -250,7 +250,7 @@ export default function CoachClientTasksView({
               key={m}
               onClick={() => handleSendMotivation(m)}
               disabled={sendingMotivation}
-              className="text-xs font-medium px-3 py-1.5 rounded-full border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/60 hover:border-[var(--color-ep-red)]/50 hover:text-white transition-colors disabled:opacity-40"
+              className="text-xs font-medium px-3 py-1.5 rounded-full border border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#E01E1E]/50 hover:text-white transition-colors disabled:opacity-40"
             >
               {m}
             </button>
@@ -266,13 +266,13 @@ export default function CoachClientTasksView({
           <button
             onClick={() => handleSendMotivation(motivationText)}
             disabled={!motivationText.trim() || sendingMotivation}
-            className="inline-flex items-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors flex-shrink-0"
+            className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors flex-shrink-0"
           >
             <Send size={13} />
           </button>
         </div>
         {motivationResult && (
-          <p className="text-xs mt-2 text-[var(--color-ep-light)]/50">{motivationResult}</p>
+          <p className="text-xs mt-2 text-[#F5EDED]/50">{motivationResult}</p>
         )}
       </div>
     </div>

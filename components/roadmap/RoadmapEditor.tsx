@@ -46,9 +46,9 @@ const TERM_OPTIONS = [
 
 const inputStyle: React.CSSProperties = {
   background: "rgba(0,0,0,0.4)",
-  border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
+  border: "1px solid rgba(224,30,30,0.15)",
   borderRadius: 8,
-  color: "var(--color-ep-light)",
+  color: "#F5EDED",
   padding: "10px 14px",
   fontSize: 13,
   width: "100%",
@@ -63,7 +63,7 @@ const labelStyle: React.CSSProperties = {
   fontWeight: 700,
   letterSpacing: "0.2em",
   textTransform: "uppercase",
-  color: "rgba(var(--color-ep-red-rgb),0.7)",
+  color: "rgba(224,30,30,0.7)",
   marginBottom: 6,
   display: "block",
 };
@@ -94,7 +94,7 @@ function PhaseCard({
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
+      background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
       border: `1px solid ${colors.border}`,
       borderRadius: 12,
       padding: 16,
@@ -119,7 +119,7 @@ function PhaseCard({
         </span>
         <button
           onClick={onDelete}
-          style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "rgba(var(--color-ep-red-rgb),0.4)", padding: 4 }}
+          style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: 4 }}
           title="Supprimer la phase"
         >
           <Trash2 size={14} />
@@ -203,8 +203,8 @@ function ObjectiveCard({
 
   return (
     <div style={{
-      background: "linear-gradient(135deg, var(--color-ep-card) 0%, var(--color-ep-deep) 100%)",
-      border: "1px solid rgba(var(--color-ep-red-rgb),0.15)",
+      background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
+      border: "1px solid rgba(224,30,30,0.15)",
       borderRadius: 12,
       padding: 16,
     }}>
@@ -218,9 +218,9 @@ function ObjectiveCard({
               flex: 1,
               padding: "6px 8px",
               borderRadius: 6,
-              border: `1px solid ${obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--color-ep-red-rgb),0.15)"}`,
+              border: `1px solid ${obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(224,30,30,0.15)"}`,
               background: obj.term === t.value ? `${OBJECTIVE_TERM_COLORS[t.value]}15` : "transparent",
-              color: obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(var(--color-ep-light-rgb),0.3)",
+              color: obj.term === t.value ? OBJECTIVE_TERM_COLORS[t.value] : "rgba(245,237,237,0.3)",
               fontSize: 10,
               fontWeight: 700,
               letterSpacing: "0.08em",
@@ -234,7 +234,7 @@ function ObjectiveCard({
         ))}
         <button
           onClick={onDelete}
-          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--color-ep-red-rgb),0.4)", padding: "0 4px" }}
+          style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: "0 4px" }}
         >
           <Trash2 size={13} />
         </button>
@@ -490,8 +490,8 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   if (loading) {
     return (
       <div>
-        <div style={{ animation: "shimmer 1.5s ease infinite", background: "var(--color-ep-card)", borderRadius: 12, height: 40, marginBottom: 16 }} />
-        <div style={{ animation: "shimmer 1.5s ease infinite", background: "var(--color-ep-card)", borderRadius: 12, height: 200 }} />
+        <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 40, marginBottom: 16 }} />
+        <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 200 }} />
       </div>
     );
   }
@@ -525,7 +525,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
 
       {/* Section 1 — Global dates */}
       <section style={{ marginBottom: 28 }}>
-        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", marginBottom: 12 }}>
+        <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
           <CalendarRange size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
           Période globale
         </p>
@@ -550,7 +550,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
             </Field>
           </div>
           {startDate && endDate && (
-            <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.4)", fontWeight: 500 }}>
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", fontWeight: 500 }}>
               📅 {durationLabel(startDate, endDate)}
             </p>
           )}
@@ -560,7 +560,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       {/* Calendar preview */}
       {showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", marginBottom: 12 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
             Aperçu calendrier
           </p>
           <div className="ep-card" style={{ padding: 20 }}>
@@ -578,9 +578,9 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       {/* Section 2 — Phases */}
       <section style={{ marginBottom: 28 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", margin: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
             Phases d&apos;entraînement
-            <span style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", marginLeft: 8 }}>({phases.length})</span>
+            <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({phases.length})</span>
           </p>
           <button onClick={addPhase} className="ep-btn-primary" style={{ fontSize: 12 }}>
             <Plus size={13} /> Ajouter une phase
@@ -595,7 +595,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
 
         {phases.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
-            <p style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", fontSize: 13 }}>
+            <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
               Aucune phase — clique sur « Ajouter une phase »
             </p>
           </div>
@@ -623,10 +623,10 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       {/* Section 3 — Objectives */}
       <section>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.6)", margin: 0 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
             <Target size={12} style={{ display: "inline", marginRight: 6, verticalAlign: "middle" }} />
             Objectifs
-            <span style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", marginLeft: 8 }}>({objectives.length})</span>
+            <span style={{ color: "rgba(245,237,237,0.3)", marginLeft: 8 }}>({objectives.length})</span>
           </p>
           <button onClick={addObjective} className="ep-btn-primary" style={{ fontSize: 12 }}>
             <Plus size={13} /> Ajouter un objectif
@@ -635,7 +635,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
 
         {objectives.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
-            <p style={{ color: "rgba(var(--color-ep-light-rgb),0.3)", fontSize: 13 }}>
+            <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
               Aucun objectif défini
             </p>
           </div>

@@ -542,7 +542,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
           background: "rgba(6,0,0,0.88)",
           backdropFilter: "blur(32px)",
           WebkitBackdropFilter: "blur(32px)",
-          borderRight: "1px solid rgba(var(--color-ep-red-rgb),0.1)",
+          borderRight: "1px solid rgba(224,30,30,0.1)",
           boxShadow: "4px 0 32px rgba(0,0,0,0.5)",
         }}
       >
@@ -563,7 +563,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                   fontWeight: 700,
                   letterSpacing: "0.18em",
                   textTransform: "uppercase",
-                  color: "rgba(var(--color-ep-light-rgb),0.18)",
+                  color: "rgba(245,237,237,0.18)",
                   padding: "14px 10px 5px",
                   margin: 0,
                 }}>
@@ -587,11 +587,11 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                       padding: "9px 12px",
                       borderRadius: 10,
                       marginBottom: 1,
-                      background: active ? "rgba(var(--color-ep-red-rgb),0.1)" : "transparent",
-                      color: active ? "var(--color-ep-light)" : "rgba(var(--color-ep-light-rgb),0.32)",
+                      background: active ? "rgba(224,30,30,0.1)" : "transparent",
+                      color: active ? "#F5EDED" : "rgba(245,237,237,0.32)",
                       fontWeight: active ? 700 : 500,
                       fontSize: 13,
-                      borderLeft: active ? "2px solid var(--color-ep-red)" : "2px solid transparent",
+                      borderLeft: active ? "2px solid #E01E1E" : "2px solid transparent",
                       marginLeft: active ? -2 : 0,
                       transition: "all 0.15s ease",
                       textDecoration: "none",
@@ -599,30 +599,30 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                     onMouseEnter={(e) => {
                       if (active) return;
                       const el = e.currentTarget as HTMLAnchorElement;
-                      el.style.background = "rgba(var(--color-ep-red-rgb),0.05)";
-                      el.style.color = "rgba(var(--color-ep-light-rgb),0.65)";
+                      el.style.background = "rgba(224,30,30,0.05)";
+                      el.style.color = "rgba(245,237,237,0.65)";
                     }}
                     onMouseLeave={(e) => {
                       if (active) return;
                       const el = e.currentTarget as HTMLAnchorElement;
                       el.style.background = "transparent";
-                      el.style.color = "rgba(var(--color-ep-light-rgb),0.32)";
+                      el.style.color = "rgba(245,237,237,0.32)";
                     }}
                   >
                     <Icon
                       size={16}
                       strokeWidth={active ? 2.2 : 1.7}
-                      style={{ color: active ? "var(--color-ep-red)" : "inherit", flexShrink: 0 }}
+                      style={{ color: active ? "#E01E1E" : "inherit", flexShrink: 0 }}
                     />
                     <span style={{ flex: 1 }}>{label}</span>
                     {locked && (
-                      <Lock size={11} style={{ color: "rgba(var(--color-ep-light-rgb),0.25)", flexShrink: 0 }} strokeWidth={2} />
+                      <Lock size={11} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} strokeWidth={2} />
                     )}
                     {count > 0 && (
                       <span
                         className={count > 0 ? "animate-pulse-glow" : ""}
                         style={{
-                          background: "var(--color-ep-red)",
+                          background: "#E01E1E",
                           color: "#fff",
                           borderRadius: "50%",
                           width: 16,
@@ -646,21 +646,21 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
         </nav>
 
         {/* Bottom: user + logout */}
-        <div style={{ borderTop: "1px solid rgba(var(--color-ep-red-rgb),0.08)", padding: "14px 12px" }}>
+        <div style={{ borderTop: "1px solid rgba(224,30,30,0.08)", padding: "14px 12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
             <div style={{
               width: 34,
               height: 34,
               borderRadius: 10,
-              background: "linear-gradient(135deg, var(--color-ep-red), var(--color-ep-dark-red))",
+              background: "linear-gradient(135deg, #E01E1E, #890404)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 12,
               fontWeight: 800,
-              color: "var(--color-ep-light)",
+              color: "#F5EDED",
               flexShrink: 0,
-              boxShadow: "0 2px 8px rgba(var(--color-ep-red-rgb),0.25)",
+              boxShadow: "0 2px 8px rgba(224,30,30,0.25)",
             }}>
               {initials}
             </div>
@@ -668,7 +668,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               <div style={{
                 fontSize: 12,
                 fontWeight: 700,
-                color: "var(--color-ep-light)",
+                color: "#F5EDED",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 whiteSpace: "nowrap",
@@ -677,7 +677,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               </div>
               <div style={{
                 fontSize: 10,
-                color: "rgba(var(--color-ep-light-rgb),0.28)",
+                color: "rgba(245,237,237,0.28)",
                 textTransform: "capitalize",
               }}>
                 {userRole ?? "—"}
@@ -696,7 +696,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                 padding: "7px 10px",
                 borderRadius: 8,
                 background: "transparent",
-                color: "rgba(var(--color-ep-light-rgb),0.4)",
+                color: "rgba(245,237,237,0.4)",
                 fontSize: 12,
                 fontWeight: 600,
                 textDecoration: "none",
@@ -705,12 +705,12 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               }}
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "var(--color-ep-red)";
-                el.style.background = "rgba(var(--color-ep-red-rgb),0.07)";
+                el.style.color = "#E01E1E";
+                el.style.background = "rgba(224,30,30,0.07)";
               }}
               onMouseLeave={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
-                el.style.color = "rgba(var(--color-ep-light-rgb),0.4)";
+                el.style.color = "rgba(245,237,237,0.4)";
                 el.style.background = "transparent";
               }}
             >
@@ -730,7 +730,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               borderRadius: 8,
               background: "transparent",
               border: "none",
-              color: "rgba(var(--color-ep-light-rgb),0.22)",
+              color: "rgba(245,237,237,0.22)",
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
@@ -738,12 +738,12 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "var(--color-ep-red)";
-              el.style.background = "rgba(var(--color-ep-red-rgb),0.07)";
+              el.style.color = "#E01E1E";
+              el.style.background = "rgba(224,30,30,0.07)";
             }}
             onMouseLeave={(e) => {
               const el = e.currentTarget as HTMLButtonElement;
-              el.style.color = "rgba(var(--color-ep-light-rgb),0.22)";
+              el.style.color = "rgba(245,237,237,0.22)";
               el.style.background = "transparent";
             }}
           >
@@ -781,7 +781,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               background: "rgba(6,0,0,0.92)",
               backdropFilter: "blur(20px)",
               WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(var(--color-ep-red-rgb),0.1)",
+              borderBottom: "1px solid rgba(224,30,30,0.1)",
             }}
           >
             {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
@@ -799,13 +799,13 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                     gap: 6,
                     padding: "7px 12px",
                     borderRadius: 999,
-                    background: active ? "rgba(var(--color-ep-red-rgb),0.14)" : "rgba(var(--color-ep-light-rgb),0.04)",
-                    color: active ? "var(--color-ep-red)" : "rgba(var(--color-ep-light-rgb),0.45)",
+                    background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
+                    color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
                     fontWeight: active ? 700 : 600,
                     fontSize: 11,
                     whiteSpace: "nowrap",
                     textDecoration: "none",
-                    border: active ? "1px solid rgba(var(--color-ep-red-rgb),0.3)" : "1px solid transparent",
+                    border: active ? "1px solid rgba(224,30,30,0.3)" : "1px solid transparent",
                     position: "relative",
                   }}
                 >
@@ -815,7 +815,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                   {count > 0 && (
                     <span
                       style={{
-                        background: "var(--color-ep-red)",
+                        background: "#E01E1E",
                         color: "#fff",
                         borderRadius: "50%",
                         width: 14,
@@ -886,7 +886,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                     alignItems: "center",
                     justifyContent: "center",
                     background: active
-                      ? "rgba(var(--color-ep-red-rgb),0.14)"
+                      ? "rgba(224,30,30,0.14)"
                       : "transparent",
                     transition: "background 0.2s ease",
                   }}
@@ -895,7 +895,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                     size={18}
                     strokeWidth={active ? 2.3 : 1.6}
                     style={{
-                      color: active ? "var(--color-ep-red)" : "rgba(var(--color-ep-light-rgb),0.28)",
+                      color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
                       transition: "color 0.2s, stroke-width 0.2s",
                     }}
                   />
@@ -904,7 +904,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                       position: "absolute",
                       top: 1,
                       right: 3,
-                      background: "var(--color-ep-red)",
+                      background: "#E01E1E",
                       color: "#fff",
                       borderRadius: "50%",
                       width: 15,
@@ -914,7 +914,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                       justifyContent: "center",
                       fontSize: 8,
                       fontWeight: 800,
-                      border: "1.5px solid var(--color-ep-deep)",
+                      border: "1.5px solid #070000",
                     }}>
                       {count > 9 ? "9+" : count}
                     </span>
@@ -926,7 +926,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                   fontSize: 9,
                   fontWeight: active ? 700 : 500,
                   letterSpacing: "0.03em",
-                  color: active ? "var(--color-ep-red)" : "rgba(var(--color-ep-light-rgb),0.28)",
+                  color: active ? "#E01E1E" : "rgba(245,237,237,0.28)",
                   transition: "color 0.2s",
                   lineHeight: 1,
                   whiteSpace: "nowrap",

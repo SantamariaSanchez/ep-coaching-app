@@ -110,11 +110,11 @@ export default function StepsClient({
   return (
     <div className="space-y-5">
       {/* Goal + today's progress */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Footprints size={16} className="text-[var(--color-ep-red)]" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+            <Footprints size={16} className="text-[#E01E1E]" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
               Objectif quotidien
             </p>
           </div>
@@ -125,25 +125,25 @@ export default function StepsClient({
                   type="number"
                   value={goal}
                   onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
-                  className="w-20 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
+                  className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
                 />
-                <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[var(--color-ep-red)]">OK</button>
+                <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">OK</button>
               </div>
             ) : (
-              <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[var(--color-ep-light)]/40 flex items-center gap-1">
+              <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
                 <Target size={11} /> {goal.toLocaleString("fr-FR")} pas
               </button>
             )
           )}
           {readOnly && (
-            <span className="text-[10px] font-bold text-[var(--color-ep-light)]/40">{goal.toLocaleString("fr-FR")} pas/jour</span>
+            <span className="text-[10px] font-bold text-[#F5EDED]/40">{goal.toLocaleString("fr-FR")} pas/jour</span>
           )}
         </div>
 
         <div className="flex items-end gap-4 mb-3">
           <div>
             <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
-            <p className="text-[10px] text-[var(--color-ep-light)]/30">pas aujourd&apos;hui</p>
+            <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
           </div>
           {!readOnly && logSteps && (
             <input
@@ -151,53 +151,53 @@ export default function StepsClient({
               value={stepsInput}
               onChange={(e) => setStepsInput(e.target.value)}
               placeholder="Mettre à jour"
-              className="flex-1 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/50"
+              className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
             />
           )}
         </div>
 
-        <div className="h-2 bg-[var(--color-ep-dark-red)]/15 rounded-full overflow-hidden mb-1">
+        <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden mb-1">
           <div
-            className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-500" : "bg-[var(--color-ep-red)]"}`}
+            className={`h-full rounded-full transition-all ${pct >= 100 ? "bg-green-500" : "bg-[#E01E1E]"}`}
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-[var(--color-ep-light)]/30">{pct}% de l&apos;objectif</p>
+        <p className="text-[10px] text-[#F5EDED]/30">{pct}% de l&apos;objectif</p>
       </div>
 
       {/* Routine */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           Ma routine du jour
         </p>
         {items.length === 0 ? (
-          <p className="text-xs text-[var(--color-ep-light)]/30 italic mb-3">Aucune habitude programmée — ajoute des créneaux de marche dans ta journée.</p>
+          <p className="text-xs text-[#F5EDED]/30 italic mb-3">Aucune habitude programmée — ajoute des créneaux de marche dans ta journée.</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {items.map((item) => {
               const done = completed.has(item.id);
               return (
-                <div key={item.id} className="flex items-center gap-2.5 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-lg px-3 py-2.5">
+                <div key={item.id} className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
                   {!readOnly ? (
                     <button
                       onClick={() => toggleCompleted(item.id)}
                       className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors ${
-                        done ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/40"
+                        done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
                       }`}
                     >
                       {done && <Check size={12} className="text-white" />}
                     </button>
                   ) : (
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/40"}`}>
+                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"}`}>
                       {done && <Check size={12} className="text-white" />}
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold ${done ? "text-[var(--color-ep-light)]/40 line-through" : "text-white"}`}>{item.label}</p>
-                    {item.time_label && <p className="text-[10px] text-[var(--color-ep-light)]/30">{item.time_label}</p>}
+                    <p className={`text-xs font-semibold ${done ? "text-[#F5EDED]/40 line-through" : "text-white"}`}>{item.label}</p>
+                    {item.time_label && <p className="text-[10px] text-[#F5EDED]/30">{item.time_label}</p>}
                   </div>
                   {!readOnly && deleteRoutineItem && (
-                    <button onClick={() => handleDeleteItem(item.id)} className="text-[var(--color-ep-light)]/20 hover:text-red-400 transition-colors">
+                    <button onClick={() => handleDeleteItem(item.id)} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
                       <Trash2 size={13} />
                     </button>
                   )}
@@ -214,18 +214,18 @@ export default function StepsClient({
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
                 placeholder="Heure"
-                className="w-20 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none"
+                className="w-20 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
                 placeholder="Ex. Marche après le déjeuner"
-                className="flex-1 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none"
+                className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
-              <button onClick={handleAddItem} className="text-[10px] font-bold text-[var(--color-ep-red)] px-2">OK</button>
+              <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">OK</button>
             </div>
           ) : (
-            <button onClick={() => setShowAddItem(true)} className="flex items-center gap-1 text-[10px] font-bold text-[var(--color-ep-red)]">
+            <button onClick={() => setShowAddItem(true)} className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
               <Plus size={11} /> Ajouter une habitude
             </button>
           )
@@ -235,7 +235,7 @@ export default function StepsClient({
           <button
             onClick={handleSaveToday}
             disabled={saving}
-            className="w-full mt-4 flex items-center justify-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+            className="w-full mt-4 flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             {saving ? "Sauvegarde…" : savedAt ? <><Check size={13} /> Enregistré</> : "Enregistrer aujourd'hui"}
           </button>
@@ -243,10 +243,10 @@ export default function StepsClient({
       </div>
 
       {/* History */}
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
-          <Flame size={14} className="text-[var(--color-ep-red)]" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+          <Flame size={14} className="text-[#E01E1E]" />
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
             14 derniers jours
           </p>
         </div>
@@ -258,11 +258,11 @@ export default function StepsClient({
               <div key={d.date} className="flex-1 flex flex-col items-center gap-1.5">
                 <div className="w-full flex-1 flex items-end">
                   <div
-                    className={`w-full rounded-t ${reached ? "bg-green-500" : d.steps > 0 ? "bg-[var(--color-ep-red)]/60" : "bg-[var(--color-ep-dark-red)]/15"}`}
+                    className={`w-full rounded-t ${reached ? "bg-green-500" : d.steps > 0 ? "bg-[#E01E1E]/60" : "bg-[#890404]/15"}`}
                     style={{ height: `${h}%` }}
                   />
                 </div>
-                <span className="text-[8px] text-[var(--color-ep-light)]/25">{dayLabel(d.date).slice(0, 2)}</span>
+                <span className="text-[8px] text-[#F5EDED]/25">{dayLabel(d.date).slice(0, 2)}</span>
               </div>
             );
           })}

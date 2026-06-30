@@ -48,7 +48,7 @@ const FOOD_CATEGORIES = [
 ];
 
 const inputCls =
-  "w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors";
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,7 @@ function calcMacros(food: Food, quantityG: number) {
 }
 
 function getDayColor(cals: number, target: number) {
-  if (cals === 0) return "bg-[var(--color-ep-light)]/5 border-[var(--color-ep-light)]/10";
+  if (cals === 0) return "bg-[#F5EDED]/5 border-[#F5EDED]/10";
   const pct = target > 0 ? cals / target : 0;
   if (pct >= 0.9) return "bg-green-600/60 border-green-500/30";
   if (pct >= 0.7) return "bg-amber-500/60 border-amber-400/30";
@@ -103,7 +103,7 @@ function MacroRing({
             cy="38"
             r={r}
             fill="none"
-            stroke="rgba(var(--color-ep-light-rgb),0.07)"
+            stroke="rgba(245,237,237,0.07)"
             strokeWidth="7"
           />
           <circle
@@ -122,12 +122,12 @@ function MacroRing({
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center leading-none">
           <span className="text-sm font-black text-white">{fmt(current)}</span>
-          <span className="text-[9px] text-[var(--color-ep-light)]/35">
+          <span className="text-[9px] text-[#F5EDED]/35">
             /{target}{isCalorie ? "" : "g"}
           </span>
         </div>
       </div>
-      <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/45">
+      <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/45">
         {label}
       </span>
     </div>
@@ -442,14 +442,14 @@ export default function ClientNutritionView({
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Nutrition
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
             Mon suivi
             {seasonMode && <SeasonModeBadge mode={seasonMode} />}
           </h1>
-          <p className="mt-1 text-xs text-[var(--color-ep-light)]/30">
+          <p className="mt-1 text-xs text-[#F5EDED]/30">
             {new Intl.DateTimeFormat("fr-FR", {
               weekday: "long",
               day: "numeric",
@@ -459,7 +459,7 @@ export default function ClientNutritionView({
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="inline-flex items-center gap-1.5 bg-[var(--color-ep-red)]/10 border border-[var(--color-ep-red)]/30 hover:bg-[var(--color-ep-red)]/20 text-[var(--color-ep-red)] text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
+          className="inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
         >
           <Plus size={11} />
           Créer un aliment
@@ -479,15 +479,15 @@ export default function ClientNutritionView({
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
         {(["today", "history"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
             className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === tab
-                ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]"
-                : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
+                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             {tab === "today" ? "Aujourd'hui" : "Historique"}
@@ -500,19 +500,19 @@ export default function ClientNutritionView({
         <div className="space-y-4">
           {/* Macro rings */}
           {noTargets ? (
-            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl p-5 text-center">
-              <p className="text-xs text-[var(--color-ep-light)]/35 uppercase tracking-widest font-semibold">
+            <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-5 text-center">
+              <p className="text-xs text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
                 Aucun objectif défini — contacte ton coach
               </p>
             </div>
           ) : (
-            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
               <div className="flex justify-around">
                 <MacroRing
                   label="Calories"
                   current={fmt(totals.calories)}
                   target={targets.calories}
-                  color="var(--color-ep-red)"
+                  color="#E01E1E"
                   isCalorie
                 />
                 <MacroRing
@@ -573,14 +573,14 @@ export default function ClientNutritionView({
           {todayLogs.length > 0 && (
             <div className="mt-6">
               <div className="mb-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-0.5">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">
                   Apports du jour
                 </p>
                 <h2 className="text-base font-black uppercase tracking-tight">
                   Micronutriments
                 </h2>
               </div>
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-4">
+              <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
                 <MicroBarList logs={todayLogs} />
               </div>
             </div>
@@ -592,7 +592,7 @@ export default function ClientNutritionView({
       {activeTab === "history" && (
         <div className="space-y-5">
           {/* Legend */}
-          <div className="flex items-center gap-4 text-[10px] text-[var(--color-ep-light)]/40 font-semibold uppercase tracking-widest">
+          <div className="flex items-center gap-4 text-[10px] text-[#F5EDED]/40 font-semibold uppercase tracking-widest">
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm bg-green-600/60 inline-block" />
               ≥ 90%
@@ -608,7 +608,7 @@ export default function ClientNutritionView({
           </div>
 
           {/* Calendar grid */}
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+          <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
             <div className="grid grid-cols-7 gap-1.5">
               {last30Days.map((date) => {
                 const cals = calsByDate[date] ?? 0;
@@ -626,7 +626,7 @@ export default function ClientNutritionView({
                       cals,
                       targets.calories
                     )} ${
-                      isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[var(--color-ep-card)]" : ""
+                      isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""
                     }`}
                   >
                     <span className="text-white/70">
@@ -640,7 +640,7 @@ export default function ClientNutritionView({
 
           {/* Selected day detail */}
           {historySelectedDate && (
-            <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
               <div className="flex items-center justify-between mb-4">
                 <p className="text-xs font-bold uppercase tracking-widest text-white">
                   {new Intl.DateTimeFormat("fr-FR", {
@@ -651,14 +651,14 @@ export default function ClientNutritionView({
                 </p>
                 <button
                   onClick={() => setHistorySelectedDate(null)}
-                  className="text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
                 >
                   <X size={14} />
                 </button>
               </div>
 
               {historyDayLogs.length === 0 ? (
-                <p className="text-xs text-[var(--color-ep-light)]/30 italic">
+                <p className="text-xs text-[#F5EDED]/30 italic">
                   Aucun aliment logué ce jour.
                 </p>
               ) : (
@@ -666,23 +666,23 @@ export default function ClientNutritionView({
                   {historyDayLogs.map((log) => (
                     <div
                       key={log.id}
-                      className="flex items-center justify-between py-1.5 border-b border-[var(--color-ep-dark-red)]/10 last:border-0"
+                      className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0"
                     >
                       <div>
                         <p className="text-xs text-white font-medium">
                           {log.foods?.name ?? "Aliment"}
                         </p>
-                        <p className="text-[10px] text-[var(--color-ep-light)]/35">
+                        <p className="text-[10px] text-[#F5EDED]/35">
                           {log.quantity_g}g · {fmt(log.calories ?? 0)} kcal
                         </p>
                       </div>
-                      <div className="text-right text-[9px] text-[var(--color-ep-light)]/35">
+                      <div className="text-right text-[9px] text-[#F5EDED]/35">
                         <p>P {fmt(log.proteins ?? 0)}g</p>
                         <p>G {fmt(log.carbs ?? 0)}g · L {fmt(log.fats ?? 0)}g</p>
                       </div>
                     </div>
                   ))}
-                  <div className="pt-2 text-xs font-bold text-[var(--color-ep-light)]/60">
+                  <div className="pt-2 text-xs font-bold text-[#F5EDED]/60">
                     Total : {fmt(calsByDate[historySelectedDate] ?? 0)} kcal
                   </div>
                 </div>
@@ -699,8 +699,8 @@ export default function ClientNutritionView({
             className="absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative w-full sm:max-w-md bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[var(--color-ep-dark-red)]/20 flex-shrink-0">
+          <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
+            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 {selectedFood
                   ? selectedFood.name
@@ -708,7 +708,7 @@ export default function ClientNutritionView({
               </p>
               <button
                 onClick={closeModal}
-                className="text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
               </button>
@@ -728,7 +728,7 @@ export default function ClientNutritionView({
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
                   {filteredFoods.length === 0 ? (
-                    <p className="text-center text-xs text-[var(--color-ep-light)]/30 py-8">
+                    <p className="text-center text-xs text-[#F5EDED]/30 py-8">
                       Aucun résultat
                     </p>
                   ) : (
@@ -739,17 +739,17 @@ export default function ClientNutritionView({
                           setSelectedFood(food);
                           setQuantityInput("100");
                         }}
-                        className="w-full text-left px-3 py-2.5 hover:bg-[var(--color-ep-card)] rounded-lg transition-colors"
+                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
                       >
                         <p className="text-sm text-white font-medium leading-tight">
                           {food.name}
                           {food.is_custom && (
-                            <span className="ml-1.5 text-[9px] text-[var(--color-ep-red)] uppercase font-bold">
+                            <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
                               custom
                             </span>
                           )}
                         </p>
-                        <p className="text-[10px] text-[var(--color-ep-light)]/35 mt-0.5">
+                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
                           {food.calories_per_100} kcal/100g · P{" "}
                           {food.proteins_per_100}g · G {food.carbs_per_100}g ·
                           L {food.fats_per_100}g
@@ -758,13 +758,13 @@ export default function ClientNutritionView({
                     ))
                   )}
                 </div>
-                <div className="px-5 py-4 border-t border-[var(--color-ep-dark-red)]/20 flex-shrink-0">
+                <div className="px-5 py-4 border-t border-[#890404]/20 flex-shrink-0">
                   <button
                     onClick={() => {
                       closeModal();
                       setShowCreateModal(true);
                     }}
-                    className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors py-2"
+                    className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
                   >
                     <Plus size={11} />
                     Créer un aliment personnalisé
@@ -775,7 +775,7 @@ export default function ClientNutritionView({
               // ── Quantity view ──
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
-                  <p className="text-[10px] text-[var(--color-ep-light)]/35 mb-1">
+                  <p className="text-[10px] text-[#F5EDED]/35 mb-1">
                     {selectedFood.calories_per_100} kcal/100g · P{" "}
                     {selectedFood.proteins_per_100}g · G{" "}
                     {selectedFood.carbs_per_100}g · L{" "}
@@ -783,7 +783,7 @@ export default function ClientNutritionView({
                   </p>
                 </div>
                 <div>
-                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                     Quantité (grammes)
                   </label>
                   <input
@@ -797,7 +797,7 @@ export default function ClientNutritionView({
                   />
                 </div>
                 {quantityInput && parseFloat(quantityInput) > 0 && (
-                  <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-lg p-3">
+                  <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
                     {(() => {
                       const m = calcMacros(
                         selectedFood,
@@ -806,22 +806,22 @@ export default function ClientNutritionView({
                       return (
                         <div className="flex gap-4 text-xs">
                           <div>
-                            <p className="text-[var(--color-ep-red)] font-black text-base">
+                            <p className="text-[#E01E1E] font-black text-base">
                               {fmt(m.calories)}
                             </p>
-                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">kcal</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">kcal</p>
                           </div>
                           <div>
                             <p className="text-blue-300 font-bold">{fmt(m.proteins)}g</p>
-                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Prot</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">Prot</p>
                           </div>
                           <div>
                             <p className="text-amber-300 font-bold">{fmt(m.carbs)}g</p>
-                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Gluc</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">Gluc</p>
                           </div>
                           <div>
                             <p className="text-rose-300 font-bold">{fmt(m.fats)}g</p>
-                            <p className="text-[var(--color-ep-light)]/40 text-[9px]">Lip</p>
+                            <p className="text-[#F5EDED]/40 text-[9px]">Lip</p>
                           </div>
                         </div>
                       );
@@ -834,14 +834,14 @@ export default function ClientNutritionView({
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedFood(null)}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 rounded-lg text-[var(--color-ep-light)]/60 hover:text-[var(--color-ep-light)]/80 transition-colors"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
                   >
                     Retour
                   </button>
                   <button
                     onClick={handleAddFood}
                     disabled={!quantityInput || parseFloat(quantityInput) <= 0}
-                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-lg disabled:opacity-40 transition-colors"
+                    className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-40 transition-colors"
                   >
                     Confirmer
                   </button>
@@ -859,14 +859,14 @@ export default function ClientNutritionView({
             className="absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={() => setShowCreateModal(false)}
           />
-          <div className="relative w-full sm:max-w-md bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-5">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 Créer un aliment
               </p>
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+                className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
               </button>
@@ -874,7 +874,7 @@ export default function ClientNutritionView({
 
             <div className="space-y-3">
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                   Nom *
                 </label>
                 <input
@@ -887,7 +887,7 @@ export default function ClientNutritionView({
                 />
               </div>
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                   Catégorie
                 </label>
                 <select
@@ -913,7 +913,7 @@ export default function ClientNutritionView({
                   { key: "fibers_per_100", label: "Fibres/100g" },
                 ].map(({ key, label }) => (
                   <div key={key}>
-                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5 block">
+                    <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                       {label}
                     </label>
                     <input
@@ -941,14 +941,14 @@ export default function ClientNutritionView({
             <div className="flex gap-2 mt-5">
               <button
                 onClick={() => setShowCreateModal(false)}
-                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[var(--color-ep-dark-red)]/40 rounded-lg text-[var(--color-ep-light)]/60 hover:text-[var(--color-ep-light)]/80 transition-colors"
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60 hover:text-[#F5EDED]/80 transition-colors"
               >
                 Annuler
               </button>
               <button
                 onClick={handleCreateFood}
                 disabled={creating}
-                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-lg disabled:opacity-50 transition-colors"
+                className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg disabled:opacity-50 transition-colors"
               >
                 {creating ? "Création…" : "Créer"}
               </button>
@@ -1025,16 +1025,16 @@ function DietPlanCard({
   const doneCount = Object.values(checkedMap).filter(Boolean).length;
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-red)]/30 rounded-xl overflow-hidden mb-6">
+    <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl overflow-hidden mb-6">
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
       >
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-red)]/70 mb-0.5">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
             Plan de ton coach
             {checkable && dayMeals.length > 0 && (
-              <span className="ml-2 text-[var(--color-ep-light)]/30 font-normal">
+              <span className="ml-2 text-[#F5EDED]/30 font-normal">
                 {doneCount}/{dayMeals.length} cochés
               </span>
             )}
@@ -1042,9 +1042,9 @@ function DietPlanCard({
           <p className="text-sm font-black text-white">{plan.name}</p>
         </div>
         {expanded ? (
-          <ChevronUp size={14} className="text-[var(--color-ep-light)]/30" />
+          <ChevronUp size={14} className="text-[#F5EDED]/30" />
         ) : (
-          <ChevronDown size={14} className="text-[var(--color-ep-light)]/30" />
+          <ChevronDown size={14} className="text-[#F5EDED]/30" />
         )}
       </div>
 
@@ -1055,7 +1055,7 @@ function DietPlanCard({
             className={`inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors ${
               useHighDay
                 ? "bg-amber-500/15 border-amber-500/40 text-amber-400"
-                : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/35"
+                : "border-[#890404]/25 text-[#F5EDED]/35"
             }`}
           >
             🔥 Aujourd&apos;hui = jour high
@@ -1064,16 +1064,16 @@ function DietPlanCard({
       )}
 
       {expanded && dayMeals.length === 0 && isWeekly && (
-        <p className="px-4 pt-3 text-[10px] text-[var(--color-ep-light)]/25 italic">
+        <p className="px-4 pt-3 text-[10px] text-[#F5EDED]/25 italic">
           Aucun repas prévu pour aujourd&apos;hui dans ce plan — jour libre / off.
         </p>
       )}
 
       {expanded && (
-        <div className="px-4 pb-4 space-y-3 border-t border-[var(--color-ep-dark-red)]/15 pt-3">
+        <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
           {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
             <div key={slot.key}>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-1.5">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
                 {slot.label}
               </p>
               <div className="space-y-1">
@@ -1094,8 +1094,8 @@ function DietPlanCard({
                         <span
                           className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
                             isChecked
-                              ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)]"
-                              : "border-[var(--color-ep-dark-red)]/40 bg-transparent"
+                              ? "bg-[#E01E1E] border-[#E01E1E]"
+                              : "border-[#890404]/40 bg-transparent"
                           }`}
                         >
                           {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
@@ -1104,12 +1104,12 @@ function DietPlanCard({
                       <div className="flex-1 flex items-center justify-between min-w-0">
                         <p
                           className={`text-xs font-medium truncate ${
-                            isChecked ? "text-[var(--color-ep-light)]/40 line-through" : "text-white"
+                            isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
                           }`}
                         >
                           {m.foods?.name ?? "Aliment"}
                         </p>
-                        <p className="text-[10px] text-[var(--color-ep-light)]/35 flex-shrink-0 ml-2">
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
                           {m.quantity_g}g
                           {m.foods
                             ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
@@ -1146,7 +1146,7 @@ function MealSlotCard({
   const [expanded, setExpanded] = useState(true);
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl overflow-hidden">
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl overflow-hidden">
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
@@ -1157,7 +1157,7 @@ function MealSlotCard({
               {label}
             </p>
             {logs.length > 0 && (
-              <p className="text-[10px] text-[var(--color-ep-light)]/35">
+              <p className="text-[10px] text-[#F5EDED]/35">
                 {fmt(totalCals)} kcal · {logs.length} aliment
                 {logs.length > 1 ? "s" : ""}
               </p>
@@ -1170,33 +1170,33 @@ function MealSlotCard({
               e.stopPropagation();
               onAdd();
             }}
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] hover:text-[#ff4444] transition-colors px-2 py-1"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors px-2 py-1"
           >
             <Plus size={11} />
             Ajouter
           </button>
           {expanded ? (
-            <ChevronUp size={14} className="text-[var(--color-ep-light)]/30" />
+            <ChevronUp size={14} className="text-[#F5EDED]/30" />
           ) : (
-            <ChevronDown size={14} className="text-[var(--color-ep-light)]/30" />
+            <ChevronDown size={14} className="text-[#F5EDED]/30" />
           )}
         </div>
       </div>
 
       {expanded && logs.length > 0 && (
-        <div className="px-4 pb-3 space-y-1 border-t border-[var(--color-ep-dark-red)]/15">
+        <div className="px-4 pb-3 space-y-1 border-t border-[#890404]/15">
           {logs.map((log) => (
             <div
               key={log.id}
-              className="flex items-center justify-between py-2 border-b border-[var(--color-ep-dark-red)]/10 last:border-0"
+              className="flex items-center justify-between py-2 border-b border-[#890404]/10 last:border-0"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-xs text-white font-medium truncate">
                   {log.foods?.name ?? "Aliment"}
                 </p>
-                <p className="text-[10px] text-[var(--color-ep-light)]/35">
+                <p className="text-[10px] text-[#F5EDED]/35">
                   {log.quantity_g}g ·{" "}
-                  <span className="text-[var(--color-ep-red)]/70">
+                  <span className="text-[#E01E1E]/70">
                     {fmt(log.calories ?? 0)} kcal
                   </span>{" "}
                   · P {fmt(log.proteins ?? 0)}g · G {fmt(log.carbs ?? 0)}g · L{" "}
@@ -1205,7 +1205,7 @@ function MealSlotCard({
               </div>
               <button
                 onClick={() => onDelete(log.id)}
-                className="text-[var(--color-ep-light)]/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
+                className="text-[#F5EDED]/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
               >
                 <Trash2 size={12} />
               </button>

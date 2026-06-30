@@ -93,16 +93,16 @@ interface RestTimer {
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "var(--color-ep-card)",
-    border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.4)",
+    backgroundColor: "#1f0101",
+    border: "1px solid rgba(137,4,4,0.4)",
     borderRadius: "8px",
-    color: "var(--color-ep-light)",
+    color: "#F5EDED",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(var(--color-ep-light-rgb),0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(var(--color-ep-light-rgb),0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
 
 const STANDARDIZATION_LABELS: Record<string, string> = {
   "1": "Exécution approximative",
@@ -213,14 +213,14 @@ function VolumeGauge({
   return (
     <div className="flex flex-col gap-0.5">
       <div className="flex justify-between">
-        <span className="text-[8px] text-[var(--color-ep-light)]/35 uppercase tracking-wider truncate max-w-[60px]">
+        <span className="text-[8px] text-[#F5EDED]/35 uppercase tracking-wider truncate max-w-[60px]">
           {muscleGroup}
         </span>
         <span className="text-[8px] font-black" style={{ color }}>
           {sets}/{lm.mev}
         </span>
       </div>
-      <div className="h-1 bg-[var(--color-ep-dark-red)]/20 rounded-full overflow-hidden w-full">
+      <div className="h-1 bg-[#890404]/20 rounded-full overflow-hidden w-full">
         <div
           className="h-full rounded-full transition-all"
           style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: color }}
@@ -263,11 +263,11 @@ function WarmupStep({
       {/* Timer */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
             Échauffement — {dayLabel}
           </p>
           <div className="flex items-center gap-2">
-            <Timer size={14} className="text-[var(--color-ep-red)]" />
+            <Timer size={14} className="text-[#E01E1E]" />
             <span className="text-2xl font-black text-white tabular-nums">
               {formatTime(elapsed)}
             </span>
@@ -275,19 +275,19 @@ function WarmupStep({
         </div>
 
         {/* Progress bar 0 → 15 min */}
-        <div className="h-2 bg-[var(--color-ep-dark-red)]/15 rounded-full overflow-hidden">
+        <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all"
             style={{
               width: `${Math.min((elapsed / 900) * 100, 100)}%`,
-              backgroundColor: isOptimal ? "#4ade80" : isLate ? "#fbbf24" : "var(--color-ep-red)",
+              backgroundColor: isOptimal ? "#4ade80" : isLate ? "#fbbf24" : "#E01E1E",
             }}
           />
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-[8px] text-[var(--color-ep-light)]/25">0 min</span>
+          <span className="text-[8px] text-[#F5EDED]/25">0 min</span>
           <span className="text-[8px] text-green-400">5 min ✓</span>
-          <span className="text-[8px] text-[var(--color-ep-light)]/25">15 min</span>
+          <span className="text-[8px] text-[#F5EDED]/25">15 min</span>
         </div>
       </div>
 
@@ -323,7 +323,7 @@ function WarmupStep({
         {warmup.articulations.map((a) => (
           <span
             key={a}
-            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/50 border border-[var(--color-ep-dark-red)]/20"
+            className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20"
           >
             {a}
           </span>
@@ -331,7 +331,7 @@ function WarmupStep({
       </div>
 
       {/* Tip */}
-      <p className="text-xs text-[var(--color-ep-light)]/50 italic mb-5 leading-relaxed">
+      <p className="text-xs text-[#F5EDED]/50 italic mb-5 leading-relaxed">
         💡 {warmup.tips}
       </p>
 
@@ -340,11 +340,11 @@ function WarmupStep({
         {warmup.exercises.map((ex, i) => (
           <div
             key={i}
-            className="flex items-center gap-3 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-4 py-3"
+            className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3"
           >
             <div className="flex-1">
               <p className="text-sm font-semibold text-white">{ex.name}</p>
-              <p className="text-[10px] text-[var(--color-ep-light)]/40">{ex.sets}</p>
+              <p className="text-[10px] text-[#F5EDED]/40">{ex.sets}</p>
             </div>
             <span
               className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
@@ -366,8 +366,8 @@ function WarmupStep({
         disabled={!canValidate}
         className={`w-full py-4 rounded-xl text-sm font-black uppercase tracking-widest transition-all ${
           canValidate
-            ? "bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white"
-            : "bg-[var(--color-ep-dark-red)]/20 text-[var(--color-ep-light)]/20 cursor-not-allowed"
+            ? "bg-[#E01E1E] hover:bg-[#B00202] text-white"
+            : "bg-[#890404]/20 text-[#F5EDED]/20 cursor-not-allowed"
         }`}
       >
         {canValidate ? "Valider l'échauffement → Commencer" : `Encore ${formatTime(300 - elapsed)}`}
@@ -438,32 +438,32 @@ function RestTimerOverlay({
           }
         }}
       />
-      <div className="relative w-full max-w-md bg-[var(--color-ep-input)] border-t border-[var(--color-ep-dark-red)]/40 rounded-t-2xl p-6 pb-8 space-y-5">
+      <div className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 pb-8 space-y-5">
         {timer.mentalStep === "hidden" && (
           <>
             <div className="text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
                 Repos — {getSuggestedRest(0).label}
               </p>
               <p className="text-5xl font-black text-white tabular-nums">
                 {formatTime(elapsed)}
               </p>
-              <p className="text-xs text-[var(--color-ep-light)]/35 mt-1">
+              <p className="text-xs text-[#F5EDED]/35 mt-1">
                 Suggéré : {formatTime(timer.suggestedSeconds)}
               </p>
             </div>
-            <div className="h-2 bg-[var(--color-ep-dark-red)]/15 rounded-full overflow-hidden">
+            <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden">
               <div
                 className="h-full rounded-full transition-all"
                 style={{
                   width: `${pct}%`,
-                  backgroundColor: pct >= 100 ? "#4ade80" : "var(--color-ep-red)",
+                  backgroundColor: pct >= 100 ? "#4ade80" : "#E01E1E",
                 }}
               />
             </div>
             <button
               onClick={() => onUpdate({ mentalStep: "checking" })}
-              className="w-full text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 py-2 transition-colors"
+              className="w-full text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 py-2 transition-colors"
             >
               Vérifier ma préparation →
             </button>
@@ -473,7 +473,7 @@ function RestTimerOverlay({
         {(timer.mentalStep === "checking" || timer.mentalStep === "no_wait") && (
           <>
             <div className="flex items-center gap-2">
-              <Brain size={16} className="text-[var(--color-ep-red)]" />
+              <Brain size={16} className="text-[#E01E1E]" />
               <p className="text-sm font-black uppercase tracking-widest text-white">
                 Es-tu prêt ?
               </p>
@@ -484,8 +484,8 @@ function RestTimerOverlay({
 
             <div className="space-y-3">
               {/* Physical */}
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4">
-                <p className="text-xs font-semibold text-[var(--color-ep-light)]/70 mb-3">
+              <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+                <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
                   💪 Physiquement — Tes muscles ont récupéré ?
                 </p>
                 <div className="flex gap-2">
@@ -498,7 +498,7 @@ function RestTimerOverlay({
                           ? v
                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
                             : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "bg-[var(--color-ep-dark-red)]/10 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                          : "bg-[#890404]/10 text-[#F5EDED]/40 border border-[#890404]/20 hover:border-[#890404]/40"
                       }`}
                     >
                       {v ? "Oui" : "Non"}
@@ -508,8 +508,8 @@ function RestTimerOverlay({
               </div>
 
               {/* Mental */}
-              <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4">
-                <p className="text-xs font-semibold text-[var(--color-ep-light)]/70 mb-3">
+              <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+                <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
                   🧠 Mentalement — Tu es concentré et prêt à exploser ce set ?
                 </p>
                 <div className="flex gap-2">
@@ -525,7 +525,7 @@ function RestTimerOverlay({
                           ? v
                             ? "bg-green-500/20 text-green-400 border border-green-500/30"
                             : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "bg-[var(--color-ep-dark-red)]/10 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                          : "bg-[#890404]/10 text-[#F5EDED]/40 border border-[#890404]/20 hover:border-[#890404]/40"
                       }`}
                     >
                       {v ? "Oui" : "Non"}
@@ -538,7 +538,7 @@ function RestTimerOverlay({
             {both && (
               <button
                 onClick={() => onClose(elapsed)}
-                className="w-full py-3.5 rounded-xl bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-sm font-black uppercase tracking-widest transition-colors"
+                className="w-full py-3.5 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest transition-colors"
               >
                 C&apos;est parti 🔥
               </button>
@@ -546,14 +546,14 @@ function RestTimerOverlay({
 
             {timer.mentalStep === "no_wait" && anyNo && (
               <div className="text-center space-y-3">
-                <p className="text-xs text-[var(--color-ep-light)]/50 leading-relaxed">
+                <p className="text-xs text-[#F5EDED]/50 leading-relaxed">
                   Prends encore 30-60 secondes. La qualité du set dépend de ta
                   préparation.
                 </p>
                 {noWaitElapsed >= 30 && (
                   <button
                     onClick={() => onClose(elapsed)}
-                    className="w-full py-3 rounded-xl border border-[var(--color-ep-dark-red)]/40 hover:border-[var(--color-ep-dark-red)]/70 text-sm font-bold text-[var(--color-ep-light)]/70 transition-colors"
+                    className="w-full py-3 rounded-xl border border-[#890404]/40 hover:border-[#890404]/70 text-sm font-bold text-[#F5EDED]/70 transition-colors"
                   >
                     Je suis prêt maintenant
                   </button>
@@ -622,11 +622,11 @@ function SetRow({
       className={`relative rounded-xl border p-3 transition-all ${
         set.validated
           ? "bg-[#0a1a0a] border-green-500/20"
-          : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/20"
+          : "bg-[#1f0101] border-[#890404]/20"
       }`}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[9px] font-black uppercase tracking-widest text-[var(--color-ep-light)]/30 w-12">
+        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/30 w-12">
           Set {set.setNumber}
         </span>
         {set.validated && (
@@ -644,22 +644,22 @@ function SetRow({
           <div className="flex gap-4 text-sm font-black text-white">
             <span>
               {set.weightKg || "—"}
-              <span className="text-[10px] font-normal text-[var(--color-ep-light)]/40 ml-0.5">
+              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 kg
               </span>
             </span>
             <span>
               {set.repsActual || "—"}
-              <span className="text-[10px] font-normal text-[var(--color-ep-light)]/40 ml-0.5">
+              <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 reps
               </span>
             </span>
             <span>
               RIR{" "}
-              <span className="text-[var(--color-ep-red)]">{set.rirActual || "—"}</span>
+              <span className="text-[#E01E1E]">{set.rirActual || "—"}</span>
             </span>
             {set.standardizationScore && (
-              <span className="text-[10px] text-[var(--color-ep-light)]/40">
+              <span className="text-[10px] text-[#F5EDED]/40">
                 ★{set.standardizationScore}
               </span>
             )}
@@ -670,7 +670,7 @@ function SetRow({
               <Video size={11} /> Vidéo envoyée à ton coach
             </span>
           ) : (
-            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 border border-dashed border-[var(--color-ep-dark-red)]/25 hover:border-[var(--color-ep-dark-red)]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
+            <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
               {uploadingVideo ? (
                 <>
                   <Loader2 size={11} className="animate-spin" /> Envoi…
@@ -700,7 +700,7 @@ function SetRow({
           {/* Weight + Reps row */}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Poids (kg)
               </label>
               <input
@@ -713,11 +713,11 @@ function SetRow({
                 }
                 value={set.weightKg}
                 onChange={(e) => onChange({ weightKg: e.target.value })}
-                className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/50"
+                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
               />
             </div>
             <div className="flex-1">
-              <label className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Reps
               </label>
               <input
@@ -729,7 +729,7 @@ function SetRow({
                 }
                 value={set.repsActual}
                 onChange={(e) => onChange({ repsActual: e.target.value })}
-                className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/50"
+                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
               />
             </div>
           </div>
@@ -737,13 +737,13 @@ function SetRow({
           {/* RIR + Score row */}
           <div className="flex gap-2">
             <div className="flex-1">
-              <label className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 RIR réel
               </label>
               <select
                 value={set.rirActual}
                 onChange={(e) => onChange({ rirActual: e.target.value })}
-                className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[var(--color-ep-red)]/50"
+                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
                 <option value="">—</option>
                 {[0, 1, 2, 3, 4, 5].map((v) => (
@@ -755,7 +755,7 @@ function SetRow({
               </select>
             </div>
             <div className="flex-1">
-              <label className="text-[8px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">
+              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Exécution
               </label>
               <select
@@ -763,7 +763,7 @@ function SetRow({
                 onChange={(e) =>
                   onChange({ standardizationScore: e.target.value })
                 }
-                className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[var(--color-ep-red)]/50"
+                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
                 <option value="">—</option>
                 {[1, 2, 3, 4, 5].map((v) => (
@@ -778,7 +778,7 @@ function SetRow({
           {/* Validate button */}
           <button
             onClick={onValidate}
-            className="w-full py-2.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors"
+            className="w-full py-2.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors"
           >
             ✓ Valider le set
           </button>
@@ -809,7 +809,7 @@ function AddExerciseForm({
     return (
       <button
         onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[var(--color-ep-dark-red)]/30 hover:border-[var(--color-ep-dark-red)]/60 rounded-xl px-4 py-3.5 text-sm text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 transition-colors"
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
       >
         <Plus size={15} strokeWidth={2} />
         Ajouter un exercice
@@ -818,19 +818,19 @@ function AddExerciseForm({
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/30 rounded-xl p-4 space-y-3">
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <input
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && submit()}
         placeholder="Nom de l'exercice (ex. Développé couché)"
-        className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[var(--color-ep-light)]/25 focus:outline-none focus:border-[var(--color-ep-red)]/50"
+        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
       />
       <select
         value={muscleGroup}
         onChange={(e) => setMuscleGroup(e.target.value)}
-        className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[var(--color-ep-red)]/50"
+        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
       >
         <option value="">Groupe musculaire (optionnel)</option>
         {MUSCLE_GROUPS.map((g) => (
@@ -843,7 +843,7 @@ function AddExerciseForm({
         <button
           onClick={submit}
           disabled={!name.trim()}
-          className="flex-1 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
           Ajouter
         </button>
@@ -853,7 +853,7 @@ function AddExerciseForm({
             setName("");
             setMuscleGroup("");
           }}
-          className="text-xs text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70 px-4 transition-colors"
+          className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 transition-colors"
         >
           Annuler
         </button>
@@ -880,7 +880,7 @@ function ExerciseCard({
   const tips = getTips(exState.exercise.name);
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl overflow-hidden">
+    <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3.5 flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -889,12 +889,12 @@ function ExerciseCard({
           </p>
           <div className="flex items-center gap-2 mt-0.5">
             {exState.exercise.muscle_group && (
-              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[var(--color-ep-dark-red)]/15 text-[var(--color-ep-light)]/40 border border-[var(--color-ep-dark-red)]/20">
+              <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/40 border border-[#890404]/20">
                 {exState.exercise.muscle_group}
               </span>
             )}
             {exState.exercise.sets && (
-              <span className="text-[9px] text-[var(--color-ep-light)]/30">
+              <span className="text-[9px] text-[#F5EDED]/30">
                 {exState.exercise.sets} séries
                 {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
                 {exState.exercise.rir != null &&
@@ -908,8 +908,8 @@ function ExerciseCard({
             onClick={() => onUpdate({ showTips: !exState.showTips })}
             className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
               exState.showTips
-                ? "bg-[var(--color-ep-red)]/15 text-[var(--color-ep-red)] border-[var(--color-ep-red)]/25"
-                : "text-[var(--color-ep-light)]/30 border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/25"
+                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
             title="Tips d'exécution"
           >
@@ -920,7 +920,7 @@ function ExerciseCard({
             className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
               exState.showHistory
                 ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
-                : "text-[var(--color-ep-light)]/30 border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
             title="Historique"
           >
@@ -931,17 +931,17 @@ function ExerciseCard({
 
       {/* Tips panel */}
       {exState.showTips && (
-        <div className="border-t border-[var(--color-ep-dark-red)]/20 bg-[var(--color-ep-card)] px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-2">
+        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             Cues d&apos;exécution
           </p>
           <ul className="space-y-1.5">
             {tips.map((tip, i) => (
               <li key={i} className="flex items-start gap-2">
-                <span className="text-[var(--color-ep-red)] font-black text-xs mt-0 leading-[1.4]">
+                <span className="text-[#E01E1E] font-black text-xs mt-0 leading-[1.4]">
                   {i + 1}.
                 </span>
-                <span className="text-xs text-[var(--color-ep-light)]/65 leading-relaxed">
+                <span className="text-xs text-[#F5EDED]/65 leading-relaxed">
                   {tip}
                 </span>
               </li>
@@ -952,15 +952,15 @@ function ExerciseCard({
 
       {/* History hint (real data fetched in coach logbook, here we show prev weight) */}
       {exState.showHistory && prevWeight && (
-        <div className="border-t border-[var(--color-ep-dark-red)]/20 bg-[var(--color-ep-card)] px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-2">
+        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             Dernière session
           </p>
           <div className="flex gap-4 text-sm font-black text-white">
             {prevWeight.weight != null && (
               <span>
                 {prevWeight.weight}
-                <span className="text-[10px] font-normal text-[var(--color-ep-light)]/40 ml-0.5">
+                <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                   kg
                 </span>
               </span>
@@ -968,7 +968,7 @@ function ExerciseCard({
             {prevWeight.reps != null && (
               <span>
                 {prevWeight.reps}
-                <span className="text-[10px] font-normal text-[var(--color-ep-light)]/40 ml-0.5">
+                <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                   reps
                 </span>
               </span>
@@ -976,7 +976,7 @@ function ExerciseCard({
             {prevWeight.rir != null && (
               <span>
                 RIR{" "}
-                <span className="text-[var(--color-ep-red)]">{prevWeight.rir}</span>
+                <span className="text-[#E01E1E]">{prevWeight.rir}</span>
               </span>
             )}
           </div>
@@ -1023,7 +1023,7 @@ function ExerciseCard({
             ];
             onUpdate({ sets: newSets });
           }}
-          className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 border border-dashed border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40 rounded-lg transition-colors"
+          className="w-full flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 border border-dashed border-[#890404]/20 hover:border-[#890404]/40 rounded-lg transition-colors"
         >
           <Plus size={11} />
           Ajouter un set
@@ -1047,10 +1047,10 @@ function SliderInput({
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
           {label}
         </label>
-        <span className="text-sm font-black text-[var(--color-ep-red)]">{value}/5</span>
+        <span className="text-sm font-black text-[#E01E1E]">{value}/5</span>
       </div>
       <input
         type="range"
@@ -1058,9 +1058,9 @@ function SliderInput({
         max={5}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[var(--color-ep-red)]"
+        className="w-full accent-[#E01E1E]"
       />
-      <div className="flex justify-between text-[8px] text-[var(--color-ep-light)]/25">
+      <div className="flex justify-between text-[8px] text-[#F5EDED]/25">
         <span>Faible</span>
         <span>Excellent</span>
       </div>
@@ -1412,7 +1412,7 @@ export default function SessionView({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[var(--color-ep-red)] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -1420,7 +1420,7 @@ export default function SessionView({
   if (!initData) {
     return (
       <div className="px-6 py-8 text-center">
-        <p className="text-[var(--color-ep-light)]/40">Séance introuvable</p>
+        <p className="text-[#F5EDED]/40">Séance introuvable</p>
       </div>
     );
   }
@@ -1481,11 +1481,11 @@ export default function SessionView({
       <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
         {/* Header */}
         <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Récap de séance
           </p>
           <h1 className="text-2xl font-black uppercase">{session.day_label}</h1>
-          <p className="text-xs text-[var(--color-ep-light)]/35 mt-1">
+          <p className="text-xs text-[#F5EDED]/35 mt-1">
             {new Intl.DateTimeFormat("fr-FR", {
               weekday: "long",
               day: "numeric",
@@ -1499,17 +1499,17 @@ export default function SessionView({
         {/* Stats summary */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           {[
-            { label: "Sets", value: String(totalSetsCompleted), icon: Dumbbell, color: "var(--color-ep-red)" },
+            { label: "Sets", value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
             { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "—", icon: Activity, color: "#4ade80" },
             { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "—", icon: Star, color: "#fbbf24" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
-              className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-3 flex flex-col items-center gap-1.5"
+              className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-3 flex flex-col items-center gap-1.5"
             >
               <Icon size={16} style={{ color }} strokeWidth={1.8} />
               <p className="text-xl font-black text-white">{value}</p>
-              <p className="text-[9px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+              <p className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
                 {label}
               </p>
             </div>
@@ -1539,8 +1539,8 @@ export default function SessionView({
         )}
 
         {/* Feeling sliders */}
-        <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-5 space-y-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5 space-y-5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
             Ressenti global
           </p>
           {!session.is_completed && (
@@ -1549,7 +1549,7 @@ export default function SessionView({
               <SliderInput label="Pump" value={pump} onChange={setPump} />
               <SliderInput label="Feeling global" value={feeling} onChange={setFeeling} />
               <div>
-                <label className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 block mb-1.5">
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
                   Notes libres
                 </label>
                 <textarea
@@ -1557,7 +1557,7 @@ export default function SessionView({
                   onChange={(e) => setSessionNotes(e.target.value)}
                   placeholder="Observations, fatigue particulière, douleurs..."
                   rows={3}
-                  className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/50 resize-none"
+                  className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
                 />
               </div>
             </>
@@ -1566,15 +1566,15 @@ export default function SessionView({
             <div className="flex gap-4">
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.energy_level ?? "—"}</p>
-                <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">Énergie</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Énergie</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.pump ?? "—"}</p>
-                <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">Pump</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Pump</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-black text-white">{session.general_feeling ?? "—"}</p>
-                <p className="text-[9px] text-[var(--color-ep-light)]/30 uppercase tracking-wider">Feeling</p>
+                <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Feeling</p>
               </div>
             </div>
           )}
@@ -1582,14 +1582,14 @@ export default function SessionView({
 
         {/* Charts */}
         {volumeData.length > 0 && (
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
+          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
               Volume par muscle (sets)
             </p>
             <div className="h-40">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={volumeData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--color-ep-dark-red-rgb),0.15)" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.15)" />
                   <XAxis dataKey="name" tick={TICK_STYLE} axisLine={false} tickLine={false} />
                   <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} />
                   <Tooltip {...TOOLTIP_STYLE} formatter={(v, name) => [`${v}`, name === "sets" ? "Sets" : "MEV"]} />
@@ -1604,7 +1604,7 @@ export default function SessionView({
                       return <Cell key={i} fill={color} />;
                     })}
                   </Bar>
-                  <Bar dataKey="mev" fill="rgba(var(--color-ep-dark-red-rgb),0.2)" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="mev" fill="rgba(137,4,4,0.2)" radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -1612,8 +1612,8 @@ export default function SessionView({
         )}
 
         {rirData.length > 0 && (
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
+          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
               RIR moyen par exercice
             </p>
             <div className="h-32">
@@ -1639,8 +1639,8 @@ export default function SessionView({
         )}
 
         {scoreData.length > 0 && (
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5 mb-6">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-4">
+          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
               Score standardisation par exercice
             </p>
             <div className="h-32">
@@ -1670,7 +1670,7 @@ export default function SessionView({
           <button
             onClick={handleCompleteSession}
             disabled={saving}
-            className="w-full py-4 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            className="w-full py-4 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {saving ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -1693,27 +1693,27 @@ export default function SessionView({
   return (
     <div className="pb-32">
       {/* Fixed header */}
-      <div className="sticky top-0 z-30 bg-[var(--color-ep-input)] border-b border-[var(--color-ep-dark-red)]/30 px-4 py-3">
+      <div className="sticky top-0 z-30 bg-[#150000] border-b border-[#890404]/30 px-4 py-3">
         <div className="max-w-2xl mx-auto">
           {/* Top row: session timer + day label */}
           <div className="flex items-center justify-between mb-2">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
                 {session.day_label}
               </p>
               <div className="flex items-center gap-1.5">
-                <Clock size={12} className="text-[var(--color-ep-red)]" />
+                <Clock size={12} className="text-[#E01E1E]" />
                 <span className="text-lg font-black text-white tabular-nums">
                   {formatTime(sessionElapsed)}
                 </span>
               </div>
             </div>
             <div className="text-right">
-              <p className="text-[9px] text-[var(--color-ep-light)]/35 uppercase tracking-wider">
+              <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">
                 {totalSetsAll} sets validés
               </p>
               {avgRIR != null && (
-                <p className="text-[9px] text-[var(--color-ep-light)]/35">
+                <p className="text-[9px] text-[#F5EDED]/35">
                   RIR moy.{" "}
                   <span className="font-black text-white">
                     {Math.round(avgRIR * 10) / 10}
@@ -1737,8 +1737,8 @@ export default function SessionView({
       {/* Exercise cards */}
       <div className="px-4 pt-5 max-w-2xl mx-auto space-y-4">
         {exercises.length === 0 && (
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl px-5 py-8 text-center">
-            <p className="text-sm text-[var(--color-ep-light)]/40">
+          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
+            <p className="text-sm text-[#F5EDED]/40">
               Séance libre — ajoute tes exercices ci-dessous
             </p>
           </div>
@@ -1774,7 +1774,7 @@ export default function SessionView({
         <div className="max-w-md mx-auto">
           <button
             onClick={() => setStep("recap")}
-            className="w-full py-3.5 bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 hover:border-[var(--color-ep-red)]/50 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
+            className="w-full py-3.5 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
           >
             Terminer la séance →
           </button>

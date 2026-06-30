@@ -38,8 +38,8 @@ function OptionGrid<T extends string>({
             onClick={() => onSelect(opt)}
             className={`text-left px-4 py-3.5 rounded-xl border text-sm font-bold transition-all ${
               active
-                ? "bg-[var(--color-ep-red)]/15 border-[var(--color-ep-red)]/50 text-white"
-                : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/55 hover:border-[var(--color-ep-dark-red)]/50"
+                ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
             }`}
           >
             {labels[opt]}
@@ -142,10 +142,10 @@ export default function ProgramCreatorWizard({
   const totalExercises = result?.days.reduce((sum, d) => sum + d.exercises.length, 0) ?? 0;
 
   return (
-    <div className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/20 rounded-2xl p-5 md:p-8 max-w-xl mx-auto">
+    <div className="bg-[#150000] border border-[#890404]/20 rounded-2xl p-5 md:p-8 max-w-xl mx-auto">
       {step !== "result" && (
-        <div className="h-1 bg-[var(--color-ep-dark-red)]/15 rounded-full mb-7 overflow-hidden">
-          <div className="h-full bg-[var(--color-ep-red)] rounded-full transition-all" style={{ width: `${progress}%` }} />
+        <div className="h-1 bg-[#890404]/15 rounded-full mb-7 overflow-hidden">
+          <div className="h-full bg-[#E01E1E] rounded-full transition-all" style={{ width: `${progress}%` }} />
         </div>
       )}
 
@@ -161,7 +161,7 @@ export default function ProgramCreatorWizard({
           {step === "goal" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Ton objectif principal ?</h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">On calibre séries, reps et repos en fonction.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">On calibre séries, reps et repos en fonction.</p>
               <OptionGrid options={Object.keys(GOAL_LABELS) as Goal[]} labels={GOAL_LABELS} value={goal} onSelect={setGoal} />
             </div>
           )}
@@ -169,7 +169,7 @@ export default function ProgramCreatorWizard({
           {step === "level" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Ton niveau ?</h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">Pour choisir des exercices adaptés à ta maîtrise technique.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour choisir des exercices adaptés à ta maîtrise technique.</p>
               <OptionGrid options={Object.keys(LEVEL_LABELS) as Level[]} labels={LEVEL_LABELS} value={level} onSelect={setLevel} cols={1} />
             </div>
           )}
@@ -177,7 +177,7 @@ export default function ProgramCreatorWizard({
           {step === "days" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Combien de jours par semaine ?</h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">On choisit le split (full body, haut/bas, push/pull/legs...) en fonction.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">On choisit le split (full body, haut/bas, push/pull/legs...) en fonction.</p>
               <div className="grid grid-cols-5 gap-2">
                 {DAYS_OPTIONS.map((d) => (
                   <button
@@ -185,8 +185,8 @@ export default function ProgramCreatorWizard({
                     onClick={() => setDaysPerWeek(d)}
                     className={`py-3.5 rounded-xl border text-sm font-black transition-all ${
                       daysPerWeek === d
-                        ? "bg-[var(--color-ep-red)]/15 border-[var(--color-ep-red)]/50 text-white"
-                        : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/55 hover:border-[var(--color-ep-dark-red)]/50"
+                        ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                        : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
                     }`}
                   >
                     {d}j
@@ -199,7 +199,7 @@ export default function ProgramCreatorWizard({
           {step === "equipment" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Quel matériel as-tu ?</h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">On ne te proposera que des exercices réalisables.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">On ne te proposera que des exercices réalisables.</p>
               <OptionGrid options={Object.keys(EQUIPMENT_PREF_LABELS) as EquipmentPref[]} labels={EQUIPMENT_PREF_LABELS} value={equipment} onSelect={setEquipment} cols={1} />
             </div>
           )}
@@ -207,7 +207,7 @@ export default function ProgramCreatorWizard({
           {step === "length" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Durée de séance visée ?</h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">Détermine le nombre d&apos;exercices par séance.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Détermine le nombre d&apos;exercices par séance.</p>
               <OptionGrid options={Object.keys(SESSION_LENGTH_LABELS) as SessionLength[]} labels={SESSION_LENGTH_LABELS} value={sessionLength} onSelect={setSessionLength} cols={1} />
             </div>
           )}
@@ -215,9 +215,9 @@ export default function ProgramCreatorWizard({
           {step === "priority" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">
-                Des zones à prioriser ? <span className="text-[var(--color-ep-light)]/30 font-normal text-sm">(optionnel, max 3)</span>
+                Des zones à prioriser ? <span className="text-[#F5EDED]/30 font-normal text-sm">(optionnel, max 3)</span>
               </h2>
-              <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">Elles recevront un exercice de plus à chaque séance où elles apparaissent.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Elles recevront un exercice de plus à chaque séance où elles apparaissent.</p>
               <div className="flex flex-wrap gap-2">
                 {MUSCLE_GROUPS.map((g) => {
                   const active = priorityGroups.has(g);
@@ -227,8 +227,8 @@ export default function ProgramCreatorWizard({
                       onClick={() => togglePriority(g)}
                       className={`px-3.5 py-2 rounded-full text-xs font-bold border transition-colors ${
                         active
-                          ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)] text-white"
-                          : "bg-[var(--color-ep-card)] border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/50 hover:border-[var(--color-ep-dark-red)]/50"
+                          ? "bg-[#E01E1E] border-[#E01E1E] text-white"
+                          : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/50 hover:border-[#890404]/50"
                       }`}
                     >
                       {g}
@@ -242,31 +242,31 @@ export default function ProgramCreatorWizard({
           {step === "result" && (
             <div>
               {!result ? (
-                <p className="text-sm text-[var(--color-ep-light)]/40 text-center py-10">Erreur de génération — réessaie.</p>
+                <p className="text-sm text-[#F5EDED]/40 text-center py-10">Erreur de génération — réessaie.</p>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
-                    <Sparkles size={16} className="text-[var(--color-ep-red)]" />
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)]">
+                    <Sparkles size={16} className="text-[#E01E1E]" />
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]">
                       Ton programme sur mesure
                     </p>
                   </div>
                   <h2 className="text-2xl font-black text-white mb-1">{result.name}</h2>
-                  <p className="text-xs text-[var(--color-ep-light)]/40 mb-5">
+                  <p className="text-xs text-[#F5EDED]/40 mb-5">
                     {result.days.length} séances · {totalExercises} exercices au total
                   </p>
 
                   <div className="space-y-3 mb-5 max-h-80 overflow-y-auto pr-1">
                     {result.days.map((day, di) => (
-                      <div key={di} className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/20 rounded-xl p-3.5">
-                        <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-red)] mb-2">
+                      <div key={di} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
+                        <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] mb-2">
                           {day.day_label}
                         </p>
                         <div className="space-y-1.5">
                           {day.exercises.map((ex, ei) => (
                             <div key={ei} className="flex items-center justify-between gap-2">
-                              <p className="text-xs text-[var(--color-ep-light)]/75 truncate">{ex.name}</p>
-                              <p className="text-[10px] text-[var(--color-ep-light)]/35 flex-shrink-0">
+                              <p className="text-xs text-[#F5EDED]/75 truncate">{ex.name}</p>
+                              <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">
                                 {ex.sets} × {ex.reps}
                               </p>
                             </div>
@@ -279,14 +279,14 @@ export default function ProgramCreatorWizard({
                   <div className="flex gap-2 flex-wrap">
                     <button
                       onClick={handleRestart}
-                      className="flex-1 text-xs font-bold uppercase tracking-widest text-[var(--color-ep-light)]/50 border border-[var(--color-ep-dark-red)]/25 hover:border-[var(--color-ep-dark-red)]/50 rounded-lg px-4 py-2.5"
+                      className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/50 border border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-4 py-2.5"
                     >
                       Recommencer
                     </button>
                     <button
                       onClick={handleSave}
                       disabled={saveStatus === "saving" || saveStatus === "saved"}
-                      className="flex-1 flex items-center justify-center gap-1.5 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+                      className="flex-1 flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
                     >
                       {saveStatus === "saving" ? (
                         <Loader2 size={13} className="animate-spin" />
@@ -303,7 +303,7 @@ export default function ProgramCreatorWizard({
                     <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {saveError}</p>
                   )}
                   {saveStatus === "saved" && (
-                    <p className="text-[11px] text-[var(--color-ep-light)]/35 mt-2">
+                    <p className="text-[11px] text-[#F5EDED]/35 mt-2">
                       Remplace ton programme actif — visible dans l&apos;onglet Programme.
                     </p>
                   )}
@@ -319,7 +319,7 @@ export default function ProgramCreatorWizard({
           {stepIdx > 0 && (
             <button
               onClick={() => go(stepIdx - 1, -1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40 flex-shrink-0"
+              className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
             >
               <ArrowLeft size={16} />
             </button>
@@ -327,7 +327,7 @@ export default function ProgramCreatorWizard({
           <button
             onClick={handleNext}
             disabled={!canAdvance()}
-            className="flex-1 flex items-center justify-center gap-2 bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
           >
             {step === "priority" ? "Créer mon programme" : "Suivant"} <ArrowRight size={15} />
           </button>

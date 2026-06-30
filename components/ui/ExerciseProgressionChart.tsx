@@ -16,16 +16,16 @@ import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 
 const TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "var(--color-ep-card)",
-    border: "1px solid rgba(var(--color-ep-dark-red-rgb),0.4)",
+    backgroundColor: "#1f0101",
+    border: "1px solid rgba(137,4,4,0.4)",
     borderRadius: "8px",
-    color: "var(--color-ep-light)",
+    color: "#F5EDED",
     fontSize: "11px",
   },
-  labelStyle: { color: "rgba(var(--color-ep-light-rgb),0.6)", fontSize: "10px" },
+  labelStyle: { color: "rgba(245,237,237,0.6)", fontSize: "10px" },
 };
 
-const TICK_STYLE = { fill: "rgba(var(--color-ep-light-rgb),0.35)", fontSize: 9 };
+const TICK_STYLE = { fill: "rgba(245,237,237,0.35)", fontSize: 9 };
 
 // Per-exercise weight progression chart, built straight from session_sets —
 // covers every exercise ever logged, not just the ones with a recorded PR.
@@ -44,9 +44,9 @@ export default function ExerciseProgressionChart({
 
   if (allExerciseNames.length === 0) {
     return (
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-8 text-center">
-        <TrendingUp size={24} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-        <p className="text-sm text-[var(--color-ep-light)]/40">
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
+        <TrendingUp size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+        <p className="text-sm text-[#F5EDED]/40">
           Tes performances par exercice apparaîtront ici après ta première séance
         </p>
       </div>
@@ -103,7 +103,7 @@ export default function ExerciseProgressionChart({
     });
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-5">
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
       {/* Exercise selector */}
       <div className="flex flex-wrap gap-1.5 mb-5">
         {allExerciseNames.map((ex) => (
@@ -112,8 +112,8 @@ export default function ExerciseProgressionChart({
             onClick={() => setSelectedExercise(ex)}
             className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors ${
               current === ex
-                ? "bg-[var(--color-ep-red)]/15 text-[var(--color-ep-red)] border-[var(--color-ep-red)]/30"
-                : "text-[var(--color-ep-light)]/40 border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/30"
+                : "text-[#F5EDED]/40 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
           >
             {ex}
@@ -126,17 +126,17 @@ export default function ExerciseProgressionChart({
         <div className="flex items-center gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
           <Trophy size={14} className="text-amber-400" />
           <div>
-            <p className="text-[9px] text-[var(--color-ep-light)]/35 uppercase tracking-wider">PR</p>
+            <p className="text-[9px] text-[#F5EDED]/35 uppercase tracking-wider">PR</p>
             <p className="text-lg font-black text-white">
               {bestRecord.weight_kg} kg
               {bestRecord.reps && (
-                <span className="text-sm font-normal text-[var(--color-ep-light)]/40 ml-1.5">
+                <span className="text-sm font-normal text-[#F5EDED]/40 ml-1.5">
                   × {bestRecord.reps} reps
                 </span>
               )}
             </p>
           </div>
-          <p className="ml-auto text-[9px] text-[var(--color-ep-light)]/35">
+          <p className="ml-auto text-[9px] text-[#F5EDED]/35">
             {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
               new Date(bestRecord.achieved_at + "T12:00:00")
             )}
@@ -149,7 +149,7 @@ export default function ExerciseProgressionChart({
         <div className="h-40 mb-5">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--color-ep-dark-red-rgb),0.15)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.15)" />
               <XAxis dataKey="date" tick={TICK_STYLE} axisLine={false} tickLine={false} />
               <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} domain={["auto", "auto"]} />
               <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`${v} kg`, "Charge max"]} />
@@ -164,16 +164,16 @@ export default function ExerciseProgressionChart({
               <Line
                 type="monotone"
                 dataKey="maxWeight"
-                stroke="var(--color-ep-red)"
+                stroke="#E01E1E"
                 strokeWidth={2}
-                dot={{ fill: "var(--color-ep-red)", r: 3 }}
+                dot={{ fill: "#E01E1E", r: 3 }}
                 activeDot={{ r: 5 }}
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-[var(--color-ep-light)]/25 italic mb-5">
+        <p className="text-xs text-[#F5EDED]/25 italic mb-5">
           Encore trop peu de séances sur cet exercice pour tracer une courbe.
         </p>
       )}
@@ -187,7 +187,7 @@ export default function ExerciseProgressionChart({
                 {["Date", "Charge", "Reps", "RIR réel", "Score tech."].map((h) => (
                   <th
                     key={h}
-                    className="text-[8px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 pb-2 text-left pr-3"
+                    className="text-[8px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pb-2 text-left pr-3"
                   >
                     {h}
                   </th>
@@ -196,12 +196,12 @@ export default function ExerciseProgressionChart({
             </thead>
             <tbody>
               {recentTableData.map((row, i) => (
-                <tr key={i} className="border-t border-[var(--color-ep-dark-red)]/10">
-                  <td className="py-2 pr-3 text-[var(--color-ep-light)]/60">{row.date}</td>
+                <tr key={i} className="border-t border-[#890404]/10">
+                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.date}</td>
                   <td className="py-2 pr-3 font-black text-white">
                     {row.weight != null ? `${row.weight} kg` : "—"}
                   </td>
-                  <td className="py-2 pr-3 text-[var(--color-ep-light)]/60">{row.reps ?? "—"}</td>
+                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.reps ?? "—"}</td>
                   <td className="py-2 pr-3">
                     {row.rir != null ? (
                       <span

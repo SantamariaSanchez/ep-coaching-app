@@ -85,24 +85,24 @@ function QuizFlow({ onComplete }: { onComplete: (result: QuizResult) => void }) 
   }
 
   return (
-    <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
           Question {step + 1} / {QUIZ_QUESTIONS.length}
         </p>
         {step > 0 && (
           <button
             onClick={() => setStep((s) => s - 1)}
-            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 transition-colors"
+            className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
           >
             <ChevronLeft size={12} /> Retour
           </button>
         )}
       </div>
 
-      <div className="h-1.5 bg-[var(--color-ep-input)] rounded-full overflow-hidden mb-5">
+      <div className="h-1.5 bg-[#150000] rounded-full overflow-hidden mb-5">
         <div
-          className="h-full bg-gradient-to-r from-[var(--color-ep-red)] to-[var(--color-ep-med-red)] rounded-full transition-all duration-300"
+          className="h-full bg-gradient-to-r from-[#E01E1E] to-[#B00202] rounded-full transition-all duration-300"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -114,10 +114,10 @@ function QuizFlow({ onComplete }: { onComplete: (result: QuizResult) => void }) 
           <button
             key={opt.value}
             onClick={() => selectAnswer(opt.value)}
-            className="w-full text-left px-4 py-3 bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 hover:border-[var(--color-ep-red)]/50 hover:bg-[#250101] rounded-lg text-sm text-white transition-colors flex items-center justify-between gap-3"
+            className="w-full text-left px-4 py-3 bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/50 hover:bg-[#250101] rounded-lg text-sm text-white transition-colors flex items-center justify-between gap-3"
           >
             {opt.label}
-            <ChevronRight size={14} className="text-[var(--color-ep-light)]/20 flex-shrink-0" />
+            <ChevronRight size={14} className="text-[#F5EDED]/20 flex-shrink-0" />
           </button>
         ))}
       </div>
@@ -129,10 +129,10 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/40">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40">{label}</span>
         <span className="text-xs font-bold text-white">{value}%</span>
       </div>
-      <div className="h-2 bg-[var(--color-ep-input)] rounded-full overflow-hidden">
+      <div className="h-2 bg-[#150000] rounded-full overflow-hidden">
         <div className="h-full rounded-full transition-all duration-500" style={{ width: `${value}%`, background: color }} />
       </div>
     </div>
@@ -160,8 +160,8 @@ function ProfileTab({
     return (
       <div className="space-y-4">
         {saving ? (
-          <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-8 text-center">
-            <p className="text-xs text-[var(--color-ep-light)]/40 uppercase tracking-widest font-semibold">Sauvegarde…</p>
+          <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-8 text-center">
+            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">Sauvegarde…</p>
           </div>
         ) : (
           <QuizFlow onComplete={handleComplete} />
@@ -169,7 +169,7 @@ function ProfileTab({
         {profile?.quiz_completed_at && (
           <button
             onClick={() => setShowQuiz(false)}
-            className="text-[10px] text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-light)]/60 transition-colors"
+            className="text-[10px] text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
           >
             Annuler et garder mon profil actuel
           </button>
@@ -180,15 +180,15 @@ function ProfileTab({
 
   if (!profile) {
     return (
-      <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/30 rounded-xl p-8 text-center">
-        <Brain size={32} className="text-[var(--color-ep-red)]/40 mx-auto mb-3" strokeWidth={1.5} />
+      <div className="bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl p-8 text-center">
+        <Brain size={32} className="text-[#E01E1E]/40 mx-auto mb-3" strokeWidth={1.5} />
         <p className="text-sm font-bold text-white mb-1">Découvre ton profil mindset</p>
-        <p className="text-xs text-[var(--color-ep-light)]/35 mb-5 max-w-sm mx-auto">
+        <p className="text-xs text-[#F5EDED]/35 mb-5 max-w-sm mx-auto">
           7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline — et recevoir des conseils vraiment adaptés à ta situation.
         </p>
         <button
           onClick={() => setShowQuiz(true)}
-          className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] text-white rounded-xl transition-colors"
+          className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl transition-colors"
         >
           Commencer le quiz
         </button>
@@ -202,21 +202,21 @@ function ProfileTab({
 
   return (
     <div className="space-y-4">
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-red)]/30 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-red)]/70 mb-1">Ton profil</p>
+      <div className="bg-[#1f0101] border border-[#E01E1E]/30 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-1">Ton profil</p>
         <p className="text-lg font-black text-white mb-1">{profileDef?.label}</p>
-        <p className="text-xs text-[var(--color-ep-light)]/40 mb-4 leading-relaxed">{profileDef?.description}</p>
+        <p className="text-xs text-[#F5EDED]/40 mb-4 leading-relaxed">{profileDef?.description}</p>
         <div className="flex flex-wrap gap-2 mb-5">
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
             {envDef?.label}
           </span>
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/50">
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/50">
             Obstacle principal · {obstacleDef?.label}
           </span>
         </div>
 
         <div className="space-y-3">
-          <ScoreBar label="Motivation" value={profile.motivation_score ?? 0} color="var(--color-ep-red)" />
+          <ScoreBar label="Motivation" value={profile.motivation_score ?? 0} color="#E01E1E" />
           <ScoreBar label="Gestion du stress" value={profile.stress_score ?? 0} color="#60a5fa" />
           <ScoreBar label="Sérénité image corporelle" value={profile.body_image_score ?? 0} color="#fbbf24" />
           <ScoreBar label="Discipline" value={profile.discipline_score ?? 0} color="#4ade80" />
@@ -225,7 +225,7 @@ function ProfileTab({
 
       <button
         onClick={() => setShowQuiz(true)}
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30 hover:text-[var(--color-ep-red)] transition-colors"
+        className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
       >
         <RotateCcw size={12} /> Refaire le quiz
       </button>
@@ -294,17 +294,17 @@ function HabitsTab({
 
   return (
     <div className="space-y-5">
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-4 flex items-center justify-between">
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-0.5">Aujourd&apos;hui</p>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">Aujourd&apos;hui</p>
           <p className="text-lg font-black text-white">{doneCount} / {HABITS.length} habitudes</p>
         </div>
-        <Flame size={28} className={doneCount > 0 ? "text-[var(--color-ep-red)]" : "text-[var(--color-ep-light)]/15"} strokeWidth={1.7} />
+        <Flame size={28} className={doneCount > 0 ? "text-[#E01E1E]" : "text-[#F5EDED]/15"} strokeWidth={1.7} />
       </div>
 
       {Object.entries(byCategory).map(([cat, habits]) => (
         <div key={cat}>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/40 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
             {CATEGORY_TITLES[cat] ?? cat}
           </p>
           <div className="space-y-2">
@@ -317,20 +317,20 @@ function HabitsTab({
                   key={h.key}
                   onClick={() => handleToggle(h.key)}
                   className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-colors ${
-                    checked ? "bg-[var(--color-ep-card)] border-[var(--color-ep-red)]/35" : "bg-[var(--color-ep-input)] border-[var(--color-ep-dark-red)]/20 hover:border-[var(--color-ep-dark-red)]/40"
+                    checked ? "bg-[#1f0101] border-[#E01E1E]/35" : "bg-[#150000] border-[#890404]/20 hover:border-[#890404]/40"
                   }`}
                 >
                   <span
                     className={`flex-shrink-0 w-6 h-6 rounded-lg border flex items-center justify-center transition-colors ${
-                      checked ? "bg-[var(--color-ep-red)] border-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/40"
+                      checked ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
                     }`}
                   >
                     {checked && <Check size={13} className="text-white" strokeWidth={3} />}
                   </span>
-                  <Icon size={16} className={checked ? "text-[var(--color-ep-red)]" : "text-[var(--color-ep-light)]/30"} strokeWidth={1.8} />
+                  <Icon size={16} className={checked ? "text-[#E01E1E]" : "text-[#F5EDED]/30"} strokeWidth={1.8} />
                   <div className="flex-1 min-w-0">
-                    <p className={`text-sm font-semibold ${checked ? "text-white" : "text-[var(--color-ep-light)]/70"}`}>{h.label}</p>
-                    <p className="text-[10px] text-[var(--color-ep-light)]/30 leading-snug">{h.description}</p>
+                    <p className={`text-sm font-semibold ${checked ? "text-white" : "text-[#F5EDED]/70"}`}>{h.label}</p>
+                    <p className="text-[10px] text-[#F5EDED]/30 leading-snug">{h.description}</p>
                   </div>
                   {streak > 1 && (
                     <span className="flex-shrink-0 inline-flex items-center gap-1 text-[10px] font-bold text-amber-400">
@@ -372,8 +372,8 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
 
   return (
     <div className="space-y-5">
-      <div className="bg-gradient-to-br from-[var(--color-ep-card)] to-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5 flex items-start gap-3">
-        <Quote size={18} className="text-[var(--color-ep-red)] flex-shrink-0 mt-0.5" />
+      <div className="bg-gradient-to-br from-[#1f0101] to-[#150000] border border-[#890404]/40 rounded-xl p-5 flex items-start gap-3">
+        <Quote size={18} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
         <p className="text-sm text-white font-medium italic leading-relaxed">{getDailyQuote()}</p>
       </div>
 
@@ -383,8 +383,8 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
             onClick={() => setActiveCategory("pour_toi")}
             className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
               activeCategory === "pour_toi"
-                ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]"
-                : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+                ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
+                : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
             Pour toi
@@ -393,7 +393,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
         <button
           onClick={() => setActiveCategory("all")}
           className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-            activeCategory === "all" ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+            activeCategory === "all" ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
           Tout
@@ -403,7 +403,7 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
             key={c}
             onClick={() => setActiveCategory(c)}
             className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-              activeCategory === c ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+              activeCategory === c ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
             }`}
           >
             {CATEGORY_LABELS[c]}
@@ -413,19 +413,19 @@ function TipsTab({ profile }: { profile: MindsetProfile | null }) {
 
       <div className="space-y-2.5">
         {visible.map((tip) => (
-          <div key={tip.id} className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/25 rounded-xl p-4">
+          <div key={tip.id} className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1.5">
               <Lightbulb size={13} className="text-amber-400" />
-              <span className="text-[9px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
+              <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
                 {CATEGORY_LABELS[tip.category]}
               </span>
             </div>
             <p className="text-sm font-bold text-white mb-1">{tip.title}</p>
-            <p className="text-xs text-[var(--color-ep-light)]/45 leading-relaxed">{tip.body}</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed">{tip.body}</p>
           </div>
         ))}
         {visible.length === 0 && (
-          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-6">Aucun conseil dans cette catégorie.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">Aucun conseil dans cette catégorie.</p>
         )}
       </div>
     </div>
@@ -488,15 +488,15 @@ function JournalTab({
 
   return (
     <div className="space-y-5">
-      <div className="bg-[var(--color-ep-card)] border border-[var(--color-ep-dark-red)]/40 rounded-xl p-5">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-3">Choisis un thème</p>
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">Choisis un thème</p>
         <div className="flex gap-2 overflow-x-auto pb-3">
           {JOURNAL_PROMPTS.map((p) => (
             <button
               key={p.key}
               onClick={() => setSelectedPrompt(p.key)}
               className={`flex-shrink-0 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full border transition-colors ${
-                selectedPrompt === p.key ? "bg-[var(--color-ep-red)]/20 border-[var(--color-ep-red)]/50 text-[var(--color-ep-red)]" : "border-[var(--color-ep-dark-red)]/25 text-[var(--color-ep-light)]/40"
+                selectedPrompt === p.key ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
               }`}
             >
               {p.label}
@@ -513,18 +513,18 @@ function JournalTab({
           onChange={(e) => setContent(e.target.value)}
           rows={4}
           placeholder="Écris librement…"
-          className="w-full bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[var(--color-ep-light)]/20 focus:outline-none focus:border-[var(--color-ep-red)]/60 transition-colors resize-none"
+          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none"
         />
 
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/30 mr-1">Humeur</span>
+            <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-1">Humeur</span>
             {MOODS.map((m) => (
               <button
                 key={m.value}
                 onClick={() => setMood(mood === m.value ? null : m.value)}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center text-base transition-colors ${
-                  mood === m.value ? "bg-[var(--color-ep-red)]/20 border border-[var(--color-ep-red)]/50" : "border border-transparent hover:bg-[var(--color-ep-input)]"
+                  mood === m.value ? "bg-[#E01E1E]/20 border border-[#E01E1E]/50" : "border border-transparent hover:bg-[#150000]"
                 }`}
               >
                 {m.emoji}
@@ -534,7 +534,7 @@ function JournalTab({
           <button
             onClick={handleSubmit}
             disabled={!content.trim() || saving}
-            className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-[var(--color-ep-red)] hover:bg-[var(--color-ep-med-red)] disabled:opacity-40 text-white rounded-lg transition-colors"
+            className="px-4 py-2 text-[10px] font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
           >
             {saving ? "…" : "Enregistrer"}
           </button>
@@ -543,20 +543,20 @@ function JournalTab({
 
       <div className="space-y-2">
         {localEntries.length === 0 ? (
-          <p className="text-xs text-[var(--color-ep-light)]/25 italic text-center py-6">Aucune entrée pour l&apos;instant.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-6">Aucune entrée pour l&apos;instant.</p>
         ) : (
           localEntries.map((entry) => {
             const prompt = JOURNAL_PROMPTS.find((p) => p.key === entry.prompt_key);
             const moodEmoji = MOODS.find((m) => m.value === entry.mood)?.emoji;
             return (
-              <div key={entry.id} className="bg-[var(--color-ep-input)] border border-[var(--color-ep-dark-red)]/15 rounded-xl p-4">
+              <div key={entry.id} className="bg-[#150000] border border-[#890404]/15 rounded-xl p-4">
                 <div className="flex items-center justify-between mb-1.5">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/30">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
                       {fmtDate(entry.entry_date)}
                     </span>
                     {prompt && (
-                      <span className="text-[9px] font-semibold uppercase tracking-widest text-[var(--color-ep-red)]/60">
+                      <span className="text-[9px] font-semibold uppercase tracking-widest text-[#E01E1E]/60">
                         {prompt.label}
                       </span>
                     )}
@@ -564,7 +564,7 @@ function JournalTab({
                   </div>
                   <button
                     onClick={() => handleDelete(entry.id)}
-                    className="text-[var(--color-ep-light)]/15 hover:text-red-400 transition-colors"
+                    className="text-[#F5EDED]/15 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={12} />
                   </button>
@@ -616,22 +616,22 @@ export default function MindsetView({
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mental & comportement
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-          <Brain size={26} className="text-[var(--color-ep-red)]" strokeWidth={1.8} />
+          <Brain size={26} className="text-[#E01E1E]" strokeWidth={1.8} />
           Mindset
         </h1>
       </div>
 
-      <div className="flex gap-1 mb-6 border-b border-[var(--color-ep-dark-red)]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         {tabs.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setTab(key)}
             className={`inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
-              tab === key ? "text-[var(--color-ep-red)] border-b-2 border-[var(--color-ep-red)]" : "text-[var(--color-ep-light)]/40 hover:text-[var(--color-ep-light)]/70"
+              tab === key ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
             <Icon size={13} />

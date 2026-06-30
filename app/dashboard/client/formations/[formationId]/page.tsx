@@ -41,7 +41,7 @@ export default async function FormationDetailPage({
         href="/dashboard/client/formations"
         style={{
           display: "inline-flex", alignItems: "center", gap: 6,
-          color: "rgba(var(--color-ep-light-rgb),0.3)", textDecoration: "none",
+          color: "rgba(245,237,237,0.3)", textDecoration: "none",
           fontSize: 11, fontWeight: 600, marginBottom: 20, letterSpacing: "0.05em",
         }}
         className="animate-fade-in"
@@ -57,8 +57,8 @@ export default async function FormationDetailPage({
         <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
           <div style={{
             width: 56, height: 56, borderRadius: 16,
-            background: "rgba(var(--color-ep-red-rgb),0.12)",
-            border: "1px solid rgba(var(--color-ep-red-rgb),0.2)",
+            background: "rgba(224,30,30,0.12)",
+            border: "1px solid rgba(224,30,30,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center",
             fontSize: 28,
           }}>
@@ -68,7 +68,7 @@ export default async function FormationDetailPage({
             <p className="ep-section-title" style={{ marginBottom: 2 }}>Formation</p>
             <h1 style={{
               fontSize: 20, fontWeight: 900, letterSpacing: "-0.03em",
-              color: "var(--color-ep-light)", margin: 0, lineHeight: 1.1,
+              color: "#F5EDED", margin: 0, lineHeight: 1.1,
             }}>
               {formation.title}
             </h1>
@@ -76,7 +76,7 @@ export default async function FormationDetailPage({
         </div>
 
         {formation.description && (
-          <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.55)", lineHeight: 1.65, margin: "0 0 16px" }}>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.65, margin: "0 0 16px" }}>
             {formation.description}
           </p>
         )}
@@ -89,8 +89,8 @@ export default async function FormationDetailPage({
             { icon: CheckCircle2, label: `${completedCount} terminée${completedCount !== 1 ? "s" : ""}` },
           ].map(({ icon: Icon, label }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <Icon size={12} style={{ color: "rgba(var(--color-ep-red-rgb),0.6)" }} strokeWidth={2} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(var(--color-ep-light-rgb),0.45)" }}>
+              <Icon size={12} style={{ color: "rgba(224,30,30,0.6)" }} strokeWidth={2} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(245,237,237,0.45)" }}>
                 {label}
               </span>
             </div>
@@ -101,14 +101,14 @@ export default async function FormationDetailPage({
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
             <span className="ep-label">Progression</span>
-            <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(var(--color-ep-light-rgb),0.5)" }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: pct >= 100 ? "#4ade80" : "rgba(245,237,237,0.5)" }}>
               {pct}%
             </span>
           </div>
-          <div style={{ height: 4, background: "rgba(var(--color-ep-red-rgb),0.10)", borderRadius: 2, overflow: "hidden" }}>
+          <div style={{ height: 4, background: "rgba(224,30,30,0.10)", borderRadius: 2, overflow: "hidden" }}>
             <div style={{
               height: "100%", width: `${pct}%`,
-              background: pct >= 100 ? "#4ade80" : "linear-gradient(90deg, var(--color-ep-red), var(--color-ep-med-red))",
+              background: pct >= 100 ? "#4ade80" : "linear-gradient(90deg, #E01E1E, #B00202)",
               borderRadius: 2,
               transition: "width 0.8s cubic-bezier(0.16,1,0.3,1)",
             }} />
@@ -120,7 +120,7 @@ export default async function FormationDetailPage({
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {formation.modules.length === 0 ? (
           <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
-            <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.35)", margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
               Les modules seront disponibles prochainement
             </p>
           </div>
@@ -142,23 +142,23 @@ export default async function FormationDetailPage({
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
-                  borderBottom: "1px solid rgba(var(--color-ep-red-rgb),0.08)",
+                  borderBottom: "1px solid rgba(224,30,30,0.08)",
                 }}>
                   <div>
                     <p style={{
                       fontSize: 9, fontWeight: 700, letterSpacing: "0.18em",
-                      textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.55)",
+                      textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
                       margin: "0 0 2px",
                     }}>
                       Module {mi + 1}
                     </p>
-                    <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "var(--color-ep-light)", margin: 0 }}>
+                    <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                       {mod.title}
                     </h3>
                   </div>
                   {modPublished > 0 && (
                     <span style={{
-                      fontSize: 10, fontWeight: 700, color: "rgba(var(--color-ep-light-rgb),0.3)",
+                      fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.3)",
                       background: "rgba(255,255,255,0.04)",
                       padding: "3px 8px", borderRadius: 6,
                     }}>
@@ -171,7 +171,7 @@ export default async function FormationDetailPage({
                 <div>
                   {mod.sections.length === 0 && (
                     <div style={{ padding: "16px 18px" }}>
-                      <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.2)", margin: 0, fontStyle: "italic" }}>
+                      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
                         Vidéos bientôt disponibles
                       </p>
                     </div>
@@ -180,11 +180,11 @@ export default async function FormationDetailPage({
                     const secPublished = sec.lessons.filter((l) => l.is_published && l.youtube_id);
                     if (secPublished.length === 0 && sec.lessons.length > 0) {
                       return (
-                        <div key={sec.id} style={{ padding: "10px 18px", borderTop: si > 0 ? "1px solid rgba(var(--color-ep-red-rgb),0.05)" : "none" }}>
-                          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.35)", margin: "0 0 6px" }}>
+                        <div key={sec.id} style={{ padding: "10px 18px", borderTop: si > 0 ? "1px solid rgba(224,30,30,0.05)" : "none" }}>
+                          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.35)", margin: "0 0 6px" }}>
                             {sec.title}
                           </p>
-                          <p style={{ fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.2)", margin: 0, fontStyle: "italic" }}>
+                          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.2)", margin: 0, fontStyle: "italic" }}>
                             Bientôt disponible
                           </p>
                         </div>
@@ -193,12 +193,12 @@ export default async function FormationDetailPage({
                     if (secPublished.length === 0) return null;
 
                     return (
-                      <div key={sec.id} style={{ borderTop: si > 0 ? "1px solid rgba(var(--color-ep-red-rgb),0.06)" : "none" }}>
+                      <div key={sec.id} style={{ borderTop: si > 0 ? "1px solid rgba(224,30,30,0.06)" : "none" }}>
                         {/* Section label */}
                         <div style={{ padding: "10px 18px 4px" }}>
                           <p style={{
                             fontSize: 9, fontWeight: 700, letterSpacing: "0.14em",
-                            textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.4)",
+                            textTransform: "uppercase", color: "rgba(224,30,30,0.4)",
                             margin: 0,
                           }}>
                             {sec.title}
@@ -213,7 +213,7 @@ export default async function FormationDetailPage({
                           return (
                             <div key={lesson.id}>
                               {li > 0 && (
-                                <div style={{ height: 1, background: "rgba(var(--color-ep-red-rgb),0.04)", margin: "0 18px" }} />
+                                <div style={{ height: 1, background: "rgba(224,30,30,0.04)", margin: "0 18px" }} />
                               )}
                               {isAvailable ? (
                                 <Link
@@ -229,32 +229,32 @@ export default async function FormationDetailPage({
                                 >
                                   <div style={{
                                     width: 26, height: 26, borderRadius: "50%",
-                                    background: isDone ? "rgba(74,222,128,0.1)" : "rgba(var(--color-ep-red-rgb),0.08)",
-                                    border: `1px solid ${isDone ? "rgba(74,222,128,0.3)" : "rgba(var(--color-ep-red-rgb),0.15)"}`,
+                                    background: isDone ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.08)",
+                                    border: `1px solid ${isDone ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.15)"}`,
                                     display: "flex", alignItems: "center", justifyContent: "center",
                                     flexShrink: 0,
                                   }}>
                                     {isDone
                                       ? <CheckCircle2 size={12} style={{ color: "#4ade80" }} />
-                                      : <PlayCircle size={12} style={{ color: "var(--color-ep-red)" }} strokeWidth={1.8} />
+                                      : <PlayCircle size={12} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
                                     }
                                   </div>
                                   <div style={{ flex: 1, minWidth: 0 }}>
                                     <p style={{
                                       fontSize: 12, fontWeight: isDone ? 600 : 700,
-                                      color: isDone ? "rgba(var(--color-ep-light-rgb),0.45)" : "var(--color-ep-light)",
+                                      color: isDone ? "rgba(245,237,237,0.45)" : "#F5EDED",
                                       margin: 0, lineHeight: 1.3,
                                       textDecoration: isDone ? "line-through" : "none",
-                                      textDecorationColor: "rgba(var(--color-ep-light-rgb),0.2)",
+                                      textDecorationColor: "rgba(245,237,237,0.2)",
                                     }}>
                                       {lesson.title}
                                     </p>
                                   </div>
                                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                                    <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.2)", fontWeight: 600 }}>
+                                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
                                       {lesson.duration_min}min
                                     </span>
-                                    <ChevronRight size={13} style={{ color: "rgba(var(--color-ep-light-rgb),0.2)" }} />
+                                    <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
                                   </div>
                                 </Link>
                               ) : (
@@ -269,14 +269,14 @@ export default async function FormationDetailPage({
                                     display: "flex", alignItems: "center", justifyContent: "center",
                                     flexShrink: 0,
                                   }}>
-                                    <Lock size={10} style={{ color: "rgba(var(--color-ep-light-rgb),0.3)" }} />
+                                    <Lock size={10} style={{ color: "rgba(245,237,237,0.3)" }} />
                                   </div>
                                   <div style={{ flex: 1 }}>
-                                    <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.4)", margin: 0 }}>
+                                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>
                                       {lesson.title}
                                     </p>
                                   </div>
-                                  <span style={{ fontSize: 10, color: "rgba(var(--color-ep-light-rgb),0.2)" }}>
+                                  <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
                                     {lesson.duration_min}min
                                   </span>
                                 </div>

@@ -29,7 +29,7 @@ export default async function CoachMonProgrammePage() {
       <TrainingSubNav scope="coach-moi" />
 
       <div className="mb-6">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[var(--color-ep-light)]/35 mb-1">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon entraînement
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>

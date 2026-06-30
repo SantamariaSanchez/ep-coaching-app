@@ -19,7 +19,7 @@ function BilanRating({ rating }: { rating: number }) {
       {Array.from({ length: 10 }, (_, i) => (
         <div key={i} style={{
           width: 8, height: 8, borderRadius: "50%",
-          background: i < rating ? "#fbbf24" : "rgba(var(--color-ep-dark-red-rgb),0.2)",
+          background: i < rating ? "#fbbf24" : "rgba(137,4,4,0.2)",
         }} />
       ))}
       <span style={{ marginLeft: 8, fontSize: 14, fontWeight: 900, color: "#fbbf24" }}>
@@ -32,9 +32,9 @@ function BilanRating({ rating }: { rating: number }) {
 function QA({ q, a }: { q: string; a: string | null | undefined }) {
   if (!a) return null;
   return (
-    <div style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "1px solid rgba(var(--color-ep-dark-red-rgb),0.06)" }}>
-      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(var(--color-ep-red-rgb),0.45)", margin: "0 0 5px" }}>{q}</p>
-      <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>{a}</p>
+    <div style={{ paddingBottom: 14, marginBottom: 14, borderBottom: "1px solid rgba(137,4,4,0.06)" }}>
+      <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.45)", margin: "0 0 5px" }}>{q}</p>
+      <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>{a}</p>
     </div>
   );
 }
@@ -50,10 +50,10 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
     <div className="ep-card" style={{ padding: "16px 18px" }}>
       <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
         <div>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "var(--color-ep-light)" }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
             Semaine {checkin.week_number}
           </p>
-          <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.3)" }}>{date}</p>
+          <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>{date}</p>
         </div>
         {hasBilan ? (
           <span className="ep-badge-green" style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
@@ -71,14 +71,14 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 12 }}>
           {checkin.weight != null && (
             <div>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 2px" }}>Poids</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: "var(--color-ep-light)", margin: 0 }}>{checkin.weight} kg</p>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight} kg</p>
             </div>
           )}
           {checkin.weight_avg != null && (
             <div>
-              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
-              <p style={{ fontSize: 14, fontWeight: 800, color: "var(--color-ep-light)", margin: 0 }}>{checkin.weight_avg} kg</p>
+              <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
+              <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{checkin.weight_avg} kg</p>
             </div>
           )}
         </div>
@@ -102,13 +102,13 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           {checkin.photo_drive_link && (
             <a href={checkin.photo_drive_link} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
               <ExternalLink size={11} /> Photos
             </a>
           )}
           {checkin.video_drive_link && (
             <a href={checkin.video_drive_link} target="_blank" rel="noopener noreferrer"
-              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)", textDecoration: "none" }}>
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
               <ExternalLink size={11} /> Vidéo
             </a>
           )}
@@ -116,7 +116,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
       )}
 
       {hasBilan && (
-        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(var(--color-ep-red-rgb),0.1)" }}>
+        <div style={{ marginTop: 14, paddingTop: 14, borderTop: "1px solid rgba(224,30,30,0.1)" }}>
           <p className="ep-section-title" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 4 }}>
             <Star size={10} />
             Bilan de ton coach
@@ -127,7 +127,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
             </div>
           )}
           {checkin.bilan_text && (
-            <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.72)", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
               {checkin.bilan_text}
             </p>
           )}
@@ -161,7 +161,7 @@ export default async function CheckinPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Semaine {weekNum}</p>
         <h1 style={{
           fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "var(--color-ep-light)", margin: 0, lineHeight: 1.05,
+          color: "#F5EDED", margin: 0, lineHeight: 1.05,
         }}>
           Check-in
         </h1>
@@ -184,7 +184,7 @@ export default async function CheckinPage() {
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
                   Check-in envoyé
                 </p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(var(--color-ep-light-rgb),0.3)" }}>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.3)" }}>
                   {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" })
                     .format(new Date(existing.created_at))}
                 </p>
@@ -199,14 +199,14 @@ export default async function CheckinPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 16px", marginBottom: 14 }}>
                 {existing.weight != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 2px" }}>Poids</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "var(--color-ep-light)", margin: 0 }}>{existing.weight} kg</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Poids</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight} kg</p>
                   </div>
                 )}
                 {existing.weight_avg != null && (
                   <div>
-                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(var(--color-ep-light-rgb),0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
-                    <p style={{ fontSize: 16, fontWeight: 900, color: "var(--color-ep-light)", margin: 0 }}>{existing.weight_avg} kg</p>
+                    <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>Moy. semaine</p>
+                    <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.weight_avg} kg</p>
                   </div>
                 )}
               </div>
@@ -226,13 +226,13 @@ export default async function CheckinPage() {
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {existing.photo_drive_link && (
                   <a href={existing.photo_drive_link} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)", textDecoration: "none" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
                     <ExternalLink size={11} /> Photos
                   </a>
                 )}
                 {existing.video_drive_link && (
                   <a href={existing.video_drive_link} target="_blank" rel="noopener noreferrer"
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "var(--color-ep-red)", textDecoration: "none" }}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
                     <ExternalLink size={11} /> Vidéo
                   </a>
                 )}
@@ -244,7 +244,7 @@ export default async function CheckinPage() {
           {existing.bilan_sent_at ? (
             <div className="ep-card-highlighted" style={{ padding: "18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <Star size={13} style={{ color: "var(--color-ep-red)" }} />
+                <Star size={13} style={{ color: "#E01E1E" }} />
                 <p className="ep-section-title" style={{ margin: 0 }}>
                   Bilan de ton coach
                   {existing.bilan_rating != null && (
@@ -257,7 +257,7 @@ export default async function CheckinPage() {
                   <BilanRating rating={existing.bilan_rating} />
                 </div>
               )}
-              <p style={{ fontSize: 13, color: "rgba(var(--color-ep-light-rgb),0.8)", lineHeight: 1.65, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0 }}>
                 {existing.bilan_text}
               </p>
             </div>
@@ -265,7 +265,7 @@ export default async function CheckinPage() {
             <div className="ep-card" style={{ padding: "16px 18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Clock size={14} style={{ color: "rgba(251,191,36,0.5)" }} />
-                <p style={{ fontSize: 12, color: "rgba(var(--color-ep-light-rgb),0.3)", margin: 0 }}>
+                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
                   En attente du bilan coach…
                 </p>
               </div>
@@ -284,7 +284,7 @@ export default async function CheckinPage() {
           <p className="ep-section-title" style={{ marginBottom: 4 }}>Historique</p>
           <h2 style={{
             fontSize: 22, fontWeight: 900, letterSpacing: "-0.03em",
-            color: "var(--color-ep-light)", marginBottom: 16,
+            color: "#F5EDED", marginBottom: 16,
           }}>
             Mes bilans
           </h2>

@@ -52,9 +52,9 @@ export default function LiveEventsList({
       {isCoach && onCreate && clients && <LiveScheduler clients={clients} onCreate={onCreate} />}
 
       {upcoming.length === 0 ? (
-        <div className="bg-[var(--color-ep-card)] border border-dashed border-[var(--color-ep-dark-red)]/25 rounded-xl py-12 text-center mb-6">
-          <CalendarX2 size={24} className="text-[var(--color-ep-light)]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[var(--color-ep-light)]/35">Aucun live programmé pour l&apos;instant.</p>
+        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center mb-6">
+          <CalendarX2 size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+          <p className="text-sm text-[#F5EDED]/35">Aucun live programmé pour l&apos;instant.</p>
         </div>
       ) : (
         <div className="space-y-2 mb-6">
@@ -73,7 +73,7 @@ export default function LiveEventsList({
 
       {others.length > 0 && (
         <>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-ep-light)]/25 mb-2">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
             Passés / annulés
           </p>
           <div className="space-y-2 opacity-60">
