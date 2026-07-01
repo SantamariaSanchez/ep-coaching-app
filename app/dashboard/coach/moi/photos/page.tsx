@@ -1,21 +1,19 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { getUser, getProfile } from "@/utils/auth";
 import { getClientPhotoUpdates, getThisWeekPhotoUpdate } from "@/utils/photos";
 import ClientPhotosView from "@/components/ui/ClientPhotosView";
 import { submitPhotoUpdate } from "./actions";
 
 export default async function CoachMonPhotosPage() {
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/auth/coach");
 
-  const { data: profile } = await supabase.from("profiles").select("role, photo_frequency").eq("id", user.id).single();
+  const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const today = new Date().toISOString().split("T")[0];
-  const frequency = (profile as { photo_frequency?: string | null })?.photo_frequency ?? "weekly";
 
   let photoHistory: Awaited<ReturnType<typeof getClientPhotoUpdates>> = [];
   let weekUpdate = null;

@@ -12,7 +12,13 @@ export async function GET(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { clientId } = await params;
-  // Admin client: coach reads client data, client reads own data
+
+  // A client can only read their own roadmap; the coach can read any.
+  const profile = await getProfile(user.id);
+  if (profile?.role !== "coach" && user.id !== clientId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const supabase = createAdminClient();
 
   const { data: roadmap } = await supabase
