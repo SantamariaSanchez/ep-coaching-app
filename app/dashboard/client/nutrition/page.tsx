@@ -1,4 +1,4 @@
-﻿import { redirect } from "next/navigation";
+import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import {
   getNutritionProfile,
@@ -8,6 +8,7 @@ import {
   getActiveDietPlan,
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
+import { getCommunityRecipes } from "@/utils/community-recipes";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
 import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
@@ -33,9 +34,8 @@ export default async function ClientNutritionPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Free community members set and adjust their own targets — no coach review.
   if (!isSubscribed(profile)) {
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans] =
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, recipes] =
       await Promise.all([
         getNutritionProfile(user.id),
         getTodayLogs(user.id, today),
@@ -43,6 +43,7 @@ export default async function ClientNutritionPage() {
         getAllFoods(),
         getActiveDietPlan(user.id),
         getAllDietPlansWithMeals(user.id),
+        getCommunityRecipes(),
       ]);
 
     return (
@@ -82,6 +83,7 @@ export default async function ClientNutritionPage() {
           initialTodayLogs={todayLogs}
           historyLogs={historyLogs}
           initialFoods={foods}
+          recipes={recipes}
           dietMode={activePlan?.mode ?? "flexible"}
           activePlan={activePlan}
           seasonMode={profile?.season_mode}
@@ -93,13 +95,14 @@ export default async function ClientNutritionPage() {
     );
   }
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes] =
     await Promise.all([
       getNutritionProfile(user.id),
       getTodayLogs(user.id, today),
       getLast30DaysLogs(user.id),
       getAllFoods(),
       getActiveDietPlan(user.id),
+      getCommunityRecipes(),
     ]);
 
   return (
@@ -109,6 +112,7 @@ export default async function ClientNutritionPage() {
       initialTodayLogs={todayLogs}
       historyLogs={historyLogs}
       initialFoods={foods}
+      recipes={recipes}
       dietMode={activePlan?.mode ?? "flexible"}
       activePlan={activePlan}
       seasonMode={profile?.season_mode}

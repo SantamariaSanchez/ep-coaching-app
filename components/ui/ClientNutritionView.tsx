@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, Camera, BookOpen } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -13,6 +13,7 @@ import type {
   DietPlanWithMeals,
   DietPlanMeal,
 } from "@/utils/nutrition";
+import type { CommunityRecipe } from "@/utils/community-recipes";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -165,11 +166,12 @@ interface Props {
   initialTodayLogs: FoodLogWithFood[];
   historyLogs: FoodLogWithFood[];
   initialFoods: Food[];
+  recipes?: CommunityRecipe[];
   dietMode: DietMode;
   activePlan: DietPlanWithMeals | null;
   seasonMode?: "off_season" | "prep" | null;
   addFoodLog: (params: {
-    foodId: string;
+    foodId: string | null;
     mealSlot: string;
     quantityG: number;
     calories: number;
@@ -196,6 +198,7 @@ export default function ClientNutritionView({
   initialTodayLogs,
   historyLogs,
   initialFoods,
+  recipes = [],
   dietMode,
   activePlan,
   seasonMode,
@@ -211,10 +214,18 @@ export default function ClientNutritionView({
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchTab, setSearchTab] = useState<"aliments" | "recettes">("aliments");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
+  const [recipeServings, setRecipeServings] = useState("1");
   const [quantityInput, setQuantityInput] = useState("");
   const [addingError, setAddingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Photo logging
+  const [analysingPhoto, setAnalysingPhoto] = useState(false);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoEstimate, setPhotoEstimate] = useState<{ name: string; calories: number; proteins: number; carbs: number; fats: number } | null>(null);
 
   // Create food modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -353,17 +364,26 @@ export default function ClientNutritionView({
   function openModal(slot: string) {
     setAddingToSlot(slot);
     setSearchQuery("");
+    setSearchTab("aliments");
     setSelectedFood(null);
+    setSelectedRecipe(null);
     setQuantityInput("");
+    setRecipeServings("1");
     setAddingError(null);
+    setPhotoPreview(null);
+    setPhotoEstimate(null);
   }
 
   function closeModal() {
     setAddingToSlot(null);
     setSelectedFood(null);
+    setSelectedRecipe(null);
     setSearchQuery("");
     setQuantityInput("");
+    setRecipeServings("1");
     setAddingError(null);
+    setPhotoPreview(null);
+    setPhotoEstimate(null);
   }
 
   function selectFoodForLogging(food: Food) {
@@ -478,6 +498,135 @@ export default function ClientNutritionView({
         next.splice(Math.min(idx, next.length), 0, backup);
         return next;
       });
+    }
+  }
+
+  async function handleAddRecipe() {
+    if (!selectedRecipe || !addingToSlot) return;
+    const servings = parseFloat(recipeServings) || 1;
+    const calories = Math.round(selectedRecipe.kcal * servings);
+    const proteins = Math.round(selectedRecipe.protein * servings);
+    const carbs = Math.round(selectedRecipe.carbs * servings);
+    const fats = Math.round(selectedRecipe.fat * servings);
+
+    const virtualFood: Food = {
+      id: `recipe-${selectedRecipe.id}`,
+      name: selectedRecipe.name,
+      category: "Recette",
+      calories_per_100: selectedRecipe.kcal,
+      proteins_per_100: selectedRecipe.protein,
+      carbs_per_100: selectedRecipe.carbs,
+      fats_per_100: selectedRecipe.fat,
+    };
+
+    const optimisticLog: FoodLogWithFood = {
+      id: `optimistic-recipe-${Date.now()}`,
+      client_id: "",
+      food_id: null,
+      meal_slot: addingToSlot,
+      quantity_g: Math.round(servings * 100),
+      logged_at: today,
+      calories,
+      proteins,
+      carbs,
+      fats,
+      foods: virtualFood,
+    };
+
+    setTodayLogs((prev) => [...prev, optimisticLog]);
+    closeModal();
+
+    const result = await addFoodLog({
+      foodId: null,
+      mealSlot: addingToSlot,
+      quantityG: Math.round(servings * 100),
+      calories,
+      proteins,
+      carbs,
+      fats,
+      loggedAt: today,
+    });
+
+    if (result.error) {
+      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
+      setAddingError(result.error);
+    } else if (result.id) {
+      setTodayLogs((prev) =>
+        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: result.id! } : l))
+      );
+    }
+  }
+
+  async function handlePhotoSelect(file: File) {
+    setAnalysingPhoto(true);
+    setPhotoEstimate(null);
+    const preview = URL.createObjectURL(file);
+    setPhotoPreview(preview);
+
+    const form = new FormData();
+    form.append("photo", file);
+    try {
+      const res = await fetch("/api/ai/analyze-meal-photo", { method: "POST", body: form });
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      setPhotoEstimate(data);
+    } catch (e) {
+      setAddingError(e instanceof Error ? e.message : "Erreur analyse photo.");
+      setPhotoPreview(null);
+    } finally {
+      setAnalysingPhoto(false);
+    }
+  }
+
+  async function handleConfirmPhotoLog() {
+    if (!photoEstimate || !addingToSlot) return;
+    const { name, calories, proteins, carbs, fats } = photoEstimate;
+
+    const virtualFood: Food = {
+      id: `photo-${Date.now()}`,
+      name,
+      category: "Photo",
+      calories_per_100: calories,
+      proteins_per_100: proteins,
+      carbs_per_100: carbs,
+      fats_per_100: fats,
+    };
+
+    const optimisticLog: FoodLogWithFood = {
+      id: `optimistic-photo-${Date.now()}`,
+      client_id: "",
+      food_id: null,
+      meal_slot: addingToSlot,
+      quantity_g: 100,
+      logged_at: today,
+      calories,
+      proteins,
+      carbs,
+      fats,
+      foods: virtualFood,
+    };
+
+    setTodayLogs((prev) => [...prev, optimisticLog]);
+    closeModal();
+
+    const result = await addFoodLog({
+      foodId: null,
+      mealSlot: addingToSlot,
+      quantityG: 100,
+      calories,
+      proteins,
+      carbs,
+      fats,
+      loggedAt: today,
+    });
+
+    if (result.error) {
+      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
+      setAddingError(result.error);
+    } else if (result.id) {
+      setTodayLogs((prev) =>
+        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: result.id! } : l))
+      );
     }
   }
 
@@ -941,10 +1090,12 @@ export default function ClientNutritionView({
             onClick={closeModal}
           />
           <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
-            <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#890404]/20 flex-shrink-0">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 {selectedFood
                   ? selectedFood.name
+                  : selectedRecipe
+                  ? selectedRecipe.name
                   : MEAL_SLOTS.find((s) => s.key === addingToSlot)?.label}
               </p>
               <button
@@ -955,78 +1106,201 @@ export default function ClientNutritionView({
               </button>
             </div>
 
-            {!selectedFood ? (
-              // ── Search view ──
+            {/* Tab switcher: Aliments / Recettes */}
+            {!selectedFood && !selectedRecipe && !photoPreview && (
+              <div className="flex px-5 pt-2 pb-0 gap-1 flex-shrink-0">
+                {(["aliments", "recettes"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => { setSearchTab(t); setSearchQuery(""); }}
+                    className={`px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest rounded-lg transition-colors ${
+                      searchTab === t
+                        ? "bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/30"
+                        : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                    }`}
+                  >
+                    {t === "aliments" ? "Aliments" : <span className="flex items-center gap-1"><BookOpen size={10} />Recettes</span>}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {!selectedFood && !selectedRecipe ? (
+              // ── Search / Recipe view ──
               <>
-                <div className="px-5 py-3 flex-shrink-0">
+                {!photoPreview && searchTab === "aliments" && (
+                  <div className="px-5 py-3 flex-shrink-0">
+                    <input
+                      autoFocus
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Rechercher un aliment…"
+                      className={inputCls}
+                    />
+                  </div>
+                )}
+
+                {/* Photo logging view */}
+                {photoPreview && (
+                  <div className="px-5 py-4 flex-1 flex flex-col gap-4 overflow-y-auto">
+                    <img src={photoPreview} alt="Repas" className="w-full max-h-48 object-cover rounded-xl" />
+                    {analysingPhoto && (
+                      <p className="text-xs text-[#F5EDED]/50 text-center animate-pulse">
+                        Analyse en cours…
+                      </p>
+                    )}
+                    {photoEstimate && (
+                      <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+                        <p className="text-xs font-bold text-white mb-3">{photoEstimate.name}</p>
+                        <div className="flex gap-4 text-xs">
+                          <div><p className="text-[#E01E1E] font-black text-lg">{photoEstimate.calories}</p><p className="text-[#F5EDED]/35 text-[9px]">kcal</p></div>
+                          <div><p className="text-blue-300 font-bold">{photoEstimate.proteins}g</p><p className="text-[#F5EDED]/35 text-[9px]">Prot</p></div>
+                          <div><p className="text-amber-300 font-bold">{photoEstimate.carbs}g</p><p className="text-[#F5EDED]/35 text-[9px]">Gluc</p></div>
+                          <div><p className="text-rose-300 font-bold">{photoEstimate.fats}g</p><p className="text-[#F5EDED]/35 text-[9px]">Lip</p></div>
+                        </div>
+                        <p className="text-[9px] text-[#F5EDED]/25 mt-2">Estimation IA — ajuste via &quot;Créer un aliment&quot; si besoin</p>
+                      </div>
+                    )}
+                    {photoEstimate && (
+                      <div className="flex gap-2">
+                        <button onClick={() => { setPhotoPreview(null); setPhotoEstimate(null); }} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">Reprendre</button>
+                        <button onClick={handleConfirmPhotoLog} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg">Logger ce repas</button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {searchTab === "aliments" && !photoPreview && (
+                  <div className="flex-1 overflow-y-auto px-2 pb-2">
+                    {!searchQuery && recentFoods.length > 0 && (
+                      <div className="mb-1">
+                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
+                          <Clock size={10} /> Récents
+                        </p>
+                        {recentFoods.map((food) => (
+                          <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} />
+                        ))}
+                      </div>
+                    )}
+                    {!searchQuery && recentFoods.length > 0 && (
+                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Tous les aliments</p>
+                    )}
+                    {filteredFoods.length === 0 ? (
+                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucun résultat</p>
+                    ) : (
+                      filteredFoods.map((food) => (
+                        <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} />
+                      ))
+                    )}
+                  </div>
+                )}
+
+                {searchTab === "recettes" && !photoPreview && (
+                  <div className="flex-1 overflow-y-auto px-2 pb-2">
+                    {(searchQuery
+                      ? recipes.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                      : recipes
+                    ).slice(0, 40).map((r) => (
+                      <button
+                        key={r.id}
+                        onClick={() => { setSelectedRecipe(r); setRecipeServings("1"); }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+                      >
+                        <p className="text-sm text-white font-medium leading-tight">{r.name}</p>
+                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                          {r.kcal} kcal/portion · P {r.protein}g · G {r.carbs}g · L {r.fat}g
+                        </p>
+                      </button>
+                    ))}
+                    {recipes.length === 0 && (
+                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucune recette disponible</p>
+                    )}
+                  </div>
+                )}
+
+                {searchTab === "aliments" && !photoPreview && (
+                  <div className="px-5 py-3 border-t border-[#890404]/20 flex-shrink-0 flex flex-col gap-1">
+                    <label className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors py-2 cursor-pointer">
+                      <Camera size={11} />
+                      {analysingPhoto ? "Analyse…" : "Logger par photo (IA)"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        capture="environment"
+                        className="hidden"
+                        onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) handlePhotoSelect(f);
+                        }}
+                      />
+                    </label>
+                    <button
+                      onClick={() => {
+                        const slot = addingToSlot!;
+                        closeModal();
+                        openQuickAdd(slot);
+                      }}
+                      className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors py-2"
+                    >
+                      <Zap size={11} />
+                      Ajout rapide (juste les calories)
+                    </button>
+                    <button
+                      onClick={() => { closeModal(); setShowCreateModal(true); }}
+                      className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
+                    >
+                      <Plus size={11} />
+                      Créer un aliment personnalisé
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : selectedRecipe ? (
+              // ── Recipe servings view ──
+              <div className="px-5 py-4 flex flex-col gap-4 overflow-y-auto flex-1">
+                <div>
+                  <p className="text-[10px] text-[#F5EDED]/35 mb-1">
+                    {selectedRecipe.kcal} kcal/portion · P {selectedRecipe.protein}g · G {selectedRecipe.carbs}g · L {selectedRecipe.fat}g
+                  </p>
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                    Nombre de portions
+                  </label>
                   <input
                     autoFocus
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Rechercher un aliment…"
+                    type="number"
+                    min="0.5"
+                    step="0.5"
+                    value={recipeServings}
+                    onChange={(e) => setRecipeServings(e.target.value)}
+                    placeholder="1"
                     className={inputCls}
                   />
                 </div>
-                <div className="flex-1 overflow-y-auto px-2 pb-2">
-                  {!searchQuery && recentFoods.length > 0 && (
-                    <div className="mb-1">
-                      <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
-                        <Clock size={10} />
-                        Récents
-                      </p>
-                      {recentFoods.map((food) => (
-                        <FoodResultButton
-                          key={`recent-${food.id}`}
-                          food={food}
-                          onClick={() => selectFoodForLogging(food)}
-                        />
-                      ))}
+                {parseFloat(recipeServings) > 0 && (
+                  <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
+                    <div className="flex gap-4 text-xs">
+                      {(() => {
+                        const s = parseFloat(recipeServings) || 1;
+                        return (
+                          <>
+                            <div><p className="text-[#E01E1E] font-black text-base">{Math.round(selectedRecipe.kcal * s)}</p><p className="text-[#F5EDED]/40 text-[9px]">kcal</p></div>
+                            <div><p className="text-blue-300 font-bold">{Math.round(selectedRecipe.protein * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Prot</p></div>
+                            <div><p className="text-amber-300 font-bold">{Math.round(selectedRecipe.carbs * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Gluc</p></div>
+                            <div><p className="text-rose-300 font-bold">{Math.round(selectedRecipe.fat * s)}g</p><p className="text-[#F5EDED]/40 text-[9px]">Lip</p></div>
+                          </>
+                        );
+                      })()}
                     </div>
-                  )}
-                  {!searchQuery && recentFoods.length > 0 && (
-                    <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-                      Tous les aliments
-                    </p>
-                  )}
-                  {filteredFoods.length === 0 ? (
-                    <p className="text-center text-xs text-[#F5EDED]/30 py-8">
-                      Aucun résultat
-                    </p>
-                  ) : (
-                    filteredFoods.map((food) => (
-                      <FoodResultButton
-                        key={food.id}
-                        food={food}
-                        onClick={() => selectFoodForLogging(food)}
-                      />
-                    ))
-                  )}
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button onClick={() => setSelectedRecipe(null)} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">Retour</button>
+                  <button onClick={handleAddRecipe} disabled={!recipeServings || parseFloat(recipeServings) <= 0} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg disabled:opacity-40">Ajouter</button>
                 </div>
-                <div className="px-5 py-4 border-t border-[#890404]/20 flex-shrink-0 flex flex-col gap-1">
-                  <button
-                    onClick={() => {
-                      const slot = addingToSlot!;
-                      closeModal();
-                      openQuickAdd(slot);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors py-2"
-                  >
-                    <Zap size={11} />
-                    Ajout rapide (juste les calories)
-                  </button>
-                  <button
-                    onClick={() => {
-                      closeModal();
-                      setShowCreateModal(true);
-                    }}
-                    className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
-                  >
-                    <Plus size={11} />
-                    Créer un aliment personnalisé
-                  </button>
-                </div>
-              </>
-            ) : (
+              </div>
+            ) : selectedFood ? (
               // ── Quantity view ──
               <div className="px-5 py-4 flex flex-col gap-4">
                 <div>
@@ -1055,7 +1329,7 @@ export default function ClientNutritionView({
                   <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
                     {(() => {
                       const m = calcMacros(
-                        selectedFood,
+                        selectedFood!,
                         parseFloat(quantityInput)
                       );
                       return (
@@ -1102,7 +1376,7 @@ export default function ClientNutritionView({
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
           </div>
         </div>
       )}

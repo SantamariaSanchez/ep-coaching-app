@@ -400,7 +400,6 @@ export default function RecipesClient({
           onSaveRecipe={async (input) => {
             const res = await createRecipe(input);
             if (!res.error && res.id) {
-              // Optimistically surface it in the library too
               setRecipes((prev) => [
                 communityToDisplay({
                   id: res.id!,
@@ -429,6 +428,8 @@ export default function RecipesClient({
                 }),
                 ...prev,
               ]);
+              // Switch to the library tab so the user sees their new recipe
+              setTimeout(() => setTab("bibliotheque"), 1800);
             }
             return res;
           }}

@@ -76,7 +76,7 @@ export async function saveOwnNutritionProfile(
 }
 
 export async function addFoodLog(params: {
-  foodId: string;
+  foodId: string | null;
   mealSlot: string;
   quantityG: number;
   calories: number;
