@@ -305,6 +305,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
+      { label: "Road Map",       icon: Map,            segment: "moi/roadmap", href: "/dashboard/client/roadmap" },
       { label: "Pas & routine",  icon: Footprints,     segment: "moi/steps" },
       { label: "Tracking",       icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },

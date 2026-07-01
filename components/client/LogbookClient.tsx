@@ -66,9 +66,11 @@ function StartSessionButton({
 }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   async function handleStart() {
     setLoading(true);
+    setStartError(null);
     try {
       const res = await fetch("/api/client/sessions", {
         method: "POST",
@@ -78,18 +80,19 @@ function StartSessionButton({
       const json = await res.json();
       const sessionId: string | undefined = json.sessionId;
       if (!sessionId) {
-        console.error("Erreur création session:", json.error ?? "id manquant");
+        setStartError(json.error ?? "Impossible de démarrer la séance. Réessaie.");
         setLoading(false);
         return;
       }
       router.push(`${sessionBasePath}/session/${sessionId}`);
-    } catch (e) {
-      console.error("Erreur création session:", e);
+    } catch {
+      setStartError("Impossible de démarrer — vérifie ta connexion.");
       setLoading(false);
     }
   }
 
   return (
+    <div>
     <button
       onClick={handleStart}
       disabled={loading}
@@ -131,15 +134,21 @@ function StartSessionButton({
         )}
       </div>
     </button>
+    {startError && (
+      <p className="text-xs text-red-400 mt-1.5 px-1">{startError}</p>
+    )}
+    </div>
   );
 }
 
 function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [startError, setStartError] = useState<string | null>(null);
 
   async function handleStart() {
     setLoading(true);
+    setStartError(null);
     try {
       const res = await fetch("/api/client/sessions", {
         method: "POST",
@@ -149,30 +158,35 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
       const json = await res.json();
       const sessionId: string | undefined = json.sessionId;
       if (!sessionId) {
-        console.error("Erreur création session libre:", json.error ?? "id manquant");
+        setStartError(json.error ?? "Impossible de démarrer la séance. Réessaie.");
         setLoading(false);
         return;
       }
       router.push(`${sessionBasePath}/session/${sessionId}`);
-    } catch (e) {
-      console.error("Erreur création session libre:", e);
+    } catch {
+      setStartError("Impossible de démarrer — vérifie ta connexion.");
       setLoading(false);
     }
   }
 
   return (
-    <button
-      onClick={handleStart}
-      disabled={loading}
-      className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
-    >
-      {loading ? (
-        <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
-      ) : (
-        <Plus size={15} strokeWidth={1.8} />
+    <div>
+      <button
+        onClick={handleStart}
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
+      >
+        {loading ? (
+          <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Plus size={15} strokeWidth={1.8} />
+        )}
+        Séance libre
+      </button>
+      {startError && (
+        <p className="text-xs text-red-400 mt-1.5 px-1">{startError}</p>
       )}
-      Séance libre
-    </button>
+    </div>
   );
 }
 

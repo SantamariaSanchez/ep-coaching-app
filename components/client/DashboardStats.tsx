@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/Skeleton";
 import ProgressRing from "@/components/ui/ProgressRing";
-import { ClipboardList, CheckCircle2, ChevronRight } from "lucide-react";
+import {
+  ClipboardList, CheckCircle2, ChevronRight, Apple, Dumbbell,
+  ClipboardCheck, Flame, Circle,
+} from "lucide-react";
 
 interface Stats {
   consumedCals: number;
@@ -15,11 +18,13 @@ interface Stats {
   sleepDisplay: string;
   hasCheckinThisWeek: boolean;
   weekNumber: number;
+  hasSessionToday: boolean;
+  hasBilanToday: boolean;
+  todayStr: string;
 }
 
 function SleepDisplay({ value }: { value: string }) {
   const hours = parseFloat(value) || 0;
-  const pct = Math.min(hours / 9, 1);
   return (
     <ProgressRing
       value={Math.round(hours * 10) / 10}
@@ -35,22 +40,67 @@ function SleepDisplay({ value }: { value: string }) {
   );
 }
 
-function StepsDisplay({ value }: { value: string }) {
-  const steps = parseInt(value.replace(/\D/g, "")) || 0;
+interface DailyTask {
+  done: boolean;
+  label: string;
+  sublabel: string;
+  href: string;
+  icon: React.ElementType;
+  color: string;
+}
+
+function DailyTaskRow({ task }: { task: DailyTask }) {
+  const Icon = task.icon;
   return (
-    <ProgressRing
-      value={steps}
-      max={10000}
-      size={96}
-      strokeWidth={7}
-      color="#60a5fa"
-      trackColor="rgba(96,165,250,0.07)"
-      label="Pas"
-      asPercent={false}
-      unit={value.includes("k") ? "k" : ""}
-      sublabel={`/ 10k`}
-      delay={300}
-    />
+    <Link
+      href={task.href}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        padding: "11px 14px",
+        borderRadius: 12,
+        background: task.done ? "rgba(74,222,128,0.05)" : "rgba(31,1,1,0.7)",
+        border: task.done ? "1px solid rgba(74,222,128,0.18)" : "1px solid rgba(137,4,4,0.22)",
+        textDecoration: "none",
+        transition: "all 0.15s ease",
+      }}
+    >
+      <div style={{
+        width: 32,
+        height: 32,
+        borderRadius: 9,
+        background: task.done ? "rgba(74,222,128,0.12)" : `${task.color}15`,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        {task.done
+          ? <CheckCircle2 size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+          : <Icon size={15} style={{ color: task.color }} strokeWidth={1.8} />
+        }
+      </div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          margin: 0,
+          fontSize: 12,
+          fontWeight: 700,
+          color: task.done ? "rgba(245,237,237,0.5)" : "#F5EDED",
+          textDecoration: task.done ? "line-through" : "none",
+        }}>
+          {task.label}
+        </p>
+        {!task.done && (
+          <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)" }}>
+            {task.sublabel}
+          </p>
+        )}
+      </div>
+      {!task.done && (
+        <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+      )}
+    </Link>
   );
 }
 
@@ -67,8 +117,8 @@ export default function ClientDashboardStats() {
   if (!stats) {
     return (
       <div style={{ marginBottom: 28 }}>
-        <div className="ep-skeleton" style={{ height: 180, marginBottom: 16, borderRadius: "var(--radius-xl)" }} />
-        <div className="ep-skeleton" style={{ height: 100, borderRadius: "var(--radius-lg)" }} />
+        <div className="ep-skeleton" style={{ height: 180, marginBottom: 12, borderRadius: "var(--radius-xl)" }} />
+        <div className="ep-skeleton" style={{ height: 120, borderRadius: "var(--radius-lg)" }} />
       </div>
     );
   }
@@ -81,19 +131,77 @@ export default function ClientDashboardStats() {
     : stats.adherence >= 50 ? "#fbbf24"
     : "#E01E1E";
 
+  const dailyTasks: DailyTask[] = [
+    {
+      done: stats.consumedCals > 0,
+      label: stats.consumedCals > 0
+        ? `Nutrition loggée — ${stats.consumedCals}${stats.targetCals > 0 ? ` / ${stats.targetCals} kcal` : " kcal"}`
+        : "Logger mes repas du jour",
+      sublabel: stats.targetCals > 0
+        ? `Objectif : ${stats.targetCals} kcal`
+        : "Renseigne tes repas pour suivre tes kcal",
+      href: "/dashboard/client/nutrition",
+      icon: Apple,
+      color: "#E01E1E",
+    },
+    {
+      done: stats.hasSessionToday,
+      label: stats.hasSessionToday ? "Séance terminée aujourd'hui" : "Démarrer ma séance",
+      sublabel: "Lance ton logbook et suis ta progression",
+      href: "/dashboard/client/logbook",
+      icon: Dumbbell,
+      color: "#60a5fa",
+    },
+    {
+      done: stats.hasBilanToday,
+      label: stats.hasBilanToday ? "Bilan du jour rempli" : "Remplir mon bilan du jour",
+      sublabel: "Poids, sommeil, ressenti — 30 secondes",
+      href: "/dashboard/client/bilan",
+      icon: ClipboardCheck,
+      color: "#fbbf24",
+    },
+  ];
+
+  const doneCount = dailyTasks.filter((t) => t.done).length;
+
   return (
     <>
-      {/* ── Hero rings card ─────────────────────────────────────────────────── */}
-      <div
-        className="ep-card-hero animate-scale-in"
-        style={{ padding: "28px 20px 24px", marginBottom: 16 }}
-      >
-        {/* Week badge */}
+      {/* ── Daily checklist ─────────────────────────────────────────────────── */}
+      <div className="animate-fade-up" style={{ marginBottom: 16 }}>
         <div style={{
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 24,
+          marginBottom: 10,
+        }}>
+          <p className="ep-section-title" style={{ margin: 0 }}>Aujourd&apos;hui</p>
+          <span style={{
+            fontSize: 10,
+            fontWeight: 700,
+            color: doneCount === 3 ? "#4ade80" : "rgba(245,237,237,0.3)",
+            letterSpacing: "0.06em",
+            textTransform: "uppercase",
+          }}>
+            {doneCount === 3 ? "✓ Tout fait" : `${doneCount}/3 actions`}
+          </span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          {dailyTasks.map((task) => (
+            <DailyTaskRow key={task.href} task={task} />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Hero rings card ─────────────────────────────────────────────────── */}
+      <div
+        className="ep-card-hero animate-scale-in"
+        style={{ padding: "24px 20px 20px", marginBottom: 16 }}
+      >
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 20,
         }}>
           <span className="ep-badge-red">Semaine {stats.weekNumber}</span>
           {stats.hasCheckinThisWeek && (
@@ -113,7 +221,6 @@ export default function ClientDashboardStats() {
           )}
         </div>
 
-        {/* 3 rings */}
         <div style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr 1fr",
@@ -121,7 +228,6 @@ export default function ClientDashboardStats() {
           alignItems: "end",
           justifyItems: "center",
         }}>
-          {/* Nutrition ring — main/largest */}
           <ProgressRing
             value={calPct}
             max={100}
@@ -134,8 +240,6 @@ export default function ClientDashboardStats() {
             sublabel={`${stats.consumedCals} / ${stats.targetCals} kcal`}
             delay={0}
           />
-
-          {/* Adherence ring */}
           <ProgressRing
             value={stats.adherence}
             max={100}
@@ -143,13 +247,11 @@ export default function ClientDashboardStats() {
             strokeWidth={7}
             color={adherenceColor}
             trackColor={`${adherenceColor}10`}
-            label="Adhésion"
+            label="Adhésion 7j"
             unit="%"
             sublabel={`${stats.daysWithLogs}/7 jours`}
             delay={100}
           />
-
-          {/* Sleep ring */}
           <SleepDisplay value={stats.sleepDisplay} />
         </div>
       </div>

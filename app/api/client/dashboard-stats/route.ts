@@ -1,21 +1,38 @@
 import { NextResponse } from "next/server";
-export const revalidate = 30;
+export const revalidate = 0; // always fresh — this is the daily dashboard
 import { getUser } from "@/utils/auth";
 import { getTodayLogs, getLast7DaysLogs, getNutritionProfile } from "@/utils/nutrition";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
+import { createServerSupabase } from "@/lib/supabase-server";
 
 export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const today = new Date();
+  const todayStr = today.toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin] =
+  const supabase = await createServerSupabase();
+
+  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount] =
     await Promise.all([
       getNutritionProfile(user.id),
       getTodayLogs(user.id),
       getLast7DaysLogs(user.id),
       getThisWeekCheckin(user.id),
+      // Did the user log a workout today?
+      supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", user.id)
+        .eq("session_date", todayStr)
+        .eq("is_completed", true),
+      // Did the user fill their daily bilan today?
+      supabase
+        .from("daily_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", user.id)
+        .eq("log_date", todayStr),
     ]);
 
   const consumedCals = Math.round(
@@ -23,7 +40,6 @@ export async function GET() {
   );
   const targetCals = nutritionProfile?.calories_target ?? 0;
 
-  // Adherence last 7 days
   const logDates = new Set(last7DaysLogs.map((l) => l.logged_at.split("T")[0]));
   const daysWithLogs = Array.from({ length: 7 }, (_, i) => {
     const d = new Date(today);
@@ -49,5 +65,8 @@ export async function GET() {
     sleepDisplay,
     hasCheckinThisWeek: thisWeekCheckin != null,
     weekNumber,
+    hasSessionToday: (sessionCount.count ?? 0) > 0,
+    hasBilanToday: (bilanCount.count ?? 0) > 0,
+    todayStr,
   });
 }
