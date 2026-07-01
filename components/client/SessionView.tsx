@@ -1116,7 +1116,8 @@ export default function SessionView({
           setStep("recap");
         } else if (data.session.warmup_validated) {
           setStep("session");
-          sessionStartRef.current = Date.now();
+          const saved = localStorage.getItem(`ep-session-start-${sessionId}`);
+          sessionStartRef.current = saved ? parseInt(saved, 10) : Date.now();
         }
 
         setLoading(false);
@@ -1153,6 +1154,7 @@ export default function SessionView({
     async function acquire() {
       try {
         sentinel = await navigator.wakeLock.request("screen");
+        sentinel.addEventListener("release", () => { sentinel = null; });
       } catch {
         // Unsupported / denied — degrade silently, the session itself
         // still resumes correctly on reopen regardless of screen lock.
@@ -1177,7 +1179,9 @@ export default function SessionView({
       // Move to the workout immediately — warmup_validated is just metadata
       // for "resume where I left off" on reload, it must never block the
       // transition if the network is slow/flaky.
-      sessionStartRef.current = Date.now();
+      const startTime = Date.now();
+      sessionStartRef.current = startTime;
+      localStorage.setItem(`ep-session-start-${sessionId}`, startTime.toString());
       setStep("session");
 
       const patchWarmup = () =>
@@ -1424,6 +1428,7 @@ export default function SessionView({
         }),
       });
 
+      localStorage.removeItem(`ep-session-start-${sessionId}`);
       router.push(returnPath);
     } catch {
       setSaving(false);
