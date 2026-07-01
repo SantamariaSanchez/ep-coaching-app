@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, Camera, BookOpen } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -222,11 +222,6 @@ export default function ClientNutritionView({
   const [addingError, setAddingError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Photo logging
-  const [analysingPhoto, setAnalysingPhoto] = useState(false);
-  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [photoEstimate, setPhotoEstimate] = useState<{ name: string; calories: number; proteins: number; carbs: number; fats: number } | null>(null);
-
   // Create food modal
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -370,8 +365,6 @@ export default function ClientNutritionView({
     setQuantityInput("");
     setRecipeServings("1");
     setAddingError(null);
-    setPhotoPreview(null);
-    setPhotoEstimate(null);
   }
 
   function closeModal() {
@@ -382,8 +375,6 @@ export default function ClientNutritionView({
     setQuantityInput("");
     setRecipeServings("1");
     setAddingError(null);
-    setPhotoPreview(null);
-    setPhotoEstimate(null);
   }
 
   function selectFoodForLogging(food: Food) {
@@ -540,79 +531,6 @@ export default function ClientNutritionView({
       foodId: null,
       mealSlot: addingToSlot,
       quantityG: Math.round(servings * 100),
-      calories,
-      proteins,
-      carbs,
-      fats,
-      loggedAt: today,
-    });
-
-    if (result.error) {
-      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
-      setAddingError(result.error);
-    } else if (result.id) {
-      setTodayLogs((prev) =>
-        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: result.id! } : l))
-      );
-    }
-  }
-
-  async function handlePhotoSelect(file: File) {
-    setAnalysingPhoto(true);
-    setPhotoEstimate(null);
-    const preview = URL.createObjectURL(file);
-    setPhotoPreview(preview);
-
-    const form = new FormData();
-    form.append("photo", file);
-    try {
-      const res = await fetch("/api/ai/analyze-meal-photo", { method: "POST", body: form });
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      setPhotoEstimate(data);
-    } catch (e) {
-      setAddingError(e instanceof Error ? e.message : "Erreur analyse photo.");
-      setPhotoPreview(null);
-    } finally {
-      setAnalysingPhoto(false);
-    }
-  }
-
-  async function handleConfirmPhotoLog() {
-    if (!photoEstimate || !addingToSlot) return;
-    const { name, calories, proteins, carbs, fats } = photoEstimate;
-
-    const virtualFood: Food = {
-      id: `photo-${Date.now()}`,
-      name,
-      category: "Photo",
-      calories_per_100: calories,
-      proteins_per_100: proteins,
-      carbs_per_100: carbs,
-      fats_per_100: fats,
-    };
-
-    const optimisticLog: FoodLogWithFood = {
-      id: `optimistic-photo-${Date.now()}`,
-      client_id: "",
-      food_id: null,
-      meal_slot: addingToSlot,
-      quantity_g: 100,
-      logged_at: today,
-      calories,
-      proteins,
-      carbs,
-      fats,
-      foods: virtualFood,
-    };
-
-    setTodayLogs((prev) => [...prev, optimisticLog]);
-    closeModal();
-
-    const result = await addFoodLog({
-      foodId: null,
-      mealSlot: addingToSlot,
-      quantityG: 100,
       calories,
       proteins,
       carbs,
@@ -902,6 +820,29 @@ export default function ClientNutritionView({
             </div>
           )}
 
+          {/* Bilan rapide — quiz 4 questions → auto-log, zéro saisie manuelle */}
+          {todayLogs.length === 0 && (
+            <a
+              href="/dashboard/client/nutrition/bilan-rapide"
+              className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
+            >
+              <span className="flex items-center gap-2.5 text-left">
+                <span className="text-xl">⚡</span>
+                <span>
+                  <span className="block text-xs font-bold text-white">
+                    Bilan rapide — 4 questions, 1 min
+                  </span>
+                  <span className="block text-[10px] text-[#F5EDED]/40">
+                    Je réponds et l&apos;appli log tout automatiquement
+                  </span>
+                </span>
+              </span>
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+                Commencer →
+              </span>
+            </a>
+          )}
+
           {/* Copy yesterday — the single biggest friction-killer for an empty day */}
           {todayLogs.length === 0 && yesterdayLogs.length > 0 && (
             <button
@@ -1107,7 +1048,7 @@ export default function ClientNutritionView({
             </div>
 
             {/* Tab switcher: Aliments / Recettes */}
-            {!selectedFood && !selectedRecipe && !photoPreview && (
+            {!selectedFood && !selectedRecipe && (
               <div className="flex px-5 pt-2 pb-0 gap-1 flex-shrink-0">
                 {(["aliments", "recettes"] as const).map((t) => (
                   <button
@@ -1128,7 +1069,7 @@ export default function ClientNutritionView({
             {!selectedFood && !selectedRecipe ? (
               // ── Search / Recipe view ──
               <>
-                {!photoPreview && searchTab === "aliments" && (
+                {searchTab === "aliments" && (
                   <div className="px-5 py-3 flex-shrink-0">
                     <input
                       autoFocus
@@ -1140,37 +1081,7 @@ export default function ClientNutritionView({
                   </div>
                 )}
 
-                {/* Photo logging view */}
-                {photoPreview && (
-                  <div className="px-5 py-4 flex-1 flex flex-col gap-4 overflow-y-auto">
-                    <img src={photoPreview} alt="Repas" className="w-full max-h-48 object-cover rounded-xl" />
-                    {analysingPhoto && (
-                      <p className="text-xs text-[#F5EDED]/50 text-center animate-pulse">
-                        Analyse en cours…
-                      </p>
-                    )}
-                    {photoEstimate && (
-                      <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
-                        <p className="text-xs font-bold text-white mb-3">{photoEstimate.name}</p>
-                        <div className="flex gap-4 text-xs">
-                          <div><p className="text-[#E01E1E] font-black text-lg">{photoEstimate.calories}</p><p className="text-[#F5EDED]/35 text-[9px]">kcal</p></div>
-                          <div><p className="text-blue-300 font-bold">{photoEstimate.proteins}g</p><p className="text-[#F5EDED]/35 text-[9px]">Prot</p></div>
-                          <div><p className="text-amber-300 font-bold">{photoEstimate.carbs}g</p><p className="text-[#F5EDED]/35 text-[9px]">Gluc</p></div>
-                          <div><p className="text-rose-300 font-bold">{photoEstimate.fats}g</p><p className="text-[#F5EDED]/35 text-[9px]">Lip</p></div>
-                        </div>
-                        <p className="text-[9px] text-[#F5EDED]/25 mt-2">Estimation IA — ajuste via &quot;Créer un aliment&quot; si besoin</p>
-                      </div>
-                    )}
-                    {photoEstimate && (
-                      <div className="flex gap-2">
-                        <button onClick={() => { setPhotoPreview(null); setPhotoEstimate(null); }} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/60">Reprendre</button>
-                        <button onClick={handleConfirmPhotoLog} className="flex-1 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] text-white rounded-lg">Logger ce repas</button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {searchTab === "aliments" && !photoPreview && (
+                {searchTab === "aliments" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
                     {!searchQuery && recentFoods.length > 0 && (
                       <div className="mb-1">
@@ -1195,7 +1106,7 @@ export default function ClientNutritionView({
                   </div>
                 )}
 
-                {searchTab === "recettes" && !photoPreview && (
+                {searchTab === "recettes" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
                     {(searchQuery
                       ? recipes.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -1218,22 +1129,8 @@ export default function ClientNutritionView({
                   </div>
                 )}
 
-                {searchTab === "aliments" && !photoPreview && (
+                {searchTab === "aliments" && (
                   <div className="px-5 py-3 border-t border-[#890404]/20 flex-shrink-0 flex flex-col gap-1">
-                    <label className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:text-purple-300 transition-colors py-2 cursor-pointer">
-                      <Camera size={11} />
-                      {analysingPhoto ? "Analyse…" : "Logger par photo (IA)"}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        capture="environment"
-                        className="hidden"
-                        onChange={(e) => {
-                          const f = e.target.files?.[0];
-                          if (f) handlePhotoSelect(f);
-                        }}
-                      />
-                    </label>
                     <button
                       onClick={() => {
                         const slot = addingToSlot!;
