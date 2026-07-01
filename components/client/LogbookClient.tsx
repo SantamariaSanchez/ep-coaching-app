@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions";
+import { Play } from "lucide-react";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
 
@@ -25,6 +26,7 @@ interface Props {
   records: PersonalRecord[];
   isFree?: boolean;
   subNavScope?: "client" | "coach-moi";
+  activeSession?: Session | null;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -297,7 +299,7 @@ function ImportLogbookButton() {
     </div>
   );
 }
-export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client" }: Props) {
+export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client", activeSession }: Props) {
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sessionBasePath =
@@ -326,6 +328,32 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
       </div>
 
       <ImportLogbookButton />
+
+      {/* ── Séance en cours ── */}
+      {activeSession && (
+        <Link
+          href={`${sessionBasePath}/session/${activeSession.id}`}
+          className="flex items-center gap-4 bg-[#E01E1E] rounded-2xl px-5 py-4 mb-6 active:scale-[0.98] transition-transform"
+        >
+          <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+            <Play size={18} className="text-white fill-white" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-0.5">
+              Séance en cours
+            </p>
+            <p className="text-sm font-black text-white truncate">
+              {activeSession.day_label}
+            </p>
+            {activeSession.muscle_groups && activeSession.muscle_groups.length > 0 && (
+              <p className="text-[10px] text-white/60 truncate">
+                {activeSession.muscle_groups.join(" · ")}
+              </p>
+            )}
+          </div>
+          <ChevronRight size={20} className="text-white/70 flex-shrink-0" />
+        </Link>
+      )}
 
       {/* ── Démarrer une séance ── */}
       <section className="mb-8">

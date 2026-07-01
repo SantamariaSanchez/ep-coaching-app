@@ -55,6 +55,25 @@ export interface SessionWithSets extends Session {
 
 // ── Client session fetches ────────────────────────────────────────────────────
 
+export async function getActiveSession(clientId: string): Promise<Session | null> {
+  try {
+    const supabase = await createServerSupabase();
+    const today = new Date().toISOString().split("T")[0];
+    const { data } = await supabase
+      .from("sessions")
+      .select("*")
+      .eq("client_id", clientId)
+      .eq("is_completed", false)
+      .eq("session_date", today)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data as Session) ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getClientSessions(
   clientId: string,
   limit = 10
