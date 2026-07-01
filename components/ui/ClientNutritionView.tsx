@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera } from "lucide-react";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -891,9 +891,11 @@ export default function ClientNutritionView({
             return (
               <MealSlotCard
                 key={slot.key}
+                slotKey={slot.key}
                 label={slot.label}
                 logs={slotLogs}
                 totalCals={slotCals}
+                today={today}
                 onAdd={() => openModal(slot.key)}
                 onDelete={handleDelete}
               />
@@ -1644,20 +1646,51 @@ function DietPlanCard({
 
 // ── MealSlotCard ──────────────────────────────────────────────────────────────
 
+import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
+
 function MealSlotCard({
+  slotKey,
   label,
   logs,
   totalCals,
+  today,
   onAdd,
   onDelete,
 }: {
+  slotKey: string;
   label: string;
   logs: FoodLogWithFood[];
   totalCals: number;
+  today: string;
   onAdd: () => void;
   onDelete: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(true);
+  const [hasPhoto, setHasPhoto] = useState(() => !!loadMealPhoto(today, slotKey));
+
+  function handlePhotoCapture(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      // Compress by drawing on canvas (max 400px wide)
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const scale = Math.min(1, 400 / img.width);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        canvas.getContext("2d")?.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressed = canvas.toDataURL("image/jpeg", 0.6);
+        saveMealPhoto(today, slotKey, compressed);
+        setHasPhoto(true);
+      };
+      img.src = dataUrl;
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  }
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl overflow-hidden">
@@ -1667,8 +1700,9 @@ function MealSlotCard({
       >
         <div className="flex items-center gap-3">
           <div>
-            <p className="text-xs font-bold uppercase tracking-widest text-white">
+            <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
               {label}
+              {hasPhoto && <span className="text-purple-400 text-[9px] font-bold">📸</span>}
             </p>
             {logs.length > 0 && (
               <p className="text-[10px] text-[#F5EDED]/35">
@@ -1678,7 +1712,24 @@ function MealSlotCard({
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
+          {/* Quick photo capture */}
+          <label
+            onClick={(e) => e.stopPropagation()}
+            className={`inline-flex items-center justify-center w-7 h-7 rounded-lg transition-colors cursor-pointer ${
+              hasPhoto ? "text-purple-400" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
+            }`}
+            title="Prendre une photo pour t'aider à loguer ce soir"
+          >
+            <Camera size={13} />
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handlePhotoCapture}
+            />
+          </label>
           <button
             onClick={(e) => {
               e.stopPropagation();

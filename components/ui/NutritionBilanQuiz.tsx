@@ -1,123 +1,77 @@
 "use client";
 
-import { useState } from "react";
-import { Check, ChevronRight, Sparkles } from "lucide-react";
-import type { NutritionProfile } from "@/utils/nutrition";
+import { useState, useMemo, useEffect, useRef } from "react";
+import {
+  Check, ChevronRight, ChevronLeft, Camera, Sparkles, Search, X, Plus,
+} from "lucide-react";
+import type { NutritionProfile, Food, FoodLogWithFood } from "@/utils/nutrition";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type MealCount = 1 | 2 | 3 | 4;
-type QuantityLevel = "peu" | "normal" | "bien" | "trop";
-type ProteinLevel = "insuff" | "correct" | "top";
-type FoodQuality = "sain" | "moyen" | "junk";
-
-interface QuizAnswers {
-  mealCount: MealCount | null;
-  quantity: QuantityLevel | null;
-  proteins: ProteinLevel | null;
-  quality: FoodQuality | null;
-}
-
-// ── Estimation logic ───────────────────────────────────────────────────────────
-// Converts quiz answers + nutrition targets into absolute macro estimates,
-// then distributes them across meal slots proportionally.
-
-const CAL_MULT: Record<QuantityLevel, number> = {
-  peu: 0.55,
-  normal: 0.88,
-  bien: 1.02,
-  trop: 1.20,
-};
-
-const PROT_MULT: Record<ProteinLevel, number> = {
-  insuff: 0.60,
-  correct: 0.88,
-  top: 1.10,
-};
-
-const JUNK_FAT_MULT: Record<FoodQuality, number> = {
-  sain: 1.0,
-  moyen: 1.15,
-  junk: 1.35,
-};
-
-const MEAL_SLOT_DISTRIBUTIONS: Record<MealCount, { slot: string; share: number }[]> = {
-  1: [{ slot: "lunch", share: 1.0 }],
-  2: [
-    { slot: "lunch", share: 0.45 },
-    { slot: "dinner", share: 0.55 },
-  ],
-  3: [
-    { slot: "breakfast", share: 0.25 },
-    { slot: "lunch", share: 0.40 },
-    { slot: "dinner", share: 0.35 },
-  ],
-  4: [
-    { slot: "breakfast", share: 0.20 },
-    { slot: "morning", share: 0.15 },
-    { slot: "lunch", share: 0.32 },
-    { slot: "dinner", share: 0.33 },
-  ],
-};
-
-interface CompletedAnswers {
-  mealCount: MealCount;
-  quantity: QuantityLevel;
-  proteins: ProteinLevel;
-  quality: FoodQuality;
-}
-
-function estimateMacros(answers: CompletedAnswers, profile: NutritionProfile | null) {
-  const baseCal = profile?.calories_target ?? 2000;
-  const baseProt = profile?.proteins_target ?? 150;
-  const baseFat = profile?.fats_target ?? 65;
-
-  const totalCal = Math.round(baseCal * CAL_MULT[answers.quantity]);
-  const totalProt = Math.round(baseProt * PROT_MULT[answers.proteins]);
-  const totalFat = Math.round(baseFat * JUNK_FAT_MULT[answers.quality]);
-  const totalCarbs = Math.max(0, Math.round((totalCal - totalProt * 4 - totalFat * 9) / 4));
-
-  return { totalCal, totalProt, totalFat, totalCarbs };
-}
-
-// ── Sub-components ─────────────────────────────────────────────────────────────
-
-function OptionButton<T>({
-  value,
-  selected,
-  label,
-  sublabel,
-  emoji,
-  onSelect,
-}: {
-  value: T;
-  selected: boolean;
+interface MealSlotDef {
+  key: string;
   label: string;
-  sublabel?: string;
   emoji: string;
-  onSelect: (v: T) => void;
-}) {
-  return (
-    <button
-      onClick={() => onSelect(value)}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl border text-left transition-all ${
-        selected
-          ? "bg-[#E01E1E]/15 border-[#E01E1E]/50"
-          : "bg-[#1f0101] border-[#890404]/25 hover:border-[#890404]/50"
-      }`}
-    >
-      <span className="text-xl flex-shrink-0">{emoji}</span>
-      <div className="flex-1 min-w-0">
-        <p className={`text-sm font-bold ${selected ? "text-white" : "text-[#F5EDED]/70"}`}>
-          {label}
-        </p>
-        {sublabel && (
-          <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">{sublabel}</p>
-        )}
-      </div>
-      {selected && <Check size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />}
-    </button>
-  );
+}
+
+const ALL_SLOTS: MealSlotDef[] = [
+  { key: "breakfast",   label: "Petit-déjeuner",      emoji: "☀️" },
+  { key: "morning",     label: "Collation matin",      emoji: "🍎" },
+  { key: "lunch",       label: "Déjeuner",             emoji: "🍽️" },
+  { key: "afternoon",   label: "Collation après-midi", emoji: "🥜" },
+  { key: "postworkout", label: "Post-entraînement",    emoji: "💪" },
+  { key: "dinner",      label: "Dîner",                emoji: "🌙" },
+];
+
+interface SelectedFood {
+  food: Food;
+  qty: "petit" | "moyen" | "grand" | "double";
+}
+
+// qty → grammes (pour les calculs macros)
+const QTY_G: Record<string, number> = {
+  petit:  70,
+  moyen: 120,
+  grand: 180,
+  double: 250,
+};
+const QTY_LABELS: Record<string, string> = {
+  petit:  "Petite (≈70g)",
+  moyen:  "Normale (≈120g)",
+  grand:  "Grande (≈180g)",
+  double: "Double (≈250g)",
+};
+
+function calcMacros(food: Food, qtyKey: string) {
+  const g = QTY_G[qtyKey] ?? 100;
+  return {
+    calories: Math.round(food.calories_per_100 * g / 100),
+    proteins: Math.round(food.proteins_per_100 * g / 100),
+    carbs:    Math.round(food.carbs_per_100    * g / 100),
+    fats:     Math.round(food.fats_per_100     * g / 100),
+  };
+}
+
+// ── LocalStorage photo helpers ─────────────────────────────────────────────────
+// Photos taken during the day live in localStorage under ep-meal-{date}-{slot}.
+// They're used as visual cues during the evening quiz to jog memory.
+
+function photoKey(date: string, slot: string) {
+  return `ep-meal-${date}-${slot}`;
+}
+
+export function saveMealPhoto(date: string, slot: string, dataUrl: string) {
+  try { localStorage.setItem(photoKey(date, slot), dataUrl); } catch {}
+}
+
+export function loadMealPhoto(date: string, slot: string): string | null {
+  try { return localStorage.getItem(photoKey(date, slot)); } catch { return null; }
+}
+
+export function clearMealPhotos(date: string) {
+  ALL_SLOTS.forEach((s) => {
+    try { localStorage.removeItem(photoKey(date, s.key)); } catch {}
+  });
 }
 
 // ── Main Quiz Component ────────────────────────────────────────────────────────
@@ -125,6 +79,8 @@ function OptionButton<T>({
 interface Props {
   nutritionProfile: NutritionProfile | null;
   today: string;
+  historyLogs: FoodLogWithFood[];
+  allFoods: Food[];
   addFoodLog: (params: {
     foodId: string | null;
     mealSlot: string;
@@ -137,276 +93,520 @@ interface Props {
   }) => Promise<{ id?: string; error?: string }>;
 }
 
-const STEPS = ["repas", "quantite", "proteines", "qualite", "resultat"] as const;
-type Step = (typeof STEPS)[number];
+type Phase = "slots" | "meal" | "summary" | "done";
 
-export default function NutritionBilanQuiz({ nutritionProfile, today, addFoodLog }: Props) {
-  const [step, setStep] = useState<Step>("repas");
-  const [answers, setAnswers] = useState<QuizAnswers>({
-    mealCount: null,
-    quantity: null,
-    proteins: null,
-    quality: null,
-  });
-  const [loading, setLoading] = useState(false);
-  const [done, setDone] = useState(false);
+export default function NutritionBilanQuiz({
+  nutritionProfile,
+  today,
+  historyLogs,
+  allFoods,
+  addFoodLog,
+}: Props) {
+  // ── Phase & navigation state ────────────────────────────────────────────────
+  const [phase, setPhase] = useState<Phase>("slots");
+  const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
+  const [currentSlotIdx, setCurrentSlotIdx] = useState(0);
+  const [mealFoods, setMealFoods] = useState<Record<string, SelectedFood[]>>({});
+
+  // ── Food search state ───────────────────────────────────────────────────────
+  const [searchQ, setSearchQ] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  // ── Submission state ────────────────────────────────────────────────────────
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [summary, setSummary] = useState<{ cal: number; prot: number; carbs: number; fat: number } | null>(null);
 
-  const stepIndex = STEPS.indexOf(step);
-  const progress = ((stepIndex + 1) / STEPS.length) * 100;
+  // ── Photos (from localStorage) ──────────────────────────────────────────────
+  const [photos, setPhotos] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const p: Record<string, string> = {};
+    ALL_SLOTS.forEach((s) => {
+      const url = loadMealPhoto(today, s.key);
+      if (url) p[s.key] = url;
+    });
+    setPhotos(p);
+  }, [today]);
 
-  function next() {
-    const nextStep = STEPS[stepIndex + 1];
-    if (nextStep) setStep(nextStep);
+  // ── Current meal ────────────────────────────────────────────────────────────
+  const activeMealKeys = useMemo(
+    () => selectedSlots.filter((k) => ALL_SLOTS.find((s) => s.key === k)),
+    [selectedSlots]
+  );
+  const currentSlotKey = activeMealKeys[currentSlotIdx] ?? null;
+  const currentSlot = ALL_SLOTS.find((s) => s.key === currentSlotKey) ?? null;
+  const currentSelections = mealFoods[currentSlotKey ?? ""] ?? [];
+
+  // ── History suggestions for current slot ───────────────────────────────────
+  const historySuggestions = useMemo(() => {
+    if (!currentSlotKey) return [];
+    const counts: Record<string, { food: Food; count: number }> = {};
+    for (const log of historyLogs) {
+      if (log.meal_slot !== currentSlotKey || !log.foods) continue;
+      const name = log.foods.name;
+      if (!counts[name]) counts[name] = { food: log.foods, count: 0 };
+      counts[name].count++;
+    }
+    return Object.values(counts)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6)
+      .map((e) => e.food);
+  }, [historyLogs, currentSlotKey]);
+
+  // ── Food search results ──────────────────────────────────────────────────────
+  const searchResults = useMemo(() => {
+    const q = searchQ.toLowerCase().trim();
+    if (!q) return [];
+    return allFoods
+      .filter((f) => f.name.toLowerCase().includes(q))
+      .slice(0, 10);
+  }, [allFoods, searchQ]);
+
+  // ── Totals for summary ───────────────────────────────────────────────────────
+  const totals = useMemo(() => {
+    let cal = 0, prot = 0, carbs = 0, fat = 0;
+    for (const [, foods] of Object.entries(mealFoods)) {
+      for (const sf of foods) {
+        const m = calcMacros(sf.food, sf.qty);
+        cal += m.calories; prot += m.proteins; carbs += m.carbs; fat += m.fats;
+      }
+    }
+    return { cal, prot, carbs, fat };
+  }, [mealFoods]);
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function toggleSlot(key: string) {
+    setSelectedSlots((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
   }
 
-  function canNext() {
-    if (step === "repas") return answers.mealCount != null;
-    if (step === "quantite") return answers.quantity != null;
-    if (step === "proteines") return answers.proteins != null;
-    if (step === "qualite") return answers.quality != null;
-    return false;
+  function toggleFood(food: Food) {
+    const key = currentSlotKey ?? "";
+    setMealFoods((prev) => {
+      const list = prev[key] ?? [];
+      const exists = list.find((sf) => sf.food.id === food.id);
+      if (exists) return { ...prev, [key]: list.filter((sf) => sf.food.id !== food.id) };
+      return { ...prev, [key]: [...list, { food, qty: "moyen" }] };
+    });
+  }
+
+  function setQty(foodId: string, qty: SelectedFood["qty"]) {
+    const key = currentSlotKey ?? "";
+    setMealFoods((prev) => ({
+      ...prev,
+      [key]: (prev[key] ?? []).map((sf) =>
+        sf.food.id === foodId ? { ...sf, qty } : sf
+      ),
+    }));
+  }
+
+  function goNextMeal() {
+    setSearchQ("");
+    setShowSearch(false);
+    if (currentSlotIdx < activeMealKeys.length - 1) {
+      setCurrentSlotIdx((i) => i + 1);
+    } else {
+      setPhase("summary");
+    }
+  }
+
+  function goPrevMeal() {
+    setSearchQ("");
+    setShowSearch(false);
+    if (currentSlotIdx > 0) {
+      setCurrentSlotIdx((i) => i - 1);
+    } else {
+      setPhase("slots");
+    }
   }
 
   async function handleSubmit() {
-    if (!answers.mealCount || !answers.quantity || !answers.proteins || !answers.quality) return;
-    setLoading(true);
+    setSubmitting(true);
     setError(null);
 
-    const { totalCal, totalProt, totalFat, totalCarbs } = estimateMacros(
-      {
-        mealCount: answers.mealCount!,
-        quantity: answers.quantity!,
-        proteins: answers.proteins!,
-        quality: answers.quality!,
-      },
-      nutritionProfile
-    );
-
-    const distribution = MEAL_SLOT_DISTRIBUTIONS[answers.mealCount];
-
-    const results = await Promise.all(
-      distribution.map(({ slot, share }) =>
-        addFoodLog({
-          foodId: null,
-          mealSlot: slot,
-          quantityG: 100,
-          calories: Math.round(totalCal * share),
-          proteins: Math.round(totalProt * share),
-          carbs: Math.round(totalCarbs * share),
-          fats: Math.round(totalFat * share),
+    const entries: Array<Parameters<typeof addFoodLog>[0]> = [];
+    for (const [slotKey, foods] of Object.entries(mealFoods)) {
+      for (const sf of foods) {
+        const g = QTY_G[sf.qty] ?? 120;
+        const m = calcMacros(sf.food, sf.qty);
+        entries.push({
+          foodId: sf.food.id,
+          mealSlot: slotKey,
+          quantityG: g,
+          calories: m.calories,
+          proteins: m.proteins,
+          carbs: m.carbs,
+          fats: m.fats,
           loggedAt: today,
-        })
-      )
-    );
+        });
+      }
+    }
 
-    setLoading(false);
-
+    // Also add entries for meals with no foods selected (skipped = 0 cal, omit)
+    const results = await Promise.all(entries.map((e) => addFoodLog(e)));
     const failed = results.find((r) => r.error);
+
+    setSubmitting(false);
+
     if (failed) {
       setError(failed.error ?? "Erreur lors du log.");
       return;
     }
 
-    setSummary({ cal: totalCal, prot: totalProt, carbs: totalCarbs, fat: totalFat });
-    setDone(true);
-    setStep("resultat");
+    setSummary({ cal: totals.cal, prot: totals.prot, carbs: totals.carbs, fat: totals.fat });
+    clearMealPhotos(today);
+    setPhase("done");
   }
 
-  if (done && step === "resultat") {
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  // DONE
+  if (phase === "done" && summary) {
     return (
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-2xl p-6 text-center">
-        <div className="flex items-center justify-center mb-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#E01E1E]/15 border border-[#E01E1E]/30 flex items-center justify-center">
-            <Sparkles size={24} className="text-[#E01E1E]" strokeWidth={1.8} />
-          </div>
+        <div className="w-14 h-14 rounded-2xl bg-[#E01E1E]/15 border border-[#E01E1E]/30 flex items-center justify-center mx-auto mb-4">
+          <Sparkles size={24} className="text-[#E01E1E]" strokeWidth={1.8} />
         </div>
-        <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">Bilan logué !</p>
-        <p className="text-2xl font-black text-white mb-1">
-          {summary?.cal} kcal
-        </p>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">Journée loggée</p>
+        <p className="text-3xl font-black text-white mb-1">{summary.cal} kcal</p>
         <p className="text-xs text-[#F5EDED]/40 mb-5">
-          P {summary?.prot}g · G {summary?.carbs}g · L {summary?.fat}g
+          estimé sur {activeMealKeys.length} repas · {entries(mealFoods)} aliment(s)
         </p>
-        <div className="flex gap-2">
-          <div className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
-            <p className="text-[10px] text-[#F5EDED]/35 mb-0.5">Protéines</p>
-            <p className="text-base font-black text-blue-300">{summary?.prot}g</p>
-          </div>
-          <div className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
-            <p className="text-[10px] text-[#F5EDED]/35 mb-0.5">Glucides</p>
-            <p className="text-base font-black text-amber-300">{summary?.carbs}g</p>
-          </div>
-          <div className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
-            <p className="text-[10px] text-[#F5EDED]/35 mb-0.5">Lipides</p>
-            <p className="text-base font-black text-rose-300">{summary?.fat}g</p>
-          </div>
+        <div className="grid grid-cols-3 gap-2 mb-5">
+          {[
+            { label: "Protéines", val: summary.prot, color: "text-blue-300" },
+            { label: "Glucides",  val: summary.carbs, color: "text-amber-300" },
+            { label: "Lipides",   val: summary.fat,   color: "text-rose-300" },
+          ].map(({ label, val, color }) => (
+            <div key={label} className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
+              <p className="text-[9px] text-[#F5EDED]/35 mb-0.5">{label}</p>
+              <p className={`text-lg font-black ${color}`}>{val}g</p>
+            </div>
+          ))}
         </div>
-        <p className="text-[10px] text-[#F5EDED]/25 mt-4">
-          Estimation basée sur tes réponses — tu peux affiner via le log manuel si besoin.
+        <p className="text-[10px] text-[#F5EDED]/25">
+          Tu peux affiner dans l&apos;onglet &quot;Aujourd&apos;hui&quot; si besoin.
         </p>
       </div>
     );
   }
 
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-2xl overflow-hidden">
-      {/* Progress bar */}
-      <div className="h-1 bg-[#890404]/15">
-        <div
-          className="h-full bg-[#E01E1E] transition-all duration-300"
-          style={{ width: `${progress}%` }}
-        />
-      </div>
+  // SUMMARY
+  if (phase === "summary") {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Récap</p>
+          <h3 className="text-xl font-black text-white">Vérifie avant de logger</h3>
+        </div>
 
-      <div className="p-5">
-        {step === "repas" && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Question 1 / 4
-            </p>
-            <h3 className="text-lg font-black text-white mb-4">
-              Combien de repas as-tu fait aujourd&apos;hui ?
-            </h3>
-            <div className="flex flex-col gap-2">
-              {([
-                { v: 1, emoji: "1️⃣", label: "1 repas", sublabel: "Un seul grand repas" },
-                { v: 2, emoji: "2️⃣", label: "2 repas", sublabel: "Ex. déjeuner + dîner" },
-                { v: 3, emoji: "3️⃣", label: "3 repas", sublabel: "Petit-déj + déj + dîner" },
-                { v: 4, emoji: "4️⃣", label: "4 repas ou +", sublabel: "Avec collation(s)" },
-              ] as const).map(({ v, emoji, label, sublabel }) => (
-                <OptionButton
-                  key={v}
-                  value={v as MealCount}
-                  selected={answers.mealCount === v}
-                  emoji={emoji}
-                  label={label}
-                  sublabel={sublabel}
-                  onSelect={(val) => setAnswers((a) => ({ ...a, mealCount: val }))}
-                />
-              ))}
+        {activeMealKeys.map((key) => {
+          const slot = ALL_SLOTS.find((s) => s.key === key)!;
+          const foods = mealFoods[key] ?? [];
+          if (foods.length === 0) return null;
+          const slotCal = foods.reduce((s, sf) => s + calcMacros(sf.food, sf.qty).calories, 0);
+          return (
+            <div key={key} className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>{slot.emoji}</span> {slot.label}
+                </p>
+                <p className="text-[10px] text-[#F5EDED]/40">{slotCal} kcal</p>
+              </div>
+              <div className="space-y-1">
+                {foods.map((sf) => {
+                  const m = calcMacros(sf.food, sf.qty);
+                  return (
+                    <div key={sf.food.id} className="flex items-center justify-between">
+                      <p className="text-xs text-[#F5EDED]/70 truncate flex-1">{sf.food.name}</p>
+                      <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                        {QTY_G[sf.qty]}g · {m.calories} kcal
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
+          );
+        })}
+
+        <div className="bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-xl p-4">
+          <div className="flex gap-4">
+            <div><p className="text-2xl font-black text-[#E01E1E]">{totals.cal}</p><p className="text-[9px] text-[#F5EDED]/35">kcal</p></div>
+            <div><p className="text-lg font-black text-blue-300">{totals.prot}g</p><p className="text-[9px] text-[#F5EDED]/35">Prot</p></div>
+            <div><p className="text-lg font-black text-amber-300">{totals.carbs}g</p><p className="text-[9px] text-[#F5EDED]/35">Gluc</p></div>
+            <div><p className="text-lg font-black text-rose-300">{totals.fat}g</p><p className="text-[9px] text-[#F5EDED]/35">Lip</p></div>
           </div>
-        )}
+        </div>
 
-        {step === "quantite" && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Question 2 / 4
-            </p>
-            <h3 className="text-lg font-black text-white mb-4">
-              Dans l&apos;ensemble, tu as mangé…
-            </h3>
-            <div className="flex flex-col gap-2">
-              {([
-                { v: "peu" as const, emoji: "🔻", label: "Très peu", sublabel: "Beaucoup moins que d'habitude" },
-                { v: "normal" as const, emoji: "🎯", label: "Normal", sublabel: "Environ mes besoins" },
-                { v: "bien" as const, emoji: "💪", label: "Bien", sublabel: "Légèrement au-dessus" },
-                { v: "trop" as const, emoji: "🔺", label: "Trop", sublabel: "Nettement au-dessus" },
-              ]).map(({ v, emoji, label, sublabel }) => (
-                <OptionButton
-                  key={v}
-                  value={v}
-                  selected={answers.quantity === v}
-                  emoji={emoji}
-                  label={label}
-                  sublabel={sublabel}
-                  onSelect={(val) => setAnswers((a) => ({ ...a, quantity: val }))}
-                />
-              ))}
-            </div>
-          </div>
-        )}
+        {error && <p className="text-xs text-red-400">{error}</p>}
 
-        {step === "proteines" && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Question 3 / 4
-            </p>
-            <h3 className="text-lg font-black text-white mb-4">
-              Tes protéines aujourd&apos;hui ?
-            </h3>
-            <div className="flex flex-col gap-2">
-              {([
-                { v: "insuff" as const, emoji: "😬", label: "Insuffisantes", sublabel: "Peu de viande, poisson, oeufs…" },
-                { v: "correct" as const, emoji: "👌", label: "Correctes", sublabel: "À peu près mon objectif" },
-                { v: "top" as const, emoji: "💪", label: "Au top", sublabel: "J'ai bien hit mes protéines" },
-              ]).map(({ v, emoji, label, sublabel }) => (
-                <OptionButton
-                  key={v}
-                  value={v}
-                  selected={answers.proteins === v}
-                  emoji={emoji}
-                  label={label}
-                  sublabel={sublabel}
-                  onSelect={(val) => setAnswers((a) => ({ ...a, proteins: val }))}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {step === "qualite" && (
-          <div>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Question 4 / 4
-            </p>
-            <h3 className="text-lg font-black text-white mb-4">
-              La qualité de tes repas ?
-            </h3>
-            <div className="flex flex-col gap-2">
-              {([
-                { v: "sain" as const, emoji: "✅", label: "Sains et équilibrés", sublabel: "Fait maison, légumes, peu de transformation" },
-                { v: "moyen" as const, emoji: "😐", label: "Moyennement", sublabel: "Mix de sain et moins sain" },
-                { v: "junk" as const, emoji: "🍔", label: "Plutôt fast-food", sublabel: "Restaurant, livraison, plats préparés" },
-              ]).map(({ v, emoji, label, sublabel }) => (
-                <OptionButton
-                  key={v}
-                  value={v}
-                  selected={answers.quality === v}
-                  emoji={emoji}
-                  label={label}
-                  sublabel={sublabel}
-                  onSelect={(val) => setAnswers((a) => ({ ...a, quality: val }))}
-                />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {error && (
-          <p className="text-xs text-red-400 mt-3 text-center">{error}</p>
-        )}
-
-        <div className="mt-5">
-          {step === "qualite" ? (
-            <button
-              onClick={handleSubmit}
-              disabled={!canNext() || loading}
-              className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
-            >
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <>
-                  <Sparkles size={14} />
-                  Logger ma journée automatiquement
-                </>
-              )}
-            </button>
-          ) : (
-            <button
-              onClick={next}
-              disabled={!canNext()}
-              className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
-            >
-              Suivant
-              <ChevronRight size={16} />
-            </button>
-          )}
+        <div className="flex gap-2">
+          <button
+            onClick={() => { setCurrentSlotIdx(activeMealKeys.length - 1); setPhase("meal"); }}
+            className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/40 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80"
+          >
+            <ChevronLeft size={13} /> Modifier
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
+          >
+            {submitting ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <><Sparkles size={13} /> Logger ma journée</>
+            )}
+          </button>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
+
+  // SLOT SELECTION
+  if (phase === "slots") {
+    return (
+      <div className="space-y-4">
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Étape 1</p>
+          <h3 className="text-xl font-black text-white mb-1">Quels repas as-tu fait aujourd&apos;hui ?</h3>
+          <p className="text-xs text-[#F5EDED]/40">Sélectionne tout ce qui s&apos;applique.</p>
+        </div>
+
+        <div className="space-y-2">
+          {ALL_SLOTS.map((slot) => {
+            const hasPhoto = !!photos[slot.key];
+            const selected = selectedSlots.includes(slot.key);
+            return (
+              <button
+                key={slot.key}
+                onClick={() => toggleSlot(slot.key)}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all ${
+                  selected
+                    ? "bg-[#E01E1E]/12 border-[#E01E1E]/40"
+                    : "bg-[#1f0101] border-[#890404]/25 hover:border-[#890404]/50"
+                }`}
+              >
+                <span className="text-xl flex-shrink-0">{slot.emoji}</span>
+                <span className="flex-1">
+                  <span className={`text-sm font-bold ${selected ? "text-white" : "text-[#F5EDED]/65"}`}>
+                    {slot.label}
+                  </span>
+                  {hasPhoto && (
+                    <span className="ml-2 text-[9px] text-purple-400 font-bold">📸 photo</span>
+                  )}
+                </span>
+                {selected && <Check size={15} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />}
+              </button>
+            );
+          })}
+        </div>
+
+        <button
+          onClick={() => { setCurrentSlotIdx(0); setPhase("meal"); }}
+          disabled={selectedSlots.length === 0}
+          className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3.5 rounded-xl disabled:opacity-40 transition-colors"
+        >
+          Commencer le détail <ChevronRight size={15} />
+        </button>
+      </div>
+    );
+  }
+
+  // MEAL DETAIL
+  if (phase === "meal" && currentSlot) {
+    const photo = photos[currentSlotKey!];
+    const mealProgress = `${currentSlotIdx + 1}/${activeMealKeys.length}`;
+
+    return (
+      <div className="space-y-4">
+        {/* Header */}
+        <div>
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+              Repas {mealProgress}
+            </p>
+            <p className="text-[10px] text-[#F5EDED]/30">
+              {currentSelections.length > 0 ? `${currentSelections.length} aliment(s)` : ""}
+            </p>
+          </div>
+          <h3 className="text-xl font-black text-white flex items-center gap-2">
+            <span>{currentSlot.emoji}</span>
+            {currentSlot.label}
+          </h3>
+        </div>
+
+        {/* Photo reminder */}
+        {photo && (
+          <div className="relative rounded-xl overflow-hidden">
+            <img src={photo} alt={currentSlot.label} className="w-full max-h-36 object-cover" />
+            <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+              <p className="text-[10px] text-white font-semibold">📸 Ta photo de ce repas</p>
+            </div>
+          </div>
+        )}
+
+        {/* Selected foods */}
+        {currentSelections.length > 0 && (
+          <div className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3 space-y-2">
+            {currentSelections.map((sf) => (
+              <div key={sf.food.id} className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-white truncate flex-1">{sf.food.name}</p>
+                  <button
+                    onClick={() => toggleFood(sf.food)}
+                    className="text-[#F5EDED]/25 hover:text-red-400 ml-2 flex-shrink-0"
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {(["petit", "moyen", "grand", "double"] as const).map((q) => (
+                    <button
+                      key={q}
+                      onClick={() => setQty(sf.food.id, q)}
+                      className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg border transition-colors ${
+                        sf.qty === q
+                          ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
+                          : "border-[#890404]/25 text-[#F5EDED]/35 hover:border-[#890404]/50"
+                      }`}
+                    >
+                      {q === "petit" ? "Petite" : q === "moyen" ? "Normale" : q === "grand" ? "Grande" : "Double"}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[9px] text-[#F5EDED]/30">
+                  ≈ {QTY_G[sf.qty]}g · {calcMacros(sf.food, sf.qty).calories} kcal
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* History suggestions */}
+        {historySuggestions.length > 0 && !showSearch && (
+          <div>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2 flex items-center gap-1.5">
+              <span>⏱</span> Tes habitudes pour ce créneau
+            </p>
+            <div className="space-y-1.5">
+              {historySuggestions.map((food) => {
+                const selected = currentSelections.find((sf) => sf.food.id === food.id);
+                return (
+                  <button
+                    key={food.id}
+                    onClick={() => toggleFood(food)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                      selected
+                        ? "bg-[#E01E1E]/12 border-[#E01E1E]/35"
+                        : "bg-[#1f0101] border-[#890404]/20 hover:border-[#890404]/45"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-bold truncate ${selected ? "text-white" : "text-[#F5EDED]/70"}`}>
+                        {food.name}
+                      </p>
+                      <p className="text-[9px] text-[#F5EDED]/30 mt-0.5">
+                        {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
+                      </p>
+                    </div>
+                    {selected
+                      ? <Check size={14} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />
+                      : <Plus size={13} className="text-[#F5EDED]/25 flex-shrink-0" />
+                    }
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* Search */}
+        {showSearch ? (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-1">
+                Rechercher un aliment
+              </p>
+              <button onClick={() => { setShowSearch(false); setSearchQ(""); }} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+                <X size={13} />
+              </button>
+            </div>
+            <input
+              ref={searchRef}
+              autoFocus
+              value={searchQ}
+              onChange={(e) => setSearchQ(e.target.value)}
+              placeholder="Ex. riz complet, poulet…"
+              className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 mb-2"
+            />
+            <div className="space-y-1 max-h-48 overflow-y-auto">
+              {searchResults.length === 0 && searchQ.trim() && (
+                <p className="text-xs text-[#F5EDED]/30 py-4 text-center">Aucun résultat</p>
+              )}
+              {searchResults.map((food) => {
+                const selected = currentSelections.find((sf) => sf.food.id === food.id);
+                return (
+                  <button
+                    key={food.id}
+                    onClick={() => toggleFood(food)}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl border text-left transition-all ${
+                      selected ? "bg-[#E01E1E]/12 border-[#E01E1E]/35" : "bg-[#1f0101] border-[#890404]/20"
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-bold text-[#F5EDED]/80 truncate">{food.name}</p>
+                      <p className="text-[9px] text-[#F5EDED]/30">{food.calories_per_100} kcal/100g</p>
+                    </div>
+                    {selected
+                      ? <Check size={14} className="text-[#E01E1E] flex-shrink-0" strokeWidth={2.5} />
+                      : <Plus size={13} className="text-[#F5EDED]/25 flex-shrink-0" />
+                    }
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowSearch(true)}
+            className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-xl px-4 py-2.5 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+          >
+            <Search size={13} />
+            Ajouter un autre aliment
+          </button>
+        )}
+
+        {/* Nav */}
+        <div className="flex gap-2 pt-1">
+          <button
+            onClick={goPrevMeal}
+            className="flex items-center gap-1 px-4 py-2.5 border border-[#890404]/30 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+          >
+            <ChevronLeft size={13} /> Retour
+          </button>
+          <button
+            onClick={goNextMeal}
+            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+          >
+            {currentSlotIdx < activeMealKeys.length - 1 ? (
+              <><span>Repas suivant</span> <ChevronRight size={15} /></>
+            ) : (
+              <><span>Voir le récap</span> <ChevronRight size={15} /></>
+            )}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// Helper: count total food entries
+function entries(mealFoods: Record<string, SelectedFood[]>) {
+  return Object.values(mealFoods).reduce((s, foods) => s + foods.length, 0);
 }
