@@ -30,7 +30,8 @@ export default async function CoachMessagesPage() {
     .in("conversation_id", clientIds.length > 0 ? clientIds : ["00000000-0000-0000-0000-000000000000"])
     .order("created_at", { ascending: false });
 
-  const msgMap: Record<string, { content: string; time: string; unread: number }> = {};
+  // Keep both the display-formatted time AND the raw ISO for sorting
+  const msgMap: Record<string, { content: string; time: string; isoTime: string; unread: number }> = {};
   const seenConv = new Set<string>();
 
   for (const msg of (lastMessages ?? []) as LastMessage[]) {
@@ -41,7 +42,7 @@ export default async function CoachMessagesPage() {
       const time = new Intl.DateTimeFormat("fr-FR", {
         day: "numeric", month: "short", hour: "2-digit", minute: "2-digit",
       }).format(new Date(msg.created_at));
-      msgMap[cid] = { content, time, unread: 0 };
+      msgMap[cid] = { content, time, isoTime: msg.created_at, unread: 0 };
     }
     if (!msg.is_read && msg.receiver_id === user.id) {
       if (msgMap[cid]) msgMap[cid].unread += 1;
@@ -54,7 +55,8 @@ export default async function CoachMessagesPage() {
       if (!a.msg && !b.msg) return 0;
       if (!a.msg) return 1;
       if (!b.msg) return -1;
-      return new Date(b.msg.time).getTime() - new Date(a.msg.time).getTime();
+      // Sort by raw ISO timestamp, not formatted display string
+      return new Date(b.msg.isoTime).getTime() - new Date(a.msg.isoTime).getTime();
     });
 
   const totalUnread = Object.values(msgMap).reduce((s, v) => s + v.unread, 0);

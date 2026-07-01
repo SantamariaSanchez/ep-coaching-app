@@ -42,6 +42,9 @@ export async function sendPhotoFeedback(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
   if (!coach_feedback) return { error: "Le retour est obligatoire." };
 

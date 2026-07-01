@@ -14,6 +14,7 @@ import type {
   DietPlanMeal,
 } from "@/utils/nutrition";
 import type { CommunityRecipe } from "@/utils/community-recipes";
+import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -1645,8 +1646,6 @@ function DietPlanCard({
 }
 
 // ── MealSlotCard ──────────────────────────────────────────────────────────────
-
-import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
 
 function MealSlotCard({
   slotKey,

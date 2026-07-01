@@ -28,6 +28,9 @@ export async function submitCorrectionFeedback(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
   const coach_video_link =
     (formData.get("coach_video_link") as string)?.trim() || null;

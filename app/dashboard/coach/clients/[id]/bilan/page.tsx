@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
 import type { DailyLog } from "@/utils/daily-logs";
@@ -155,17 +155,11 @@ export default async function CoachClientBilanPage({
 }) {
   const { id } = await params;
 
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const user = await getUser();
   if (!user) redirect("/auth/coach");
 
-  const { data: coachProfile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (coachProfile?.role !== "coach") redirect("/dashboard/client");
+  const profile = await getProfile(user.id);
+  if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const admin = createAdminClient();
   const { data: clientProfile } = await admin
