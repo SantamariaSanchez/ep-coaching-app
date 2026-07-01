@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 // This route handles /guides/[filename].html URLs used in email CTAs.
 // It looks up the file in Supabase Storage by filename and serves it inline,
 // injecting a CSS fix so the cover section doesn't occupy 100vh.
+// Always returns the most recently uploaded file if there are duplicates.
 
 const HTML_FIX_CSS = `<style>
   .cover { min-height: auto !important; padding: 80px 40px !important; }
@@ -17,12 +18,15 @@ export async function GET(
     const filename = slug.join("/");
     const admin = createAdminClient();
 
-  // Find the resource by matching the end of its file_path
-  const { data: resource } = await admin
+  // Find the most recently uploaded resource matching this filename
+  const { data: resources } = await admin
       .from("resources")
-      .select("file_path, title")
+      .select("file_path, title, created_at")
       .ilike("file_path", `%${filename}`)
-      .single();
+      .order("created_at", { ascending: false })
+      .limit(1);
+
+  const resource = resources?.[0];
 
   if (!resource) {
         return new NextResponse(`<html><body><h1>Ressource introuvable : ${filename}</h1></body></html>`, {
@@ -47,13 +51,13 @@ export async function GET(
   if (ext === "html" || ext === "htm") {
         let htmlContent = await blob.text();
         htmlContent = htmlContent.replace("</head>", `${HTML_FIX_CSS}</head>`);
-            return new NextResponse(htmlContent, {
-                    headers: {
-                              "Content-Type": "text/html; charset=utf-8",
-                              "Content-Disposition": "inline",
-                              "Cache-Control": "public, max-age=3600",
-                    },
-            });
+        return new NextResponse(htmlContent, {
+                headers: {
+                          "Content-Type": "text/html; charset=utf-8",
+                          "Content-Disposition": "inline",
+                          "Cache-Control": "no-cache",
+                },
+        });
   }
 
   return new NextResponse(blob, {
