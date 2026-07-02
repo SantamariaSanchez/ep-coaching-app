@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -300,10 +300,21 @@ function ImportLogbookButton() {
   );
 }
 export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client", activeSession }: Props) {
+  const router = useRouter();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const sessionBasePath =
     subNavScope === "coach-moi" ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
+
+  // Redirect immédiat si une séance active est détectée en localStorage —
+  // contourne le Router Cache Next.js qui peut servir une version périmée du
+  // logbook sans le banner server-side.
+  useEffect(() => {
+    const id = localStorage.getItem("ep-active-session-id");
+    if (id) {
+      router.replace(`${sessionBasePath}/session/${id}`);
+    }
+  }, [sessionBasePath, router]);
 
   // Map day_label → last session
   const lastSessionByDay: Record<string, Session> = {};

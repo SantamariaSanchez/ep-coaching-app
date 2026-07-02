@@ -1118,6 +1118,7 @@ export default function SessionView({
           setStep("session");
           const saved = localStorage.getItem(`ep-session-start-${sessionId}`);
           sessionStartRef.current = saved ? parseInt(saved, 10) : Date.now();
+          localStorage.setItem("ep-active-session-id", sessionId);
         }
 
         setLoading(false);
@@ -1182,6 +1183,7 @@ export default function SessionView({
       const startTime = Date.now();
       sessionStartRef.current = startTime;
       localStorage.setItem(`ep-session-start-${sessionId}`, startTime.toString());
+      localStorage.setItem("ep-active-session-id", sessionId);
       setStep("session");
 
       const patchWarmup = () =>
@@ -1429,6 +1431,7 @@ export default function SessionView({
       });
 
       localStorage.removeItem(`ep-session-start-${sessionId}`);
+      localStorage.removeItem("ep-active-session-id");
       router.push(returnPath);
     } catch {
       setSaving(false);

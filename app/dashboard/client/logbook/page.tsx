@@ -4,6 +4,8 @@ import { getActiveProgram } from "@/utils/programs";
 import { getAllClientSessions, getClientPersonalRecords, getActiveSession } from "@/utils/sessions";
 import LogbookClient from "@/components/client/LogbookClient";
 
+export const dynamic = "force-dynamic";
+
 export default async function LogbookPage() {
   const user = await getUser();
   if (!user) redirect("/");
