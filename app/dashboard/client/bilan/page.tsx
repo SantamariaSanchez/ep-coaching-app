@@ -102,6 +102,15 @@ export default async function ClientBilanPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/client");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("subscription_status, role")
+    .eq("id", user.id)
+    .single();
+  if (profile?.role !== "coach" && profile?.subscription_status !== "active") {
+    redirect("/dashboard/client");
+  }
+
   const today = new Date().toISOString().split("T")[0];
   const [todayLog, allLogs] = await Promise.all([
     getTodayLog(user.id),

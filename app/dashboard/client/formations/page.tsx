@@ -19,6 +19,7 @@ export default async function FormationsPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
+  if (profile?.subscription_status !== "active") redirect("/dashboard/client/abonnement");
 
   const [formations, completed] = await Promise.all([
     getFormations(),

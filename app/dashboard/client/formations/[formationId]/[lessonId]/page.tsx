@@ -18,6 +18,7 @@ export default async function LessonPage({
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
+  if (profile?.subscription_status !== "active") redirect("/dashboard/client/abonnement");
 
   const [lesson, formation, completed] = await Promise.all([
     getLesson(lessonId),

@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getPointsMap } from "@/lib/gamification";
+import { resolveAvatarUrl } from "@/utils/avatar";
 
 export type CommunityPostType = "victory" | "question";
 
@@ -83,7 +84,16 @@ export async function getCommunityPostsPage(
     }
 
     const clientAuthorIds = (authors ?? []).filter((a) => a.role === "client").map((a) => a.id as string);
-    const pointsMap = await getPointsMap(clientAuthorIds);
+
+    // Résoudre les avatars (chemin bucket → signed URL) pour tous les auteurs uniques
+    const resolvedAvatars: Record<string, string | null> = {};
+    await Promise.all(
+      (authors ?? []).map(async (a) => {
+        resolvedAvatars[a.id] = await resolveAvatarUrl(a.avatar_url);
+      })
+    );
+
+    const [pointsMap] = await Promise.all([getPointsMap(clientAuthorIds)]);
 
     const countMap: Record<string, number> = {};
     for (const c of comments ?? []) {
@@ -99,7 +109,7 @@ export async function getCommunityPostsPage(
         author_name: author?.full_name ?? "Membre",
         author_role: author?.role ?? "client",
         author_subscription_status: author?.subscription_status ?? "free",
-        author_avatar_url: author?.avatar_url ?? null,
+        author_avatar_url: resolvedAvatars[p.author_id] ?? null,
         author_points: author?.role === "client" ? pointsMap[p.author_id] ?? 0 : null,
         type: p.type,
         content: p.content,
@@ -149,6 +159,14 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
     }
 
     const clientAuthorIds = (authors ?? []).filter((a) => a.role === "client").map((a) => a.id as string);
+
+    const resolvedAvatars: Record<string, string | null> = {};
+    await Promise.all(
+      (authors ?? []).map(async (a) => {
+        resolvedAvatars[a.id] = await resolveAvatarUrl(a.avatar_url);
+      })
+    );
+
     const pointsMap = await getPointsMap(clientAuthorIds);
 
     return comments.map((c) => {
@@ -160,7 +178,7 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
         author_name: author?.full_name ?? "Membre",
         author_role: author?.role ?? "client",
         author_subscription_status: author?.subscription_status ?? "free",
-        author_avatar_url: author?.avatar_url ?? null,
+        author_avatar_url: resolvedAvatars[c.author_id] ?? null,
         author_points: author?.role === "client" ? pointsMap[c.author_id] ?? 0 : null,
         content: c.content,
         created_at: c.created_at,

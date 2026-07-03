@@ -29,6 +29,7 @@ export default async function ClientQuestionsPage() {
         initialPosts={posts}
         initialNextCursor={nextCursor}
         isCoach={false}
+        currentUserId={user.id}
       />
     </div>
   );

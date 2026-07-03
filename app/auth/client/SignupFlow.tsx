@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight, Heart, Crown } from "lucide-react";
+import { ChevronLeft, ChevronRight, Heart, PhoneCall } from "lucide-react";
 import { selfSignup } from "./actions";
-import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
+
+const CALENDLY_URL = "https://calendly.com/peccoux-manu/30min";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -229,7 +230,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Rejoindre la communauté</span>
               <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
-                Gratuit — Victoires, Questions, Ressources
+                Gratuit · Victoires, Questions, Ressources
               </span>
             </span>
             {submitting === "free" ? (
@@ -245,32 +246,31 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             <div style={{ flex: 1, height: 1, background: "rgba(245,237,237,0.08)" }} />
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {SUBSCRIPTION_PLANS.map((plan) => (
-              <button
-                key={plan.id}
-                type="button"
-                onClick={() => handleChoice(plan.id, plan.url)}
-                disabled={submitting !== null}
-                style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "14px 16px", borderRadius: 12,
-                  border: plan.highlight ? "1px solid rgba(224,30,30,0.45)" : "1px solid rgba(224,30,30,0.18)",
-                  background: plan.highlight ? "rgba(224,30,30,0.12)" : "rgba(224,30,30,0.05)",
-                  color: "#F5EDED", cursor: "pointer", textAlign: "left",
-                }}
-              >
-                {plan.highlight && <Crown size={16} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />}
-                <span style={{ flex: 1 }}>
-                  <span style={{ display: "block", fontWeight: 800, fontSize: 13 }}>EP Coaching — {plan.label}</span>
-                  <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.35)", marginTop: 1 }}>{plan.sublabel}</span>
-                </span>
-                <span style={{ fontWeight: 900, fontSize: 13, whiteSpace: "nowrap" }}>
-                  {submitting === plan.id ? "…" : plan.priceLabel}
-                </span>
-              </button>
-            ))}
-          </div>
+          <button
+            type="button"
+            onClick={() => handleChoice("coaching", CALENDLY_URL)}
+            disabled={submitting !== null}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "16px 18px", borderRadius: 12,
+              border: "1px solid rgba(224,30,30,0.45)",
+              background: "rgba(224,30,30,0.12)",
+              color: "#F5EDED", cursor: "pointer", textAlign: "left",
+            }}
+          >
+            <PhoneCall size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+            <span style={{ flex: 1 }}>
+              <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Je veux un coaching individuel</span>
+              <span style={{ display: "block", fontSize: 10, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
+                Réserve ton appel découverte de 30 min
+              </span>
+            </span>
+            {submitting === "coaching" ? (
+              <div style={{ width: 16, height: 16, border: "2px solid #E01E1E", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+            ) : (
+              <ChevronRight size={16} style={{ color: "rgba(224,30,30,0.6)" }} />
+            )}
+          </button>
         </div>
       )}
 

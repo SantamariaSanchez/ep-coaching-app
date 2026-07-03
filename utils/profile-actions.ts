@@ -53,17 +53,23 @@ export async function uploadAvatar(formData: FormData): Promise<{ url?: string; 
       .upload(path, file, { contentType: file.type, upsert: true });
     if (uploadError) return { error: "Erreur lors de l'upload de la photo." };
 
-    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
-
+    // On stocke le chemin dans le bucket (pas l'URL publique) pour pouvoir
+    // générer des signed URLs à la demande. Le bucket "avatars" doit être
+    // configuré en mode privé dans le dashboard Supabase.
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ avatar_url: pub.publicUrl })
+      .update({ avatar_url: path })
       .eq("id", user.id);
     if (updateError) return { error: "Erreur lors de l'enregistrement de la photo." };
 
+    // Générer une signed URL courte pour retourner une URL utilisable immédiatement.
+    const { data: signed } = await supabase.storage
+      .from("avatars")
+      .createSignedUrl(path, 300);
+
     revalidatePath("/dashboard/client/profile");
     revalidatePath("/dashboard/coach/profile");
-    return { url: pub.publicUrl };
+    return { url: signed?.signedUrl ?? path };
   } catch {
     return { error: "Erreur inattendue." };
   }

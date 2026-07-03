@@ -80,7 +80,7 @@ const GUIDE_ITEMS = [
     href: "/dashboard/client/abonnement",
     icon: GraduationCap,
     title: "Formations",
-    desc: "80h+ de contenu vidéo — débloquées avec le coaching premium.",
+    desc: "80h+ de contenu vidéo, débloquées avec le coaching premium.",
     locked: true,
   },
 ];
@@ -102,7 +102,7 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
         </h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
           Tu fais partie de la communauté EP Coaching. Ici, tu as accès à des
-          outils gratuits pour avancer en autonomie — et tu peux passer
+          outils gratuits pour avancer en autonomie, et tu peux passer
           premium quand tu veux pour un vrai accompagnement coaché.
         </p>
       </div>
@@ -181,7 +181,7 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
             Envie d&apos;aller plus loin ?
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-            Découvre le coaching premium — programme et nutrition coachés, suivi, bilans...
+            Découvre le coaching premium : programme et nutrition coachés, suivi, bilans...
           </p>
         </div>
         <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
@@ -326,7 +326,7 @@ export default async function ClientDashboard() {
                   color: "#F5EDED",
                   letterSpacing: "-0.01em",
                 }}>
-                  Bilan — Semaine {latestNote.week_number ?? "—"}
+                  Bilan · Semaine {latestNote.week_number ?? "·"}
                 </p>
               </div>
               {latestNote.rating != null && (

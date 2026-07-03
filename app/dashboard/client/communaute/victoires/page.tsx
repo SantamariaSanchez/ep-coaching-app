@@ -29,6 +29,7 @@ export default async function ClientVictoriesPage() {
         initialPosts={posts}
         initialNextCursor={nextCursor}
         isCoach={false}
+        currentUserId={user.id}
       />
     </div>
   );

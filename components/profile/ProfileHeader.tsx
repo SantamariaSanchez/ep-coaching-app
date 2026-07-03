@@ -26,11 +26,13 @@ export default function ProfileHeader({
   profile,
   postCount,
   points,
+  avatarSrc,
   children,
 }: {
   profile: Profile;
   postCount: number;
   points?: number;
+  avatarSrc?: string | null;
   children?: React.ReactNode;
 }) {
   const badge = roleBadge(profile);
@@ -50,10 +52,10 @@ export default function ProfileHeader({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-6 mb-6">
       <div className="flex items-start gap-4 flex-wrap">
-        {profile.avatar_url ? (
+        {avatarSrc ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={profile.avatar_url}
+            src={avatarSrc}
             alt=""
             className="w-20 h-20 rounded-full object-cover flex-shrink-0"
           />

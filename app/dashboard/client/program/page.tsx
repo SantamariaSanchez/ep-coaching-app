@@ -6,7 +6,7 @@ import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
-import ProgramBuilderTabs from "@/components/ui/ProgramBuilderTabs";
+import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
@@ -25,29 +25,70 @@ export default async function ClientProgramPage() {
 
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  // Free community members build and edit their own program — no coach review.
+  // Espace gratuit — 3 programmes prédéfinis au choix, pas de création custom.
   if (!isSubscribed(profile)) {
     return (
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
         <TrainingSubNav />
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Entraînement — Communauté
+            Training
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
-          <p className="text-sm text-[#F5EDED]/45 mt-2">
-            Tu gères toi-même ton programme — autonome, sans suivi coach.
-          </p>
         </div>
+
         {program && program.days.length > 0 && (
-          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+          <>
+            <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+
+            <div className="mb-6 overflow-x-auto">
+              <div style={{ display: "flex", gap: 12, minWidth: `${program.days.length * 280}px` }}>
+                {program.days.map((day, di) => (
+                  <div
+                    key={day.id}
+                    className="ep-card animate-fade-up"
+                    style={{ flex: 1, minWidth: 260, padding: "18px 16px", animationDelay: `${di * 60}ms` }}
+                  >
+                    <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "#E01E1E", marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid rgba(224,30,30,0.1)" }}>
+                      {day.day_label}
+                    </p>
+                    {day.exercises.length === 0 ? (
+                      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>Aucun exercice</p>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                        {day.exercises.map((ex) => (
+                          <div key={ex.id} style={{ background: "rgba(0,0,0,0.35)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 12, padding: "11px 14px" }}>
+                            <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>{ex.name}</p>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
+                              {ex.sets != null && ex.reps && (
+                                <span style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>{ex.sets} x {ex.reps}</span>
+                              )}
+                              {ex.rir !== null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>RIR {ex.rir}</span>}
+                              {ex.rest_seconds != null && ex.rest_seconds > 0 && (
+                                <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+                                  {ex.rest_seconds >= 60 ? `${Math.floor(ex.rest_seconds / 60)}min` : `${ex.rest_seconds}s`} repos
+                                </span>
+                              )}
+                            </div>
+                            {ex.notes && <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", marginTop: 6, fontStyle: "italic" }}>{ex.notes}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
         )}
-        <ProgramBuilderTabs
-          clientId={user.id}
-          program={program}
-          saveProgram={saveOwnProgram}
-          successRedirect="/dashboard/client/program"
-        />
+
+        <div className="border-t border-[#890404]/15 pt-6">
+          <ProgramPresetSelector
+            clientId={user.id}
+            currentProgramName={program?.name ?? null}
+            saveProgram={saveOwnProgram}
+          />
+        </div>
       </div>
     );
   }

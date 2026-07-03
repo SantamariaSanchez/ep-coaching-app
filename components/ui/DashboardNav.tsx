@@ -83,13 +83,12 @@ const CLIENT_TABS: TabItem[] = [
   },
 ];
 
-// Free community members get zero allusion to 1:1 coaching (no Messages,
-// Check-in, Mes tâches, Notes du coach...) but keep every self-tracking
-// tool (Programme, Nutrition, Logbook, Road Map, Bilan, Photos) — just
-// autonomous, unreviewed versions of each.
+// Espace gratuit (prospects) — navigation minimaliste centrée sur les outils
+// de découverte et l'écran de conversion coaching. Pas de roadmap, pas de bilan,
+// pas de plan nutrition personnalisable.
 const CLIENT_TABS_FREE: TabItem[] = [
   {
-    label: "Bienvenue",
+    label: "Accueil",
     icon: Home,
     href: "/dashboard/client",
     matchSegments: [],
@@ -99,56 +98,44 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Training",
     icon: Dumbbell,
     href: "/dashboard/client/program",
-    matchSegments: ["program", "logbook", "roadmap", "exercises", "gyms"],
+    matchSegments: ["program", "logbook"],
   },
   {
-    label: "Suivi",
-    icon: TrendingUp,
+    label: "Nutrition",
+    icon: Apple,
     href: "/dashboard/client/nutrition",
-    matchSegments: ["nutrition", "bilan", "photos", "steps", "mindset"],
+    matchSegments: ["nutrition"],
   },
   {
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement", "profile", "live"],
+    matchSegments: ["communaute"],
   },
   {
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "science"],
+    matchSegments: ["ressources", "formations", "abonnement", "profile"],
   },
 ];
 
 const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
   {
     group: "",
-    items: [{ label: "Bienvenue", icon: Home, segment: "" }],
+    items: [{ label: "Accueil", icon: Home, segment: "" }],
   },
   {
     group: "Training",
     items: [
       { label: "Programme", icon: Dumbbell, segment: "program" },
       { label: "Logbook", icon: BookOpen, segment: "logbook" },
-      { label: "Road Map", icon: Map, segment: "roadmap" },
     ],
   },
   {
-    group: "Bibliothèque",
+    group: "Nutrition",
     items: [
-      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles", icon: MapPin, segment: "gyms" },
-    ],
-  },
-  {
-    group: "Suivi",
-    items: [
-      { label: "Nutrition", icon: Apple, segment: "nutrition" },
-      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
-      { label: "Pas & routine", icon: Footprints, segment: "steps" },
-      { label: "Photos", icon: Image, segment: "photos" },
-      { label: "Mindset", icon: Brain, segment: "mindset" },
+      { label: "Calculateur", icon: Apple, segment: "nutrition" },
     ],
   },
   {
@@ -156,20 +143,12 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
-      { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
-      { label: "Mon profil", icon: User, segment: "profile" },
-      { label: "Abonnement", icon: Crown, segment: "abonnement" },
     ],
-  },
-  {
-    group: "Live",
-    items: [{ label: "Lives & appels", icon: Video, segment: "live" }],
   },
   {
     group: "Contenu",
     items: [
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
-      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
       {
         label: "Formations",
         icon: GraduationCap,
@@ -180,12 +159,10 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     ],
   },
   {
-    group: "Science",
+    group: "Mon coaching",
     items: [
-      { label: "Recherche", icon: Search, segment: "science/recherche" },
-      { label: "Actualité", icon: Newspaper, segment: "science/actualite" },
-      { label: "Bibliothèque", icon: FlaskConical, segment: "science/bibliotheque" },
-      { label: "Nos études", icon: Microscope, segment: "science/etudes" },
+      { label: "Mon profil", icon: User, segment: "profile" },
+      { label: "Coaching individuel", icon: Crown, segment: "abonnement" },
     ],
   },
 ];
@@ -379,7 +356,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
-      { label: "Abonnement", icon: Crown, segment: "abonnement" },
+      { label: "Mon coaching", icon: Crown, segment: "abonnement" },
     ],
   },
 ];
@@ -720,7 +697,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               }}
             >
               <Crown size={14} strokeWidth={1.7} />
-              Abonnement
+              Mon coaching
             </Link>
           )}
 

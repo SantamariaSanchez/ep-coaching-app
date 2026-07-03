@@ -4,6 +4,7 @@ import { getCommunityPostCount } from "@/utils/community";
 import { getTotalPoints } from "@/lib/gamification";
 import { createServerSupabase } from "@/lib/supabase-server";
 import ProfileHeader from "@/components/profile/ProfileHeader";
+import { resolveAvatarUrl } from "@/utils/avatar";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import AccountActions from "@/components/profile/AccountActions";
 
@@ -30,10 +31,11 @@ export default async function ClientProfilePage() {
   if (!profile) redirect("/");
   if (profile.role === "coach") redirect("/dashboard/coach/profile");
 
-  const [postCount, points, supabase] = await Promise.all([
+  const [postCount, points, supabase, avatarSrc] = await Promise.all([
     getCommunityPostCount(user.id),
     getTotalPoints(user.id),
     createServerSupabase(),
+    resolveAvatarUrl(profile.avatar_url),
   ]);
   const { data: pushSub } = await supabase
     .from("push_subscriptions")
@@ -52,7 +54,7 @@ export default async function ClientProfilePage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon profil</h1>
       </div>
 
-      <ProfileHeader profile={profile} postCount={postCount} points={points} />
+      <ProfileHeader profile={profile} postCount={postCount} points={points} avatarSrc={avatarSrc} />
 
       <ProfileEditor fullName={profile.full_name ?? ""} phone={profile.phone} bio={profile.bio} />
 

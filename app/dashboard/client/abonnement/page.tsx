@@ -1,75 +1,41 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
-import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import {
-  Check,
-  Crown,
-  Users,
-  MessageCircleQuestion,
+  PhoneCall,
   Dumbbell,
   Apple,
   HeartHandshake,
   GraduationCap,
-  FlaskConical,
-  UtensilsCrossed,
-  LibraryBig,
-  Gift,
-  Sparkles,
+  CheckCircle2,
+  ArrowRight,
 } from "lucide-react";
 import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
-const COACHING_CATEGORIES = [
+const COACHING_PILLARS = [
   {
-    title: "Entraînement",
     icon: Dumbbell,
-    perks: [
-      "Programme 100% personnalisé, construit par ton coach",
-      "Logbook complet : séances, séries, records personnels",
-      "Suivi vidéo de tes exercices avec retours correctifs du coach",
-      "Road Map : objectifs court/moyen/long terme avec échéances",
-    ],
+    title: "Entraînement sur-mesure",
+    body: "Ton programme est construit par ton coach, pas généré. Séances, exercices, charges, progressions : tout est pensé pour toi et ajusté chaque semaine selon tes retours.",
   },
   {
-    title: "Nutrition",
     icon: Apple,
-    perks: [
-      "Calcul de tes besoins (TDEE/BMR) et macros par ton coach",
-      "Plan alimentaire adapté à ta phase (perte / prise / maintenance)",
-      "Suivi quotidien des repas et des écarts",
-    ],
+    title: "Nutrition qui colle à ta vie",
+    body: "Fini les régimes impossibles. Ton plan alimentaire respecte tes préférences, ton planning et ta phase de progression (prise, perte ou maintenance).",
   },
   {
-    title: "Suivi & accompagnement",
     icon: HeartHandshake,
-    perks: [
-      "Bilans hebdomadaires avec ton coach (poids, adhérence, ressenti)",
-      "Check-in réguliers",
-      "Messagerie directe avec ton coach",
-      "Suivi photos de progression",
-      "Rappels personnalisés (pesée, compléments, etc.)",
-      "Lives & appels coaching",
-    ],
+    title: "Suivi humain, chaque semaine",
+    body: "Bilans hebdomadaires, messagerie directe, check-ins photos, retours vidéo sur tes mouvements. Quelqu'un qui connaît vraiment ta progression.",
   },
   {
-    title: "Contenu",
     icon: GraduationCap,
-    perks: [
-      "80h+ de formations vidéo complètes (entraînement, nutrition, mental...)",
-      "Modules structurés, accessibles à vie, enrichis régulièrement",
-    ],
+    title: "Formations complètes incluses",
+    body: "80h+ de contenus vidéo sur l'entraînement, la nutrition, le mental et la récupération. Accessibles à vie, enrichis régulièrement.",
   },
 ];
 
-const ALWAYS_FREE = [
-  { icon: Dumbbell, label: "Training autonome", sub: "Programme, Logbook, Road Map" },
-  { icon: Apple, label: "Nutrition autonome", sub: "Calcul, journal, bilan, photos" },
-  { icon: LibraryBig, label: "Bibliothèque", sub: "Exercices & salles de sport" },
-  { icon: FlaskConical, label: "Science", sub: "Recherche, actualité, bibliothèque PubMed" },
-  { icon: UtensilsCrossed, label: "Recettes", sub: "Base de recettes & créateur de repas" },
-  { icon: Users, label: "Communauté", sub: "Victoires, Questions, profils" },
-  { icon: MessageCircleQuestion, label: "Ressources", sub: "Guides & lead magnets" },
-];
+export const dynamic = "force-dynamic";
 
 export default async function AbonnementPage() {
   const user = await getUser();
@@ -81,126 +47,303 @@ export default async function AbonnementPage() {
   const alreadySubscribed = isSubscribed(profile);
   const points = await getTotalPoints(user.id);
 
+  const calendlyUrl = "https://calendly.com/peccoux-manu/30min";
+
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-8">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Abonnement
+    <div
+      className="page-transition"
+      style={{ padding: "32px 20px 100px", maxWidth: 600, margin: "0 auto" }}
+    >
+      {/* Header */}
+      <div className="animate-fade-up" style={{ marginBottom: 32 }}>
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "rgba(224,30,30,0.55)",
+            marginBottom: 4,
+          }}
+        >
+          Mon coaching
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">
-          Passer Premium
+        <h1
+          style={{
+            fontSize: 40,
+            fontWeight: 900,
+            letterSpacing: "-0.01em",
+            color: "#F5EDED",
+            margin: "0 0 12px",
+            lineHeight: 1.0,
+            textTransform: "uppercase",
+          }}
+        >
+          Passe au niveau supérieur
         </h1>
-        <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
-          Avec l&apos;offre gratuite, tu as déjà accès à tous les outils d&apos;entraînement et de
-          nutrition en autonomie, à la bibliothèque, à Science et à la Communauté. Deux chemins
-          pour débloquer le reste : prendre l&apos;abonnement tout de suite, ou accumuler des
-          points en utilisant l&apos;appli et en publiant — voir plus bas.
+        <p
+          style={{
+            fontSize: 14,
+            color: "rgba(245,237,237,0.5)",
+            lineHeight: 1.7,
+            margin: 0,
+          }}
+        >
+          Tu utilises déjà les outils. Tu t&apos;entraînes déjà. La question c&apos;est : est-ce que tu veux continuer à avancer seul, ou avoir quelqu&apos;un qui s&apos;occupe de tout pendant que tu exécutes ?
         </p>
       </div>
 
-      {alreadySubscribed && (
-        <div className="flex items-center gap-2.5 bg-green-500/10 border border-green-500/20 rounded-xl px-4 py-3 mb-6">
-          <Check size={14} className="text-green-400 flex-shrink-0" />
-          <p className="text-xs font-bold text-green-400">
-            Tu es déjà abonné — merci pour ta confiance !
+      {alreadySubscribed ? (
+        /* Already a paying client */
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            background: "rgba(74,222,128,0.07)",
+            border: "1px solid rgba(74,222,128,0.2)",
+            borderRadius: "var(--radius-xl)",
+            padding: "16px 20px",
+            marginBottom: 28,
+          }}
+        >
+          <CheckCircle2 size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
+          <div>
+            <p
+              style={{
+                fontSize: 13,
+                fontWeight: 800,
+                color: "#4ade80",
+                margin: "0 0 2px",
+              }}
+            >
+              Tu es déjà client EP Coaching
+            </p>
+            <p style={{ fontSize: 11, color: "rgba(74,222,128,0.6)", margin: 0 }}>
+              Tout le contenu est débloqué pour toi.
+            </p>
+          </div>
+        </div>
+      ) : (
+        /* Main CTA block */
+        <div
+          className="ep-card-hero animate-fade-up"
+          style={{
+            padding: "28px 24px",
+            marginBottom: 28,
+            textAlign: "center",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: -50,
+              right: -50,
+              width: 180,
+              height: 180,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(224,30,30,0.1) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
+          <p
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: "rgba(245,237,237,0.35)",
+              marginBottom: 10,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+            }}
+          >
+            Prochaine étape
           </p>
+          <h2
+            style={{
+              fontSize: 22,
+              fontWeight: 900,
+              letterSpacing: "-0.03em",
+              color: "#F5EDED",
+              margin: "0 0 12px",
+              lineHeight: 1.2,
+            }}
+          >
+            Un appel de 30 min pour voir si le coaching te correspond
+          </h2>
+          <p
+            style={{
+              fontSize: 13,
+              color: "rgba(245,237,237,0.45)",
+              lineHeight: 1.65,
+              margin: "0 0 24px",
+            }}
+          >
+            Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l&apos;accompagnement est fait pour toi.
+          </p>
+          <a
+            href={calendlyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              background: "#E01E1E",
+              color: "#fff",
+              padding: "14px 28px",
+              borderRadius: "var(--radius-lg)",
+              fontWeight: 800,
+              fontSize: 14,
+              letterSpacing: "0.02em",
+              textDecoration: "none",
+              boxShadow: "0 4px 24px rgba(224,30,30,0.35)",
+            }}
+          >
+            <PhoneCall size={16} />
+            Réserve ton appel découverte
+            <ArrowRight size={15} />
+          </a>
         </div>
       )}
 
-      {/* ── Plans ── */}
-      <div className="space-y-3 mb-10">
-        {SUBSCRIPTION_PLANS.map((plan) => {
-          const url = `${plan.url}?client_reference_id=${user.id}${
-            user.email ? `&prefilled_email=${encodeURIComponent(user.email)}` : ""
-          }`;
-          return (
+      {/* Coaching pillars */}
+      <section style={{ marginBottom: 28 }}>
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "rgba(245,237,237,0.22)",
+            marginBottom: 14,
+          }}
+        >
+          Ce que tu obtiens avec le coaching
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {COACHING_PILLARS.map(({ icon: Icon, title, body }, i) => (
+            <div
+              key={title}
+              className="ep-card animate-fade-up"
+              style={{ animationDelay: `${i * 60}ms`, padding: "18px 20px" }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  marginBottom: 8,
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: 10,
+                    background: "rgba(224,30,30,0.1)",
+                    border: "1px solid rgba(224,30,30,0.18)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                </div>
+                <h3
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: "#F5EDED",
+                    margin: 0,
+                  }}
+                >
+                  {title}
+                </h3>
+              </div>
+              <p
+                style={{
+                  fontSize: 12,
+                  color: "rgba(245,237,237,0.5)",
+                  lineHeight: 1.7,
+                  margin: 0,
+                  paddingLeft: 48,
+                }}
+              >
+                {body}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Second CTA for non-subscribed */}
+      {!alreadySubscribed && (
+        <section style={{ marginBottom: 28 }}>
+          <div
+            style={{
+              background: "rgba(224,30,30,0.05)",
+              border: "1px solid rgba(224,30,30,0.18)",
+              borderRadius: "var(--radius-xl)",
+              padding: "22px 20px",
+              textAlign: "center",
+            }}
+          >
+            <p
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "rgba(245,237,237,0.5)",
+                margin: "0 0 16px",
+                lineHeight: 1.5,
+              }}
+            >
+              Prêt à arrêter de tâtonner seul ?
+            </p>
             <a
-              key={plan.id}
-              href={url}
+              href={calendlyUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`flex items-center justify-between gap-4 rounded-xl px-5 py-4 transition-colors border ${
-                plan.highlight
-                  ? "bg-[#E01E1E]/10 border-[#E01E1E]/40 hover:bg-[#E01E1E]/15"
-                  : "bg-[#1f0101] border-[#890404]/25 hover:border-[#890404]/45"
-              }`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 8,
+                color: "#E01E1E",
+                padding: "12px 24px",
+                borderRadius: "var(--radius-lg)",
+                fontWeight: 800,
+                fontSize: 13,
+                letterSpacing: "0.02em",
+                textDecoration: "none",
+                border: "1.5px solid rgba(224,30,30,0.4)",
+              }}
             >
-              <div className="flex items-center gap-3">
-                {plan.highlight && (
-                  <Crown size={18} className="text-[#E01E1E] flex-shrink-0" strokeWidth={1.8} />
-                )}
-                <div>
-                  <p className="text-sm font-black text-white">{plan.label}</p>
-                  <p className="text-[10px] text-[#F5EDED]/40">{plan.sublabel}</p>
-                </div>
-              </div>
-              <p className="text-base font-black text-white whitespace-nowrap">
-                {plan.priceLabel}
-              </p>
+              <PhoneCall size={14} />
+              Réserve ton appel découverte
             </a>
-          );
-        })}
-      </div>
+          </div>
+        </section>
+      )}
 
-      {/* ── Ce que débloque l'abonnement ── */}
-      <section className="mb-10">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Tout ce que contient le coaching
-        </p>
-        <div className="space-y-3">
-          {COACHING_CATEGORIES.map(({ title, icon: Icon, perks }) => (
-            <div key={title} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-              <div className="flex items-center gap-2.5 mb-3.5">
-                <Icon size={16} className="text-[#E01E1E] flex-shrink-0" strokeWidth={1.8} />
-                <p className="text-sm font-black text-white">{title}</p>
-              </div>
-              <div className="space-y-2.5">
-                {perks.map((perk) => (
-                  <div key={perk} className="flex items-start gap-2.5">
-                    <Check size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-                    <p className="text-sm text-[#F5EDED]/70">{perk}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Toujours gratuit ── */}
-      <section className="mb-10">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Toujours gratuit, dès l&apos;inscription
-        </p>
-        <div className="grid grid-cols-2 gap-3">
-          {ALWAYS_FREE.map(({ icon: Icon, label, sub }) => (
-            <div key={label} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex flex-col items-center text-center gap-2">
-              <Icon size={18} className="text-[#F5EDED]/40" strokeWidth={1.8} />
-              <p className="text-xs font-bold text-white">{label}</p>
-              <p className="text-[10px] text-[#F5EDED]/35">{sub}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Débloque en jouant le jeu (points/rang) ── */}
+      {/* Points / gamification */}
       <section>
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5 flex items-center gap-1.5">
-          <Sparkles size={11} /> Ou débloque en l&apos;utilisant
-        </p>
-        <p className="text-sm text-[#F5EDED]/45 mb-3 leading-relaxed">
-          Chaque bilan loggé, séance complétée, leçon vue ou victoire publiée dans la Communauté
-          te rapporte des points (lentement — c&apos;est une récompense de fidélité, pas un
-          raccourci). En cumulant assez de points, tu débloques certains contenus sans payer.
-          Tout ce qui demande du temps réel de ton coach (messages, bilans coachés, programme
-          construit pour toi, etc.) reste réservé à l&apos;abonnement.
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            letterSpacing: "0.18em",
+            textTransform: "uppercase",
+            color: "rgba(245,237,237,0.22)",
+            marginBottom: 12,
+          }}
+        >
+          Ta progression dans l&apos;app
         </p>
         <PointsProgressCard points={points} isSubscribed={alreadySubscribed} />
-        {!alreadySubscribed && (
-          <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] text-amber-300/70">
-            <Gift size={11} /> Au rang Légende, les membres abonnés reçoivent une Oura Ring offerte par le coach.
-          </p>
-        )}
       </section>
     </div>
   );

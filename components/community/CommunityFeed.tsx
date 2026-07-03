@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   Trophy,
   HelpCircle,
+  Trash2,
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
 import RankBadge from "@/components/ui/RankBadge";
@@ -302,24 +303,42 @@ function PostCard({
   post,
   basePath,
   isCoach,
+  currentUserId,
   expanded,
   onToggleExpand,
   comments,
   commentsLoading,
   onCommentAdded,
   onStatusChanged,
+  onDeleted,
 }: {
   post: CommunityPost;
   basePath: string;
   isCoach: boolean;
+  currentUserId: string | null;
   expanded: boolean;
   onToggleExpand: () => void;
   comments: CommunityComment[] | undefined;
   commentsLoading: boolean;
   onCommentAdded: (comment: CommunityComment) => void;
   onStatusChanged: (status: "open" | "answered") => void;
+  onDeleted: () => void;
 }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const canDelete = isCoach || currentUserId === post.author_id;
+
+  async function handleDelete() {
+    if (!confirm("Supprimer ce post ?")) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/community/posts/${post.id}`, { method: "DELETE" });
+      if (res.ok) onDeleted();
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   async function toggleAnswered() {
     setUpdatingStatus(true);
@@ -392,13 +411,25 @@ function PostCard({
             </div>
           )}
 
-          <button
-            onClick={onToggleExpand}
-            className="flex items-center gap-1.5 mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
-          >
-            <MessageCircle size={12} strokeWidth={1.8} />
-            {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : "Répondre"}
-          </button>
+          <div className="flex items-center gap-3 mt-3">
+            <button
+              onClick={onToggleExpand}
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
+            >
+              <MessageCircle size={12} strokeWidth={1.8} />
+              {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : "Répondre"}
+            </button>
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/20 hover:text-red-400 transition-colors disabled:opacity-30"
+              >
+                <Trash2 size={11} strokeWidth={1.8} />
+                Supprimer
+              </button>
+            )}
+          </div>
 
           {expanded && (
             <CommentsThread
@@ -422,11 +453,13 @@ export default function CommunityFeed({
   initialPosts,
   initialNextCursor,
   isCoach,
+  currentUserId,
 }: {
   type: CommunityPostType;
   initialPosts: CommunityPost[];
   initialNextCursor: string | null;
   isCoach: boolean;
+  currentUserId?: string | null;
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
@@ -507,6 +540,10 @@ export default function CommunityFeed({
     setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, status } : p)));
   }
 
+  function handlePostDeleted(postId: string) {
+    setPosts((prev) => prev.filter((p) => p.id !== postId));
+  }
+
   const Icon = type === "victory" ? Trophy : HelpCircle;
 
   return (
@@ -530,12 +567,14 @@ export default function CommunityFeed({
               post={post}
               basePath={basePath}
               isCoach={isCoach}
+              currentUserId={currentUserId ?? null}
               expanded={expandedId === post.id}
               onToggleExpand={() => handleToggleExpand(post.id)}
               comments={commentsByPost[post.id]}
               commentsLoading={loadingComments[post.id] ?? false}
               onCommentAdded={(c) => handleCommentAdded(post.id, c)}
               onStatusChanged={(s) => handleStatusChanged(post.id, s)}
+              onDeleted={() => handlePostDeleted(post.id)}
             />
           ))}
           <div ref={sentinelRef} className="h-1" />
