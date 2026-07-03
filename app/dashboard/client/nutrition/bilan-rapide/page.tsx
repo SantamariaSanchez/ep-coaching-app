@@ -11,7 +11,6 @@ export default async function BilanRapidePage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
 
   const today = new Date().toISOString().split("T")[0];
 

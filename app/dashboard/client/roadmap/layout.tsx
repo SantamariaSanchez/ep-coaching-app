@@ -6,7 +6,9 @@ export default async function RoadmapLayout({ children }: { children: React.Reac
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role !== "coach" && profile?.subscription_status !== "active") {
+  const isCoach = profile?.role === "coach";
+  const isPaying = profile?.subscription_status === "active";
+  if (!isCoach && !isPaying) {
     redirect("/dashboard/client");
   }
 
