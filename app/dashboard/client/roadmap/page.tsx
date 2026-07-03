@@ -160,10 +160,11 @@ export default function ClientRoadmapPage() {
 
       const { data: profile } = await supabase
         .from("profiles")
-        .select("subscription_status")
+        .select("subscription_status, role")
         .eq("id", user.id)
         .single();
-      setIsFree((profile as { subscription_status: string } | null)?.subscription_status !== "active");
+      const p = profile as { subscription_status: string; role: string } | null;
+      setIsFree(p?.role !== "coach" && p?.subscription_status !== "active");
 
       const res = await fetch(`/api/roadmap/${user.id}`);
       const json = await res.json();
