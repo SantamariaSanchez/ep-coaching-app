@@ -80,7 +80,7 @@ const GUIDE_ITEMS = [
     href: "/dashboard/client/abonnement",
     icon: GraduationCap,
     title: "Formations",
-    desc: "80h+ de contenu vidéo, débloquées avec le coaching premium.",
+    desc: "80h+ de contenu vidéo. Réservé aux clients coachés (optionnel).",
     locked: true,
   },
 ];
@@ -101,9 +101,10 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
           Salut {firstName} 👋
         </h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
-          Tu fais partie de la communauté EP Coaching. Ici, tu as accès à des
-          outils gratuits pour avancer en autonomie, et tu peux passer
-          premium quand tu veux pour un vrai accompagnement coaché.
+          Ton compte est <strong style={{ color: "#F5EDED" }}>gratuit, pour toujours</strong>.
+          Tout ce qui est listé ci-dessous, tu peux l&apos;utiliser dès maintenant,
+          en autonomie. Si un jour tu veux qu&apos;un vrai coach s&apos;occupe de ton
+          programme et ta nutrition, c&apos;est possible en plus — mais rien ne t&apos;y oblige.
         </p>
       </div>
 
@@ -154,7 +155,24 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
-                  {locked && <Lock size={11} style={{ color: "#E01E1E" }} strokeWidth={2} />}
+                  {locked ? (
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: 3,
+                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "rgba(245,237,237,0.4)", border: "1px solid rgba(245,237,237,0.2)",
+                      borderRadius: 999, padding: "1px 7px",
+                    }}>
+                      <Lock size={9} strokeWidth={2} /> Coaching
+                    </span>
+                  ) : (
+                    <span style={{
+                      fontSize: 9, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                      color: "#4ade80", border: "1px solid rgba(74,222,128,0.35)",
+                      borderRadius: 999, padding: "1px 7px",
+                    }}>
+                      Gratuit
+                    </span>
+                  )}
                 </div>
                 <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
               </div>
@@ -178,10 +196,10 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
         <Crown size={22} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            Envie d&apos;aller plus loin ?
+            Envie d&apos;un vrai coach, en plus ? (optionnel)
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-            Découvre le coaching premium : programme et nutrition coachés, suivi, bilans...
+            Un appel de 30 min, sans engagement, pour voir si ça peut t&apos;aider.
           </p>
         </div>
         <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />

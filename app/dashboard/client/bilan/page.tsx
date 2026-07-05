@@ -102,15 +102,9 @@ export default async function ClientBilanPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/client");
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("subscription_status, role")
-    .eq("id", user.id)
-    .single();
-  if (profile?.role !== "coach" && profile?.subscription_status !== "active") {
-    redirect("/dashboard/client");
-  }
-
+  // Le bilan quotidien (poids, sommeil, ressenti) est un outil de suivi
+  // autonome accessible à tous les clients, gratuits ou coachés — c'est le
+  // cœur du suivi de perte de poids en self-service.
   const today = new Date().toISOString().split("T")[0];
   const [todayLog, allLogs] = await Promise.all([
     getTodayLog(user.id),

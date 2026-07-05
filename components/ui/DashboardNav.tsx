@@ -107,6 +107,12 @@ const CLIENT_TABS_FREE: TabItem[] = [
     matchSegments: ["nutrition"],
   },
   {
+    label: "Suivi",
+    icon: ClipboardCheck,
+    href: "/dashboard/client/bilan",
+    matchSegments: ["bilan", "photos"],
+  },
+  {
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
@@ -139,6 +145,13 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     ],
   },
   {
+    group: "Suivi",
+    items: [
+      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Photos", icon: Image, segment: "photos" },
+    ],
+  },
+  {
     group: "Communauté",
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
@@ -162,7 +175,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     group: "Mon coaching",
     items: [
       { label: "Mon profil", icon: User, segment: "profile" },
-      { label: "Coaching individuel", icon: Crown, segment: "abonnement" },
+      { label: "Réserver un appel avec un coach", icon: Crown, segment: "abonnement" },
     ],
   },
 ];

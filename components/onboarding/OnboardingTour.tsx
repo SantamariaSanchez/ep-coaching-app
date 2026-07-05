@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     icon: Sparkles,
     eyebrow: "Bienvenue",
     title: "T'es officiellement dans la place 👋",
-    desc: "1 minute, 9 écrans, et tu sauras exactement tout ce que tu peux faire ici — gratuitement et en payant. Let's go.",
+    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux — mais 100% optionnel. Let's go.",
   },
   {
     icon: Dumbbell,
@@ -56,27 +56,27 @@ const SLIDES: Slide[] = [
     icon: Heart,
     eyebrow: "Communauté",
     title: "T'es plus seul·e",
-    desc: "Partage tes victoires, pose tes questions — toute la communauté (et le coach) peut te répondre. Et chaque publication te rapporte des points.",
+    desc: "Partage tes victoires, pose tes questions — toute la communauté peut te répondre et t'encourager. Chaque publication te rapporte des points.",
     bullets: ["Victoires", "Questions", "Ressources gratuites"],
   },
   {
     icon: Trophy,
     eyebrow: "Points & rang",
     title: "Plus tu joues le jeu, plus tu débloques",
-    desc: "Bilan loggé, séance complétée, leçon vue, victoire publiée : chaque action te rapporte un peu de points. En grimpant les rangs (🌱 Débutant → 🐐 Légende), tu débloques progressivement du contenu sans jamais payer.",
+    desc: "Bilan loggé, séance complétée, leçon vue, victoire publiée : chaque action te rapporte des points. En grimpant les rangs (🌱 Débutant → 🐐 Légende), tu débloques du contenu bonus gratuitement, juste en étant actif·ve.",
     bullets: ["Recettes exclusives", "Vidéos de démonstration", "Participer à \"Nos études\""],
   },
   {
     icon: GraduationCap,
     eyebrow: "Contenu",
     title: "80h+ de formations",
-    desc: "Entraînement, nutrition, mental — des modules vidéo complets, accessibles à vie. C'est le seul contenu réservé à l'abonnement (le reste est gratuit ou débloquable par points).",
+    desc: "Entraînement, nutrition, mental — des modules vidéo complets, accessibles à vie. C'est la seule chose réservée aux clients coachés (tout le reste que tu viens de voir est gratuit, ou débloquable par points).",
   },
   {
     icon: Crown,
-    eyebrow: "Pour aller plus loin",
-    title: "Le coaching premium, quand tu veux",
-    desc: "Programme et nutrition coachés sur-mesure, bilans hebdo, messages directs avec ton coach, formations complètes. Accessible à tout moment depuis Abonnement.",
+    eyebrow: "Pour aller plus loin (optionnel)",
+    title: "Un vrai coach, si tu le souhaites",
+    desc: "Tout ce que tu viens de voir reste gratuit, sans limite de temps. Si un jour tu veux qu'un coach s'occupe de ton programme et ta nutrition, avec un bilan chaque semaine et des messages directs, tu peux réserver un appel découverte de 30 min, gratuit et sans engagement, depuis \"Mon coaching\". Rien ne t'y oblige.",
   },
 ];
 

@@ -79,18 +79,28 @@ export default async function AbonnementPage() {
             textTransform: "uppercase",
           }}
         >
-          Passe au niveau supérieur
+          Le coaching individuel
         </h1>
         <p
           style={{
             fontSize: 14,
             color: "rgba(245,237,237,0.5)",
             lineHeight: 1.7,
-            margin: 0,
+            margin: "0 0 14px",
           }}
         >
-          Tu utilises déjà les outils. Tu t&apos;entraînes déjà. La question c&apos;est : est-ce que tu veux continuer à avancer seul, ou avoir quelqu&apos;un qui s&apos;occupe de tout pendant que tu exécutes ?
+          Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l&apos;app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.
         </p>
+        {!alreadySubscribed && (
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 11, fontWeight: 700, color: "#4ade80",
+            border: "1px solid rgba(74,222,128,0.3)", background: "rgba(74,222,128,0.06)",
+            borderRadius: 999, padding: "5px 12px",
+          }}>
+            <CheckCircle2 size={12} /> Aucune obligation — l&apos;appel est gratuit et sans engagement
+          </div>
+        )}
       </div>
 
       {alreadySubscribed ? (
