@@ -4,6 +4,7 @@ import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { getLatestCoachNote } from "@/utils/notes";
 import ClientDashboardStats from "@/components/client/DashboardStats";
+import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
@@ -245,11 +246,14 @@ export default async function ClientDashboard() {
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
     return (
-      <WelcomeGuide
-        firstName={profile?.full_name?.split(" ")[0] ?? ""}
-        goal={profile?.goal ?? null}
-        level={profile?.level ?? null}
-      />
+      <>
+        <PushPermission userId={user.id} />
+        <WelcomeGuide
+          firstName={profile?.full_name?.split(" ")[0] ?? ""}
+          goal={profile?.goal ?? null}
+          level={profile?.level ?? null}
+        />
+      </>
     );
   }
 
@@ -290,6 +294,7 @@ export default async function ClientDashboard() {
         position: "relative",
       }}
     >
+      <PushPermission userId={user.id} />
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>

@@ -15,9 +15,15 @@ const playfair = Playfair_Display({
   weight: ["400", "700"],
 });
 
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+const SITE_TITLE = "EP Coaching";
+const SITE_DESCRIPTION =
+  "Entraînement, nutrition et suivi guidés par un vrai coach — gratuit pour commencer, dès maintenant.";
+
 export const metadata: Metadata = {
-  title: "EP Coaching",
-  description: "Ton espace coaching personnalisé",
+  metadataBase: new URL(APP_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -30,6 +36,21 @@ export const metadata: Metadata = {
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
     ],
+  },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: APP_URL,
+    siteName: SITE_TITLE,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630, alt: "EP Coaching" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: ["/og-image.jpg"],
   },
 };
 

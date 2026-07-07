@@ -778,7 +778,13 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
               display: "flex",
               gap: 6,
               overflowX: "auto",
+              overflowY: "hidden",
               WebkitOverflowScrolling: "touch",
+              // Sans ça, un swipe horizontal sur cette bande pouvait être
+              // intercepté par le scroll vertical de la page entière au lieu
+              // de faire défiler seulement les onglets.
+              touchAction: "pan-x",
+              overscrollBehavior: "contain",
               padding: "10px 12px",
               background: "rgba(6,0,0,0.92)",
               backdropFilter: "blur(20px)",

@@ -262,11 +262,13 @@ function WarmupStep({
   dayLabel,
   muscleGroups,
   onValidate,
+  onCancel,
 }: {
   sessionId: string;
   dayLabel: string;
   muscleGroups: string[];
   onValidate: (seconds: number) => void;
+  onCancel: () => void;
 }) {
   // Le point de départ est persisté (comme le timer de séance) — sans ça,
   // changer d'onglet démonte ce composant et le décompte repart de zéro,
@@ -416,6 +418,13 @@ function WarmupStep({
         }`}
       >
         {canValidate ? "Valider l'échauffement → Commencer" : `Encore ${formatTime(300 - elapsed)}`}
+      </button>
+
+      <button
+        onClick={onCancel}
+        className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+      >
+        Annuler la séance
       </button>
     </div>
   );
@@ -1538,6 +1547,26 @@ export default function SessionView({
       }))
   );
 
+  const [canceling, setCanceling] = useState(false);
+
+  // Abandonner une séance de test/erreur sans rien enregistrer — jusqu'ici
+  // seul "Terminer" existait, qui sauvegarde toujours tout.
+  const handleCancelSession = useCallback(async () => {
+    if (!confirm("Annuler cette séance ? Rien ne sera enregistré.")) return;
+    setCanceling(true);
+    try {
+      await fetch(`/api/client/sessions/${sessionId}`, { method: "DELETE" });
+    } catch {
+      // best-effort — on quitte quand même, la séance restera visible comme
+      // "en cours" au pire, sans bloquer l'utilisateur.
+    }
+    localStorage.removeItem(`ep-session-start-${sessionId}`);
+    localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+    localStorage.removeItem(customExercisesKey(sessionId));
+    localStorage.removeItem("ep-active-session-id");
+    router.push(returnPath);
+  }, [sessionId, returnPath, router]);
+
   const handleCompleteSession = useCallback(async () => {
     setSaving(true);
     try {
@@ -1628,6 +1657,7 @@ export default function SessionView({
         dayLabel={session.day_label}
         muscleGroups={muscleGroups}
         onValidate={handleWarmupValidate}
+        onCancel={handleCancelSession}
       />
     );
   }
@@ -1860,20 +1890,29 @@ export default function SessionView({
 
         {/* Save button */}
         {!session.is_completed && (
-          <button
-            onClick={handleCompleteSession}
-            disabled={saving}
-            className="w-full py-4 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-          >
-            {saving ? (
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-            ) : (
-              <>
-                <CheckCircle2 size={16} />
-                Valider et sauvegarder la séance
-              </>
-            )}
-          </button>
+          <>
+            <button
+              onClick={handleCompleteSession}
+              disabled={saving || canceling}
+              className="w-full py-4 bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              {saving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <CheckCircle2 size={16} />
+                  Valider et sauvegarder la séance
+                </>
+              )}
+            </button>
+            <button
+              onClick={handleCancelSession}
+              disabled={saving || canceling}
+              className="w-full mt-3 py-2 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/25 hover:text-red-400 transition-colors disabled:opacity-50"
+            >
+              {canceling ? "Annulation…" : "Annuler la séance (rien ne sera enregistré)"}
+            </button>
+          </>
         )}
       </div>
     );
@@ -1913,6 +1952,13 @@ export default function SessionView({
                   </span>
                 </p>
               )}
+              <button
+                onClick={handleCancelSession}
+                disabled={canceling}
+                className="text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/25 hover:text-red-400 transition-colors mt-1 disabled:opacity-50"
+              >
+                {canceling ? "Annulation…" : "Annuler"}
+              </button>
             </div>
           </div>
 
