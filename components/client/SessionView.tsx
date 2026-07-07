@@ -148,6 +148,30 @@ function newLocalId() {
   return Math.random().toString(36).slice(2);
 }
 
+// Les exercices ajoutés à la volée (bouton "Ajouter un exercice", séance
+// libre) ne vivaient qu'en state React — un simple refresh de page les
+// effaçait tant qu'aucun set n'avait été validé pour eux. Persistés ici,
+// comme le timer de séance et d'échauffement.
+function customExercisesKey(sessionId: string) {
+  return `ep-custom-exercises-${sessionId}`;
+}
+
+function loadCustomExercises(sessionId: string): Exercise[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(customExercisesKey(sessionId));
+    return raw ? (JSON.parse(raw) as Exercise[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomExercises(sessionId: string, list: Exercise[]) {
+  try {
+    localStorage.setItem(customExercisesKey(sessionId), JSON.stringify(list));
+  } catch {}
+}
+
 function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): ExerciseState[] {
   return exercises.map((ex) => {
     const targetSets = ex.sets ?? 3;
@@ -459,7 +483,10 @@ function RestTimerOverlay({
           }
         }}
       />
-      <div className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 pb-8 space-y-5">
+      <div
+        className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 pb-8 space-y-5 overflow-y-auto"
+        style={{ maxHeight: "88dvh" }}
+      >
         {timer.mentalStep === "hidden" && (
           <>
             <div className="text-center">
@@ -1156,7 +1183,11 @@ export default function SessionView({
       .then((r) => r.json())
       .then((data: InitData) => {
         setInitData(data);
-        const exStates = buildExerciseState(data.exercises, data.existingSets);
+        const customExercises = loadCustomExercises(sessionId);
+        const exStates = buildExerciseState(
+          [...data.exercises, ...customExercises],
+          data.existingSets
+        );
         setExercises(exStates);
 
         // Determine starting step
@@ -1440,15 +1471,28 @@ export default function SessionView({
         ...prev,
         { exercise: newExercise, sets, showTips: false, showHistory: false },
       ]);
+      saveCustomExercises(sessionId, [...loadCustomExercises(sessionId), newExercise]);
     },
-    [exercises.length]
+    [exercises.length, sessionId]
   );
 
   // Retirer un exercice de la séance — n'affecte que la vue locale, les
   // sets déjà validés (donc déjà enregistrés en base) le restent.
-  const handleRemoveExercise = useCallback((exIdx: number) => {
-    setExercises((prev) => prev.filter((_, i) => i !== exIdx));
-  }, []);
+  const handleRemoveExercise = useCallback(
+    (exIdx: number) => {
+      setExercises((prev) => {
+        const removed = prev[exIdx];
+        if (removed.exercise.id.startsWith("local-")) {
+          saveCustomExercises(
+            sessionId,
+            loadCustomExercises(sessionId).filter((e) => e.id !== removed.exercise.id)
+          );
+        }
+        return prev.filter((_, i) => i !== exIdx);
+      });
+    },
+    [sessionId]
+  );
 
   // Retirer un set non-validé d'un exercice.
   const handleRemoveSet = useCallback((exIdx: number, setIdx: number) => {
@@ -1538,6 +1582,7 @@ export default function SessionView({
 
       localStorage.removeItem(`ep-session-start-${sessionId}`);
       localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+      localStorage.removeItem(customExercisesKey(sessionId));
       localStorage.removeItem("ep-active-session-id");
       router.push(returnPath);
     } catch {
