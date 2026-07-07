@@ -12,11 +12,16 @@ const TRAINING_TYPES = [
   { label: "Cardio intense", kcal_per_hour: 500 },
 ];
 
+// Activité professionnelle uniquement — volontairement indépendante des pas
+// quotidiens (déjà comptés séparément juste en dessous). Avant cette
+// correction, les deux termes se chevauchaient (marcher = pas ET "niveau
+// d'activité"), ce qui gonflait artificiellement le TDEE de toute personne
+// remplissant les deux champs.
 const ACTIVITY_LEVELS = [
-  { label: "Sédentaire", value: 300 },
-  { label: "Léger", value: 500 },
-  { label: "Modéré", value: 700 },
-  { label: "Actif", value: 900 },
+  { label: "Assis (bureau)", value: 0 },
+  { label: "Debout / déplacements", value: 150 },
+  { label: "Physique (manutention, chantier)", value: 350 },
+  { label: "Très physique", value: 600 },
 ];
 
 const PHASE_ADJUSTMENTS: Record<string, { label: string; value: number }[]> = {
@@ -65,7 +70,7 @@ export default function NutritionForm({
       sessionsPerWeek: existingProfile?.sessions_per_week != null ? String(existingProfile.sessions_per_week) : "",
       sessionDuration: existingProfile?.session_duration != null ? String(existingProfile.session_duration) : "",
       stepsPerDay: existingProfile?.steps_per_day != null ? String(existingProfile.steps_per_day) : "",
-      activityLevel: existingProfile?.activity_level != null ? String(existingProfile.activity_level) : "500",
+      activityLevel: existingProfile?.activity_level != null ? String(existingProfile.activity_level) : "0",
       phase: existingProfile?.phase ?? "maintenance",
       adjustment: existingProfile?.phase === "deficit"
         ? "-300"
@@ -347,7 +352,7 @@ export default function NutritionForm({
             />
           </div>
           <div>
-            <label className={labelCls}>Niveau d&apos;activité hors sport</label>
+            <label className={labelCls}>Activité professionnelle</label>
             <select
               value={form.activityLevel}
               onChange={(e) => set("activityLevel", e.target.value)}
@@ -355,10 +360,13 @@ export default function NutritionForm({
             >
               {ACTIVITY_LEVELS.map((a) => (
                 <option key={a.value} value={a.value}>
-                  {a.label} (+{a.value} kcal NEAT)
+                  {a.label} (+{a.value} kcal)
                 </option>
               ))}
             </select>
+            <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+              Indépendant de tes pas quotidiens, déjà comptés ci-contre.
+            </p>
           </div>
         </div>
       </div>

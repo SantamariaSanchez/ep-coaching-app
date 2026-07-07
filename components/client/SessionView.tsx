@@ -18,6 +18,7 @@ import {
   Star,
   Video,
   Loader2,
+  X,
 } from "lucide-react";
 import {
   BarChart,
@@ -597,6 +598,7 @@ function SetRow({
   sessionId,
   onChange,
   onValidate,
+  onRemove,
 }: {
   set: SetState;
   exercise: Exercise;
@@ -605,6 +607,7 @@ function SetRow({
   sessionId: string;
   onChange: (patch: Partial<SetState>) => void;
   onValidate: () => void;
+  onRemove: () => void;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
   const isPRCandidate =
@@ -656,6 +659,15 @@ function SetRow({
           <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
             🏆 PR !
           </span>
+        )}
+        {!set.validated && (
+          <button
+            onClick={onRemove}
+            className="ml-auto p-1 rounded-md text-[#F5EDED]/25 hover:text-red-400 transition-colors"
+            title="Retirer ce set"
+          >
+            <X size={12} />
+          </button>
         )}
       </div>
 
@@ -889,6 +901,8 @@ function ExerciseCard({
   sessionId,
   onUpdate,
   onValidateSet,
+  onRemoveExercise,
+  onRemoveSet,
 }: {
   exState: ExerciseState;
   prevWeight: PrevWeight | null;
@@ -896,6 +910,8 @@ function ExerciseCard({
   sessionId: string;
   onUpdate: (patch: Partial<ExerciseState>) => void;
   onValidateSet: (setIdx: number) => void;
+  onRemoveExercise: () => void;
+  onRemoveSet: (setIdx: number) => void;
 }) {
   const tips = getTips(exState.exercise.name);
 
@@ -945,6 +961,17 @@ function ExerciseCard({
             title="Historique"
           >
             <BarChart2 size={12} />
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`Retirer "${exState.exercise.name}" de cette séance ?`)) {
+                onRemoveExercise();
+              }
+            }}
+            className="p-1.5 rounded-lg text-[9px] font-bold border text-[#F5EDED]/30 border-[#890404]/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
+            title="Retirer cet exercice"
+          >
+            <X size={12} />
           </button>
         </div>
       </div>
@@ -1019,6 +1046,7 @@ function ExerciseCard({
               onUpdate({ sets: newSets });
             }}
             onValidate={() => onValidateSet(idx)}
+            onRemove={() => onRemoveSet(idx)}
           />
         ))}
 
@@ -1201,6 +1229,36 @@ export default function SessionView({
     };
   }, [step]);
 
+  // Notification système quand on quitte l'app (autre onglet, autre app,
+  // écran verrouillé) pendant une séance active — sans ça, rien ne rappelle
+  // qu'une séance tourne toujours une fois qu'on a quitté la page, et on
+  // peut croire qu'il faut la relancer depuis zéro.
+  useEffect(() => {
+    if (step === "recap" || typeof window === "undefined" || !("Notification" in window)) return;
+
+    if (Notification.permission === "default") {
+      Notification.requestPermission().catch(() => {});
+    }
+
+    function handleVisibility() {
+      if (document.visibilityState !== "hidden") return;
+      if (Notification.permission !== "granted") return;
+      try {
+        new Notification("Séance en cours 💪", {
+          body: "Reviens dans l'app pour continuer — seul \"Terminer\" y met fin.",
+          tag: "ep-active-session",
+          icon: "/icon-192.png",
+        });
+      } catch {
+        // Notification API peut être indisponible (iOS Safari hors PWA) —
+        // le bandeau in-app reste le filet de sécurité principal.
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [step]);
+
   const handleWarmupValidate = useCallback(
     (seconds: number) => {
       // Move to the workout immediately — warmup_validated is just metadata
@@ -1347,7 +1405,10 @@ export default function SessionView({
 
   const handleAddExercise = useCallback(
     (input: { name: string; muscleGroup: string | null }) => {
-      const defaultSets = 3;
+      // 1 set pour démarrer — "Ajouter un set" permet d'en rajouter autant
+      // que voulu, mais imposer 3 d'office ne laissait aucun moyen de
+      // choisir moins pour une séance libre.
+      const defaultSets = 1;
       const newExercise: Exercise = {
         id: `local-${newLocalId()}`,
         day_id: "",
@@ -1382,6 +1443,24 @@ export default function SessionView({
     },
     [exercises.length]
   );
+
+  // Retirer un exercice de la séance — n'affecte que la vue locale, les
+  // sets déjà validés (donc déjà enregistrés en base) le restent.
+  const handleRemoveExercise = useCallback((exIdx: number) => {
+    setExercises((prev) => prev.filter((_, i) => i !== exIdx));
+  }, []);
+
+  // Retirer un set non-validé d'un exercice.
+  const handleRemoveSet = useCallback((exIdx: number, setIdx: number) => {
+    setExercises((prev) => {
+      const next = [...prev];
+      next[exIdx] = {
+        ...next[exIdx],
+        sets: next[exIdx].sets.filter((_, i) => i !== setIdx),
+      };
+      return next;
+    });
+  }, []);
 
   // Compute volume per muscle group
   const volumeByMuscle: Record<string, number> = {};
@@ -1832,6 +1911,8 @@ export default function SessionView({
               })
             }
             onValidateSet={(setIdx) => handleValidateSet(exIdx, setIdx)}
+            onRemoveExercise={() => handleRemoveExercise(exIdx)}
+            onRemoveSet={(setIdx) => handleRemoveSet(exIdx, setIdx)}
           />
         ))}
 

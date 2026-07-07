@@ -14,6 +14,7 @@ import {
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import NotificationBell from "@/components/ui/NotificationBell";
+import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -939,6 +940,8 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
           })}
         </div>
       </nav>
+
+      <ActiveSessionBanner />
     </>
   );
 }

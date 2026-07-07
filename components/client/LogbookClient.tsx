@@ -411,7 +411,7 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
           <SectionLabel>Mes dernières séances</SectionLabel>
           <div className="space-y-2">
             {sessions.map((s) => {
-              const totalSets = 0; // would require joining with sets
+              const totalSets = s.sets.length;
               return (
                 <Link
                   key={s.id}
@@ -433,6 +433,7 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
                       }).format(new Date(s.session_date + "T12:00:00"))}
                       {s.duration_minutes != null &&
                         ` · ${s.duration_minutes} min`}
+                      {totalSets > 0 && ` · ${totalSets} set${totalSets > 1 ? "s" : ""}`}
                     </p>
                   </div>
                   <div className="flex items-center gap-3">
