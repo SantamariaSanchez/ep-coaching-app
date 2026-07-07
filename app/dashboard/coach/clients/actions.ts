@@ -51,6 +51,13 @@ export async function addClient(
     goal,
     start_date: startDate,
     status: "active",
+    // Ce formulaire sert uniquement à créer un client coaché individuellement
+    // (le coach le remplit après avoir vendu le coaching) — contrairement au
+    // formulaire d'auto-inscription publique, qui lui reste sur "free" par
+    // défaut. Sans ce champ, le client resterait bloqué sur l'espace gratuit
+    // (pas de messages, pas de bilan coach, pas de formations) sans qu'il y
+    // ait nulle part ailleurs un moyen de l'activer.
+    subscription_status: "active",
   });
 
   if (profileError) {
@@ -60,5 +67,33 @@ export async function addClient(
 
   revalidatePath("/dashboard/coach");
   revalidatePath("/dashboard/coach/clients");
+  return { success: true };
+}
+
+// Activer/désactiver le coaching individuel d'un client manuellement. Le
+// webhook Stripe (app/api/webhooks/stripe/route.ts) sait mettre à jour ce
+// même champ, mais rien dans l'app ne crée jamais de Checkout Session avec
+// le client_reference_id attendu — en pratique un client ne peut donc devenir
+// "actif" que si le coach l'active ici lui-même (paiement réglé par ailleurs :
+// virement, espèces, lien Stripe envoyé à la main...).
+export async function setClientSubscriptionStatus(
+  clientId: string,
+  status: "free" | "active" | "canceled"
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ subscription_status: status })
+    .eq("id", clientId)
+    .eq("role", "client");
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/clients");
+  revalidatePath(`/dashboard/coach/clients/${clientId}`);
+  revalidatePath("/dashboard/coach/communaute/membres");
   return { success: true };
 }

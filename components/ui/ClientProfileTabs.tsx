@@ -7,6 +7,7 @@ import type { Profile } from "@/utils/auth";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import { ExternalLink } from "lucide-react";
+import SubscriptionToggle from "./SubscriptionToggle";
 
 const TABS = [
   { key: "profil",    label: "Profil" },
@@ -88,6 +89,11 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
 
       {activeTab === "profil" && (
         <div className="space-y-4">
+          <SubscriptionToggle
+            clientId={client.id}
+            currentStatus={client.subscription_status}
+          />
+
           <Card title="Informations personnelles">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <InfoRow label="Nom complet" value={client.full_name} />

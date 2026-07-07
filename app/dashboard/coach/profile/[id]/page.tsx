@@ -4,6 +4,7 @@ import { getCommunityPostCount } from "@/utils/community";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import BackButton from "@/components/ui/BackButton";
+import SubscriptionToggle from "@/components/ui/SubscriptionToggle";
 
 export default async function CoachPublicProfilePage({
   params,
@@ -36,6 +37,15 @@ export default async function CoachPublicProfilePage({
       </div>
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />
+
+      {profile.role === "client" && (
+        <div className="mt-4">
+          <SubscriptionToggle
+            clientId={profile.id}
+            currentStatus={profile.subscription_status}
+          />
+        </div>
+      )}
     </div>
   );
 }

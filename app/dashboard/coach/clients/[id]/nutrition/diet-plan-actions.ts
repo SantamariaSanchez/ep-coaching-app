@@ -79,7 +79,8 @@ export async function deactivateDietPlan(
     await supabase
       .from("diet_plans")
       .update({ is_active: false })
-      .eq("id", planId);
+      .eq("id", planId)
+      .eq("client_id", clientId);
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
@@ -110,7 +111,8 @@ export async function activateDietPlan(
     await supabase
       .from("diet_plans")
       .update({ is_active: true })
-      .eq("id", planId);
+      .eq("id", planId)
+      .eq("client_id", clientId);
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
@@ -130,7 +132,11 @@ export async function deleteDietPlan(
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
-    const { error } = await supabase.from("diet_plans").delete().eq("id", planId);
+    const { error } = await supabase
+      .from("diet_plans")
+      .delete()
+      .eq("id", planId)
+      .eq("client_id", clientId);
     if (error) return { error: "Erreur lors de la suppression." };
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
