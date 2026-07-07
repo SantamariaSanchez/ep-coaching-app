@@ -16,9 +16,9 @@ const playfair = Playfair_Display({
 });
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
-const SITE_TITLE = "EP Coaching";
+const SITE_TITLE = "EP Coaching — Ta transformation commence ici";
 const SITE_DESCRIPTION =
-  "Entraînement, nutrition et suivi guidés par un vrai coach — gratuit pour commencer, dès maintenant.";
+  "Une vraie communauté et tous les outils dont tu as besoin pour atteindre ton objectif — entraînement, nutrition, suivi, un vrai coach derrière toi. Gratuit, dès aujourd'hui.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(APP_URL),
