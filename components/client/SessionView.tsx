@@ -233,19 +233,39 @@ function VolumeGauge({
 // ── Warmup Step ───────────────────────────────────────────────────────────────
 
 function WarmupStep({
+  sessionId,
   dayLabel,
   muscleGroups,
   onValidate,
 }: {
+  sessionId: string;
   dayLabel: string;
   muscleGroups: string[];
   onValidate: (seconds: number) => void;
 }) {
-  const [elapsed, setElapsed] = useState(0);
+  // Le point de départ est persisté (comme le timer de séance) — sans ça,
+  // changer d'onglet démonte ce composant et le décompte repart de zéro,
+  // donnant l'impression que la séance vient d'être interrompue/annulée
+  // alors que rien ne l'a été : seul le bouton "Terminer" doit y mettre fin.
+  const storageKey = `ep-warmup-start-${sessionId}`;
+  const warmupStartRef = useRef<number>((() => {
+    if (typeof window === "undefined") return Date.now();
+    const saved = localStorage.getItem(storageKey);
+    if (saved) return parseInt(saved, 10);
+    const now = Date.now();
+    localStorage.setItem(storageKey, now.toString());
+    return now;
+  })());
+  const [elapsed, setElapsed] = useState(() =>
+    Math.floor((Date.now() - warmupStartRef.current) / 1000)
+  );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => setElapsed((s) => s + 1), 1000);
+    intervalRef.current = setInterval(
+      () => setElapsed(Math.floor((Date.now() - warmupStartRef.current) / 1000)),
+      1000
+    );
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -1114,11 +1134,17 @@ export default function SessionView({
         // Determine starting step
         if (data.session.is_completed) {
           setStep("recap");
-        } else if (data.session.warmup_validated) {
-          setStep("session");
-          const saved = localStorage.getItem(`ep-session-start-${sessionId}`);
-          sessionStartRef.current = saved ? parseInt(saved, 10) : Date.now();
+        } else {
+          // Marquer la séance comme active dès qu'elle est chargée (pas
+          // seulement après validation de l'échauffement) — sinon revenir sur
+          // /logbook pendant l'échauffement ne propose pas de la reprendre et
+          // donne l'impression qu'elle a été arrêtée.
           localStorage.setItem("ep-active-session-id", sessionId);
+          if (data.session.warmup_validated) {
+            setStep("session");
+            const saved = localStorage.getItem(`ep-session-start-${sessionId}`);
+            sessionStartRef.current = saved ? parseInt(saved, 10) : Date.now();
+          }
         }
 
         setLoading(false);
@@ -1184,6 +1210,7 @@ export default function SessionView({
       sessionStartRef.current = startTime;
       localStorage.setItem(`ep-session-start-${sessionId}`, startTime.toString());
       localStorage.setItem("ep-active-session-id", sessionId);
+      localStorage.removeItem(`ep-warmup-start-${sessionId}`);
       setStep("session");
 
       const patchWarmup = () =>
@@ -1431,6 +1458,7 @@ export default function SessionView({
       });
 
       localStorage.removeItem(`ep-session-start-${sessionId}`);
+      localStorage.removeItem(`ep-warmup-start-${sessionId}`);
       localStorage.removeItem("ep-active-session-id");
       router.push(returnPath);
     } catch {
@@ -1472,6 +1500,7 @@ export default function SessionView({
   if (step === "warmup") {
     return (
       <WarmupStep
+        sessionId={sessionId}
         dayLabel={session.day_label}
         muscleGroups={muscleGroups}
         onValidate={handleWarmupValidate}
