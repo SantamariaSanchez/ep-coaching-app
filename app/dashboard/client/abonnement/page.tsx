@@ -9,6 +9,7 @@ import {
   GraduationCap,
   CheckCircle2,
   ArrowRight,
+  UserCheck,
 } from "lucide-react";
 import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
@@ -219,6 +220,47 @@ export default async function AbonnementPage() {
         </div>
       )}
 
+      {/* Ce qui change vraiment : coach humain, pas un algorithme */}
+      <section
+        className="animate-fade-up"
+        style={{
+          display: "flex",
+          gap: 14,
+          padding: "20px",
+          marginBottom: 28,
+          borderRadius: "var(--radius-xl)",
+          background: "rgba(224,30,30,0.05)",
+          border: "1px solid rgba(224,30,30,0.16)",
+        }}
+      >
+        <div
+          style={{
+            width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+            background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.25)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <UserCheck size={18} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+        </div>
+        <div>
+          <h2
+            style={{
+              fontSize: 15, fontWeight: 900, letterSpacing: "-0.02em",
+              color: "#F5EDED", margin: "0 0 6px",
+            }}
+          >
+            Ce n&apos;est pas un algorithme qui te coache. C&apos;est moi.
+          </h2>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.7, margin: 0 }}>
+            Les outils gratuits, c&apos;est la partie visible. Le coaching, c&apos;est moi qui
+            regarde ton programme, ton bilan et ta nutrition chaque semaine, qui ajuste ce
+            qui ne marche pas, et qui te réponds personnellement quand tu bloques. Pas un
+            chatbot, pas un plan généré automatiquement : un vrai suivi 1:1, dans la durée,
+            avec quelqu&apos;un qui connaît ton historique.
+          </p>
+        </div>
+      </section>
+
       {/* Coaching pillars */}
       <section style={{ marginBottom: 28 }}>
         <p
@@ -231,7 +273,7 @@ export default async function AbonnementPage() {
             marginBottom: 14,
           }}
         >
-          Ce que tu obtiens avec le coaching
+          Concrètement, ce que ça change au quotidien
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {COACHING_PILLARS.map(({ icon: Icon, title, body }, i) => (

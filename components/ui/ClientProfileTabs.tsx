@@ -6,6 +6,7 @@ import Card from "./Card";
 import type { Profile } from "@/utils/auth";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
+import { getRankForPoints } from "@/lib/gamification-types";
 import { ExternalLink } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -17,7 +18,6 @@ const TABS = [
   { key: "nutrition", label: "Nutrition" },
   { key: "bilans",    label: "Bilans" },
   { key: "photos",    label: "Photos" },
-  { key: "notes",     label: "Notes" },
   { key: "checkins",  label: "Check-ins" },
   { key: "rappels",   label: "Rappels" },
 ] as const;
@@ -56,7 +56,8 @@ interface RoadmapData {
   objectives: RoadmapObjective[];
 }
 
-export default function ClientProfileTabs({ client }: { client: Profile }) {
+export default function ClientProfileTabs({ client, points }: { client: Profile; points: number }) {
+  const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [roadmapLoading, setRoadmapLoading] = useState(true);
@@ -134,6 +135,28 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
               </p>
             </Card>
           )}
+
+          <Card title="Points & rang">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-bold text-white">
+                {rank.emoji} {rank.label}
+              </span>
+              <span className="text-xs text-[#F5EDED]/40">{points} pts</span>
+            </div>
+            {next && (
+              <>
+                <div className="h-1.5 bg-[#890404]/15 rounded-full overflow-hidden mb-1.5">
+                  <div
+                    className="h-full rounded-full bg-[#E01E1E] transition-all"
+                    style={{ width: `${Math.min(progressPct, 100)}%` }}
+                  />
+                </div>
+                <p className="text-[10px] text-[#F5EDED]/35">
+                  Encore {next.minPoints - points} pts avant {next.emoji} {next.label}
+                </p>
+              </>
+            )}
+          </Card>
         </div>
       )}
 
@@ -289,23 +312,6 @@ export default function ClientProfileTabs({ client }: { client: Profile }) {
             >
               <ExternalLink size={13} />
               Voir les photos
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "notes" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Journal de suivi
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/notes`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir les notes
             </Link>
           </div>
         </Card>

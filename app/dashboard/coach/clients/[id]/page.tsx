@@ -1,6 +1,7 @@
 ﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { getTotalPoints } from "@/lib/gamification";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
 
@@ -37,6 +38,8 @@ export default async function ClientDetailPage({
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
+  const points = await getTotalPoints(id);
+
   const badge = STATUS_BADGE[client.status ?? "active"];
 
   return (
@@ -62,7 +65,7 @@ export default async function ClientDetailPage({
         </span>
       </div>
 
-      <ClientProfileTabs client={client} />
+      <ClientProfileTabs client={client} points={points} />
     </div>
   );
 }
