@@ -135,7 +135,7 @@ export default function ClientDashboardStats() {
     {
       done: stats.consumedCals > 0,
       label: stats.consumedCals > 0
-        ? `Nutrition loggée — ${stats.consumedCals}${stats.targetCals > 0 ? ` / ${stats.targetCals} kcal` : " kcal"}`
+        ? `Nutrition loggée : ${stats.consumedCals}${stats.targetCals > 0 ? ` / ${stats.targetCals} kcal` : " kcal"}`
         : "Logger mes repas du jour",
       sublabel: stats.targetCals > 0
         ? `Objectif : ${stats.targetCals} kcal`
@@ -155,7 +155,7 @@ export default function ClientDashboardStats() {
     {
       done: stats.hasBilanToday,
       label: stats.hasBilanToday ? "Bilan du jour rempli" : "Remplir mon bilan du jour",
-      sublabel: "Poids, sommeil, ressenti — 30 secondes",
+      sublabel: "Poids, sommeil, ressenti, 30 secondes",
       href: "/dashboard/client/bilan",
       icon: ClipboardCheck,
       color: "#fbbf24",

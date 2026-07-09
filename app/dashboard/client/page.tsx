@@ -8,7 +8,7 @@ import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
-  Map, ClipboardCheck, Image as ImageIcon,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed,
 } from "lucide-react";
 
 // ── Free-tier welcome guide ──────────────────────────────────────────────────
@@ -40,6 +40,13 @@ const GUIDE_ITEMS = [
     icon: Apple,
     title: "Ma nutrition",
     desc: "Calcule tes besoins et suis tes repas au quotidien.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/recettes",
+    icon: UtensilsCrossed,
+    title: "Recettes",
+    desc: "Des idées de repas triées par régime, phase et macros.",
     locked: false,
   },
   {
@@ -102,10 +109,9 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
           Salut {firstName} 👋
         </h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
-          Ton compte est <strong style={{ color: "#F5EDED" }}>gratuit, pour toujours</strong>.
           Tout ce qui est listé ci-dessous, tu peux l&apos;utiliser dès maintenant,
           en autonomie. Si un jour tu veux qu&apos;un vrai coach s&apos;occupe de ton
-          programme et ta nutrition, c&apos;est possible en plus — mais rien ne t&apos;y oblige.
+          programme et ta nutrition, c&apos;est possible en plus, mais rien ne t&apos;y oblige.
         </p>
       </div>
 
@@ -499,7 +505,7 @@ export default async function ClientDashboard() {
                             </span>
                           </>
                         ) : (
-                          <span style={{ color: "rgba(245,237,237,0.2)" }}>—</span>
+                          <span style={{ color: "rgba(245,237,237,0.2)" }}>N/A</span>
                         )}
                       </p>
                     </div>

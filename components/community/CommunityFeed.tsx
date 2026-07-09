@@ -98,7 +98,7 @@ function Composer({
 
   const placeholder =
     type === "victory"
-      ? "Partage ta victoire de la semaine — perte de poids, nouveau record, séance réussie..."
+      ? "Partage ta victoire de la semaine : perte de poids, nouveau record, séance réussie..."
       : "Pose ta question à la communauté et au coach...";
 
   async function handleSubmit() {

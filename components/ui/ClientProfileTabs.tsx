@@ -25,7 +25,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "—";
+  if (!dateStr) return "N/A";
   return new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "long",
@@ -45,7 +45,7 @@ function InfoRow({
       <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
         {label}
       </span>
-      <span className="text-sm text-white font-medium">{value || "—"}</span>
+      <span className="text-sm text-white font-medium">{value || "N/A"}</span>
     </div>
   );
 }
@@ -236,7 +236,7 @@ export default function ClientProfileTabs({ client, points }: { client: Profile;
                           style={{ color: obj.is_achieved ? "#4ade80" : OBJECTIVE_TERM_COLORS[obj.term] }}
                         >
                           {obj.is_achieved ? "✓ " : ""}{obj.label}
-                          {obj.target_value ? ` — ${obj.target_value}${obj.target_unit ?? ""}` : ""}
+                          {obj.target_value ? ` : ${obj.target_value}${obj.target_unit ?? ""}` : ""}
                         </span>
                         <span className="text-xs text-[#F5EDED]/40">{formatDate(obj.target_date)}</span>
                       </div>

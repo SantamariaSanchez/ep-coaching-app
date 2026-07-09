@@ -210,7 +210,7 @@ export function generateRecipe(
   if (["Légumineuse"].includes(proteinCategory) || proteinFood.name === "Tofu ferme" || proteinFood.name === "Edamame") {
     steps.push(`Faire revenir ${baseName(proteinFood.name).toLowerCase()} 5-8 min à la poêle avec un peu d'assaisonnement.`);
   } else if (proteinFood.name === "Œuf entier") {
-    steps.push("Cuire les œufs à ta façon (brouillés, à la poêle, durs) — 5-8 min.");
+    steps.push("Cuire les œufs à ta façon (brouillés, à la poêle, durs), 5-8 min.");
   } else if (["Skyr nature", "Cottage cheese"].includes(proteinFood.name)) {
     steps.push(`Servir ${baseName(proteinFood.name).toLowerCase()} tel quel, frais.`);
   } else {

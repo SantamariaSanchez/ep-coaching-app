@@ -5,7 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import type { Measurement } from "@/utils/measurements";
 
 function fmt(n: number | null, unit = ""): string {
-  if (n == null) return "—";
+  if (n == null) return "-";
   return `${n}${unit}`;
 }
 
@@ -18,7 +18,7 @@ function formatDate(dateStr: string): string {
 }
 
 function DeltaBadge({ delta }: { delta: number | null }) {
-  if (delta == null) return <span className="text-[#F5EDED]/25">—</span>;
+  if (delta == null) return <span className="text-[#F5EDED]/25">-</span>;
   const positive = delta > 0;
   const zero = delta === 0;
   if (zero) return <span className="text-[#F5EDED]/40">±0</span>;

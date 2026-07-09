@@ -43,7 +43,7 @@ function PostEditor({
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Titre — ex. Pourquoi la constance bat l'intensité"
+        placeholder="Titre, ex. Pourquoi la constance bat l'intensité"
         className={`${inputCls} font-bold`}
       />
       <textarea
@@ -116,7 +116,7 @@ export default function CoachPostsManager({
 
       {posts.length === 0 && !showNew && (
         <p className="text-xs text-[#F5EDED]/25 italic text-center py-8">
-          Aucune publication pour l&apos;instant — partage une réflexion ou un conseil avec tes membres.
+          Aucune publication pour l&apos;instant. Partage une réflexion ou un conseil avec tes membres.
         </p>
       )}
 

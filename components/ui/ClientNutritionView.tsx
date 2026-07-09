@@ -171,6 +171,9 @@ interface Props {
   dietMode: DietMode;
   activePlan: DietPlanWithMeals | null;
   seasonMode?: "off_season" | "prep" | null;
+  // Membre gratuit gérant lui-même son plan (pas de coach) — adapte les
+  // libellés qui supposent normalement un coach ("Plan de ton coach", etc.).
+  isOwnPlan?: boolean;
   addFoodLog: (params: {
     foodId: string | null;
     mealSlot: string;
@@ -203,6 +206,7 @@ export default function ClientNutritionView({
   dietMode,
   activePlan,
   seasonMode,
+  isOwnPlan = false,
   addFoodLog,
   removeFoodLog,
   createCustomFood,
@@ -759,6 +763,7 @@ export default function ClientNutritionView({
           plan={activePlan}
           todayLogs={todayLogs}
           onToggle={handleTogglePlanItem}
+          isOwnPlan={isOwnPlan}
         />
       )}
 
@@ -786,7 +791,9 @@ export default function ClientNutritionView({
           {noTargets ? (
             <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-5 text-center">
               <p className="text-xs text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
-                Aucun objectif défini — contacte ton coach
+                {isOwnPlan
+                  ? "Aucun objectif défini. Utilise le calculateur ci-dessus."
+                  : "Aucun objectif défini. Contacte ton coach."}
               </p>
             </div>
           ) : (
@@ -831,7 +838,7 @@ export default function ClientNutritionView({
                 <span className="text-xl">⚡</span>
                 <span>
                   <span className="block text-xs font-bold text-white">
-                    Bilan rapide — 4 questions, 1 min
+                    Bilan rapide : 4 questions, 1 min
                   </span>
                   <span className="block text-[10px] text-[#F5EDED]/40">
                     Je réponds et l&apos;appli log tout automatiquement
@@ -933,7 +940,7 @@ export default function ClientNutritionView({
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm bg-amber-500/60 inline-block" />
-              70–90%
+              70 à 90%
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-3 h-3 rounded-sm bg-red-700/60 inline-block" />
@@ -955,7 +962,7 @@ export default function ClientNutritionView({
                         isSelected ? null : date
                       )
                     }
-                    title={`${date} — ${Math.round(cals)} kcal`}
+                    title={`${date} : ${Math.round(cals)} kcal`}
                     className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(
                       cals,
                       targets.calories
@@ -1408,7 +1415,7 @@ export default function ClientNutritionView({
             </div>
             <p className="text-[10px] text-[#F5EDED]/35 mb-5">
               Au resto, pas le temps de chercher l&apos;aliment exact ? Indique juste les calories
-              (et les macros si tu les connais) — ça compte direct dans ton suivi.
+              (et les macros si tu les connais), ça compte direct dans ton suivi.
             </p>
 
             <div className="space-y-3">
@@ -1483,10 +1490,12 @@ function DietPlanCard({
   plan,
   todayLogs,
   onToggle,
+  isOwnPlan = false,
 }: {
   plan: DietPlanWithMeals;
   todayLogs: FoodLogWithFood[];
   onToggle: (meal: DietPlanMeal, matchedLogId: string | undefined) => void;
+  isOwnPlan?: boolean;
 }) {
   const [expanded, setExpanded] = useState(true);
   const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
@@ -1549,7 +1558,7 @@ function DietPlanCard({
       >
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
-            Plan de ton coach
+            {isOwnPlan ? "Mon plan" : "Plan de ton coach"}
             {checkable && dayMeals.length > 0 && (
               <span className="ml-2 text-[#F5EDED]/30 font-normal">
                 {doneCount}/{dayMeals.length} cochés
@@ -1582,7 +1591,7 @@ function DietPlanCard({
 
       {expanded && dayMeals.length === 0 && isWeekly && (
         <p className="px-4 pt-3 text-[10px] text-[#F5EDED]/25 italic">
-          Aucun repas prévu pour aujourd&apos;hui dans ce plan — jour libre / off.
+          Aucun repas prévu pour aujourd&apos;hui dans ce plan, jour libre ou off.
         </p>
       )}
 

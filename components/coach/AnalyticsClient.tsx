@@ -193,7 +193,7 @@ export default function AnalyticsClient() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: isDesktop ? 28 : 16 }}>
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Analytics — 21 jours
+            Analytics, 21 jours
           </p>
           <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
             Tableau de Bord
@@ -245,7 +245,7 @@ export default function AnalyticsClient() {
             {clientsWithAlerts.length === 0 ? (
               <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
                 <CheckCircle2 size={24} className="text-green-400 mx-auto mb-3" strokeWidth={1.5} />
-                <p className="text-sm font-bold text-green-400">Aucune alerte — tout roule !</p>
+                <p className="text-sm font-bold text-green-400">Aucune alerte, tout roule !</p>
                 <p className="text-xs text-[#F5EDED]/30 mt-1">Tous tes clients sont dans les clous</p>
               </div>
             ) : (
@@ -277,7 +277,7 @@ export default function AnalyticsClient() {
           <section>
             <div className="flex items-center gap-2 mb-4">
               <BarChart2 size={14} className="text-[#F5EDED]/50" />
-              <h2 className="text-sm font-black uppercase tracking-widest text-[#F5EDED]/50">Vue d&apos;ensemble — 21 jours</h2>
+              <h2 className="text-sm font-black uppercase tracking-widest text-[#F5EDED]/50">Vue d&apos;ensemble, 21 jours</h2>
             </div>
             {clients.length === 0 ? (
               <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
@@ -299,20 +299,20 @@ export default function AnalyticsClient() {
                         <tr key={c.id} className="border-b border-[#890404]/10 hover:bg-[#890404]/5 transition-colors">
                           <td className="py-3 px-3">
                             <Link href={`/dashboard/coach/clients/${c.id}`} className="font-black text-white hover:text-[#E01E1E] transition-colors whitespace-nowrap">
-                              {c.full_name ?? "—"}
+                              {c.full_name ?? "N/A"}
                             </Link>
                           </td>
                           <td className="py-3 px-3">{c.alerts.length > 0 ? <span className="font-black text-red-400">{c.alerts.length}</span> : <span className="text-green-400 font-bold">0 ✓</span>}</td>
-                          <td className="py-3 px-3">{c.highlights.length > 0 ? <span className="font-black text-green-400">{c.highlights.length}</span> : <span className="text-[#F5EDED]/25">—</span>}</td>
+                          <td className="py-3 px-3">{c.highlights.length > 0 ? <span className="font-black text-green-400">{c.highlights.length}</span> : <span className="text-[#F5EDED]/25">N/A</span>}</td>
                           <td className="py-3 px-3">
                             {c.weightVar21d != null ? (
                               <span className="text-[#F5EDED]/70 font-bold">{c.weightVar21d > 0 ? "+" : ""}{c.weightVar21d} kg</span>
-                            ) : <span className="text-[#F5EDED]/25">—</span>}
+                            ) : <span className="text-[#F5EDED]/25">N/A</span>}
                           </td>
-                          <td className="py-3 px-3"><span className={cellColor(c.nutritionAdherence7d, { ok: 80, warn: 60 })}>{c.nutritionAdherence7d != null ? `${c.nutritionAdherence7d}%` : "—"}</span></td>
+                          <td className="py-3 px-3"><span className={cellColor(c.nutritionAdherence7d, { ok: 80, warn: 60 })}>{c.nutritionAdherence7d != null ? `${c.nutritionAdherence7d}%` : "N/A"}</span></td>
                           <td className="py-3 px-3"><span className={cellColor(c.sessionsThisWeek, { ok: 3, warn: 1 })}>{c.sessionsThisWeek}</span></td>
                           <td className="py-3 px-3 text-[#F5EDED]/40 whitespace-nowrap">
-                            {c.lastActivity ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.lastActivity + "T12:00:00")) : "—"}
+                            {c.lastActivity ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.lastActivity + "T12:00:00")) : "N/A"}
                           </td>
                         </tr>
                       ))}

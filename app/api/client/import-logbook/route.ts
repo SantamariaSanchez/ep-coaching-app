@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
     if (file.size > MAX_FILE_BYTES) {
       return NextResponse.json(
-        { error: "Fichier trop volumineux (max 4 Mo) — exporte une période plus courte depuis Hevy/Strong." },
+        { error: "Fichier trop volumineux (max 4 Mo), exporte une période plus courte depuis Hevy/Strong." },
         { status: 413 }
       );
     }

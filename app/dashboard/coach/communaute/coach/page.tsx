@@ -26,7 +26,7 @@ export default async function CoachPostsPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Mot du coach</h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40">
-          Réflexions, conseils, retours d&apos;expérience — visibles par tous les membres.
+          Réflexions, conseils, retours d&apos;expérience, visibles par tous les membres.
         </p>
       </div>
 

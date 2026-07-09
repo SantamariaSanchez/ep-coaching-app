@@ -23,7 +23,7 @@ export default async function CoachMembresPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Membres</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Membres gratuits de la communauté — autonomes, sans suivi coaching.
+          Membres gratuits de la communauté, autonomes, sans suivi coaching.
           Ils n&apos;apparaissent pas dans tes clients.
         </p>
       </div>

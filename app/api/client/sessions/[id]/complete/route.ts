@@ -116,7 +116,7 @@ export async function POST(
   try {
     await sendBrevoEmail({
       to: "peccoux.manu@gmail.com",
-      subject: `Séance terminée — ${clientName}`,
+      subject: `Séance terminée : ${clientName}`,
       htmlContent: `
         <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
           <h2 style="color:#E01E1E;margin-top:0;">💪 Séance terminée</h2>

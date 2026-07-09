@@ -209,7 +209,7 @@ export async function joinStudy(studyId: string): Promise<{ error?: string }> {
       getTotalPoints(guard.userId),
     ]);
     if (!hasUnlocked("study_participation", points, isSubscribed(profile))) {
-      return { error: "Pas encore débloqué — continue à cumuler des points ou abonne-toi." };
+      return { error: "Pas encore débloqué, continue à cumuler des points ou abonne-toi." };
     }
 
     const supabase = createAdminClient();

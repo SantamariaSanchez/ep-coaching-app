@@ -152,41 +152,46 @@ export async function saveProgramForClient(
       return { error: "Erreur lors de la création du programme." };
     }
 
-    for (let i = 0; i < input.days.length; i++) {
-      const day = input.days[i];
-
-      const { data: dayRow, error: dayError } = await supabase
-        .from("program_days")
-        .insert({
+    // Un insert par jour puis un insert par exercice (en série) faisait
+    // autant d'allers-retours réseau que de lignes à créer — pour un
+    // programme de plusieurs séances, l'activation prenait plusieurs
+    // secondes et paraissait figée. Deux inserts groupés suffisent.
+    const { data: dayRows, error: daysError } = await supabase
+      .from("program_days")
+      .insert(
+        input.days.map((day, i) => ({
           program_id: program.id,
           day_label: day.day_label || `Séance ${i + 1}`,
           position: i,
-        })
-        .select()
-        .single();
+        }))
+      )
+      .select();
 
-      if (dayError || !dayRow) {
-        return { error: `Erreur lors de la création de la séance ${i + 1}.` };
-      }
+    if (daysError || !dayRows) {
+      return { error: "Erreur lors de la création des séances." };
+    }
 
-      for (let j = 0; j < day.exercises.length; j++) {
-        const ex = day.exercises[j];
-        const { error: exError } = await supabase.from("exercises").insert({
-          day_id: dayRow.id,
-          name: ex.name,
-          sets: ex.sets,
-          reps: ex.reps || null,
-          rir: ex.rir,
-          rest_seconds: ex.rest_seconds,
-          notes: ex.notes || null,
-          position: j,
-          muscle_group: ex.muscle_group || null,
-          muscle_subgroup: ex.muscle_subgroup || null,
-          is_direct: ex.is_direct,
-        });
-        if (exError) {
-          return { error: `Erreur lors de l'ajout de l'exercice "${ex.name}".` };
-        }
+    const sortedDayRows = [...dayRows].sort((a, b) => a.position - b.position);
+    const exerciseRows = input.days.flatMap((day, i) =>
+      day.exercises.map((ex, j) => ({
+        day_id: sortedDayRows[i].id,
+        name: ex.name,
+        sets: ex.sets,
+        reps: ex.reps || null,
+        rir: ex.rir,
+        rest_seconds: ex.rest_seconds,
+        notes: ex.notes || null,
+        position: j,
+        muscle_group: ex.muscle_group || null,
+        muscle_subgroup: ex.muscle_subgroup || null,
+        is_direct: ex.is_direct,
+      }))
+    );
+
+    if (exerciseRows.length > 0) {
+      const { error: exError } = await supabase.from("exercises").insert(exerciseRows);
+      if (exError) {
+        return { error: "Erreur lors de l'ajout des exercices." };
       }
     }
 

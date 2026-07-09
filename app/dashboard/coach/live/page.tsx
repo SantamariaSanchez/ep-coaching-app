@@ -24,7 +24,7 @@ export default async function CoachLivePage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Lives & appels</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Programme tes appels 1:1, tes webinaires et tes lives Q&amp;A — la salle vidéo est intégrée.
+          Programme tes appels 1:1, tes webinaires et tes lives Q&amp;A. La salle vidéo est intégrée.
         </p>
       </div>
 

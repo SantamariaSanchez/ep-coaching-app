@@ -199,9 +199,9 @@ export default function ExerciseProgressionChart({
                 <tr key={i} className="border-t border-[#890404]/10">
                   <td className="py-2 pr-3 text-[#F5EDED]/60">{row.date}</td>
                   <td className="py-2 pr-3 font-black text-white">
-                    {row.weight != null ? `${row.weight} kg` : "—"}
+                    {row.weight != null ? `${row.weight} kg` : "-"}
                   </td>
-                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.reps ?? "—"}</td>
+                  <td className="py-2 pr-3 text-[#F5EDED]/60">{row.reps ?? "-"}</td>
                   <td className="py-2 pr-3">
                     {row.rir != null ? (
                       <span
@@ -211,7 +211,7 @@ export default function ExerciseProgressionChart({
                       >
                         {row.rir}
                       </span>
-                    ) : "—"}
+                    ) : "-"}
                   </td>
                   <td className="py-2">
                     {row.score != null ? (
@@ -222,7 +222,7 @@ export default function ExerciseProgressionChart({
                       >
                         {row.score}/5
                       </span>
-                    ) : "—"}
+                    ) : "-"}
                   </td>
                 </tr>
               ))}

@@ -112,7 +112,7 @@ export default function MetricGauge({
           margin: 0,
           textAlign: "center",
         }}>
-          / {max > 0 ? max : "—"} {label}
+          / {max > 0 ? max : "-"} {label}
         </p>
       )}
     </div>

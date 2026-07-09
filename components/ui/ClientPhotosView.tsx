@@ -79,7 +79,7 @@ function SubmissionForm({
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <CheckCircle2 size={40} className="text-green-400" strokeWidth={1.5} />
-        <p className="text-sm font-black text-white uppercase tracking-wider">Photo update envoyée !</p>
+        <p className="text-sm font-black text-white uppercase tracking-wider">Mise à jour envoyée !</p>
         <p className="text-xs text-[#F5EDED]/35">Ton coach recevra une notification.</p>
         <button
           onClick={() => { setSuccess(false); setDriveLink(""); setNotes(""); }}
@@ -117,7 +117,7 @@ function SubmissionForm({
       {type === "mandatory_poses" && posingData && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Poses obligatoires — {category}
+            Poses obligatoires : {category}
           </p>
           <div className="space-y-1.5">
             {posingData.mandatory_poses.map((pose, i) => (
@@ -149,7 +149,7 @@ function SubmissionForm({
       {type === "posing_routine" && posingData && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 space-y-2">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Instructions — {category}
+            Instructions : {category}
           </p>
           <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
             {posingData.posing_routine.instructions}
@@ -206,7 +206,9 @@ function SubmissionForm({
       {/* Drive link */}
       <div>
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          Lien Google Drive{type === "posing_routine" ? " ou YouTube" : ""}{" "}
+          {type === "mandatory_poses"
+            ? "Lien Google Drive (photos)"
+            : "Lien Drive, YouTube ou Vimeo (vidéo)"}{" "}
           <span className="text-[#E01E1E]">*</span>
         </label>
         <input
@@ -369,7 +371,7 @@ export default function ClientPhotosView({
             </span>
             <div>
               <p className="text-xs font-black text-[#E01E1E] uppercase tracking-widest">
-                Suivi Quotidien — Compétition
+                Suivi Quotidien : Compétition
               </p>
               {daysLeft != null && daysLeft > 0 && (
                 <p className="text-[10px] text-[#F5EDED]/50 mt-0.5">
@@ -378,7 +380,7 @@ export default function ClientPhotosView({
               )}
               {daysLeft != null && daysLeft <= 0 && (
                 <p className="text-[10px] text-green-400/70 mt-0.5">
-                  Jour J — Bonne chance ! 💪
+                  Jour J. Bonne chance ! 💪
                 </p>
               )}
             </div>
@@ -397,10 +399,10 @@ export default function ClientPhotosView({
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 mb-8">
         <div className="mb-4">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            {isDaily ? "Photo du jour" : "Photo de la semaine"}
+            {isDaily ? "Mise à jour du jour" : "Mise à jour de la semaine"}
           </p>
           <h2 className="text-lg font-black uppercase tracking-tight">
-            Envoyer mes photos
+            Envoyer une mise à jour
           </h2>
         </div>
 
@@ -408,7 +410,7 @@ export default function ClientPhotosView({
           <div className="flex items-center gap-3 py-4 text-center justify-center">
             <CheckCircle2 size={20} className="text-green-400" />
             <p className="text-sm font-bold text-green-400">
-              Photo update envoyée {isDaily ? "aujourd'hui" : "cette semaine"} ✓
+              Mise à jour envoyée {isDaily ? "aujourd'hui" : "cette semaine"} ✓
             </p>
           </div>
         ) : (

@@ -118,7 +118,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     axis: "body_image",
     question: "Quand tu regardes ton reflet ou tes photos de progression, tu te sens plutôt...",
     options: [
-      { value: "a", label: "Serein(e), factuel — je vois ce qu'il y a à voir", score: 4 },
+      { value: "a", label: "Serein(e), factuel, je vois ce qu'il y a à voir", score: 4 },
       { value: "b", label: "Plutôt neutre, ça dépend du jour", score: 3 },
       { value: "c", label: "Souvent critique envers moi-même", score: 2 },
       { value: "d", label: "Très anxiogène, je préfère éviter", score: 1 },
@@ -130,7 +130,7 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     axis: "discipline",
     question: "Sur la durée (plusieurs semaines), tiens-tu tes engagements (nutrition, sommeil, séances) ?",
     options: [
-      { value: "a", label: "Oui, sans trop d'efforts — c'est devenu une routine", score: 4 },
+      { value: "a", label: "Oui, sans trop d'efforts, c'est devenu une routine", score: 4 },
       { value: "b", label: "La plupart du temps, avec des écarts gérés", score: 3 },
       { value: "c", label: "Par à-coups, en dents de scie", score: 2 },
       { value: "d", label: "Difficilement, je recommence souvent à zéro", score: 1 },
@@ -199,11 +199,11 @@ export const HABITS: HabitDef[] = [
   { key: "screen_cutoff", label: "Écrans coupés 30 min avant de dormir", icon: "Smartphone", category: "sommeil", description: "Remplace le scroll par lecture, étirements ou respiration." },
   { key: "intention_seance", label: "1 intention avant chaque séance", icon: "Target", category: "discipline", description: "Une phrase simple : ce que tu veux accomplir aujourd'hui, pas plus." },
   { key: "meal_prep", label: "Repas préparés à l'avance", icon: "Utensils", category: "nutrition", description: "Anticiper 1 à 2 jours pour ne pas dépendre de la motivation du moment." },
-  { key: "gratitude", label: "3 choses positives de la journée", icon: "Sparkles", category: "stress", description: "Liées ou non au sport — entraîner le regard à voir ce qui va bien." },
+  { key: "gratitude", label: "3 choses positives de la journée", icon: "Sparkles", category: "stress", description: "Liées ou non au sport, entraîner le regard à voir ce qui va bien." },
   { key: "social_limit", label: "Limiter la comparaison réseaux sociaux", icon: "EyeOff", category: "social", description: "Plage horaire dédiée plutôt que scroll en continu, surtout après une séance." },
   { key: "weekly_review", label: "Bilan hebdo (3 minutes)", icon: "ClipboardList", category: "discipline", description: "Qu'est-ce qui a marché cette semaine ? Qu'est-ce qui doit changer ?" },
   { key: "breathing", label: "5 min de respiration / calme", icon: "Wind", category: "stress", description: "Avant le coucher ou avant une séance stressante (compétition, retard de prog)." },
-  { key: "hydration_wake", label: "Hydratation au réveil", icon: "GlassWater", category: "recuperation", description: "Un grand verre d'eau avant le café — simple, mais souvent oublié." },
+  { key: "hydration_wake", label: "Hydratation au réveil", icon: "GlassWater", category: "recuperation", description: "Un grand verre d'eau avant le café, simple, mais souvent oublié." },
   { key: "mobility", label: "5 min de mobilité / étirements", icon: "Activity", category: "recuperation", description: "Hors séance, pour la récupération et le ressenti corporel." },
   { key: "bag_ready", label: "Sac de sport prêt la veille", icon: "Backpack", category: "discipline", description: "Supprime une friction du matin qui peut faire sauter la séance." },
   { key: "single_priority", label: "1 priorité non négociable du jour", icon: "Flag", category: "discipline", description: "Un seul engagement que rien ne fait sauter, même un jour chargé." },
@@ -232,13 +232,13 @@ export interface Tip {
 
 export const TIPS: Tip[] = [
   // Motivation
-  { id: "mot-1", category: "motivation", title: "Agis avant de te sentir motivé", body: "La motivation suit souvent l'action, pas l'inverse. Démarre une version minimale de la séance (5 min) — la suite vient presque toujours." },
+  { id: "mot-1", category: "motivation", title: "Agis avant de te sentir motivé", body: "La motivation suit souvent l'action, pas l'inverse. Démarre une version minimale de la séance (5 min), la suite vient presque toujours." },
   { id: "mot-2", category: "motivation", title: "Vise la séance, pas la performance", body: "Le jour où la motivation est basse, l'objectif devient simplement 'être présent', pas 'battre un record'. Ça suffit à garder la série intacte." },
   { id: "mot-3", category: "motivation", title: "Reconnecte-toi à ton pourquoi", body: "Note en une phrase pourquoi tu t'entraînes (santé, confiance, performance, transformation). Relis-la les jours de doute.", profiles: ["debutant", "pratiquant"] },
   { id: "mot-4", category: "motivation", title: "La motivation de compétition est cyclique", body: "Il est normal d'être à fond à 12 semaines de l'échéance et plus émoussé en intersaison. Planifie des phases de récupération mentale, pas seulement physique.", profiles: ["competiteur"] },
 
   // Stress
-  { id: "str-1", category: "stress", title: "Sépare l'entraînement du reste de la journée", body: "Un rituel court avant la séance (musique, marche jusqu'à la salle, changement de tenue) signale au cerveau qu'on change de mode — utile pour évacuer le stress du travail/études." },
+  { id: "str-1", category: "stress", title: "Sépare l'entraînement du reste de la journée", body: "Un rituel court avant la séance (musique, marche jusqu'à la salle, changement de tenue) signale au cerveau qu'on change de mode, utile pour évacuer le stress du travail/études." },
   { id: "str-2", category: "stress", title: "Le sport comme exutoire, pas comme punition", body: "S'entraîner « parce qu'on est énervé » peut être sain une fois, dangereux en habitude (blessure, épuisement). Vérifie que tu écoutes aussi la fatigue, pas seulement l'émotion." },
   { id: "str-3", category: "stress", title: "Anticipe les semaines difficiles", body: "Examens, deadlines, enfant malade : prévois une version 'mode survie' de ton programme (2 séances courtes, nutrition simplifiée) plutôt que tout ou rien.", environments: ["etudiant", "parent", "salarie"] },
   { id: "str-4", category: "stress", title: "Le stress de compétition se prépare", body: "Simule les conditions (horaires, public, tenue) en amont. L'inconnu génère plus de stress que la difficulté elle-même.", profiles: ["competiteur"] },
@@ -246,12 +246,12 @@ export const TIPS: Tip[] = [
   // Image corporelle
   { id: "img-1", category: "image_corporelle", title: "Mesure-toi avec des données, pas avec un miroir un matin difficile", body: "Photos, mensurations et poids moyennés sur 7 jours racontent une histoire plus fiable qu'un reflet ponctuel influencé par le sommeil, la digestion ou la lumière." },
   { id: "img-2", category: "image_corporelle", title: "La dysmorphie musculaire existe aussi en musculation", body: "Se sentir 'jamais assez gros/sec/défini' malgré des progrès réels est fréquent chez les pratiquants assidus. Si ça affecte ton quotidien, en parler (coach, proche, professionnel) n'est pas un échec." },
-  { id: "img-3", category: "image_corporelle", title: "Limite les comptes qui nourrissent la comparaison", body: "Les corps mis en avant sur les réseaux sont souvent un instant choisi (lumière, pump, déshydratation temporaire) — pas un état permanent, même pour les athlètes affichés." },
+  { id: "img-3", category: "image_corporelle", title: "Limite les comptes qui nourrissent la comparaison", body: "Les corps mis en avant sur les réseaux sont souvent un instant choisi (lumière, pump, déshydratation temporaire), pas un état permanent, même pour les athlètes affichés." },
   { id: "img-4", category: "image_corporelle", title: "Le physique de compétition n'est pas le physique du quotidien", body: "Le shape de stage (très sec, très pompé) est temporaire par construction. L'attendre toute l'année mène à la frustration permanente.", profiles: ["competiteur"] },
 
   // Discipline
   { id: "dis-1", category: "discipline", title: "Réduis la friction plutôt que d'augmenter la volonté", body: "Sac prêt, repas préparés, séance planifiée dans l'agenda : la discipline tient plus à l'environnement qu'à un effort de volonté permanent." },
-  { id: "dis-2", category: "discipline", title: "Les séries de 'jamais raté' sont fragiles", body: "Viser '100% parfait' casse au premier imprévu et démoralise. Vise plutôt 80-90% de constance sur le mois — plus réaliste, plus durable." },
+  { id: "dis-2", category: "discipline", title: "Les séries de 'jamais raté' sont fragiles", body: "Viser '100% parfait' casse au premier imprévu et démoralise. Vise plutôt 80-90% de constance sur le mois, plus réaliste, plus durable." },
   { id: "dis-3", category: "discipline", title: "Un raté n'efface pas les progrès précédents", body: "Une semaine ratée pèse statistiquement très peu sur des mois de constance. Le risque n'est pas l'écart, c'est l'abandon qui suit l'écart." },
 
   // Social
@@ -287,7 +287,7 @@ export const DAILY_QUOTES: string[] = [
   "Tu n'as pas besoin d'être motivé tous les jours, juste assez discipliné pour te montrer.",
   "Les séries qui comptent le plus sont celles du jour où tu n'avais pas envie.",
   "Le corps accomplit ce que l'esprit croit possible.",
-  "On ne voit jamais ses propres progrès en direct — seulement en regardant en arrière.",
+  "On ne voit jamais ses propres progrès en direct, seulement en regardant en arrière.",
   "La constance bat l'intensité sur la durée, presque toujours.",
   "Une mauvaise séance vaut mieux qu'une séance sautée.",
   "Le physique se construit à la salle, le mental se construit dans les moments où tu n'as pas envie d'y aller.",
@@ -295,7 +295,7 @@ export const DAILY_QUOTES: string[] = [
   "Le repos n'est pas l'opposé du progrès, il en fait partie.",
   "Chaque répétition imparfaite mais réalisée vaut plus que la répétition parfaite imaginée.",
   "Ton seul adversaire valable, c'est la version de toi d'il y a six mois.",
-  "La progression n'est jamais linéaire — le plateau fait partie du chemin, pas une sortie de route.",
+  "La progression n'est jamais linéaire, le plateau fait partie du chemin, pas une sortie de route.",
   "Ce que tu fais quand c'est difficile compte plus que ce que tu fais quand c'est facile.",
   "Un objectif sans système pour y arriver reste un souhait.",
   "La fierté du travail accompli dure plus longtemps que le compliment sur le physique.",
@@ -306,7 +306,7 @@ export const DAILY_QUOTES: string[] = [
   "Les bases ennuyeuses, répétées, gagnent presque toujours contre les méthodes brillantes abandonnées après 2 semaines.",
   "Demande-toi : est-ce que cette pensée m'aide à avancer, ou juste à me juger ?",
   "L'échec d'aujourd'hui n'est qu'une donnée pour ajuster demain.",
-  "Tu ne rates pas une séance, tu choisis simplement de la reporter — à toi de décider quand.",
+  "Tu ne rates pas une séance, tu choisis simplement de la reporter, à toi de décider quand.",
   "Le respect de soi se construit dans les petites promesses qu'on se tient.",
   "On surestime ce qu'on peut faire en un jour, on sous-estime ce qu'on peut faire en un an de constance.",
   "Ce n'est pas le poids sur la barre qui définit ta valeur, c'est ta présence régulière sous la barre.",

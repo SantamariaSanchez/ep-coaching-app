@@ -36,7 +36,7 @@ function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
   if (state?.success)
     return (
       <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
-        ✓ Bilan envoyé — le client a été notifié par email.
+        ✓ Bilan envoyé, le client a été notifié par email.
       </p>
     );
 
@@ -234,7 +234,7 @@ function BilanCard({
       {checkin.client_notes && (
         <p className="text-xs text-[#F5EDED]/55 leading-relaxed border-t border-[#890404]/10 pt-2">
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-            Notes —{" "}
+            Notes :{" "}
           </span>
           {checkin.client_notes}
         </p>
@@ -288,7 +288,7 @@ function CorrectionCard({
         <div>
           <p className="text-sm font-bold text-white">
             {correction.profiles?.full_name ?? "Client"}
-            <span className="font-normal text-[#F5EDED]/40"> — </span>
+            <span className="font-normal text-[#F5EDED]/40"> : </span>
             {correction.exercise_name}
           </p>
           <p className="text-[10px] text-[#F5EDED]/30">{date}</p>
@@ -304,14 +304,14 @@ function CorrectionCard({
       <div className="space-y-1 text-xs text-[#F5EDED]/55">
         <p>
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-            Objectif —{" "}
+            Objectif :{" "}
           </span>
           {correction.objective}
         </p>
         {correction.client_question && (
           <p>
             <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
-              Question —{" "}
+              Question :{" "}
             </span>
             {correction.client_question}
           </p>
@@ -371,7 +371,7 @@ function PhotoFeedbackFormBilan({
   if (state?.success) {
     return (
       <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
-        ✓ Retour envoyé — le client a été notifié.
+        ✓ Retour envoyé, le client a été notifié.
       </p>
     );
   }
@@ -414,7 +414,7 @@ function PhotoBilanCard({ photo }: { photo: PhotoUpdateWithClient }) {
         <div>
           <p className="text-sm font-bold text-white">
             {photo.profiles?.full_name ?? "Client"}
-            <span className="font-normal text-[#F5EDED]/40"> — </span>
+            <span className="font-normal text-[#F5EDED]/40"> : </span>
             {typeLabel}
           </p>
           <p className="text-[10px] text-[#F5EDED]/30">
@@ -442,7 +442,7 @@ function PhotoBilanCard({ photo }: { photo: PhotoUpdateWithClient }) {
       {photo.notes && (
         <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
-            Notes —{" "}
+            Notes :{" "}
           </span>
           {photo.notes}
         </p>
@@ -473,7 +473,7 @@ function DoneSection({
         className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/50 transition-colors"
       >
         {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-        Traités — 30 derniers jours ({total})
+        Traités : 30 derniers jours ({total})
       </button>
 
       {open && (

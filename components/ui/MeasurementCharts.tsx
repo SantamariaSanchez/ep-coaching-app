@@ -92,7 +92,7 @@ export default function MeasurementCharts({
       {/* Weight chart */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          Poids — 12 dernières semaines (kg)
+          Poids : 12 dernières semaines (kg)
         </p>
         {weightData.length < 2 ? (
           <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">
@@ -136,7 +136,7 @@ export default function MeasurementCharts({
       {/* Body measurements chart */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          Mensurations — 12 dernières semaines (cm)
+          Mensurations : 12 dernières semaines (cm)
         </p>
         {bodyData.length < 2 ? (
           <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">

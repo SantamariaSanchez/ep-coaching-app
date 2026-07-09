@@ -80,7 +80,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
           <div>
             <p className="ep-label" style={{ marginBottom: 4 }}>Statut publication</p>
             <p style={{ fontSize: 13, fontWeight: 700, color: formation.is_published ? "#4ade80" : "rgba(245,237,237,0.4)", margin: 0 }}>
-              {formation.is_published ? "✓ Publiée — visible par les clients" : "Brouillon — non visible"}
+              {formation.is_published ? "✓ Publiée, visible par les clients" : "Brouillon, non visible"}
             </p>
           </div>
           <button

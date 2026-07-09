@@ -28,7 +28,7 @@ export default async function CoachScienceBibliothequePage() {
           Science
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40">
-          Toutes les études, méta-analyses et revues archivées — issues de PubMed.
+          Toutes les études, méta-analyses et revues archivées, issues de PubMed.
         </p>
       </div>
 

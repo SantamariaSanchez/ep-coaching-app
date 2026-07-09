@@ -33,7 +33,7 @@ export default async function CoachExercisesPage() {
           Bibliothèque d&apos;exercices
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 mb-3">
-          Modifie une entrée ou ajoute le lien vidéo d&apos;exécution — tes membres peuvent aussi enrichir la liste.
+          Modifie une entrée ou ajoute le lien vidéo d&apos;exécution, tes membres peuvent aussi enrichir la liste.
         </p>
         <SeedLibraryButton label="Importer la bibliothèque officielle" action={seedOfficialExercises} />
       </div>

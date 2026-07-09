@@ -78,7 +78,7 @@ export async function submitCheckin(
     insertNotification({
       userId: coachId,
       type: "new_checkin",
-      title: `Nouveau check-in — ${clientName}`,
+      title: `Nouveau check-in de ${clientName}`,
       body: `${clientName} vient d'envoyer son check-in hebdomadaire (S${weekNumber}).`,
       url: `/dashboard/coach/clients/${user.id}/checkins`,
     }).catch(() => {});

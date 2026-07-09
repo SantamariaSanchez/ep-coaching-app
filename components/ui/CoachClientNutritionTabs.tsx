@@ -114,7 +114,7 @@ function TodayLogsView({
                 {slotLogs.map((l) => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white font-medium">{l.foods?.name ?? "—"}</p>
+                      <p className="text-xs text-white font-medium">{l.foods?.name ?? "N/A"}</p>
                       <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g</p>
                     </div>
                     <div className="text-right text-[10px] text-[#F5EDED]/40">
@@ -190,7 +190,7 @@ function HistoryView({
               <button
                 key={date}
                 onClick={() => setSelectedDate(isSelected ? null : date)}
-                title={`${date} — ${Math.round(cals)} kcal`}
+                title={`${date} : ${Math.round(cals)} kcal`}
                 className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(cals, targets.calories)} ${isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""}`}
               >
                 <span className="text-white/70">{new Date(date + "T12:00:00").getDate()}</span>
@@ -218,7 +218,7 @@ function HistoryView({
                 {dayLogs.map((l) => (
                   <div key={l.id} className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0">
                     <div>
-                      <p className="text-xs text-white">{l.foods?.name ?? "—"}</p>
+                      <p className="text-xs text-white">{l.foods?.name ?? "N/A"}</p>
                       <p className="text-[10px] text-[#F5EDED]/35">{l.quantity_g}g · {l.meal_slot}</p>
                     </div>
                     <p className="text-xs text-[#E01E1E]/70 font-bold">{Math.round(l.calories ?? 0)} kcal</p>

@@ -208,7 +208,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter les fruits coupés et le granola",
       "Saupoudrer de cannelle",
     ],
-    tip: "Le skyr a deux fois plus de protéines qu'un yaourt grec classique pour le même nombre de calories — parfait en sèche.",
+    tip: "Le skyr a deux fois plus de protéines qu'un yaourt grec classique pour le même nombre de calories, parfait en sèche.",
   },
   {
     id: "pdj-toast-avocat-oeuf",
@@ -259,7 +259,7 @@ export const RECIPES: Recipe[] = [
       "Verser dans un bol",
       "Garnir de fruit de la passion, coco râpée et granola",
     ],
-    tip: "Très rafraîchissant après une séance d'été — facile à digérer avant un entraînement aussi.",
+    tip: "Très rafraîchissant après une séance d'été, facile à digérer avant un entraînement aussi.",
   },
   {
     id: "pdj-pain-perdu-proteine",
@@ -313,7 +313,7 @@ export const RECIPES: Recipe[] = [
       "Griller le poulet 6-7 min par face",
       "Cuire le brocoli à la vapeur 6 min, assaisonner",
     ],
-    tip: "Le plat de référence en musculation — ajuste juste la quantité de riz selon ta phase.",
+    tip: "Le plat de référence en musculation, ajuste juste la quantité de riz selon ta phase.",
   },
   {
     id: "dej-buddha-bowl-pois-chiches",
@@ -365,7 +365,7 @@ export const RECIPES: Recipe[] = [
       "Faire revenir les épinards 2 min",
       "Dresser et arroser de citron",
     ],
-    tip: "Riche en oméga-3 — excellent pour la récupération articulaire des sportifs.",
+    tip: "Riche en oméga-3, excellent pour la récupération articulaire des sportifs.",
   },
   {
     id: "dej-salade-lentilles-feta",
@@ -415,7 +415,7 @@ export const RECIPES: Recipe[] = [
       "Garnir la galette de crudités et de dinde",
       "Napper de sauce, rouler serré",
     ],
-    tip: "Idéal pour un repas rapide au bureau — se prépare en moins de 10 minutes.",
+    tip: "Idéal pour un repas rapide au bureau, se prépare en moins de 10 minutes.",
   },
   {
     id: "dej-pates-completes-thon",
@@ -467,7 +467,7 @@ export const RECIPES: Recipe[] = [
       "Incorporer les pois chiches, mijoter 15 min",
       "Servir sur riz basmati",
     ],
-    tip: "Se congèle très bien — fais une double dose pour la semaine.",
+    tip: "Se congèle très bien, fais une double dose pour la semaine.",
   },
   {
     id: "dej-steak-haricots-verts",
@@ -572,7 +572,7 @@ export const RECIPES: Recipe[] = [
       "Arroser d'huile d'olive, citron et thym",
       "Fermer la papillote, cuire 20 min à 200°C",
     ],
-    tip: "Plat très léger en calories mais rassasiant — parfait pour un dîner en phase de sèche.",
+    tip: "Plat très léger en calories mais rassasiant, parfait pour un dîner en phase de sèche.",
   },
   {
     id: "din-soupe-legumes-hiver",
@@ -598,7 +598,7 @@ export const RECIPES: Recipe[] = [
       "Mixer jusqu'à texture lisse",
       "Servir avec croûtons et un trait de crème végétale",
     ],
-    tip: "Très faible en calories pour le volume — excellent dîner en déficit qui cale bien.",
+    tip: "Très faible en calories pour le volume, excellent dîner en déficit qui cale bien.",
   },
   {
     id: "din-omelette-jambon-salade",
@@ -700,7 +700,7 @@ export const RECIPES: Recipe[] = [
       "Casser l'œuf au centre, ajouter jambon et fromage",
       "Replier les bords en carré, cuire jusqu'à ce que le blanc soit pris",
     ],
-    tip: "Le sarrasin est naturellement sans gluten — vérifie juste que la galette est pure sarrasin si allergie.",
+    tip: "Le sarrasin est naturellement sans gluten, vérifie juste que la galette est pure sarrasin si allergie.",
   },
   {
     id: "din-dahl-lentilles-corail",
@@ -803,7 +803,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter champignons et crème légère en fin de cuisson",
       "Servir avec du riz",
     ],
-    tip: "Version 'fitness' du classique français — remplace la crème entière par de la crème à 4% MG.",
+    tip: "Version 'fitness' du classique français, remplace la crème entière par de la crème à 4% MG.",
   },
 
   // ─────────────────────────── COLLATIONS ───────────────────────────
@@ -868,7 +868,7 @@ export const RECIPES: Recipe[] = [
     allergens: [],
     ingredients: ["100g de houmous maison ou du commerce", "Carotte, concombre, céleri en bâtonnets"],
     steps: ["Couper les légumes en bâtonnets", "Servir avec le houmous"],
-    tip: "Très peu calorique pour le volume — combat bien les fringales en phase de sèche.",
+    tip: "Très peu calorique pour le volume, combat bien les fringales en phase de sèche.",
   },
   {
     id: "col-shaker-whey-banane",
@@ -889,7 +889,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["30g de whey", "1 banane", "250ml de lait demi-écrémé"],
     steps: ["Mixer tous les ingrédients", "Servir immédiatement bien frais"],
-    tip: "Pratique quand l'appétit manque en surplus calorique — facile à boire même sans faim.",
+    tip: "Pratique quand l'appétit manque en surplus calorique, facile à boire même sans faim.",
   },
   {
     id: "col-oeufs-durs-paprika",
@@ -910,7 +910,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["oeuf"],
     ingredients: ["2 œufs", "Paprika, sel"],
     steps: ["Cuire les œufs 9-10 min à l'eau bouillante", "Écaler, saupoudrer de paprika et sel"],
-    tip: "Se prépare en lot pour 4-5 jours — collation la moins chère du marché en protéines.",
+    tip: "Se prépare en lot pour 4-5 jours, collation la moins chère du marché en protéines.",
   },
   {
     id: "col-barres-dattes-cacao",
@@ -936,7 +936,7 @@ export const RECIPES: Recipe[] = [
       "Étaler dans un moule, tasser et réfrigérer 1h",
       "Découper en barres",
     ],
-    tip: "Se conserve 1 semaine au frigo dans une boîte hermétique — parfait pour le sac de sport.",
+    tip: "Se conserve 1 semaine au frigo dans une boîte hermétique, parfait pour le sac de sport.",
   },
   {
     id: "col-skyr-cacao-fruits-rouges",
@@ -957,7 +957,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["200g de skyr nature", "1 c. à café de cacao non sucré", "Fruits rouges"],
     steps: ["Mélanger le skyr et le cacao", "Ajouter les fruits rouges par-dessus"],
-    tip: "Effet 'dessert' avec très peu de calories — excellent pour gérer les envies de sucré en sèche.",
+    tip: "Effet 'dessert' avec très peu de calories, excellent pour gérer les envies de sucré en sèche.",
   },
   {
     id: "col-toast-fromage-frais-radis",
@@ -978,7 +978,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["gluten", "lactose"],
     ingredients: ["1 tranche de pain complet", "30g de fromage frais (type Saint Môret light)", "Radis émincés", "Ciboulette"],
     steps: ["Tartiner le pain de fromage frais", "Disposer les radis émincés", "Parsemer de ciboulette"],
-    tip: "Croquant et frais — parfaite collation de printemps quand les radis sont au top de leur saison.",
+    tip: "Croquant et frais, parfaite collation de printemps quand les radis sont au top de leur saison.",
   },
 
   // ─────────────────────────── POST-TRAINING ───────────────────────────
@@ -1072,7 +1072,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["150g de yaourt grec 0%", "Fruits rouges surgelés", "1/2 banane", "Eau ou glaçons"],
     steps: ["Mixer tous les ingrédients jusqu'à texture lisse", "Boire frais"],
-    tip: "Faible en calories mais riche en protéines — parfait quand tu es en sèche et que tu veux limiter l'apport calorique post-séance.",
+    tip: "Faible en calories mais riche en protéines, parfait quand tu es en sèche et que tu veux limiter l'apport calorique post-séance.",
   },
   {
     id: "post-galette-riz-jambon-fromage",
@@ -1144,7 +1144,7 @@ export const RECIPES: Recipe[] = [
       "Mixer tous les ingrédients jusqu'à texture lisse et mousseuse",
       "Réfrigérer 30 min avant de servir",
     ],
-    tip: "Le goût d'avocat disparaît complètement derrière le cacao — bluffant en texture.",
+    tip: "Le goût d'avocat disparaît complètement derrière le cacao, bluffant en texture.",
   },
   {
     id: "des-cookies-proteines-avoine",
@@ -1169,7 +1169,7 @@ export const RECIPES: Recipe[] = [
       "Façonner des petits tas sur plaque",
       "Cuire 12 min à 180°C",
     ],
-    tip: "Idéal en collation post-training si tu es en surplus calorique — calorique mais riche en protéines.",
+    tip: "Idéal en collation post-training si tu es en surplus calorique, calorique mais riche en protéines.",
   },
   {
     id: "des-compote-pomme-cannelle",
@@ -1268,7 +1268,7 @@ export const RECIPES: Recipe[] = [
       "Creuser des nids, casser les œufs dedans, couvrir 5-6 min",
       "Parsemer de coriandre fraîche",
     ],
-    tip: "Se mange directement à la poêle avec du pain — convivial pour un brunch.",
+    tip: "Se mange directement à la poêle avec du pain, convivial pour un brunch.",
   },
   {
     id: "pdj2-overnight-oats",
@@ -1293,7 +1293,7 @@ export const RECIPES: Recipe[] = [
       "Réfrigérer toute la nuit",
       "Mélanger et déguster froid le matin",
     ],
-    tip: "Prépare 3-4 bocaux le dimanche pour toute la semaine — zéro effort le matin.",
+    tip: "Prépare 3-4 bocaux le dimanche pour toute la semaine, zéro effort le matin.",
   },
   {
     id: "pdj2-tartines-avocat-saumon",
@@ -1318,7 +1318,7 @@ export const RECIPES: Recipe[] = [
       "Écraser l'avocat avec citron et poivre, étaler",
       "Disposer le saumon fumé, parsemer d'aneth",
     ],
-    tip: "Riche en oméga-3 — un excellent départ avant une séance du matin.",
+    tip: "Riche en oméga-3, un excellent départ avant une séance du matin.",
   },
   {
     id: "pdj2-porridge-quinoa",
@@ -1343,7 +1343,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter la pomme en dés à mi-cuisson",
       "Saupoudrer de cannelle et vanille en fin de cuisson",
     ],
-    tip: "Le quinoa apporte des protéines complètes — alternative intéressante à l'avoine.",
+    tip: "Le quinoa apporte des protéines complètes, alternative intéressante à l'avoine.",
   },
   {
     id: "pdj2-pancakes-sarrasin",
@@ -1368,7 +1368,7 @@ export const RECIPES: Recipe[] = [
       "Cuire des petites portions à la poêle chaude, 2 min par face",
       "Servir avec fruits rouges et un filet de miel ou sirop d'agave",
     ],
-    tip: "100% sans gluten naturellement — bonne option pour varier sans avoine.",
+    tip: "100% sans gluten naturellement, bonne option pour varier sans avoine.",
   },
 
   // ─────────────────────────── DÉJEUNER (2) ───────────────────────────
@@ -1396,7 +1396,7 @@ export const RECIPES: Recipe[] = [
       "Préparer le taboulé avec semoule, tomate, concombre et citron",
       "Dresser falafels et taboulé ensemble",
     ],
-    tip: "Cuits au four plutôt qu'en friture — beaucoup moins gras, tout aussi croustillant.",
+    tip: "Cuits au four plutôt qu'en friture, beaucoup moins gras, tout aussi croustillant.",
   },
   {
     id: "dej2-saumon-teriyaki",
@@ -1422,7 +1422,7 @@ export const RECIPES: Recipe[] = [
       "Saisir le saumon à la poêle 4 min par face en arrosant de marinade",
       "Servir sur le riz, parsemer de sésame",
     ],
-    tip: "La marinade caramélise vite — surveille la cuisson pour éviter qu'elle ne brûle.",
+    tip: "La marinade caramélise vite, surveille la cuisson pour éviter qu'elle ne brûle.",
   },
   {
     id: "dej2-chili-sin-carne",
@@ -1447,7 +1447,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter tomates, épices et haricots, mijoter 20 min",
       "Servir sur riz blanc ou complet",
     ],
-    tip: "Encore meilleur réchauffé le lendemain — fais-en une grande quantité.",
+    tip: "Encore meilleur réchauffé le lendemain, fais-en une grande quantité.",
   },
   {
     id: "dej2-salade-quinoa-feta",
@@ -1498,7 +1498,7 @@ export const RECIPES: Recipe[] = [
       "Garnir avec salade, tomate, oignon et sauce",
       "Assembler le burger",
     ],
-    tip: "Remplace la mayo classique par une sauce au yaourt — même onctuosité, moins de calories.",
+    tip: "Remplace la mayo classique par une sauce au yaourt, même onctuosité, moins de calories.",
   },
   {
     id: "dej2-riz-cantonais-crevettes",
@@ -1524,7 +1524,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter l'œuf battu, remuer pour l'incorporer",
       "Réunir avec les crevettes, arroser de sauce soja",
     ],
-    tip: "Le riz de la veille (froid) se fait sauter sans coller — bien meilleur résultat que du riz chaud.",
+    tip: "Le riz de la veille (froid) se fait sauter sans coller, bien meilleur résultat que du riz chaud.",
   },
 
   // ─────────────────────────── DÎNER (2) ───────────────────────────
@@ -1552,7 +1552,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter tofu et algues, réchauffer 2-3 min",
       "Parsemer d'oignon vert",
     ],
-    tip: "Ne fais jamais bouillir le miso à gros bouillons — ça détruit les probiotiques et l'arôme.",
+    tip: "Ne fais jamais bouillir le miso à gros bouillons, ça détruit les probiotiques et l'arôme.",
   },
   {
     id: "din2-poelee-boeuf-legumes",
@@ -1680,7 +1680,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter le saumon fumé en lanières",
       "Arroser d'huile d'olive et citron, ajouter la roquette",
     ],
-    tip: "Aucune cuisson nécessaire — parfait pour un dîner d'été rapide après une journée chargée.",
+    tip: "Aucune cuisson nécessaire, parfait pour un dîner d'été rapide après une journée chargée.",
   },
 
   // ─────────────────────────── COLLATIONS (2) ───────────────────────────
@@ -1703,7 +1703,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["soja"],
     ingredients: ["200g d'edamame surgelés", "Fleur de sel"],
     steps: ["Cuire les edamame à la vapeur ou à l'eau bouillante 5 min", "Saler et déguster directement dans la cosse"],
-    tip: "Très riche en protéines végétales pour une collation — rare pour un légume.",
+    tip: "Très riche en protéines végétales pour une collation, rare pour un légume.",
   },
   {
     id: "col2-smoothie-vert",
@@ -1787,7 +1787,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["fruits-a-coque"],
     ingredients: ["15g d'amandes", "15g de noix de cajou", "15g de raisins secs", "15g d'abricots secs"],
     steps: ["Mélanger tous les ingrédients dans un petit contenant", "Emporter facilement au travail ou en salle"],
-    tip: "Pèse les portions à l'avance en sachets — c'est très calorique vite si on se sert au pif.",
+    tip: "Pèse les portions à l'avance en sachets, c'est très calorique vite si on se sert au pif.",
   },
 
   // ─────────────────────────── POST-TRAINING (2) ───────────────────────────
@@ -1856,7 +1856,7 @@ export const RECIPES: Recipe[] = [
     allergens: ["lactose"],
     ingredients: ["30g de caséine micellaire", "1/2 banane", "250ml de lait"],
     steps: ["Mixer tous les ingrédients", "Boire environ 1h avant le coucher après une séance du soir"],
-    tip: "La caséine digère lentement — idéale pour une séance en fin de journée, limite le catabolisme nocturne.",
+    tip: "La caséine digère lentement, idéale pour une séance en fin de journée, limite le catabolisme nocturne.",
   },
   {
     id: "post2-patate-douce-oeufs-rapide",
@@ -1932,7 +1932,7 @@ export const RECIPES: Recipe[] = [
       "Cuire 90 secondes à 800W au micro-ondes",
       "Laisser tiédir 1 min avant de déguster",
     ],
-    tip: "Ne dépasse pas 2 min de cuisson — ça devient vite sec et caoutchouteux.",
+    tip: "Ne dépasse pas 2 min de cuisson, ça devient vite sec et caoutchouteux.",
   },
   {
     id: "des2-salade-fruits-menthe",
@@ -2086,7 +2086,7 @@ export const RECIPES: Recipe[] = [
       "Cuire à feu doux dans une poêle légèrement huilée, 2-3 min par face",
       "Empiler les pancakes, parsemer de myrtilles et napper de beurre de cacahuète fondu",
     ],
-    tip: "Pâte trop liquide ? Ajoute une cuillère de flocons d'avoine en plus plutôt que de la whey — ça évite le goût trop poudreux.",
+    tip: "Pâte trop liquide ? Ajoute une cuillère de flocons d'avoine en plus plutôt que de la whey, ça évite le goût trop poudreux.",
     exclusive: true,
   },
   {
@@ -2231,7 +2231,7 @@ export const RECIPES: Recipe[] = [
       "Remettre le bœuf, couvrir, mijoter 2h à feu doux",
       "Ajouter les champignons les 30 dernières minutes",
     ],
-    tip: "Encore meilleur réchauffé le lendemain — les saveurs se développent au repos.",
+    tip: "Encore meilleur réchauffé le lendemain, les saveurs se développent au repos.",
   },
   {
     id: "fr-gratin-dauphinois",
@@ -2265,7 +2265,7 @@ export const RECIPES: Recipe[] = [
       "Disposer les pommes de terre en couches, verser le mélange lacté",
       "Cuire 50 min à 160°C, gratiner 5 min en fin de cuisson",
     ],
-    tip: "Le secret : des rondelles très fines et une cuisson lente — évite de trop monter le four.",
+    tip: "Le secret : des rondelles très fines et une cuisson lente, évite de trop monter le four.",
   },
   {
     id: "fr-poulet-roti-herbes",
@@ -2360,7 +2360,7 @@ export const RECIPES: Recipe[] = [
       "Disposer tous les ingrédients dans un grand plat ou bol",
       "Arroser de vinaigrette huile d'olive et citron",
     ],
-    tip: "La vraie niçoise ne cuit pas les tomates ni les poivrons — tout doit être cru et frais.",
+    tip: "La vraie niçoise ne cuit pas les tomates ni les poivrons, tout doit être cru et frais.",
   },
 
   // ─────────────────────────── CUISINE DU MONDE ───────────────────────────
@@ -2429,7 +2429,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter nouilles et sauce, mélanger 2 min",
       "Réunir avec les crevettes, garnir de cacahuètes et citron vert",
     ],
-    tip: "La sauce poisson est irremplaçable pour l'authenticité — ne la substitue pas par du sel.",
+    tip: "La sauce poisson est irremplaçable pour l'authenticité, ne la substitue pas par du sel.",
   },
   {
     id: "monde-bowl-libanais-agneau",
@@ -2496,7 +2496,7 @@ export const RECIPES: Recipe[] = [
       "Arroser de sauce soja et huile de sésame",
       "Parsemer de sésame et nori",
     ],
-    tip: "Prépare une grande quantité de riz japonais le dimanche — il se conserve 3 jours au frigo.",
+    tip: "Prépare une grande quantité de riz japonais le dimanche, il se conserve 3 jours au frigo.",
   },
   {
     id: "monde-shakshuka-harissa",
@@ -2529,7 +2529,7 @@ export const RECIPES: Recipe[] = [
       "Ajouter les tomates, mijoter 10 min",
       "Remettre les merguez, creuser des nids pour les œufs et cuire 5-6 min",
     ],
-    tip: "La harissa ajoute du piquant sans calories supplémentaires — ajuste selon ta tolérance.",
+    tip: "La harissa ajoute du piquant sans calories supplémentaires, ajuste selon ta tolérance.",
   },
 
   // ─────────────────────────── REPAS HAUTE PROTÉINE ───────────────────────────
@@ -2593,7 +2593,7 @@ export const RECIPES: Recipe[] = [
       "Dresser le cottage cheese, le thon égoutté et les œufs dans une assiette",
       "Ajouter les crudités, assaisonner",
     ],
-    tip: "L'assiette la plus riche en protéines du livre pour le moins de calories — imbattable en sèche.",
+    tip: "L'assiette la plus riche en protéines du livre pour le moins de calories, imbattable en sèche.",
   },
   {
     id: "hp-boeuf-hache-riz-brocoli",
@@ -2684,7 +2684,7 @@ export const RECIPES: Recipe[] = [
       "Cuire à la poêle antiadhésive 2-3 min par face",
       "Servir avec fruits rouges",
     ],
-    tip: "Sans jaune d'œuf, le ratio protéines/calories explose à la hausse — idéal en sèche.",
+    tip: "Sans jaune d'œuf, le ratio protéines/calories explose à la hausse, idéal en sèche.",
   },
 
   // ─────────────────────────── VÉGÉTARIEN / VEGAN ───────────────────────────
@@ -2718,7 +2718,7 @@ export const RECIPES: Recipe[] = [
       "Terminer par du coulis et parmesan",
       "Cuire 25 min à 190°C",
     ],
-    tip: "Remplace les feuilles de pâtes par les tranches d'aubergine — même gourmandise, deux fois moins de glucides.",
+    tip: "Remplace les feuilles de pâtes par les tranches d'aubergine, même gourmandise, deux fois moins de glucides.",
   },
   {
     id: "veg-poelee-pois-chiches-epinards",
@@ -2783,7 +2783,7 @@ export const RECIPES: Recipe[] = [
       "Mixer partiellement pour une texture veloutée-légère",
       "Finir avec citron et coriandre",
     ],
-    tip: "Les lentilles corail ne nécessitent aucun trempage et cuisent en 15 min — la légumineuse express.",
+    tip: "Les lentilles corail ne nécessitent aucun trempage et cuisent en 15 min, la légumineuse express.",
   },
   {
     id: "veg-bowl-quinoa-avocat-mangue",
@@ -2847,7 +2847,7 @@ export const RECIPES: Recipe[] = [
       "Mélanger avec tomates séchées, ail, persil, cumin et fécule",
       "Former des galettes, les faire dorer 4 min par face",
     ],
-    tip: "Se mange avec une salade verte et un filet de citron — très rassasiant grâce aux fibres.",
+    tip: "Se mange avec une salade verte et un filet de citron, très rassasiant grâce aux fibres.",
   },
 
   // ─────────────────────────── REPAS RAPIDES (< 15 MIN) ───────────────────────────
@@ -2879,7 +2879,7 @@ export const RECIPES: Recipe[] = [
       "Mélanger avec oignon émincé, persil et assaisonnement",
       "Servir froid",
     ],
-    tip: "Repas le plus rapide du livre — garde toujours une boîte de chaque en réserve.",
+    tip: "Repas le plus rapide du livre, garde toujours une boîte de chaque en réserve.",
   },
   {
     id: "rapide-omelette-jambon-crudites",
@@ -2940,7 +2940,7 @@ export const RECIPES: Recipe[] = [
       "Étaler la ricotta, disposer le saumon",
       "Ajouter câpres, zeste de citron et aneth",
     ],
-    tip: "Le pain de seigle a un index glycémique plus bas que le pain blanc — bon choix pour un déjeuner stable.",
+    tip: "Le pain de seigle a un index glycémique plus bas que le pain blanc, bon choix pour un déjeuner stable.",
   },
   {
     id: "rapide-salade-poulet-avocat",
@@ -2971,7 +2971,7 @@ export const RECIPES: Recipe[] = [
       "Dresser roquette, poulet, avocat et tomates cerises",
       "Émietter la feta, assaisonner",
     ],
-    tip: "Utilise le reste du poulet de la veille — parfait pour zéro gaspillage et zéro effort.",
+    tip: "Utilise le reste du poulet de la veille, parfait pour zéro gaspillage et zéro effort.",
   },
 
   // ─────────────────────────── PRISE DE MASSE ───────────────────────────
@@ -3006,7 +3006,7 @@ export const RECIPES: Recipe[] = [
       "Verser dans un bol, ajouter banane tranchée et beurre d'amande fondu",
       "Saupoudrer de cannelle",
     ],
-    tip: "Ce bol dépasse les 650 kcal — parfait pour le premier repas d'un mésomorphe en surplus.",
+    tip: "Ce bol dépasse les 650 kcal, parfait pour le premier repas d'un mésomorphe en surplus.",
   },
   {
     id: "masse-pates-boeuf-sauce-tomate",
@@ -3104,7 +3104,7 @@ export const RECIPES: Recipe[] = [
       "Égoutter le thon, assaisonner avec citron et moutarde",
       "Dresser l'assiette",
     ],
-    tip: "Moins de 300 kcal et plus de 35g de protéines — l'assiette idéale quand le bilan quotidien est serré.",
+    tip: "Moins de 300 kcal et plus de 35g de protéines, l'assiette idéale quand le bilan quotidien est serré.",
   },
   {
     id: "seche-soupe-legumes-blancs-poulet",
@@ -3135,7 +3135,7 @@ export const RECIPES: Recipe[] = [
       "Effilocher le poulet, le remettre dans la soupe",
       "Servir avec les herbes fraîches",
     ],
-    tip: "Volume généreux pour très peu de calories — parfait pour les soirs où la faim se fait sentir en sèche.",
+    tip: "Volume généreux pour très peu de calories, parfait pour les soirs où la faim se fait sentir en sèche.",
   },
   {
     id: "seche-salade-chou-chinois-poulet",
@@ -3166,7 +3166,7 @@ export const RECIPES: Recipe[] = [
       "Préparer la vinaigrette avec soja, vinaigre, sésame et gingembre",
       "Ajouter le poulet en morceaux, arroser de vinaigrette",
     ],
-    tip: "Le chou chinois a un très faible apport calorique mais un volume impressionnant — parfait pour caler en sèche.",
+    tip: "Le chou chinois a un très faible apport calorique mais un volume impressionnant, parfait pour caler en sèche.",
   },
 
   // ─────────────────────────── PETIT-DÉJEUNER (3) ───────────────────────────
@@ -3265,7 +3265,7 @@ export const RECIPES: Recipe[] = [
       "Couvrir et réfrigérer toute la nuit",
       "Le matin : ajouter amandes et raisins secs",
     ],
-    tip: "Le muesli trempé est bien plus digeste que le muesli sec — idéal avant une séance du matin.",
+    tip: "Le muesli trempé est bien plus digeste que le muesli sec, idéal avant une séance du matin.",
   },
 
   // ─────────────────────────── COLLATIONS (3) ───────────────────────────
@@ -3441,7 +3441,7 @@ export const RECIPES: Recipe[] = [
       "Mixer tous les ingrédients avec les glaçons",
       "Boire dans les 45 min suivant l'entraînement",
     ],
-    tip: "Ce smoothie rivalise avec une vraie prise alimentaire en termes de récupération — pratique si tu n'as pas faim post-séance.",
+    tip: "Ce smoothie rivalise avec une vraie prise alimentaire en termes de récupération, pratique si tu n'as pas faim post-séance.",
   },
   {
     id: "smoothie-fraises-citron-avocat",
@@ -3630,7 +3630,7 @@ export const RECIPES: Recipe[] = [
       "Verser dans un moule, cuire 25 min à 180°C",
       "Laisser refroidir avant de découper",
     ],
-    tip: "La patate douce apporte un moelleux naturel sans œuf ni beurre — bluffant pour une version vegan.",
+    tip: "La patate douce apporte un moelleux naturel sans œuf ni beurre, bluffant pour une version vegan.",
   },
   {
     id: "des3-creme-chia-vanille",
@@ -3661,7 +3661,7 @@ export const RECIPES: Recipe[] = [
       "Réfrigérer minimum 4h (idéalement une nuit)",
       "Garnir de mangue fraîche avant de servir",
     ],
-    tip: "Les graines de chia triplent de volume en absorbant le liquide — effet rassasiant impressionnant.",
+    tip: "Les graines de chia triplent de volume en absorbant le liquide, effet rassasiant impressionnant.",
   },
 
   // ─────────────────────────── DÉJEUNER (3) ───────────────────────────
@@ -3826,7 +3826,7 @@ export const RECIPES: Recipe[] = [
       "Préparer la sauce légère en mélangeant citron, moutarde et yaourt",
       "Servir le poisson sur les légumes, napper de sauce",
     ],
-    tip: "Le lieu noir est le poisson blanc le moins cher pour son apport protéique — idéal en sèche.",
+    tip: "Le lieu noir est le poisson blanc le moins cher pour son apport protéique, idéal en sèche.",
   },
   {
     id: "din3-saumon-croute-herbes",

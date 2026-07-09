@@ -151,7 +151,7 @@ function RecipeCard({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-white/80 truncate">{recipe.name}</p>
           <p className="text-[10px] text-amber-300/70">
-            Recette exclusive — débloquée à {FEATURE_UNLOCK_POINTS.exclusive_recipes} pts ou avec l&apos;abonnement
+            Recette exclusive, débloquée à {FEATURE_UNLOCK_POINTS.exclusive_recipes} pts ou avec l&apos;abonnement
           </p>
         </div>
         <Sparkles size={14} className="text-amber-500/40 flex-shrink-0" />

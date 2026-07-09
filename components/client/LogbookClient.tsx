@@ -38,7 +38,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">—</span>;
+  if (value == null) return <span className="text-[#F5EDED]/25">N/A</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
@@ -88,7 +88,7 @@ function StartSessionButton({
       }
       router.push(`${sessionBasePath}/session/${sessionId}`);
     } catch {
-      setStartError("Impossible de démarrer — vérifie ta connexion.");
+      setStartError("Impossible de démarrer, vérifie ta connexion.");
       setLoading(false);
     }
   }
@@ -166,7 +166,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
       }
       router.push(`${sessionBasePath}/session/${sessionId}`);
     } catch {
-      setStartError("Impossible de démarrer — vérifie ta connexion.");
+      setStartError("Impossible de démarrer, vérifie ta connexion.");
       setLoading(false);
     }
   }
@@ -242,7 +242,7 @@ function ImportLogbookButton() {
       }
     } catch (e) {
       console.error("Import logbook fetch error:", e);
-      setResult({ ok: false, error: "Import impossible — vérifie ta connexion." });
+      setResult({ ok: false, error: "Import impossible, vérifie ta connexion." });
     } finally {
       setImporting(false);
     }
@@ -281,7 +281,7 @@ function ImportLogbookButton() {
               ` ${result.sessionsSkipped} déjà importée${result.sessionsSkipped !== 1 ? "s" : ""}, ignorée${result.sessionsSkipped !== 1 ? "s" : ""}.`}
             {result.programCreated && (
               <>
-                {" "}Ton programme a été reconstruit à partir de ton historique —{" "}
+                {" "}Ton programme a été reconstruit à partir de ton historique.{" "}
                 <Link href="/dashboard/client/program" className="underline font-bold">
                   va le voir
                 </Link>.
@@ -395,8 +395,8 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
             <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4 mb-2">
               <p className="text-xs text-[#F5EDED]/40">
                 {isFree
-                  ? "Aucun programme actif — crée ton programme ou démarre une séance libre."
-                  : "Aucun programme actif — démarre une séance libre ou contacte ton coach."}
+                  ? "Aucun programme actif. Crée ton programme ou démarre une séance libre."
+                  : "Aucun programme actif. Démarre une séance libre ou contacte ton coach."}
               </p>
             </div>
           )}

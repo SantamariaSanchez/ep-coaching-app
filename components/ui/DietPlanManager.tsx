@@ -40,7 +40,7 @@ export const DAY_TABS: { key: DayOfWeek; label: string }[] = [
 
 const MODES: { key: DietMode; label: string; icon: React.ElementType; desc: string }[] = [
   { key: "flexible", label: "Flexible", icon: Shuffle, desc: "Tu logues librement tes repas" },
-  { key: "fixed", label: "Fixe", icon: Lock, desc: "Plan strict — coche chaque aliment au fil de la journée" },
+  { key: "fixed", label: "Fixe", icon: Lock, desc: "Plan strict, coche chaque aliment au fil de la journée" },
   { key: "fixed_flexible", label: "Fixe Flexible", icon: Sliders, desc: "Plan avec swaps autorisés dans la même catégorie" },
 ];
 
@@ -227,7 +227,7 @@ export function PlanBuilder({
           </div>
           <p className="text-[10px] text-[#F5EDED]/30">
             {structure === "weekly"
-              ? "Construis chaque jour séparément — utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique."
+              ? "Construis chaque jour séparément, utile pour des jours \"on\"/\"off\" ou un jour de recharge glucidique."
               : "Un seul jour-type, répété tous les jours."}
           </p>
         </div>
@@ -260,7 +260,7 @@ export function PlanBuilder({
       {mode === "flexible" && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5 text-center">
           <p className="text-xs text-[#F5EDED]/40">
-            En mode Flexible, tu logues librement tes repas — aucun plan prédéfini nécessaire.
+            En mode Flexible, tu logues librement tes repas, aucun plan prédéfini nécessaire.
           </p>
         </div>
       )}
@@ -333,7 +333,7 @@ export function PlanBuilder({
           {meals.length > 0 && (
             <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-                {structure === "weekly" ? `Total — ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : "Total du plan"}
+                {structure === "weekly" ? `Total : ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : "Total du plan"}
               </p>
               <div className="flex gap-4">
                 <div>
@@ -581,7 +581,7 @@ function PlanDetailRow({
             </div>
           )}
           {plan.diet_plan_meals.length === 0 ? (
-            <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible — aucun aliment prédéfini.</p>
+            <p className="text-[10px] text-[#F5EDED]/25 italic">Plan flexible, aucun aliment prédéfini.</p>
           ) : visibleMeals.length === 0 ? (
             <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun aliment pour ce jour.</p>
           ) : (

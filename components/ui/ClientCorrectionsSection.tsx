@@ -41,14 +41,14 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
       <div className="space-y-1.5 text-xs text-[#F5EDED]/60">
         <p>
           <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-            Objectif —{" "}
+            Objectif :{" "}
           </span>
           {c.objective}
         </p>
         {c.client_question && (
           <p>
             <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-              Question —{" "}
+              Question :{" "}
             </span>
             {c.client_question}
           </p>
@@ -125,7 +125,7 @@ export default function ClientCorrectionsSection({
           Corrections &amp; Questions
         </h2>
         <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Envoie une vidéo de ton exercice — ton coach te donne un retour.
+          Envoie une vidéo de ton exercice, ton coach te donne un retour.
         </p>
       </div>
 
@@ -187,7 +187,7 @@ export default function ClientCorrectionsSection({
           )}
           {state?.success && (
             <p className="text-green-400 text-xs">
-              ✓ Envoyé — ton coach te répondra prochainement.
+              ✓ Envoyé, ton coach te répondra prochainement.
             </p>
           )}
 

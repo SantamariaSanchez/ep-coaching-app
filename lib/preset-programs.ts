@@ -22,7 +22,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
       frequency: 3,
       days: [
         {
-          day_label: "Push — Pectoraux / Épaules / Triceps",
+          day_label: "Push : Pectoraux / Épaules / Triceps",
           exercises: [
             { name: "Développé couché barre", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Barre, prise légèrement plus large que les épaules", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
             { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Inclinaison 30-45°", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
@@ -32,7 +32,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Pull — Dos / Biceps",
+          day_label: "Pull : Dos / Biceps",
           exercises: [
             { name: "Tractions (ou tirage vertical)", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Tractions si possible, sinon tirage vertical prise large", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
             { name: "Rowing barre pronation", sets: 3, reps: "6-8", rir: 2, rest_seconds: 90, notes: "Dos à plat, tirage vers le nombril", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
@@ -42,7 +42,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Legs — Quadriceps / Ischio / Mollets",
+          day_label: "Legs : Quadriceps / Ischio / Mollets",
           exercises: [
             { name: "Squat barre", sets: 4, reps: "6-8", rir: 2, rest_seconds: 150, notes: "Descente contrôlée, genoux dans l'axe des orteils", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
             { name: "Presse jambes", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Pieds à hauteur d'épaules, dos plaqué contre le dossier", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
@@ -66,7 +66,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
       frequency: 3,
       days: [
         {
-          day_label: "Séance A — Force",
+          day_label: "Séance A : Force",
           exercises: [
             { name: "Squat barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 150, notes: "Mouvement fondamental, priorité à la technique", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
             { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: "Descente jusqu'au sternum, pas de rebond", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
@@ -76,7 +76,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Séance B — Volume",
+          day_label: "Séance B : Volume",
           exercises: [
             { name: "Soulevé de terre roumain", sets: 4, reps: "8-10", rir: 2, rest_seconds: 120, notes: "Jambes légèrement fléchies, hanches en arrière", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
             { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Inclinaison 30°, contrôle en descente", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
@@ -86,7 +86,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Séance C — Mixte",
+          day_label: "Séance C : Mixte",
           exercises: [
             { name: "Presse jambes", sets: 4, reps: "10-12", rir: 2, rest_seconds: 90, notes: "Pieds légèrement hauts pour plus d'ischio", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },
             { name: "Dips lestés (ou non)", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "Légèrement penché vers l'avant pour les pectoraux", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
@@ -110,7 +110,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
       frequency: 4,
       days: [
         {
-          day_label: "Upper A — Force haut du corps",
+          day_label: "Upper A : Force haut du corps",
           exercises: [
             { name: "Développé couché barre", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: "Charge lourde, technique prioritaire", muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
             { name: "Tractions (ou tirage vertical)", sets: 4, reps: "5-6", rir: 2, rest_seconds: 120, notes: null, muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
@@ -119,7 +119,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Lower A — Force bas du corps",
+          day_label: "Lower A : Force bas du corps",
           exercises: [
             { name: "Squat barre", sets: 5, reps: "5", rir: 2, rest_seconds: 150, notes: "Priorité à la technique, charge progressive", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: true },
             { name: "Soulevé de terre roumain", sets: 4, reps: "6-8", rir: 2, rest_seconds: 120, notes: "Maintien du dos neutre tout au long du mouvement", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: true },
@@ -128,7 +128,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Upper B — Volume haut du corps",
+          day_label: "Upper B : Volume haut du corps",
           exercises: [
             { name: "Développé incliné haltères", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: null, muscle_group: "Pectoraux", muscle_subgroup: null, is_direct: true },
             { name: "Rowing haltère unilatéral", sets: 3, reps: "8-10", rir: 2, rest_seconds: 90, notes: "3 séries de chaque côté", muscle_group: "Dos", muscle_subgroup: null, is_direct: true },
@@ -138,7 +138,7 @@ export const PRESET_PROGRAMS: PresetProgram[] = [
           ],
         },
         {
-          day_label: "Lower B — Volume bas du corps",
+          day_label: "Lower B : Volume bas du corps",
           exercises: [
             { name: "Presse jambes pieds hauts", sets: 4, reps: "10-12", rir: 2, rest_seconds: 90, notes: "Pieds hauts pour maximiser les ischio-jambiers", muscle_group: "Ischio-jambiers", muscle_subgroup: null, is_direct: false },
             { name: "Fentes marchées haltères", sets: 3, reps: "10-12", rir: 2, rest_seconds: 90, notes: "8-10 pas de chaque côté", muscle_group: "Quadriceps", muscle_subgroup: null, is_direct: false },

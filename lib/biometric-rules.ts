@@ -43,7 +43,7 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
       type: "sleep_debt",
       severity: "warning",
       message: `Dette de sommeil : ${shortNights} nuits à moins de 6h sur les 4 derniers jours.`,
-      suggestion: "Réduis le volume d'entraînement de 10-20% cette semaine et priorise le sommeil avant tout — la récupération ne suivra pas sinon.",
+      suggestion: "Réduis le volume d'entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.",
     });
   }
 
@@ -57,7 +57,7 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
       type: "low_readiness_streak",
       severity: "warning",
       message: `Score de récupération bas 2 jours de suite (${yesterday.readiness_score} puis ${today.readiness_score}).`,
-      suggestion: "Évite les séances à forte intensité aujourd'hui — privilégie une séance légère, de la mobilité, ou un jour de repos actif.",
+      suggestion: "Évite les séances à forte intensité aujourd'hui, privilégie une séance légère, de la mobilité, ou un jour de repos actif.",
     });
   }
 
@@ -68,7 +68,7 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
       type: "hrv_drop",
       severity: "warning",
       message: `HRV à ${today.hrv_ms}ms, soit ${Math.round((1 - today.hrv_ms / avgHrv7) * 100)}% en dessous de ta moyenne 7 jours (${Math.round(avgHrv7)}ms).`,
-      suggestion: "Signe de fatigue accumulée sur le système nerveux — réduis l'intensité ou ajoute un jour de repos supplémentaire cette semaine.",
+      suggestion: "Signe de fatigue accumulée sur le système nerveux, réduis l'intensité ou ajoute un jour de repos supplémentaire cette semaine.",
     });
   }
 
@@ -79,7 +79,7 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
       type: "resting_hr_elevated",
       severity: "info",
       message: `FC au repos à ${today.resting_hr}bpm, ${Math.round(today.resting_hr - avgRhr7)}bpm au-dessus de ta moyenne 7 jours.`,
-      suggestion: "Surveille ton hydratation et ton sommeil ce soir — une FC repos élevée précède souvent un surmenage ou un début de maladie.",
+      suggestion: "Surveille ton hydratation et ton sommeil ce soir, une FC repos élevée précède souvent un surmenage ou un début de maladie.",
     });
   }
 
@@ -93,7 +93,7 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
       type: "green_light",
       severity: "info",
       message: `Récupération excellente (score ${today.readiness_score}, ${today.sleep_hours}h de sommeil).`,
-      suggestion: "Ton corps est prêt — c'est le bon jour pour viser une séance plus intense ou tenter un nouveau record.",
+      suggestion: "Ton corps est prêt, c'est le bon jour pour viser une séance plus intense ou tenter un nouveau record.",
     });
   }
 

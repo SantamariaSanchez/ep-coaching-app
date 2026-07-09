@@ -180,13 +180,13 @@ export default function ClientRoadmapPage() {
         <TrainingSubNav />
         <div style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
-            Road Map — Communauté
+            Road Map : Communauté
           </span>
           <h1 style={{ fontSize: 28, fontWeight: 800, letterSpacing: "-0.04em", color: "#F5EDED", margin: "4px 0 6px" }}>
             Ma Road Map
           </h1>
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>
-            Construis toi-même tes phases et tes objectifs — autonome, sans suivi coach.
+            Construis toi-même tes phases et tes objectifs, en autonomie, sans suivi coach.
           </p>
         </div>
         <RoadmapEditor clientId={userId} />

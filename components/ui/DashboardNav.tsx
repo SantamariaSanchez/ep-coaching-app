@@ -123,7 +123,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "abonnement", "profile"],
+    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile"],
   },
 ];
 
@@ -163,6 +163,7 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     group: "Contenu",
     items: [
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
       {
         label: "Formations",
         icon: GraduationCap,
@@ -423,8 +424,14 @@ function useNavState(isFreeTier: boolean) {
 
 // ── Component ───────────────────────────────────────────────────────────────
 
-export default function DashboardNav({ children }: { children: React.ReactNode }) {
-  const [isFreeTier, setIsFreeTier] = useState(false);
+export default function DashboardNav({
+  children,
+  initialIsFreeTier = false,
+}: {
+  children: React.ReactNode;
+  initialIsFreeTier?: boolean;
+}) {
+  const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
     useNavState(isFreeTier);
   const router = useRouter();
@@ -676,7 +683,7 @@ export default function DashboardNav({ children }: { children: React.ReactNode }
                 color: "rgba(245,237,237,0.28)",
                 textTransform: "capitalize",
               }}>
-                {userRole ?? "—"}
+                {userRole ?? "-"}
               </div>
             </div>
           </div>

@@ -91,7 +91,7 @@ export function ClientCard({
       {/* Oura Ring eligibility badge */}
       {ouraEligible && (
         <div
-          title="Rang Légende atteint — Oura Ring à offrir"
+          title="Rang Légende atteint : Oura Ring à offrir"
           style={{
             position: "absolute",
             top: 14, left: 14,
@@ -188,9 +188,9 @@ export function ClientCard({
         gap: 8,
       }}>
         {[
-          { label: "Semaine",  value: weekNum   != null ? `S${weekNum}`     : "—" },
-          { label: "Poids",    value: weight    != null ? `${weight} kg`    : "—" },
-          { label: "Adhésion", value: adherence != null ? `${adherence}%`   : "—", color: adherenceColor },
+          { label: "Semaine",  value: weekNum   != null ? `S${weekNum}`     : "N/A" },
+          { label: "Poids",    value: weight    != null ? `${weight} kg`    : "N/A" },
+          { label: "Adhésion", value: adherence != null ? `${adherence}%`   : "N/A", color: adherenceColor },
         ].map((stat) => (
           <div key={stat.label} style={{
             background: "rgba(0,0,0,0.3)",

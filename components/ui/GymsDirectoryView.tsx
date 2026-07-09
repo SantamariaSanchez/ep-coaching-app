@@ -371,7 +371,7 @@ export default function GymsDirectoryView({
       </div>
 
       <p className="text-[10px] text-[#F5EDED]/25">
-        {gyms.length} salle{gyms.length !== 1 ? "s" : ""} référencée{gyms.length !== 1 ? "s" : ""} — partage la tienne et note celles que tu connais.
+        {gyms.length} salle{gyms.length !== 1 ? "s" : ""} référencée{gyms.length !== 1 ? "s" : ""}, partage la tienne et note celles que tu connais.
       </p>
 
       <div className="flex gap-1.5 overflow-x-auto pb-1">

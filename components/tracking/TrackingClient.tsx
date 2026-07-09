@@ -106,7 +106,7 @@ export default function TrackingClient({
       <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
         <Watch size={15} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
         <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
-          Connexion Oura Ring à venir — en attendant, log tes données chaque jour. Dès qu&apos;une vraie
+          Connexion Oura Ring à venir. En attendant, log tes données chaque jour. Dès qu&apos;une vraie
           décision d&apos;ajustement ressort de tes données, tu reçois une notification.
         </p>
       </div>

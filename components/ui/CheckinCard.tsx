@@ -82,7 +82,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
               borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#F5EDED", outline: "none",
             }}
           >
-            <option value="">—</option>
+            <option value="">N/A</option>
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}/10</option>
             ))}
@@ -230,11 +230,11 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
                   <NumRow label="FC repos" value={checkin.resting_hr ? `${checkin.resting_hr} bpm` : null} />
                   <NumRow
                     label="Digestion"
-                    value={checkin.digestion != null ? `${checkin.digestion}/5 — ${DIGESTION[checkin.digestion] ?? ""}` : null}
+                    value={checkin.digestion != null ? `${checkin.digestion}/5 : ${DIGESTION[checkin.digestion] ?? ""}` : null}
                   />
                   <NumRow
                     label="Ressenti"
-                    value={checkin.general_feeling != null ? `${checkin.general_feeling}/5 — ${FEELING[checkin.general_feeling] ?? ""}` : null}
+                    value={checkin.general_feeling != null ? `${checkin.general_feeling}/5 : ${FEELING[checkin.general_feeling] ?? ""}` : null}
                   />
                 </div>
               </div>
@@ -291,7 +291,7 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
           {checkin.coach_replied_at && checkin.coach_notes ? (
             <div style={{ paddingTop: 14, borderTop: "1px solid rgba(137,4,4,0.12)" }}>
               <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: "0 0 8px" }}>
-                Ton retour{checkin.coach_rating ? ` — ${checkin.coach_rating}/10` : ""}
+                Ton retour{checkin.coach_rating ? ` : ${checkin.coach_rating}/10` : ""}
               </p>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.coach_notes}

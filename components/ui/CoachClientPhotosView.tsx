@@ -45,7 +45,7 @@ function CompetitionSettings({
             defaultValue={client.competition_category ?? ""}
             className={inputCls}
           >
-            <option value="">— Non définie —</option>
+            <option value="">Non définie</option>
             {ALL_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
                 {cat}
@@ -142,7 +142,7 @@ function PhotoFeedbackForm({
   if (state?.success) {
     return (
       <p className="text-green-400 text-xs font-semibold pt-3 border-t border-[#890404]/15">
-        ✓ Retour envoyé — le client a été notifié.
+        ✓ Retour envoyé, le client a été notifié.
       </p>
     );
   }
@@ -222,7 +222,7 @@ function PhotoCard({
 
       {photo.notes && (
         <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
-          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Notes — </span>
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Notes : </span>
           {photo.notes}
         </p>
       )}
@@ -291,7 +291,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
 
       {drawMode && (
         <p className="text-[10px] text-[#F5EDED]/30 italic">
-          Trace directement sur les photos pour pointer un détail à l&apos;oral — chaque trait s&apos;efface automatiquement au bout de 5 secondes.
+          Trace directement sur les photos pour pointer un détail à l&apos;oral, chaque trait s&apos;efface automatiquement au bout de 5 secondes.
         </p>
       )}
 
@@ -309,7 +309,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               <select value={id} onChange={(e) => setId(e.target.value)} className={inputCls}>
                 {photos.map((p) => (
                   <option key={p.id} value={p.id}>
-                    {formatDate(p.submitted_at)} — {TYPE_LABELS[p.type] ?? p.type}
+                    {formatDate(p.submitted_at)} : {TYPE_LABELS[p.type] ?? p.type}
                   </option>
                 ))}
               </select>
@@ -320,7 +320,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               {photo && !imgUrl && (
                 <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
                   <p className="text-[10px] text-[#F5EDED]/30">
-                    Aperçu indisponible — le lien Drive doit être partagé en &quot;Tous les utilisateurs disposant du lien&quot;.
+                    Aperçu indisponible. Le lien Drive doit être partagé en &quot;Tous les utilisateurs disposant du lien&quot;.
                   </p>
                 </div>
               )}
@@ -397,7 +397,7 @@ export default function CoachClientPhotosView({
         {pendingPhotos.length === 0 ? (
           <div className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-4">
             <CheckCircle2 size={16} className="text-green-400" />
-            <p className="text-xs text-[#F5EDED]/40">Tout à jour — aucune photo en attente.</p>
+            <p className="text-xs text-[#F5EDED]/40">Tout à jour, aucune photo en attente.</p>
           </div>
         ) : (
           <div className="space-y-3">

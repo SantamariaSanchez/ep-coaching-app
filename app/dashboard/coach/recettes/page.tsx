@@ -25,7 +25,7 @@ export default async function CoachRecettesPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Recettes & idées repas</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Base de recettes à partager avec tes clients — triée par régime, phase, macros,
+          Base de recettes à partager avec tes clients, triée par régime, phase, macros,
           allergènes, saison et goûts. Les membres peuvent aussi ajouter les leurs.
         </p>
       </div>

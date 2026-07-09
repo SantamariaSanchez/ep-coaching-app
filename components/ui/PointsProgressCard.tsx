@@ -67,7 +67,7 @@ export default function PointsProgressCard({
                 )}
                 <p className={`text-[11px] leading-snug ${reached ? "text-[#F5EDED]/60" : "text-[#F5EDED]/30"}`}>
                   <span className="font-bold">{r.emoji} {r.label}</span>
-                  {" — "}
+                  {" : "}
                   {r.unlocks?.join(", ")}
                   {r.reward ? (r.unlocks ? " + " : "") + r.reward : ""}
                 </p>

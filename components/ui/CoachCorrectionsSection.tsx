@@ -108,14 +108,14 @@ function CorrectionCard({
       <div className="space-y-1.5 text-xs text-[#F5EDED]/60">
         <p>
           <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-            Objectif —{" "}
+            Objectif :{" "}
           </span>
           {c.objective}
         </p>
         {c.client_question && (
           <p>
             <span className="text-[#F5EDED]/35 font-semibold uppercase tracking-widest text-[9px]">
-              Question —{" "}
+              Question :{" "}
             </span>
             {c.client_question}
           </p>

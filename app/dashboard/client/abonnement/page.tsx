@@ -99,7 +99,7 @@ export default async function AbonnementPage() {
             border: "1px solid rgba(74,222,128,0.3)", background: "rgba(74,222,128,0.06)",
             borderRadius: 999, padding: "5px 12px",
           }}>
-            <CheckCircle2 size={12} /> Aucune obligation — l&apos;appel est gratuit et sans engagement
+            <CheckCircle2 size={12} /> Aucune obligation, l&apos;appel est gratuit et sans engagement
           </div>
         )}
       </div>

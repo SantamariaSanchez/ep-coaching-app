@@ -596,7 +596,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         {phases.length === 0 && (
           <div className="ep-card" style={{ padding: 32, textAlign: "center" }}>
             <p style={{ color: "rgba(245,237,237,0.3)", fontSize: 13 }}>
-              Aucune phase — clique sur « Ajouter une phase »
+              Aucune phase. Clique sur « Ajouter une phase »
             </p>
           </div>
         )}

@@ -30,7 +30,7 @@ function AvgRow({ label, value, unit = "" }: { label: string; value: number | nu
     <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
       <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
       <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)" }}>
-        {value !== null ? `${value}${unit}` : "—"}
+        {value !== null ? `${value}${unit}` : "N/A"}
       </span>
     </div>
   );

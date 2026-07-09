@@ -70,7 +70,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   const supabase = await createServerSupabase();
   const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
   if (signInError) {
-    return { error: "Compte créé mais connexion automatique impossible — connecte-toi manuellement." };
+    return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
 
   try {

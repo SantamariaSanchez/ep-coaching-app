@@ -264,7 +264,7 @@ export default function MealCreatorWizard({
           {step === "allergens" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Des allergies à éviter ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Optionnel — laisse vide si aucune.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Optionnel, laisse vide si aucune.</p>
               <MultiChips options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={toggleAllergen} />
             </div>
           )}
@@ -300,7 +300,7 @@ export default function MealCreatorWizard({
               </div>
               {(foodGroupOptions[step as FoodGroupKey] ?? []).length === 0 && (
                 <p className="text-xs text-[#F5EDED]/30 italic">
-                  Aucune option compatible avec ton régime/allergies pour ce groupe — tu peux passer.
+                  Aucune option compatible avec ton régime/allergies pour ce groupe, tu peux passer.
                 </p>
               )}
             </div>
@@ -341,7 +341,7 @@ export default function MealCreatorWizard({
               {!result ? (
                 <div className="text-center py-10">
                   <p className="text-sm text-[#F5EDED]/40">
-                    Aucune combinaison trouvée — essaie avec d&apos;autres choix.
+                    Aucune combinaison trouvée, essaie avec d&apos;autres choix.
                   </p>
                   <button onClick={handleRestart} className="mt-4 text-xs font-bold text-[#E01E1E]">
                     Recommencer

@@ -186,7 +186,7 @@ function WeeklyNoteForm({
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5 space-y-5">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          Semaine {weekNumber} — {formatDate(weekStart)}
+          Semaine {weekNumber} : {formatDate(weekStart)}
         </p>
         {isEditing && (
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/25 px-2 py-0.5 rounded-full">

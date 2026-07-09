@@ -1,12 +1,15 @@
 ﻿import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import {
   getClientPhotoUpdates,
   getThisWeekPhotoUpdate,
   getTodayPhotoUpdate,
 } from "@/utils/photos";
+import { getPersonalPhotos } from "@/utils/personal-photos";
 import ClientPhotosView from "@/components/ui/ClientPhotosView";
+import PersonalPhotosView from "@/components/ui/PersonalPhotosView";
 import { submitPhotoUpdate } from "./actions";
+import { uploadPersonalPhoto, deletePersonalPhoto } from "./personal-actions";
 
 export default async function ClientPhotosPage() {
   const user = await getUser();
@@ -14,6 +17,20 @@ export default async function ClientPhotosPage() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
+
+  // Membres gratuits : pas de coach pour relire ces photos, pas de catégorie
+  // de compétition, pas de raison de passer par un lien Drive externe — un
+  // simple suivi perso avec upload direct suffit largement.
+  if (!isSubscribed(profile)) {
+    const photos = await getPersonalPhotos(user.id).catch(() => []);
+    return (
+      <PersonalPhotosView
+        photos={photos}
+        uploadPersonalPhoto={uploadPersonalPhoto}
+        deletePersonalPhoto={deletePersonalPhoto}
+      />
+    );
+  }
 
   const frequency = profile?.photo_frequency ?? "weekly";
   const today = new Date().toISOString().split("T")[0];

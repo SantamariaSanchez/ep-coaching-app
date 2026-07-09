@@ -191,7 +191,7 @@ export default function SearchView({ isCoach, importArticle }: {
         </button>
       </div>
       <p className="text-[10px] text-[#F5EDED]/25">
-        Recherche directement sur PubMed (NCBI) en anglais — la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.
+        Recherche directement sur PubMed (NCBI) en anglais, la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.
       </p>
 
       {error && <p className="text-xs text-red-400">{error}</p>}

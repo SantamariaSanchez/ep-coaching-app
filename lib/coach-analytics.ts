@@ -307,7 +307,7 @@ export async function getClientHighlights(
     highlights.push({
       type: "new_pr",
       label: `${prs.length} PR cette semaine`,
-      detail: prs.map((pr) => `${pr.exercise_name} — ${pr.weight_kg}kg`).join(", "),
+      detail: prs.map((pr) => `${pr.exercise_name} : ${pr.weight_kg}kg`).join(", "),
       icon: "Trophy",
     });
   }

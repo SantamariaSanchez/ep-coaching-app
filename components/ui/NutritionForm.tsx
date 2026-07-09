@@ -215,7 +215,7 @@ export default function NutritionForm({
                   {label}
                 </p>
                 <p className="text-2xl font-black text-white">
-                  {value ?? "—"}
+                  {value ?? "-"}
                   <span className="text-xs font-normal text-[#F5EDED]/40 ml-1">{unit}</span>
                 </p>
               </div>
@@ -224,11 +224,11 @@ export default function NutritionForm({
           <p className="text-[10px] text-[#F5EDED]/25 mt-3">
             Phase :{" "}
             <span className="text-[#E01E1E] font-semibold capitalize">
-              {existingProfile.phase ?? "—"}
+              {existingProfile.phase ?? "-"}
             </span>{" "}
             · TDEE :{" "}
             <span className="text-white font-semibold">
-              {existingProfile.tdee ?? "—"} kcal
+              {existingProfile.tdee ?? "-"} kcal
             </span>
           </p>
         </div>

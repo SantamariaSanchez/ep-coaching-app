@@ -20,7 +20,7 @@ export const SUBSCRIPTION_PLANS = [
     id: "semiannual",
     label: "Semestriel",
     priceLabel: "1000€ / 6 mois",
-    sublabel: "= ~167€/mois — meilleure offre",
+    sublabel: "= ~167€/mois, meilleure offre",
     url: "https://buy.stripe.com/9B6aEX7y39SH8nWbtVfIs02",
     highlight: true,
   },

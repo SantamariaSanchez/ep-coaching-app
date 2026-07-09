@@ -184,7 +184,7 @@ function ProfileTab({
         <Brain size={32} className="text-[#E01E1E]/40 mx-auto mb-3" strokeWidth={1.5} />
         <p className="text-sm font-bold text-white mb-1">Découvre ton profil mindset</p>
         <p className="text-xs text-[#F5EDED]/35 mb-5 max-w-sm mx-auto">
-          7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline — et recevoir des conseils vraiment adaptés à ta situation.
+          7 questions pour comprendre ton rapport à la motivation, au stress, à ton image et à la discipline, et recevoir des conseils vraiment adaptés à ta situation.
         </p>
         <button
           onClick={() => setShowQuiz(true)}

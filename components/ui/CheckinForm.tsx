@@ -172,7 +172,7 @@ export default function CheckinForm({
         <Section title="Photos & vidéo" />
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
-            <label className={lbl}>Lien Google Drive — photos</label>
+            <label className={lbl}>Lien Google Drive : photos</label>
             <input
               name="photo_drive_link"
               type="url"
@@ -181,7 +181,7 @@ export default function CheckinForm({
             />
           </div>
           <div>
-            <label className={lbl}>Lien Google Drive — vidéo posing</label>
+            <label className={lbl}>Lien Google Drive : vidéo posing</label>
             <input
               name="video_drive_link"
               type="url"

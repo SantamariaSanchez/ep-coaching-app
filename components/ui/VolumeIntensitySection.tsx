@@ -309,7 +309,7 @@ export default function VolumeIntensitySection({
       {hasRealized && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
-            Volume — Réalisé cette semaine
+            Volume : réalisé cette semaine
           </p>
           <div className="space-y-5">
             {realizedEntries.map(([group, { direct, indirect, subgroups }]) => {
@@ -334,7 +334,7 @@ export default function VolumeIntensitySection({
       {hasVolume && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
-            Volume — Semaine planifiée
+            Volume : semaine planifiée
           </p>
           <div className="space-y-5">
             {volumeEntries.map(([group, { direct, indirect, subgroups }]) => {
@@ -359,7 +359,7 @@ export default function VolumeIntensitySection({
       {hasExercises && (
         <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-            Intensité — RIR & Progression
+            Intensité : RIR & Progression
           </p>
           <div>
             {allExercises.map((ex) => {

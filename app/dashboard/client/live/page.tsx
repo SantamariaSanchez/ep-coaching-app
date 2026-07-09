@@ -20,7 +20,7 @@ export default async function ClientLivePage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Lives & appels</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Appels 1:1 avec ton coach, webinaires et lives Q&amp;A — directement dans l&apos;appli.
+          Appels 1:1 avec ton coach, webinaires et lives Q&amp;A, directement dans l&apos;appli.
         </p>
       </div>
 

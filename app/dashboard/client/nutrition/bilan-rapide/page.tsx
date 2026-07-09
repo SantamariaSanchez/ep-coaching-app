@@ -40,7 +40,7 @@ export default async function BilanRapidePage() {
           ⚡ Bilan rapide
         </h1>
         <p className="text-sm text-[#F5EDED]/45 leading-relaxed">
-          Repas par repas, aliment par aliment. ~2 min — log automatique à la fin.
+          Repas par repas, aliment par aliment. ~2 min, log automatique à la fin.
         </p>
 
         {!nutritionProfile?.calories_target && (

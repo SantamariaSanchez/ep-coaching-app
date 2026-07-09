@@ -28,7 +28,7 @@ export default async function ClientRecettesPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Recettes & idées repas</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Toutes les recettes triées par régime, phase (surplus, maintenance, sèche), macros,
-          allergènes, saison et goûts — produits français de saison. Ajoute les tiennes ou
+          allergènes, saison et goûts, produits français de saison. Ajoute les tiennes ou
           crée une recette 100% sur mesure.
         </p>
       </div>

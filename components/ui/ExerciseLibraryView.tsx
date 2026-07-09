@@ -133,7 +133,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>Sous-groupe (optionnel)</label>
           <select value={muscleSubgroup} onChange={(e) => setMuscleSubgroup(e.target.value)} className={inputCls} disabled={subgroups.length === 0}>
-            <option value="">—</option>
+            <option value="">-</option>
             {subgroups.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -145,7 +145,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>Matériel</label>
           <select value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
-            <option value="">—</option>
+            <option value="">-</option>
             {EQUIPMENT_OPTIONS.map((e) => (
               <option key={e} value={e}>{e}</option>
             ))}
@@ -154,7 +154,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>Marque de machine (optionnel)</label>
           <select value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
-            <option value="">—</option>
+            <option value="">-</option>
             {MACHINE_BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
             ))}
@@ -163,7 +163,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>Type</label>
           <select value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)} className={inputCls}>
-            <option value="">—</option>
+            <option value="">-</option>
             {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -172,7 +172,7 @@ function ExerciseForm({
         <div>
           <label className={labelCls}>Difficulté</label>
           <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)} className={inputCls}>
-            <option value="">—</option>
+            <option value="">-</option>
             {Object.entries(DIFFICULTY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -434,7 +434,7 @@ export default function ExerciseLibraryView({
       </div>
 
       <p className="text-[10px] text-[#F5EDED]/25">
-        {exercises.length} exercice{exercises.length !== 1 ? "s" : ""} dans la bibliothèque — enrichis-la en ajoutant les tiens.
+        {exercises.length} exercice{exercises.length !== 1 ? "s" : ""} dans la bibliothèque, enrichis-la en ajoutant les tiens.
       </p>
 
       {showCreate && (

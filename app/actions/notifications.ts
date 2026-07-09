@@ -102,7 +102,7 @@ export async function notifyCoachNewPhotoUpdate(
   notifyCoach({
     type: "coach_photo",
     title: "Nouvelle photo update",
-    body: `${clientName} — ${type} (${category})`,
+    body: `${clientName} : ${type} (${category})`,
     url: "/dashboard/coach/bilan",
   });
   await sendBrevoEmail({
@@ -167,7 +167,7 @@ export async function notifyCoachNewResourceRequest(
   });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
-    subject: `Demande de guide — ${clientName}`,
+    subject: `Demande de guide de ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouvelle demande de guide</h2>
@@ -226,7 +226,7 @@ export async function notifyClientNewLiveEvent(
 
   await sendBrevoEmail({
     to: clientEmail,
-    subject: `Appel programmé — ${title}`,
+    subject: `Appel programmé : ${title}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">📅 Un appel a été programmé</h2>

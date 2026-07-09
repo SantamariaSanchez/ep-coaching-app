@@ -358,7 +358,7 @@ export default function ConversationView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: peerId,
-          title: "EP Coaching — Nouveau message",
+          title: "EP Coaching : Nouveau message",
           body: `${senderName} : ${body.slice(0, 60)}`,
           url: pushUrl,
         }),

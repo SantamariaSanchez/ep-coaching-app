@@ -50,10 +50,10 @@ export async function GET() {
 
   const stepsDisplay = thisWeekCheckin?.steps_per_day
     ? thisWeekCheckin.steps_per_day.toLocaleString("fr-FR")
-    : "—";
+    : "-";
   const sleepDisplay = thisWeekCheckin?.sleep_hours
     ? `${thisWeekCheckin.sleep_hours}h`
-    : "—";
+    : "-";
   const weekNumber = getISOWeek(today);
 
   return NextResponse.json({

@@ -34,30 +34,68 @@ export default async function ClientNutritionPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Espace gratuit — calculateur TDEE uniquement, pas de plan repas ni journal.
+  // Espace gratuit — calculateur TDEE + journal alimentaire (aujourd'hui /
+  // historique) et plans perso, comme les clients coachés : seule la
+  // provenance du plan change (auto-géré, pas de coach).
   if (!isSubscribed(profile)) {
-    const nutritionProfile = await getNutritionProfile(user.id);
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes] =
+      await Promise.all([
+        getNutritionProfile(user.id),
+        getTodayLogs(user.id, today),
+        getLast30DaysLogs(user.id),
+        getAllFoods(),
+        getActiveDietPlan(user.id),
+        getAllDietPlansWithMeals(user.id),
+        getCommunityRecipes(),
+      ]);
 
     return (
-      <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-        <div className="mb-6">
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Nutrition
-          </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Calculateur calorique</h1>
-          <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
-            Calcule tes besoins caloriques et tes macros selon ton profil et ton objectif. Sauvegarde le résultat pour le conserver.
-          </p>
+      <div className="pb-24 md:pb-8 page-transition">
+        <div className="px-6 pt-8 max-w-2xl mx-auto">
+          <div className="mb-6">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+              Nutrition
+            </p>
+            <h1 className="text-3xl font-black uppercase tracking-tight">Calculateur calorique</h1>
+            <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
+              Calcule tes besoins caloriques et tes macros selon ton profil et ton objectif. Sauvegarde le résultat pour le conserver.
+            </p>
+          </div>
+          <SeasonModeToggle
+            currentMode={profile?.season_mode ?? "off_season"}
+            setSeasonMode={setOwnSeasonMode}
+          />
+          <NutritionForm
+            clientId={user.id}
+            existingProfile={nutritionProfile}
+            clientWeight={profile?.weight_start ?? null}
+            saveNutritionProfile={saveOwnNutritionProfile}
+          />
         </div>
-        <SeasonModeToggle
-          currentMode={profile?.season_mode ?? "off_season"}
-          setSeasonMode={setOwnSeasonMode}
+
+        <ClientNutritionView
+          today={today}
+          nutritionProfile={nutritionProfile}
+          initialTodayLogs={todayLogs}
+          historyLogs={historyLogs}
+          initialFoods={foods}
+          recipes={recipes}
+          dietMode={activePlan?.mode ?? "flexible"}
+          activePlan={activePlan}
+          seasonMode={profile?.season_mode}
+          isOwnPlan
+          addFoodLog={addFoodLog}
+          removeFoodLog={removeFoodLog}
+          createCustomFood={createCustomFood}
         />
-        <NutritionForm
-          clientId={user.id}
-          existingProfile={nutritionProfile}
-          clientWeight={profile?.weight_start ?? null}
-          saveNutritionProfile={saveOwnNutritionProfile}
+
+        <OwnDietPlansSection
+          foods={foods}
+          plans={ownPlans}
+          createOwnDietPlan={createOwnDietPlan}
+          activateOwnDietPlan={activateOwnDietPlan}
+          deactivateOwnDietPlan={deactivateOwnDietPlan}
+          deleteOwnDietPlan={deleteOwnDietPlan}
         />
       </div>
     );

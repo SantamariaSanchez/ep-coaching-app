@@ -69,7 +69,7 @@ export default function PublicRessourcesClient({
           }}
         >
           <span style={{ letterSpacing: "0.04em" }}>
-            Accès libre — {secondsLeft}s
+            Accès libre : {secondsLeft}s
           </span>
           <button
             onClick={() => setManualOpen(true)}

@@ -45,7 +45,7 @@ export default function SubscriptionToggle({
         <p className="text-[11px] text-[#F5EDED]/40">
           {isActive
             ? "A accès aux messages, bilans, formations et au suivi coaché."
-            : "Autonome — accès aux outils gratuits uniquement."}
+            : "Autonome, accès aux outils gratuits uniquement."}
         </p>
         {error && <p className="text-[11px] text-red-400 mt-1">{error}</p>}
       </div>

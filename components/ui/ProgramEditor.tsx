@@ -290,7 +290,7 @@ export default function ProgramEditor({
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. PPL – Hypertrophie"
+              placeholder="Ex. PPL : Hypertrophie"
               className={inputCls}
             />
           </div>
@@ -518,7 +518,7 @@ export default function ProgramEditor({
                               }
                               className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
                             >
-                              <option value="">— Non défini —</option>
+                              <option value="">Non défini</option>
                               {MUSCLE_GROUPS.map((g) => (
                                 <option key={g} value={g}>{g}</option>
                               ))}
@@ -569,7 +569,7 @@ export default function ProgramEditor({
                                 }
                                 className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
                               >
-                                <option value="">— Non défini —</option>
+                                <option value="">Non défini</option>
                                 {MUSCLE_SUBGROUPS[ex.muscle_group as MuscleGroup].map((sg) => (
                                   <option key={sg} value={sg}>{sg}</option>
                                 ))}

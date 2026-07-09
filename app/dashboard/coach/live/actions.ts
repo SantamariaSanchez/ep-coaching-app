@@ -66,7 +66,7 @@ export async function createLiveEvent(
       notifyUser(input.invitedClientId, {
         type: "live_scheduled",
         title: "📅 Appel programmé",
-        body: `${input.title.trim()} — ${dateLabel}`,
+        body: `${input.title.trim()} : ${dateLabel}`,
         url: "/dashboard/client/live",
       }).catch(() => {});
     } else {
@@ -79,7 +79,7 @@ export async function createLiveEvent(
             {
               type: "live_scheduled",
               title: `📅 ${LIVE_TYPE_LABELS[input.type]} programmé`,
-              body: `${input.title.trim()} — ${dateLabel}`,
+              body: `${input.title.trim()} : ${dateLabel}`,
               url: "/dashboard/client/live",
             }
           )

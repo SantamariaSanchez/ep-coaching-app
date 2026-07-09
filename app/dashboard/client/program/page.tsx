@@ -7,6 +7,7 @@ import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
+import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
@@ -25,7 +26,8 @@ export default async function ClientProgramPage() {
 
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  // Espace gratuit — 3 programmes prédéfinis au choix, pas de création custom.
+  // Espace gratuit — programmes prédéfinis au choix, ou création d'un
+  // programme sur mesure de zéro via ProgramFromScratchSection.
   if (!isSubscribed(profile)) {
     return (
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -86,6 +88,11 @@ export default async function ClientProgramPage() {
           <ProgramPresetSelector
             clientId={user.id}
             currentProgramName={program?.name ?? null}
+            saveProgram={saveOwnProgram}
+          />
+          <ProgramFromScratchSection
+            clientId={user.id}
+            program={program}
             saveProgram={saveOwnProgram}
           />
         </div>

@@ -38,23 +38,23 @@ function CheckinsTable({ checkins }: { checkins: CheckIn[] }) {
             <tr key={c.id} className="border-b border-[#890404]/10 last:border-0 bg-[#1a0101] hover:bg-[#1f0101] transition-colors">
               <td className="px-4 py-3 text-xs font-bold text-white">S{c.week_number}</td>
               <td className="px-4 py-3 text-xs text-[#F5EDED]/70">
-                {c.weight != null ? `${c.weight} kg` : "—"}
+                {c.weight != null ? `${c.weight} kg` : "N/A"}
               </td>
               <td className="px-4 py-3 text-xs">
                 {c.nutrition_adherence != null ? (
                   <span className={`font-bold ${c.nutrition_adherence >= 80 ? "text-green-400" : c.nutrition_adherence >= 60 ? "text-amber-400" : "text-red-400"}`}>
                     {c.nutrition_adherence}%
                   </span>
-                ) : <span className="text-[#F5EDED]/30">—</span>}
+                ) : <span className="text-[#F5EDED]/30">N/A</span>}
               </td>
               <td className="px-4 py-3 text-xs text-[#F5EDED]/70">
-                {c.steps_per_day != null ? c.steps_per_day.toLocaleString("fr-FR") : "—"}
+                {c.steps_per_day != null ? c.steps_per_day.toLocaleString("fr-FR") : "N/A"}
               </td>
               <td className="px-4 py-3 text-xs text-[#F5EDED]/70">
-                {c.sleep_hours != null ? `${c.sleep_hours}h` : "—"}
+                {c.sleep_hours != null ? `${c.sleep_hours}h` : "N/A"}
               </td>
               <td className="px-4 py-3 text-xs text-[#F5EDED]/70">
-                {c.general_feeling != null ? `${c.general_feeling}/5 — ${FEELING_LABELS[c.general_feeling] ?? ""}` : "—"}
+                {c.general_feeling != null ? `${c.general_feeling}/5 : ${FEELING_LABELS[c.general_feeling] ?? ""}` : "N/A"}
               </td>
             </tr>
           ))}

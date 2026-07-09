@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     icon: Sparkles,
     eyebrow: "Bienvenue",
     title: "T'es officiellement dans la place 👋",
-    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux — mais 100% optionnel. Let's go.",
+    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux, mais 100% optionnel. Let's go.",
   },
   {
     icon: Dumbbell,
@@ -43,20 +43,20 @@ const SLIDES: Slide[] = [
     icon: ImageIcon,
     eyebrow: "Suivi",
     title: "Vois ta progression",
-    desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation, pas & routine, mindset — tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
+    desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation, pas & routine, mindset : tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
   },
   {
     icon: FlaskConical,
     eyebrow: "Science",
     title: "Vérifie ce qu'on te raconte",
-    desc: "Recherche en direct sur PubMed, actualité scientifique, bibliothèque de méta-analyses sur l'entraînement et la nutrition — fais-toi ton propre avis, sourcé.",
+    desc: "Recherche en direct sur PubMed, actualité scientifique, bibliothèque de méta-analyses sur l'entraînement et la nutrition. Fais-toi ton propre avis, sourcé.",
     bullets: ["Recherche PubMed live", "Actualité scientifique", "Bibliothèque de méta-analyses", "Nos propres études"],
   },
   {
     icon: Heart,
     eyebrow: "Communauté",
     title: "T'es plus seul·e",
-    desc: "Partage tes victoires, pose tes questions — toute la communauté peut te répondre et t'encourager. Chaque publication te rapporte des points.",
+    desc: "Partage tes victoires, pose tes questions. Toute la communauté peut te répondre et t'encourager. Chaque publication te rapporte des points.",
     bullets: ["Victoires", "Questions", "Ressources gratuites"],
   },
   {
@@ -70,7 +70,7 @@ const SLIDES: Slide[] = [
     icon: GraduationCap,
     eyebrow: "Contenu",
     title: "80h+ de formations",
-    desc: "Entraînement, nutrition, mental — des modules vidéo complets, accessibles à vie. C'est la seule chose réservée aux clients coachés (tout le reste que tu viens de voir est gratuit, ou débloquable par points).",
+    desc: "Entraînement, nutrition, mental : des modules vidéo complets, accessibles à vie. C'est la seule chose réservée aux clients coachés (tout le reste que tu viens de voir est gratuit, ou débloquable par points).",
   },
   {
     icon: Crown,
@@ -112,7 +112,12 @@ export default function OnboardingTour() {
 
   async function finish() {
     setFinishing(true);
-    await completeOnboarding();
+    try {
+      await completeOnboarding();
+    } catch {
+      // Best-effort — un souci réseau ou un redéploiement ne doit jamais
+      // bloquer l'utilisateur ici : au pire il reverra l'onboarding.
+    }
     router.push("/dashboard/client");
     router.refresh();
   }

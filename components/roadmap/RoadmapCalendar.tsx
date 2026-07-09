@@ -207,7 +207,7 @@ function WeekDetailModal({
               Détail de la semaine
             </p>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", margin: "2px 0 0" }}>
-              {fmt(weekStart)} — {fmt(weekEnd)}
+              {fmt(weekStart)} à {fmt(weekEnd)}
             </h3>
           </div>
           <button
@@ -511,7 +511,7 @@ export default function RoadmapCalendar({
               return (
                 <span
                   key={obj.id}
-                  title={`${obj.label} — ${obj.target_date}${obj.target_value ? ` (${obj.target_value}${obj.target_unit ? " " + obj.target_unit : ""})` : ""}`}
+                  title={`${obj.label} : ${obj.target_date}${obj.target_value ? ` (${obj.target_value}${obj.target_unit ? " " + obj.target_unit : ""})` : ""}`}
                   style={{
                     position: "absolute",
                     left: `${pct}%`,

@@ -15,7 +15,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 
 const PUSH_MESSAGES = [
   { title: "🗺️ Ta Road Map t'attend", body: "Fixe tes objectifs à 3 mois si ce n'est pas déjà fait.", url: "/dashboard/client/roadmap" },
-  { title: "🏆 Partage ta victoire de la semaine", body: "La communauté est là pour t'encourager — même une petite victoire compte.", url: "/dashboard/client/communaute/victoires" },
+  { title: "🏆 Partage ta victoire de la semaine", body: "La communauté est là pour t'encourager, même une petite victoire compte.", url: "/dashboard/client/communaute/victoires" },
   { title: "🍽️ Check tes macros du jour", body: "Ton calculateur nutrition est prêt en 2 minutes.", url: "/dashboard/client/nutrition" },
   { title: "💪 Log ta dernière séance", body: "Même une séance rapide mérite sa place dans ton logbook.", url: "/dashboard/client/logbook" },
   { title: "📚 Nouvelles ressources dispo", body: "Des guides et recettes gratuites t'attendent.", url: "/dashboard/client/ressources" },
@@ -27,7 +27,7 @@ function emailBody(firstName: string) {
   return `
     <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
       <h2 style="color:#E01E1E;margin-top:0;">Salut ${firstName} 👋</h2>
-      <p>Ton compte EP Coaching est prêt — programme, nutrition, communauté, tout est gratuit et accessible dès maintenant.</p>
+      <p>Ton compte EP Coaching est prêt : programme, nutrition, communauté, tout est gratuit et accessible dès maintenant.</p>
       <p>Deux minutes suffisent pour reprendre où tu t'es arrêté·e.</p>
       <a href="${url}/dashboard/client" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">
         Ouvrir mon espace

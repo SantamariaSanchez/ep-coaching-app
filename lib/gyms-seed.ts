@@ -28,13 +28,13 @@ export const GYMS_SEED: SeedGym[] = [
   // ── Salles indépendantes hardcore / bodybuilding (vérifiées) ──
   { name: "Rem-Gym", city: "Paris (19e/20e)", address: "72 rue de Romainville, 75019 Paris", equipment_notes: "Salle indépendante depuis 1983, plus de 100 postes de musculation, gros plateau fonte, équipement Matrix/Technogym/Precor.", website: "https://www.rem-gym.com", type: "independante" },
   { name: "Blackout Fitness 64", city: "Anglet", address: null, equipment_notes: "Salle indépendante orientée musculation sérieuse, Pays Basque.", website: null, type: "independante" },
-  { name: "European Bodybuilding", city: null, address: null, equipment_notes: "Salle 100% dédiée à la musculation sérieuse, créée par d'anciens compétiteurs — pas de machines gadget.", website: "https://www.europeanbodybuilding.com", type: "independante" },
+  { name: "European Bodybuilding", city: null, address: null, equipment_notes: "Salle 100% dédiée à la musculation sérieuse, créée par d'anciens compétiteurs, pas de machines gadget.", website: "https://www.europeanbodybuilding.com", type: "independante" },
   { name: "Ultraflex Gym", city: "Royaume-Uni", address: null, equipment_notes: "Salle premium orientée bodybuilding, équipement Panatta/Hammer Strength.", website: "https://www.ultraflexgym.co.uk", type: "independante" },
 
   // ── Salles mythiques internationales (référence / inspiration) ──
-  { name: "Metroflex Gym (Arlington, Texas)", city: "Arlington, Texas — USA", address: null, equipment_notes: "La salle culte depuis 1987 où s'entraînait Ronnie Coleman pour ses 8 Mr. Olympia. Ambiance hardcore brute, sans clim.", website: "https://metroflexgym.com", type: "independante" },
-  { name: "Gold's Gym Venice Beach", city: "Venice, Californie — USA", address: null, equipment_notes: "La \"Mecque\" historique du bodybuilding, berceau de l'ère Arnold Schwarzenegger.", website: null, type: "independante" },
-  { name: "Bev Francis Powerhouse Gym", city: "Long Island, New York — USA", address: null, equipment_notes: "Mecque de la côte est américaine, fréquentée par de nombreux pros IFBB.", website: null, type: "independante" },
+  { name: "Metroflex Gym (Arlington, Texas)", city: "Arlington, Texas, USA", address: null, equipment_notes: "La salle culte depuis 1987 où s'entraînait Ronnie Coleman pour ses 8 Mr. Olympia. Ambiance hardcore brute, sans clim.", website: "https://metroflexgym.com", type: "independante" },
+  { name: "Gold's Gym Venice Beach", city: "Venice, Californie, USA", address: null, equipment_notes: "La \"Mecque\" historique du bodybuilding, berceau de l'ère Arnold Schwarzenegger.", website: null, type: "independante" },
+  { name: "Bev Francis Powerhouse Gym", city: "Long Island, New York, USA", address: null, equipment_notes: "Mecque de la côte est américaine, fréquentée par de nombreux pros IFBB.", website: null, type: "independante" },
 
   // ── Grandes enseignes — clubs avec adresse spécifique ──
   { name: "Basic-Fit Paris République", city: "Paris (10e)", address: "13 boulevard Saint-Martin, 75003 Paris", equipment_notes: "Grand club low-cost, nombreuses machines, cardio bien fourni, cours collectifs.", website: "https://www.basic-fit.com", type: "commerciale" },

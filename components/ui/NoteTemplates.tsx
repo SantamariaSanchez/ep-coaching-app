@@ -44,7 +44,7 @@ Prends le temps de répondre précisément, c'est ce qui me permet d'ajuster au 
 
 Je viens de regarder tes données de la semaine et je voulais te dire : excellent travail.
 
-Les chiffres parlent d'eux-mêmes — tu es dans la bonne direction. Continue comme ça, la régularité est la clé et tu le prouvent semaine après semaine.
+Les chiffres parlent d'eux-mêmes, tu es dans la bonne direction. Continue comme ça, la régularité est la clé et tu le prouvent semaine après semaine.
 
 On reste sur le même cap, keep going 🔥`,
     },
@@ -58,7 +58,7 @@ On reste sur le même cap, keep going 🔥`,
 
 Je voulais revenir sur cette semaine. Les résultats ne sont pas au niveau de ce qu'on a prévu ensemble, et je pense qu'on doit en parler.
 
-Ce n'est pas une critique — c'est mon rôle de te signaler quand on dévie du plan. Ce qui compte, c'est ce qu'on fait maintenant.
+Ce n'est pas une critique, c'est mon rôle de te signaler quand on dévie du plan. Ce qui compte, c'est ce qu'on fait maintenant.
 
 Qu'est-ce qui s'est passé cette semaine ? Dis-moi franchement, qu'on puisse ajuster ensemble si nécessaire.`,
     },
@@ -86,7 +86,7 @@ N'hésite pas si tu as des questions sur ces changements. L'objectif est toujour
       subject: "Tu es à mi-chemin",
       body: `${first} 🔥
 
-Tu es exactement à mi-chemin du programme. C'est souvent là que c'est le plus dur mentalement — les premiers résultats sont là mais la fin semble encore loin.
+Tu es exactement à mi-chemin du programme. C'est souvent là que c'est le plus dur mentalement, les premiers résultats sont là mais la fin semble encore loin.
 
 Je voulais juste te rappeler pourquoi tu as commencé. Tu as déjà accompli énormément et chaque semaine te rapproche de là où tu veux être.
 
@@ -106,7 +106,7 @@ Cette semaine, on met en place un refeed. Voici ce que ça signifie :
 🛌 Objectif : recharger les réserves de glycogène et relancer les hormones
 ⚡ Tu devrais te sentir plus énergique à l'entraînement
 
-Ce n'est pas un cheat meal, ce n'est pas une semaine off — c'est une stratégie réfléchie pour optimiser tes résultats long terme.
+Ce n'est pas un cheat meal, ce n'est pas une semaine off, c'est une stratégie réfléchie pour optimiser tes résultats long terme.
 
 Je t'ai mis les détails dans les notes. On reprend le déficit la semaine suivante 🎯`,
     },

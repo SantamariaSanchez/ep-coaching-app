@@ -171,7 +171,7 @@ export default function StepsClient({
           Ma routine du jour
         </p>
         {items.length === 0 ? (
-          <p className="text-xs text-[#F5EDED]/30 italic mb-3">Aucune habitude programmée — ajoute des créneaux de marche dans ta journée.</p>
+          <p className="text-xs text-[#F5EDED]/30 italic mb-3">Aucune habitude programmée, ajoute des créneaux de marche dans ta journée.</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {items.map((item) => {

@@ -19,6 +19,8 @@ import {
   Video,
   Loader2,
   X,
+  Pencil,
+  StickyNote,
 } from "lucide-react";
 import {
   BarChart,
@@ -35,9 +37,10 @@ import {
   EQUIPMENT_COLORS,
   detectWarmupType,
 } from "@/lib/warmup-data";
+import ExercisePicker from "@/components/client/ExercisePicker";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { getTips } from "@/lib/execution-tips";
-import { VOLUME_LANDMARKS, MUSCLE_GROUPS } from "@/lib/volume-data";
+import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 
@@ -76,6 +79,8 @@ interface ExerciseState {
   sets: SetState[];
   showTips: boolean;
   showHistory: boolean;
+  showNotes: boolean;
+  clientNotes: string;
 }
 
 type Step = "warmup" | "session" | "recap";
@@ -172,7 +177,74 @@ function saveCustomExercises(sessionId: string, list: Exercise[]) {
   } catch {}
 }
 
-function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): ExerciseState[] {
+// Notes libres du client sur un exercice (consignes, douleur, variante...) —
+// distinctes des notes du coach déjà présentes sur l'exercice programmé.
+function exerciseNotesKey(sessionId: string) {
+  return `ep-exercise-notes-${sessionId}`;
+}
+
+function loadExerciseNotes(sessionId: string): Record<string, string> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(exerciseNotesKey(sessionId));
+    return raw ? (JSON.parse(raw) as Record<string, string>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveExerciseNote(sessionId: string, exerciseName: string, note: string) {
+  try {
+    const all = loadExerciseNotes(sessionId);
+    if (note) all[exerciseName] = note;
+    else delete all[exerciseName];
+    localStorage.setItem(exerciseNotesKey(sessionId), JSON.stringify(all));
+  } catch {}
+}
+
+// Ordre d'affichage des exercices dans la séance — modifiable par le client
+// (flèches haut/bas), persisté pour survivre à un refresh/retour sur la page.
+function exerciseOrderKey(sessionId: string) {
+  return `ep-exercise-order-${sessionId}`;
+}
+
+function loadExerciseOrder(sessionId: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(exerciseOrderKey(sessionId));
+    return raw ? (JSON.parse(raw) as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveExerciseOrder(sessionId: string, order: string[]) {
+  try {
+    localStorage.setItem(exerciseOrderKey(sessionId), JSON.stringify(order));
+  } catch {}
+}
+
+function applyExerciseOrder(exercises: Exercise[], order: string[]): Exercise[] {
+  if (order.length === 0) return exercises;
+  const byId = new Map(exercises.map((e) => [e.id, e]));
+  const ordered: Exercise[] = [];
+  for (const id of order) {
+    const ex = byId.get(id);
+    if (ex) {
+      ordered.push(ex);
+      byId.delete(id);
+    }
+  }
+  // Exercices non couverts par l'ordre sauvegardé (nouveaux ajouts) — à la suite.
+  ordered.push(...byId.values());
+  return ordered;
+}
+
+function buildExerciseState(
+  exercises: Exercise[],
+  existingSets: SessionSet[],
+  clientNotes: Record<string, string>
+): ExerciseState[] {
   return exercises.map((ex) => {
     const targetSets = ex.sets ?? 3;
     const existing = existingSets.filter((s) => s.exercise_name === ex.name);
@@ -194,9 +266,11 @@ function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): 
         hasVideo: !!s.video_url,
       });
     }
-    // Fill remaining empty slots up to target
+    // Fill remaining empty slots up to target — jamais au-delà : sinon
+    // rouvrir la séance (retour depuis un autre onglet, refresh) rajoutait à
+    // chaque fois un set vide supplémentaire que personne n'avait demandé.
     const existingCount = sets.length;
-    for (let i = existingCount; i < Math.max(targetSets, existingCount + 1); i++) {
+    for (let i = existingCount; i < targetSets; i++) {
       sets.push({
         localId: newLocalId(),
         setNumber: i + 1,
@@ -211,7 +285,14 @@ function buildExerciseState(exercises: Exercise[], existingSets: SessionSet[]): 
         hasVideo: false,
       });
     }
-    return { exercise: ex, sets, showTips: false, showHistory: false };
+    return {
+      exercise: ex,
+      sets,
+      showTips: false,
+      showHistory: false,
+      showNotes: false,
+      clientNotes: clientNotes[ex.name] ?? "",
+    };
   });
 }
 
@@ -311,7 +392,7 @@ function WarmupStep({
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Échauffement — {dayLabel}
+            Échauffement : {dayLabel}
           </p>
           <div className="flex items-center gap-2">
             <Timer size={14} className="text-[#E01E1E]" />
@@ -493,14 +574,14 @@ function RestTimerOverlay({
         }}
       />
       <div
-        className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 pb-8 space-y-5 overflow-y-auto"
-        style={{ maxHeight: "88dvh" }}
+        className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 space-y-5 overflow-y-auto"
+        style={{ maxHeight: "88dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
       >
         {timer.mentalStep === "hidden" && (
           <>
             <div className="text-center">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-                Repos — {getSuggestedRest(0).label}
+                Repos : {getSuggestedRest(0).label}
               </p>
               <p className="text-5xl font-black text-white tabular-nums">
                 {formatTime(elapsed)}
@@ -543,7 +624,7 @@ function RestTimerOverlay({
               {/* Physical */}
               <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
                 <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
-                  💪 Physiquement — Tes muscles ont récupéré ?
+                  💪 Physiquement, tes muscles ont récupéré ?
                 </p>
                 <div className="flex gap-2">
                   {[true, false].map((v) => (
@@ -567,7 +648,7 @@ function RestTimerOverlay({
               {/* Mental */}
               <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
                 <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
-                  🧠 Mentalement — Tu es concentré et prêt à exploser ce set ?
+                  🧠 Mentalement, tu es concentré et prêt à exploser ce set ?
                 </p>
                 <div className="flex gap-2">
                   {[true, false].map((v) => (
@@ -635,6 +716,7 @@ function SetRow({
   onChange,
   onValidate,
   onRemove,
+  onUnvalidate,
 }: {
   set: SetState;
   exercise: Exercise;
@@ -644,6 +726,7 @@ function SetRow({
   onChange: (patch: Partial<SetState>) => void;
   onValidate: () => void;
   onRemove: () => void;
+  onUnvalidate: () => void;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
   const isPRCandidate =
@@ -696,7 +779,15 @@ function SetRow({
             🏆 PR !
           </span>
         )}
-        {!set.validated && (
+        {set.validated ? (
+          <button
+            onClick={onUnvalidate}
+            className="ml-auto flex items-center gap-1 p-1 rounded-md text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
+            title="Modifier ce set"
+          >
+            <Pencil size={11} />
+          </button>
+        ) : (
           <button
             onClick={onRemove}
             className="ml-auto p-1 rounded-md text-[#F5EDED]/25 hover:text-red-400 transition-colors"
@@ -711,20 +802,20 @@ function SetRow({
         <div className="space-y-2">
           <div className="flex gap-4 text-sm font-black text-white">
             <span>
-              {set.weightKg || "—"}
+              {set.weightKg || "N/A"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 kg
               </span>
             </span>
             <span>
-              {set.repsActual || "—"}
+              {set.repsActual || "N/A"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 reps
               </span>
             </span>
             <span>
               RIR{" "}
-              <span className="text-[#E01E1E]">{set.rirActual || "—"}</span>
+              <span className="text-[#E01E1E]">{set.rirActual || "N/A"}</span>
             </span>
             {set.standardizationScore && (
               <span className="text-[10px] text-[#F5EDED]/40">
@@ -813,7 +904,7 @@ function SetRow({
                 onChange={(e) => onChange({ rirActual: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
-                <option value="">—</option>
+                <option value="">N/A</option>
                 {[0, 1, 2, 3, 4, 5].map((v) => (
                   <option key={v} value={v}>
                     RIR {v}
@@ -833,10 +924,10 @@ function SetRow({
                 }
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
-                <option value="">—</option>
+                <option value="">N/A</option>
                 {[1, 2, 3, 4, 5].map((v) => (
                   <option key={v} value={v}>
-                    {v} — {STANDARDIZATION_LABELS[String(v)]}
+                    {v} : {STANDARDIZATION_LABELS[String(v)]}
                   </option>
                 ))}
               </select>
@@ -856,80 +947,6 @@ function SetRow({
   );
 }
 
-function AddExerciseForm({
-  onAdd,
-}: {
-  onAdd: (input: { name: string; muscleGroup: string | null }) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [muscleGroup, setMuscleGroup] = useState("");
-
-  function submit() {
-    if (!name.trim()) return;
-    onAdd({ name: name.trim(), muscleGroup: muscleGroup || null });
-    setName("");
-    setMuscleGroup("");
-    setOpen(false);
-  }
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
-      >
-        <Plus size={15} strokeWidth={2} />
-        Ajouter un exercice
-      </button>
-    );
-  }
-
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4 space-y-3">
-      <input
-        autoFocus
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && submit()}
-        placeholder="Nom de l'exercice (ex. Développé couché)"
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
-      />
-      <select
-        value={muscleGroup}
-        onChange={(e) => setMuscleGroup(e.target.value)}
-        className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
-      >
-        <option value="">Groupe musculaire (optionnel)</option>
-        {MUSCLE_GROUPS.map((g) => (
-          <option key={g} value={g}>
-            {g}
-          </option>
-        ))}
-      </select>
-      <div className="flex gap-2">
-        <button
-          onClick={submit}
-          disabled={!name.trim()}
-          className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
-        >
-          Ajouter
-        </button>
-        <button
-          onClick={() => {
-            setOpen(false);
-            setName("");
-            setMuscleGroup("");
-          }}
-          className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 px-4 transition-colors"
-        >
-          Annuler
-        </button>
-      </div>
-    </div>
-  );
-}
-
 function ExerciseCard({
   exState,
   prevWeight,
@@ -937,8 +954,12 @@ function ExerciseCard({
   sessionId,
   onUpdate,
   onValidateSet,
+  onUnvalidateSet,
   onRemoveExercise,
   onRemoveSet,
+  onMoveUp,
+  onMoveDown,
+  onNotesChange,
 }: {
   exState: ExerciseState;
   prevWeight: PrevWeight | null;
@@ -946,10 +967,17 @@ function ExerciseCard({
   sessionId: string;
   onUpdate: (patch: Partial<ExerciseState>) => void;
   onValidateSet: (setIdx: number) => void;
+  onUnvalidateSet: (setIdx: number) => void;
   onRemoveExercise: () => void;
   onRemoveSet: (setIdx: number) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  onNotesChange: (notes: string) => void;
 }) {
   const tips = getTips(exState.exercise.name);
+  // Les exercices ajoutés à la volée n'ont pas de nombre de séries cible
+  // fiable (défaut arbitraire) — l'afficher induisait en erreur.
+  const isCustomExercise = exState.exercise.id.startsWith("local-");
 
   return (
     <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
@@ -965,7 +993,7 @@ function ExerciseCard({
                 {exState.exercise.muscle_group}
               </span>
             )}
-            {exState.exercise.sets && (
+            {!isCustomExercise && exState.exercise.sets && (
               <span className="text-[9px] text-[#F5EDED]/30">
                 {exState.exercise.sets} séries
                 {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
@@ -976,6 +1004,26 @@ function ExerciseCard({
           </div>
         </div>
         <div className="flex gap-1">
+          {(onMoveUp || onMoveDown) && (
+            <div className="flex flex-col border border-[#890404]/20 rounded-lg overflow-hidden mr-0.5">
+              <button
+                onClick={onMoveUp}
+                disabled={!onMoveUp}
+                className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors"
+                title="Monter l'exercice"
+              >
+                <ChevronUp size={12} />
+              </button>
+              <button
+                onClick={onMoveDown}
+                disabled={!onMoveDown}
+                className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors border-t border-[#890404]/20"
+                title="Descendre l'exercice"
+              >
+                <ChevronDown size={12} />
+              </button>
+            </div>
+          )}
           <button
             onClick={() => onUpdate({ showTips: !exState.showTips })}
             className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
@@ -999,6 +1047,19 @@ function ExerciseCard({
             <BarChart2 size={12} />
           </button>
           <button
+            onClick={() => onUpdate({ showNotes: !exState.showNotes })}
+            className={`p-1.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border transition-colors ${
+              exState.showNotes
+                ? "bg-amber-500/15 text-amber-400 border-amber-500/25"
+                : exState.clientNotes
+                ? "text-amber-400/70 border-amber-500/20"
+                : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
+            }`}
+            title="Notes"
+          >
+            <StickyNote size={12} />
+          </button>
+          <button
             onClick={() => {
               if (confirm(`Retirer "${exState.exercise.name}" de cette séance ?`)) {
                 onRemoveExercise();
@@ -1011,6 +1072,22 @@ function ExerciseCard({
           </button>
         </div>
       </div>
+
+      {/* Notes panel */}
+      {exState.showNotes && (
+        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+            Ta note sur cet exercice
+          </p>
+          <textarea
+            value={exState.clientNotes}
+            onChange={(e) => onNotesChange(e.target.value)}
+            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..."
+            rows={2}
+            className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+          />
+        </div>
+      )}
 
       {/* Tips panel */}
       {exState.showTips && (
@@ -1082,6 +1159,7 @@ function ExerciseCard({
               onUpdate({ sets: newSets });
             }}
             onValidate={() => onValidateSet(idx)}
+            onUnvalidate={() => onUnvalidateSet(idx)}
             onRemove={() => onRemoveSet(idx)}
           />
         ))}
@@ -1193,9 +1271,14 @@ export default function SessionView({
       .then((data: InitData) => {
         setInitData(data);
         const customExercises = loadCustomExercises(sessionId);
-        const exStates = buildExerciseState(
+        const combined = applyExerciseOrder(
           [...data.exercises, ...customExercises],
-          data.existingSets
+          loadExerciseOrder(sessionId)
+        );
+        const exStates = buildExerciseState(
+          combined,
+          data.existingSets,
+          loadExerciseNotes(sessionId)
         );
         setExercises(exStates);
 
@@ -1285,7 +1368,7 @@ export default function SessionView({
       if (Notification.permission !== "granted") return;
       try {
         new Notification("Séance en cours 💪", {
-          body: "Reviens dans l'app pour continuer — seul \"Terminer\" y met fin.",
+          body: "Reviens dans l'app pour continuer. Seul \"Terminer\" y met fin.",
           tag: "ep-active-session",
           icon: "/icon-192.png",
         });
@@ -1366,6 +1449,7 @@ export default function SessionView({
               ? parseInt(set.standardizationScore)
               : null,
             is_pr: isPR,
+            notes: exState.clientNotes || null,
           }),
         });
         const { id } = await res.json();
@@ -1384,23 +1468,9 @@ export default function SessionView({
           isPR,
           dbId,
         };
-        // Auto-add next empty set if this was the last
-        const allValidated = newSets.every((s) => s.validated);
-        if (allValidated) {
-          newSets.push({
-            localId: newLocalId(),
-            setNumber: newSets.length + 1,
-            weightKg: "",
-            repsActual: "",
-            rirActual: "",
-            standardizationScore: "",
-            validated: false,
-            isPR: false,
-            dbId: null,
-            restDuration: null,
-            hasVideo: false,
-          });
-        }
+        // Pas d'ajout automatique d'un set vide supplémentaire ici — seul le
+        // bouton "Ajouter un set" doit en créer un, sinon ça apparaît comme
+        // un set rajouté tout seul sans que le client ait rien demandé.
         next[exIdx] = { ...next[exIdx], sets: newSets };
         return next;
       });
@@ -1478,7 +1548,14 @@ export default function SessionView({
       }));
       setExercises((prev) => [
         ...prev,
-        { exercise: newExercise, sets, showTips: false, showHistory: false },
+        {
+          exercise: newExercise,
+          sets,
+          showTips: false,
+          showHistory: false,
+          showNotes: false,
+          clientNotes: "",
+        },
       ]);
       saveCustomExercises(sessionId, [...loadCustomExercises(sessionId), newExercise]);
     },
@@ -1514,6 +1591,63 @@ export default function SessionView({
       return next;
     });
   }, []);
+
+  // Dévalider un set déjà validé — repasse en mode édition (les valeurs
+  // saisies restent modifiables) et supprime la ligne déjà enregistrée en
+  // base pour éviter un doublon si le client revalide ensuite.
+  const handleUnvalidateSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      setExercises((prev) => {
+        const set = prev[exIdx].sets[setIdx];
+        if (set.dbId) {
+          fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, {
+            method: "DELETE",
+          }).catch(() => {});
+        }
+        const next = [...prev];
+        const newSets = [...next[exIdx].sets];
+        newSets[setIdx] = {
+          ...newSets[setIdx],
+          validated: false,
+          isPR: false,
+          dbId: null,
+        };
+        next[exIdx] = { ...next[exIdx], sets: newSets };
+        return next;
+      });
+    },
+    [sessionId]
+  );
+
+  // Réordonner les exercices de la séance (flèches haut/bas) — persisté pour
+  // survivre à un refresh, sans toucher à l'ordre défini dans le programme.
+  const handleMoveExercise = useCallback(
+    (exIdx: number, dir: -1 | 1) => {
+      setExercises((prev) => {
+        const target = exIdx + dir;
+        if (target < 0 || target >= prev.length) return prev;
+        const next = [...prev];
+        [next[exIdx], next[target]] = [next[target], next[exIdx]];
+        saveExerciseOrder(sessionId, next.map((e) => e.exercise.id));
+        return next;
+      });
+    },
+    [sessionId]
+  );
+
+  // Notes libres du client sur un exercice — persistées et jointes aux sets
+  // envoyés en base pour rester visibles côté coach.
+  const handleExerciseNotesChange = useCallback(
+    (exIdx: number, exerciseName: string, notes: string) => {
+      saveExerciseNote(sessionId, exerciseName, notes);
+      setExercises((prev) => {
+        const next = [...prev];
+        next[exIdx] = { ...next[exIdx], clientNotes: notes };
+        return next;
+      });
+    },
+    [sessionId]
+  );
 
   // Compute volume per muscle group
   const volumeByMuscle: Record<string, number> = {};
@@ -1723,8 +1857,8 @@ export default function SessionView({
         <div className="grid grid-cols-3 gap-2 mb-6">
           {[
             { label: "Sets", value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
-            { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "—", icon: Activity, color: "#4ade80" },
-            { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "—", icon: Star, color: "#fbbf24" },
+            { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "N/A", icon: Activity, color: "#4ade80" },
+            { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "N/A", icon: Star, color: "#fbbf24" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
@@ -1754,7 +1888,7 @@ export default function SessionView({
                   key={i}
                   className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-full border border-amber-500/20"
                 >
-                  {pr.exerciseName} — {pr.weightKg} kg
+                  {pr.exerciseName} : {pr.weightKg} kg
                 </span>
               ))}
             </div>
@@ -1788,15 +1922,15 @@ export default function SessionView({
           {session.is_completed && (
             <div className="flex gap-4">
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.energy_level ?? "—"}</p>
+                <p className="text-2xl font-black text-white">{session.energy_level ?? "N/A"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Énergie</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.pump ?? "—"}</p>
+                <p className="text-2xl font-black text-white">{session.pump ?? "N/A"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Pump</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.general_feeling ?? "—"}</p>
+                <p className="text-2xl font-black text-white">{session.general_feeling ?? "N/A"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Feeling</p>
               </div>
             </div>
@@ -1978,7 +2112,7 @@ export default function SessionView({
         {exercises.length === 0 && (
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-8 text-center">
             <p className="text-sm text-[#F5EDED]/40">
-              Séance libre — ajoute tes exercices ci-dessous
+              Séance libre, ajoute tes exercices ci-dessous
             </p>
           </div>
         )}
@@ -2002,16 +2136,22 @@ export default function SessionView({
               })
             }
             onValidateSet={(setIdx) => handleValidateSet(exIdx, setIdx)}
+            onUnvalidateSet={(setIdx) => handleUnvalidateSet(exIdx, setIdx)}
             onRemoveExercise={() => handleRemoveExercise(exIdx)}
             onRemoveSet={(setIdx) => handleRemoveSet(exIdx, setIdx)}
+            onMoveUp={exIdx > 0 ? () => handleMoveExercise(exIdx, -1) : undefined}
+            onMoveDown={exIdx < exercises.length - 1 ? () => handleMoveExercise(exIdx, 1) : undefined}
+            onNotesChange={(notes) => handleExerciseNotesChange(exIdx, exState.exercise.name, notes)}
           />
         ))}
 
-        <AddExerciseForm onAdd={handleAddExercise} />
+        <ExercisePicker onAdd={handleAddExercise} />
       </div>
 
-      {/* Terminate button (fixed bottom) */}
-      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+56px)] md:bottom-4 left-0 right-0 px-4 z-30">
+      {/* Terminate button (fixed bottom) — décalé au-dessus de la nav mobile
+          (72px + safe-area) avec un z-index supérieur, sinon le bas du
+          bouton se retrouvait caché sous la barre d'onglets. */}
+      <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+84px)] md:bottom-4 left-0 right-0 px-4 z-50">
         <div className="max-w-md mx-auto">
           <button
             onClick={() => setStep("recap")}

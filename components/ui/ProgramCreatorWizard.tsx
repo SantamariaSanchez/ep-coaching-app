@@ -242,7 +242,7 @@ export default function ProgramCreatorWizard({
           {step === "result" && (
             <div>
               {!result ? (
-                <p className="text-sm text-[#F5EDED]/40 text-center py-10">Erreur de génération — réessaie.</p>
+                <p className="text-sm text-[#F5EDED]/40 text-center py-10">Erreur de génération, réessaie.</p>
               ) : (
                 <div>
                   <div className="flex items-center gap-2 mb-4">
@@ -304,7 +304,7 @@ export default function ProgramCreatorWizard({
                   )}
                   {saveStatus === "saved" && (
                     <p className="text-[11px] text-[#F5EDED]/35 mt-2">
-                      Remplace ton programme actif — visible dans l&apos;onglet Programme.
+                      Remplace ton programme actif, visible dans l&apos;onglet Programme.
                     </p>
                   )}
                 </div>
