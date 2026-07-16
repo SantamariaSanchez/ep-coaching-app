@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   Timer,
@@ -2162,14 +2163,20 @@ export default function SessionView({
         </div>
       </div>
 
-      {/* Rest timer overlay */}
-      {restTimer && (
-        <RestTimerOverlay
-          timer={restTimer}
-          onUpdate={(patch) => setRestTimer((prev) => prev ? { ...prev, ...patch } : null)}
-          onClose={handleRestClose}
-        />
-      )}
+      {/* Rest timer overlay — rendu via portail dans <body> : la nav du bas vit
+          hors du stacking context de <main> (position relative + z-index),
+          donc son z-index dépassait celui de l'overlay peu importe sa valeur
+          ici, et le recouvrait complètement en bas d'écran. */}
+      {restTimer &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <RestTimerOverlay
+            timer={restTimer}
+            onUpdate={(patch) => setRestTimer((prev) => prev ? { ...prev, ...patch } : null)}
+            onClose={handleRestClose}
+          />,
+          document.body
+        )}
     </div>
   );
 }

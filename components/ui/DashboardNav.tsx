@@ -9,7 +9,7 @@ import {
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
-  Search, Newspaper, FlaskConical, Microscope,
+  Search, Newspaper, FlaskConical, Microscope, Menu, X,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -67,7 +67,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "profile", "tasks", "live"],
+    matchSegments: ["messages", "checkin", "reminders", "tasks", "live"],
     badge: "messages",
   },
   {
@@ -123,7 +123,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile"],
+    matchSegments: ["ressources", "formations", "recettes", "abonnement"],
   },
 ];
 
@@ -176,9 +176,12 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
   {
     group: "Mon coaching",
     items: [
-      { label: "Mon profil", icon: User, segment: "profile" },
       { label: "Réserver un appel avec un coach", icon: Crown, segment: "abonnement" },
     ],
+  },
+  {
+    group: "Compte",
+    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
   },
 ];
 
@@ -227,7 +230,7 @@ const COACH_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/coach/communaute",
-    matchSegments: ["communaute", "profile", "live"],
+    matchSegments: ["communaute", "live"],
   },
 ];
 
@@ -282,7 +285,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
-      { label: "Mon profil", icon: User, segment: "profile" },
     ],
   },
   {
@@ -303,6 +305,10 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
       { label: "Mindset",        icon: Brain,          segment: "moi/mindset" },
     ],
+  },
+  {
+    group: "Compte",
+    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
   },
 ];
 
@@ -344,7 +350,6 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
       { label: "Mes tâches", icon: ListChecks,  segment: "tasks" },
       { label: "Check-in", icon: ClipboardList, segment: "checkin" },
-      { label: "Profil",   icon: User,          segment: "profile" },
       { label: "Lives & appels", icon: Video,   segment: "live" },
     ],
   },
@@ -373,6 +378,10 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Mon coaching", icon: Crown, segment: "abonnement" },
     ],
+  },
+  {
+    group: "Compte",
+    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
   },
 ];
 
@@ -435,7 +444,15 @@ export default function DashboardNav({
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
     useNavState(isFreeTier);
   const router = useRouter();
+  const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  // Ferme le tiroir de nav mobile dès qu'on change de page — sinon il reste
+  // ouvert par-dessus la nouvelle page après un clic sur un lien.
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
 
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
@@ -768,9 +785,57 @@ export default function DashboardNav({
         }}
       >
         {!isDesktop && (
-          <div style={{ position: "fixed", top: "calc(14px + env(safe-area-inset-top, 0px))", right: 14, zIndex: 101 }}>
-            <NotificationBell variant="mobile" />
-          </div>
+          <>
+            <button
+              onClick={() => setDrawerOpen(true)}
+              aria-label="Ouvrir le menu"
+              style={{
+                position: "fixed",
+                top: "calc(14px + env(safe-area-inset-top, 0px))",
+                left: 14,
+                zIndex: 101,
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                background: "rgba(6,0,0,0.7)",
+                border: "1px solid rgba(224,30,30,0.15)",
+                backdropFilter: "blur(12px)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "rgba(245,237,237,0.7)",
+              }}
+            >
+              <Menu size={17} />
+            </button>
+            <div style={{ position: "fixed", top: "calc(14px + env(safe-area-inset-top, 0px))", right: 14, zIndex: 101, display: "flex", alignItems: "center", gap: 8 }}>
+              {/* Bouton profil — auparavant tassé dans l'onglet Communauté
+                  (coach) ou l'onglet Coach/Contenu (client) comme une entrée
+                  de plus parmi d'autres, ce qui le rendait dur à trouver
+                  malgré son usage fréquent (compte, déconnexion...). Un
+                  bouton dédié dans l'en-tête est plus direct qu'un onglet
+                  du bas dédié, qui aurait surchargé une barre déjà pleine. */}
+              <Link
+                href={`${base}/profile`}
+                aria-label="Mon profil"
+                style={{
+                  width: 38,
+                  height: 38,
+                  borderRadius: 12,
+                  background: isSidebarActive("profile") ? "rgba(224,30,30,0.18)" : "rgba(6,0,0,0.7)",
+                  border: isSidebarActive("profile") ? "1px solid rgba(224,30,30,0.4)" : "1px solid rgba(224,30,30,0.15)",
+                  backdropFilter: "blur(12px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: isSidebarActive("profile") ? "#E01E1E" : "rgba(245,237,237,0.7)",
+                }}
+              >
+                <User size={17} />
+              </Link>
+              <NotificationBell variant="mobile" />
+            </div>
+          </>
         )}
 
         {/* Mobile secondary tab strip — exposes every sidebar destination
@@ -953,6 +1018,70 @@ export default function DashboardNav({
           })}
         </div>
       </nav>
+
+      {/* ── Mobile nav drawer — accès complet et organisé par groupes,
+          identique au sommaire desktop, plutôt que de tout tasser dans les
+          onglets du bas + la bande d'onglets secondaires. ────────────────── */}
+      {!isDesktop && drawerOpen && (
+        <div className="fixed inset-0 z-[200] flex">
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={() => setDrawerOpen(false)}
+          />
+          <div
+            className="relative w-[82%] max-w-[320px] h-full bg-[#0a0000] border-r border-[#890404]/20 overflow-y-auto"
+            style={{ paddingTop: "calc(14px + env(safe-area-inset-top, 0px))" }}
+          >
+            <div className="flex items-center justify-between px-4 pb-4">
+              <EPLogo size="sm" showCoaching />
+              <button
+                onClick={() => setDrawerOpen(false)}
+                className="p-2 rounded-lg text-[#F5EDED]/50 hover:text-white transition-colors"
+                aria-label="Fermer le menu"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <nav className="px-3 pb-8">
+              {sidebar.map((group, gi) => (
+                <div key={gi} className="mb-1">
+                  {group.group && (
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/20 px-2 pt-4 pb-1.5">
+                      {group.group}
+                    </p>
+                  )}
+                  {group.items.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
+                    const active = isSidebarActive(segment);
+                    const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
+                    const count = getBadgeCount(badge);
+                    return (
+                      <Link
+                        key={href}
+                        href={href}
+                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-colors ${
+                          active
+                            ? "bg-[#E01E1E]/12 text-white font-bold"
+                            : "text-[#F5EDED]/50 hover:bg-[#890404]/10 hover:text-[#F5EDED]/80"
+                        }`}
+                      >
+                        <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? "text-[#E01E1E]" : ""} />
+                        <span className="flex-1">{label}</span>
+                        {locked && <Lock size={11} className="text-[#F5EDED]/25" />}
+                        {count > 0 && (
+                          <span className="w-4 h-4 rounded-full bg-[#E01E1E] text-white text-[9px] font-bold flex items-center justify-center">
+                            {count > 9 ? "9+" : count}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
 
       <ActiveSessionBanner />
     </>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { Search, Plus, X, Dumbbell } from "lucide-react";
 import {
   LIBRARY_MUSCLE_GROUPS,
@@ -175,7 +176,12 @@ export default function ExercisePicker({ onAdd }: Props) {
     );
   }
 
-  return (
+  // Portail vers <body> : la nav du bas vit hors du stacking context de
+  // <main> (position relative + z-index) qui englobe ce composant, donc son
+  // z-index passait devant celui de cette modale peu importe sa valeur ici.
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
       <div
@@ -291,6 +297,7 @@ export default function ExercisePicker({ onAdd }: Props) {
           </>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
