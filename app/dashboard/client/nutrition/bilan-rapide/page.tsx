@@ -3,7 +3,7 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getNutritionProfile, getLast30DaysLogs, getAllFoods } from "@/utils/nutrition";
 import NutritionBilanQuiz from "@/components/ui/NutritionBilanQuiz";
-import { addFoodLog } from "../actions";
+import { addFoodLog, createCustomFood } from "../actions";
 import { ChevronLeft } from "lucide-react";
 
 export default async function BilanRapidePage() {
@@ -61,6 +61,7 @@ export default async function BilanRapidePage() {
         historyLogs={historyLogs}
         allFoods={allFoods}
         addFoodLog={addFoodLog}
+        createCustomFood={createCustomFood}
       />
     </div>
   );

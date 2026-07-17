@@ -91,6 +91,15 @@ interface Props {
     fats: number;
     loggedAt: string;
   }) => Promise<{ id?: string; error?: string }>;
+  createCustomFood: (params: {
+    name: string;
+    category: string;
+    calories_per_100: number;
+    proteins_per_100: number;
+    carbs_per_100: number;
+    fats_per_100: number;
+    fibers_per_100: number;
+  }) => Promise<{ food?: Food; error?: string }>;
 }
 
 type Phase = "slots" | "meal" | "summary" | "done";
@@ -101,6 +110,7 @@ export default function NutritionBilanQuiz({
   historyLogs,
   allFoods,
   addFoodLog,
+  createCustomFood,
 }: Props) {
   // ── Phase & navigation state ────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("slots");
@@ -112,6 +122,15 @@ export default function NutritionBilanQuiz({
   const [searchQ, setSearchQ] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
+
+  // ── Custom food creation (when search finds nothing) ───────────────────────
+  const [foods, setFoods] = useState<Food[]>(allFoods);
+  const [showCreateFood, setShowCreateFood] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    name: "", calories: "", proteins: "", carbs: "", fats: "",
+  });
+  const [creatingFood, setCreatingFood] = useState(false);
+  const [createFoodError, setCreateFoodError] = useState<string | null>(null);
 
   // ── Submission state ────────────────────────────────────────────────────────
   const [submitting, setSubmitting] = useState(false);
@@ -158,10 +177,48 @@ export default function NutritionBilanQuiz({
   const searchResults = useMemo(() => {
     const q = searchQ.toLowerCase().trim();
     if (!q) return [];
-    return allFoods
+    return foods
       .filter((f) => f.name.toLowerCase().includes(q))
       .slice(0, 10);
-  }, [allFoods, searchQ]);
+  }, [foods, searchQ]);
+
+  function openCreateFood() {
+    setCreateForm({ name: searchQ.trim(), calories: "", proteins: "", carbs: "", fats: "" });
+    setCreateFoodError(null);
+    setShowCreateFood(true);
+  }
+
+  async function handleCreateFood() {
+    const calories = parseFloat(createForm.calories) || 0;
+    if (!createForm.name.trim() || calories <= 0) {
+      setCreateFoodError("Nom et calories obligatoires.");
+      return;
+    }
+    setCreatingFood(true);
+    setCreateFoodError(null);
+
+    const result = await createCustomFood({
+      name: createForm.name.trim(),
+      category: "Divers",
+      calories_per_100: calories,
+      proteins_per_100: parseFloat(createForm.proteins) || 0,
+      carbs_per_100: parseFloat(createForm.carbs) || 0,
+      fats_per_100: parseFloat(createForm.fats) || 0,
+      fibers_per_100: 0,
+    });
+
+    setCreatingFood(false);
+
+    if (result.error || !result.food) {
+      setCreateFoodError(result.error ?? "Erreur lors de la création.");
+      return;
+    }
+
+    setFoods((prev) => [result.food!, ...prev]);
+    toggleFood(result.food);
+    setShowCreateFood(false);
+    setSearchQ("");
+  }
 
   // ── Totals for summary ───────────────────────────────────────────────────────
   const totals = useMemo(() => {
@@ -205,6 +262,7 @@ export default function NutritionBilanQuiz({
   function goNextMeal() {
     setSearchQ("");
     setShowSearch(false);
+    setShowCreateFood(false);
     if (currentSlotIdx < activeMealKeys.length - 1) {
       setCurrentSlotIdx((i) => i + 1);
     } else {
@@ -215,6 +273,7 @@ export default function NutritionBilanQuiz({
   function goPrevMeal() {
     setSearchQ("");
     setShowSearch(false);
+    setShowCreateFood(false);
     if (currentSlotIdx > 0) {
       setCurrentSlotIdx((i) => i - 1);
     } else {
@@ -531,7 +590,7 @@ export default function NutritionBilanQuiz({
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-1">
                 Rechercher un aliment
               </p>
-              <button onClick={() => { setShowSearch(false); setSearchQ(""); }} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
                 <X size={13} />
               </button>
             </div>
@@ -544,8 +603,17 @@ export default function NutritionBilanQuiz({
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 mb-2"
             />
             <div className="space-y-1 max-h-48 overflow-y-auto">
-              {searchResults.length === 0 && searchQ.trim() && (
-                <p className="text-xs text-[#F5EDED]/30 py-4 text-center">Aucun résultat</p>
+              {searchResults.length === 0 && searchQ.trim() && !showCreateFood && (
+                <div className="py-4 text-center">
+                  <p className="text-xs text-[#F5EDED]/30 mb-2">Aucun résultat pour &quot;{searchQ.trim()}&quot;</p>
+                  <button
+                    onClick={openCreateFood}
+                    className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                  >
+                    <Plus size={12} />
+                    Créer &quot;{searchQ.trim()}&quot; comme nouvel aliment
+                  </button>
+                </div>
               )}
               {searchResults.map((food) => {
                 const selected = currentSelections.find((sf) => sf.food.id === food.id);
@@ -569,6 +637,54 @@ export default function NutritionBilanQuiz({
                 );
               })}
             </div>
+
+            {showCreateFood && (
+              <div className="mt-3 bg-[#150000] border border-[#890404]/30 rounded-xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                    Nouvel aliment
+                  </p>
+                  <button onClick={() => setShowCreateFood(false)} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+                    <X size={13} />
+                  </button>
+                </div>
+                <input
+                  value={createForm.name}
+                  onChange={(e) => setCreateForm((f) => ({ ...f, name: e.target.value }))}
+                  placeholder="Nom de l'aliment"
+                  className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+                />
+                <p className="text-[9px] text-[#F5EDED]/25">Valeurs pour 100g</p>
+                <div className="grid grid-cols-4 gap-1.5">
+                  {([
+                    { key: "calories", label: "Kcal" },
+                    { key: "proteins", label: "Prot." },
+                    { key: "carbs", label: "Gluc." },
+                    { key: "fats", label: "Lip." },
+                  ] as const).map(({ key, label }) => (
+                    <div key={key}>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={createForm[key]}
+                        onChange={(e) => setCreateForm((f) => ({ ...f, [key]: e.target.value }))}
+                        placeholder="0"
+                        className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-2 py-1.5 text-xs text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                      />
+                      <p className="text-[8px] text-[#F5EDED]/25 text-center mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+                {createFoodError && <p className="text-[10px] text-red-400">{createFoodError}</p>}
+                <button
+                  onClick={handleCreateFood}
+                  disabled={creatingFood}
+                  className="w-full flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest py-2.5 rounded-lg transition-colors"
+                >
+                  {creatingFood ? "Création…" : "Créer et ajouter au repas"}
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <button
