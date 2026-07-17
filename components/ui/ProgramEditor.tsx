@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
+import type { LibraryExercise } from "@/utils/exercise-library";
 import {
   Plus,
   Trash2,
@@ -11,6 +12,8 @@ import {
   ChevronRight,
   AlertCircle,
   Check,
+  Copy,
+  Search,
 } from "lucide-react";
 
 interface ExerciseRow {
@@ -36,14 +39,18 @@ function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
-function emptyExercise(): ExerciseRow {
+// Reprend les séries/reps/RIR/repos du dernier exercice du jour par défaut
+// (le plus souvent identiques d'un exercice à l'autre dans une séance) —
+// avant, chaque nouvel exercice repartait de zéro, avec 4 champs à
+// re-remplir même quand le schéma ne changeait pas.
+function emptyExercise(prefillFrom?: ExerciseRow): ExerciseRow {
   return {
     localId: uid(),
     name: "",
-    sets: "",
-    reps: "",
-    rir: "",
-    rest_seconds: "",
+    sets: prefillFrom?.sets ?? "",
+    reps: prefillFrom?.reps ?? "",
+    rir: prefillFrom?.rir ?? "",
+    rest_seconds: prefillFrom?.rest_seconds ?? "",
     notes: "",
     muscle_group: "",
     muscle_subgroup: "",
@@ -81,6 +88,75 @@ function initFromProgram(program: ProgramWithDays | null) {
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
+// Champ nom d'exercice avec recherche dans la bibliothèque — un choix
+// remplit aussi groupe/sous-groupe musculaire d'un coup. Reste un champ
+// texte libre : taper sans rien sélectionner marche toujours (exercice
+// hors catalogue).
+function ExerciseNameField({
+  value,
+  library,
+  onChange,
+  onPick,
+  onEnter,
+}: {
+  value: string;
+  library: LibraryExercise[];
+  onChange: (v: string) => void;
+  onPick: (lib: LibraryExercise) => void;
+  onEnter?: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  const q = value.trim().toLowerCase();
+  const matches = q.length >= 2 ? library.filter((l) => l.name.toLowerCase().includes(q)).slice(0, 8) : [];
+
+  return (
+    <div ref={wrapRef} className="relative flex-1 min-w-0">
+      <input
+        value={value}
+        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") { setOpen(false); onEnter?.(); }
+          if (e.key === "Escape") setOpen(false);
+        }}
+        placeholder="Exercice (recherche...)"
+        className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
+      />
+      {open && matches.length > 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+          {matches.map((lib) => (
+            <button
+              key={lib.id}
+              type="button"
+              onClick={() => { onPick(lib); setOpen(false); }}
+              className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors flex items-center justify-between gap-2"
+            >
+              <span className="truncate">{lib.name}</span>
+              <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+            </button>
+          ))}
+        </div>
+      )}
+      {open && q.length >= 2 && matches.length === 0 && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
+          <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
+          <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat — nom libre conservé</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProgramEditor({
   clientId,
   program,
@@ -97,6 +173,17 @@ export default function ProgramEditor({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Bibliothèque d'exercices — sert le picker avec recherche (nom exact +
+  // groupe/sous-groupe musculaire auto-remplis en un choix, au lieu de
+  // taper le nom puis sélectionner les 2 menus déroulants séparément).
+  const [library, setLibrary] = useState<LibraryExercise[]>([]);
+  useEffect(() => {
+    fetch("/api/exercise-library")
+      .then((r) => r.json())
+      .then((d) => setLibrary(d.exercises ?? []))
+      .catch(() => {});
+  }, []);
 
   // ── Program meta ────────────────────────────────────────────────────────────
 
@@ -149,10 +236,29 @@ export default function ProgramEditor({
       ...s,
       days: s.days.map((d) =>
         d.localId === dayId
-          ? { ...d, exercises: [...d.exercises, emptyExercise()] }
+          ? { ...d, exercises: [...d.exercises, emptyExercise(d.exercises[d.exercises.length - 1])] }
           : d
       ),
     }));
+  }
+
+  // Duplique un jour entier (avec tous ses exercices) — pour les
+  // programmes qui répètent le même schéma plusieurs fois par semaine
+  // (Push/Pull/Legs x2, etc.), au lieu de tout retaper à l'identique.
+  function duplicateDay(dayId: string) {
+    setState((s) => {
+      const source = s.days.find((d) => d.localId === dayId);
+      if (!source) return s;
+      const idx = s.days.findIndex((d) => d.localId === dayId);
+      const copy: DayRow = {
+        localId: uid(),
+        day_label: `${source.day_label} (copie)`,
+        exercises: source.exercises.map((e) => ({ ...e, localId: uid() })),
+      };
+      const days = [...s.days];
+      days.splice(idx + 1, 0, copy);
+      return { ...s, days };
+    });
   }
 
   function removeExercise(dayId: string, exId: string) {
@@ -180,6 +286,31 @@ export default function ProgramEditor({
               ...d,
               exercises: d.exercises.map((e) =>
                 e.localId === exId ? { ...e, [field]: value } : e
+              ),
+            }
+          : d
+      ),
+    }));
+  }
+
+  // Sélection depuis la bibliothèque : nom + groupe + sous-groupe en un
+  // seul geste plutôt que 3 champs séparés à remplir un par un.
+  function pickLibraryExercise(dayId: string, exId: string, lib: LibraryExercise) {
+    setState((s) => ({
+      ...s,
+      days: s.days.map((d) =>
+        d.localId === dayId
+          ? {
+              ...d,
+              exercises: d.exercises.map((e) =>
+                e.localId === exId
+                  ? {
+                      ...e,
+                      name: lib.name,
+                      muscle_group: MUSCLE_GROUPS.includes(lib.muscle_group as MuscleGroup) ? lib.muscle_group : "",
+                      muscle_subgroup: lib.muscle_subgroup ?? "",
+                    }
+                  : e
               ),
             }
           : d
@@ -380,6 +511,13 @@ export default function ProgramEditor({
                       <ChevronRight size={14} />
                     </button>
                     <button
+                      onClick={() => duplicateDay(day.localId)}
+                      title="Dupliquer cette séance"
+                      className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
+                    >
+                      <Copy size={12} />
+                    </button>
+                    <button
                       onClick={() => removeDay(day.localId)}
                       title="Supprimer la séance"
                       className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
@@ -397,18 +535,12 @@ export default function ProgramEditor({
                       >
                         {/* Name + controls */}
                         <div className="flex items-center gap-1.5">
-                          <input
+                          <ExerciseNameField
                             value={ex.name}
-                            onChange={(e) =>
-                              updateExercise(
-                                day.localId,
-                                ex.localId,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Exercice"
-                            className="flex-1 bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
+                            library={library}
+                            onChange={(v) => updateExercise(day.localId, ex.localId, "name", v)}
+                            onPick={(lib) => pickLibraryExercise(day.localId, ex.localId, lib)}
+                            onEnter={() => addExercise(day.localId)}
                           />
                           <div className="flex items-center gap-0.5 flex-shrink-0">
                             <button

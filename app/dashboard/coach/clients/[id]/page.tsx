@@ -8,7 +8,7 @@ import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getAllClientSessions, getClientPersonalRecords, getSessionsThisWeekCount } from "@/utils/sessions";
 import { getClientTasks } from "@/utils/tasks";
 import { getClientCheckins } from "@/utils/checkins";
-import { getClientDailyLogs, groupLogsByWeek, getWeekDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
+import { getClientDailyLogs, groupLogsByWeek, getWeekDailyLogs, computeWeeklyAverages, getLatestWeight } from "@/utils/daily-logs";
 import { getAllClientPhotoUpdates } from "@/utils/photos";
 import {
   getNutritionProfile,
@@ -83,6 +83,7 @@ export default async function ClientDetailPage({
     foods,
     activePlan,
     allPlans,
+    latestWeight,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -101,6 +102,7 @@ export default async function ClientDetailPage({
     getAllFoods(),
     getActiveDietPlan(id),
     getAllDietPlansWithMeals(id),
+    getLatestWeight(id),
   ]);
 
   const checkinsWithAverages = await Promise.all(
@@ -139,6 +141,8 @@ export default async function ClientDetailPage({
 
       <ClientProfileTabs
         client={client}
+        latestWeight={latestWeight}
+        recentDailyLogs={dailyLogs}
         points={points}
         program={program}
         corrections={corrections}

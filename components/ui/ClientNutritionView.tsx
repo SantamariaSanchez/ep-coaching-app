@@ -295,10 +295,32 @@ export default function ClientNutritionView({
   const [historySelectedDate, setHistorySelectedDate] = useState<string | null>(null);
 
   // ── Derived ────────────────────────────────────────────────────────────────
+  // Carb cycling — même profil, écart de calories les jours de repos/high,
+  // absorbé en glucides (protéines/lipides stables). Persisté par date
+  // plutôt que par session, pour ne pas avoir à re-sélectionner à chaque
+  // ouverture de l'appli le même jour.
+  const hasDayOffsets = nutritionProfile?.calories_offset_rest != null || nutritionProfile?.calories_offset_high != null;
+  const [dayType, setDayType] = useState<"training" | "repos" | "high">(() => {
+    if (typeof window === "undefined") return "training";
+    try {
+      const saved = localStorage.getItem(`ep-daytype-${today}`);
+      if (saved === "repos" || saved === "high") return saved;
+    } catch {}
+    return "training";
+  });
+  function selectDayType(v: "training" | "repos" | "high") {
+    setDayType(v);
+    try { localStorage.setItem(`ep-daytype-${today}`, v); } catch {}
+  }
+  const dayOffset =
+    dayType === "repos" ? nutritionProfile?.calories_offset_rest ?? 0
+    : dayType === "high" ? nutritionProfile?.calories_offset_high ?? 0
+    : 0;
+
   const targets = {
-    calories: nutritionProfile?.calories_target ?? 0,
+    calories: (nutritionProfile?.calories_target ?? 0) + dayOffset,
     proteins: nutritionProfile?.proteins_target ?? 0,
-    carbs: nutritionProfile?.carbs_target ?? 0,
+    carbs: Math.max(0, (nutritionProfile?.carbs_target ?? 0) + Math.round(dayOffset / 4)),
     fats: nutritionProfile?.fats_target ?? 0,
   };
 
@@ -821,6 +843,30 @@ export default function ClientNutritionView({
       {/* ── TODAY TAB ─────────────────────────────────────────────────────── */}
       {activeTab === "today" && (
         <div className="space-y-4">
+          {/* Type de jour — objectif calorique/glucides différent les jours
+              de repos ou high, uniquement si le coach en a défini. */}
+          {hasDayOffsets && !noTargets && (
+            <div className="flex gap-1.5">
+              {([
+                { key: "training", label: "Entraînement" },
+                ...(nutritionProfile?.calories_offset_rest != null ? [{ key: "repos", label: "Repos" }] : []),
+                ...(nutritionProfile?.calories_offset_high != null ? [{ key: "high", label: "High" }] : []),
+              ] as { key: "training" | "repos" | "high"; label: string }[]).map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => selectDayType(key)}
+                  className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg border transition-colors ${
+                    dayType === key
+                      ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
+                      : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/65"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/* Macro rings */}
           {noTargets ? (
             <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-5 text-center">

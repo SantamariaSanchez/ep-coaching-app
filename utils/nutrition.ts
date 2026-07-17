@@ -12,6 +12,11 @@ export interface NutritionProfile {
   proteins_target: number | null;
   carbs_target: number | null;
   fats_target: number | null;
+  // Carb cycling — écart de calories (absorbé en glucides, protéines/lipides
+  // stables) les jours de repos / les jours "high". null = pas de variation,
+  // même objectif tous les jours.
+  calories_offset_rest: number | null;
+  calories_offset_high: number | null;
   tdee: number | null;
   bmr: number | null;
   phase: "deficit" | "maintenance" | "surplus" | null;
@@ -31,6 +36,8 @@ export interface NutritionProfileInput {
   proteins_target: number;
   carbs_target: number;
   fats_target: number;
+  calories_offset_rest?: number | null;
+  calories_offset_high?: number | null;
   tdee: number;
   bmr: number;
   phase: string;

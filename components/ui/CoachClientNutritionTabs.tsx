@@ -15,6 +15,7 @@ import type {
   DietStructure,
 } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import type { DailyLog } from "@/utils/daily-logs";
 
 const MEAL_SLOTS = [
   { key: "breakfast", label: "Petit-déjeuner" },
@@ -243,6 +244,7 @@ function HistoryView({
 interface Props {
   clientId: string;
   clientWeight: number | null;
+  recentDailyLogs?: DailyLog[];
   nutritionProfile: NutritionProfile | null;
   todayLogs: FoodLogWithFood[];
   historyLogs: FoodLogWithFood[];
@@ -262,6 +264,7 @@ type Tab = "objectifs" | "plan" | "today" | "history";
 export default function CoachClientNutritionTabs({
   clientId,
   clientWeight,
+  recentDailyLogs = [],
   nutritionProfile,
   todayLogs,
   historyLogs,
@@ -332,6 +335,7 @@ export default function CoachClientNutritionTabs({
           clientId={clientId}
           existingProfile={nutritionProfile}
           clientWeight={clientWeight}
+          recentDailyLogs={recentDailyLogs}
           saveNutritionProfile={saveNutritionProfile}
         />
       )}

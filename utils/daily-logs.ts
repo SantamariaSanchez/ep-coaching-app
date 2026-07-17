@@ -86,6 +86,27 @@ export async function getClientDailyLogs(
   }
 }
 
+// Poids le plus récent réellement pesé (bilan quotidien) — le calculateur
+// TDEE se pré-remplissait avec le poids de départ (weight_start, saisi une
+// fois à l'onboarding) même des mois plus tard, ce qui faussait le calcul
+// dès que le client avait pris ou perdu du poids depuis.
+export async function getLatestWeight(clientId: string): Promise<number | null> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data } = await supabase
+      .from("daily_logs")
+      .select("weight_morning")
+      .eq("client_id", clientId)
+      .not("weight_morning", "is", null)
+      .order("log_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    return (data as { weight_morning: number | null } | null)?.weight_morning ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getWeekDailyLogs(
   clientId: string,
   weekStart: string

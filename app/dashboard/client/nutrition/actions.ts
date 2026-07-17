@@ -26,6 +26,8 @@ export async function saveOwnNutritionProfile(
     proteins_target: data.proteins_target,
     carbs_target: data.carbs_target,
     fats_target: data.fats_target,
+    calories_offset_rest: data.calories_offset_rest ?? null,
+    calories_offset_high: data.calories_offset_high ?? null,
     tdee: data.tdee,
     bmr: data.bmr,
     phase: data.phase,

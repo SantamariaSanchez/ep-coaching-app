@@ -13,7 +13,7 @@ import type { WorkoutLog } from "@/utils/workout-logs";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import type { ClientTask } from "@/utils/tasks";
 import type { CheckIn } from "@/utils/checkins";
-import type { WeeklyAverages } from "@/utils/daily-logs";
+import type { WeeklyAverages, DailyLog } from "@/utils/daily-logs";
 import { groupLogsByWeek } from "@/utils/daily-logs";
 import type { PhotoUpdate } from "@/utils/photos";
 import type {
@@ -90,6 +90,8 @@ interface RoadmapData {
 
 export default function ClientProfileTabs({
   client,
+  latestWeight,
+  recentDailyLogs,
   points,
   program,
   corrections,
@@ -120,6 +122,8 @@ export default function ClientProfileTabs({
   deleteDietPlan,
 }: {
   client: Profile;
+  latestWeight: number | null;
+  recentDailyLogs: DailyLog[];
   points: number;
   program: ProgramWithDays | null;
   corrections: ExerciseCorrection[];
@@ -365,7 +369,8 @@ export default function ClientProfileTabs({
       {activeTab === "nutrition" && (
         <CoachClientNutritionTabs
           clientId={client.id}
-          clientWeight={client.weight_start}
+          clientWeight={latestWeight ?? client.weight_start}
+          recentDailyLogs={recentDailyLogs}
           nutritionProfile={nutritionProfile}
           todayLogs={todayLogs}
           historyLogs={historyLogs}

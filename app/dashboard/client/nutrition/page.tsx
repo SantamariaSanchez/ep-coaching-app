@@ -8,6 +8,7 @@ import {
   getActiveDietPlan,
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
+import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getCommunityRecipes } from "@/utils/community-recipes";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
@@ -38,7 +39,7 @@ export default async function ClientNutritionPage() {
   // historique) et plans perso, comme les clients coachés : seule la
   // provenance du plan change (auto-géré, pas de coach).
   if (!isSubscribed(profile)) {
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes] =
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs] =
       await Promise.all([
         getNutritionProfile(user.id),
         getTodayLogs(user.id, today),
@@ -47,6 +48,8 @@ export default async function ClientNutritionPage() {
         getActiveDietPlan(user.id),
         getAllDietPlansWithMeals(user.id),
         getCommunityRecipes(),
+        getLatestWeight(user.id),
+        getClientDailyLogs(user.id, 21),
       ]);
 
     return (
@@ -68,7 +71,8 @@ export default async function ClientNutritionPage() {
           <NutritionForm
             clientId={user.id}
             existingProfile={nutritionProfile}
-            clientWeight={profile?.weight_start ?? null}
+            clientWeight={latestWeight ?? profile?.weight_start ?? null}
+            recentDailyLogs={recentDailyLogs}
             saveNutritionProfile={saveOwnNutritionProfile}
           />
         </div>

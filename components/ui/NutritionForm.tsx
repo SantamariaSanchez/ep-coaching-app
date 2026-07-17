@@ -3,7 +3,9 @@
 import { useState, useMemo, useEffect } from "react";
 import Card from "./Card";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
-import { AlertCircle, Check, FlameKindling } from "lucide-react";
+import type { DailyLog } from "@/utils/daily-logs";
+import { computeObservedTdee } from "@/lib/tdee-suggestion";
+import { AlertCircle, Check, FlameKindling, TrendingUp } from "lucide-react";
 
 const TRAINING_TYPES = [
   { label: "Musculation", kcal_per_hour: 45 },
@@ -48,11 +50,14 @@ export default function NutritionForm({
   clientId,
   existingProfile,
   clientWeight,
+  recentDailyLogs = [],
   saveNutritionProfile,
 }: {
   clientId: string;
   existingProfile: NutritionProfile | null;
   clientWeight: number | null;
+  /** Bilans des ~21 derniers jours — sert à comparer le TDEE formule vs réel */
+  recentDailyLogs?: DailyLog[];
   saveNutritionProfile: (
     clientId: string,
     data: NutritionProfileInput
@@ -77,6 +82,8 @@ export default function NutritionForm({
         : existingProfile?.phase === "surplus"
         ? "200"
         : "0",
+      offsetRest: existingProfile?.calories_offset_rest != null ? String(existingProfile.calories_offset_rest) : "",
+      offsetHigh: existingProfile?.calories_offset_high != null ? String(existingProfile.calories_offset_high) : "",
     };
   });
 
@@ -164,6 +171,20 @@ export default function NutritionForm({
     };
   }, [form]);
 
+  // Compare le TDEE formule (ci-dessus, jamais mis à jour tout seul) au TDEE
+  // observé réellement à partir du bilan quotidien — poids qui dérive
+  // + calories loggées. N'affiche une suggestion que si l'écart est assez
+  // grand pour valoir la peine (bruit habituel sinon).
+  const observed = useMemo(() => computeObservedTdee(recentDailyLogs), [recentDailyLogs]);
+  const tdeeGap = observed && calc ? observed.tdee - calc.tdee : 0;
+  const showSuggestion = observed && calc && Math.abs(tdeeGap) >= 150;
+
+  function applySuggestion() {
+    if (!observed || !calc) return;
+    const currentAdj = parseFloat(form.adjustment) || 0;
+    set("adjustment", String(Math.round(currentAdj + tdeeGap)));
+  }
+
   async function handleSave() {
     if (!calc) {
       setError("Remplis tous les champs obligatoires (poids, taille, âge).");
@@ -176,6 +197,8 @@ export default function NutritionForm({
       proteins_target: calc.proteinsG,
       carbs_target: calc.carbsG,
       fats_target: calc.fatsG,
+      calories_offset_rest: form.offsetRest ? parseInt(form.offsetRest) : null,
+      calories_offset_high: form.offsetHigh ? parseInt(form.offsetHigh) : null,
       tdee: calc.tdee,
       bmr: calc.bmr,
       phase: form.phase,
@@ -231,6 +254,35 @@ export default function NutritionForm({
               {existingProfile.tdee ?? "-"} kcal
             </span>
           </p>
+        </div>
+      )}
+
+      {/* TDEE observé vs formule — le TDEE ci-dessus est une estimation
+          théorique (Mifflin-St Jeor) qui ne bouge jamais toute seule ;
+          celui-ci vient du poids et des calories réellement loggés dans le
+          bilan quotidien sur les ~3 dernières semaines. */}
+      {showSuggestion && observed && (
+        <div className="bg-amber-500/8 border border-amber-500/25 rounded-xl p-4">
+          <div className="flex items-start gap-2.5">
+            <TrendingUp size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-xs font-bold text-amber-400 mb-1">
+                Écart entre TDEE formule et TDEE réel observé
+              </p>
+              <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
+                Sur les {observed.days} derniers jours, {observed.weightChangeKg >= 0 ? "+" : ""}
+                {observed.weightChangeKg}kg pour ~{observed.avgCalories} kcal/jour loggés →
+                TDEE réel estimé à ~{observed.tdee} kcal, contre {calc?.tdee} kcal côté formule
+                ({tdeeGap > 0 ? "+" : ""}{tdeeGap} kcal).
+              </p>
+              <button
+                onClick={applySuggestion}
+                className="mt-2.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors underline"
+              >
+                Ajuster l&apos;objectif en conséquence
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -403,6 +455,40 @@ export default function NutritionForm({
               </option>
             ))}
           </select>
+        </div>
+      </div>
+
+      {/* Section: Carb cycling — objectif de base ci-dessus = jour
+          d'entraînement par défaut. Écarts optionnels pour repos/high day,
+          absorbés en glucides (protéines/lipides stables). */}
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <p className={labelCls + " mb-1"}>Jours de repos / high day (optionnel)</p>
+        <p className="text-[10px] text-[#F5EDED]/30 mb-4">
+          L&apos;objectif ci-dessus est celui des jours d&apos;entraînement. Défini un écart pour
+          les jours de repos ou les journées &laquo;&nbsp;high&nbsp;&raquo; — l&apos;écart est absorbé en
+          glucides, protéines et lipides restent stables.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelCls}>Jour de repos (kcal)</label>
+            <input
+              type="number"
+              value={form.offsetRest}
+              onChange={(e) => set("offsetRest", e.target.value)}
+              placeholder="Ex. -200"
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className={labelCls}>Jour high (kcal)</label>
+            <input
+              type="number"
+              value={form.offsetHigh}
+              onChange={(e) => set("offsetHigh", e.target.value)}
+              placeholder="Ex. +400"
+              className={inputCls}
+            />
+          </div>
         </div>
       </div>
 
