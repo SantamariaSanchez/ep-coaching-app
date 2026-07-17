@@ -95,6 +95,80 @@ export async function createLiveEvent(
   }
 }
 
+export interface UpdateLiveEventInput {
+  title: string;
+  description: string;
+  invitedClientId: string | null;
+  startsAt: string; // ISO
+  durationMinutes: number;
+}
+
+// Modifier un live existant (titre, horaire, durée, client invité) — jusqu'ici
+// la seule option en cas d'erreur de saisie était d'annuler et de tout
+// reprogrammer depuis zéro.
+export async function updateLiveEvent(
+  id: string,
+  input: UpdateLiveEventInput
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  if (!input.title.trim()) return { error: "Le titre est requis." };
+
+  try {
+    const admin = createAdminClient();
+    const { data: existing } = await admin
+      .from("live_events")
+      .select("type, title, invited_client_id")
+      .eq("id", id)
+      .eq("host_id", guard.userId)
+      .single();
+
+    if (!existing) return { error: "Live introuvable." };
+    if (existing.type === "1to1" && !input.invitedClientId) {
+      return { error: "Choisis un client pour un appel 1:1." };
+    }
+
+    const { error } = await admin
+      .from("live_events")
+      .update({
+        title: input.title.trim(),
+        description: input.description.trim() || null,
+        invited_client_id: existing.type === "1to1" ? input.invitedClientId : null,
+        starts_at: input.startsAt,
+        duration_minutes: input.durationMinutes,
+      })
+      .eq("id", id)
+      .eq("host_id", guard.userId);
+
+    if (error) return { error: "Erreur lors de la mise à jour." };
+
+    // Notifie l'audience concernée du changement — best effort.
+    const dateLabel = new Intl.DateTimeFormat("fr-FR", {
+      weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
+    }).format(new Date(input.startsAt));
+    const params = {
+      type: "live_scheduled",
+      title: "🔄 Live modifié",
+      body: `${input.title.trim()} : ${dateLabel}`,
+      url: "/dashboard/client/live",
+    };
+    if (existing.type === "1to1" && input.invitedClientId) {
+      notifyUser(input.invitedClientId, params).catch(() => {});
+    } else if (existing.type !== "1to1") {
+      getClients()
+        .then((clients) => notifyUsers(clients.map((c) => c.id), params))
+        .catch(() => {});
+    }
+
+    revalidatePath("/dashboard/coach/live");
+    revalidatePath("/dashboard/client/live");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };

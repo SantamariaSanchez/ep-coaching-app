@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import LiveEventsList from "@/components/live/LiveEventsList";
-import { createLiveEvent, cancelLiveEvent, deleteLiveEvent } from "./actions";
+import { createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent } from "./actions";
 
 export default async function CoachLivePage() {
   const user = await getUser();
@@ -36,6 +36,7 @@ export default async function CoachLivePage() {
         onCreate={createLiveEvent}
         onCancel={cancelLiveEvent}
         onDelete={deleteLiveEvent}
+        onUpdate={updateLiveEvent}
       />
     </div>
   );

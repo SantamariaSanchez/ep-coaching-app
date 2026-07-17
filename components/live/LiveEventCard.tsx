@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Video, Users, MessageCircle, Clock, Trash2, Ban, User } from "lucide-react";
+import { Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil } from "lucide-react";
 import { LIVE_TYPE_LABELS, type LiveEvent } from "@/lib/live-types";
+import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
+import LiveEditForm from "@/components/live/LiveEditForm";
 
 const TYPE_ICONS = {
   "1to1": User,
@@ -39,18 +41,23 @@ export default function LiveEventCard({
   event,
   basePath,
   isCoach,
+  clients,
   onCancel,
   onDelete,
+  onUpdate,
 }: {
   event: LiveEvent;
   basePath: string;
   isCoach: boolean;
+  clients?: { id: string; full_name: string | null }[];
   onCancel?: () => void;
   onDelete?: () => void;
+  onUpdate?: (id: string, input: UpdateLiveEventInput) => Promise<{ error?: string }>;
 }) {
   const { canJoin, isPast, isSoon } = useJoinWindow(event.starts_at, event.duration_minutes);
   const Icon = TYPE_ICONS[event.type];
   const cancelled = event.status === "cancelled";
+  const [editing, setEditing] = useState(false);
 
   return (
     <div className={`bg-[#1f0101] border rounded-xl p-4 ${cancelled ? "border-[#890404]/10 opacity-50" : "border-[#890404]/20"}`}>
@@ -98,6 +105,14 @@ export default function LiveEventCard({
             )}
             {isCoach && !cancelled && (
               <>
+                {onUpdate && !isPast && (
+                  <button
+                    onClick={() => setEditing((v) => !v)}
+                    className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#E01E1E] transition-colors"
+                  >
+                    <Pencil size={11} /> Modifier
+                  </button>
+                )}
                 {onCancel && (
                   <button
                     onClick={onCancel}
@@ -117,6 +132,15 @@ export default function LiveEventCard({
               </button>
             )}
           </div>
+
+          {editing && onUpdate && (
+            <LiveEditForm
+              event={event}
+              clients={clients ?? []}
+              onUpdate={onUpdate}
+              onClose={() => setEditing(false)}
+            />
+          )}
         </div>
       </div>
     </div>

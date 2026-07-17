@@ -9,7 +9,7 @@ function isStillRelevant(startsAt: string): boolean {
 }
 import LiveScheduler from "@/components/live/LiveScheduler";
 import type { LiveEvent } from "@/lib/live-types";
-import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
+import type { CreateLiveEventInput, UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 export default function LiveEventsList({
   initialEvents,
@@ -19,6 +19,7 @@ export default function LiveEventsList({
   onCreate,
   onCancel,
   onDelete,
+  onUpdate,
 }: {
   initialEvents: LiveEvent[];
   basePath: string;
@@ -27,6 +28,7 @@ export default function LiveEventsList({
   onCreate?: (input: CreateLiveEventInput) => Promise<{ error?: string; id?: string }>;
   onCancel?: (id: string) => Promise<{ error?: string }>;
   onDelete?: (id: string) => Promise<{ error?: string }>;
+  onUpdate?: (id: string, input: UpdateLiveEventInput) => Promise<{ error?: string }>;
 }) {
   const [events, setEvents] = useState(initialEvents);
 
@@ -42,6 +44,32 @@ export default function LiveEventsList({
     if (!onDelete) return;
     const res = await onDelete(id);
     if (!res.error) setEvents((prev) => prev.filter((e) => e.id !== id));
+  }
+
+  async function handleUpdate(id: string, input: UpdateLiveEventInput) {
+    if (!onUpdate) return { error: "Action indisponible." };
+    const res = await onUpdate(id, input);
+    if (!res.error) {
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === id
+            ? {
+                ...e,
+                title: input.title,
+                description: input.description || null,
+                invited_client_id: e.type === "1to1" ? input.invitedClientId : e.invited_client_id,
+                invited_client_name:
+                  e.type === "1to1"
+                    ? clients?.find((c) => c.id === input.invitedClientId)?.full_name ?? e.invited_client_name
+                    : e.invited_client_name,
+                starts_at: input.startsAt,
+                duration_minutes: input.durationMinutes,
+              }
+            : e
+        )
+      );
+    }
+    return res;
   }
 
   const upcoming = events.filter((e) => e.status !== "cancelled" && isStillRelevant(e.starts_at));
@@ -64,8 +92,10 @@ export default function LiveEventsList({
               event={event}
               basePath={basePath}
               isCoach={isCoach}
+              clients={clients}
               onCancel={isCoach ? () => handleCancel(event.id) : undefined}
               onDelete={isCoach ? () => handleDelete(event.id) : undefined}
+              onUpdate={isCoach && onUpdate ? handleUpdate : undefined}
             />
           ))}
         </div>
