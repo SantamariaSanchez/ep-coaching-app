@@ -145,6 +145,11 @@ function playBeep() {
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
     osc.start();
     osc.stop(ctx.currentTime + 0.5);
+    // Sans ça, chaque bip (un par set validé, donc des dizaines par séance)
+    // laissait son AudioContext ouvert indéfiniment — WebKit/iOS plafonne le
+    // nombre de contextes audio simultanés, et les accumuler sur une longue
+    // séance ajoute une pression mémoire inutile.
+    osc.onended = () => { ctx.close().catch(() => {}); };
   } catch {
     // audio not available
   }

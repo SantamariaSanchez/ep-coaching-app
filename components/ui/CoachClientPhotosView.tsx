@@ -210,15 +210,39 @@ function PhotoCard({
         )}
       </div>
 
-      <a
-        href={photo.drive_link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
-      >
-        <ExternalLink size={11} />
-        Ouvrir dans Drive
-      </a>
+      {(photo.photo_urls.length > 0 || photo.video_url) && (
+        <div className="flex gap-1.5 flex-wrap">
+          {photo.photo_urls.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
+            </a>
+          ))}
+          {photo.video_url && (
+            <a
+              href={photo.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+            >
+              <ExternalLink size={11} />
+              Voir la vidéo
+            </a>
+          )}
+        </div>
+      )}
+
+      {photo.drive_link && (
+        <a
+          href={photo.drive_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+        >
+          <ExternalLink size={11} />
+          Ouvrir dans Drive
+        </a>
+      )}
 
       {photo.notes && (
         <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
@@ -300,7 +324,9 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
           { id: leftId, setId: setLeftId, photo: leftPhoto, label: "Avant" },
           { id: rightId, setId: setRightId, photo: rightPhoto, label: "Après" },
         ].map(({ id, setId, photo, label }) => {
-          const imgUrl = photo ? driveImageUrl(photo.drive_link) : null;
+          const imgUrl = photo
+            ? photo.photo_urls[0] ?? (photo.drive_link ? driveImageUrl(photo.drive_link) : null)
+            : null;
           return (
             <div key={label} className="space-y-2">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
@@ -320,7 +346,9 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               {photo && !imgUrl && (
                 <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
                   <p className="text-[10px] text-[#F5EDED]/30">
-                    Aperçu indisponible. Le lien Drive doit être partagé en &quot;Tous les utilisateurs disposant du lien&quot;.
+                    {photo.video_url || photo.drive_link
+                      ? "Pas de photo pour cette mise à jour (vidéo)."
+                      : "Aperçu indisponible. Le lien Drive doit être partagé en «Tous les utilisateurs disposant du lien»."}
                   </p>
                 </div>
               )}
@@ -330,15 +358,28 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                   <p className="text-xs text-white font-bold">{TYPE_LABELS[photo.type] ?? photo.type}</p>
                   <p className="text-[10px] text-[#F5EDED]/40">{formatDate(photo.submitted_at)}</p>
                   {photo.notes && <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>}
-                  <a
-                    href={photo.drive_link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
-                  >
-                    <ExternalLink size={10} />
-                    Ouvrir Drive
-                  </a>
+                  {photo.video_url && (
+                    <a
+                      href={photo.video_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                    >
+                      <ExternalLink size={10} />
+                      Voir la vidéo
+                    </a>
+                  )}
+                  {!photo.video_url && photo.drive_link && (
+                    <a
+                      href={photo.drive_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+                    >
+                      <ExternalLink size={10} />
+                      Ouvrir Drive
+                    </a>
+                  )}
                 </div>
               )}
             </div>

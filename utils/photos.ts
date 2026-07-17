@@ -8,7 +8,14 @@ export interface PhotoUpdate {
   week_number: number | null;
   type: SubmissionType;
   category: string;
-  drive_link: string;
+  // Legacy — check-ins soumis avant l'upload direct, gardés pour affichage
+  // rétrocompatible.
+  drive_link: string | null;
+  photo_paths: string[] | null;
+  video_path: string | null;
+  // URLs signées prêtes à afficher, calculées par les fonctions de lecture.
+  photo_urls: string[];
+  video_url: string | null;
   notes: string | null;
   coach_feedback: string | null;
   coach_replied_at: string | null;
@@ -17,6 +24,31 @@ export interface PhotoUpdate {
 
 export interface PhotoUpdateWithClient extends PhotoUpdate {
   profiles: { full_name: string | null; email: string | null } | null;
+}
+
+// Transforme les chemins de stockage bruts en URLs signées prêtes à
+// afficher — même logique que withSignedMedia dans utils/checkins.ts.
+async function withSignedMedia<T extends { photo_paths: string[] | null; video_path: string | null }>(
+  supabase: Awaited<ReturnType<typeof createServerSupabase>>,
+  rows: T[]
+): Promise<(T & { photo_urls: string[]; video_url: string | null })[]> {
+  return Promise.all(
+    rows.map(async (row) => {
+      const photo_urls = row.photo_paths?.length
+        ? (
+            await Promise.all(
+              row.photo_paths.map((p) => supabase.storage.from("photo-updates-media").createSignedUrl(p, 3600))
+            )
+          )
+            .map((r) => r.data?.signedUrl ?? null)
+            .filter((u): u is string => !!u)
+        : [];
+      const video_url = row.video_path
+        ? (await supabase.storage.from("photo-updates-media").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
+        : null;
+      return { ...row, photo_urls, video_url };
+    })
+  );
 }
 
 // ── Client queries ─────────────────────────────────────────────────────────────
@@ -33,7 +65,7 @@ export async function getClientPhotoUpdates(
       .eq("client_id", clientId)
       .order("submitted_at", { ascending: false })
       .limit(limit);
-    return (data as PhotoUpdate[]) ?? [];
+    return await withSignedMedia(supabase, (data as PhotoUpdate[]) ?? []);
   } catch {
     return [];
   }
@@ -60,7 +92,9 @@ export async function getThisWeekPhotoUpdate(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    return (data as PhotoUpdate) ?? null;
+    if (!data) return null;
+    const [signed] = await withSignedMedia(supabase, [data as PhotoUpdate]);
+    return signed;
   } catch {
     return null;
   }
@@ -80,7 +114,9 @@ export async function getTodayPhotoUpdate(
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
-    return (data as PhotoUpdate) ?? null;
+    if (!data) return null;
+    const [signed] = await withSignedMedia(supabase, [data as PhotoUpdate]);
+    return signed;
   } catch {
     return null;
   }
@@ -96,7 +132,7 @@ export async function getPendingPhotoUpdates(): Promise<PhotoUpdateWithClient[]>
       .select("*, profiles(full_name, email)")
       .is("coach_replied_at", null)
       .order("created_at", { ascending: true });
-    return (data as PhotoUpdateWithClient[]) ?? [];
+    return await withSignedMedia(supabase, (data as PhotoUpdateWithClient[]) ?? []);
   } catch {
     return [];
   }
@@ -125,7 +161,7 @@ export async function getAllClientPhotoUpdates(
       .select("*")
       .eq("client_id", clientId)
       .order("submitted_at", { ascending: false });
-    return (data as PhotoUpdate[]) ?? [];
+    return await withSignedMedia(supabase, (data as PhotoUpdate[]) ?? []);
   } catch {
     return [];
   }

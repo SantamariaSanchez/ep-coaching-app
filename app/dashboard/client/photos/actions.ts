@@ -42,12 +42,20 @@ export async function submitPhotoUpdate(
     if (profile.role !== "client") return { error: "Accès refusé." };
 
     const type = formData.get("type") as SubmissionType;
-    const drive_link = (formData.get("drive_link") as string)?.trim();
     const notes = (formData.get("notes") as string)?.trim() || null;
     const category = (profile as { competition_category?: string | null }).competition_category ?? "Non définie";
 
+    // Médias déjà uploadés côté client (voir ClientPhotosView) — on ne reçoit
+    // ici que les chemins de stockage, jamais les fichiers eux-mêmes.
+    const photoPaths = formData
+      .getAll("photo_paths")
+      .map((v) => (v as string).trim())
+      .filter(Boolean);
+    const videoPath = (formData.get("video_path") as string)?.trim() || null;
+
     if (!type) return { error: "Type requis." };
-    if (!drive_link) return { error: "Lien Drive requis." };
+    if (type === "mandatory_poses" && photoPaths.length === 0) return { error: "Au moins une photo requise." };
+    if (type !== "mandatory_poses" && !videoPath) return { error: "Vidéo requise." };
 
     const today = new Date();
     const submitted_at = today.toISOString().split("T")[0];
@@ -61,7 +69,8 @@ export async function submitPhotoUpdate(
       week_number,
       type,
       category,
-      drive_link,
+      photo_paths: photoPaths.length > 0 ? photoPaths : null,
+      video_path: videoPath,
       notes,
     });
 

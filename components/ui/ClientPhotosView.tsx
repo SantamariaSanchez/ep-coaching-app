@@ -1,10 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { Camera, Video, Trophy, CheckCircle2, Clock, ExternalLink, AlertCircle } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, Video, Trophy, CheckCircle2, Clock, ExternalLink, AlertCircle, X, Loader2, Sparkles } from "lucide-react";
 import { POSING_CATEGORIES, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
+import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
+
+const MAX_PHOTOS = 4;
+
+interface MediaItem {
+  localId: string;
+  previewUrl: string;
+  path: string | null;
+  uploading: boolean;
+  error: boolean;
+}
+
+// Upload immédiat vers Supabase Storage dès la sélection — même logique que
+// CheckinForm : le formulaire n'envoie ensuite que les chemins déjà
+// uploadés, jamais les fichiers eux-mêmes (payload trop lourd pour une
+// action serveur Next.js).
+async function uploadFile(file: File): Promise<string | null> {
+  try {
+    const supabase = createClientSupabase();
+    const ext = file.name.split(".").pop() || (file.type.startsWith("video") ? "mp4" : "jpg");
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("photo-updates-media")
+      .upload(path, file, { contentType: file.type || undefined, upsert: false });
+    if (error) return null;
+    return path;
+  } catch {
+    return null;
+  }
+}
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -39,7 +69,8 @@ function SubmissionForm({
   onSubmit: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
 }) {
   const [type, setType] = useState<SubmissionType>("mandatory_poses");
-  const [driveLink, setDriveLink] = useState("");
+  const [photos, setPhotos] = useState<MediaItem[]>([]);
+  const [video, setVideo] = useState<MediaItem | null>(null);
   const [notes, setNotes] = useState("");
   const [exerciseName, setExerciseName] = useState("");
   const [videoGoal, setVideoGoal] = useState("");
@@ -47,20 +78,64 @@ function SubmissionForm({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const category = profile?.competition_category ?? "Classic Physique";
   const posingData =
     POSING_CATEGORIES[category] ?? POSING_CATEGORIES["Classic Physique"] ?? null;
 
+  const mediaUploading = photos.some((p) => p.uploading) || !!video?.uploading;
+
+  async function handlePhotosSelected(files: FileList) {
+    const room = MAX_PHOTOS - photos.length;
+    const toAdd = Array.from(files).slice(0, Math.max(room, 0));
+    const items: MediaItem[] = toAdd.map((file) => ({
+      localId: Math.random().toString(36).slice(2),
+      previewUrl: URL.createObjectURL(file),
+      path: null,
+      uploading: true,
+      error: false,
+    }));
+    setPhotos((prev) => [...prev, ...items]);
+    toAdd.forEach(async (file, i) => {
+      const path = await uploadFile(file);
+      setPhotos((prev) =>
+        prev.map((p) => (p.localId === items[i].localId ? { ...p, path, uploading: false, error: !path } : p))
+      );
+    });
+  }
+
+  async function handleVideoSelected(file: File) {
+    const item: MediaItem = {
+      localId: Math.random().toString(36).slice(2),
+      previewUrl: URL.createObjectURL(file),
+      path: null,
+      uploading: true,
+      error: false,
+    };
+    setVideo(item);
+    const path = await uploadFile(file);
+    setVideo((prev) => (prev && prev.localId === item.localId ? { ...prev, path, uploading: false, error: !path } : prev));
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!driveLink.trim()) { setError("Lien Drive requis."); return; }
+    if (type === "mandatory_poses" && photos.filter((p) => p.path).length === 0) {
+      setError("Au moins une photo requise.");
+      return;
+    }
+    if (type !== "mandatory_poses" && !video?.path) {
+      setError("Vidéo requise.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
 
     const fd = new FormData();
     fd.set("type", type);
-    fd.set("drive_link", driveLink.trim());
+    photos.forEach((p) => { if (p.path) fd.append("photo_paths", p.path); });
+    if (video?.path) fd.set("video_path", video.path);
     fd.set("notes", notes.trim());
     if (type === "video_perf") {
       fd.set("notes", `Exercice: ${exerciseName.trim()}\nObjectif: ${videoGoal.trim()}\n${notes.trim()}`);
@@ -82,7 +157,7 @@ function SubmissionForm({
         <p className="text-sm font-black text-white uppercase tracking-wider">Mise à jour envoyée !</p>
         <p className="text-xs text-[#F5EDED]/35">Ton coach recevra une notification.</p>
         <button
-          onClick={() => { setSuccess(false); setDriveLink(""); setNotes(""); }}
+          onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setNotes(""); }}
           className="text-xs text-[#E01E1E] hover:underline mt-2"
         >
           Envoyer une autre update
@@ -203,26 +278,113 @@ function SubmissionForm({
         </>
       )}
 
-      {/* Drive link */}
-      <div>
-        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-          {type === "mandatory_poses"
-            ? "Lien Google Drive (photos)"
-            : "Lien Drive, YouTube ou Vimeo (vidéo)"}{" "}
-          <span className="text-[#E01E1E]">*</span>
-        </label>
-        <input
-          type="url"
-          value={driveLink}
-          onChange={(e) => setDriveLink(e.target.value)}
-          placeholder="Drive → Clic droit → Partager → Lien → Coller ici"
-          className={inputCls}
-          required
-        />
-        <p className="text-[9px] text-[#F5EDED]/20 mt-1">
-          Assure-toi que le partage est activé (Tout le monde avec le lien).
-        </p>
-      </div>
+      {/* Médias */}
+      {type === "mandatory_poses" ? (
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Photos ({photos.length}/{MAX_PHOTOS}) <span className="text-[#E01E1E]">*</span>
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {photos.map((p) => (
+              <div key={p.localId} className="relative w-16 h-16 rounded-lg overflow-hidden border border-[#890404]/30">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={p.previewUrl} alt="" className="w-full h-full object-cover" />
+                {p.uploading && (
+                  <div className="absolute inset-0 bg-black/55 flex items-center justify-center">
+                    <Loader2 size={16} className="animate-spin text-white" />
+                  </div>
+                )}
+                {p.error && (
+                  <div className="absolute inset-0 bg-[#E01E1E]/55 flex items-center justify-center">
+                    <span className="text-[9px] text-white font-black">Échec</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setPhotos((prev) => prev.filter((x) => x.localId !== p.localId))}
+                  className="absolute top-0.5 right-0.5 w-4.5 h-4.5 rounded-full bg-black/65 flex items-center justify-center"
+                  aria-label="Retirer cette photo"
+                >
+                  <X size={11} className="text-white" />
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_PHOTOS && (
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                className="w-16 h-16 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 flex flex-col items-center justify-center gap-1 text-[#F5EDED]/40"
+              >
+                <Camera size={16} />
+                <span className="text-[8px] font-bold uppercase">Photo</span>
+              </button>
+            )}
+          </div>
+          <input
+            ref={photoInputRef}
+            type="file"
+            accept="image/*"
+            capture="environment"
+            multiple
+            className="hidden"
+            onChange={(e) => {
+              if (e.target.files && e.target.files.length > 0) handlePhotosSelected(e.target.files);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      ) : (
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Vidéo <span className="text-[#E01E1E]">*</span>
+          </label>
+          {video ? (
+            <div className="flex items-center gap-2.5 bg-black/20 border border-[#890404]/30 rounded-lg px-3 py-2">
+              <Video size={14} className={video.error ? "text-[#E01E1E]" : "text-green-400"} />
+              <span className="text-[11px] text-[#F5EDED]/60 flex-1">
+                {video.uploading ? "Envoi en cours…" : video.error ? "Échec de l'envoi" : "Vidéo prête"}
+              </span>
+              {video.uploading && <Loader2 size={13} className="animate-spin text-[#F5EDED]/40" />}
+              <button type="button" onClick={() => setVideo(null)} aria-label="Retirer la vidéo">
+                <X size={13} className="text-[#F5EDED]/40" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => videoInputRef.current?.click()}
+              className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/40 bg-black/20 rounded-lg py-2.5 text-[#F5EDED]/40"
+            >
+              <Video size={14} />
+              <span className="text-[11px] font-bold uppercase tracking-widest">Filmer ma vidéo</span>
+            </button>
+          )}
+          <input
+            ref={videoInputRef}
+            type="file"
+            accept="video/*"
+            capture="environment"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleVideoSelected(file);
+              e.target.value = "";
+            }}
+          />
+        </div>
+      )}
+
+      {/* Suggestion Lens Buddy — pour les poses obligatoires, garder le même
+          angle/pose chaque semaine rend les photos vraiment comparables. */}
+      {type === "mandatory_poses" && (
+        <div className="flex items-start gap-2 bg-[#E01E1E]/6 border border-[#E01E1E]/15 rounded-lg px-3 py-2.5">
+          <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
+            Astuce : l&apos;appli <strong className="text-[#F5EDED]">Lens Buddy</strong> aide à reprendre
+            exactement la même pose et le même angle chaque semaine.
+          </p>
+        </div>
+      )}
 
       {/* Notes */}
       <div>
@@ -242,10 +404,10 @@ function SubmissionForm({
 
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || mediaUploading}
         className="w-full py-3 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-xl disabled:opacity-50 transition-colors"
       >
-        {submitting ? "Envoi…" : "Envoyer"}
+        {submitting ? "Envoi…" : mediaUploading ? "Envoi des médias…" : "Envoyer"}
       </button>
     </form>
   );
@@ -286,15 +448,39 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
         )}
       </div>
 
-      <a
-        href={photo.drive_link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
-      >
-        <ExternalLink size={11} />
-        Ouvrir dans Drive
-      </a>
+      {(photo.photo_urls.length > 0 || photo.video_url) && (
+        <div className="flex gap-1.5 flex-wrap">
+          {photo.photo_urls.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-12 h-12 object-cover rounded-lg border border-[#890404]/30" />
+            </a>
+          ))}
+          {photo.video_url && (
+            <a
+              href={photo.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+            >
+              <ExternalLink size={11} />
+              Voir la vidéo
+            </a>
+          )}
+        </div>
+      )}
+
+      {photo.drive_link && (
+        <a
+          href={photo.drive_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+        >
+          <ExternalLink size={11} />
+          Ouvrir dans Drive
+        </a>
+      )}
 
       {photo.notes && (
         <p className="text-[10px] text-[#F5EDED]/45 leading-relaxed border-t border-[#890404]/10 pt-2">

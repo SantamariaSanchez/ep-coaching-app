@@ -429,15 +429,39 @@ function PhotoBilanCard({ photo }: { photo: PhotoUpdateWithClient }) {
         </div>
       </div>
 
-      <a
-        href={photo.drive_link}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
-      >
-        <ExternalLink size={11} />
-        Ouvrir dans Drive
-      </a>
+      {(photo.photo_urls.length > 0 || photo.video_url) && (
+        <div className="flex gap-1.5 flex-wrap">
+          {photo.photo_urls.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
+            </a>
+          ))}
+          {photo.video_url && (
+            <a
+              href={photo.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+            >
+              <ExternalLink size={11} />
+              Voir la vidéo
+            </a>
+          )}
+        </div>
+      )}
+
+      {photo.drive_link && (
+        <a
+          href={photo.drive_link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+        >
+          <ExternalLink size={11} />
+          Ouvrir dans Drive
+        </a>
+      )}
 
       {photo.notes && (
         <p className="text-xs text-[#F5EDED]/50 leading-relaxed border-t border-[#890404]/10 pt-2">
