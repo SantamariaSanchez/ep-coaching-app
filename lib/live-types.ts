@@ -29,3 +29,15 @@ export const LIVE_TYPE_LABELS: Record<LiveType, string> = {
 export function generateRoomSlug(): string {
   return `epcoaching-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`;
 }
+
+// Même fenêtre que useJoinWindow (components/live/LiveEventCard.tsx) — le
+// bouton "Rejoindre" n'est affiché que dans cette fenêtre, mais rien ne
+// vérifiait côté serveur qu'on ne rentre pas directement par l'URL en
+// dehors de la fenêtre (avant l'heure, ou bien après que l'appel soit fini).
+export function isWithinJoinWindow(event: Pick<LiveEvent, "starts_at" | "duration_minutes">): boolean {
+  const now = Date.now();
+  const start = new Date(event.starts_at).getTime();
+  const joinOpensAt = start - 10 * 60 * 1000;
+  const joinClosesAt = start + event.duration_minutes * 60 * 1000 + 30 * 60 * 1000;
+  return now >= joinOpensAt && now <= joinClosesAt;
+}

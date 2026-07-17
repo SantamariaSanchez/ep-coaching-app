@@ -28,11 +28,16 @@ export default async function LessonPage({
 
   if (!lesson || !formation) notFound();
 
-  // Flatten all lessons across modules → sections
-  const allLessons = formation.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons));
+  // Flatten all lessons across modules → sections. Précédent/Suivant ne
+  // doit sauter que vers des leçons réellement accessibles — même règle
+  // que la page de présentation (sinon on atterrit sur une leçon verrouillée
+  // que l'utilisateur ne peut normalement même pas cliquer depuis la liste).
+  const allLessons = formation.modules
+    .flatMap((m) => m.sections.flatMap((s) => s.lessons))
+    .filter((l) => l.is_published && l.youtube_id);
   const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
-  const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
+  const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
   // Find current module and section
   const currentModule = formation.modules.find((m) =>

@@ -41,6 +41,8 @@ export async function saveKeyDecision(
   clientId: string,
   data: KeyDecisionInput
 ): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase
@@ -59,6 +61,8 @@ export async function deleteKeyDecision(
   clientId: string,
   decisionId: string
 ): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
     const { error } = await supabase

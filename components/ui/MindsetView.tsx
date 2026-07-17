@@ -144,21 +144,31 @@ function ProfileTab({
   onSave,
 }: {
   profile: MindsetProfile | null;
-  onSave: (result: QuizResult) => Promise<void>;
+  onSave: (result: QuizResult) => Promise<{ error?: string }>;
 }) {
   const [showQuiz, setShowQuiz] = useState(!profile?.quiz_completed_at);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleComplete(result: QuizResult) {
     setSaving(true);
-    await onSave(result);
+    setError(null);
+    const res = await onSave(result);
     setSaving(false);
-    setShowQuiz(false);
+    // Ne ferme le quiz que si l'enregistrement a réussi — sinon les
+    // réponses étaient silencieusement perdues et l'utilisateur retombait
+    // sur l'état "Découvre ton profil mindset" sans explication.
+    if (res.error) {
+      setError(res.error);
+    } else {
+      setShowQuiz(false);
+    }
   }
 
   if (showQuiz) {
     return (
       <div className="space-y-4">
+        {error && <p className="text-xs text-red-400 text-center">{error}</p>}
         {saving ? (
           <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-8 text-center">
             <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">Sauvegarde…</p>
@@ -242,9 +252,10 @@ function HabitsTab({
 }: {
   today: string;
   habitLogs: MindsetHabitLog[];
-  onToggle: (habitKey: string, checked: boolean) => void;
+  onToggle: (habitKey: string, checked: boolean) => Promise<{ error?: string }>;
 }) {
   const [optimisticLogs, setOptimisticLogs] = useState(habitLogs);
+  const [error, setError] = useState<string | null>(null);
 
   const loggedToday = useMemo(
     () => new Set(optimisticLogs.filter((l) => l.logged_at === today).map((l) => l.habit_key)),
@@ -262,14 +273,26 @@ function HabitsTab({
     return streak;
   }
 
-  function handleToggle(habitKey: string) {
+  async function handleToggle(habitKey: string) {
     const checked = !loggedToday.has(habitKey);
+    setError(null);
     setOptimisticLogs((prev) =>
       checked
         ? [...prev, { id: `optimistic-${habitKey}`, client_id: "", habit_key: habitKey, logged_at: today }]
         : prev.filter((l) => !(l.habit_key === habitKey && l.logged_at === today))
     );
-    onToggle(habitKey, checked);
+    const result = await onToggle(habitKey, checked);
+    if (result.error) {
+      // Échec côté serveur : on annule l'optimisme plutôt que de laisser
+      // l'utilisateur croire que son habitude est loggée alors qu'elle ne
+      // l'est pas.
+      setOptimisticLogs((prev) =>
+        checked
+          ? prev.filter((l) => !(l.habit_key === habitKey && l.logged_at === today))
+          : [...prev, { id: `optimistic-${habitKey}`, client_id: "", habit_key: habitKey, logged_at: today }]
+      );
+      setError(result.error);
+    }
   }
 
   const doneCount = HABITS.filter((h) => loggedToday.has(h.key)).length;
@@ -294,6 +317,7 @@ function HabitsTab({
 
   return (
     <div className="space-y-5">
+      {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4 flex items-center justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">Aujourd&apos;hui</p>
@@ -448,14 +472,15 @@ function JournalTab({
   onDelete,
 }: {
   entries: MindsetJournalEntry[];
-  onAdd: (promptKey: string | null, content: string, mood: number | null) => Promise<void>;
-  onDelete: (id: string) => Promise<void>;
+  onAdd: (promptKey: string | null, content: string, mood: number | null) => Promise<{ error?: string; id?: string }>;
+  onDelete: (id: string) => Promise<{ error?: string }>;
 }) {
   const dayPrompt = getPromptOfDay();
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(dayPrompt.key);
   const [content, setContent] = useState("");
   const [mood, setMood] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [localEntries, setLocalEntries] = useState(entries);
 
   const activePrompt = JOURNAL_PROMPTS.find((p) => p.key === selectedPrompt) ?? null;
@@ -463,10 +488,19 @@ function JournalTab({
   async function handleSubmit() {
     if (!content.trim()) return;
     setSaving(true);
-    await onAdd(selectedPrompt, content.trim(), mood);
+    setError(null);
+    const result = await onAdd(selectedPrompt, content.trim(), mood);
+    setSaving(false);
+    if (result.error) {
+      // Ne pas ajouter l'entrée en local si l'enregistrement a échoué —
+      // avant, elle apparaissait quand même jusqu'au prochain rechargement,
+      // où elle disparaissait sans explication.
+      setError(result.error);
+      return;
+    }
     setLocalEntries((prev) => [
       {
-        id: `optimistic-${Date.now()}`,
+        id: result.id ?? `optimistic-${Date.now()}`,
         client_id: "",
         entry_date: new Date().toISOString().split("T")[0],
         prompt_key: selectedPrompt,
@@ -478,16 +512,21 @@ function JournalTab({
     ]);
     setContent("");
     setMood(null);
-    setSaving(false);
   }
 
   async function handleDelete(id: string) {
-    setLocalEntries((prev) => prev.filter((e) => e.id !== id));
-    await onDelete(id);
+    const prev = localEntries;
+    setLocalEntries((cur) => cur.filter((e) => e.id !== id));
+    const result = await onDelete(id);
+    if (result.error) {
+      setError(result.error);
+      setLocalEntries(prev);
+    }
   }
 
   return (
     <div className="space-y-5">
+      {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">Choisis un thème</p>
         <div className="flex gap-2 overflow-x-auto pb-3">
@@ -647,7 +686,7 @@ export default function MindsetView({
       {tab === "profil" && (
         <ProfileTab
           profile={mindsetProfile}
-          onSave={async (result) => { await saveMindsetQuiz(result); }}
+          onSave={(result) => saveMindsetQuiz(result)}
         />
       )}
 
@@ -655,7 +694,7 @@ export default function MindsetView({
         <HabitsTab
           today={today}
           habitLogs={habitLogs}
-          onToggle={(habitKey, checked) => { toggleHabitLog(habitKey, today, checked); }}
+          onToggle={(habitKey, checked) => toggleHabitLog(habitKey, today, checked)}
         />
       )}
 
@@ -664,8 +703,8 @@ export default function MindsetView({
       {tab === "journal" && (
         <JournalTab
           entries={journalEntries}
-          onAdd={async (promptKey, content, mood) => { await addJournalEntry({ promptKey, content, mood }); }}
-          onDelete={async (id) => { await deleteJournalEntry(id); }}
+          onAdd={(promptKey, content, mood) => addJournalEntry({ promptKey, content, mood })}
+          onDelete={(id) => deleteJournalEntry(id)}
         />
       )}
     </div>

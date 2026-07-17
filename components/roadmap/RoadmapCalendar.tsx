@@ -38,8 +38,15 @@ function addDays(d: Date, n: number): Date {
   return r;
 }
 
+// toISOString() convertit en UTC : entre minuit et ~2h heure française,
+// ça renvoyait encore la date de la veille (le calendrier "aujourd'hui"
+// pointait sur le mauvais jour juste après minuit). On construit la date
+// ISO à partir des composants locaux à la place.
 function toISO(d: Date): string {
-  return d.toISOString().split("T")[0];
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
 }
 
 function getPhaseForDate(phases: RoadmapPhase[], dateStr: string): RoadmapPhase | null {
@@ -147,7 +154,6 @@ function WeekDetailModal({
   stat,
   readOnly,
   onClose,
-  onToggleObjective,
 }: {
   weekStart: string;
   weekEnd: string;
@@ -156,7 +162,6 @@ function WeekDetailModal({
   stat: WeekStat | null;
   readOnly: boolean;
   onClose: () => void;
-  onToggleObjective?: (id: string, achieved: boolean) => void;
 }) {
   const phase = getPhaseForDate(phases, weekStart);
   const weekObjectives = getObjectivesForWeek(objectives, weekStart, weekEnd);
@@ -327,17 +332,6 @@ function WeekDetailModal({
                       </p>
                     )}
                   </div>
-                  {!readOnly && onToggleObjective && (
-                    <button
-                      onClick={() => onToggleObjective(obj.id, !obj.is_achieved)}
-                      style={{ background: "none", border: "none", cursor: "pointer", padding: 2 }}
-                    >
-                      {obj.is_achieved
-                        ? <CheckCircle2 size={16} style={{ color: "#4ade80" }} />
-                        : <XCircle size={16} style={{ color: "rgba(245,237,237,0.2)" }} />
-                      }
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
