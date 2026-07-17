@@ -138,7 +138,7 @@ export interface MealCreatorAnswers {
   allergens: Allergen[];
   temp: Temp;
   prepTime: PrepTime;
-  choices: Partial<Record<FoodGroupKey, string>>; // food name per group, "" = skip
+  choices: Partial<Record<FoodGroupKey, string[]>>; // food names per group, multi-select
 }
 
 export interface GeneratedRecipe {
@@ -158,15 +158,77 @@ function baseName(name: string): string {
   return name.replace(/\s*\([^)]*\)\s*/g, "").trim();
 }
 
-function gramsFor(food: Food, targetGrams: number, min: number, max: number): number {
+function gramsFor(targetGrams: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, Math.round(targetGrams / 10) * 10));
 }
 
-const PHASE_TIPS: Record<Phase, string> = {
-  deficit: "Astuce : si tu as encore faim, ajoute du volume avec plus de légumes plutôt que des calories.",
-  maintenance: "Astuce : ajuste les portions à ±20g selon ton appétit du jour, l'équilibre global reste le même.",
-  surplus: "Astuce : ajoute une portion de fruit ou un filet d'huile en plus si tu as encore faim après ce repas.",
+// Répartit un total macro cible entre plusieurs aliments d'un même groupe
+// (multi-sélection) — chacun reçoit une part égale du besoin, converti en
+// grammes via sa propre densité nutritionnelle.
+function distributeGrams(
+  items: Food[],
+  totalTargetG: number,
+  macroKey: "proteins_per_100" | "carbs_per_100" | "fats_per_100",
+  fallbackPer100: number,
+  min: number,
+  max: number
+): { food: Food; grams: number }[] {
+  if (items.length === 0) return [];
+  const perItemTarget = totalTargetG / items.length;
+  return items.map((food) => {
+    const per100 = food[macroKey];
+    const targetGrams = per100 > 0 ? (perItemTarget / per100) * 100 : fallbackPer100;
+    return { food, grams: gramsFor(targetGrams, min, max) };
+  });
+}
+
+function groupLabel(items: Food[]): string | null {
+  if (items.length === 0) return null;
+  if (items.length === 1) return baseName(items[0].name).toLowerCase();
+  if (items.length === 2) return `${baseName(items[0].name).toLowerCase()} & ${baseName(items[1].name).toLowerCase()}`;
+  return `${baseName(items[0].name).toLowerCase()} & co`;
+}
+
+function cookingStep(food: Food, temp: Temp): string {
+  const label = baseName(food.name).toLowerCase();
+  if (["Légumineuses"].includes(food.category ?? "") || food.name === "Tofu ferme" || food.name === "Edamame") {
+    return `Faire revenir ${label} 5-8 min à la poêle avec un peu d'assaisonnement.`;
+  }
+  if (food.name === "Œuf entier") return "Cuire les œufs à ta façon (brouillés, à la poêle, durs), 5-8 min.";
+  if (["Skyr nature", "Cottage cheese"].includes(food.name)) return `Servir ${label} tel quel, frais.`;
+  if (temp === "froid") return `Préparer ${label} froid ou à température ambiante.`;
+  return `Cuire ${label} à la poêle ou au four, 10-15 min selon l'épaisseur.`;
+}
+
+// Plusieurs formulations par phase pour que l'astuce ne soit plus toujours
+// identique d'une recette à l'autre — une seule était générée avant, ce qui
+// donnait l'impression d'un générateur figé.
+const PHASE_TIPS: Record<Phase, string[]> = {
+  deficit: [
+    "Astuce : si tu as encore faim, ajoute du volume avec plus de légumes plutôt que des calories.",
+    "Astuce : bois un grand verre d'eau avant de manger, la faim et la soif se confondent souvent.",
+    "Astuce : privilégie les aliments riches en fibres dans ce repas pour prolonger la satiété.",
+    "Astuce : mange lentement, la sensation de satiété met 15-20 min à arriver au cerveau.",
+    "Astuce : si le repas semble léger, double la portion de légumes plutôt que le féculent.",
+  ],
+  maintenance: [
+    "Astuce : ajuste les portions à ±20g selon ton appétit du jour, l'équilibre global reste le même.",
+    "Astuce : varie les sources de protéines d'un jour à l'autre pour couvrir plus de micronutriments.",
+    "Astuce : ce repas se prépare bien en double pour le lendemain, ça fait gagner du temps.",
+    "Astuce : garde toujours une portion de légumes, même en maintenance, pour la satiété et les fibres.",
+  ],
+  surplus: [
+    "Astuce : ajoute une portion de fruit ou un filet d'huile en plus si tu as encore faim après ce repas.",
+    "Astuce : en surplus, ne néglige pas les légumes, ils facilitent la digestion des plus grosses portions.",
+    "Astuce : si tu peines à finir ce repas, fractionne-le en deux prises rapprochées.",
+    "Astuce : privilégie des glucides denses (riz, pâtes, pain) pour atteindre tes calories sans trop de volume.",
+  ],
 };
+
+function pickTip(phase: Phase): string {
+  const pool = PHASE_TIPS[phase];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
 
 export function generateRecipe(
   answers: MealCreatorAnswers,
@@ -175,18 +237,18 @@ export function generateRecipe(
   const foodByName = new Map(foods.map((f) => [f.name, f]));
   const targetKcal = MEAL_KCAL_TARGET[answers.meal][answers.phase];
 
-  const proteinName = answers.choices.proteine;
-  const glucideName = answers.choices.glucide;
-  const legumeName = answers.choices.legume;
-  const fatName = answers.choices.matiere_grasse;
+  function pickGroup(key: FoodGroupKey): Food[] {
+    return (answers.choices[key] ?? [])
+      .map((n) => foodByName.get(n))
+      .filter((f): f is Food => !!f);
+  }
 
-  if (!proteinName) return null;
-  const proteinFood = foodByName.get(proteinName);
-  if (!proteinFood) return null;
+  const proteinFoods = pickGroup("proteine");
+  const glucideFoods = pickGroup("glucide");
+  const legumeFoods = pickGroup("legume");
+  const fatFoods = pickGroup("matiere_grasse");
 
-  const glucideFood = glucideName ? foodByName.get(glucideName) : null;
-  const legumeFood = legumeName ? foodByName.get(legumeName) : null;
-  const fatFood = fatName ? foodByName.get(fatName) : null;
+  if (proteinFoods.length === 0) return null;
 
   // ── Répartition macro selon le profil choisi — avant, toujours 30/40/30
   // quel que soit ce que le client demandait (riche en glucides, en
@@ -196,24 +258,11 @@ export function generateRecipe(
   const targetCarbG = (targetKcal * split.carb) / 4;
   const targetFatG = (targetKcal * split.fat) / 9;
 
-  const proteinGrams = gramsFor(
-    proteinFood,
-    proteinFood.proteins_per_100 > 0 ? (targetProteinG / proteinFood.proteins_per_100) * 100 : 150,
-    80,
-    300
-  );
-  const glucideGrams = glucideFood
-    ? gramsFor(
-        glucideFood,
-        glucideFood.carbs_per_100 > 0 ? (targetCarbG / glucideFood.carbs_per_100) * 100 : 150,
-        50,
-        300
-      )
-    : 0;
-  const legumeGrams = legumeFood ? 150 : 0;
-  const fatGrams = fatFood
-    ? gramsFor(fatFood, fatFood.fats_per_100 > 0 ? (targetFatG / fatFood.fats_per_100) * 100 : 20, 5, 200)
-    : 0;
+  const proteinEntries = distributeGrams(proteinFoods, targetProteinG, "proteins_per_100", 150, 60, 300);
+  const glucideEntries = distributeGrams(glucideFoods, targetCarbG, "carbs_per_100", 150, 40, 300);
+  const legumePerItem = legumeFoods.length > 1 ? 100 : 150;
+  const legumeEntries = legumeFoods.map((food) => ({ food, grams: legumePerItem }));
+  const fatEntries = distributeGrams(fatFoods, targetFatG, "fats_per_100", 20, 5, 150);
 
   function macrosOf(food: Food, grams: number) {
     return {
@@ -224,65 +273,56 @@ export function generateRecipe(
     };
   }
 
-  const parts = [
-    macrosOf(proteinFood, proteinGrams),
-    ...(glucideFood ? [macrosOf(glucideFood, glucideGrams)] : []),
-    ...(legumeFood ? [macrosOf(legumeFood, legumeGrams)] : []),
-    ...(fatFood ? [macrosOf(fatFood, fatGrams)] : []),
-  ];
-
-  const totals = parts.reduce(
-    (acc, p) => ({
-      kcal: acc.kcal + p.kcal,
-      protein: acc.protein + p.protein,
-      carbs: acc.carbs + p.carbs,
-      fat: acc.fat + p.fat,
-    }),
+  const allEntries = [...proteinEntries, ...glucideEntries, ...legumeEntries, ...fatEntries];
+  const totals = allEntries.reduce(
+    (acc, { food, grams }) => {
+      const m = macrosOf(food, grams);
+      return {
+        kcal: acc.kcal + m.kcal,
+        protein: acc.protein + m.protein,
+        carbs: acc.carbs + m.carbs,
+        fat: acc.fat + m.fat,
+      };
+    },
     { kcal: 0, protein: 0, carbs: 0, fat: 0 }
   );
 
   // ── Ingredients list ──
-  const ingredients: string[] = [`${proteinGrams}g de ${proteinFood.name.toLowerCase()}`];
-  if (glucideFood) ingredients.push(`${glucideGrams}g de ${glucideFood.name.toLowerCase()}`);
-  if (legumeFood) ingredients.push(`${legumeGrams}g de ${legumeFood.name.toLowerCase()}`);
-  if (fatFood) ingredients.push(`${fatGrams}g de ${fatFood.name.toLowerCase()}`);
+  const ingredients: string[] = allEntries.map(({ food, grams }) => `${grams}g de ${food.name.toLowerCase()}`);
   ingredients.push("Sel, poivre, épices au choix");
 
   // ── Steps (templated) ──
   const steps: string[] = [];
-  if (glucideFood) {
-    steps.push(`Cuire ${baseName(glucideFood.name).toLowerCase()} selon les instructions (ou réchauffer s'il est déjà cuit).`);
+  for (const { food } of glucideEntries) {
+    steps.push(`Cuire ${baseName(food.name).toLowerCase()} selon les instructions (ou réchauffer s'il est déjà cuit).`);
   }
-  const proteinCategory = proteinFood.category ?? "";
-  if (["Légumineuse"].includes(proteinCategory) || proteinFood.name === "Tofu ferme" || proteinFood.name === "Edamame") {
-    steps.push(`Faire revenir ${baseName(proteinFood.name).toLowerCase()} 5-8 min à la poêle avec un peu d'assaisonnement.`);
-  } else if (proteinFood.name === "Œuf entier") {
-    steps.push("Cuire les œufs à ta façon (brouillés, à la poêle, durs), 5-8 min.");
-  } else if (["Skyr nature", "Cottage cheese"].includes(proteinFood.name)) {
-    steps.push(`Servir ${baseName(proteinFood.name).toLowerCase()} tel quel, frais.`);
-  } else {
-    steps.push(`Cuire ${baseName(proteinFood.name).toLowerCase()} à la poêle ou au four, 10-15 min selon l'épaisseur.`);
+  for (const { food } of proteinEntries) {
+    steps.push(cookingStep(food, answers.temp));
   }
-  if (legumeFood) {
+  for (const { food } of legumeEntries) {
     steps.push(
       answers.temp === "froid"
-        ? `Préparer ${baseName(legumeFood.name).toLowerCase()} cru ou blanchi puis refroidi.`
-        : `Cuire ${baseName(legumeFood.name).toLowerCase()} à la vapeur ou à la poêle 5-8 min.`
+        ? `Préparer ${baseName(food.name).toLowerCase()} cru ou blanchi puis refroidi.`
+        : `Cuire ${baseName(food.name).toLowerCase()} à la vapeur ou à la poêle 5-8 min.`
     );
   }
-  if (fatFood) {
-    if (["Huile d'olive"].includes(fatFood.name)) {
-      steps.push(`Arroser le tout d'un filet de ${baseName(fatFood.name).toLowerCase()} avant de servir.`);
+  for (const { food } of fatEntries) {
+    if (food.name === "Huile d'olive") {
+      steps.push(`Arroser le tout d'un filet de ${baseName(food.name).toLowerCase()} avant de servir.`);
     } else {
-      steps.push(`Ajouter ${baseName(fatFood.name).toLowerCase()} en accompagnement ou en topping.`);
+      steps.push(`Ajouter ${baseName(food.name).toLowerCase()} en accompagnement ou en topping.`);
     }
   }
   steps.push("Assaisonner à ta convenance et dresser le tout.");
 
   // ── Name ──
-  const nameParts = [baseName(proteinFood.name)];
-  if (glucideFood) nameParts.push(baseName(glucideFood.name).toLowerCase());
-  if (legumeFood) nameParts.push(baseName(legumeFood.name).toLowerCase());
+  const nameParts = [
+    proteinFoods.length === 1 ? baseName(proteinFoods[0].name) : (groupLabel(proteinFoods) as string).replace(/^./, (c) => c.toUpperCase()),
+  ];
+  const glucideLabel = groupLabel(glucideFoods);
+  const legumeLabel = groupLabel(legumeFoods);
+  if (glucideLabel) nameParts.push(glucideLabel);
+  if (legumeLabel) nameParts.push(legumeLabel);
   const name =
     nameParts.length === 1
       ? nameParts[0]
@@ -291,10 +331,10 @@ export function generateRecipe(
       : `${nameParts[0]}, ${nameParts[1]} et ${nameParts[2]}`;
 
   const allergenSet = new Set<Allergen>();
-  const allChosen = [proteinName, glucideName, legumeName, fatName].filter(Boolean) as string[];
+  const allChosenNames = new Set(allEntries.map(({ food }) => food.name));
   for (const group of Object.values(buildFoodGroups(foods))) {
     for (const item of group) {
-      if (allChosen.includes(item.name)) item.allergens.forEach((a) => allergenSet.add(a));
+      if (allChosenNames.has(item.name)) item.allergens.forEach((a) => allergenSet.add(a));
     }
   }
 
@@ -306,7 +346,7 @@ export function generateRecipe(
     fat: totals.fat,
     ingredients,
     steps,
-    tip: PHASE_TIPS[answers.phase],
+    tip: pickTip(answers.phase),
     prepMinutes: answers.prepTime === "rapide" ? 15 : answers.prepTime === "moyen" ? 25 : 40,
     allergens: [...allergenSet],
   };

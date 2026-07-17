@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight, ArrowLeft, Sparkles, Check, Loader2,
+  ArrowRight, ArrowLeft, Sparkles, Check, Loader2, Search, X,
 } from "lucide-react";
 import {
   MEAL_LABELS, DIET_LABELS, PHASE_LABELS, TEMP_LABELS, ALLERGEN_LABELS,
@@ -19,8 +19,8 @@ import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actio
 
 const FOOD_GROUP_ORDER: FoodGroupKey[] = ["proteine", "glucide", "legume", "matiere_grasse"];
 
-type StepKey = "meal" | "diet" | "phase" | "macroProfile" | "allergens" | FoodGroupKey | "temp" | "time" | "result";
-const STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "macroProfile", "allergens", ...FOOD_GROUP_ORDER, "temp", "time", "result"];
+type StepKey = "meal" | "diet" | "phase" | "macroProfile" | "allergens" | "aliments" | "temp" | "time" | "result";
+const STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "macroProfile", "allergens", "aliments", "temp", "time", "result"];
 
 function OptionGrid<T extends string>({
   options,
@@ -88,6 +88,81 @@ function MultiChips<T extends string>({
   );
 }
 
+function FoodGroupPicker({
+  label,
+  hint,
+  options,
+  selected,
+  toggle,
+  search,
+  setSearch,
+}: {
+  label: string;
+  hint: string;
+  options: { name: string }[];
+  selected: Set<string>;
+  toggle: (name: string) => void;
+  search: string;
+  setSearch: (v: string) => void;
+}) {
+  const query = search.trim().toLowerCase();
+  const filtered = query ? options.filter((o) => o.name.toLowerCase().includes(query)) : options;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <h3 className="text-sm font-black text-white">{label}</h3>
+        {selected.size > 0 && (
+          <span className="text-[10px] font-bold text-[#E01E1E]">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+        )}
+      </div>
+      <p className="text-[11px] text-[#F5EDED]/35 mb-2">{hint}</p>
+      <div className="relative mb-2">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+        <input
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Rechercher un aliment..."
+          className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#890404]/60"
+        />
+        {search && (
+          <button
+            onClick={() => setSearch("")}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+          >
+            <X size={13} />
+          </button>
+        )}
+      </div>
+      <div className="max-h-44 overflow-y-auto pr-1 grid grid-cols-2 gap-2 rounded-lg">
+        {filtered.map(({ name }) => {
+          const active = selected.has(name);
+          return (
+            <button
+              key={name}
+              onClick={() => toggle(name)}
+              className={`text-left px-3 py-2.5 rounded-lg border text-xs font-bold transition-all flex items-center gap-1.5 ${
+                active
+                  ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                  : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+              }`}
+            >
+              {active && <Check size={11} className="text-[#E01E1E] flex-shrink-0" />}
+              <span className="truncate">{name}</span>
+            </button>
+          );
+        })}
+        {filtered.length === 0 && (
+          <p className="col-span-2 text-xs text-[#F5EDED]/30 italic py-2">
+            {query ? "Aucun résultat pour cette recherche." : "Aucune option compatible avec ton régime/allergies."}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MealCreatorWizard({
   foods,
   onSaveRecipe,
@@ -103,7 +178,12 @@ export default function MealCreatorWizard({
   const [phase, setPhase] = useState<Phase | null>(null);
   const [macroProfile, setMacroProfile] = useState<MacroProfile | null>(null);
   const [allergens, setAllergens] = useState<Set<Allergen>>(new Set());
-  const [choices, setChoices] = useState<Partial<Record<FoodGroupKey, string>>>({});
+  const [choices, setChoices] = useState<Record<FoodGroupKey, Set<string>>>({
+    proteine: new Set(), glucide: new Set(), legume: new Set(), matiere_grasse: new Set(),
+  });
+  const [foodSearch, setFoodSearch] = useState<Record<FoodGroupKey, string>>({
+    proteine: "", glucide: "", legume: "", matiere_grasse: "",
+  });
   const [temp, setTemp] = useState<Temp | null>(null);
   const [prepTime, setPrepTime] = useState<PrepTime | null>(null);
 
@@ -122,6 +202,15 @@ export default function MealCreatorWizard({
     });
   }
 
+  function toggleFood(group: FoodGroupKey, name: string) {
+    setChoices((prev) => {
+      const next = new Set(prev[group]);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
+      return { ...prev, [group]: next };
+    });
+  }
+
   function go(next: number, dir: 1 | -1) {
     setDirection(dir);
     setStepIdx(next);
@@ -133,10 +222,7 @@ export default function MealCreatorWizard({
     if (step === "phase") return !!phase;
     if (step === "macroProfile") return !!macroProfile;
     if (step === "allergens") return true;
-    if (FOOD_GROUP_ORDER.includes(step as FoodGroupKey)) {
-      if (step === "proteine") return !!choices.proteine;
-      return true; // other groups optional
-    }
+    if (step === "aliments") return choices.proteine.size > 0;
     if (step === "temp") return !!temp;
     if (step === "time") return !!prepTime;
     return true;
@@ -153,7 +239,12 @@ export default function MealCreatorWizard({
         allergens: [...allergens],
         temp: temp!,
         prepTime: prepTime!,
-        choices,
+        choices: {
+          proteine: [...choices.proteine],
+          glucide: [...choices.glucide],
+          legume: [...choices.legume],
+          matiere_grasse: [...choices.matiere_grasse],
+        },
       };
       setResult(generateRecipe(answers, foods));
     }
@@ -167,7 +258,8 @@ export default function MealCreatorWizard({
     setPhase(null);
     setMacroProfile(null);
     setAllergens(new Set());
-    setChoices({});
+    setChoices({ proteine: new Set(), glucide: new Set(), legume: new Set(), matiere_grasse: new Set() });
+    setFoodSearch({ proteine: "", glucide: "", legume: "", matiere_grasse: "" });
     setTemp(null);
     setPrepTime(null);
     setResult(null);
@@ -299,40 +391,26 @@ export default function MealCreatorWizard({
             </div>
           )}
 
-          {FOOD_GROUP_ORDER.includes(step as FoodGroupKey) && (
+          {step === "aliments" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">
-                {FOOD_GROUP_LABELS[step as FoodGroupKey]}
-                {step !== "proteine" && <span className="text-[#F5EDED]/30 font-normal text-sm"> (optionnel)</span>}
-              </h2>
+              <h2 className="text-xl font-black text-white mb-1">Choisis tes aliments</h2>
               <p className="text-xs text-[#F5EDED]/40 mb-5">
-                {step === "proteine" ? "La base de ta recette." : "Choisis-en un, ou passe directement."}
+                Sélectionne autant d&apos;aliments que tu veux par catégorie (protéine obligatoire, le reste est optionnel).
               </p>
-              <div className="grid grid-cols-2 gap-2.5">
-                {(foodGroupOptions[step as FoodGroupKey] ?? []).map(({ name }) => {
-                  const active = choices[step as FoodGroupKey] === name;
-                  return (
-                    <button
-                      key={name}
-                      onClick={() =>
-                        setChoices((prev) => ({ ...prev, [step]: active ? undefined : name }))
-                      }
-                      className={`text-left px-3.5 py-3 rounded-xl border text-xs font-bold transition-all ${
-                        active
-                          ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
-                          : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
-                      }`}
-                    >
-                      {name}
-                    </button>
-                  );
-                })}
+              <div className="flex flex-col gap-6 max-h-[26rem] overflow-y-auto pr-1 -mr-1">
+                {FOOD_GROUP_ORDER.map((key) => (
+                  <FoodGroupPicker
+                    key={key}
+                    label={FOOD_GROUP_LABELS[key] + (key === "proteine" ? "" : " (optionnel)")}
+                    hint={key === "proteine" ? "La base de ta recette." : "Choisis-en un ou plusieurs, ou passe."}
+                    options={foodGroupOptions[key] ?? []}
+                    selected={choices[key]}
+                    toggle={(name) => toggleFood(key, name)}
+                    search={foodSearch[key]}
+                    setSearch={(v) => setFoodSearch((prev) => ({ ...prev, [key]: v }))}
+                  />
+                ))}
               </div>
-              {(foodGroupOptions[step as FoodGroupKey] ?? []).length === 0 && (
-                <p className="text-xs text-[#F5EDED]/30 italic">
-                  Aucune option compatible avec ton régime/allergies pour ce groupe, tu peux passer.
-                </p>
-              )}
             </div>
           )}
 
