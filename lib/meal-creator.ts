@@ -118,6 +118,7 @@ const MEAL_KCAL_TARGET: Record<MealType, Record<Phase, number>> = {
   dejeuner: { deficit: 450, maintenance: 550, surplus: 700 },
   diner: { deficit: 400, maintenance: 500, surplus: 650 },
   collation: { deficit: 200, maintenance: 250, surplus: 320 },
+  "pre-training": { deficit: 200, maintenance: 280, surplus: 350 },
   "post-training": { deficit: 350, maintenance: 400, surplus: 500 },
   dessert: { deficit: 150, maintenance: 200, surplus: 280 },
 };
