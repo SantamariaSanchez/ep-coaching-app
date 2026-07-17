@@ -51,11 +51,15 @@ export interface CheckIn {
   video_drive_link: string | null;
   photo_paths: string[] | null;
   video_path: string | null;
+  // Retour vidéo type Loom du coach, attaché à ce check-in (bucket
+  // "coach-videos", distinct du video_path du client ci-dessus).
+  coach_video_path: string | null;
   // Media — URLs signées prêtes à afficher, calculées par les fonctions de
   // lecture ci-dessous. Vide par défaut pour les fonctions qui n'ont pas
   // besoin d'afficher les médias (ex. stats, bilans).
   photo_urls: string[];
   video_url: string | null;
+  coach_video_url: string | null;
 }
 
 export interface CheckInWithClient extends CheckIn {
@@ -70,10 +74,12 @@ export interface CheckInWithClientProfile extends CheckIn {
 // signées prêtes à afficher — appelé par les fonctions de lecture dont le
 // résultat est effectivement rendu avec les médias (pas par celles qui ne
 // servent qu'à des compteurs/stats).
-async function withSignedMedia<T extends { photo_paths: string[] | null; video_path: string | null }>(
+async function withSignedMedia<
+  T extends { photo_paths: string[] | null; video_path: string | null; coach_video_path: string | null }
+>(
   supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   rows: T[]
-): Promise<(T & { photo_urls: string[]; video_url: string | null })[]> {
+): Promise<(T & { photo_urls: string[]; video_url: string | null; coach_video_url: string | null })[]> {
   return Promise.all(
     rows.map(async (row) => {
       const photo_urls = row.photo_paths?.length
@@ -88,7 +94,10 @@ async function withSignedMedia<T extends { photo_paths: string[] | null; video_p
       const video_url = row.video_path
         ? (await supabase.storage.from("checkin-media").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
         : null;
-      return { ...row, photo_urls, video_url };
+      const coach_video_url = row.coach_video_path
+        ? (await supabase.storage.from("coach-videos").createSignedUrl(row.coach_video_path, 3600)).data?.signedUrl ?? null
+        : null;
+      return { ...row, photo_urls, video_url, coach_video_url };
     })
   );
 }

@@ -64,3 +64,27 @@ export async function updateCheckinDay(
   revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
   return { success: true };
 }
+
+// Retour vidéo type Loom attaché à un check-in — le fichier est déjà
+// uploadé côté client (voir CoachVideoRecorder), on ne reçoit ici que le
+// chemin de stockage.
+export async function attachCoachVideo(
+  checkinId: string,
+  clientId: string,
+  videoPath: string
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("check_ins")
+    .update({ coach_video_path: videoPath })
+    .eq("id", checkinId)
+    .eq("client_id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  return {};
+}

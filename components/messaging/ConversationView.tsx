@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X } from "lucide-react";
+import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,11 +17,12 @@ interface Message {
   conversation_id: string;
   sender_id: string;
   receiver_id: string;
-  type: "text" | "voice" | "image";
+  type: "text" | "voice" | "image" | "video";
   content: string | null;
   voice_url: string | null;
   voice_duration_seconds: number | null;
   image_url: string | null;
+  video_url: string | null;
   is_read: boolean;
   expires_at: string | null;
   created_at: string;
@@ -261,6 +263,8 @@ function MessageBubble({
               className="rounded-lg max-w-[220px] max-h-[280px] object-cover"
             />
           </a>
+        ) : msg.type === "video" && msg.video_url ? (
+          <video src={msg.video_url} controls playsInline className="rounded-lg max-w-[240px] max-h-[300px]" />
         ) : (
           <p
             className={`text-sm leading-relaxed ${
@@ -516,6 +520,45 @@ export default function ConversationView({
     [conversationId, userId, peerId, isCoach, peerName]
   );
 
+  // Retour vidéo type Loom (coach uniquement) — voir components/coach/CoachVideoRecorder.tsx.
+  const sendVideoMessage = useCallback(
+    async (blob: Blob) => {
+      setSendError(null);
+      const fileName = `${conversationId}/${userId}-${Date.now()}.webm`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("coach-videos")
+        .upload(fileName, blob, { contentType: blob.type || "video/webm", upsert: false });
+      if (uploadError) throw uploadError;
+
+      const { data: signedData, error: signError } = await supabase.storage
+        .from("coach-videos")
+        .createSignedUrl(uploadData.path, 30 * 24 * 60 * 60);
+      if (signError || !signedData) throw signError ?? new Error("Signed URL failed");
+
+      const { data: msgData, error: insertError } = await supabase
+        .from("messages")
+        .insert({
+          conversation_id: conversationId,
+          sender_id: userId,
+          receiver_id: peerId,
+          type: "video",
+          content: null,
+          video_url: signedData.signedUrl,
+          is_read: false,
+        })
+        .select()
+        .single();
+      if (insertError) throw insertError;
+
+      if (msgData) {
+        setMessages((prev) => [...prev, msgData as Message]);
+        await sendPushNotification("Emmanuel t'a envoyé une vidéo");
+      }
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [conversationId, userId, peerId]
+  );
+
   return (
     <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100dvh-0px)] max-h-[800px]">
       {/* Messages */}
@@ -571,6 +614,14 @@ export default function ConversationView({
             e.target.value = "";
           }}
         />
+
+        {isCoach && (
+          <CoachVideoRecorder
+            onSend={sendVideoMessage}
+            triggerLabel=""
+            triggerClassName="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-colors"
+          />
+        )}
 
         <input
           type="text"

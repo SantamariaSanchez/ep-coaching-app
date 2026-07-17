@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useActionState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages } from "@/utils/daily-logs";
-import { replyToCheckin } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
+import { replyToCheckin, attachCoachVideo } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
+import { createClientSupabase } from "@/lib/supabase-client";
+import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 
 const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
 
@@ -83,10 +86,33 @@ function NumRow({ label, value }: { label: string; value: string | null | undefi
 function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
   const [state, formAction, isPending] = useActionState(replyToCheckin, null);
   const formRef = useRef<HTMLFormElement>(null);
+  const router = useRouter();
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state && "success" in state) formRef.current?.reset();
   }, [state]);
+
+  async function handleVideoSend(blob: Blob) {
+    setVideoError(null);
+    const supabase = createClientSupabase();
+    const path = `${checkin.id}-${Date.now()}.webm`;
+    const { error: uploadError } = await supabase.storage
+      .from("coach-videos")
+      .upload(path, blob, { contentType: blob.type || "video/webm", upsert: false });
+    if (uploadError) {
+      setVideoError("Échec de l'envoi de la vidéo.");
+      throw uploadError;
+    }
+    const result = await attachCoachVideo(checkin.id, checkin.client_id, path);
+    if (result.error) {
+      setVideoError(result.error);
+      throw new Error(result.error);
+    }
+    setVideoPath(path);
+    router.refresh();
+  }
 
   return (
     <form ref={formRef} action={formAction} style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(137,4,4,0.15)" }}>
@@ -108,6 +134,14 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
             resize: "none", outline: "none", boxSizing: "border-box",
           }}
         />
+      </div>
+
+      <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
+        <CoachVideoRecorder onSend={handleVideoSend} triggerLabel="Retour vidéo" />
+        {(videoPath || checkin.coach_video_path) && !videoError && (
+          <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Vidéo attachée</span>
+        )}
+        {videoError && <span style={{ fontSize: 11, color: "#FDC4C4" }}>{videoError}</span>}
       </div>
 
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
@@ -349,7 +383,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                     borderRadius: 8, padding: "6px 12px", textDecoration: "none", height: 64, boxSizing: "border-box",
                   }}
                 >
-                  <ExternalLink size={11} /> Vidéo posing
+                  <ExternalLink size={11} /> Vidéo d&apos;exécution
                 </a>
               )}
             </div>
@@ -400,6 +434,9 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.coach_notes}
               </p>
+              {checkin.coach_video_url && (
+                <video src={checkin.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }} />
+              )}
             </div>
           ) : (
             <CoachReplyForm checkin={checkin} />
