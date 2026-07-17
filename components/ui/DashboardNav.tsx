@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
-  Search, Newspaper, FlaskConical, Microscope, Menu, X, Bell,
+  Search, Newspaper, FlaskConical, Microscope, Bell,
 } from "lucide-react";
-import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import NotificationBell from "@/components/ui/NotificationBell";
@@ -81,7 +80,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement"],
+    matchSegments: ["communaute", "abonnement", "profile"],
   },
 ];
 
@@ -124,7 +123,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "abonnement"],
+    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile"],
   },
 ];
 
@@ -223,7 +222,7 @@ const COACH_TABS: TabItem[] = [
     label: "Moi",
     icon: Activity,
     href: "/dashboard/coach/moi/bilan",
-    matchSegments: ["moi"],
+    matchSegments: ["moi", "profile"],
   },
   {
     label: "Contenu",
@@ -464,13 +463,6 @@ export default function DashboardNav({
   const router = useRouter();
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
-  // Ferme le tiroir de nav mobile dès qu'on change de page — sinon il reste
-  // ouvert par-dessus la nouvelle page après un clic sur un lien.
-  useEffect(() => {
-    setDrawerOpen(false);
-  }, [pathname]);
 
   // Reprise automatique d'une séance active après relance à froid de l'app —
   // sur mobile, verrouiller l'écran pendant une séance peut faire évincer le
@@ -501,10 +493,8 @@ export default function DashboardNav({
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
   const [analyticsAlerts, setAnalyticsAlerts] = useState(0);
-  const [notifCount,      setNotifCount]      = useState(0);
   const [userName,        setUserName]        = useState<string | null>(null);
   const [userRole,        setUserRole]        = useState<string | null>(null);
-  const notifChannelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -540,11 +530,6 @@ export default function DashboardNav({
       .then((d) => setUnreadMessages(d.count ?? 0))
       .catch(() => {});
 
-    fetch("/api/notifications/unread")
-      .then((r) => r.json())
-      .then((d) => setNotifCount(d.count ?? 0))
-      .catch(() => {});
-
     const supabase = createClientSupabase();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -564,15 +549,6 @@ export default function DashboardNav({
           }
         });
 
-      const notifCh = supabase
-        .channel("nav-notifications")
-        .on(
-          "postgres_changes",
-          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-          () => fetch("/api/notifications/unread").then((r) => r.json()).then((d) => setNotifCount(d.count ?? 0)).catch(() => {})
-        )
-        .subscribe();
-      notifChannelRef.current = notifCh;
     });
 
     const ch = supabase
@@ -586,7 +562,6 @@ export default function DashboardNav({
       .subscribe();
     return () => {
       supabase.removeChannel(ch);
-      if (notifChannelRef.current) supabase.removeChannel(notifChannelRef.current);
     };
   }, []);
 
@@ -944,65 +919,15 @@ export default function DashboardNav({
           height: 72,
           gap: 2,
         }}>
-          {/* Menu — regroupe tout ce qui n'a pas sa place dans les onglets :
-              profil, notifications, déconnexion, sommaire complet. Largeur
-              fixe et à part (pas flex:1 comme les onglets) pour ne pas
-              tasser la rangée principale — avant, en 8e onglet à largeur
-              égale, la rangée devenait trop serrée pour rester tapable
-              confortablement. */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Ouvrir le menu"
-            style={{
-              flexShrink: 0,
-              width: 44,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-              background: "none",
-              border: "none",
-              borderRadius: 12,
-              minHeight: 56,
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: 34,
-                height: 30,
-                borderRadius: 15,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Menu size={17} strokeWidth={1.6} style={{ color: "rgba(245,237,237,0.28)" }} />
-              {notifCount > 0 && (
-                <span style={{
-                  position: "absolute",
-                  top: 1,
-                  right: -1,
-                  background: "#E01E1E",
-                  color: "#fff",
-                  borderRadius: "50%",
-                  width: 14,
-                  height: 14,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 8,
-                  fontWeight: 800,
-                  border: "1.5px solid #070000",
-                }}>
-                  {notifCount > 9 ? "9+" : notifCount}
-                </span>
-              )}
-            </div>
-          </button>
+          {/* Le menu hamburger a été retiré — chaque onglet ci-dessous
+              expose déjà sa sous-nav complète (y compris Mon profil, voir
+              "profile" ajouté à un matchSegments par rôle), plus rien n'y
+              était uniquement accessible. Les notifications, elles,
+              n'avaient pas d'autre point d'accès mobile : gardées ici, à
+              largeur fixe pour ne pas tasser la rangée d'onglets. */}
+          <div style={{ flexShrink: 0, width: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <NotificationBell variant="mobile" openUpward alignLeft />
+          </div>
 
           <div style={{ width: 1, background: "rgba(224,30,30,0.1)", margin: "10px 2px" }} />
 
@@ -1092,73 +1017,6 @@ export default function DashboardNav({
           })}
         </div>
       </nav>
-
-      {/* ── Mobile nav drawer — accès complet et organisé par groupes,
-          identique au sommaire desktop, plutôt que de tout tasser dans les
-          onglets du bas + la bande d'onglets secondaires. ────────────────── */}
-      {!isDesktop && drawerOpen && (
-        <div className="fixed inset-0 z-[200] flex">
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <div
-            className="relative w-[82%] max-w-[320px] h-full bg-[#0a0000] border-r border-[#890404]/20 overflow-y-auto"
-            style={{ paddingTop: "calc(14px + env(safe-area-inset-top, 0px))" }}
-          >
-            <div className="flex items-center justify-between px-4 pb-4">
-              <EPLogo size="sm" showCoaching />
-              <div className="flex items-center gap-2">
-                <NotificationBell variant="mobile" />
-                <button
-                  onClick={() => setDrawerOpen(false)}
-                  className="p-2 rounded-lg text-[#F5EDED]/50 hover:text-white transition-colors"
-                  aria-label="Fermer le menu"
-                >
-                  <X size={18} />
-                </button>
-              </div>
-            </div>
-
-            <nav className="px-3 pb-8">
-              {sidebar.map((group, gi) => (
-                <div key={gi} className="mb-1">
-                  {group.group && (
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/20 px-2 pt-4 pb-1.5">
-                      {group.group}
-                    </p>
-                  )}
-                  {group.items.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
-                    const active = isSidebarActive(segment);
-                    const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
-                    const count = getBadgeCount(badge);
-                    return (
-                      <Link
-                        key={href}
-                        href={href}
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 text-sm transition-colors ${
-                          active
-                            ? "bg-[#E01E1E]/12 text-white font-bold"
-                            : "text-[#F5EDED]/50 hover:bg-[#890404]/10 hover:text-[#F5EDED]/80"
-                        }`}
-                      >
-                        <Icon size={16} strokeWidth={active ? 2.2 : 1.7} className={active ? "text-[#E01E1E]" : ""} />
-                        <span className="flex-1">{label}</span>
-                        {locked && <Lock size={11} className="text-[#F5EDED]/25" />}
-                        {count > 0 && (
-                          <span className="w-4 h-4 rounded-full bg-[#E01E1E] text-white text-[9px] font-bold flex items-center justify-center">
-                            {count > 9 ? "9+" : count}
-                          </span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              ))}
-            </nav>
-          </div>
-        </div>
-      )}
 
       <ActiveSessionBanner />
     </>

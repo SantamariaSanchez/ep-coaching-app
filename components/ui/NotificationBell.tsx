@@ -26,7 +26,17 @@ function timeAgo(iso: string): string {
   return `${days} j`;
 }
 
-export default function NotificationBell({ variant = "desktop" }: { variant?: "desktop" | "mobile" }) {
+export default function NotificationBell({
+  variant = "desktop",
+  openUpward = false,
+  alignLeft = false,
+}: {
+  variant?: "desktop" | "mobile";
+  /** Panneau ouvert vers le haut plutôt que vers le bas — pour un déclencheur ancré en bas d'écran */
+  openUpward?: boolean;
+  /** Panneau aligné sur le bord gauche du déclencheur plutôt que le droit */
+  alignLeft?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [count, setCount] = useState(0);
   const [items, setItems] = useState<NotificationItem[]>([]);
@@ -136,8 +146,8 @@ export default function NotificationBell({ variant = "desktop" }: { variant?: "d
         <div
           style={{
             position: "absolute",
-            top: "calc(100% + 8px)",
-            right: 0,
+            ...(openUpward ? { bottom: "calc(100% + 8px)" } : { top: "calc(100% + 8px)" }),
+            ...(alignLeft ? { left: 0 } : { right: 0 }),
             width: 320,
             maxHeight: 420,
             overflowY: "auto",
