@@ -36,9 +36,17 @@ export interface CheckIn {
   upcoming_obstacles: string | null;
   coach_questions: string | null;
   additional_notes: string | null;
-  // Media links
+  // Media — anciens liens Drive (check-ins pré-upload direct, gardés pour
+  // affichage rétrocompatible) et chemins de stockage bruts.
   photo_drive_link: string | null;
   video_drive_link: string | null;
+  photo_paths: string[] | null;
+  video_path: string | null;
+  // Media — URLs signées prêtes à afficher, calculées par les fonctions de
+  // lecture ci-dessous. Vide par défaut pour les fonctions qui n'ont pas
+  // besoin d'afficher les médias (ex. stats, bilans).
+  photo_urls: string[];
+  video_url: string | null;
 }
 
 export interface CheckInWithClient extends CheckIn {
@@ -47,6 +55,33 @@ export interface CheckInWithClient extends CheckIn {
 
 export interface CheckInWithClientProfile extends CheckIn {
   profiles: { full_name: string | null; email: string | null } | null;
+}
+
+// Transforme les chemins de stockage bruts (photo_paths/video_path) en URLs
+// signées prêtes à afficher — appelé par les fonctions de lecture dont le
+// résultat est effectivement rendu avec les médias (pas par celles qui ne
+// servent qu'à des compteurs/stats).
+async function withSignedMedia<T extends { photo_paths: string[] | null; video_path: string | null }>(
+  supabase: Awaited<ReturnType<typeof createServerSupabase>>,
+  rows: T[]
+): Promise<(T & { photo_urls: string[]; video_url: string | null })[]> {
+  return Promise.all(
+    rows.map(async (row) => {
+      const photo_urls = row.photo_paths?.length
+        ? (
+            await Promise.all(
+              row.photo_paths.map((p) => supabase.storage.from("checkin-media").createSignedUrl(p, 3600))
+            )
+          )
+            .map((r) => r.data?.signedUrl ?? null)
+            .filter((u): u is string => !!u)
+        : [];
+      const video_url = row.video_path
+        ? (await supabase.storage.from("checkin-media").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
+        : null;
+      return { ...row, photo_urls, video_url };
+    })
+  );
 }
 
 export function getWeekStart(): string {
@@ -75,7 +110,9 @@ export async function getThisWeekCheckin(clientId: string): Promise<CheckIn | nu
       .eq("client_id", clientId)
       .eq("week_start", getWeekStart())
       .maybeSingle();
-    return (data as CheckIn) ?? null;
+    if (!data) return null;
+    const [signed] = await withSignedMedia(supabase, [data as CheckIn]);
+    return signed;
   } catch {
     return null;
   }
@@ -89,7 +126,7 @@ export async function getClientCheckins(clientId: string): Promise<CheckIn[]> {
       .select("*")
       .eq("client_id", clientId)
       .order("week_start", { ascending: false });
-    return (data as CheckIn[]) ?? [];
+    return await withSignedMedia(supabase, (data as CheckIn[]) ?? []);
   } catch {
     return [];
   }
@@ -104,7 +141,7 @@ export async function getClientPastCheckins(clientId: string): Promise<CheckIn[]
       .eq("client_id", clientId)
       .lt("week_start", getWeekStart())
       .order("week_start", { ascending: false });
-    return (data as CheckIn[]) ?? [];
+    return await withSignedMedia(supabase, (data as CheckIn[]) ?? []);
   } catch {
     return [];
   }

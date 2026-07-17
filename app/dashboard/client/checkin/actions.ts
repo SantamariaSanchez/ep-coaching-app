@@ -40,6 +40,11 @@ export async function submitCheckin(
   const weekStart = getWeekStart();
   const weekNumber = getISOWeek(new Date(weekStart));
 
+  const photoPaths = formData
+    .getAll("photo_paths")
+    .map((v) => (v as string).trim())
+    .filter(Boolean);
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("check_ins").insert({
@@ -60,9 +65,10 @@ export async function submitCheckin(
     upcoming_obstacles: txt(formData.get("upcoming_obstacles")),
     coach_questions: txt(formData.get("coach_questions")),
     additional_notes: txt(formData.get("additional_notes")),
-    // Media links
-    photo_drive_link: txt(formData.get("photo_drive_link")),
-    video_drive_link: txt(formData.get("video_drive_link")),
+    // Médias — déjà uploadés côté client (voir CheckinForm), on ne reçoit ici
+    // que les chemins de stockage, jamais les fichiers eux-mêmes.
+    photo_paths: photoPaths.length > 0 ? photoPaths : null,
+    video_path: txt(formData.get("video_path")),
   });
 
   if (error) return { error: error.message };

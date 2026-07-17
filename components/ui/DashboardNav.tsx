@@ -439,6 +439,32 @@ export default function DashboardNav({
     setDrawerOpen(false);
   }, [pathname]);
 
+  // Reprise automatique d'une séance active après relance à froid de l'app —
+  // sur mobile, verrouiller l'écran pendant une séance peut faire évincer le
+  // processus par l'OS ; à la réouverture (icône ré-appuyée), l'app repart de
+  // start_url ("/") et non de la page où on était, ce qui donnait l'impression
+  // que la séance avait "disparu" alors que sa progression était toujours là.
+  // sessionStorage (contrairement à localStorage) est vidé quand le process
+  // repart de zéro mais survit à un simple verrouillage d'écran tant que l'app
+  // reste en mémoire — il sert ici à ne déclencher la redirection qu'une seule
+  // fois par lancement réel, jamais lors d'une navigation normale dans l'app.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("ep-session-resume-checked")) return;
+    sessionStorage.setItem("ep-session-resume-checked", "1");
+
+    const activeId = localStorage.getItem("ep-active-session-id");
+    if (!activeId) return;
+    if (pathname.includes("/logbook/session/")) return;
+
+    const sessionBase = isCoach ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
+    router.replace(`${sessionBase}/session/${activeId}`);
+    // Volontairement exécuté une seule fois au montage (relance de l'app) —
+    // pas à chaque changement de route, sinon ça interromprait une navigation
+    // volontaire vers une autre page pendant que la séance tourne en fond.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
   const [analyticsAlerts, setAnalyticsAlerts] = useState(0);

@@ -251,7 +251,38 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
             </div>
           )}
 
-          {/* ── Drive links ───────────────────────────────────────────────── */}
+          {/* ── Photos & vidéo uploadées ──────────────────────────────────── */}
+          {(checkin.photo_urls.length > 0 || checkin.video_url) && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+              {checkin.photo_urls.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={url}
+                    alt=""
+                    style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }}
+                  />
+                </a>
+              ))}
+              {checkin.video_url && (
+                <a
+                  href={checkin.video_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 5,
+                    fontSize: 11, fontWeight: 700, color: "#E01E1E",
+                    background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
+                    borderRadius: 8, padding: "6px 12px", textDecoration: "none", height: 64, boxSizing: "border-box",
+                  }}
+                >
+                  <ExternalLink size={11} /> Vidéo posing
+                </a>
+              )}
+            </div>
+          )}
+
+          {/* ── Anciens liens Drive (check-ins pré-upload direct) ───────────── */}
           {(checkin.photo_drive_link || checkin.video_drive_link) && (
             <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
               {checkin.photo_drive_link && (

@@ -97,7 +97,25 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
       <QA q="Questions coach" a={checkin.coach_questions} />
       <QA q="Notes" a={checkin.additional_notes} />
 
-      {/* Media links */}
+      {/* Photos & vidéo uploadées */}
+      {(checkin.photo_urls.length > 0 || checkin.video_url) && (
+        <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+          {checkin.photo_urls.map((url, i) => (
+            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={url} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(137,4,4,0.3)" }} />
+            </a>
+          ))}
+          {checkin.video_url && (
+            <a href={checkin.video_url} target="_blank" rel="noopener noreferrer"
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+              <ExternalLink size={11} /> Vidéo
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* Anciens liens Drive (check-ins pré-upload direct) */}
       {(checkin.photo_drive_link || checkin.video_drive_link) && (
         <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
           {checkin.photo_drive_link && (
@@ -222,6 +240,22 @@ export default async function CheckinPage() {
             <QA q="Obstacles à venir" a={existing.upcoming_obstacles} />
             <QA q="Questions coach" a={existing.coach_questions} />
             <QA q="Notes" a={existing.additional_notes} />
+            {(existing.photo_urls.length > 0 || existing.video_url) && (
+              <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
+                {existing.photo_urls.map((url, i) => (
+                  <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }} />
+                  </a>
+                ))}
+                {existing.video_url && (
+                  <a href={existing.video_url} target="_blank" rel="noopener noreferrer"
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
+                    <ExternalLink size={11} /> Vidéo
+                  </a>
+                )}
+              </div>
+            )}
             {(existing.photo_drive_link || existing.video_drive_link) && (
               <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                 {existing.photo_drive_link && (
