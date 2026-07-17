@@ -3,7 +3,47 @@
 import { useState, useActionState, useEffect, useRef } from "react";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import type { CheckIn } from "@/utils/checkins";
+import type { WeeklyAverages } from "@/utils/daily-logs";
 import { replyToCheckin } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
+
+const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
+
+// Moyennes des bilans quotidiens de la semaine — pour le coach uniquement,
+// affiché en petit, le client n'a pas besoin de le voir en double de son
+// propre bilan quotidien déjà rempli au jour le jour.
+function DailyAveragesRecap({ averages }: { averages: WeeklyAverages }) {
+  if (averages.daysLogged === 0) return null;
+  const items: { label: string; value: string }[] = [];
+  if (averages.weight != null) items.push({ label: "Poids", value: `${averages.weight} kg` });
+  if (averages.sleep_hours != null) items.push({ label: "Sommeil", value: `${averages.sleep_hours} h` });
+  if (averages.calories_kcal != null) items.push({ label: "Kcal", value: `${averages.calories_kcal}` });
+  if (averages.proteins_g != null) items.push({ label: "Prot.", value: `${averages.proteins_g}g` });
+  if (averages.carbs_g != null) items.push({ label: "Gluc.", value: `${averages.carbs_g}g` });
+  if (averages.fats_g != null) items.push({ label: "Lip.", value: `${averages.fats_g}g` });
+  if (averages.training_rating != null) items.push({ label: "Séance", value: `${averages.training_rating}/10` });
+  if (averages.stress != null) items.push({ label: "Stress", value: STRESS_HUNGER_LABEL[Math.round(averages.stress)] });
+  if (averages.hunger != null) items.push({ label: "Faim", value: STRESS_HUNGER_LABEL[Math.round(averages.hunger)] });
+  if (averages.digestion_summary) items.push({ label: "Digestion", value: `${averages.digestion_summary.value} (${averages.digestion_summary.count}/${averages.daysLogged})` });
+  if (items.length === 0) return null;
+
+  return (
+    <div style={{
+      display: "flex", flexWrap: "wrap", gap: "4px 12px",
+      background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.15)",
+      borderRadius: 8, padding: "8px 10px", marginBottom: 14,
+    }}>
+      <p style={{ width: "100%", fontSize: 8, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
+        Moy. bilan quotidien ({averages.daysLogged}/7 j)
+      </p>
+      {items.map(({ label, value }) => (
+        <span key={label} style={{ fontSize: 10, color: "rgba(245,237,237,0.5)" }}>
+          <span style={{ color: "rgba(245,237,237,0.28)" }}>{label} </span>
+          <strong style={{ color: "rgba(245,237,237,0.7)" }}>{value}</strong>
+        </span>
+      ))}
+    </div>
+  );
+}
 
 // Legacy numeric labels (for old check-ins pre-redesign)
 const FEELING = ["", "Épuisé", "Fatigué", "Correct", "Bien", "Au top"];
@@ -109,7 +149,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
   );
 }
 
-export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
+export default function CheckinCard({ checkin, dailyAverages }: { checkin: CheckIn; dailyAverages?: WeeklyAverages }) {
   const [expanded, setExpanded] = useState(!checkin.coach_replied_at);
 
   const weekDate = new Intl.DateTimeFormat("fr-FR", {
@@ -120,7 +160,9 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
     checkin.physique_feeling || checkin.energy_mood || checkin.biggest_win ||
     checkin.training_review || checkin.nutrition_review || checkin.digestion_review ||
     checkin.work_impact || checkin.sleep_review || checkin.upcoming_obstacles ||
-    checkin.coach_questions || checkin.additional_notes
+    checkin.coach_questions || checkin.additional_notes ||
+    checkin.attitude_rating != null || checkin.biggest_win_2 || checkin.biggest_win_3 ||
+    checkin.improvement_reflection || checkin.entourage_support || checkin.plan_adherence_feedback
   );
 
   const hasLegacyNumeric = !!(
@@ -196,19 +238,50 @@ export default function CheckinCard({ checkin }: { checkin: CheckIn }) {
       {expanded && (
         <div style={{ padding: "0 18px 18px" }}>
 
+          {dailyAverages && <DailyAveragesRecap averages={dailyAverages} />}
+
           {/* ── Qualitative questions (new format) ───────────────────────── */}
           {hasQualitative && (
             <div style={{ marginBottom: 16 }}>
               <p style={sectionLbl}>Bilan de la semaine</p>
+              {checkin.attitude_rating != null && (
+                <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "0 0 4px" }}>
+                    Attitude sur la semaine
+                  </p>
+                  <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+                    {checkin.attitude_rating}
+                    <span style={{ fontSize: 11, fontWeight: 400, color: "rgba(245,237,237,0.3)" }}>/10</span>
+                  </p>
+                </div>
+              )}
+              <QA q="Pourquoi cette attitude" a={checkin.attitude_explanation} />
+              <QA q="Victoire n°1" a={checkin.biggest_win} />
+              <QA q="Victoire n°2" a={checkin.biggest_win_2} />
+              <QA q="Victoire n°3" a={checkin.biggest_win_3} />
+              <QA q="Performances entraînement" a={checkin.training_review} />
+              <QA q="Événements personnels" a={checkin.work_impact} />
+              <QA q="Amélioration semaine prochaine" a={checkin.improvement_reflection} />
+              <QA q="Soutien de l'entourage" a={checkin.entourage_support} />
+              <QA q="Événements prévus" a={checkin.upcoming_obstacles} />
+              <QA q="Ressenti sur l'accompagnement" a={checkin.plan_adherence_feedback} />
+              {checkin.preferred_feedback_format && (
+                <div style={{ paddingBottom: 12, marginBottom: 12, borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
+                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "0 0 4px" }}>
+                    Format de retour préféré
+                  </p>
+                  <p style={{ fontSize: 13, color: "rgba(245,237,237,0.78)", margin: 0, textTransform: "capitalize" }}>
+                    {checkin.preferred_feedback_format}
+                  </p>
+                </div>
+              )}
+              {/* Legacy — anciennes questions retirées du formulaire mais
+                  gardées à l'affichage pour les check-ins déjà envoyés. */}
               <QA q="Physique" a={checkin.physique_feeling} />
               <QA q="Énergie / humeur / stress" a={checkin.energy_mood} />
-              <QA q="Plus grosse victoire" a={checkin.biggest_win} />
-              <QA q="Entraînement" a={checkin.training_review} />
               <QA q="Nutrition" a={checkin.nutrition_review} />
               <QA q="Digestion" a={checkin.digestion_review} />
-              <QA q="Travail / vie perso" a={checkin.work_impact} />
               <QA q="Sommeil" a={checkin.sleep_review} />
-              <QA q="Obstacles à venir" a={checkin.upcoming_obstacles} />
               <QA q="Questions coach" a={checkin.coach_questions} />
               <QA q="Notes" a={checkin.additional_notes} />
             </div>

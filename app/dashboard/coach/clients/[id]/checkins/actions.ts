@@ -39,3 +39,28 @@ export async function replyToCheckin(
   revalidatePath("/dashboard/coach");
   return { success: true };
 }
+
+type DaySettingsState = { error: string } | { success: true } | null;
+
+export async function updateCheckinDay(
+  clientId: string,
+  prevState: DaySettingsState,
+  formData: FormData
+): Promise<DaySettingsState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const day = parseInt(formData.get("checkin_day") as string, 10);
+  if (isNaN(day) || day < 1 || day > 7) return { error: "Jour invalide." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ checkin_day: day })
+    .eq("id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  return { success: true };
+}

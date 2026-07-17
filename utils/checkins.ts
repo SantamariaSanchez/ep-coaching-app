@@ -36,6 +36,15 @@ export interface CheckIn {
   upcoming_obstacles: string | null;
   coach_questions: string | null;
   additional_notes: string | null;
+  // Refonte 2026-07-17c
+  attitude_rating: number | null;
+  attitude_explanation: string | null;
+  biggest_win_2: string | null;
+  biggest_win_3: string | null;
+  improvement_reflection: string | null;
+  entourage_support: string | null;
+  plan_adherence_feedback: string | null;
+  preferred_feedback_format: "ecrit" | "vocal" | "video" | null;
   // Media — anciens liens Drive (check-ins pré-upload direct, gardés pour
   // affichage rétrocompatible) et chemins de stockage bruts.
   photo_drive_link: string | null;

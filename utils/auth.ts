@@ -42,10 +42,12 @@ export interface Profile {
   bio: string | null;
   avatar_url: string | null;
   onboarding_completed_at: string | null;
+  // Jour de check-in hebdo fixe : 1 = lundi ... 7 = dimanche.
+  checkin_day: number;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {

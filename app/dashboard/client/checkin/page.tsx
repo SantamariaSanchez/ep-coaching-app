@@ -11,7 +11,14 @@ import {
 } from "@/utils/checkins";
 import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import CheckinForm from "@/components/ui/CheckinForm";
-import { CheckCircle2, Clock, Star, ExternalLink } from "lucide-react";
+import { CheckCircle2, Clock, Star, ExternalLink, CalendarDays } from "lucide-react";
+
+const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+
+function isoWeekday(date: Date): number {
+  const d = date.getDay();
+  return d === 0 ? 7 : d;
+}
 
 function BilanRating({ rating }: { rating: number }) {
   return (
@@ -84,16 +91,34 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
         </div>
       )}
 
+      {/* Attitude */}
+      {checkin.attitude_rating != null && (
+        <div style={{ marginBottom: 12 }}>
+          <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.45)", margin: "0 0 5px" }}>
+            Attitude sur la semaine
+          </p>
+          <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{checkin.attitude_rating}/10</p>
+        </div>
+      )}
+      <QA q="Pourquoi cette attitude" a={checkin.attitude_explanation} />
+
       {/* Qualitative questions */}
+      <QA q="Victoire n°1" a={checkin.biggest_win} />
+      <QA q="Victoire n°2" a={checkin.biggest_win_2} />
+      <QA q="Victoire n°3" a={checkin.biggest_win_3} />
+      <QA q="Performances entraînement" a={checkin.training_review} />
+      <QA q="Événements personnels" a={checkin.work_impact} />
+      <QA q="Amélioration semaine prochaine" a={checkin.improvement_reflection} />
+      <QA q="Soutien de l'entourage" a={checkin.entourage_support} />
+      <QA q="Événements prévus" a={checkin.upcoming_obstacles} />
+      <QA q="Ressenti sur l'accompagnement" a={checkin.plan_adherence_feedback} />
+      {/* Legacy — anciennes questions retirées du formulaire mais gardées à
+          l'affichage pour les check-ins déjà envoyés avant la refonte. */}
       <QA q="Physique" a={checkin.physique_feeling} />
       <QA q="Énergie / humeur / stress" a={checkin.energy_mood} />
-      <QA q="Plus grosse victoire" a={checkin.biggest_win} />
-      <QA q="Entraînement" a={checkin.training_review} />
       <QA q="Nutrition" a={checkin.nutrition_review} />
       <QA q="Digestion" a={checkin.digestion_review} />
-      <QA q="Travail / vie perso" a={checkin.work_impact} />
       <QA q="Sommeil" a={checkin.sleep_review} />
-      <QA q="Obstacles à venir" a={checkin.upcoming_obstacles} />
       <QA q="Questions coach" a={checkin.coach_questions} />
       <QA q="Notes" a={checkin.additional_notes} />
 
@@ -170,6 +195,8 @@ export default async function CheckinPage() {
 
   const weekNum = getISOWeek(new Date(getWeekStart()));
   const avgWeight = computeWeeklyAverages(recentLogs).weight;
+  const checkinDay = profile?.checkin_day ?? 1;
+  const isCheckinDay = isoWeekday(new Date()) === checkinDay;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
@@ -229,17 +256,24 @@ export default async function CheckinPage() {
                 )}
               </div>
             )}
-            <QA q="Physique" a={existing.physique_feeling} />
-            <QA q="Énergie / humeur / stress" a={existing.energy_mood} />
-            <QA q="Plus grosse victoire" a={existing.biggest_win} />
-            <QA q="Entraînement" a={existing.training_review} />
-            <QA q="Nutrition" a={existing.nutrition_review} />
-            <QA q="Digestion" a={existing.digestion_review} />
-            <QA q="Travail / vie perso" a={existing.work_impact} />
-            <QA q="Sommeil" a={existing.sleep_review} />
-            <QA q="Obstacles à venir" a={existing.upcoming_obstacles} />
-            <QA q="Questions coach" a={existing.coach_questions} />
-            <QA q="Notes" a={existing.additional_notes} />
+            {existing.attitude_rating != null && (
+              <div style={{ marginBottom: 12 }}>
+                <p style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
+                  Attitude sur la semaine
+                </p>
+                <p style={{ fontSize: 16, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{existing.attitude_rating}/10</p>
+              </div>
+            )}
+            <QA q="Pourquoi cette attitude" a={existing.attitude_explanation} />
+            <QA q="Victoire n°1" a={existing.biggest_win} />
+            <QA q="Victoire n°2" a={existing.biggest_win_2} />
+            <QA q="Victoire n°3" a={existing.biggest_win_3} />
+            <QA q="Performances entraînement" a={existing.training_review} />
+            <QA q="Événements personnels" a={existing.work_impact} />
+            <QA q="Amélioration semaine prochaine" a={existing.improvement_reflection} />
+            <QA q="Soutien de l'entourage" a={existing.entourage_support} />
+            <QA q="Événements prévus" a={existing.upcoming_obstacles} />
+            <QA q="Ressenti sur l'accompagnement" a={existing.plan_adherence_feedback} />
             {(existing.photo_urls.length > 0 || existing.video_url) && (
               <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 {existing.photo_urls.map((url, i) => (
@@ -306,9 +340,19 @@ export default async function CheckinPage() {
             </div>
           )}
         </div>
-      ) : (
+      ) : isCheckinDay ? (
         <div className="ep-card">
           <CheckinForm weightAvgFromLogs={avgWeight} />
+        </div>
+      ) : (
+        <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
+          <CalendarDays size={22} style={{ color: "rgba(224,30,30,0.5)", margin: "0 auto 10px" }} />
+          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>
+            Ton jour de check-in, c&apos;est le {DAY_NAMES[checkinDay]}
+          </p>
+          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", margin: 0, lineHeight: 1.5 }}>
+            Reviens ce jour-là pour l&apos;envoyer. Continue de remplir ton bilan quotidien en attendant.
+          </p>
         </div>
       )}
 

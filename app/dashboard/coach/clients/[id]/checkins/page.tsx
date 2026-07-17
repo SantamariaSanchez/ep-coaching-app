@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientCheckins } from "@/utils/checkins";
+import { getWeekDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import CheckinCard from "@/components/ui/CheckinCard";
+import CheckinDaySettings from "@/components/ui/CheckinDaySettings";
 import { ChevronLeft } from "lucide-react";
 
 export default async function ClientCheckinsPage({
@@ -23,6 +25,15 @@ export default async function ClientCheckinsPage({
 
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
+
+  // Moyennes du bilan quotidien de la semaine de chaque check-in — pour le
+  // coach uniquement (voir DailyAveragesRecap dans CheckinCard).
+  const checkinsWithAverages = await Promise.all(
+    checkins.map(async (checkin) => ({
+      checkin,
+      averages: computeWeeklyAverages(await getWeekDailyLogs(id, checkin.week_start)),
+    }))
+  );
 
   const pendingCount = checkins.filter((c) => !c.coach_replied_at).length;
 
@@ -55,6 +66,8 @@ export default async function ClientCheckinsPage({
         </div>
       </div>
 
+      <CheckinDaySettings clientId={id} currentDay={client.checkin_day} />
+
       {checkins.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
@@ -66,8 +79,8 @@ export default async function ClientCheckinsPage({
         </div>
       ) : (
         <div className="space-y-3">
-          {checkins.map((checkin) => (
-            <CheckinCard key={checkin.id} checkin={checkin} />
+          {checkinsWithAverages.map(({ checkin, averages }) => (
+            <CheckinCard key={checkin.id} checkin={checkin} dailyAverages={averages} />
           ))}
         </div>
       )}

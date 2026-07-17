@@ -9,6 +9,8 @@ import { notifyCoachNewCheckin } from "@/app/actions/notifications";
 
 type SubmitState = { error: string } | { success: true } | null;
 
+const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
+
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
   const n = parseFloat(v as string);
@@ -18,6 +20,14 @@ function num(v: FormDataEntryValue | null): number | null {
 function txt(v: FormDataEntryValue | null): string | null {
   const s = (v as string | null)?.trim();
   return s || null;
+}
+
+// 1 = lundi ... 7 = dimanche — Date.getDay() renvoie 0 pour dimanche, d'où
+// le décalage pour rester cohérent avec profiles.checkin_day et les semaines
+// lundi→dimanche déjà utilisées par getWeekStart/getISOWeek.
+function isoWeekday(date: Date): number {
+  const d = date.getDay();
+  return d === 0 ? 7 : d;
 }
 
 export async function submitCheckin(
@@ -30,12 +40,20 @@ export async function submitCheckin(
 
   const { data: profile } = await serverClient
     .from("profiles")
-    .select("full_name, role")
+    .select("full_name, role, checkin_day")
     .eq("id", user.id)
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
   if (profile.role !== "client") return { error: "Accès refusé." };
+
+  const today = new Date();
+  const checkinDay = (profile as { checkin_day?: number }).checkin_day ?? 1;
+  if (isoWeekday(today) !== checkinDay) {
+    return {
+      error: `Ton jour de check-in est le ${DAY_NAMES[checkinDay]}. Reviens ce jour-là pour l'envoyer.`,
+    };
+  }
 
   const weekStart = getWeekStart();
   const weekNumber = getISOWeek(new Date(weekStart));
@@ -45,6 +63,14 @@ export async function submitCheckin(
     .map((v) => (v as string).trim())
     .filter(Boolean);
 
+  const attitudeRating = num(formData.get("attitude_rating"));
+  const attitudeExplanation = txt(formData.get("attitude_explanation"));
+  if (attitudeRating != null && (attitudeRating <= 3 || attitudeRating >= 8) && !attitudeExplanation) {
+    return { error: "Explique ta note d'attitude — c'est requis quand elle est très basse ou très haute." };
+  }
+
+  const feedbackFormat = txt(formData.get("preferred_feedback_format"));
+
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("check_ins").insert({
@@ -53,18 +79,22 @@ export async function submitCheckin(
     week_number: weekNumber,
     weight: num(formData.get("weight")),
     weight_avg: num(formData.get("weight_avg")),
-    // Qualitative questions
-    physique_feeling: txt(formData.get("physique_feeling")),
-    energy_mood: txt(formData.get("energy_mood")),
+    // Bilan de la semaine
+    attitude_rating: attitudeRating,
+    attitude_explanation: attitudeExplanation,
     biggest_win: txt(formData.get("biggest_win")),
+    biggest_win_2: txt(formData.get("biggest_win_2")),
+    biggest_win_3: txt(formData.get("biggest_win_3")),
     training_review: txt(formData.get("training_review")),
-    nutrition_review: txt(formData.get("nutrition_review")),
-    digestion_review: txt(formData.get("digestion_review")),
     work_impact: txt(formData.get("work_impact")),
-    sleep_review: txt(formData.get("sleep_review")),
+    improvement_reflection: txt(formData.get("improvement_reflection")),
+    entourage_support: txt(formData.get("entourage_support")),
     upcoming_obstacles: txt(formData.get("upcoming_obstacles")),
-    coach_questions: txt(formData.get("coach_questions")),
-    additional_notes: txt(formData.get("additional_notes")),
+    plan_adherence_feedback: txt(formData.get("plan_adherence_feedback")),
+    preferred_feedback_format:
+      feedbackFormat === "ecrit" || feedbackFormat === "vocal" || feedbackFormat === "video"
+        ? feedbackFormat
+        : null,
     // Médias — déjà uploadés côté client (voir CheckinForm), on ne reçoit ici
     // que les chemins de stockage, jamais les fichiers eux-mêmes.
     photo_paths: photoPaths.length > 0 ? photoPaths : null,
