@@ -1,10 +1,10 @@
 import type { Allergen, Diet, MealType, Phase, Temp } from "@/lib/recipes-data";
 import type { Food } from "@/utils/nutrition";
 
-// ── Curated picks per food-group, by exact name in the `foods` table ───────
-// Kept small and curated (not the full 150+ item catalogue) so the wizard
-// stays a handful of big, fast choices rather than an overwhelming dropdown —
-// each name must match `foods.name` exactly so real macros can be looked up.
+// ── Groupes d'aliments, dérivés en direct du catalogue complet `foods` ─────
+// (150+ entrées) plutôt que d'une petite liste figée à ~40 noms — beaucoup
+// plus de variété, et toujours cohérent avec la bibliothèque réelle du
+// coach (nouvel aliment ajouté à `foods` = immédiatement disponible ici).
 
 export type FoodGroupKey = "proteine" | "glucide" | "legume" | "matiere_grasse";
 
@@ -21,53 +21,96 @@ interface CuratedFood {
   allergens: Allergen[];
 }
 
-export const CURATED_FOODS: Record<FoodGroupKey, CuratedFood[]> = {
-  proteine: [
-    { name: "Poulet (blanc)", diet: ["omnivore"], allergens: [] },
-    { name: "Bœuf haché 5%", diet: ["omnivore"], allergens: [] },
-    { name: "Dinde (blanc)", diet: ["omnivore"], allergens: [] },
-    { name: "Saumon (frais)", diet: ["omnivore", "pescetarien"], allergens: ["poisson"] },
-    { name: "Cabillaud", diet: ["omnivore", "pescetarien"], allergens: ["poisson"] },
-    { name: "Thon (en conserve, eau)", diet: ["omnivore", "pescetarien"], allergens: ["poisson"] },
-    { name: "Crevettes", diet: ["omnivore", "pescetarien"], allergens: ["crustaces"] },
-    { name: "Œuf entier", diet: ["omnivore", "pescetarien", "vegetarien"], allergens: ["oeuf"] },
-    { name: "Skyr nature", diet: ["omnivore", "pescetarien", "vegetarien"], allergens: ["lactose"] },
-    { name: "Cottage cheese", diet: ["omnivore", "pescetarien", "vegetarien"], allergens: ["lactose"] },
-    { name: "Tofu ferme", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["soja"] },
-    { name: "Edamame", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["soja"] },
-    { name: "Lentilles (cuites)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Pois chiches (cuits)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Haricots rouges (cuits)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Protéine végétale (pois/riz)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-  ],
-  glucide: [
-    { name: "Riz basmati (cuit)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Riz complet (cuit)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Patate douce (cuite)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Pomme de terre (vapeur)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Quinoa (cuit)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Avoine (flocons secs)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Pâtes complètes (cuites)", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["gluten"] },
-    { name: "Pain complet", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["gluten"] },
-  ],
-  legume: [
-    { name: "Brocoli", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Épinards", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Courgette", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Haricots verts", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Poivron rouge", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Carotte", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Chou-fleur", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Asperges", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-  ],
-  matiere_grasse: [
-    { name: "Huile d'olive", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Avocat", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-    { name: "Amandes", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["fruits-a-coque"] },
-    { name: "Noix", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["fruits-a-coque"] },
-    { name: "Beurre de cacahuète", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: ["arachide"] },
-    { name: "Graines de chia", diet: ["omnivore", "pescetarien", "vegetarien", "vegan"], allergens: [] },
-  ],
+// La catégorie de `foods` (Viandes, Poissons...) est plus fine que les 4
+// groupes du wizard — cette table fait le pont. Sucreries/Boissons/
+// Compléments/Divers ne rentrent dans aucun groupe (pas des ingrédients de
+// base pour composer un repas) et sont volontairement exclues.
+const CATEGORY_TO_GROUP: Record<string, FoodGroupKey> = {
+  Viandes: "proteine",
+  Poissons: "proteine",
+  Oeufs: "proteine",
+  Laitiers: "proteine",
+  Legumineuses: "proteine",
+  Feculents: "glucide",
+  Cereales: "glucide",
+  Fruits: "glucide",
+  Legumes: "legume",
+  Oleagineux: "matiere_grasse",
+  Sauces: "matiere_grasse",
+};
+
+// Compatibilité régime/allergène au niveau de la catégorie (pas de tag par
+// aliment dans `foods`) — approximation volontairement large plutôt que
+// trop restrictive, pour ne pas cacher des aliments par excès de prudence.
+const CATEGORY_DIET: Record<string, Diet[]> = {
+  Viandes: ["omnivore"],
+  Poissons: ["omnivore", "pescetarien"],
+  Oeufs: ["omnivore", "pescetarien", "vegetarien"],
+  Laitiers: ["omnivore", "pescetarien", "vegetarien"],
+  Legumineuses: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Feculents: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Cereales: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Fruits: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Legumes: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Oleagineux: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+  Sauces: ["omnivore", "pescetarien", "vegetarien", "vegan"],
+};
+
+const CATEGORY_ALLERGENS: Record<string, Allergen[]> = {
+  Poissons: ["poisson"],
+  Laitiers: ["lactose"],
+  Oleagineux: ["fruits-a-coque"],
+  Oeufs: ["oeuf"],
+};
+
+// Construit les 4 groupes à partir du catalogue réel — remplace l'ancienne
+// liste CURATED_FOODS figée.
+export function buildFoodGroups(allFoods: Food[]): Record<FoodGroupKey, CuratedFood[]> {
+  const out: Record<FoodGroupKey, CuratedFood[]> = {
+    proteine: [], glucide: [], legume: [], matiere_grasse: [],
+  };
+  for (const food of allFoods) {
+    const group = food.category ? CATEGORY_TO_GROUP[food.category] : undefined;
+    if (!group) continue;
+    out[group].push({
+      name: food.name,
+      diet: CATEGORY_DIET[food.category!] ?? ["omnivore"],
+      allergens: CATEGORY_ALLERGENS[food.category!] ?? [],
+    });
+  }
+  for (const key of Object.keys(out) as FoodGroupKey[]) {
+    out[key].sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  }
+  return out;
+}
+
+// ── Profil de répartition macro — auparavant toujours 30% P / 40% G / 30% L
+// quel que soit ce que le client recherche, "riche en glucides" ou
+// "riche en protéines" n'avait aucune influence sur la recette générée.
+export type MacroProfile = "equilibre" | "riche_proteine" | "riche_glucide" | "faible_glucide" | "riche_lipide";
+
+export const MACRO_PROFILE_LABELS: Record<MacroProfile, string> = {
+  equilibre: "Équilibré",
+  riche_proteine: "Riche en protéines",
+  riche_glucide: "Riche en glucides",
+  faible_glucide: "Faible en glucides",
+  riche_lipide: "Riche en lipides",
+};
+
+export const MACRO_PROFILE_DESC: Record<MacroProfile, string> = {
+  equilibre: "30% protéines / 40% glucides / 30% lipides",
+  riche_proteine: "45% protéines / 30% glucides / 25% lipides",
+  riche_glucide: "20% protéines / 55% glucides / 25% lipides",
+  faible_glucide: "35% protéines / 15% glucides / 50% lipides",
+  riche_lipide: "20% protéines / 25% glucides / 55% lipides",
+};
+
+const MACRO_SPLITS: Record<MacroProfile, { protein: number; carb: number; fat: number }> = {
+  equilibre: { protein: 0.3, carb: 0.4, fat: 0.3 },
+  riche_proteine: { protein: 0.45, carb: 0.3, fat: 0.25 },
+  riche_glucide: { protein: 0.2, carb: 0.55, fat: 0.25 },
+  faible_glucide: { protein: 0.35, carb: 0.15, fat: 0.5 },
+  riche_lipide: { protein: 0.2, carb: 0.25, fat: 0.55 },
 };
 
 const MEAL_KCAL_TARGET: Record<MealType, Record<Phase, number>> = {
@@ -91,6 +134,7 @@ export interface MealCreatorAnswers {
   meal: MealType;
   diet: Diet;
   phase: Phase;
+  macroProfile: MacroProfile;
   allergens: Allergen[];
   temp: Temp;
   prepTime: PrepTime;
@@ -144,10 +188,13 @@ export function generateRecipe(
   const legumeFood = legumeName ? foodByName.get(legumeName) : null;
   const fatFood = fatName ? foodByName.get(fatName) : null;
 
-  // ── Target split: 30% protein / 40% carbs / 30% fat of target kcal ──
-  const targetProteinG = (targetKcal * 0.3) / 4;
-  const targetCarbG = (targetKcal * 0.4) / 4;
-  const targetFatG = (targetKcal * 0.3) / 9;
+  // ── Répartition macro selon le profil choisi — avant, toujours 30/40/30
+  // quel que soit ce que le client demandait (riche en glucides, en
+  // protéines...), le choix n'avait aucun effet réel sur la recette.
+  const split = MACRO_SPLITS[answers.macroProfile];
+  const targetProteinG = (targetKcal * split.protein) / 4;
+  const targetCarbG = (targetKcal * split.carb) / 4;
+  const targetFatG = (targetKcal * split.fat) / 9;
 
   const proteinGrams = gramsFor(
     proteinFood,
@@ -244,10 +291,10 @@ export function generateRecipe(
       : `${nameParts[0]}, ${nameParts[1]} et ${nameParts[2]}`;
 
   const allergenSet = new Set<Allergen>();
-  const allCurated = [proteinName, glucideName, legumeName, fatName].filter(Boolean) as string[];
-  for (const group of Object.values(CURATED_FOODS)) {
+  const allChosen = [proteinName, glucideName, legumeName, fatName].filter(Boolean) as string[];
+  for (const group of Object.values(buildFoodGroups(foods))) {
     for (const item of group) {
-      if (allCurated.includes(item.name)) item.allergens.forEach((a) => allergenSet.add(a));
+      if (allChosen.includes(item.name)) item.allergens.forEach((a) => allergenSet.add(a));
     }
   }
 

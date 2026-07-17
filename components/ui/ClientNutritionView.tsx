@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb } from "lucide-react";
+import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -212,9 +213,42 @@ export default function ClientNutritionView({
   createCustomFood,
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
-  const [activeTab, setActiveTab] = useState<"today" | "history">("today");
+  const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
+
+  // Liste de courses — coché persiste localement (utile en cours de courses),
+  // remis à zéro manuellement plutôt qu'automatiquement pour ne pas perdre
+  // la progression si on ferme l'appli en plein magasin.
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("ep-shopping-checked");
+      if (saved) setCheckedItems(new Set(JSON.parse(saved)));
+    } catch {}
+  }, []);
+  function toggleChecked(foodId: string) {
+    setCheckedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(foodId)) next.delete(foodId);
+      else next.add(foodId);
+      try { localStorage.setItem("ep-shopping-checked", JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }
+  const shoppingList = useMemo(
+    () => buildShoppingList(activePlan, historyLogs),
+    [activePlan, historyLogs]
+  );
+  const shoppingByCategory = useMemo(() => {
+    const map = new Map<string, typeof shoppingList.items>();
+    for (const item of shoppingList.items) {
+      const list = map.get(item.category) ?? [];
+      list.push(item);
+      map.set(item.category, list);
+    }
+    return map;
+  }, [shoppingList]);
 
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
@@ -769,17 +803,17 @@ export default function ClientNutritionView({
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
-        {(["today", "history"] as const).map((tab) => (
+        {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
+            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               activeTab === tab
                 ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
                 : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
-            {tab === "today" ? "Aujourd'hui" : "Historique"}
+            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique" : "Courses"}
           </button>
         ))}
       </div>
@@ -1031,6 +1065,99 @@ export default function ClientNutritionView({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {/* ── COURSES TAB ──────────────────────────────────────────────────────
+          Générée depuis le plan structuré du coach s'il y en a un, sinon
+          depuis les aliments réellement loggués récemment (au moins 2 fois)
+          — jamais vide de sens même sans plan fixe. */}
+      {activeTab === "courses" && (
+        <div className="space-y-5">
+          <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl px-4 py-3 flex items-start gap-2.5">
+            <ShoppingCart size={15} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
+            <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
+              {shoppingList.source === "plan"
+                ? "Générée à partir de ton plan nutritionnel, pour la semaine."
+                : "Générée à partir de ce que tu manges le plus souvent ces 7 derniers jours."}
+            </p>
+          </div>
+
+          {shoppingList.items.length === 0 ? (
+            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center">
+              <p className="text-xs text-[#F5EDED]/35">
+                Pas encore assez de données — logue tes repas quelques jours, ou demande à ton coach un plan.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {[...shoppingByCategory.entries()].map(([category, items]) => (
+                <div key={category} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2.5">
+                    {category}
+                  </p>
+                  <div className="space-y-1.5">
+                    {items.map((item) => {
+                      const checked = checkedItems.has(item.foodId);
+                      return (
+                        <button
+                          key={item.foodId}
+                          onClick={() => toggleChecked(item.foodId)}
+                          className="w-full flex items-center gap-2.5 text-left"
+                        >
+                          <span className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                            checked ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
+                          }`}>
+                            {checked && <Check size={12} className="text-white" strokeWidth={3} />}
+                          </span>
+                          <span className={`text-sm flex-1 ${checked ? "text-[#F5EDED]/30 line-through" : "text-white"}`}>
+                            {item.name}
+                          </span>
+                          <span className={`text-xs ${checked ? "text-[#F5EDED]/20" : "text-[#F5EDED]/40"}`}>
+                            {item.totalGrams >= 1000 ? `${(item.totalGrams / 1000).toFixed(1)}kg` : `${item.totalGrams}g`}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              {checkedItems.size > 0 && (
+                <button
+                  onClick={() => { setCheckedItems(new Set()); try { localStorage.removeItem("ep-shopping-checked"); } catch {} }}
+                  className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+                >
+                  Tout décocher
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Idées de sources — pour varier en plan flexible, sans dépendre
+              uniquement de ce qui a déjà été loggué. */}
+          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
+              <Lightbulb size={12} className="text-amber-400" />
+              Idées pour varier
+            </p>
+            <div className="space-y-3">
+              {FOOD_IDEAS.map((group) => (
+                <div key={group.key}>
+                  <p className="text-xs font-bold text-white mb-1.5">{group.label}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {group.items.map((item) => (
+                      <span
+                        key={item}
+                        className="text-[10px] text-[#F5EDED]/55 bg-[#150000] border border-[#890404]/20 rounded-full px-2.5 py-1"
+                      >
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

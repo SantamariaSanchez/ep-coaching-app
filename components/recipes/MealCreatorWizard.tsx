@@ -10,16 +10,17 @@ import {
   type MealType, type Diet, type Phase, type Temp, type Allergen,
 } from "@/lib/recipes-data";
 import {
-  CURATED_FOODS, FOOD_GROUP_LABELS, TIME_LABELS, generateRecipe,
-  type FoodGroupKey, type MealCreatorAnswers, type GeneratedRecipe, type PrepTime,
+  buildFoodGroups, FOOD_GROUP_LABELS, TIME_LABELS, generateRecipe,
+  MACRO_PROFILE_LABELS, MACRO_PROFILE_DESC,
+  type FoodGroupKey, type MealCreatorAnswers, type GeneratedRecipe, type PrepTime, type MacroProfile,
 } from "@/lib/meal-creator";
 import type { Food } from "@/utils/nutrition";
 import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actions";
 
 const FOOD_GROUP_ORDER: FoodGroupKey[] = ["proteine", "glucide", "legume", "matiere_grasse"];
 
-type StepKey = "meal" | "diet" | "phase" | "allergens" | FoodGroupKey | "temp" | "time" | "result";
-const STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "allergens", ...FOOD_GROUP_ORDER, "temp", "time", "result"];
+type StepKey = "meal" | "diet" | "phase" | "macroProfile" | "allergens" | FoodGroupKey | "temp" | "time" | "result";
+const STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "macroProfile", "allergens", ...FOOD_GROUP_ORDER, "temp", "time", "result"];
 
 function OptionGrid<T extends string>({
   options,
@@ -100,6 +101,7 @@ export default function MealCreatorWizard({
   const [meal, setMeal] = useState<MealType | null>(null);
   const [diet, setDiet] = useState<Diet | null>(null);
   const [phase, setPhase] = useState<Phase | null>(null);
+  const [macroProfile, setMacroProfile] = useState<MacroProfile | null>(null);
   const [allergens, setAllergens] = useState<Set<Allergen>>(new Set());
   const [choices, setChoices] = useState<Partial<Record<FoodGroupKey, string>>>({});
   const [temp, setTemp] = useState<Temp | null>(null);
@@ -129,6 +131,7 @@ export default function MealCreatorWizard({
     if (step === "meal") return !!meal;
     if (step === "diet") return !!diet;
     if (step === "phase") return !!phase;
+    if (step === "macroProfile") return !!macroProfile;
     if (step === "allergens") return true;
     if (FOOD_GROUP_ORDER.includes(step as FoodGroupKey)) {
       if (step === "proteine") return !!choices.proteine;
@@ -146,6 +149,7 @@ export default function MealCreatorWizard({
         meal: meal!,
         diet: diet!,
         phase: phase!,
+        macroProfile: macroProfile!,
         allergens: [...allergens],
         temp: temp!,
         prepTime: prepTime!,
@@ -161,6 +165,7 @@ export default function MealCreatorWizard({
     setMeal(null);
     setDiet(null);
     setPhase(null);
+    setMacroProfile(null);
     setAllergens(new Set());
     setChoices({});
     setTemp(null);
@@ -169,13 +174,15 @@ export default function MealCreatorWizard({
     setSaveStatus("idle");
   }
 
+  const foodGroups = useMemo(() => buildFoodGroups(foods), [foods]);
+
   const foodGroupOptions = useMemo(() => {
     if (!diet) return {} as Record<FoodGroupKey, { name: string; disabled: boolean }[]>;
     const out: Record<FoodGroupKey, { name: string; disabled: boolean }[]> = {
       proteine: [], glucide: [], legume: [], matiere_grasse: [],
     };
     for (const key of FOOD_GROUP_ORDER) {
-      out[key] = CURATED_FOODS[key]
+      out[key] = foodGroups[key]
         .filter((f) => f.diet.includes(diet))
         .map((f) => ({
           name: f.name,
@@ -184,7 +191,7 @@ export default function MealCreatorWizard({
         .filter((f) => !f.disabled);
     }
     return out;
-  }, [diet, allergens]);
+  }, [diet, allergens, foodGroups]);
 
   async function handleSave() {
     if (!result || !onSaveRecipe) return;
@@ -258,6 +265,29 @@ export default function MealCreatorWizard({
               <h2 className="text-xl font-black text-white mb-1">Ta phase actuelle ?</h2>
               <p className="text-xs text-[#F5EDED]/40 mb-5">On ajuste les calories et les portions en fonction.</p>
               <OptionGrid options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} value={phase} onSelect={setPhase} />
+            </div>
+          )}
+
+          {step === "macroProfile" && (
+            <div>
+              <h2 className="text-xl font-black text-white mb-1">Quel profil de macros ?</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour varier — plus riche en glucides, en protéines, ou équilibré.</p>
+              <div className="flex flex-col gap-2.5">
+                {(Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => setMacroProfile(p)}
+                    className={`text-left px-4 py-3.5 rounded-xl border transition-all ${
+                      macroProfile === p
+                        ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                        : "bg-[#1f0101] border-[#890404]/25 text-[#F5EDED]/55 hover:border-[#890404]/50"
+                    }`}
+                  >
+                    <span className="block text-sm font-bold">{MACRO_PROFILE_LABELS[p]}</span>
+                    <span className="block text-[10px] text-[#F5EDED]/35 mt-0.5">{MACRO_PROFILE_DESC[p]}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 

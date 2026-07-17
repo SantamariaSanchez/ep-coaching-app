@@ -29,6 +29,26 @@ import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actio
 import type { Food } from "@/utils/nutrition";
 import AddRecipeForm from "@/components/recipes/AddRecipeForm";
 import MealCreatorWizard from "@/components/recipes/MealCreatorWizard";
+import { MACRO_PROFILE_LABELS, type MacroProfile } from "@/lib/meal-creator";
+
+// Classe une recette par profil macro à partir de ses totaux kcal/P/G/L —
+// calculé à la volée plutôt que d'exiger un tag manuel supplémentaire à la
+// création, donc toujours cohérent avec les vrais chiffres de la recette.
+// Une recette peut cocher plusieurs profils (ex. riche en protéines ET
+// faible en glucides à la fois).
+function classifyMacroProfiles(r: { kcal: number; protein: number; carbs: number; fat: number }): MacroProfile[] {
+  if (!r.kcal) return ["equilibre"];
+  const proteinPct = (r.protein * 4) / r.kcal;
+  const carbPct = (r.carbs * 4) / r.kcal;
+  const fatPct = (r.fat * 9) / r.kcal;
+  const tags: MacroProfile[] = [];
+  if (proteinPct >= 0.35) tags.push("riche_proteine");
+  if (carbPct >= 0.5) tags.push("riche_glucide");
+  if (carbPct < 0.2) tags.push("faible_glucide");
+  if (fatPct >= 0.4) tags.push("riche_lipide");
+  if (tags.length === 0) tags.push("equilibre");
+  return tags;
+}
 
 interface DisplayRecipe extends Recipe {
   isCommunity: boolean;
@@ -203,6 +223,13 @@ function RecipeCard({
               <span className="text-[10px] text-[#F5EDED]/50">P {recipe.protein}g</span>
               <span className="text-[10px] text-[#F5EDED]/50">G {recipe.carbs}g</span>
               <span className="text-[10px] text-[#F5EDED]/50">L {recipe.fat}g</span>
+              {classifyMacroProfiles(recipe)
+                .filter((p) => p !== "equilibre")
+                .map((p) => (
+                  <span key={p} className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#890404]/20 text-[#F5EDED]/50 border border-[#890404]/20">
+                    {MACRO_PROFILE_LABELS[p]}
+                  </span>
+                ))}
             </div>
           </div>
           <ChevronDown
@@ -326,6 +353,7 @@ export default function RecipesClient({
   const [phases, setPhases] = useState<Set<Phase>>(new Set());
   const [seasons, setSeasons] = useState<Set<Season>>(new Set());
   const [temps, setTemps] = useState<Set<Temp>>(new Set());
+  const [macroProfiles, setMacroProfiles] = useState<Set<MacroProfile>>(new Set());
   const [excludedAllergens, setExcludedAllergens] = useState<Set<Allergen>>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
@@ -348,13 +376,14 @@ export default function RecipesClient({
       if (phases.size && !r.phases.some((p) => phases.has(p))) return false;
       if (seasons.size && !r.season.some((s) => seasons.has(s) || s === "toute-saison")) return false;
       if (temps.size && !temps.has(r.temp)) return false;
+      if (macroProfiles.size && !classifyMacroProfiles(r).some((p) => macroProfiles.has(p))) return false;
       if (excludedAllergens.size && r.allergens.some((a) => excludedAllergens.has(a))) return false;
       return true;
     });
-  }, [recipes, search, meals, diets, phases, seasons, temps, excludedAllergens]);
+  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens]);
 
   const activeFilterCount =
-    meals.size + diets.size + phases.size + seasons.size + temps.size + excludedAllergens.size;
+    meals.size + diets.size + phases.size + seasons.size + temps.size + macroProfiles.size + excludedAllergens.size;
 
   function resetFilters() {
     setMeals(new Set());
@@ -362,6 +391,7 @@ export default function RecipesClient({
     setPhases(new Set());
     setSeasons(new Set());
     setTemps(new Set());
+    setMacroProfiles(new Set());
     setExcludedAllergens(new Set());
   }
 
@@ -514,6 +544,7 @@ export default function RecipesClient({
               <FilterGroup label="Phase nutritionnelle" options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
               <FilterGroup label="Saison" options={Object.keys(SEASON_LABELS).filter((s) => s !== "toute-saison") as Season[]} labels={SEASON_LABELS} selected={seasons} toggle={(v) => toggleSet(setSeasons, v)} />
               <FilterGroup label="Température" options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} selected={temps} toggle={(v) => toggleSet(setTemps, v)} />
+              <FilterGroup label="Profil macro" options={Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]} labels={MACRO_PROFILE_LABELS} selected={macroProfiles} toggle={(v) => toggleSet(setMacroProfiles, v)} />
               <FilterGroup label="Exclure allergènes" options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={excludedAllergens} toggle={(v) => toggleSet(setExcludedAllergens, v)} />
             </div>
           )}
