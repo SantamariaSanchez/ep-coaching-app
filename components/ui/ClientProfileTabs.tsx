@@ -7,19 +7,22 @@ import type { Profile } from "@/utils/auth";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import { getRankForPoints } from "@/lib/gamification-types";
-import { ExternalLink } from "lucide-react";
+import {
+  ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
+  ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
+} from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
 const TABS = [
-  { key: "profil",    label: "Profil" },
-  { key: "roadmap",   label: "Road Map" },
-  { key: "logbook",   label: "Logbook" },
-  { key: "programme", label: "Programme" },
-  { key: "nutrition", label: "Nutrition" },
-  { key: "bilans",    label: "Bilans" },
-  { key: "photos",    label: "Photos" },
-  { key: "checkins",  label: "Check-ins" },
-  { key: "rappels",   label: "Rappels" },
+  { key: "profil",    label: "Profil",    icon: User },
+  { key: "roadmap",   label: "Road Map",  icon: Map },
+  { key: "logbook",   label: "Logbook",   icon: BookOpen },
+  { key: "programme", label: "Programme", icon: Dumbbell },
+  { key: "nutrition", label: "Nutrition", icon: Apple },
+  { key: "bilans",    label: "Bilans",    icon: ClipboardCheck },
+  { key: "photos",    label: "Photos",    icon: ImageIcon },
+  { key: "checkins",  label: "Check-ins", icon: ClipboardList },
+  { key: "rappels",   label: "Rappels",   icon: ListChecks },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -72,18 +75,23 @@ export default function ClientProfileTabs({ client, points }: { client: Profile;
 
   return (
     <div>
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 pb-0">
-        {TABS.map(({ key, label }) => (
+      {/* Grille de boutons icône + texte plutôt qu'une rangée d'onglets sur
+          une seule ligne — avec 9 sections, la rangée dépassait largement la
+          largeur de l'écran sur mobile, forçant à zoomer/dézoomer et
+          défiler sur le côté pour juste choisir un onglet. */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
+        {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
+            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
               activeTab === key
-                ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
-                : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
+                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
             }`}
           >
-            {label}
+            <Icon size={17} strokeWidth={activeTab === key ? 2.2 : 1.7} />
+            <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{label}</span>
           </button>
         ))}
       </div>
