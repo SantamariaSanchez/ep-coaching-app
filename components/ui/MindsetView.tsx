@@ -604,7 +604,11 @@ export default function MindsetView({
   addJournalEntry,
   deleteJournalEntry,
 }: Props) {
-  const [tab, setTab] = useState<Tab>("profil");
+  // Le quiz de profil est une configuration ponctuelle ; une fois fait, ce
+  // qu'on vient remplir ici au quotidien c'est le journal — sans ça la page
+  // rouvrait chaque jour sur le quiz déjà répondu, et il fallait cliquer
+  // sur "Journal" à chaque visite pour atteindre ce qu'on venait faire.
+  const [tab, setTab] = useState<Tab>(mindsetProfile?.quiz_completed_at ? "journal" : "profil");
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
     { key: "profil", label: "Profil", icon: Brain },

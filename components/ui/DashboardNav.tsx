@@ -406,20 +406,6 @@ function useNavState(isFreeTier: boolean) {
     return pathname.startsWith(`${base}/${segment}`);
   }
 
-  // Items belonging to the currently active bottom tab — surfaced as a
-  // secondary scrollable strip on mobile so every sidebar destination
-  // (not just the 5-6 top-level sections) stays reachable without a sidebar.
-  const activeTab = tabs.find(isTabActive);
-  const flatSidebarItems = sidebar.flatMap((g) => g.items);
-  const mobileSubItems =
-    activeTab && !activeTab.exactMatch
-      ? flatSidebarItems.filter((item) =>
-          activeTab.matchSegments.some(
-            (seg) => item.segment === seg || item.segment.startsWith(`${seg}/`)
-          )
-        )
-      : [];
-
   return {
     isCoach,
     base,
@@ -427,7 +413,6 @@ function useNavState(isFreeTier: boolean) {
     sidebar,
     isTabActive,
     isSidebarActive,
-    mobileSubItems,
   };
 }
 
@@ -441,7 +426,7 @@ export default function DashboardNav({
   initialIsFreeTier?: boolean;
 }) {
   const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
-  const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
+  const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive } =
     useNavState(isFreeTier);
   const router = useRouter();
   const pathname = usePathname();
@@ -836,85 +821,6 @@ export default function DashboardNav({
               <NotificationBell variant="mobile" />
             </div>
           </>
-        )}
-
-        {/* Mobile secondary tab strip — exposes every sidebar destination
-            within the active section, since the bottom nav only has room
-            for the top-level sections. */}
-        {!isDesktop && mobileSubItems.length > 1 && (
-          <nav
-            style={{
-              position: "sticky",
-              top: 0,
-              zIndex: 30,
-              display: "flex",
-              gap: 6,
-              overflowX: "auto",
-              overflowY: "hidden",
-              WebkitOverflowScrolling: "touch",
-              // Sans ça, un swipe horizontal sur cette bande pouvait être
-              // intercepté par le scroll vertical de la page entière au lieu
-              // de faire défiler seulement les onglets.
-              touchAction: "pan-x",
-              overscrollBehavior: "contain",
-              padding: "10px 12px",
-              background: "rgba(6,0,0,0.92)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              borderBottom: "1px solid rgba(224,30,30,0.1)",
-            }}
-          >
-            {mobileSubItems.map(({ label, icon: Icon, segment, badge, href: hrefOverride, locked }) => {
-              const active = isSidebarActive(segment);
-              const href = hrefOverride ?? (segment ? `${base}/${segment}` : base);
-              const count = getBadgeCount(badge);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  style={{
-                    flexShrink: 0,
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    padding: "7px 12px",
-                    borderRadius: 999,
-                    background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
-                    color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
-                    fontWeight: active ? 700 : 600,
-                    fontSize: 11,
-                    whiteSpace: "nowrap",
-                    textDecoration: "none",
-                    border: active ? "1px solid rgba(224,30,30,0.3)" : "1px solid transparent",
-                    position: "relative",
-                  }}
-                >
-                  <Icon size={13} strokeWidth={active ? 2.2 : 1.7} />
-                  {label}
-                  {locked && <Lock size={10} style={{ flexShrink: 0 }} strokeWidth={2} />}
-                  {count > 0 && (
-                    <span
-                      style={{
-                        background: "#E01E1E",
-                        color: "#fff",
-                        borderRadius: "50%",
-                        width: 14,
-                        height: 14,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 8,
-                        fontWeight: 800,
-                        flexShrink: 0,
-                      }}
-                    >
-                      {count > 9 ? "9+" : count}
-                    </span>
-                  )}
-                </Link>
-              );
-            })}
-          </nav>
         )}
 
         {children}
