@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, Video, Trophy, CheckCircle2, Clock, ExternalLink, AlertCircle, X, Loader2, Sparkles } from "lucide-react";
+import { Camera, Video, CheckCircle2, Clock, ExternalLink, AlertCircle, X, Loader2, Sparkles } from "lucide-react";
 import { POSING_CATEGORIES, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
@@ -39,10 +39,12 @@ async function uploadFile(file: File): Promise<string | null> {
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
+// "video_perf" (vidéo d'exercice/perf) retiré — hors-sujet ici, un exercice
+// filmé n'a rien à faire dans le suivi physique/posing ; le retour vidéo
+// d'exécution se fait déjà côté messagerie coach (retour type Loom).
 const TYPES: { key: SubmissionType; label: string; icon: React.ElementType; desc: string }[] = [
   { key: "mandatory_poses", label: "Poses Obligatoires", icon: Camera, desc: "Photos des poses imposées par ta catégorie" },
   { key: "posing_routine", label: "Routine Posing", icon: Video, desc: "Vidéo de ta routine complète" },
-  { key: "video_perf", label: "Performance / Autre", icon: Trophy, desc: "Vidéo d'exercice, perf ou contexte libre" },
 ];
 
 function daysUntil(dateStr: string): number {
@@ -64,16 +66,16 @@ function formatDate(dateStr: string) {
 function SubmissionForm({
   profile,
   onSubmit,
+  isSelfTracking,
 }: {
   profile: Profile;
   onSubmit: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
+  isSelfTracking: boolean;
 }) {
   const [type, setType] = useState<SubmissionType>("mandatory_poses");
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [video, setVideo] = useState<MediaItem | null>(null);
   const [notes, setNotes] = useState("");
-  const [exerciseName, setExerciseName] = useState("");
-  const [videoGoal, setVideoGoal] = useState("");
   const [duration, setDuration] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -81,9 +83,13 @@ function SubmissionForm({
   const photoInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
 
-  const category = profile?.competition_category ?? "Classic Physique";
-  const posingData =
-    POSING_CATEGORIES[category] ?? POSING_CATEGORIES["Classic Physique"] ?? null;
+  // Ne JAMAIS retomber silencieusement sur une catégorie par défaut (c'était
+  // le cas avant : "Classic Physique", une catégorie homme, s'affichait à
+  // n'importe quel client sans catégorie configurée — y compris les
+  // femmes). Sans catégorie reconnue, on affiche clairement qu'il faut la
+  // configurer plutôt que d'inventer une réponse.
+  const category = profile?.competition_category ?? null;
+  const posingData = category ? POSING_CATEGORIES[category] ?? null : null;
 
   const mediaUploading = photos.some((p) => p.uploading) || !!video?.uploading;
 
@@ -137,9 +143,6 @@ function SubmissionForm({
     photos.forEach((p) => { if (p.path) fd.append("photo_paths", p.path); });
     if (video?.path) fd.set("video_path", video.path);
     fd.set("notes", notes.trim());
-    if (type === "video_perf") {
-      fd.set("notes", `Exercice: ${exerciseName.trim()}\nObjectif: ${videoGoal.trim()}\n${notes.trim()}`);
-    }
 
     const result = await onSubmit(fd);
     setSubmitting(false);
@@ -154,8 +157,12 @@ function SubmissionForm({
     return (
       <div className="flex flex-col items-center gap-3 py-10 text-center">
         <CheckCircle2 size={40} className="text-green-400" strokeWidth={1.5} />
-        <p className="text-sm font-black text-white uppercase tracking-wider">Mise à jour envoyée !</p>
-        <p className="text-xs text-[#F5EDED]/35">Ton coach recevra une notification.</p>
+        <p className="text-sm font-black text-white uppercase tracking-wider">
+          {isSelfTracking ? "Ajoutée à ton historique !" : "Mise à jour envoyée !"}
+        </p>
+        <p className="text-xs text-[#F5EDED]/35">
+          {isSelfTracking ? "Retrouve-la dans ton suivi ci-dessous." : "Ton coach recevra une notification."}
+        </p>
         <button
           onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setNotes(""); }}
           className="text-xs text-[#E01E1E] hover:underline mt-2"
@@ -169,7 +176,7 @@ function SubmissionForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Type selector */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         {TYPES.map(({ key, label, icon: Icon, desc }) => (
           <button
             key={key}
@@ -212,12 +219,31 @@ function SubmissionForm({
         </div>
       )}
 
-      {type === "mandatory_poses" && !posingData && (
+      {!posingData && (
         <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
           <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
           <p className="text-xs text-amber-400">
             Catégorie non définie. Ton coach va la configurer prochainement.
           </p>
+        </div>
+      )}
+
+      {/* Astuces posing — pour que cet espace serve à progresser, pas juste
+          à déposer des photos. */}
+      {posingData && posingData.tips.length > 0 && (
+        <div className="bg-[#E01E1E]/6 border border-[#E01E1E]/15 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E]/70 mb-2.5 flex items-center gap-1.5">
+            <Sparkles size={11} />
+            Astuces posing · {category}
+          </p>
+          <div className="space-y-2">
+            {posingData.tips.map((tip, i) => (
+              <p key={i} className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex gap-2">
+                <span className="text-[#E01E1E]/50 flex-shrink-0">•</span>
+                {tip}
+              </p>
+            ))}
+          </div>
         </div>
       )}
 
@@ -247,35 +273,6 @@ function SubmissionForm({
             className={inputCls}
           />
         </div>
-      )}
-
-      {type === "video_perf" && (
-        <>
-          <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Nom de l&apos;exercice ou contexte <span className="text-[#E01E1E]">*</span>
-            </label>
-            <input
-              value={exerciseName}
-              onChange={(e) => setExerciseName(e.target.value)}
-              placeholder="Ex. Squat, Développé couché, Gainage…"
-              className={inputCls}
-              required
-            />
-          </div>
-          <div>
-            <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Objectif de la vidéo <span className="text-[#E01E1E]">*</span>
-            </label>
-            <input
-              value={videoGoal}
-              onChange={(e) => setVideoGoal(e.target.value)}
-              placeholder="Ex. Corriger ma profondeur, feedback sur la technique…"
-              className={inputCls}
-              required
-            />
-          </div>
-        </>
       )}
 
       {/* Médias */}
@@ -374,16 +371,24 @@ function SubmissionForm({
         </div>
       )}
 
-      {/* Suggestion Lens Buddy — pour les poses obligatoires, garder le même
-          angle/pose chaque semaine rend les photos vraiment comparables. */}
+      {/* Lens Buddy : superpose la photo précédente en transparence pour
+          reprendre exactement la même pose/angle chaque semaine. Lien vers
+          la fiche App Store plutôt qu'un schéma d'URL deep-link non
+          confirmé — évite d'ouvrir l'appareil photo natif du téléphone
+          par erreur en cliquant sur la tuile photo juste à côté. */}
       {type === "mandatory_poses" && (
-        <div className="flex items-start gap-2 bg-[#E01E1E]/6 border border-[#E01E1E]/15 rounded-lg px-3 py-2.5">
-          <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-[#F5EDED]/55 leading-relaxed">
-            Astuce : l&apos;appli <strong className="text-[#F5EDED]">Lens Buddy</strong> aide à reprendre
-            exactement la même pose et le même angle chaque semaine.
-          </p>
-        </div>
+        <a
+          href="https://apps.apple.com/search?term=lens%20buddy"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 bg-[#E01E1E]/6 border border-[#E01E1E]/15 hover:border-[#E01E1E]/35 rounded-lg px-3 py-2.5 transition-colors"
+        >
+          <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0" />
+          <span className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex-1">
+            Utilise <strong className="text-[#F5EDED]">Lens Buddy</strong> pour reprendre la même pose au pixel près.
+          </span>
+          <ExternalLink size={12} className="text-[#E01E1E]/60 flex-shrink-0" />
+        </a>
       )}
 
       {/* Notes */}
@@ -395,7 +400,7 @@ function SubmissionForm({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder="Ce qui t'a plu, ce sur quoi tu veux un retour particulier…"
+          placeholder={isSelfTracking ? "Notes personnelles…" : "Ce qui t'a plu, ce sur quoi tu veux un retour particulier…"}
           className={`${inputCls} resize-none`}
         />
       </div>
@@ -415,7 +420,7 @@ function SubmissionForm({
 
 // ── History card ─────────────────────────────────────────────────────────────
 
-function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
+function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSelfTracking: boolean }) {
   const hasFeedback = !!photo.coach_replied_at;
   const date = formatDate(photo.submitted_at);
   const typeLabel = TYPE_LABELS[photo.type] ?? photo.type;
@@ -435,7 +440,9 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
             </span>
           )}
         </div>
-        {hasFeedback ? (
+        {/* Pas de statut "retour" en suivi perso — personne ne relit ces
+            photos, ce badge n'aurait aucun sens. */}
+        {!isSelfTracking && (hasFeedback ? (
           <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25 flex-shrink-0">
             <CheckCircle2 size={10} />
             Retour reçu
@@ -445,7 +452,7 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
             <Clock size={10} />
             En attente
           </span>
-        )}
+        ))}
       </div>
 
       {(photo.photo_urls.length > 0 || photo.video_url) && (
@@ -488,7 +495,7 @@ function PhotoHistoryCard({ photo }: { photo: PhotoUpdate }) {
         </p>
       )}
 
-      {hasFeedback && photo.coach_feedback && (
+      {!isSelfTracking && hasFeedback && photo.coach_feedback && (
         <div className="bg-green-500/8 border border-green-500/20 rounded-lg p-3 mt-1">
           <p className="text-[9px] font-bold uppercase tracking-widest text-green-400/70 mb-1">
             Retour de ton coach
@@ -536,6 +543,10 @@ export default function ClientPhotosView({
   const isDaily = frequency === "daily";
   const competitionDate = profile?.competition_date;
   const daysLeft = competitionDate ? daysUntil(competitionDate) : null;
+  // Le coach utilise cette même vue pour son propre suivi physique (Moi >
+  // Photos) — personne ne "donne un retour" là-dessus, donc tout ce qui
+  // évoque un coach qui répond n'a pas sa place dans ce contexte.
+  const isSelfTracking = profile.role === "coach";
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8">
@@ -600,7 +611,7 @@ export default function ClientPhotosView({
             </p>
           </div>
         ) : (
-          <SubmissionForm profile={profile} onSubmit={submitPhotoUpdate} />
+          <SubmissionForm profile={profile} onSubmit={submitPhotoUpdate} isSelfTracking={isSelfTracking} />
         )}
       </div>
 
@@ -617,7 +628,7 @@ export default function ClientPhotosView({
           </div>
           <div className="space-y-3">
             {(photoHistory ?? []).map((p) => (
-              <PhotoHistoryCard key={p.id} photo={p} />
+              <PhotoHistoryCard key={p.id} photo={p} isSelfTracking={isSelfTracking} />
             ))}
           </div>
         </section>

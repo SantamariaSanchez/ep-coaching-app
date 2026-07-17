@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ArrowRight,
   UserCheck,
+  Watch,
 } from "lucide-react";
 import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
@@ -27,7 +28,12 @@ const COACHING_PILLARS = [
   {
     icon: HeartHandshake,
     title: "Suivi humain, chaque semaine",
-    body: "Bilans hebdomadaires, messagerie directe, check-ins photos, retours vidéo sur tes mouvements. Quelqu'un qui connaît vraiment ta progression.",
+    body: "Bilans hebdomadaires, messagerie directe, check-ins photos, retours vidéo sur tes mouvements, appels live en groupe ou 1:1, accompagnement mindset. Quelqu'un qui connaît vraiment ta progression.",
+  },
+  {
+    icon: Watch,
+    title: "Bague Oura Ring offerte",
+    body: "Ton sommeil, ta récupération et ta variabilité cardiaque connectés automatiquement à ton suivi — aucune saisie manuelle, juste les bonnes décisions au bon moment.",
   },
   {
     icon: GraduationCap,
@@ -48,7 +54,9 @@ export default async function AbonnementPage() {
   const alreadySubscribed = isSubscribed(profile);
   const points = await getTotalPoints(user.id);
 
-  const calendlyUrl = "https://calendly.com/peccoux-manu/30min";
+  // Avant de prendre rendez-vous, le prospect passe par un questionnaire de
+  // préqualification — plus de lien Calendly direct.
+  const prequalificationUrl = "https://ep-coaching-formulaires.vercel.app/prequalification";
 
   return (
     <div
@@ -195,7 +203,7 @@ export default async function AbonnementPage() {
             Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l&apos;accompagnement est fait pour toi.
           </p>
           <a
-            href={calendlyUrl}
+            href={prequalificationUrl}
             target="_blank"
             rel="noopener noreferrer"
             style={{
@@ -357,7 +365,7 @@ export default async function AbonnementPage() {
               Prêt à arrêter de tâtonner seul ?
             </p>
             <a
-              href={calendlyUrl}
+              href={prequalificationUrl}
               target="_blank"
               rel="noopener noreferrer"
               style={{

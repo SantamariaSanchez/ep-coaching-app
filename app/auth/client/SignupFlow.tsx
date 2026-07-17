@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight, Heart, PhoneCall } from "lucide-react";
+import PasswordInput from "@/components/ui/PasswordInput";
 import { selfSignup } from "./actions";
 
-const CALENDLY_URL = "https://calendly.com/peccoux-manu/30min";
+// Avant de reserver un appel, le prospect passe par un questionnaire de
+// prequalification — plus de lien Calendly direct.
+const PREQUALIFICATION_URL = "https://ep-coaching-formulaires.vercel.app/prequalification";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -126,8 +129,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
         return;
       }
       if (planUrl) {
-        const url = `${planUrl}?client_reference_id=${result.userId}&prefilled_email=${encodeURIComponent(email)}`;
-        window.location.href = url;
+        window.location.href = planUrl;
       } else {
         router.push("/dashboard/client");
         router.refresh();
@@ -171,7 +173,13 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           </div>
           <div>
             <label style={labelStyle}>Mot de passe</label>
-            <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="••••••••" style={inputStyle} />
+            <PasswordInput
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              inputStyle={inputStyle}
+              autoComplete="new-password"
+            />
           </div>
         </div>
       )}
@@ -248,7 +256,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
           <button
             type="button"
-            onClick={() => handleChoice("coaching", CALENDLY_URL)}
+            onClick={() => handleChoice("coaching", PREQUALIFICATION_URL)}
             disabled={submitting !== null}
             style={{
               display: "flex", alignItems: "center", gap: 12,

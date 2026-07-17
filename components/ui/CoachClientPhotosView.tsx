@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { ExternalLink, CheckCircle2, Clock, Camera, Pencil, Eraser } from "lucide-react";
-import { ALL_CATEGORIES, TYPE_LABELS } from "@/lib/posing-data";
+import { CATEGORIES_BY_GENDER, TYPE_LABELS } from "@/lib/posing-data";
 import { driveImageUrl } from "@/lib/drive-utils";
 import DrawableImage from "@/components/ui/DrawableImage";
 import type { Profile } from "@/utils/auth";
@@ -46,11 +46,20 @@ function CompetitionSettings({
             className={inputCls}
           >
             <option value="">Non définie</option>
-            {ALL_CATEGORIES.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
+            <optgroup label="Femmes">
+              {CATEGORIES_BY_GENDER.femme.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="Hommes">
+              {CATEGORIES_BY_GENDER.homme.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </optgroup>
           </select>
         </div>
         <div>

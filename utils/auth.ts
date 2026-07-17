@@ -81,6 +81,17 @@ export async function getClients(): Promise<Profile[]> {
   }
 }
 
+// Le coach doit pouvoir écrire à n'importe quel membre (clients payants
+// et membres gratuits de la communauté), pas seulement à ses clients actifs —
+// utilisé par la liste des messages coach.
+export async function getAllMessageableMembers(): Promise<Profile[]> {
+  const [clients, communityMembers] = await Promise.all([
+    getClients(),
+    getCommunityMembers(),
+  ]);
+  return [...clients, ...communityMembers];
+}
+
 export async function getCommunityMembers(): Promise<Profile[]> {
   try {
     const admin = createAdminClient();

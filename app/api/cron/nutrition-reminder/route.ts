@@ -49,7 +49,7 @@ export async function GET(req: Request) {
       await sendPushToUser(
         profile.client_id,
         "⚡ Bilan nutrition du jour",
-        "1 minute, 4 questions → ta journée est loggée automatiquement.",
+        "Trop la flemme de logger ? Choisis juste tes repas habituels, l'appli calcule tout.",
         "/dashboard/client/nutrition/bilan-rapide"
       ).catch(() => {});
       notified++;

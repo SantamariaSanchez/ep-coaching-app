@@ -23,7 +23,7 @@ const SLIDES: Slide[] = [
     icon: Sparkles,
     eyebrow: "Bienvenue",
     title: "T'es officiellement dans la place 👋",
-    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux, mais 100% optionnel. Let's go.",
+    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux — bilans persos, appels live, accompagnement mindset, et une bague Oura Ring offerte. 100% optionnel. Let's go.",
   },
   {
     icon: Dumbbell,
@@ -43,7 +43,8 @@ const SLIDES: Slide[] = [
     icon: ImageIcon,
     eyebrow: "Suivi",
     title: "Vois ta progression",
-    desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation, pas & routine, mindset : tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
+    desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation et posing, pas & routine, mindset : tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
+    bullets: ["Bilan quotidien", "Photos & posing", "Pas & routine", "Mindset"],
   },
   {
     icon: FlaskConical,
@@ -76,7 +77,7 @@ const SLIDES: Slide[] = [
     icon: Crown,
     eyebrow: "Pour aller plus loin (optionnel)",
     title: "Un vrai coach, si tu le souhaites",
-    desc: "Tout ce que tu viens de voir reste gratuit, sans limite de temps. Si un jour tu veux qu'un coach s'occupe de ton programme et ta nutrition, avec un bilan chaque semaine et des messages directs, tu peux réserver un appel découverte de 30 min, gratuit et sans engagement, depuis \"Mon coaching\". Rien ne t'y oblige.",
+    desc: "Tout ce que tu viens de voir reste gratuit, sans limite de temps. En coaching payant, en plus du programme et de la nutrition sur-mesure : bilan chaque semaine, messages directs avec ton coach, appels live (groupe ou 1:1), accompagnement mindset, et une bague Oura Ring offerte pour connecter sommeil et récupération automatiquement. Réserve un appel découverte gratuit et sans engagement depuis \"Mon coaching\" — tu passes d'abord par un court questionnaire pour qu'on prépare l'appel ensemble.",
   },
 ];
 

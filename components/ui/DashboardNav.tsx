@@ -111,7 +111,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Suivi",
     icon: ClipboardCheck,
     href: "/dashboard/client/bilan",
-    matchSegments: ["bilan", "photos"],
+    matchSegments: ["bilan", "photos", "tracking"],
   },
   {
     label: "Communauté",
@@ -150,6 +150,10 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
     items: [
       { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
       { label: "Photos", icon: Image, segment: "photos" },
+      // Onglet accessible mais bague Oura non offerte aux membres gratuits —
+      // la page elle-même explique qu'il faut passer en coaching payant
+      // pour connecter (voir TrackingClient canConnectOura).
+      { label: "Sommeil", icon: Watch, segment: "tracking", locked: true },
     ],
   },
   {
@@ -252,7 +256,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Analytics", icon: BarChart2,      segment: "analytics", badge: "analytics" },
       { label: "Bilan",     icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
       { label: "Nutrition", icon: Apple,           segment: "nutrition" },
-      { label: "Notes",     icon: ClipboardList,   segment: "notes" },
     ],
   },
   {
@@ -302,7 +305,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
       { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
       { label: "Pas & routine",  icon: Footprints,     segment: "moi/steps" },
-      { label: "Tracking",       icon: Watch,          segment: "moi/tracking" },
+      { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
       { label: "Mindset",        icon: Brain,          segment: "moi/mindset" },
     ],
@@ -340,7 +343,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Pas & routine",  icon: Footprints,      segment: "steps" },
-      { label: "Tracking",      icon: Watch,           segment: "tracking" },
+      { label: "Sommeil",       icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
       { label: "Mindset",        icon: Brain,           segment: "mindset" },
     ],
@@ -885,7 +888,12 @@ export default function DashboardNav({
           <nav
             style={{
               position: "sticky",
-              top: 0,
+              // Le bouton menu + profil + cloche sont en position fixed
+              // par-dessus tout (z-index 101) et ne poussent pas le
+              // contenu — sans cette marge, cette bande pleine largeur
+              // se retrouvait juste derrière eux, chevauchée.
+              marginTop: "calc(58px + env(safe-area-inset-top, 0px))",
+              top: "calc(58px + env(safe-area-inset-top, 0px))",
               zIndex: 30,
               display: "flex",
               gap: 6,

@@ -41,6 +41,8 @@ interface Props {
   isCoach: boolean;
   /** Push URL for push notification (e.g. /dashboard/coach/messages) */
   pushUrl: string;
+  /** false = this user can't send yet (free member waiting on the coach to open the conversation) */
+  canSend?: boolean;
 }
 
 // ── Voice message player ──────────────────────────────────────────────────────
@@ -289,6 +291,7 @@ export default function ConversationView({
   conversationId,
   isCoach,
   pushUrl,
+  canSend = true,
 }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
@@ -386,7 +389,7 @@ export default function ConversationView({
 
   const sendText = useCallback(async () => {
     const content = text.trim();
-    if (!content || sending) return;
+    if (!content || sending || !canSend) return;
     setSending(true);
     setSendError(null);
 
@@ -412,10 +415,11 @@ export default function ConversationView({
     }
     setSending(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, sending, conversationId, userId, peerId]);
+  }, [text, sending, canSend, conversationId, userId, peerId]);
 
   const sendVoice = useCallback(
     async (blob: Blob, duration: number) => {
+      if (!canSend) return;
       setSending(true);
       setSendError(null);
       try {
@@ -469,11 +473,12 @@ export default function ConversationView({
       setSending(false);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [conversationId, userId, peerId, isCoach, peerName]
+    [conversationId, userId, peerId, isCoach, peerName, canSend]
   );
 
   const sendImage = useCallback(
     async (file: File) => {
+      if (!canSend) return;
       setSending(true);
       setSendError(null);
       try {
@@ -517,7 +522,7 @@ export default function ConversationView({
       setSending(false);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [conversationId, userId, peerId, isCoach, peerName]
+    [conversationId, userId, peerId, isCoach, peerName, canSend]
   );
 
   // Retour vidéo type Loom (coach uniquement) — voir components/coach/CoachVideoRecorder.tsx.
@@ -592,6 +597,15 @@ export default function ConversationView({
       )}
 
       {/* Input zone */}
+      {!canSend ? (
+        <div className="border-t border-[#890404]/20 bg-[#150000] px-4 py-4 text-center">
+          <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed">
+            Ton coach n&apos;a pas encore ouvert cette conversation.
+            <br />
+            Tu pourras lui répondre dès qu&apos;il t&apos;aura écrit.
+          </p>
+        </div>
+      ) : (
       <div className="border-t border-[#890404]/20 bg-[#150000] px-3 py-3 flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
 
@@ -649,6 +663,7 @@ export default function ConversationView({
           )}
         </button>
       </div>
+      )}
     </div>
   );
 }

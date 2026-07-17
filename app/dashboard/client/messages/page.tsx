@@ -1,5 +1,6 @@
 ﻿import { redirect } from "next/navigation";
-import { getUser, getProfile, getClients } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 
@@ -7,7 +8,6 @@ import ConversationView from "@/components/messaging/ConversationView";
 async function getCoachId(): Promise<string | null> {
   try {
     // Admin client bypasses RLS - client cannot read other users profiles
-    const { createAdminClient } = await import("@/lib/supabase-admin");
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
@@ -18,6 +18,24 @@ async function getCoachId(): Promise<string | null> {
     return data?.id ?? null;
   } catch {
     return null;
+  }
+}
+
+// Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
+// lui répondre une fois qu'il a ouvert la conversation, pour éviter que le
+// coach se retrouve sollicité par des membres qu'il ne suit pas activement.
+// Les clients payants peuvent toujours écrire.
+async function canMemberSend(coachId: string, clientId: string): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { count } = await admin
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("conversation_id", clientId)
+      .eq("sender_id", coachId);
+    return (count ?? 0) > 0;
+  } catch {
+    return false;
   }
 }
 
@@ -42,6 +60,7 @@ export default async function ClientMessagesPage() {
   // conversation_id is always the client's ID
   const conversationId = user.id;
   const coachName = "Emmanuel Peccoux";
+  const canSend = isSubscribed(profile) || (await canMemberSend(coachId, user.id));
 
   return (
     <div className="max-w-2xl mx-auto">
@@ -68,6 +87,7 @@ export default async function ClientMessagesPage() {
         conversationId={conversationId}
         isCoach={false}
         pushUrl="/dashboard/coach/messages"
+        canSend={canSend}
       />
     </div>
   );

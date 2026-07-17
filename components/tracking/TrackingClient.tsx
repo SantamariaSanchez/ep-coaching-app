@@ -5,7 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
 import {
-  Moon, Activity, HeartPulse, Gauge, AlertTriangle, Info, CheckCircle2, Watch,
+  Moon, Activity, HeartPulse, Gauge, AlertTriangle, Info, CheckCircle2, Watch, Lock, Unlink,
 } from "lucide-react";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { LogBiometricsInput } from "@/app/dashboard/client/tracking/actions";
@@ -65,11 +65,19 @@ export default function TrackingClient({
   insights,
   readOnly = false,
   logBiometrics,
+  ouraConnected = false,
+  canConnectOura = true,
+  disconnectOura,
 }: {
   logs: BiometricLog[];
   insights: BiometricInsight[];
   readOnly?: boolean;
   logBiometrics?: (input: LogBiometricsInput) => Promise<{ error?: string }>;
+  /** Une bague Oura est déjà connectée pour cet utilisateur */
+  ouraConnected?: boolean;
+  /** false = membre gratuit, pas de bague offerte, pas de connexion possible */
+  canConnectOura?: boolean;
+  disconnectOura?: () => Promise<{ error?: string }>;
 }) {
   const today = new Date().toISOString().split("T")[0];
   const todayLog = logs.find((l) => l.log_date === today) ?? null;
@@ -80,6 +88,14 @@ export default function TrackingClient({
   const [restingHr, setRestingHr] = useState(todayLog?.resting_hr?.toString() ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [disconnecting, setDisconnecting] = useState(false);
+
+  async function handleDisconnect() {
+    if (!disconnectOura) return;
+    setDisconnecting(true);
+    await disconnectOura();
+    setDisconnecting(false);
+  }
 
   async function handleSave() {
     if (!logBiometrics) return;
@@ -103,13 +119,44 @@ export default function TrackingClient({
 
   return (
     <div className="space-y-5">
-      <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
-        <Watch size={15} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
-        <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
-          Connexion Oura Ring à venir. En attendant, log tes données chaque jour. Dès qu&apos;une vraie
-          décision d&apos;ajustement ressort de tes données, tu reçois une notification.
-        </p>
-      </div>
+      {ouraConnected ? (
+        <div className="bg-[#150000] border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
+          <Watch size={15} className="text-green-400 flex-shrink-0" />
+          <p className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex-1">
+            Bague Oura connectée — sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.
+          </p>
+          {!readOnly && disconnectOura && (
+            <button
+              onClick={handleDisconnect}
+              disabled={disconnecting}
+              className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors flex-shrink-0"
+            >
+              <Unlink size={11} />
+              {disconnecting ? "…" : "Déconnecter"}
+            </button>
+          )}
+        </div>
+      ) : canConnectOura ? (
+        <a
+          href="/api/oura/connect"
+          className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-xl px-4 py-3 transition-colors"
+        >
+          <Watch size={15} className="text-[#E01E1E] flex-shrink-0" />
+          <span className="text-[11px] text-[#F5EDED]/45 leading-relaxed flex-1">
+            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> pour remplir cet onglet automatiquement.
+          </span>
+          <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+            Connecter →
+          </span>
+        </a>
+      ) : (
+        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
+          <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
+            La bague Oura Ring est offerte aux membres en coaching — passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.
+          </p>
+        </div>
+      )}
 
       {!readOnly && logBiometrics && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">

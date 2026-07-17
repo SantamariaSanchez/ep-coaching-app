@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { createAdminClient } from "@/lib/supabase-admin";
 import TrackingClient from "@/components/tracking/TrackingClient";
-import { logBiometrics } from "./actions";
+import { logBiometrics, disconnectOura } from "./actions";
 
 export default async function ClientTrackingPage() {
   const user = await getUser();
@@ -11,9 +12,11 @@ export default async function ClientTrackingPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/moi/tracking");
 
-  const [logs, insights] = await Promise.all([
+  const admin = createAdminClient();
+  const [logs, insights, { data: ouraConnection }] = await Promise.all([
     getBiometricLogs(user.id),
     getBiometricInsights(user.id),
+    admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
   ]);
 
   return (
@@ -22,13 +25,20 @@ export default async function ClientTrackingPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Suivi
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Tracking</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Sommeil</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Sommeil, récupération, HRV : des données qui débouchent sur de vraies suggestions d&apos;ajustement.
         </p>
       </div>
 
-      <TrackingClient logs={logs} insights={insights} logBiometrics={logBiometrics} />
+      <TrackingClient
+        logs={logs}
+        insights={insights}
+        logBiometrics={logBiometrics}
+        ouraConnected={!!ouraConnection}
+        canConnectOura={isSubscribed(profile)}
+        disconnectOura={disconnectOura}
+      />
     </div>
   );
 }

@@ -1,9 +1,28 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
 import { sendPushToUser } from "@/lib/push";
+
+export async function disconnectOura(): Promise<{ error?: string }> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { error: "Non authentifié." };
+
+    const admin = createAdminClient();
+    const { error } = await admin.from("oura_connections").delete().eq("client_id", user.id);
+    if (error) return { error: "Erreur lors de la déconnexion." };
+
+    revalidatePath("/dashboard/client/tracking");
+    revalidatePath("/dashboard/coach/moi/tracking");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
 
 export interface LogBiometricsInput {
   logDate: string;

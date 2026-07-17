@@ -25,8 +25,13 @@
   --radius-xl:   24px;
   --radius-2xl:  32px;
 
-  --blur-card: blur(28px);
-  --blur-nav:  blur(36px);
+  /* Valeurs volontairement modestes : un écran comme Nutrition empile des
+     dizaines de .ep-card en liste (historique, aliments...) — avec un flou
+     de 28px chacune, Safari iOS finit par "abandonner" le rendu du flou et
+     affiche un aplat gris uni à la place (bug de compositing WebKit connu
+     sur les piles de backdrop-filter trop nombreuses/coûteuses). */
+  --blur-card: blur(14px);
+  --blur-nav:  blur(20px);
 
   --nav-bottom-height: 72px;
 }
@@ -134,6 +139,18 @@
        casse l'impression d'appli native (le geste de swipe vers le bas
        recharge toute la page au lieu de scroller le contenu). */
     overscroll-behavior-y: contain;
+  }
+
+  /* iOS Safari zoome automatiquement la page quand un champ de moins de
+     16px reçoit le focus, puis dézoome à la perte du focus — donnant
+     l'impression d'un léger zoom/dézoome parasite à chaque tap sur un
+     champ. Plusieurs champs (composer de messages, formulaires) sont en
+     14px ; on force 16px minimum sur tous les champs en mobile plutôt que
+     de corriger chaque composant un par un. */
+  @media (max-width: 767px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
   }
 
   body {

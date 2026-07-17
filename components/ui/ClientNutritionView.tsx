@@ -828,28 +828,29 @@ export default function ClientNutritionView({
             </div>
           )}
 
-          {/* Bilan rapide — quiz 4 questions → auto-log, zéro saisie manuelle */}
-          {todayLogs.length === 0 && (
-            <a
-              href="/dashboard/client/nutrition/bilan-rapide"
-              className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
-            >
-              <span className="flex items-center gap-2.5 text-left">
-                <span className="text-xl">⚡</span>
-                <span>
-                  <span className="block text-xs font-bold text-white">
-                    Bilan rapide : 4 questions, 1 min
-                  </span>
-                  <span className="block text-[10px] text-[#F5EDED]/40">
-                    Je réponds et l&apos;appli log tout automatiquement
-                  </span>
+          {/* Bilan rapide — alternative rapide à la saisie manuelle, toujours
+              accessible (avant, elle disparaissait dès le premier aliment
+              loggé dans la journée — hors c'est le seul lien vers cette
+              page, la perdre revenait à la rendre injoignable). */}
+          <a
+            href="/dashboard/client/nutrition/bilan-rapide"
+            className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
+          >
+            <span className="flex items-center gap-2.5 text-left">
+              <span className="text-xl">⚡</span>
+              <span>
+                <span className="block text-xs font-bold text-white">
+                  {todayLogs.length === 0 ? "Bilan rapide" : "Compléter ma journée"}
+                </span>
+                <span className="block text-[10px] text-[#F5EDED]/40">
+                  Je choisis mes repas et mes aliments habituels, l&apos;appli calcule tout
                 </span>
               </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-                Commencer →
-              </span>
-            </a>
-          )}
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+              Commencer →
+            </span>
+          </a>
 
           {/* Copy yesterday — the single biggest friction-killer for an empty day */}
           {todayLogs.length === 0 && yesterdayLogs.length > 0 && (

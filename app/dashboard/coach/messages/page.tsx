@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile, getClients } from "@/utils/auth";
+import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -21,7 +21,7 @@ export default async function CoachMessagesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");
 
-  const [clients, supabase] = await Promise.all([getClients(), createServerSupabase()]);
+  const [clients, supabase] = await Promise.all([getAllMessageableMembers(), createServerSupabase()]);
   const clientIds = clients.map((c) => c.id);
 
   const { data: lastMessages } = await supabase
@@ -91,7 +91,7 @@ export default async function CoachMessagesPage() {
 
       {clients.length === 0 ? (
         <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Aucun client encore</p>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Aucun membre encore</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -147,8 +147,17 @@ export default async function CoachMessagesPage() {
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED" }}>
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6 }}>
                     {client.full_name ?? "Client"}
+                    {client.subscription_status !== "active" && (
+                      <span style={{
+                        fontSize: 8, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
+                        color: "rgba(245,237,237,0.35)", border: "1px solid rgba(245,237,237,0.15)",
+                        borderRadius: 6, padding: "2px 5px", flexShrink: 0,
+                      }}>
+                        Gratuit
+                      </span>
+                    )}
                   </p>
                   {client.msg ? (
                     <p style={{

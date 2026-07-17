@@ -2,9 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import TrackingClient from "@/components/tracking/TrackingClient";
-import { logBiometrics } from "@/app/dashboard/client/tracking/actions";
+import { logBiometrics, disconnectOura } from "@/app/dashboard/client/tracking/actions";
 
 export default async function CoachMoiTrackingPage() {
   const supabase = await createServerSupabase();
@@ -14,9 +15,11 @@ export default async function CoachMoiTrackingPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [logs, insights] = await Promise.all([
+  const admin = createAdminClient();
+  const [logs, insights, { data: ouraConnection }] = await Promise.all([
     getBiometricLogs(user.id),
     getBiometricInsights(user.id),
+    admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
   ]);
 
   return (
@@ -25,10 +28,17 @@ export default async function CoachMoiTrackingPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon suivi
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Tracking</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Sommeil</h1>
       </div>
 
-      <TrackingClient logs={logs} insights={insights} logBiometrics={logBiometrics} />
+      <TrackingClient
+        logs={logs}
+        insights={insights}
+        logBiometrics={logBiometrics}
+        ouraConnected={!!ouraConnection}
+        canConnectOura
+        disconnectOura={disconnectOura}
+      />
     </div>
   );
 }
