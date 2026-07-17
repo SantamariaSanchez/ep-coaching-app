@@ -34,6 +34,7 @@ export default function CheckinDaySettings({
       </span>
       <form action={action} style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <select
+          key={currentDay}
           name="checkin_day"
           defaultValue={currentDay}
           disabled={isPending}

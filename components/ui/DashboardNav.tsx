@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
@@ -11,6 +11,7 @@ import {
   Brain, MessageSquareText, LibraryBig, MapPin,
   Search, Newspaper, FlaskConical, Microscope, Menu, X, Bell,
 } from "lucide-react";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import NotificationBell from "@/components/ui/NotificationBell";
@@ -500,8 +501,10 @@ export default function DashboardNav({
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
   const [analyticsAlerts, setAnalyticsAlerts] = useState(0);
+  const [notifCount,      setNotifCount]      = useState(0);
   const [userName,        setUserName]        = useState<string | null>(null);
   const [userRole,        setUserRole]        = useState<string | null>(null);
+  const notifChannelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -537,6 +540,11 @@ export default function DashboardNav({
       .then((d) => setUnreadMessages(d.count ?? 0))
       .catch(() => {});
 
+    fetch("/api/notifications/unread")
+      .then((r) => r.json())
+      .then((d) => setNotifCount(d.count ?? 0))
+      .catch(() => {});
+
     const supabase = createClientSupabase();
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return;
@@ -555,6 +563,16 @@ export default function DashboardNav({
             );
           }
         });
+
+      const notifCh = supabase
+        .channel("nav-notifications")
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+          () => fetch("/api/notifications/unread").then((r) => r.json()).then((d) => setNotifCount(d.count ?? 0)).catch(() => {})
+        )
+        .subscribe();
+      notifChannelRef.current = notifCh;
     });
 
     const ch = supabase
@@ -566,7 +584,10 @@ export default function DashboardNav({
         fetch("/api/messages/unread").then((r) => r.json()).then((d) => setUnreadMessages(d.count ?? 0)).catch(() => {})
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+      if (notifChannelRef.current) supabase.removeChannel(notifChannelRef.current);
+    };
   }, []);
 
   async function handleSignOut() {
@@ -827,73 +848,16 @@ export default function DashboardNav({
           zIndex: 1,
         }}
       >
-        {!isDesktop && (
-          <>
-            <button
-              onClick={() => setDrawerOpen(true)}
-              aria-label="Ouvrir le menu"
-              style={{
-                position: "fixed",
-                top: "calc(14px + env(safe-area-inset-top, 0px))",
-                left: 14,
-                zIndex: 101,
-                width: 38,
-                height: 38,
-                borderRadius: 12,
-                background: "rgba(6,0,0,0.7)",
-                border: "1px solid rgba(224,30,30,0.15)",
-                backdropFilter: "blur(12px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "rgba(245,237,237,0.7)",
-              }}
-            >
-              <Menu size={17} />
-            </button>
-            <div style={{ position: "fixed", top: "calc(14px + env(safe-area-inset-top, 0px))", right: 14, zIndex: 101, display: "flex", alignItems: "center", gap: 8 }}>
-              {/* Bouton profil — auparavant tassé dans l'onglet Communauté
-                  (coach) ou l'onglet Coach/Contenu (client) comme une entrée
-                  de plus parmi d'autres, ce qui le rendait dur à trouver
-                  malgré son usage fréquent (compte, déconnexion...). Un
-                  bouton dédié dans l'en-tête est plus direct qu'un onglet
-                  du bas dédié, qui aurait surchargé une barre déjà pleine. */}
-              <Link
-                href={`${base}/profile`}
-                aria-label="Mon profil"
-                style={{
-                  width: 38,
-                  height: 38,
-                  borderRadius: 12,
-                  background: isSidebarActive("profile") ? "rgba(224,30,30,0.18)" : "rgba(6,0,0,0.7)",
-                  border: isSidebarActive("profile") ? "1px solid rgba(224,30,30,0.4)" : "1px solid rgba(224,30,30,0.15)",
-                  backdropFilter: "blur(12px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: isSidebarActive("profile") ? "#E01E1E" : "rgba(245,237,237,0.7)",
-                }}
-              >
-                <User size={17} />
-              </Link>
-              <NotificationBell variant="mobile" />
-            </div>
-          </>
-        )}
-
         {/* Mobile secondary tab strip — exposes every sibling page within
             the active bottom-tab section, since the bottom nav only has
-            room for the top-level sections. */}
+            room for the top-level sections. Plus rien de fixed en haut
+            (menu/profil/cloche sont descendus dans la barre du bas) donc
+            plus besoin de marge pour les éviter — la bande colle en haut. */}
         {!isDesktop && mobileSubItems.length > 1 && (
           <nav
             style={{
               position: "sticky",
-              // Le bouton menu + profil + cloche sont en position fixed
-              // par-dessus tout (z-index 101) et ne poussent pas le
-              // contenu — sans cette marge, cette bande pleine largeur
-              // se retrouvait juste derrière eux, chevauchée.
-              marginTop: "calc(58px + env(safe-area-inset-top, 0px))",
-              top: "calc(58px + env(safe-area-inset-top, 0px))",
+              top: 0,
               zIndex: 30,
               display: "flex",
               gap: 6,
@@ -1064,6 +1028,74 @@ export default function DashboardNav({
               </Link>
             );
           })}
+
+          {/* Menu — regroupe tout ce qui n'a pas sa place dans les onglets
+              du bas : profil, notifications, déconnexion, sommaire complet.
+              Avant, ces accès flottaient en position fixed en haut de
+              l'écran par-dessus le contenu ; regroupés ici, en bas avec le
+              reste de la navigation, à portée de pouce. */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Ouvrir le menu"
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              background: "none",
+              border: "none",
+              borderRadius: 12,
+              minHeight: 56,
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: 48,
+                height: 30,
+                borderRadius: 15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Menu size={18} strokeWidth={1.6} style={{ color: "rgba(245,237,237,0.28)" }} />
+              {notifCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: 1,
+                  right: 3,
+                  background: "#E01E1E",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  width: 15,
+                  height: 15,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 8,
+                  fontWeight: 800,
+                  border: "1.5px solid #070000",
+                }}>
+                  {notifCount > 9 ? "9+" : notifCount}
+                </span>
+              )}
+            </div>
+            <span style={{
+              fontSize: 9,
+              fontWeight: 500,
+              letterSpacing: "0.03em",
+              color: "rgba(245,237,237,0.28)",
+              lineHeight: 1,
+              whiteSpace: "nowrap",
+            }}>
+              Menu
+            </span>
+          </button>
         </div>
       </nav>
 
@@ -1082,13 +1114,16 @@ export default function DashboardNav({
           >
             <div className="flex items-center justify-between px-4 pb-4">
               <EPLogo size="sm" showCoaching />
-              <button
-                onClick={() => setDrawerOpen(false)}
-                className="p-2 rounded-lg text-[#F5EDED]/50 hover:text-white transition-colors"
-                aria-label="Fermer le menu"
-              >
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-2">
+                <NotificationBell variant="mobile" />
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="p-2 rounded-lg text-[#F5EDED]/50 hover:text-white transition-colors"
+                  aria-label="Fermer le menu"
+                >
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             <nav className="px-3 pb-8">

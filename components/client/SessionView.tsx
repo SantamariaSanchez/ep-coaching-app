@@ -34,9 +34,10 @@ import {
   Cell,
 } from "recharts";
 import {
-  WARMUP_RECOMMENDATIONS,
   EQUIPMENT_COLORS,
-  detectWarmupType,
+  detectWarmupTypes,
+  combineWarmupRecommendations,
+  type WarmupExercise,
 } from "@/lib/warmup-data";
 import ExercisePicker from "@/components/client/ExercisePicker";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -53,12 +54,18 @@ interface PrevWeight {
   rir: number | null;
 }
 
+interface LibraryTip {
+  instructions: string | null;
+  video_url: string | null;
+}
+
 interface InitData {
   session: Session;
   exercises: Exercise[];
   prMap: Record<string, number>;
   prevWeights: Record<string, PrevWeight>;
   existingSets: SessionSet[];
+  libraryByName: Record<string, LibraryTip>;
 }
 
 interface SetState {
@@ -385,8 +392,21 @@ function WarmupStep({
     };
   }, []);
 
-  const type = detectWarmupType(dayLabel, muscleGroups);
-  const warmup = WARMUP_RECOMMENDATIONS[type];
+  const suggested = combineWarmupRecommendations(detectWarmupTypes(dayLabel, muscleGroups));
+  // Liste éditable — les exercices proposés sont des suggestions, pas une
+  // liste imposée : on peut en retirer et ajouter les siens.
+  const [exercises, setExercises] = useState<WarmupExercise[]>(suggested.exercises);
+  const [customName, setCustomName] = useState("");
+
+  function removeExercise(i: number) {
+    setExercises((prev) => prev.filter((_, idx) => idx !== i));
+  }
+
+  function addCustomExercise() {
+    if (!customName.trim()) return;
+    setExercises((prev) => [...prev, { name: customName.trim(), sets: "", equipment: "libre" }]);
+    setCustomName("");
+  }
 
   const canValidate = elapsed >= 300; // 5 min
   const isOptimal = elapsed >= 300 && elapsed <= 900;
@@ -454,7 +474,7 @@ function WarmupStep({
 
       {/* Articulations */}
       <div className="flex flex-wrap gap-1.5 mb-4">
-        {warmup.articulations.map((a) => (
+        {suggested.articulations.map((a) => (
           <span
             key={a}
             className="text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-[#890404]/15 text-[#F5EDED]/50 border border-[#890404]/20"
@@ -466,19 +486,23 @@ function WarmupStep({
 
       {/* Tip */}
       <p className="text-xs text-[#F5EDED]/50 italic mb-5 leading-relaxed">
-        💡 {warmup.tips}
+        💡 {suggested.tips}
       </p>
 
-      {/* Exercises list */}
-      <div className="space-y-2 mb-8">
-        {warmup.exercises.map((ex, i) => (
+      {/* Exercises list — suggestions éditables : retire ce que tu ne veux
+          pas, ajoute les tiens. */}
+      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+        Suggestions — modifie librement
+      </p>
+      <div className="space-y-2 mb-3">
+        {exercises.map((ex, i) => (
           <div
             key={i}
             className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3"
           >
             <div className="flex-1">
               <p className="text-sm font-semibold text-white">{ex.name}</p>
-              <p className="text-[10px] text-[#F5EDED]/40">{ex.sets}</p>
+              {ex.sets && <p className="text-[10px] text-[#F5EDED]/40">{ex.sets}</p>}
             </div>
             <span
               className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
@@ -490,8 +514,38 @@ function WarmupStep({
             >
               {ex.equipment}
             </span>
+            <button
+              onClick={() => removeExercise(i)}
+              aria-label="Retirer"
+              className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0"
+            >
+              <X size={14} />
+            </button>
           </div>
         ))}
+        {exercises.length === 0 && (
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-3">
+            Aucun exercice — ajoute le tien ci-dessous.
+          </p>
+        )}
+      </div>
+
+      {/* Ajouter son propre exercice d'échauffement */}
+      <div className="flex gap-2 mb-8">
+        <input
+          value={customName}
+          onChange={(e) => setCustomName(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomExercise(); } }}
+          placeholder="Ajouter ton propre exercice…"
+          className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+        />
+        <button
+          onClick={addCustomExercise}
+          disabled={!customName.trim()}
+          className="px-4 rounded-lg bg-[#890404]/30 hover:bg-[#890404]/50 disabled:opacity-30 text-[#F5EDED]/70 transition-colors"
+        >
+          <Plus size={16} />
+        </button>
       </div>
 
       {/* Validate button */}
@@ -958,6 +1012,7 @@ function ExerciseCard({
   prevWeight,
   prThreshold,
   sessionId,
+  libraryTip,
   onUpdate,
   onValidateSet,
   onUnvalidateSet,
@@ -971,6 +1026,7 @@ function ExerciseCard({
   prevWeight: PrevWeight | null;
   prThreshold: number | null;
   sessionId: string;
+  libraryTip?: LibraryTip;
   onUpdate: (patch: Partial<ExerciseState>) => void;
   onValidateSet: (setIdx: number) => void;
   onUnvalidateSet: (setIdx: number) => void;
@@ -980,7 +1036,11 @@ function ExerciseCard({
   onMoveDown?: () => void;
   onNotesChange: (notes: string) => void;
 }) {
-  const tips = getTips(exState.exercise.name);
+  // Conseils réels de la bibliothèque d'exercices en priorité — sinon les
+  // cues génériques (avant : c'était toujours ces cues génériques, quasi
+  // identiques pour tous les exercices faute de correspondance).
+  const libraryInstructions = libraryTip?.instructions?.trim() || null;
+  const tips = libraryInstructions ? null : getTips(exState.exercise.name);
   // Les exercices ajoutés à la volée n'ont pas de nombre de séries cible
   // fiable (défaut arbitraire) — l'afficher induisait en erreur.
   const isCustomExercise = exState.exercise.id.startsWith("local-");
@@ -1097,22 +1157,41 @@ function ExerciseCard({
 
       {/* Tips panel */}
       {exState.showTips && (
-        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Cues d&apos;exécution
-          </p>
-          <ul className="space-y-1.5">
-            {tips.map((tip, i) => (
-              <li key={i} className="flex items-start gap-2">
-                <span className="text-[#E01E1E] font-black text-xs mt-0 leading-[1.4]">
-                  {i + 1}.
-                </span>
-                <span className="text-xs text-[#F5EDED]/65 leading-relaxed">
-                  {tip}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3 space-y-3">
+          <div>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+              {libraryInstructions ? "Conseils d'exécution" : "Cues d'exécution"}
+            </p>
+            {libraryInstructions ? (
+              <p className="text-xs text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">
+                {libraryInstructions}
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {tips!.map((tip, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span className="text-[#E01E1E] font-black text-xs mt-0 leading-[1.4]">
+                      {i + 1}.
+                    </span>
+                    <span className="text-xs text-[#F5EDED]/65 leading-relaxed">
+                      {tip}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {libraryTip?.video_url && (
+            <a
+              href={libraryTip.video_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
+            >
+              <Video size={11} />
+              Voir la vidéo d&apos;exemple
+            </a>
+          )}
         </div>
       )}
 
@@ -2133,6 +2212,7 @@ export default function SessionView({
             prThreshold={
               initData.prMap[exState.exercise.name.toLowerCase()] ?? null
             }
+            libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
             sessionId={sessionId}
             onUpdate={(patch) =>
               setExercises((prev) => {

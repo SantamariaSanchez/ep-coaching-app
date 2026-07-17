@@ -161,41 +161,76 @@ export const WARMUP_RECOMMENDATIONS: Record<WarmupType, WarmupRecommendation> =
     },
   };
 
-export function detectWarmupType(
+// Retourne TOUTES les catégories concernées plutôt que la première trouvée
+// — une séance "dos triceps quad" touche pull (dos) + push (triceps) +
+// legs (quad) à la fois, pas une seule.
+export function detectWarmupTypes(
   dayLabel: string,
   muscleGroups: string[]
-): WarmupType {
+): WarmupType[] {
   const label = dayLabel.toLowerCase();
   const groups = muscleGroups.map((g) => g.toLowerCase());
+  const types: WarmupType[] = [];
 
   if (
     label.includes("push") ||
     label.includes("pouss") ||
     label.includes("pec") ||
+    label.includes("triceps") ||
+    label.includes("épaule") ||
+    label.includes("epaule") ||
     groups.some((g) => ["pectoraux", "épaules", "triceps"].includes(g))
   ) {
-    return "push";
+    types.push("push");
   }
   if (
     label.includes("pull") ||
     label.includes("tir") ||
     label.includes("dos") ||
+    label.includes("biceps") ||
     groups.some((g) => ["dos", "biceps"].includes(g))
   ) {
-    return "pull";
+    types.push("pull");
   }
   if (
     label.includes("leg") ||
     label.includes("jambe") ||
     label.includes("squat") ||
     label.includes("quad") ||
+    label.includes("fessier") ||
+    label.includes("mollet") ||
+    label.includes("ischio") ||
     groups.some((g) =>
       ["quadriceps", "ischio-jambiers", "fessiers", "mollets"].includes(g)
     )
   ) {
-    return "legs";
+    types.push("legs");
   }
-  return "full";
+
+  return types.length > 0 ? types : ["full"];
+}
+
+// Combine plusieurs catégories en une seule recommandation — articulations
+// et exercices dédupliqués, plafonné pour rester un échauffement (pas une
+// séance à part entière).
+export function combineWarmupRecommendations(types: WarmupType[]): WarmupRecommendation {
+  if (types.length === 1) return WARMUP_RECOMMENDATIONS[types[0]];
+
+  const articulations = [...new Set(types.flatMap((t) => WARMUP_RECOMMENDATIONS[t].articulations))];
+  const seenNames = new Set<string>();
+  const exercises: WarmupExercise[] = [];
+  for (const t of types) {
+    for (const ex of WARMUP_RECOMMENDATIONS[t].exercises) {
+      if (seenNames.has(ex.name)) continue;
+      seenNames.add(ex.name);
+      exercises.push(ex);
+      if (exercises.length >= 8) break;
+    }
+    if (exercises.length >= 8) break;
+  }
+  const tips = types.map((t) => WARMUP_RECOMMENDATIONS[t].tips).join(" ");
+
+  return { articulations, exercises, tips };
 }
 
 export const EQUIPMENT_COLORS: Record<WarmupExercise["equipment"], string> = {

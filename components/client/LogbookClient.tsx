@@ -144,6 +144,8 @@ function StartSessionButton({
 
 function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
   const router = useRouter();
+  const [asking, setAsking] = useState(false);
+  const [dayLabel, setDayLabel] = useState("");
   const [loading, setLoading] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
@@ -154,7 +156,10 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
       const res = await fetch("/api/client/sessions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dayLabel: "Séance libre", muscleGroups: [] }),
+        // Le texte tapé sert aussi à cibler l'échauffement (voir
+        // detectWarmupTypes dans lib/warmup-data.ts) — d'où l'intérêt de
+        // demander "dos triceps" plutôt que de figer "Séance libre".
+        body: JSON.stringify({ dayLabel: dayLabel.trim() || "Séance libre", muscleGroups: [] }),
       });
       const json = await res.json();
       const sessionId: string | undefined = json.sessionId;
@@ -170,24 +175,47 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
     }
   }
 
-  return (
-    <div>
-      <button
-        onClick={handleStart}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors disabled:opacity-50"
-      >
-        {loading ? (
-          <div className="w-4 h-4 border-2 border-[#F5EDED]/40 border-t-transparent rounded-full animate-spin" />
-        ) : (
-          <Plus size={15} strokeWidth={1.8} />
+  if (asking) {
+    return (
+      <div className="border border-dashed border-[#890404]/30 rounded-xl px-4 py-3.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-2">
+          Quelle séance veux-tu faire ?
+        </p>
+        <div className="flex gap-2">
+          <input
+            autoFocus
+            value={dayLabel}
+            onChange={(e) => setDayLabel(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleStart(); } }}
+            placeholder="Ex. Dos triceps quad"
+            className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+          />
+          <button
+            onClick={handleStart}
+            disabled={loading}
+            className="px-4 rounded-lg bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest transition-colors"
+          >
+            {loading ? "…" : "Démarrer"}
+          </button>
+        </div>
+        <p className="text-[9px] text-[#F5EDED]/25 mt-2">
+          Sert à proposer un échauffement adapté — modifiable ensuite si besoin.
+        </p>
+        {startError && (
+          <p className="text-xs text-red-400 mt-1.5">{startError}</p>
         )}
-        Séance libre
-      </button>
-      {startError && (
-        <p className="text-xs text-red-400 mt-1.5 px-1">{startError}</p>
-      )}
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setAsking(true)}
+      className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3.5 text-sm text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+    >
+      <Plus size={15} strokeWidth={1.8} />
+      Séance libre
+    </button>
   );
 }
 

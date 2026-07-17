@@ -62,6 +62,11 @@ export async function updateCheckinDay(
   if (error) return { error: error.message };
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  // CheckinDaySettings est aussi rendu depuis la fiche client (onglet
+  // Check-ins) — sans ça, ce cache-là restait périmé et réaffichait
+  // l'ancien jour tant que la page n'était pas visitée depuis un lien
+  // externe.
+  revalidatePath(`/dashboard/coach/clients/${clientId}`);
   return { success: true };
 }
 

@@ -23,8 +23,25 @@ import {
   getSubgroupsFor,
 } from "@/lib/exercise-library-content";
 import { resolveVideoEmbed } from "@/lib/video-embed-utils";
+import { createClientSupabase } from "@/lib/supabase-client";
 import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
+
+async function uploadExerciseVideo(file: File): Promise<string | null> {
+  try {
+    const supabase = createClientSupabase();
+    const ext = file.name.split(".").pop() || "mp4";
+    const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabase.storage
+      .from("exercise-videos")
+      .upload(path, file, { contentType: file.type || "video/mp4", upsert: false });
+    if (error) return null;
+    const { data } = supabase.storage.from("exercise-videos").getPublicUrl(path);
+    return data.publicUrl;
+  } catch {
+    return null;
+  }
+}
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -87,8 +104,18 @@ function ExerciseForm({
   const [difficulty, setDifficulty] = useState<ExerciseDifficulty | "">(initial?.difficulty ?? "");
   const [instructions, setInstructions] = useState(initial?.instructions ?? "");
   const [videoUrl, setVideoUrl] = useState(initial?.video_url ?? "");
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleVideoUpload(file: File) {
+    setUploadingVideo(true);
+    setError(null);
+    const url = await uploadExerciseVideo(file);
+    setUploadingVideo(false);
+    if (!url) { setError("Échec de l'envoi de la vidéo, réessaie."); return; }
+    setVideoUrl(url);
+  }
 
   const subgroups = getSubgroupsFor(muscleGroup);
 
@@ -193,8 +220,35 @@ function ExerciseForm({
 
       {showVideoField && (
         <div>
-          <label className={labelCls}>Lien vidéo d&apos;exécution (YouTube, Vimeo, ou lien direct)</label>
-          <input value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://…" className={inputCls} />
+          <label className={labelCls}>Vidéo d&apos;exemple</label>
+          <div className="flex items-center gap-2 mb-2">
+            <label className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-[#890404]/40 bg-black/20 text-xs text-[#F5EDED]/50 hover:border-[#890404]/60 hover:text-[#F5EDED]/75 cursor-pointer transition-colors">
+              <Video size={13} />
+              {uploadingVideo ? "Envoi…" : "Uploader une vidéo"}
+              <input
+                type="file"
+                accept="video/*"
+                className="hidden"
+                disabled={uploadingVideo}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleVideoUpload(file);
+                  e.target.value = "";
+                }}
+              />
+            </label>
+            {videoUrl && (
+              <span className="text-[10px] text-green-400 flex items-center gap-1">
+                <PlayCircle size={12} /> Vidéo prête
+              </span>
+            )}
+          </div>
+          <input
+            value={videoUrl}
+            onChange={(e) => setVideoUrl(e.target.value)}
+            placeholder="…ou colle un lien YouTube / Vimeo / direct"
+            className={inputCls}
+          />
         </div>
       )}
 

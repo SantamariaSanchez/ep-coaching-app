@@ -214,6 +214,32 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
   }
 }
 
+// Marque le live comme terminé — distinct de "quitter l'appel" (qui ne
+// concerne que le participant local). Utilisé par le bouton "Terminer le
+// live", réservé à l'hôte, pour faire basculer l'événement dans les lives
+// passés plutôt que de le laisser trainer indéfiniment en "à venir".
+export async function endLiveEvent(id: string): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("live_events")
+      .update({ status: "ended" })
+      .eq("id", id)
+      .eq("host_id", guard.userId);
+
+    if (error) return { error: "Erreur lors de la clôture." };
+
+    revalidatePath("/dashboard/coach/live");
+    revalidatePath("/dashboard/client/live");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function deleteLiveEvent(id: string): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };

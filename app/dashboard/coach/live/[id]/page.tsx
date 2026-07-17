@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getLiveEventById } from "@/utils/live-events";
 import JitsiRoom from "@/components/live/JitsiRoom";
+import { endLiveEvent } from "../actions";
 
 export default async function CoachLiveRoomPage({
   params,
@@ -18,5 +19,13 @@ export default async function CoachLiveRoomPage({
   const event = await getLiveEventById(id);
   if (!event || event.status !== "scheduled") notFound();
 
-  return <JitsiRoom roomSlug={event.room_slug} title={event.title} backHref="/dashboard/coach/live" />;
+  return (
+    <JitsiRoom
+      roomSlug={event.room_slug}
+      title={event.title}
+      backHref="/dashboard/coach/live"
+      isHost
+      onEndLive={endLiveEvent.bind(null, id)}
+    />
+  );
 }

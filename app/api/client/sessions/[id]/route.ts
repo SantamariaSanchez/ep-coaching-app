@@ -11,6 +11,10 @@ interface InitData {
   prMap: Record<string, number>; // exerciseName.lower → best weight
   prevWeights: Record<string, { weight: number | null; reps: string | null; rir: number | null }>;
   existingSets: SessionSet[];
+  // exerciseName.lower → conseils réels + vidéo d'exemple, tirés de la
+  // bibliothèque d'exercices (exercise_library) plutôt que d'un petit
+  // dictionnaire générique — voir lib/execution-tips.ts pour le fallback.
+  libraryByName: Record<string, { instructions: string | null; video_url: string | null }>;
 }
 
 export async function GET(
@@ -91,12 +95,26 @@ export async function GET(
     }
   }
 
+  // Conseils + vidéo d'exemple par exercice, tirés de la bibliothèque —
+  // match par nom (pas de FK entre les exercices d'un programme et la
+  // bibliothèque), insensible à la casse.
+  const libraryByName: Record<string, { instructions: string | null; video_url: string | null }> = {};
+  if (exercises.length > 0) {
+    const { data: libraryRows } = await supabase
+      .from("exercise_library")
+      .select("name, instructions, video_url");
+    for (const row of (libraryRows as { name: string; instructions: string | null; video_url: string | null }[]) ?? []) {
+      libraryByName[row.name.toLowerCase()] = { instructions: row.instructions, video_url: row.video_url };
+    }
+  }
+
   const result: InitData = {
     session: sess,
     exercises,
     prMap,
     prevWeights,
     existingSets: (existingSets as SessionSet[]) ?? [],
+    libraryByName,
   };
 
   return NextResponse.json(result);

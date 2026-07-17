@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getUpcomingLiveEventsForClient } from "@/utils/live-events";
+import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
 import LiveEventsList from "@/components/live/LiveEventsList";
 
 export default async function ClientLivePage() {
@@ -10,7 +10,14 @@ export default async function ClientLivePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/live");
 
-  const events = await getUpcomingLiveEventsForClient(user.id);
+  // Les lives passés étaient invisibles côté client — seuls les "à venir"
+  // (status="scheduled") étaient chargés, la section "Passés" de
+  // LiveEventsList ne recevait donc jamais rien à afficher.
+  const [upcoming, past] = await Promise.all([
+    getUpcomingLiveEventsForClient(user.id),
+    getPastLiveEventsForClient(user.id),
+  ]);
+  const events = [...upcoming, ...past];
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">

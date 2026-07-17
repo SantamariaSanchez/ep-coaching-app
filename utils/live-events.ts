@@ -38,6 +38,29 @@ export async function getUpcomingLiveEventsForClient(clientId: string): Promise<
   }
 }
 
+// Lives passés (terminés explicitement par l'hôte, ou dont l'horaire +
+// marge est simplement écoulé) — pas de rediff vidéo (pas d'enregistrement
+// disponible sur ce plan Jitsi gratuit), juste un historique.
+export async function getPastLiveEventsForClient(clientId: string, limit = 15): Promise<LiveEvent[]> {
+  try {
+    const admin = createAdminClient();
+    const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const { data } = await admin
+      .from("live_events")
+      .select("*")
+      .or(`status.eq.ended,starts_at.lt.${cutoff}`)
+      .neq("status", "cancelled")
+      .or(`type.neq.1to1,invited_client_id.eq.${clientId}`)
+      .order("starts_at", { ascending: false })
+      .limit(limit);
+
+    if (!data) return [];
+    return (await attachInvitedNames(data, admin)) as LiveEvent[];
+  } catch {
+    return [];
+  }
+}
+
 export async function getAllLiveEventsForCoach(): Promise<LiveEvent[]> {
   try {
     const admin = createAdminClient();
