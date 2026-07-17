@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
 import { getCoachPosts } from "@/utils/coach-posts";
-import CommunitySubNav from "@/components/community/CommunitySubNav";
 import { MessageSquareText } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -20,8 +19,6 @@ export default async function ClientCoachPostsPage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <CommunitySubNav base="/dashboard/client/communaute" />
-
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Communauté

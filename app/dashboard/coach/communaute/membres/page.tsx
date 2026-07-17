@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getCommunityMembers } from "@/utils/auth";
-import CommunitySubNav from "@/components/community/CommunitySubNav";
 import { Heart, Mail } from "lucide-react";
 
 export default async function CoachMembresPage() {
@@ -15,8 +14,6 @@ export default async function CoachMembresPage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <CommunitySubNav base="/dashboard/coach/communaute" isCoach />
-
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Communauté

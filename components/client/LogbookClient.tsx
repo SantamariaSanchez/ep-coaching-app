@@ -17,7 +17,6 @@ import {
 import type { ProgramWithDays } from "@/utils/programs";
 import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import { Play } from "lucide-react";
-import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
 
 interface Props {
@@ -326,8 +325,6 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
-      <TrainingSubNav scope={subNavScope} />
-
       {/* Header */}
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">

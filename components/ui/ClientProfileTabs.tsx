@@ -7,11 +7,40 @@ import type { Profile } from "@/utils/auth";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import { getRankForPoints } from "@/lib/gamification-types";
+import type { ProgramWithDays } from "@/utils/programs";
+import type { ExerciseCorrection } from "@/utils/corrections";
+import type { WorkoutLog } from "@/utils/workout-logs";
+import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
+import type { ClientTask } from "@/utils/tasks";
+import type { CheckIn } from "@/utils/checkins";
+import type { WeeklyAverages } from "@/utils/daily-logs";
+import { groupLogsByWeek } from "@/utils/daily-logs";
+import type { PhotoUpdate } from "@/utils/photos";
+import type {
+  NutritionProfile,
+  NutritionProfileInput,
+  Food,
+  FoodLogWithFood,
+  DietPlanWithMeals,
+  DietMode,
+  DietStructure,
+} from "@/utils/nutrition";
+import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import ClientProgramView from "./ClientProgramView";
+import ClientBilanView from "./ClientBilanView";
+import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
+import CoachClientPhotosView from "./CoachClientPhotosView";
+import CheckinDaySettings from "./CheckinDaySettings";
+import CheckinCard from "./CheckinCard";
+import CoachClientTasksView from "./CoachClientTasksView";
+import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
+
+type ActionState = { error?: string; success?: boolean } | null;
 
 const TABS = [
   { key: "profil",    label: "Profil",    icon: User },
@@ -59,7 +88,67 @@ interface RoadmapData {
   objectives: RoadmapObjective[];
 }
 
-export default function ClientProfileTabs({ client, points }: { client: Profile; points: number }) {
+export default function ClientProfileTabs({
+  client,
+  points,
+  program,
+  corrections,
+  workoutLogs,
+  sessionsThisWeek,
+  logbookSessions,
+  personalRecords,
+  tasks,
+  createClientTask,
+  deleteClientTask,
+  sendMotivationMessage,
+  checkinsWithAverages,
+  bilanWeeks,
+  photos,
+  saveCompetitionSettings,
+  sendPhotoFeedback,
+  nutritionProfile,
+  todayLogs,
+  historyLogs,
+  foods,
+  activePlan,
+  allPlans,
+  today,
+  saveNutritionProfile,
+  createDietPlan,
+  deactivateDietPlan,
+  activateDietPlan,
+  deleteDietPlan,
+}: {
+  client: Profile;
+  points: number;
+  program: ProgramWithDays | null;
+  corrections: ExerciseCorrection[];
+  workoutLogs: WorkoutLog[];
+  sessionsThisWeek: number;
+  logbookSessions: SessionWithSets[];
+  personalRecords: PersonalRecord[];
+  tasks: ClientTask[];
+  createClientTask: (clientId: string, label: string, icon: string, nagMinutes: number) => Promise<{ error?: string }>;
+  deleteClientTask: (clientId: string, taskId: string) => Promise<{ error?: string }>;
+  sendMotivationMessage: (clientId: string, message: string) => Promise<{ error?: string }>;
+  checkinsWithAverages: { checkin: CheckIn; averages: WeeklyAverages }[];
+  bilanWeeks: ReturnType<typeof groupLogsByWeek>;
+  photos: PhotoUpdate[];
+  saveCompetitionSettings: (clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
+  sendPhotoFeedback: (photoId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
+  nutritionProfile: NutritionProfile | null;
+  todayLogs: FoodLogWithFood[];
+  historyLogs: FoodLogWithFood[];
+  foods: Food[];
+  activePlan: DietPlanWithMeals | null;
+  allPlans: DietPlanWithMeals[];
+  today: string;
+  saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
+  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
+  deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+  activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+  deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+}) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
@@ -72,6 +161,8 @@ export default function ClientProfileTabs({ client, points }: { client: Profile;
       .catch(() => setRoadmapData(null))
       .finally(() => setRoadmapLoading(false));
   }, [client.id]);
+
+  const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
 
   return (
     <div>
@@ -258,122 +349,93 @@ export default function ClientProfileTabs({ client, points }: { client: Profile;
       )}
 
       {activeTab === "logbook" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Logbook d&apos;entraînement
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/logbook`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir le logbook
-            </Link>
-          </div>
-        </Card>
+        <CoachLogbookClient clientId={client.id} sessions={logbookSessions} records={personalRecords} />
       )}
 
       {activeTab === "programme" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Programme d&apos;entraînement
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/program`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir le programme
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "bilans" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Bilans quotidiens
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/bilan`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir les bilans
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "photos" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Suivi photos &amp; posing
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/photos`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir les photos
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "checkins" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Historique des check-ins
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/checkins`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir les check-ins
-            </Link>
-          </div>
-        </Card>
-      )}
-
-      {activeTab === "rappels" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Rappels & messages de motivation
-            </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/tasks`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Gérer les rappels
-            </Link>
-          </div>
-        </Card>
+        <ClientProgramView
+          clientId={client.id}
+          program={program}
+          corrections={corrections}
+          workoutLogs={workoutLogs}
+          sessionsThisWeek={sessionsThisWeek}
+        />
       )}
 
       {activeTab === "nutrition" && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
+        <CoachClientNutritionTabs
+          clientId={client.id}
+          clientWeight={client.weight_start}
+          nutritionProfile={nutritionProfile}
+          todayLogs={todayLogs}
+          historyLogs={historyLogs}
+          foods={foods}
+          activePlan={activePlan}
+          allPlans={allPlans}
+          today={today}
+          saveNutritionProfile={saveNutritionProfile}
+          createDietPlan={createDietPlan}
+          deactivateDietPlan={deactivateDietPlan}
+          activateDietPlan={activateDietPlan}
+          deleteDietPlan={deleteDietPlan}
+        />
+      )}
+
+      {activeTab === "bilans" && (
+        <ClientBilanView weeks={bilanWeeks} clientId={client.id} />
+      )}
+
+      {activeTab === "photos" && (
+        <CoachClientPhotosView
+          client={client}
+          photos={photos}
+          saveCompetitionSettings={saveCompetitionSettings}
+          sendPhotoFeedback={sendPhotoFeedback}
+        />
+      )}
+
+      {activeTab === "checkins" && (
+        <div>
+          <div className="flex items-start justify-between mb-4">
             <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
-              Plan nutritionnel
+              {checkinsWithAverages.length} check-in{checkinsWithAverages.length !== 1 ? "s" : ""}
+              {pendingCheckins > 0 && (
+                <span className="ml-2 text-amber-400 font-semibold normal-case tracking-normal">
+                  · {pendingCheckins} sans réponse
+                </span>
+              )}
             </p>
-            <Link
-              href={`/dashboard/coach/clients/${client.id}/nutrition`}
-              className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-5 py-2.5 rounded-lg transition-colors"
-            >
-              <ExternalLink size={13} />
-              Voir la nutrition
-            </Link>
           </div>
-        </Card>
+
+          <CheckinDaySettings clientId={client.id} currentDay={client.checkin_day} />
+
+          {checkinsWithAverages.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
+                Aucun check-in pour l&apos;instant
+              </p>
+              <p className="text-xs text-[#F5EDED]/25 mt-1">
+                Le client n&apos;a pas encore soumis de bilan hebdomadaire.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {checkinsWithAverages.map(({ checkin, averages }) => (
+                <CheckinCard key={checkin.id} checkin={checkin} dailyAverages={averages} />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === "rappels" && (
+        <CoachClientTasksView
+          clientId={client.id}
+          initialTasks={tasks}
+          createClientTask={createClientTask}
+          deleteClientTask={deleteClientTask}
+          sendMotivationMessage={sendMotivationMessage}
+        />
       )}
     </div>
   );

@@ -5,7 +5,6 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getActiveProgram } from "@/utils/programs";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
-import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ProgramEditor from "@/components/ui/ProgramEditor";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import { saveOwnCoachProgram } from "./actions";
@@ -26,8 +25,6 @@ export default async function CoachMonProgrammePage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <TrainingSubNav scope="coach-moi" />
-
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon entraînement

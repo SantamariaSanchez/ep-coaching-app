@@ -128,7 +128,13 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  html { scroll-behavior: smooth; }
+  html {
+    scroll-behavior: smooth;
+    /* App mobile installée : pas de pull-to-refresh façon navigateur, ça
+       casse l'impression d'appli native (le geste de swipe vers le bas
+       recharge toute la page au lieu de scroller le contenu). */
+    overscroll-behavior-y: contain;
+  }
 
   body {
     background: #080000;
@@ -136,6 +142,7 @@
     font-family: var(--font-montserrat, 'Montserrat'), sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
+    overscroll-behavior-y: contain;
   }
 
   /* ── Atmospheric ambient background (Oura-style deep blobs) ── */

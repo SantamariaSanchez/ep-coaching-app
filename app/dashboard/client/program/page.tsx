@@ -5,7 +5,6 @@ import { getClientCorrections } from "@/utils/corrections";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
 import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
-import TrainingSubNav from "@/components/ui/TrainingSubNav";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
@@ -31,7 +30,6 @@ export default async function ClientProgramPage() {
   if (!isSubscribed(profile)) {
     return (
       <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-        <TrainingSubNav />
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
             Training
@@ -102,8 +100,6 @@ export default async function ClientProgramPage() {
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 900, margin: "0 auto" }}>
-
-      <TrainingSubNav />
 
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>

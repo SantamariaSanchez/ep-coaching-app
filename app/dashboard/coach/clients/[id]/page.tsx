@@ -1,7 +1,32 @@
-﻿import { redirect, notFound } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
+import { getActiveProgram } from "@/utils/programs";
+import { getClientCorrections } from "@/utils/corrections";
+import { getRecentWorkoutLogs } from "@/utils/workout-logs";
+import { getAllClientSessions, getClientPersonalRecords, getSessionsThisWeekCount } from "@/utils/sessions";
+import { getClientTasks } from "@/utils/tasks";
+import { getClientCheckins } from "@/utils/checkins";
+import { getClientDailyLogs, groupLogsByWeek, getWeekDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
+import { getAllClientPhotoUpdates } from "@/utils/photos";
+import {
+  getNutritionProfile,
+  getTodayLogs,
+  getLast30DaysLogs,
+  getAllFoods,
+  getActiveDietPlan,
+  getAllDietPlansWithMeals,
+} from "@/utils/nutrition";
+import { createClientTask, deleteClientTask, sendMotivationMessage } from "./tasks/actions";
+import { saveCompetitionSettings, sendPhotoFeedback } from "./photos/actions";
+import { saveNutritionProfile } from "./nutrition/actions";
+import {
+  createDietPlan,
+  deactivateDietPlan,
+  activateDietPlan,
+  deleteDietPlan,
+} from "./nutrition/diet-plan-actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
 
@@ -38,7 +63,54 @@ export default async function ClientDetailPage({
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
-  const points = await getTotalPoints(id);
+  const today = new Date().toISOString().split("T")[0];
+
+  const [
+    points,
+    program,
+    corrections,
+    workoutLogs,
+    sessionsThisWeek,
+    logbookSessions,
+    personalRecords,
+    tasks,
+    checkins,
+    dailyLogs,
+    photos,
+    nutritionProfile,
+    todayLogs,
+    historyLogs,
+    foods,
+    activePlan,
+    allPlans,
+  ] = await Promise.all([
+    getTotalPoints(id),
+    getActiveProgram(id),
+    getClientCorrections(id),
+    getRecentWorkoutLogs(id),
+    getSessionsThisWeekCount(id),
+    getAllClientSessions(id, 10),
+    getClientPersonalRecords(id),
+    getClientTasks(id),
+    getClientCheckins(id),
+    getClientDailyLogs(id, 56),
+    getAllClientPhotoUpdates(id),
+    getNutritionProfile(id),
+    getTodayLogs(id, today),
+    getLast30DaysLogs(id),
+    getAllFoods(),
+    getActiveDietPlan(id),
+    getAllDietPlansWithMeals(id),
+  ]);
+
+  const checkinsWithAverages = await Promise.all(
+    checkins.map(async (checkin) => ({
+      checkin,
+      averages: computeWeeklyAverages(await getWeekDailyLogs(id, checkin.week_start)),
+    }))
+  );
+
+  const bilanWeeks = groupLogsByWeek(dailyLogs);
 
   const badge = STATUS_BADGE[client.status ?? "active"];
 
@@ -65,7 +137,37 @@ export default async function ClientDetailPage({
         </span>
       </div>
 
-      <ClientProfileTabs client={client} points={points} />
+      <ClientProfileTabs
+        client={client}
+        points={points}
+        program={program}
+        corrections={corrections}
+        workoutLogs={workoutLogs}
+        sessionsThisWeek={sessionsThisWeek}
+        logbookSessions={logbookSessions}
+        personalRecords={personalRecords}
+        tasks={tasks}
+        createClientTask={createClientTask}
+        deleteClientTask={deleteClientTask}
+        sendMotivationMessage={sendMotivationMessage}
+        checkinsWithAverages={checkinsWithAverages}
+        bilanWeeks={bilanWeeks}
+        photos={photos}
+        saveCompetitionSettings={saveCompetitionSettings}
+        sendPhotoFeedback={sendPhotoFeedback}
+        nutritionProfile={nutritionProfile}
+        todayLogs={todayLogs}
+        historyLogs={historyLogs}
+        foods={foods}
+        activePlan={activePlan}
+        allPlans={allPlans}
+        today={today}
+        saveNutritionProfile={saveNutritionProfile}
+        createDietPlan={createDietPlan}
+        deactivateDietPlan={deactivateDietPlan}
+        activateDietPlan={activateDietPlan}
+        deleteDietPlan={deleteDietPlan}
+      />
     </div>
   );
 }

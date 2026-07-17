@@ -11,7 +11,6 @@ import {
 } from "@/lib/roadmap-colors";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { Target, MapPin } from "lucide-react";
-import TrainingSubNav from "@/components/ui/TrainingSubNav";
 
 // Pure ISO week helper (no server imports)
 function getISOWeek(date: Date): number {
@@ -177,7 +176,6 @@ export default function ClientRoadmapPage() {
   if (!loading && isFree && userId) {
     return (
       <div style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
-        <TrainingSubNav />
         <div style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
             Road Map : Communauté
@@ -212,7 +210,6 @@ export default function ClientRoadmapPage() {
   if (!data) {
     return (
       <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
-        <TrainingSubNav />
         <MapPin size={40} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
         <h1 style={{ fontSize: 22, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em", marginBottom: 8 }}>
           Road Map non configurée
@@ -245,7 +242,6 @@ export default function ClientRoadmapPage() {
 
   return (
     <div style={{ padding: "24px 20px 80px", maxWidth: 700, margin: "0 auto" }}>
-      <TrainingSubNav />
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
