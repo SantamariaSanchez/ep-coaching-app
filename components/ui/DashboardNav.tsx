@@ -944,6 +944,68 @@ export default function DashboardNav({
           height: 72,
           gap: 2,
         }}>
+          {/* Menu — regroupe tout ce qui n'a pas sa place dans les onglets :
+              profil, notifications, déconnexion, sommaire complet. Largeur
+              fixe et à part (pas flex:1 comme les onglets) pour ne pas
+              tasser la rangée principale — avant, en 8e onglet à largeur
+              égale, la rangée devenait trop serrée pour rester tapable
+              confortablement. */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Ouvrir le menu"
+            style={{
+              flexShrink: 0,
+              width: 44,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 4,
+              background: "none",
+              border: "none",
+              borderRadius: 12,
+              minHeight: 56,
+              position: "relative",
+              cursor: "pointer",
+            }}
+          >
+            <div
+              style={{
+                position: "relative",
+                width: 34,
+                height: 30,
+                borderRadius: 15,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Menu size={17} strokeWidth={1.6} style={{ color: "rgba(245,237,237,0.28)" }} />
+              {notifCount > 0 && (
+                <span style={{
+                  position: "absolute",
+                  top: 1,
+                  right: -1,
+                  background: "#E01E1E",
+                  color: "#fff",
+                  borderRadius: "50%",
+                  width: 14,
+                  height: 14,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: 8,
+                  fontWeight: 800,
+                  border: "1.5px solid #070000",
+                }}>
+                  {notifCount > 9 ? "9+" : notifCount}
+                </span>
+              )}
+            </div>
+          </button>
+
+          <div style={{ width: 1, background: "rgba(224,30,30,0.1)", margin: "10px 2px" }} />
+
           {tabs.map((tab) => {
             const active = isTabActive(tab);
             const Icon = tab.icon;
@@ -1028,74 +1090,6 @@ export default function DashboardNav({
               </Link>
             );
           })}
-
-          {/* Menu — regroupe tout ce qui n'a pas sa place dans les onglets
-              du bas : profil, notifications, déconnexion, sommaire complet.
-              Avant, ces accès flottaient en position fixed en haut de
-              l'écran par-dessus le contenu ; regroupés ici, en bas avec le
-              reste de la navigation, à portée de pouce. */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            aria-label="Ouvrir le menu"
-            style={{
-              flex: 1,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 4,
-              background: "none",
-              border: "none",
-              borderRadius: 12,
-              minHeight: 56,
-              position: "relative",
-              cursor: "pointer",
-            }}
-          >
-            <div
-              style={{
-                position: "relative",
-                width: 48,
-                height: 30,
-                borderRadius: 15,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Menu size={18} strokeWidth={1.6} style={{ color: "rgba(245,237,237,0.28)" }} />
-              {notifCount > 0 && (
-                <span style={{
-                  position: "absolute",
-                  top: 1,
-                  right: 3,
-                  background: "#E01E1E",
-                  color: "#fff",
-                  borderRadius: "50%",
-                  width: 15,
-                  height: 15,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 8,
-                  fontWeight: 800,
-                  border: "1.5px solid #070000",
-                }}>
-                  {notifCount > 9 ? "9+" : notifCount}
-                </span>
-              )}
-            </div>
-            <span style={{
-              fontSize: 9,
-              fontWeight: 500,
-              letterSpacing: "0.03em",
-              color: "rgba(245,237,237,0.28)",
-              lineHeight: 1,
-              whiteSpace: "nowrap",
-            }}>
-              Menu
-            </span>
-          </button>
         </div>
       </nav>
 

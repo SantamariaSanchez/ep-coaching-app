@@ -68,6 +68,7 @@ export default function TrackingClient({
   ouraConnected = false,
   canConnectOura = true,
   disconnectOura,
+  ouraStatus,
 }: {
   logs: BiometricLog[];
   insights: BiometricInsight[];
@@ -78,6 +79,8 @@ export default function TrackingClient({
   /** false = membre gratuit, pas de bague offerte, pas de connexion possible */
   canConnectOura?: boolean;
   disconnectOura?: () => Promise<{ error?: string }>;
+  /** ?oura=... au retour de /api/oura/connect ou /callback */
+  ouraStatus?: string;
 }) {
   const today = new Date().toISOString().split("T")[0];
   const todayLog = logs.find((l) => l.log_date === today) ?? null;
@@ -117,8 +120,26 @@ export default function TrackingClient({
   const hrvData = logs.map((l) => ({ date: l.log_date, value: l.hrv_ms }));
   const rhrData = logs.map((l) => ({ date: l.log_date, value: l.resting_hr }));
 
+  const ouraStatusMessage =
+    ouraStatus === "not_configured"
+      ? "La connexion Oura n'est pas encore configurée côté serveur (clé API manquante) — préviens ton développeur."
+      : ouraStatus === "error"
+      ? "La connexion à Oura a échoué. Réessaie, et si ça persiste, préviens ton développeur."
+      : ouraStatus === "locked"
+      ? "La bague Oura est réservée aux membres en coaching."
+      : null;
+
   return (
     <div className="space-y-5">
+      {/* Retour explicite après /api/oura/connect — avant, en cas d'échec
+          (le cas le plus probable : clé API pas encore configurée), la
+          page se contentait de rester la même sans rien dire. */}
+      {ouraStatusMessage && (
+        <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3 flex items-start gap-2.5">
+          <AlertTriangle size={15} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-amber-400 leading-relaxed">{ouraStatusMessage}</p>
+        </div>
+      )}
       {ouraConnected ? (
         <div className="bg-[#150000] border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
           <Watch size={15} className="text-green-400 flex-shrink-0" />

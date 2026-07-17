@@ -59,6 +59,13 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
+  // maximumScale seul ne suffit pas : Safari iOS zoome quand même au focus
+  // d'un champ, puis dézoome à la perte du focus (déjà limité en forçant
+  // 16px sur les champs mobiles dans globals.css, mais ça reste fragile —
+  // un futur champ oublié reproduirait le bug). userScalable=false coupe le
+  // zoom entièrement, dans une appli ce n'est pas un site de contenu où le
+  // zoom d'accessibilité est attendu.
+  userScalable: false,
 };
 
 export default function RootLayout({

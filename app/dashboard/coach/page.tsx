@@ -54,7 +54,6 @@ export default async function CoachDashboard() {
 
       {/* ── Clients ─────────────────────────────────────────────────────────── */}
       <section>
-        <p className="ep-section-title">Mes clients</p>
         <ClientsSection clients={clients} />
       </section>
     </div>

@@ -5,7 +5,12 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import { logBiometrics, disconnectOura } from "./actions";
 
-export default async function ClientTrackingPage() {
+export default async function ClientTrackingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ oura?: string }>;
+}) {
+  const { oura: ouraStatus } = await searchParams;
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -38,6 +43,7 @@ export default async function ClientTrackingPage() {
         ouraConnected={!!ouraConnection}
         canConnectOura={isSubscribed(profile)}
         disconnectOura={disconnectOura}
+        ouraStatus={ouraStatus}
       />
     </div>
   );

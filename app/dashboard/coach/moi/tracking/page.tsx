@@ -7,7 +7,12 @@ import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import { logBiometrics, disconnectOura } from "@/app/dashboard/client/tracking/actions";
 
-export default async function CoachMoiTrackingPage() {
+export default async function CoachMoiTrackingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ oura?: string }>;
+}) {
+  const { oura: ouraStatus } = await searchParams;
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/coach");
@@ -38,6 +43,7 @@ export default async function CoachMoiTrackingPage() {
         ouraConnected={!!ouraConnection}
         canConnectOura
         disconnectOura={disconnectOura}
+        ouraStatus={ouraStatus}
       />
     </div>
   );
