@@ -7,7 +7,7 @@ import {
   useCallback,
 } from "react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import { Send, Mic, MicOff, Clock, Play, Pause } from "lucide-react";
+import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X } from "lucide-react";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -16,10 +16,11 @@ interface Message {
   conversation_id: string;
   sender_id: string;
   receiver_id: string;
-  type: "text" | "voice";
+  type: "text" | "voice" | "image";
   content: string | null;
   voice_url: string | null;
   voice_duration_seconds: number | null;
+  image_url: string | null;
   is_read: boolean;
   expires_at: string | null;
   created_at: string;
@@ -251,6 +252,15 @@ function MessageBubble({
             durationSeconds={msg.voice_duration_seconds}
             expiresAt={msg.expires_at}
           />
+        ) : msg.type === "image" && msg.image_url ? (
+          <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={msg.image_url}
+              alt=""
+              className="rounded-lg max-w-[220px] max-h-[280px] object-cover"
+            />
+          </a>
         ) : (
           <p
             className={`text-sm leading-relaxed ${
@@ -279,7 +289,9 @@ export default function ConversationView({
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClientSupabase();
 
   // Load messages and mark as read
@@ -372,6 +384,7 @@ export default function ConversationView({
     const content = text.trim();
     if (!content || sending) return;
     setSending(true);
+    setSendError(null);
 
     const { data, error } = await supabase
       .from("messages")
@@ -390,6 +403,8 @@ export default function ConversationView({
       setMessages((prev) => [...prev, data as Message]);
       setText("");
       await sendPushNotification(content);
+    } else {
+      setSendError("Message non envoyé, réessaie.");
     }
     setSending(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -398,6 +413,7 @@ export default function ConversationView({
   const sendVoice = useCallback(
     async (blob: Blob, duration: number) => {
       setSending(true);
+      setSendError(null);
       try {
         // Upload to Supabase Storage
         const fileName = `${conversationId}/${userId}-${Date.now()}.webm`;
@@ -411,14 +427,16 @@ export default function ConversationView({
         if (uploadError) throw uploadError;
 
         // Get signed URL (24h expiry)
-        const { data: signedData } = await supabase.storage
+        const { data: signedData, error: signError } = await supabase.storage
           .from("voice-messages")
           .createSignedUrl(uploadData.path, 24 * 60 * 60);
 
-        const voiceUrl = signedData?.signedUrl ?? null;
+        if (signError || !signedData) throw signError ?? new Error("Signed URL failed");
+
+        const voiceUrl = signedData.signedUrl;
         const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
-        const { data: msgData } = await supabase
+        const { data: msgData, error: insertError } = await supabase
           .from("messages")
           .insert({
             conversation_id: conversationId,
@@ -434,13 +452,63 @@ export default function ConversationView({
           .select()
           .single();
 
+        if (insertError) throw insertError;
+
         if (msgData) {
           setMessages((prev) => [...prev, msgData as Message]);
           const name = isCoach ? "Emmanuel" : peerName.split(" ")[0];
           await sendPushNotification(`${name} t'a envoyé un vocal`);
         }
       } catch {
-        // upload failed
+        setSendError("Échec de l'envoi du vocal, réessaie.");
+      }
+      setSending(false);
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [conversationId, userId, peerId, isCoach, peerName]
+  );
+
+  const sendImage = useCallback(
+    async (file: File) => {
+      setSending(true);
+      setSendError(null);
+      try {
+        const ext = file.name.split(".").pop() || "jpg";
+        const fileName = `${conversationId}/${userId}-${Date.now()}.${ext}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("message-images")
+          .upload(fileName, file, {
+            contentType: file.type || "image/jpeg",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const { data: pub } = supabase.storage.from("message-images").getPublicUrl(uploadData.path);
+
+        const { data: msgData, error: insertError } = await supabase
+          .from("messages")
+          .insert({
+            conversation_id: conversationId,
+            sender_id: userId,
+            receiver_id: peerId,
+            type: "image",
+            content: null,
+            image_url: pub.publicUrl,
+            is_read: false,
+          })
+          .select()
+          .single();
+
+        if (insertError) throw insertError;
+
+        if (msgData) {
+          setMessages((prev) => [...prev, msgData as Message]);
+          const name = isCoach ? "Emmanuel" : peerName.split(" ")[0];
+          await sendPushNotification(`${name} t'a envoyé une photo`);
+        }
+      } catch {
+        setSendError("Échec de l'envoi de la photo, réessaie.");
       }
       setSending(false);
     },
@@ -471,9 +539,38 @@ export default function ConversationView({
         <div ref={bottomRef} />
       </div>
 
+      {sendError && (
+        <div className="px-3 pb-1 flex items-center justify-between gap-2">
+          <p className="text-[11px] text-red-400">{sendError}</p>
+          <button onClick={() => setSendError(null)} className="text-red-400/60 hover:text-red-400">
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       {/* Input zone */}
       <div className="border-t border-[#890404]/20 bg-[#150000] px-3 py-3 flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
+
+        <button
+          onClick={() => imageInputRef.current?.click()}
+          disabled={sending}
+          className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-colors"
+          title="Envoyer une photo"
+        >
+          <ImageIcon size={16} />
+        </button>
+        <input
+          ref={imageInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) sendImage(file);
+            e.target.value = "";
+          }}
+        />
 
         <input
           type="text"
