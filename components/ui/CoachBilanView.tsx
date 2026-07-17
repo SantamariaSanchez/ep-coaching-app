@@ -1,11 +1,15 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   sendBilan,
+  attachBilanVideo,
   sendCorrectionFeedbackBilan,
   sendPhotoFeedbackBilan,
 } from "@/app/dashboard/coach/bilan/actions";
+import { createClientSupabase } from "@/lib/supabase-client";
+import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 import type { CheckInWithClientProfile } from "@/utils/checkins";
 import type { ExerciseCorrectionWithClient } from "@/utils/corrections";
 import type { PhotoUpdateWithClient } from "@/utils/photos";
@@ -32,6 +36,29 @@ const labelClass =
 function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
   const boundAction = sendBilan.bind(null, checkin.id, checkin.client_id);
   const [state, action, isPending] = useActionState(boundAction, null);
+  const router = useRouter();
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [videoError, setVideoError] = useState<string | null>(null);
+
+  async function handleVideoSend(blob: Blob) {
+    setVideoError(null);
+    const supabase = createClientSupabase();
+    const path = `${checkin.id}-${Date.now()}.webm`;
+    const { error: uploadError } = await supabase.storage
+      .from("coach-videos")
+      .upload(path, blob, { contentType: blob.type || "video/webm", upsert: false });
+    if (uploadError) {
+      setVideoError("Échec de l'envoi de la vidéo.");
+      throw uploadError;
+    }
+    const result = await attachBilanVideo(checkin.id, checkin.client_id, path);
+    if (result.error) {
+      setVideoError(result.error);
+      throw new Error(result.error);
+    }
+    setVideoPath(path);
+    router.refresh();
+  }
 
   if (state?.success)
     return (
@@ -70,6 +97,13 @@ function BilanReplyForm({ checkin }: { checkin: CheckInWithClientProfile }) {
           placeholder="8"
           className={inputClass}
         />
+      </div>
+      <div className="flex items-center gap-3">
+        <CoachVideoRecorder onSend={handleVideoSend} triggerLabel="Retour vidéo (optionnel)" />
+        {(videoPath || checkin.coach_video_path) && !videoError && (
+          <span className="text-[11px] text-green-400 font-semibold">✓ Vidéo attachée</span>
+        )}
+        {videoError && <span className="text-[11px] text-[#FDC4C4]">{videoError}</span>}
       </div>
       {state?.error && (
         <p className="text-[#FDC4C4] text-xs">{state.error}</p>
@@ -254,6 +288,14 @@ function BilanCard({
           <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
             {checkin.bilan_text}
           </p>
+          {checkin.coach_video_url && (
+            <video
+              src={checkin.coach_video_url}
+              controls
+              playsInline
+              className="w-full max-w-[280px] rounded-lg mt-1.5"
+            />
+          )}
         </div>
       )}
 

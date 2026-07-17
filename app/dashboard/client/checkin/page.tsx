@@ -174,6 +174,14 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
               {checkin.bilan_text}
             </p>
           )}
+          {checkin.coach_video_url && (
+            <video
+              src={checkin.coach_video_url}
+              controls
+              playsInline
+              style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }}
+            />
+          )}
         </div>
       )}
     </div>
@@ -328,6 +336,14 @@ export default async function CheckinPage() {
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0 }}>
                 {existing.bilan_text}
               </p>
+              {existing.coach_video_url && (
+                <video
+                  src={existing.coach_video_url}
+                  controls
+                  playsInline
+                  style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }}
+                />
+              )}
             </div>
           ) : (
             <div className="ep-card" style={{ padding: "16px 18px" }}>

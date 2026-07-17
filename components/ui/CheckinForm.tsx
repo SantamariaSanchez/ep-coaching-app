@@ -265,7 +265,6 @@ export default function CheckinForm({
           ref={photoInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           multiple
           className="hidden"
           onChange={(e) => {
@@ -432,7 +431,6 @@ export default function CheckinForm({
           ref={videoInputRef}
           type="file"
           accept="video/*"
-          capture="environment"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];

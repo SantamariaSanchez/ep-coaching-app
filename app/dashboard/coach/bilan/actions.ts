@@ -63,6 +63,31 @@ export async function sendBilan(
   return { success: true };
 }
 
+// Retour vidéo type Loom attaché au bilan — même colonne que l'ancien flux
+// /checkins (check_ins.coach_video_path), le fichier est déjà uploadé côté
+// client (voir CoachVideoRecorder), on ne reçoit ici que le chemin de stockage.
+export async function attachBilanVideo(
+  checkinId: string,
+  clientId: string,
+  videoPath: string
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("check_ins")
+    .update({ coach_video_path: videoPath })
+    .eq("id", checkinId)
+    .eq("client_id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/bilan");
+  revalidatePath("/dashboard/client/checkin");
+  return {};
+}
+
 export async function sendCorrectionFeedbackBilan(
   correctionId: string,
   clientId: string,

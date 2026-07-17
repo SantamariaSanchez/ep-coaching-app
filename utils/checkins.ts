@@ -196,6 +196,23 @@ export async function getPendingReplies(): Promise<CheckInWithClient[]> {
 
 // ── Bilan system ──────────────────────────────────────────────────────────────
 
+// Retour vidéo du coach (coach_video_path → coach_video_url signée) — les
+// bilans n'ont pas besoin des photos/vidéo du client ici (déjà pas affichées
+// dans CoachBilanView), seulement du retour vidéo déjà attaché.
+async function withCoachVideoUrl<T extends { coach_video_path: string | null }>(
+  admin: ReturnType<typeof import("@/lib/supabase-admin").createAdminClient>,
+  rows: T[]
+): Promise<(T & { coach_video_url: string | null })[]> {
+  return Promise.all(
+    rows.map(async (row) => {
+      const coach_video_url = row.coach_video_path
+        ? (await admin.storage.from("coach-videos").createSignedUrl(row.coach_video_path, 3600)).data?.signedUrl ?? null
+        : null;
+      return { ...row, coach_video_url };
+    })
+  );
+}
+
 export async function getPendingBilans(): Promise<CheckInWithClientProfile[]> {
   try {
     // Admin client: coach reads ALL clients' check-ins (bypasses RLS)
@@ -206,7 +223,7 @@ export async function getPendingBilans(): Promise<CheckInWithClientProfile[]> {
       .select("*, profiles:client_id(full_name, email)")
       .is("bilan_sent_at", null)
       .order("created_at", { ascending: false });
-    return (data as CheckInWithClientProfile[]) ?? [];
+    return await withCoachVideoUrl(admin, (data as CheckInWithClientProfile[]) ?? []);
   } catch {
     return [];
   }
@@ -224,7 +241,7 @@ export async function getDoneBilans(): Promise<CheckInWithClientProfile[]> {
       .not("bilan_sent_at", "is", null)
       .gte("bilan_sent_at", thirtyDaysAgo.toISOString())
       .order("bilan_sent_at", { ascending: false });
-    return (data as CheckInWithClientProfile[]) ?? [];
+    return await withCoachVideoUrl(admin, (data as CheckInWithClientProfile[]) ?? []);
   } catch {
     return [];
   }

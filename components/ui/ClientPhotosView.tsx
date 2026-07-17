@@ -321,7 +321,6 @@ function SubmissionForm({
             ref={photoInputRef}
             type="file"
             accept="image/*"
-            capture="environment"
             multiple
             className="hidden"
             onChange={(e) => {
@@ -360,7 +359,6 @@ function SubmissionForm({
             ref={videoInputRef}
             type="file"
             accept="video/*"
-            capture="environment"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];

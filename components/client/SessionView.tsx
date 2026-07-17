@@ -902,7 +902,6 @@ function SetRow({
               <input
                 type="file"
                 accept="video/*"
-                capture="environment"
                 className="hidden"
                 disabled={uploadingVideo}
                 onChange={(e) => {
