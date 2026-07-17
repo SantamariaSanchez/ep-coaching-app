@@ -919,18 +919,6 @@ export default function DashboardNav({
           height: 72,
           gap: 2,
         }}>
-          {/* Le menu hamburger a été retiré — chaque onglet ci-dessous
-              expose déjà sa sous-nav complète (y compris Mon profil, voir
-              "profile" ajouté à un matchSegments par rôle), plus rien n'y
-              était uniquement accessible. Les notifications, elles,
-              n'avaient pas d'autre point d'accès mobile : gardées ici, à
-              largeur fixe pour ne pas tasser la rangée d'onglets. */}
-          <div style={{ flexShrink: 0, width: 44, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <NotificationBell variant="mobile" openUpward alignLeft />
-          </div>
-
-          <div style={{ width: 1, background: "rgba(224,30,30,0.1)", margin: "10px 2px" }} />
-
           {tabs.map((tab) => {
             const active = isTabActive(tab);
             const Icon = tab.icon;
