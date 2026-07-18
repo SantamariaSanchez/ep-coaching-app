@@ -269,9 +269,10 @@ function MessageBubble({
           <video src={msg.video_url} controls playsInline className="rounded-lg max-w-[240px] max-h-[300px]" />
         ) : (
           <p
-            className={`text-sm leading-relaxed ${
+            className={`text-sm leading-relaxed break-words ${
               isExpired ? "text-white/30 italic" : "text-white"
             }`}
+            style={{ overflowWrap: "anywhere" }}
           >
             {msg.content ?? ""}
           </p>
@@ -648,7 +649,7 @@ export default function ConversationView({
             }
           }}
           placeholder={`Message à ${peerName.split(" ")[0]}…`}
-          className="flex-1 bg-[#1f0101] border border-[#890404]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/60"
+          className="flex-1 min-w-0 bg-[#1f0101] border border-[#890404]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/60"
         />
 
         <button

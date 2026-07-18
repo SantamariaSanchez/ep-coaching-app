@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { Users, TrendingUp, CalendarClock, Video, ChevronRight } from "lucide-react";
+import { Users, TrendingUp, CalendarClock, UserPlus, ChevronRight } from "lucide-react";
 
 interface PendingCheckin {
   id: string;
@@ -14,11 +14,11 @@ interface PendingCheckin {
 }
 
 interface Stats {
-  activeCount:        number;
-  weeklyCount:        number;
-  pendingCount:       number;
-  pendingCorrections: number;
-  pendingReplies:     PendingCheckin[];
+  activeCount:  number;
+  weeklyCount:  number;
+  pendingCount: number;
+  totalMembers: number;
+  pendingReplies: PendingCheckin[];
 }
 
 function StatTile({
@@ -122,10 +122,10 @@ export default function DashboardStats() {
   }
 
   const tiles = [
-    { label: "Clients actifs",    value: stats.activeCount,        icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false },
-    { label: "Check-ins / sem.",  value: stats.weeklyCount,        icon: TrendingUp,    sub: stats.weeklyCount === 0 ? "aucun reçu"          : "reçus cette semaine", urgent: false },
-    { label: "Sans réponse",      value: stats.pendingCount,       icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true  },
-    { label: "Corrections",       value: stats.pendingCorrections, icon: Video,         sub: stats.pendingCorrections === 0 ? "rien à corriger" : "vidéos à revoir",   urgent: true  },
+    { label: "Clients actifs",    value: stats.activeCount,  icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false },
+    { label: "Check-ins / sem.",  value: stats.weeklyCount,  icon: TrendingUp,    sub: stats.weeklyCount === 0 ? "aucun reçu"          : "reçus cette semaine", urgent: false },
+    { label: "Sans réponse",      value: stats.pendingCount, icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true  },
+    { label: "Membres au total",  value: stats.totalMembers, icon: UserPlus,      sub: "inscrits sur l'appli",                                                 urgent: false },
   ];
 
   return (

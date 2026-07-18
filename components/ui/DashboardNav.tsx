@@ -297,7 +297,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Mon Suivi",
     items: [
-      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "moi/bilan" },
       { label: "Progression",    icon: TrendingUp,     segment: "moi/progression" },
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },

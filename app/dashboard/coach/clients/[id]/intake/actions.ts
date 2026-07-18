@@ -18,7 +18,11 @@ export async function saveClientIntake(
 
   if (error) return { error: error.message };
 
+  // clientId est parfois l'id du coach lui-meme (fiche perso, voir
+  // /dashboard/coach/profile) — les deux chemins sont revalidated sans
+  // savoir lequel s'applique, l'autre est un no-op.
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
+  revalidatePath("/dashboard/coach/profile");
   return {};
 }
 

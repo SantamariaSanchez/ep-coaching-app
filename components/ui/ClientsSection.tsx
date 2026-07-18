@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Users } from "lucide-react";
+import { Users } from "lucide-react";
 import type { Profile } from "@/utils/auth";
-import AddClientModal from "./AddClientModal";
 import { ClientCard } from "./ClientCard";
 
 export default function ClientsSection({
@@ -14,7 +12,6 @@ export default function ClientsSection({
   clients: Profile[];
   ouraEligibleIds?: string[];
 }) {
-  const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
 
   return (
@@ -27,14 +24,6 @@ export default function ClientsSection({
             {clients.length} client{clients.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <button
-          onClick={() => setModalOpen(true)}
-          className="ep-btn-primary"
-          style={{ padding: "10px 18px" }}
-        >
-          <Plus size={13} strokeWidth={2.5} />
-          Ajouter
-        </button>
       </div>
 
       {/* Empty state */}
@@ -70,13 +59,10 @@ export default function ClientsSection({
           <p style={{ fontSize: 15, fontWeight: 700, color: "#F5EDED", margin: "0 0 6px" }}>
             Aucun client pour l&apos;instant
           </p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: "0 0 20px" }}>
-            Ajoute ton premier client pour commencer
+          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
+            Les clients s&apos;inscrivent eux-mêmes depuis l&apos;appli, ils apparaîtront ici — il ne te reste
+            plus qu&apos;à activer leur coaching.
           </p>
-          <button onClick={() => setModalOpen(true)} className="ep-btn-primary">
-            <Plus size={13} strokeWidth={2.5} />
-            Ajouter ton premier client
-          </button>
         </div>
       ) : (
         <div
@@ -102,8 +88,6 @@ export default function ClientsSection({
           ))}
         </div>
       )}
-
-      <AddClientModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
     </>
   );
 }

@@ -14,7 +14,7 @@ export async function GET() {
 
   const supabase = await createServerSupabase();
 
-  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount] =
+  const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount, weighInCount] =
     await Promise.all([
       getNutritionProfile(user.id),
       getTodayLogs(user.id),
@@ -33,6 +33,15 @@ export async function GET() {
         .select("id", { count: "exact", head: true })
         .eq("client_id", user.id)
         .eq("log_date", todayStr),
+      // Le poids du matin est un champ du bilan quotidien mais mérite son
+      // propre non-négociable — un bilan peut être rempli sans poids renseigné,
+      // et "se peser le matin" est le premier réflexe qu'on veut jamais rater.
+      supabase
+        .from("daily_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", user.id)
+        .eq("log_date", todayStr)
+        .not("weight_morning", "is", null),
     ]);
 
   const consumedCals = Math.round(
@@ -67,6 +76,7 @@ export async function GET() {
     weekNumber,
     hasSessionToday: (sessionCount.count ?? 0) > 0,
     hasBilanToday: (bilanCount.count ?? 0) > 0,
+    weighInToday: (weighInCount.count ?? 0) > 0,
     todayStr,
   });
 }

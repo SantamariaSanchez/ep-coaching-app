@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import ProgressRing from "@/components/ui/ProgressRing";
 import {
   ClipboardList, CheckCircle2, ChevronRight, Apple, Dumbbell,
-  ClipboardCheck, Flame, Circle,
+  ClipboardCheck, Flame, Circle, Scale,
 } from "lucide-react";
 
 interface Stats {
@@ -20,6 +20,7 @@ interface Stats {
   weekNumber: number;
   hasSessionToday: boolean;
   hasBilanToday: boolean;
+  weighInToday: boolean;
   todayStr: string;
 }
 
@@ -133,6 +134,14 @@ export default function ClientDashboardStats() {
 
   const dailyTasks: DailyTask[] = [
     {
+      done: stats.weighInToday,
+      label: stats.weighInToday ? "Pesée du matin faite" : "Se peser ce matin",
+      sublabel: "Le premier réflexe, avant même de manger",
+      href: "/dashboard/client/bilan",
+      icon: Scale,
+      color: "#4ade80",
+    },
+    {
       done: stats.consumedCals > 0,
       label: stats.consumedCals > 0
         ? `Nutrition loggée : ${stats.consumedCals}${stats.targetCals > 0 ? ` / ${stats.targetCals} kcal` : " kcal"}`
@@ -178,11 +187,11 @@ export default function ClientDashboardStats() {
           <span style={{
             fontSize: 10,
             fontWeight: 700,
-            color: doneCount === 3 ? "#4ade80" : "rgba(245,237,237,0.3)",
+            color: doneCount === dailyTasks.length ? "#4ade80" : "rgba(245,237,237,0.3)",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
           }}>
-            {doneCount === 3 ? "✓ Tout fait" : `${doneCount}/3 actions`}
+            {doneCount === dailyTasks.length ? "✓ Tout fait" : `${doneCount}/${dailyTasks.length} actions`}
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

@@ -81,6 +81,22 @@ export async function getClients(): Promise<Profile[]> {
   }
 }
 
+// Total de membres inscrits (clients payants + communauté gratuite), tous
+// statuts confondus — sert de repère de croissance sur le dashboard coach,
+// distinct de getClients() qui ne compte que les clients payants actifs.
+export async function getTotalMembersCount(): Promise<number> {
+  try {
+    const admin = createAdminClient();
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "client");
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Le coach doit pouvoir écrire à n'importe quel membre (clients payants
 // et membres gratuits de la communauté), pas seulement à ses clients actifs —
 // utilisé par la liste des messages coach.

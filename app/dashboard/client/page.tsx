@@ -8,8 +8,29 @@ import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
-  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video,
 } from "lucide-react";
+
+const ENGAGEMENT_ITEMS = [
+  {
+    href: "/dashboard/client/communaute/victoires",
+    icon: Trophy,
+    title: "Partage une victoire",
+    desc: "Même petite, elle compte — la régularité se fête aussi.",
+  },
+  {
+    href: "/dashboard/client/communaute/questions",
+    icon: HelpCircle,
+    title: "Pose ta question",
+    desc: "N'hésite pas à détailler, plus c'est précis, mieux c'est répondu.",
+  },
+  {
+    href: "/dashboard/client/live",
+    icon: Video,
+    title: "Prochain live",
+    desc: "Rejoins les sessions en direct avec le coach et le groupe.",
+  },
+];
 
 // ── Free-tier welcome guide ──────────────────────────────────────────────────
 
@@ -548,6 +569,39 @@ export default async function ClientDashboard() {
           </div>
         </section>
       )}
+
+      {/* ── Partage & échange ───────────────────────────────────────────────── */}
+      <section className="animate-fade-up stagger-5">
+        <p className="ep-section-title">Partage & échange</p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {ENGAGEMENT_ITEMS.map(({ href, icon: Icon, title, desc }) => (
+            <Link
+              key={href}
+              href={href}
+              style={{
+                display: "flex", alignItems: "center", gap: 12,
+                padding: "13px 16px", borderRadius: 12,
+                background: "rgba(31,1,1,0.7)",
+                border: "1px solid rgba(137,4,4,0.22)",
+                textDecoration: "none",
+              }}
+            >
+              <div style={{
+                width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+                <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
+              </div>
+              <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
+            </Link>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
