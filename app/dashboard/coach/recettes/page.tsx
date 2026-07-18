@@ -4,6 +4,7 @@ import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getAllFoods } from "@/utils/nutrition";
 import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "@/app/dashboard/client/recettes/actions";
+import { createCustomFood } from "@/app/dashboard/client/nutrition/actions";
 
 export default async function CoachRecettesPage() {
   const user = await getUser();
@@ -39,6 +40,7 @@ export default async function CoachRecettesPage() {
         isSubscribed={false}
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
+        createCustomFood={createCustomFood}
       />
     </div>
   );

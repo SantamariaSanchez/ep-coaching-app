@@ -2,8 +2,10 @@
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
+import { getClientIntake } from "@/utils/client-intake";
 import { saveProgram } from "../actions";
 import ProgramEditor from "@/components/ui/ProgramEditor";
+import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
 import { ChevronLeft } from "lucide-react";
 
 export default async function EditProgramPage({
@@ -16,10 +18,11 @@ export default async function EditProgramPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client, program] = await Promise.all([
+  const [profile, client, program, intake] = await Promise.all([
     getProfile(user.id),
     getClientById(id),
     getActiveProgram(id),
+    getClientIntake(id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
@@ -43,6 +46,8 @@ export default async function EditProgramPage({
           {client.full_name}
         </h1>
       </div>
+
+      <ClientReferenceCard intake={intake} />
 
       <ProgramEditor clientId={id} program={program} saveProgram={saveProgram} />
     </div>

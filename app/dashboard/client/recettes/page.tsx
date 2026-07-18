@@ -3,8 +3,10 @@ import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getAllFoods } from "@/utils/nutrition";
 import { getTotalPoints } from "@/lib/gamification";
+import { getClientIntake } from "@/utils/client-intake";
 import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "./actions";
+import { createCustomFood } from "@/app/dashboard/client/nutrition/actions";
 
 export default async function ClientRecettesPage() {
   const user = await getUser();
@@ -13,10 +15,11 @@ export default async function ClientRecettesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/recettes");
 
-  const [communityRecipes, foods, points] = await Promise.all([
+  const [communityRecipes, foods, points, intake] = await Promise.all([
     getCommunityRecipes(),
     getAllFoods(),
     getTotalPoints(user.id),
+    getClientIntake(user.id),
   ]);
 
   return (
@@ -42,6 +45,9 @@ export default async function ClientRecettesPage() {
         isSubscribed={isSubscribed(profile)}
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
+        createCustomFood={createCustomFood}
+        presetDiet={intake?.diet_type ?? null}
+        presetAllergens={intake ? intake.allergens : null}
       />
     </div>
   );

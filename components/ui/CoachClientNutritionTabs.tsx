@@ -4,6 +4,8 @@ import { useState, useMemo } from "react";
 import { X, CheckCircle2, Plus } from "lucide-react";
 import NutritionForm from "@/components/ui/NutritionForm";
 import MicroBarList from "@/components/ui/MicroBarList";
+import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
+import type { ClientIntake } from "@/utils/client-intake";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
 import type {
   NutritionProfile,
@@ -252,6 +254,7 @@ interface Props {
   activePlan: DietPlanWithMeals | null;
   allPlans: DietPlanWithMeals[];
   today: string;
+  intake?: ClientIntake | null;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
   createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
@@ -272,6 +275,7 @@ export default function CoachClientNutritionTabs({
   activePlan,
   allPlans,
   today,
+  intake = null,
   saveNutritionProfile,
   createDietPlan,
   deactivateDietPlan,
@@ -342,6 +346,7 @@ export default function CoachClientNutritionTabs({
 
       {tab === "plan" && (
         <div className="space-y-5">
+          <ClientReferenceCard intake={intake} />
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
               {allPlans.length} plan{allPlans.length !== 1 ? "s" : ""}

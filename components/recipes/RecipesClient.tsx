@@ -321,13 +321,16 @@ function RecipeCard({
 
 export default function RecipesClient({
   communityRecipes,
-  foods,
+  foods: initialFoods,
   currentUserId,
   isCoach,
   points,
   isSubscribed,
   createRecipe,
   deleteRecipe,
+  createCustomFood,
+  presetDiet,
+  presetAllergens,
 }: {
   communityRecipes: CommunityRecipe[];
   foods: Food[];
@@ -337,9 +340,23 @@ export default function RecipesClient({
   isSubscribed: boolean;
   createRecipe: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
   deleteRecipe: (id: string) => Promise<{ error?: string }>;
+  createCustomFood: (params: {
+    name: string;
+    category: string;
+    calories_per_100: number;
+    proteins_per_100: number;
+    carbs_per_100: number;
+    fats_per_100: number;
+    fibers_per_100: number;
+  }) => Promise<{ food?: Food; error?: string }>;
+  // Régime/allergies déjà connus via la fiche client — évite de reposer ces
+  // questions dans le créateur de recette quand le coach les a déjà remplies.
+  presetDiet?: Diet | null;
+  presetAllergens?: Allergen[] | null;
 }) {
   const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
   const recipesUnlocked = isCoach || hasUnlocked("exclusive_recipes", points, isSubscribed);
+  const [foods, setFoods] = useState<Food[]>(initialFoods);
   const [tab, setTab] = useState<"bibliotheque" | "creer">("bibliotheque");
   const [showAddForm, setShowAddForm] = useState(false);
   const [recipes, setRecipes] = useState<DisplayRecipe[]>([
@@ -427,6 +444,10 @@ export default function RecipesClient({
       {tab === "creer" ? (
         <MealCreatorWizard
           foods={foods}
+          createCustomFood={createCustomFood}
+          onFoodCreated={(food) => setFoods((prev) => [food, ...prev])}
+          presetDiet={presetDiet}
+          presetAllergens={presetAllergens}
           onSaveRecipe={async (input) => {
             const res = await createRecipe(input);
             if (!res.error && res.id) {

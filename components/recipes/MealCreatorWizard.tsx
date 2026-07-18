@@ -20,7 +20,7 @@ import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actio
 const FOOD_GROUP_ORDER: FoodGroupKey[] = ["proteine", "glucide", "legume", "matiere_grasse"];
 
 type StepKey = "meal" | "diet" | "phase" | "macroProfile" | "allergens" | "aliments" | "temp" | "time" | "result";
-const STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "macroProfile", "allergens", "aliments", "temp", "time", "result"];
+const BASE_STEP_ORDER: StepKey[] = ["meal", "diet", "phase", "macroProfile", "allergens", "aliments", "temp", "time", "result"];
 
 function OptionGrid<T extends string>({
   options,
@@ -96,6 +96,7 @@ function FoodGroupPicker({
   toggle,
   search,
   setSearch,
+  onCreateFood,
 }: {
   label: string;
   hint: string;
@@ -104,9 +105,38 @@ function FoodGroupPicker({
   toggle: (name: string) => void;
   search: string;
   setSearch: (v: string) => void;
+  onCreateFood?: (name: string, macros: { calories: number; protein: number; carbs: number; fat: number }) => Promise<void>;
 }) {
   const query = search.trim().toLowerCase();
   const filtered = query ? options.filter((o) => o.name.toLowerCase().includes(query)) : options;
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [macros, setMacros] = useState({ calories: "", protein: "", carbs: "", fat: "" });
+
+  async function handleCreate() {
+    const calories = parseFloat(macros.calories) || 0;
+    if (!search.trim() || calories <= 0) {
+      setCreateError("Nom et calories obligatoires.");
+      return;
+    }
+    setCreating(true);
+    setCreateError(null);
+    try {
+      await onCreateFood?.(search.trim(), {
+        calories,
+        protein: parseFloat(macros.protein) || 0,
+        carbs: parseFloat(macros.carbs) || 0,
+        fat: parseFloat(macros.fat) || 0,
+      });
+      setShowCreate(false);
+      setMacros({ calories: "", protein: "", carbs: "", fat: "" });
+    } catch {
+      setCreateError("Erreur lors de la création.");
+    }
+    setCreating(false);
+  }
 
   return (
     <div>
@@ -122,13 +152,13 @@ function FoodGroupPicker({
         <input
           type="text"
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => { setSearch(e.target.value); setShowCreate(false); }}
           placeholder="Rechercher un aliment..."
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#890404]/60"
         />
         {search && (
           <button
-            onClick={() => setSearch("")}
+            onClick={() => { setSearch(""); setShowCreate(false); }}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <X size={13} />
@@ -159,25 +189,111 @@ function FoodGroupPicker({
           </p>
         )}
       </div>
+      {query && filtered.length === 0 && onCreateFood && !showCreate && (
+        <button
+          onClick={() => setShowCreate(true)}
+          className="mt-2 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+        >
+          + Créer &quot;{search.trim()}&quot; comme nouvel aliment
+        </button>
+      )}
+      {showCreate && (
+        <div className="mt-2 bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
+          <p className="text-[9px] text-[#F5EDED]/25">Valeurs pour 100g de &quot;{search.trim()}&quot;</p>
+          <div className="grid grid-cols-4 gap-1.5">
+            {([
+              { key: "calories", label: "Kcal" },
+              { key: "protein", label: "Prot." },
+              { key: "carbs", label: "Gluc." },
+              { key: "fat", label: "Lip." },
+            ] as const).map(({ key, label: l }) => (
+              <div key={key}>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={macros[key]}
+                  onChange={(e) => setMacros((m) => ({ ...m, [key]: e.target.value }))}
+                  placeholder="0"
+                  className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-2 py-1.5 text-xs text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+                />
+                <p className="text-[8px] text-[#F5EDED]/25 text-center mt-0.5">{l}</p>
+              </div>
+            ))}
+          </div>
+          {createError && <p className="text-[10px] text-red-400">{createError}</p>}
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => setShowCreate(false)}
+              className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2"
+            >
+              Annuler
+            </button>
+            <button
+              onClick={handleCreate}
+              disabled={creating}
+              className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2 transition-colors"
+            >
+              {creating ? "Création…" : "Créer et ajouter"}
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
+// Catégorie représentative de chaque groupe du wizard — utilisée pour
+// classer un aliment créé à la volée (voir CATEGORY_TO_GROUP dans
+// lib/meal-creator.ts, qui fait le chemin inverse).
+const GROUP_DEFAULT_CATEGORY: Record<FoodGroupKey, string> = {
+  proteine: "Viandes",
+  glucide: "Feculents",
+  legume: "Legumes",
+  matiere_grasse: "Oleagineux",
+};
+
 export default function MealCreatorWizard({
   foods,
   onSaveRecipe,
+  createCustomFood,
+  onFoodCreated,
+  presetDiet,
+  presetAllergens,
 }: {
   foods: Food[];
   onSaveRecipe?: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
+  createCustomFood?: (params: {
+    name: string;
+    category: string;
+    calories_per_100: number;
+    proteins_per_100: number;
+    carbs_per_100: number;
+    fats_per_100: number;
+    fibers_per_100: number;
+  }) => Promise<{ food?: Food; error?: string }>;
+  onFoodCreated?: (food: Food) => void;
+  // Régime/allergies déjà connus (fiche client remplie par le coach) —
+  // quand fournis, on n'a pas besoin de reposer ces deux questions à
+  // chaque fois, les étapes correspondantes sont sautées.
+  presetDiet?: Diet | null;
+  presetAllergens?: Allergen[] | null;
 }) {
   const [stepIdx, setStepIdx] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
 
+  const STEP_ORDER = useMemo(
+    () =>
+      BASE_STEP_ORDER.filter(
+        (s) => !((s === "diet" && presetDiet) || (s === "allergens" && presetAllergens))
+      ),
+    [presetDiet, presetAllergens]
+  );
+
   const [meal, setMeal] = useState<MealType | null>(null);
-  const [diet, setDiet] = useState<Diet | null>(null);
+  const [diet, setDiet] = useState<Diet | null>(presetDiet ?? null);
   const [phase, setPhase] = useState<Phase | null>(null);
   const [macroProfile, setMacroProfile] = useState<MacroProfile | null>(null);
-  const [allergens, setAllergens] = useState<Set<Allergen>>(new Set());
+  const [allergens, setAllergens] = useState<Set<Allergen>>(new Set(presetAllergens ?? []));
   const [choices, setChoices] = useState<Record<FoodGroupKey, Set<string>>>({
     proteine: new Set(), glucide: new Set(), legume: new Set(), matiere_grasse: new Set(),
   });
@@ -209,6 +325,27 @@ export default function MealCreatorWizard({
       else next.add(name);
       return { ...prev, [group]: next };
     });
+  }
+
+  async function handleCreateFoodForGroup(
+    group: FoodGroupKey,
+    name: string,
+    macros: { calories: number; protein: number; carbs: number; fat: number }
+  ) {
+    if (!createCustomFood) return;
+    const result = await createCustomFood({
+      name,
+      category: GROUP_DEFAULT_CATEGORY[group],
+      calories_per_100: macros.calories,
+      proteins_per_100: macros.protein,
+      carbs_per_100: macros.carbs,
+      fats_per_100: macros.fat,
+      fibers_per_100: 0,
+    });
+    if (result.error || !result.food) throw new Error(result.error ?? "Erreur");
+    onFoodCreated?.(result.food);
+    toggleFood(group, result.food.name);
+    setFoodSearch((prev) => ({ ...prev, [group]: "" }));
   }
 
   function go(next: number, dir: 1 | -1) {
@@ -254,10 +391,10 @@ export default function MealCreatorWizard({
   function handleRestart() {
     setStepIdx(0);
     setMeal(null);
-    setDiet(null);
+    setDiet(presetDiet ?? null);
     setPhase(null);
     setMacroProfile(null);
-    setAllergens(new Set());
+    setAllergens(new Set(presetAllergens ?? []));
     setChoices({ proteine: new Set(), glucide: new Set(), legume: new Set(), matiere_grasse: new Set() });
     setFoodSearch({ proteine: "", glucide: "", legume: "", matiere_grasse: "" });
     setTemp(null);
@@ -408,6 +545,11 @@ export default function MealCreatorWizard({
                     toggle={(name) => toggleFood(key, name)}
                     search={foodSearch[key]}
                     setSearch={(v) => setFoodSearch((prev) => ({ ...prev, [key]: v }))}
+                    onCreateFood={
+                      createCustomFood
+                        ? (name, macros) => handleCreateFoodForGroup(key, name, macros)
+                        : undefined
+                    }
                   />
                 ))}
               </div>

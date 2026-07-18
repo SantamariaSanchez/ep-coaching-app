@@ -12,6 +12,11 @@ export default async function BilanRapidePage() {
 
   const profile = await getProfile(user.id);
 
+  // Le coach peut ouvrir son propre bilan rapide depuis /dashboard/coach/moi/nutrition —
+  // /dashboard/client/nutrition (contrairement à cette page) redirige les coachs vers
+  // /dashboard/coach, donc les liens de retour doivent pointer ailleurs pour eux.
+  const backHref = profile?.role === "coach" ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition";
+
   const today = new Date().toISOString().split("T")[0];
 
   const [nutritionProfile, historyLogs, allFoods] = await Promise.all([
@@ -24,7 +29,7 @@ export default async function BilanRapidePage() {
     <div className="px-5 py-8 max-w-lg mx-auto pb-24 md:pb-8 page-transition">
       {/* Back link */}
       <Link
-        href="/dashboard/client/nutrition"
+        href={backHref}
         className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} />
@@ -47,7 +52,7 @@ export default async function BilanRapidePage() {
           <div className="bg-amber-900/20 border border-amber-700/30 rounded-xl px-4 py-3 mt-4">
             <p className="text-xs text-amber-400 font-semibold">
               Aucun objectif calorique défini.{" "}
-              <Link href="/dashboard/client/nutrition" className="underline">
+              <Link href={backHref} className="underline">
                 Définir mon objectif →
               </Link>
             </p>

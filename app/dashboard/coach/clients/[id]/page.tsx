@@ -27,6 +27,9 @@ import {
   activateDietPlan,
   deleteDietPlan,
 } from "./nutrition/diet-plan-actions";
+import { getClientIntake } from "@/utils/client-intake";
+import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
+import { saveClientIntake, addPeriodLog, deletePeriodLog } from "./intake/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
 
@@ -84,6 +87,8 @@ export default async function ClientDetailPage({
     activePlan,
     allPlans,
     latestWeight,
+    intake,
+    periodLogs,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -103,7 +108,11 @@ export default async function ClientDetailPage({
     getActiveDietPlan(id),
     getAllDietPlansWithMeals(id),
     getLatestWeight(id),
+    getClientIntake(id),
+    getPeriodLogs(id),
   ]);
+
+  const cycleStats = computeCycleStats(periodLogs);
 
   const checkinsWithAverages = await Promise.all(
     checkins.map(async (checkin) => ({
@@ -171,6 +180,12 @@ export default async function ClientDetailPage({
         deactivateDietPlan={deactivateDietPlan}
         activateDietPlan={activateDietPlan}
         deleteDietPlan={deleteDietPlan}
+        intake={intake}
+        saveClientIntake={saveClientIntake}
+        periodLogs={periodLogs}
+        cycleStats={cycleStats}
+        addPeriodLog={addPeriodLog}
+        deletePeriodLog={deletePeriodLog}
       />
     </div>
   );

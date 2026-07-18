@@ -26,6 +26,8 @@ import type {
   DietStructure,
 } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
+import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 import ClientProgramView from "./ClientProgramView";
 import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
@@ -34,9 +36,12 @@ import CheckinDaySettings from "./CheckinDaySettings";
 import CheckinCard from "./CheckinCard";
 import CoachClientTasksView from "./CoachClientTasksView";
 import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
+import ClientIntakeForm from "./ClientIntakeForm";
+import ClientPeriodTracking from "./ClientPeriodTracking";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
+  FileText, Droplet,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -44,6 +49,7 @@ type ActionState = { error?: string; success?: boolean } | null;
 
 const TABS = [
   { key: "profil",    label: "Profil",    icon: User },
+  { key: "intake",    label: "Fiche client", icon: FileText },
   { key: "roadmap",   label: "Road Map",  icon: Map },
   { key: "logbook",   label: "Logbook",   icon: BookOpen },
   { key: "programme", label: "Programme", icon: Dumbbell },
@@ -52,6 +58,7 @@ const TABS = [
   { key: "photos",    label: "Photos",    icon: ImageIcon },
   { key: "checkins",  label: "Check-ins", icon: ClipboardList },
   { key: "rappels",   label: "Rappels",   icon: ListChecks },
+  { key: "cycle",     label: "Cycle",     icon: Droplet },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -120,6 +127,12 @@ export default function ClientProfileTabs({
   deactivateDietPlan,
   activateDietPlan,
   deleteDietPlan,
+  intake,
+  saveClientIntake,
+  periodLogs,
+  cycleStats,
+  addPeriodLog,
+  deletePeriodLog,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -152,6 +165,15 @@ export default function ClientProfileTabs({
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+  intake: ClientIntake | null;
+  saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
+  periodLogs: PeriodLog[];
+  cycleStats: CycleStats;
+  addPeriodLog: (
+    clientId: string,
+    data: { start_date: string; end_date: string | null; flow: string | null; symptoms: string[]; notes: string | null }
+  ) => Promise<{ error?: string; id?: string }>;
+  deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -175,7 +197,7 @@ export default function ClientProfileTabs({
           largeur de l'écran sur mobile, forçant à zoomer/dézoomer et
           défiler sur le côté pour juste choisir un onglet. */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
-        {TABS.map(({ key, label, icon: Icon }) => (
+        {TABS.filter(({ key }) => key !== "cycle" || intake?.gender === "Femme").map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
@@ -261,6 +283,20 @@ export default function ClientProfileTabs({
             )}
           </Card>
         </div>
+      )}
+
+      {activeTab === "intake" && (
+        <ClientIntakeForm clientId={client.id} existingIntake={intake} saveClientIntake={saveClientIntake} />
+      )}
+
+      {activeTab === "cycle" && intake?.gender === "Femme" && (
+        <ClientPeriodTracking
+          clientId={client.id}
+          logs={periodLogs}
+          stats={cycleStats}
+          addPeriodLog={addPeriodLog}
+          deletePeriodLog={deletePeriodLog}
+        />
       )}
 
       {activeTab === "roadmap" && (
@@ -378,6 +414,7 @@ export default function ClientProfileTabs({
           activePlan={activePlan}
           allPlans={allPlans}
           today={today}
+          intake={intake}
           saveNutritionProfile={saveNutritionProfile}
           createDietPlan={createDietPlan}
           deactivateDietPlan={deactivateDietPlan}
