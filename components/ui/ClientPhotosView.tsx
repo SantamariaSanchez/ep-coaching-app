@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useActionState, useRef, useState } from "react";
 import { Camera, Video, CheckCircle2, Clock, ExternalLink, AlertCircle, X, Loader2, Sparkles } from "lucide-react";
-import { POSING_CATEGORIES, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
+import { POSING_CATEGORIES, CATEGORIES_BY_GENDER, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
@@ -61,16 +61,65 @@ function formatDate(dateStr: string) {
   }).format(new Date(dateStr + "T12:00:00"));
 }
 
+// ── Self-service category picker (coach only) ─────────────────────────────────
+// Pour un vrai client, la catégorie est configurée par le coach ailleurs
+// (fiche client). Le coach n'a personne au-dessus de lui pour la configurer
+// à sa place quand il utilise cette même vue pour son propre suivi — il doit
+// pouvoir la choisir lui-même directement ici.
+
+function SelfCategoryPicker({
+  coachId,
+  save,
+}: {
+  coachId: string;
+  save: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
+}) {
+  const bound = save.bind(null, coachId);
+  const [state, action, isPending] = useActionState(bound, null);
+
+  return (
+    <form action={action} className="flex items-center gap-2 mt-2">
+      <select
+        name="competition_category"
+        defaultValue=""
+        className="flex-1 bg-[#150000] border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/60"
+      >
+        <option value="">Choisis ta catégorie</option>
+        <optgroup label="Femmes">
+          {CATEGORIES_BY_GENDER.femme.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </optgroup>
+        <optgroup label="Hommes">
+          {CATEGORIES_BY_GENDER.homme.map((cat) => (
+            <option key={cat} value={cat}>{cat}</option>
+          ))}
+        </optgroup>
+      </select>
+      <button
+        type="submit"
+        disabled={isPending}
+        className="bg-amber-500/15 hover:bg-amber-500/25 disabled:opacity-50 border border-amber-500/40 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+      >
+        {isPending ? "…" : "Valider"}
+      </button>
+      {state?.error && <p className="text-[10px] text-red-400">{state.error}</p>}
+    </form>
+  );
+}
+
 // ── Submission form ──────────────────────────────────────────────────────────
 
 function SubmissionForm({
   profile,
   onSubmit,
   isSelfTracking,
+  saveCompetitionSettings,
 }: {
   profile: Profile;
   onSubmit: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
   isSelfTracking: boolean;
+  saveCompetitionSettings?: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
 }) {
   const [type, setType] = useState<SubmissionType>("mandatory_poses");
   const [photos, setPhotos] = useState<MediaItem[]>([]);
@@ -220,13 +269,18 @@ function SubmissionForm({
       )}
 
       {!posingData && (
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-          <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
-          <p className="text-xs text-amber-400">
-            {isSelfTracking
-              ? "Catégorie non définie pour l'instant."
-              : "Catégorie non définie. Ton coach va la configurer prochainement."}
-          </p>
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
+            <p className="text-xs text-amber-400">
+              {isSelfTracking
+                ? "Catégorie non définie — choisis-la ci-dessous."
+                : "Catégorie non définie. Ton coach va la configurer prochainement."}
+            </p>
+          </div>
+          {isSelfTracking && saveCompetitionSettings && (
+            <SelfCategoryPicker coachId={profile.id} save={saveCompetitionSettings} />
+          )}
         </div>
       )}
 
@@ -517,6 +571,10 @@ interface Props {
   photoHistory: PhotoUpdate[];
   alreadySubmitted: boolean;
   submitPhotoUpdate: (formData: FormData) => Promise<{ error?: string; success?: boolean }>;
+  // Uniquement fourni par la page "Moi > Photos" du coach — lui permet de
+  // choisir lui-même sa catégorie de compétition, personne d'autre ne peut
+  // le faire à sa place.
+  saveCompetitionSettings?: (clientId: string, _prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean } | null>;
 }
 
 export default function ClientPhotosView({
@@ -524,6 +582,7 @@ export default function ClientPhotosView({
   profile,
   photoHistory,
   alreadySubmitted,
+  saveCompetitionSettings,
   submitPhotoUpdate,
 }: Props) {
   // Guard: profile not yet available (Supabase fetch failed or slow)
@@ -611,7 +670,12 @@ export default function ClientPhotosView({
             </p>
           </div>
         ) : (
-          <SubmissionForm profile={profile} onSubmit={submitPhotoUpdate} isSelfTracking={isSelfTracking} />
+          <SubmissionForm
+            profile={profile}
+            onSubmit={submitPhotoUpdate}
+            isSelfTracking={isSelfTracking}
+            saveCompetitionSettings={saveCompetitionSettings}
+          />
         )}
       </div>
 

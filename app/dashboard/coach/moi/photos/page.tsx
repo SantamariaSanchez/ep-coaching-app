@@ -5,6 +5,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getClientPhotoUpdates, getThisWeekPhotoUpdate } from "@/utils/photos";
 import ClientPhotosView from "@/components/ui/ClientPhotosView";
 import { submitPhotoUpdate } from "./actions";
+import { saveCompetitionSettings } from "@/app/dashboard/coach/clients/[id]/photos/actions";
 
 export default async function CoachMonPhotosPage() {
   const user = await getUser();
@@ -35,6 +36,7 @@ export default async function CoachMonPhotosPage() {
       photoHistory={photoHistory}
       alreadySubmitted={alreadySubmitted}
       submitPhotoUpdate={submitPhotoUpdate}
+      saveCompetitionSettings={saveCompetitionSettings}
     />
   );
 }

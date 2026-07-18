@@ -215,7 +215,7 @@ const COACH_TABS: TabItem[] = [
     label: "Bilan",
     icon: ClipboardCheck,
     href: "/dashboard/coach/bilan",
-    matchSegments: ["bilan", "notes", "nutrition"],
+    matchSegments: ["bilan", "notes"],
     badge: "pending",
   },
   {
@@ -253,8 +253,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Analyse",
     items: [
-      { label: "Bilan",     icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
-      { label: "Nutrition", icon: Apple,           segment: "nutrition" },
+      { label: "Bilan", icon: ClipboardCheck, segment: "bilan", badge: "pending" },
     ],
   },
   {
@@ -297,6 +296,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Mon Suivi",
     items: [
+      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "moi/bilan" },
       { label: "Progression",    icon: TrendingUp,     segment: "moi/progression" },
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },

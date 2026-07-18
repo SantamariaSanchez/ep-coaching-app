@@ -1,7 +1,7 @@
 "use server";
 
 import { getUser } from "@/utils/auth";
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ScheduleBlock } from "@/utils/agenda";
 
@@ -9,6 +9,11 @@ import type { ScheduleBlock } from "@/utils/agenda";
 // pas de paramètre clientId, l'utilisateur connecté est toujours le
 // propriétaire du bloc. Le coach consulte l'agenda d'un client en lecture
 // seule ailleurs (fiche client), jamais via ces actions.
+//
+// Client admin (bypass RLS) plutôt que le client serveur classique — la
+// table a RLS désactivée en théorie, mais mieux vaut ne pas dépendre de cet
+// état pour une simple insertion, comme partout ailleurs dans l'app où le
+// serveur écrit des données pour le compte de l'utilisateur.
 
 export async function addScheduleBlock(data: {
   day_of_week: number;
@@ -21,7 +26,7 @@ export async function addScheduleBlock(data: {
   const user = await getUser();
   if (!user) return { error: "Non authentifié." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient();
   const { data: row, error } = await supabase
     .from("schedule_blocks")
     .insert({ owner_id: user.id, ...data })
@@ -49,7 +54,7 @@ export async function updateScheduleBlock(
   const user = await getUser();
   if (!user) return { error: "Non authentifié." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("schedule_blocks")
     .update(data)
@@ -67,7 +72,7 @@ export async function deleteScheduleBlock(blockId: string): Promise<{ error?: st
   const user = await getUser();
   if (!user) return { error: "Non authentifié." };
 
-  const supabase = await createServerSupabase();
+  const supabase = createAdminClient();
   const { error } = await supabase
     .from("schedule_blocks")
     .delete()
