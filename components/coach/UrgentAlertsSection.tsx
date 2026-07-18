@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, AlertCircle, ChevronRight, BarChart2 } from "lucide-react";
+import { AlertTriangle, AlertCircle, ChevronRight, Users } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { TopAlert } from "@/lib/coach-analytics";
 
@@ -49,7 +49,7 @@ export default function UrgentAlertsSection() {
           </span>
         </div>
         <Link
-          href="/dashboard/coach/analytics"
+          href="/dashboard/coach/clients"
           className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
           Voir tout
@@ -86,11 +86,11 @@ export default function UrgentAlertsSection() {
 
       <div className="mt-3 text-center">
         <Link
-          href="/dashboard/coach/analytics"
+          href="/dashboard/coach/clients"
           className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
         >
-          <BarChart2 size={12} />
-          Tableau de bord analytique complet
+          <Users size={12} />
+          Voir tous les clients
         </Link>
       </div>
     </section>

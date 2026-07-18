@@ -223,7 +223,9 @@ function SubmissionForm({
         <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
           <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
           <p className="text-xs text-amber-400">
-            Catégorie non définie. Ton coach va la configurer prochainement.
+            {isSelfTracking
+              ? "Catégorie non définie pour l'instant."
+              : "Catégorie non définie. Ton coach va la configurer prochainement."}
           </p>
         </div>
       )}

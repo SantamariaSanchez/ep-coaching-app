@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Card from "./Card";
 import type { Profile } from "@/utils/auth";
@@ -8,7 +8,6 @@ import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import { getRankForPoints } from "@/lib/gamification-types";
 import type { ProgramWithDays } from "@/utils/programs";
-import type { ExerciseCorrection } from "@/utils/corrections";
 import type { WorkoutLog } from "@/utils/workout-logs";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import type { ClientTask } from "@/utils/tasks";
@@ -28,6 +27,8 @@ import type {
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
+import type { ScheduleBlock } from "@/utils/agenda";
+import WeeklyAgenda from "./WeeklyAgenda";
 import ClientProgramView from "./ClientProgramView";
 import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
@@ -38,10 +39,12 @@ import CoachClientTasksView from "./CoachClientTasksView";
 import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
+import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
+import { generateClientSuggestions } from "@/lib/client-suggestions";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet,
+  FileText, Droplet, CalendarDays,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -59,6 +62,7 @@ const TABS = [
   { key: "checkins",  label: "Check-ins", icon: ClipboardList },
   { key: "rappels",   label: "Rappels",   icon: ListChecks },
   { key: "cycle",     label: "Cycle",     icon: Droplet },
+  { key: "agenda",    label: "Agenda",    icon: CalendarDays },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -101,7 +105,6 @@ export default function ClientProfileTabs({
   recentDailyLogs,
   points,
   program,
-  corrections,
   workoutLogs,
   sessionsThisWeek,
   logbookSessions,
@@ -133,13 +136,13 @@ export default function ClientProfileTabs({
   cycleStats,
   addPeriodLog,
   deletePeriodLog,
+  scheduleBlocks,
 }: {
   client: Profile;
   latestWeight: number | null;
   recentDailyLogs: DailyLog[];
   points: number;
   program: ProgramWithDays | null;
-  corrections: ExerciseCorrection[];
   workoutLogs: WorkoutLog[];
   sessionsThisWeek: number;
   logbookSessions: SessionWithSets[];
@@ -174,6 +177,7 @@ export default function ClientProfileTabs({
     data: { start_date: string; end_date: string | null; flow: string | null; symptoms: string[]; notes: string | null }
   ) => Promise<{ error?: string; id?: string }>;
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
+  scheduleBlocks: ScheduleBlock[];
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -189,6 +193,11 @@ export default function ClientProfileTabs({
   }, [client.id]);
 
   const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
+
+  const suggestions = useMemo(
+    () => generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length),
+    [intake, nutritionProfile, recentDailyLogs, periodLogs.length]
+  );
 
   return (
     <div>
@@ -215,6 +224,8 @@ export default function ClientProfileTabs({
 
       {activeTab === "profil" && (
         <div className="space-y-4">
+          <ClientSuggestionsPanel suggestions={suggestions} />
+
           <SubscriptionToggle
             clientId={client.id}
             currentStatus={client.subscription_status}
@@ -297,6 +308,15 @@ export default function ClientProfileTabs({
           addPeriodLog={addPeriodLog}
           deletePeriodLog={deletePeriodLog}
         />
+      )}
+
+      {activeTab === "agenda" && (
+        <div>
+          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+            Emploi du temps du client — lecture seule, c&apos;est lui qui le gère depuis son espace.
+          </p>
+          <WeeklyAgenda blocks={scheduleBlocks} editable={false} />
+        </div>
       )}
 
       {activeTab === "roadmap" && (
@@ -396,7 +416,6 @@ export default function ClientProfileTabs({
         <ClientProgramView
           clientId={client.id}
           program={program}
-          corrections={corrections}
           workoutLogs={workoutLogs}
           sessionsThisWeek={sessionsThisWeek}
         />

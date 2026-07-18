@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
 import { getActiveProgram } from "@/utils/programs";
-import { getClientCorrections } from "@/utils/corrections";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getAllClientSessions, getClientPersonalRecords, getSessionsThisWeekCount } from "@/utils/sessions";
 import { getClientTasks } from "@/utils/tasks";
@@ -29,6 +28,7 @@ import {
 } from "./nutrition/diet-plan-actions";
 import { getClientIntake } from "@/utils/client-intake";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
+import { getScheduleBlocks } from "@/utils/agenda";
 import { saveClientIntake, addPeriodLog, deletePeriodLog } from "./intake/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
@@ -71,7 +71,6 @@ export default async function ClientDetailPage({
   const [
     points,
     program,
-    corrections,
     workoutLogs,
     sessionsThisWeek,
     logbookSessions,
@@ -89,10 +88,10 @@ export default async function ClientDetailPage({
     latestWeight,
     intake,
     periodLogs,
+    scheduleBlocks,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
-    getClientCorrections(id),
     getRecentWorkoutLogs(id),
     getSessionsThisWeekCount(id),
     getAllClientSessions(id, 10),
@@ -110,6 +109,7 @@ export default async function ClientDetailPage({
     getLatestWeight(id),
     getClientIntake(id),
     getPeriodLogs(id),
+    getScheduleBlocks(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -154,7 +154,6 @@ export default async function ClientDetailPage({
         recentDailyLogs={dailyLogs}
         points={points}
         program={program}
-        corrections={corrections}
         workoutLogs={workoutLogs}
         sessionsThisWeek={sessionsThisWeek}
         logbookSessions={logbookSessions}
@@ -186,6 +185,7 @@ export default async function ClientDetailPage({
         cycleStats={cycleStats}
         addPeriodLog={addPeriodLog}
         deletePeriodLog={deletePeriodLog}
+        scheduleBlocks={scheduleBlocks}
       />
     </div>
   );

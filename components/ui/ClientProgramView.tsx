@@ -1,21 +1,17 @@
 import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
-import type { ExerciseCorrection } from "@/utils/corrections";
-import CoachCorrectionsSection from "./CoachCorrectionsSection";
 import VolumeIntensitySection from "./VolumeIntensitySection";
 import { Pencil, Plus } from "lucide-react";
 
 export default function ClientProgramView({
   clientId,
   program,
-  corrections,
   workoutLogs,
   sessionsThisWeek,
 }: {
   clientId: string;
   program: ProgramWithDays | null;
-  corrections: ExerciseCorrection[];
   workoutLogs: WorkoutLog[];
   sessionsThisWeek: number;
 }) {
@@ -116,9 +112,6 @@ export default function ClientProgramView({
           </div>
         </div>
       )}
-
-      {/* ── Corrections & Questions ─────────────────────────────────────────── */}
-      <CoachCorrectionsSection corrections={corrections} clientId={clientId} />
     </div>
   );
 }

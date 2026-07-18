@@ -444,12 +444,15 @@ export default function CoachLogbookClient({ clientId, sessions, records }: Prop
   return (
     <div>
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
+      <div
+        className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto"
+        style={{ WebkitOverflowScrolling: "touch", touchAction: "pan-x", overscrollBehavior: "contain" }}
+      >
         {tabs.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
+            className={`flex-shrink-0 whitespace-nowrap px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px ${
               activeTab === key
                 ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
                 : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"

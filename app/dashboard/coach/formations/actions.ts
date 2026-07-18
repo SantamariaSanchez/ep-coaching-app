@@ -51,6 +51,51 @@ export async function updateFormation(formationId: string, data: {
   return { success: true };
 }
 
+export async function updateModuleTitle(moduleId: string, title: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase
+    .from("formation_modules")
+    .update({ title })
+    .eq("id", moduleId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+export async function updateSectionTitle(sectionId: string, title: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase
+    .from("formation_sections")
+    .update({ title })
+    .eq("id", sectionId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+export async function updateLessonTitle(lessonId: string, title: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase
+    .from("formation_lessons")
+    .update({ title })
+    .eq("id", lessonId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
 export async function addModule(formationId: string, title: string, orderIndex: number) {
   await requireCoachForFormations();
   const supabase = await createServerSupabase();
@@ -86,6 +131,95 @@ export async function addLesson(sectionId: string, title: string, orderIndex: nu
     .insert({ section_id: sectionId, title, order_index: orderIndex, duration_min: 10 });
 
   if (error) return { error: error.message };
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+// Suppressions — les sections/leçons enfants sont détruites automatiquement
+// par les ON DELETE CASCADE côté DB (voir supabase/migrations/add_formation_sections.sql).
+export async function deleteModule(moduleId: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase.from("formation_modules").delete().eq("id", moduleId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+export async function deleteSection(sectionId: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase.from("formation_sections").delete().eq("id", sectionId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+export async function deleteLesson(lessonId: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase.from("formation_lessons").delete().eq("id", lessonId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { success: true };
+}
+
+function slugify(title: string): string {
+  return title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    || "formation";
+}
+
+export async function createFormation(
+  title: string,
+  emoji: string
+): Promise<{ error?: string; id?: string }> {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { count } = await supabase
+    .from("formations")
+    .select("id", { count: "exact", head: true });
+
+  const { data, error } = await supabase
+    .from("formations")
+    .insert({
+      title,
+      slug: `${slugify(title)}-${Date.now().toString(36)}`,
+      emoji: emoji || "📚",
+      color: "#E01E1E",
+      order_index: count ?? 0,
+      is_published: false,
+    })
+    .select()
+    .single();
+
+  if (error || !data) return { error: error?.message ?? "Erreur." };
+  revalidatePath("/dashboard/coach/formations", "layout");
+  return { id: data.id };
+}
+
+export async function deleteFormation(formationId: string) {
+  await requireCoachForFormations();
+  const supabase = await createServerSupabase();
+
+  const { error } = await supabase.from("formations").delete().eq("id", formationId);
+
+  if (error) return { error: error.message };
+  revalidatePath("/dashboard/client/formations", "layout");
   revalidatePath("/dashboard/coach/formations", "layout");
   return { success: true };
 }

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getFormations, getFormationWithModules, countLessons } from "@/utils/formations";
 import { BookOpen, ChevronRight, PlayCircle, Eye, EyeOff } from "lucide-react";
+import NewFormationButton from "./NewFormationButton";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,8 @@ export default async function CoachFormationsPage() {
           {formations.length} formation{formations.length !== 1 ? "s" : ""} · Clique pour gérer le contenu
         </p>
       </div>
+
+      <NewFormationButton />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {formationData.map(({ formation, total, published, totalMin, moduleCount }, i) => (
@@ -96,7 +99,7 @@ export default async function CoachFormationsPage() {
         {formations.length === 0 && (
           <div className="ep-card" style={{ padding: "40px 20px", textAlign: "center" }}>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-              Aucune formation. Crée les tables en BDD d&apos;abord.
+              Aucune formation pour l&apos;instant. Clique sur &quot;Nouvelle formation&quot; pour en créer une.
             </p>
           </div>
         )}

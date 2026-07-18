@@ -6,10 +6,10 @@ import { useEffect, useState } from "react";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
-  MessageCircle, BarChart2, Map, GraduationCap, Activity, Footprints, Watch,
+  MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
-  Search, Newspaper, FlaskConical, Microscope, Bell,
+  Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -18,7 +18,7 @@ import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type BadgeKey = "pending" | "messages" | "analytics";
+type BadgeKey = "pending" | "messages";
 
 type TabItem = {
   label: string;
@@ -61,7 +61,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/progress",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda"],
   },
   {
     label: "Coach",
@@ -212,11 +212,11 @@ const COACH_TABS: TabItem[] = [
     badge: "messages",
   },
   {
-    label: "Analytics",
-    icon: BarChart2,
-    href: "/dashboard/coach/analytics",
-    matchSegments: ["analytics", "bilan", "notes", "nutrition"],
-    badge: "analytics",
+    label: "Bilan",
+    icon: ClipboardCheck,
+    href: "/dashboard/coach/bilan",
+    matchSegments: ["bilan", "notes", "nutrition"],
+    badge: "pending",
   },
   {
     label: "Moi",
@@ -253,7 +253,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Analyse",
     items: [
-      { label: "Analytics", icon: BarChart2,      segment: "analytics", badge: "analytics" },
       { label: "Bilan",     icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
       { label: "Nutrition", icon: Apple,           segment: "nutrition" },
     ],
@@ -304,6 +303,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
       { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
+      { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
       { label: "Pas & routine",  icon: Footprints,     segment: "moi/steps" },
       { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
@@ -342,6 +342,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Progression",    icon: TrendingUp,      segment: "progress" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       { label: "Road Map",       icon: Map,             segment: "roadmap" },
+      { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },
       { label: "Pas & routine",  icon: Footprints,      segment: "steps" },
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
@@ -492,7 +493,6 @@ export default function DashboardNav({
 
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
-  const [analyticsAlerts, setAnalyticsAlerts] = useState(0);
   const [userName,        setUserName]        = useState<string | null>(null);
   const [userRole,        setUserRole]        = useState<string | null>(null);
 
@@ -506,7 +506,7 @@ export default function DashboardNav({
 
   useEffect(() => {
     const prefetch = isCoach
-      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/analytics", "/dashboard/coach/messages"]
+      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/bilan", "/dashboard/coach/messages"]
       : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/progress", "/dashboard/client/messages"];
     prefetch.forEach((p) => router.prefetch(p));
   }, [isCoach, router]);
@@ -516,10 +516,6 @@ export default function DashboardNav({
       fetch("/api/coach/pending-count")
         .then((r) => r.json())
         .then((d) => setPendingCount(d.count ?? 0))
-        .catch(() => {});
-      fetch("/api/coach/analytics-alerts")
-        .then((r) => r.json())
-        .then((d) => setAnalyticsAlerts(d.count ?? 0))
         .catch(() => {});
     }
   }, [isCoach]);
@@ -573,9 +569,8 @@ export default function DashboardNav({
   }
 
   function getBadgeCount(badge?: BadgeKey): number {
-    if (badge === "pending")   return pendingCount;
-    if (badge === "messages")  return unreadMessages;
-    if (badge === "analytics") return analyticsAlerts;
+    if (badge === "pending")  return pendingCount;
+    if (badge === "messages") return unreadMessages;
     return 0;
   }
 
