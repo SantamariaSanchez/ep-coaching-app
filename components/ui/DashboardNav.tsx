@@ -201,7 +201,7 @@ const COACH_TABS: TabItem[] = [
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients"],
+    matchSegments: ["clients", "bilan", "notes"],
     badge: "pending",
   },
   {
@@ -210,13 +210,6 @@ const COACH_TABS: TabItem[] = [
     href: "/dashboard/coach/messages",
     matchSegments: ["messages"],
     badge: "messages",
-  },
-  {
-    label: "Bilan",
-    icon: ClipboardCheck,
-    href: "/dashboard/coach/bilan",
-    matchSegments: ["bilan", "notes"],
-    badge: "pending",
   },
   {
     label: "Moi",
@@ -248,12 +241,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Clients",  icon: Users,         segment: "clients",   badge: "pending" },
       { label: "Messages", icon: MessageCircle, segment: "messages",  badge: "messages" },
-    ],
-  },
-  {
-    group: "Analyse",
-    items: [
-      { label: "Bilan", icon: ClipboardCheck, segment: "bilan", badge: "pending" },
+      { label: "Bilan",    icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
     ],
   },
   {
