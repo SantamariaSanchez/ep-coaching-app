@@ -40,7 +40,9 @@ import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
+import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import { generateClientSuggestions } from "@/lib/client-suggestions";
+import type { AutoGenerateResult } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
@@ -137,6 +139,7 @@ export default function ClientProfileTabs({
   addPeriodLog,
   deletePeriodLog,
   scheduleBlocks,
+  autoGenerateClientPlan,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -178,6 +181,7 @@ export default function ClientProfileTabs({
   ) => Promise<{ error?: string; id?: string }>;
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
   scheduleBlocks: ScheduleBlock[];
+  autoGenerateClientPlan: (clientId: string) => Promise<AutoGenerateResult>;
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -297,7 +301,10 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "intake" && (
-        <ClientIntakeForm clientId={client.id} existingIntake={intake} saveClientIntake={saveClientIntake} />
+        <div>
+          <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} autoGenerateClientPlan={autoGenerateClientPlan} />
+          <ClientIntakeForm clientId={client.id} existingIntake={intake} saveClientIntake={saveClientIntake} />
+        </div>
       )}
 
       {activeTab === "cycle" && intake?.gender === "Femme" && (

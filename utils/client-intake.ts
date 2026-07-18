@@ -6,6 +6,7 @@ export interface ClientIntake {
   client_id: string;
   date_of_birth: string | null;
   gender: "Homme" | "Femme" | "Autre" | null;
+  height_cm: number | null;
   occupation: string | null;
   work_hours: string | null;
   schedule_type: "fixe" | "variable" | null;

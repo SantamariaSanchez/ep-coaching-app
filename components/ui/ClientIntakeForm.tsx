@@ -30,6 +30,7 @@ function emptyIntake(): ClientIntakeInput {
   return {
     date_of_birth: null,
     gender: null,
+    height_cm: null,
     occupation: null,
     work_hours: null,
     schedule_type: null,
@@ -109,7 +110,15 @@ export default function ClientIntakeForm({
     const res = await saveClientIntake(clientId, form);
     setSaving(false);
     if (res.error) {
-      setError(res.error);
+      // La table client_intake vient d'une migration récente — si elle n'a
+      // pas encore été exécutée dans Supabase, l'erreur Postgres brute
+      // ("relation ... does not exist") ne dit rien d'actionnable au coach.
+      const looksLikeMissingTable = /relation .* does not exist|schema cache/i.test(res.error);
+      setError(
+        looksLikeMissingTable
+          ? "La fiche client n'est pas encore activée côté base de données — la migration SQL doit être exécutée dans Supabase avant de pouvoir enregistrer. Rien n'a été perdu, réessaie une fois que c'est fait."
+          : res.error
+      );
     } else {
       setSaved(true);
     }
@@ -138,6 +147,9 @@ export default function ClientIntakeForm({
             <option value="Femme">Femme</option>
             <option value="Autre">Autre</option>
           </select>
+        </Field>
+        <Field label="Taille (cm)">
+          <input type="number" value={num("height_cm")} onChange={(e) => set("height_cm", e.target.value ? parseFloat(e.target.value) : null)} className={inputClass} />
         </Field>
         <Field label="Métier">
           <input value={txt("occupation")} onChange={(e) => set("occupation", e.target.value || null)} className={inputClass} />
@@ -354,9 +366,12 @@ export default function ClientIntakeForm({
         <textarea rows={3} value={txt("additional_notes")} onChange={(e) => set("additional_notes", e.target.value || null)} className={`${inputClass} resize-none`} />
       </Field>
 
-      {error && <p className="text-xs text-red-400 mt-4">{error}</p>}
-
       <div className="sticky bottom-0 mt-8 pt-4 pb-1 bg-gradient-to-t from-[#0a0000] via-[#0a0000]/95 to-transparent">
+        {error && (
+          <div className="bg-red-950/80 border border-red-500/40 rounded-xl px-4 py-3 mb-3">
+            <p className="text-xs text-red-300 font-semibold leading-relaxed">⚠ {error}</p>
+          </div>
+        )}
         <button
           onClick={handleSave}
           disabled={saving}
