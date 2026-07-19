@@ -26,6 +26,7 @@ import type {
 } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
+import { ALLERGEN_LABELS, DIET_LABELS } from "@/lib/recipes-data";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 import type { ScheduleBlock } from "@/utils/agenda";
 import WeeklyAgenda from "./WeeklyAgenda";
@@ -214,8 +215,8 @@ export default function ClientProfileTabs({
   const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
 
   const suggestions = useMemo(
-    () => generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length),
-    [intake, nutritionProfile, recentDailyLogs, periodLogs.length]
+    () => generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program),
+    [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program]
   );
 
   return (
@@ -244,6 +245,57 @@ export default function ClientProfileTabs({
       {activeTab === "profil" && (
         <div className="space-y-4">
           <ClientSuggestionsPanel suggestions={suggestions} />
+
+          {intake ? (
+            <Card title="Fiche client — l'essentiel">
+              <div className="space-y-3">
+                {(intake.goal_3_months || intake.goal_12_months) && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <InfoRow label="Objectif 3 mois" value={intake.goal_3_months} />
+                    <InfoRow label="Objectif 12 mois" value={intake.goal_12_months} />
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1.5">
+                  {intake.diet_type && (
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/60">
+                      {DIET_LABELS[intake.diet_type]}
+                    </span>
+                  )}
+                  {intake.allergens.map((a) => (
+                    <span key={a} className="text-[10px] font-bold px-2 py-1 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-400">
+                      ⚠ {ALLERGEN_LABELS[a]}
+                    </span>
+                  ))}
+                  {intake.injuries && (
+                    <span className="text-[10px] font-bold px-2 py-1 rounded-full bg-red-500/10 border border-red-500/25 text-red-400">
+                      ⚠ Blessure/douleur déclarée
+                    </span>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("intake")}
+                  className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                >
+                  Voir la fiche complète →
+                </button>
+              </div>
+            </Card>
+          ) : (
+            <Card title="Fiche client — l'essentiel">
+              <p className="text-xs text-[#F5EDED]/40 mb-2">
+                Pas encore de fiche client remplie pour ce client — objectifs, régime, blessures... tout ce qui
+                sert ensuite dans le créateur de recette, de programme et de plan nutrition.
+              </p>
+              <button
+                type="button"
+                onClick={() => setActiveTab("intake")}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              >
+                Remplir la fiche →
+              </button>
+            </Card>
+          )}
 
           <SubscriptionToggle
             clientId={client.id}
