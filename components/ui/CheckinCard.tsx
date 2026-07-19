@@ -83,7 +83,7 @@ function NumRow({ label, value }: { label: string; value: string | null | undefi
   );
 }
 
-function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
+function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDone?: () => void; onCancel?: () => void }) {
   const [state, formAction, isPending] = useActionState(replyToCheckin, null);
   const formRef = useRef<HTMLFormElement>(null);
   const router = useRouter();
@@ -91,7 +91,11 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
   const [videoError, setVideoError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (state && "success" in state) formRef.current?.reset();
+    if (state && "success" in state) {
+      formRef.current?.reset();
+      onDone?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   async function handleVideoSend(blob: Blob) {
@@ -127,6 +131,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
           name="coach_notes"
           rows={4}
           required
+          defaultValue={checkin.coach_notes ?? ""}
           placeholder="Analyse, conseils, encouragements…"
           style={{
             width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
@@ -151,6 +156,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
           </label>
           <select
             name="coach_rating"
+            defaultValue={checkin.coach_rating ? String(checkin.coach_rating) : ""}
             style={{
               width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
               borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#F5EDED", outline: "none",
@@ -172,8 +178,22 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
             cursor: isPending ? "wait" : "pointer",
           }}
         >
-          {isPending ? "Envoi…" : "Envoyer le retour"}
+          {isPending ? "Envoi…" : onCancel ? "Enregistrer la modification" : "Envoyer le retour"}
         </button>
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isPending}
+            style={{
+              background: "none", border: "1px solid rgba(245,237,237,0.15)", color: "rgba(245,237,237,0.5)",
+              borderRadius: 10, padding: "10px 16px", fontSize: 11, fontWeight: 800,
+              letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer",
+            }}
+          >
+            Annuler
+          </button>
+        )}
       </div>
 
       {state && "error" in state && (
@@ -185,6 +205,7 @@ function CoachReplyForm({ checkin }: { checkin: CheckIn }) {
 
 export default function CheckinCard({ checkin, dailyAverages }: { checkin: CheckIn; dailyAverages?: WeeklyAverages }) {
   const [expanded, setExpanded] = useState(!checkin.coach_replied_at);
+  const [isEditingReply, setIsEditingReply] = useState(false);
 
   const weekDate = new Intl.DateTimeFormat("fr-FR", {
     day: "numeric", month: "long", year: "numeric",
@@ -426,11 +447,24 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           )}
 
           {/* ── Coach reply ───────────────────────────────────────────────── */}
-          {checkin.coach_replied_at && checkin.coach_notes ? (
+          {checkin.coach_replied_at && checkin.coach_notes && !isEditingReply ? (
             <div style={{ paddingTop: 14, borderTop: "1px solid rgba(137,4,4,0.12)" }}>
-              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: "0 0 8px" }}>
-                Ton retour{checkin.coach_rating ? ` : ${checkin.coach_rating}/10` : ""}
-              </p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(74,222,128,0.5)", margin: 0 }}>
+                  Ton retour{checkin.coach_rating ? ` : ${checkin.coach_rating}/10` : ""}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setIsEditingReply(true)}
+                  style={{
+                    background: "none", border: "1px solid rgba(245,237,237,0.15)", color: "rgba(245,237,237,0.5)",
+                    borderRadius: 8, padding: "3px 10px", fontSize: 9, fontWeight: 800,
+                    letterSpacing: "0.08em", textTransform: "uppercase", cursor: "pointer",
+                  }}
+                >
+                  Modifier
+                </button>
+              </div>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
                 {checkin.coach_notes}
               </p>
@@ -439,7 +473,11 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               )}
             </div>
           ) : (
-            <CoachReplyForm checkin={checkin} />
+            <CoachReplyForm
+              checkin={checkin}
+              onDone={() => setIsEditingReply(false)}
+              onCancel={checkin.coach_replied_at && checkin.coach_notes ? () => setIsEditingReply(false) : undefined}
+            />
           )}
         </div>
       )}
