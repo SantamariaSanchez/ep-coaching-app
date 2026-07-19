@@ -136,6 +136,8 @@ export default function ClientProfileTabs({
   deleteDietPlan,
   intake,
   saveClientIntake,
+  stepGoal,
+  updateClientStepGoal,
   periodLogs,
   cycleStats,
   addPeriodLog,
@@ -177,6 +179,8 @@ export default function ClientProfileTabs({
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   intake: ClientIntake | null;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
+  stepGoal: number;
+  updateClientStepGoal: (clientId: string, dailyGoal: number) => Promise<{ error?: string }>;
   periodLogs: PeriodLog[];
   cycleStats: CycleStats;
   addPeriodLog: (
@@ -314,7 +318,13 @@ export default function ClientProfileTabs({
       {activeTab === "intake" && (
         <div>
           <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} autoGenerateClientPlan={autoGenerateClientPlan} />
-          <ClientIntakeForm clientId={client.id} existingIntake={intake} saveClientIntake={saveClientIntake} />
+          <ClientIntakeForm
+            clientId={client.id}
+            existingIntake={intake}
+            saveClientIntake={saveClientIntake}
+            stepGoal={stepGoal}
+            updateClientStepGoal={updateClientStepGoal}
+          />
         </div>
       )}
 

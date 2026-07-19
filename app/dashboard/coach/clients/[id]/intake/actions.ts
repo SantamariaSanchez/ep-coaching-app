@@ -26,6 +26,30 @@ export async function saveClientIntake(
   return {};
 }
 
+// L'objectif de pas quotidien est desormais fixe par le coach depuis la
+// fiche client (le client ne peut plus le modifier lui-meme, voir
+// StepsClient/steps page) — admin bypass RLS car step_settings n'autorise
+// en ecriture que auth.uid() = client_id.
+export async function updateClientStepGoal(
+  clientId: string,
+  dailyGoal: number
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  if (dailyGoal <= 0) return { error: "Objectif invalide." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("step_settings")
+    .upsert({ client_id: clientId, daily_goal: dailyGoal, updated_at: new Date().toISOString() });
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}`);
+  revalidatePath("/dashboard/client/steps");
+  return {};
+}
+
 export async function addPeriodLog(
   clientId: string,
   data: { start_date: string; end_date: string | null; flow: string | null; symptoms: string[]; notes: string | null }

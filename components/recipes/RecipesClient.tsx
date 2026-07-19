@@ -396,7 +396,7 @@ export default function RecipesClient({
       if (macroProfiles.size && !classifyMacroProfiles(r).some((p) => macroProfiles.has(p))) return false;
       if (excludedAllergens.size && r.allergens.some((a) => excludedAllergens.has(a))) return false;
       return true;
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name, "fr"));
   }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens]);
 
   const activeFilterCount =

@@ -30,7 +30,8 @@ import {
 import { getClientIntake } from "@/utils/client-intake";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
-import { saveClientIntake, addPeriodLog, deletePeriodLog } from "./intake/actions";
+import { getStepSettings } from "@/utils/steps";
+import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal } from "./intake/actions";
 import { autoGenerateClientPlan } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
@@ -93,6 +94,7 @@ export default async function ClientDetailPage({
     periodLogs,
     scheduleBlocks,
     corrections,
+    stepSettings,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -115,6 +117,7 @@ export default async function ClientDetailPage({
     getPeriodLogs(id),
     getScheduleBlocks(id),
     getClientCorrections(id),
+    getStepSettings(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -186,6 +189,8 @@ export default async function ClientDetailPage({
         deleteDietPlan={deleteDietPlan}
         intake={intake}
         saveClientIntake={saveClientIntake}
+        stepGoal={stepSettings.daily_goal}
+        updateClientStepGoal={updateClientStepGoal}
         periodLogs={periodLogs}
         cycleStats={cycleStats}
         addPeriodLog={addPeriodLog}

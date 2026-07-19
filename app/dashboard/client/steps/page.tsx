@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
 import StepsClient from "@/components/steps/StepsClient";
-import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps } from "./actions";
+import { addRoutineItem, deleteRoutineItem, logSteps } from "./actions";
 
 export default async function ClientStepsPage() {
   const user = await getUser();
@@ -25,7 +25,8 @@ export default async function ClientStepsPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Pas & routine</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Fixe ton objectif, planifie des créneaux de marche dans ta journée, et suis ta progression.
+          Ton objectif est fixé par ton coach. Planifie des créneaux de marche dans ta journée et suis ta
+          progression.
         </p>
       </div>
 
@@ -33,7 +34,6 @@ export default async function ClientStepsPage() {
         settings={settings}
         routineItems={routineItems}
         logs={logs}
-        updateStepGoal={updateStepGoal}
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}
         logSteps={logSteps}

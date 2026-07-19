@@ -118,7 +118,7 @@ export default function StepsClient({
               Objectif quotidien
             </p>
           </div>
-          {!readOnly && updateStepGoal && (
+          {!readOnly && updateStepGoal ? (
             editingGoal ? (
               <div className="flex items-center gap-2">
                 <input
@@ -134,9 +134,10 @@ export default function StepsClient({
                 <Target size={11} /> {goal.toLocaleString("fr-FR")} pas
               </button>
             )
-          )}
-          {readOnly && (
-            <span className="text-[10px] font-bold text-[#F5EDED]/40">{goal.toLocaleString("fr-FR")} pas/jour</span>
+          ) : (
+            <span className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
+              <Target size={11} /> {goal.toLocaleString("fr-FR")} pas/jour
+            </span>
           )}
         </div>
 

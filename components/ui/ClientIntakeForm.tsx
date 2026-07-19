@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Save, Check } from "lucide-react";
+import { Save, Check, Target } from "lucide-react";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import { ALLERGEN_LABELS, DIET_LABELS, type Allergen, type Diet } from "@/lib/recipes-data";
 
@@ -81,15 +81,37 @@ export default function ClientIntakeForm({
   clientId,
   existingIntake,
   saveClientIntake,
+  stepGoal,
+  updateClientStepGoal,
 }: {
   clientId: string;
   existingIntake: ClientIntake | null;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
+  stepGoal?: number;
+  updateClientStepGoal?: (clientId: string, dailyGoal: number) => Promise<{ error?: string }>;
 }) {
   const [form, setForm] = useState<ClientIntakeInput>(existingIntake ?? emptyIntake());
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [goalInput, setGoalInput] = useState(String(stepGoal ?? 8000));
+  const [goalSaving, setGoalSaving] = useState(false);
+  const [goalSaved, setGoalSaved] = useState(false);
+
+  async function handleSaveGoal() {
+    if (!updateClientStepGoal) return;
+    const goal = parseInt(goalInput, 10);
+    if (!goal || goal <= 0) return;
+    setGoalSaving(true);
+    setGoalSaved(false);
+    const res = await updateClientStepGoal(clientId, goal);
+    setGoalSaving(false);
+    if (!res.error) {
+      setGoalSaved(true);
+      setTimeout(() => setGoalSaved(false), 2000);
+    }
+  }
 
   function set<K extends keyof ClientIntakeInput>(key: K, value: ClientIntakeInput[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -180,8 +202,42 @@ export default function ClientIntakeForm({
       </div>
 
       <Section title="Santé et récupération" />
+
+      {updateClientStepGoal && (
+        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Target size={13} className="text-[#E01E1E]" />
+            <p className="text-[10px] font-bold uppercase tracking-widest text-white">
+              Objectif de pas imposé au client
+            </p>
+          </div>
+          <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
+            Ce chiffre est celui affiché dans l&apos;app du client, dans &quot;Pas &amp; routine&quot;. Le client ne peut
+            plus le modifier lui-même — seul toi, le coach, le règles ici.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="number"
+              min={1}
+              value={goalInput}
+              onChange={(e) => setGoalInput(e.target.value)}
+              className={`${inputClass} w-32`}
+            />
+            <span className="text-[10px] text-[#F5EDED]/30">pas / jour</span>
+            <button
+              type="button"
+              onClick={handleSaveGoal}
+              disabled={goalSaving}
+              className="ml-auto bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
+            >
+              {goalSaving ? "…" : goalSaved ? "✓ Enregistré" : "Enregistrer"}
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Nombre de pas moyen/jour">
+        <Field label="Nombre de pas moyen/jour (info onboarding, historique)">
           <input type="number" value={num("avg_daily_steps")} onChange={(e) => set("avg_daily_steps", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
         <Field label="Montre / bague connectée">
