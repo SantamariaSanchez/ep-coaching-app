@@ -289,7 +289,7 @@ export default function CoachClientNutritionTabs({
     { key: "objectifs", label: "Objectifs TDEE" },
     { key: "plan", label: "Plans" },
     { key: "today", label: "Suivi du jour" },
-    { key: "history", label: "Historique" },
+    { key: "history", label: "Historique alimentaire" },
   ];
 
   return (

@@ -835,7 +835,7 @@ export default function ClientNutritionView({
                 : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
-            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique" : "Courses"}
+            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique alimentaire" : "Courses"}
           </button>
         ))}
       </div>

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getTodayLog, getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
+import { getTodayLogs } from "@/utils/nutrition";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import { upsertDailyLog } from "./actions";
 
@@ -106,12 +107,28 @@ export default async function ClientBilanPage() {
   // autonome accessible à tous les clients, gratuits ou coachés — c'est le
   // cœur du suivi de perte de poids en self-service.
   const today = new Date().toISOString().split("T")[0];
-  const [todayLog, allLogs] = await Promise.all([
+  const [todayLog, allLogs, todayFoodLogs] = await Promise.all([
     getTodayLog(user.id),
     getClientDailyLogs(user.id, 42),
+    getTodayLogs(user.id, today),
   ]);
 
   const weeks = groupLogsByWeek(allLogs);
+
+  // Evite de refaire calculer les macros a la main : si le client a deja
+  // logge ses aliments du jour dans Nutrition, on pre-remplit le bilan avec
+  // ce total plutot que de lui demander de le retaper.
+  const nutritionTotals = todayFoodLogs.length > 0
+    ? todayFoodLogs.reduce(
+        (acc, l) => ({
+          calories: acc.calories + (l.calories ?? 0),
+          proteins: acc.proteins + (l.proteins ?? 0),
+          carbs: acc.carbs + (l.carbs ?? 0),
+          fats: acc.fats + (l.fats ?? 0),
+        }),
+        { calories: 0, proteins: 0, carbs: 0, fats: 0 }
+      )
+    : null;
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px 80px" }}>
@@ -134,14 +151,14 @@ export default async function ClientBilanPage() {
         padding: "20px 16px",
         marginBottom: 32,
       }}>
-        <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} />
+        <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} />
       </div>
 
       {/* Weekly history */}
       {weeks.length > 0 && (
         <div>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", marginBottom: 16 }}>
-            Historique
+            Historique du bilan
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {weeks.map(({ weekStart, logs, averages }) => (

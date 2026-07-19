@@ -77,7 +77,20 @@ function RatingInput({ name, defaultValue }: { name: string; defaultValue?: numb
   );
 }
 
-export default function DailyBilanForm({ today, existing, action: serverAction }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
+
+export default function DailyBilanForm({
+  today,
+  existing,
+  action: serverAction,
+  nutritionTotals,
+}: {
+  today: string;
+  existing: DailyLog | null;
+  action: BilanAction;
+  /** Totaux du jour deja loggues dans Nutrition — pre-remplit au lieu de faire retaper les macros */
+  nutritionTotals?: NutritionTotals | null;
+}) {
   const formRef = useRef<HTMLFormElement>(null);
   const [state, action, pending] = useActionState(serverAction, null);
 
@@ -176,23 +189,28 @@ export default function DailyBilanForm({ today, existing, action: serverAction }
       {/* ── Nutrition ─────────────────────────────────────────────────────────── */}
       <div>
         <Section title="Nutrition" />
+        {nutritionTotals && existing?.calories_kcal == null && (
+          <p style={{ fontSize: 10, color: "rgba(74,222,128,0.6)", margin: "-8px 0 12px" }}>
+            Pré-rempli depuis ce que tu as déjà loggé dans Nutrition aujourd&apos;hui — modifiable si besoin.
+          </p>
+        )}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label className={lbl}>Protéines (g)</label>
-              <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? ""} placeholder="200" className={inp} />
+              <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? (nutritionTotals ? Math.round(nutritionTotals.proteins) : "")} placeholder="200" className={inp} />
             </div>
             <div>
               <label className={lbl}>Glucides (g)</label>
-              <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? ""} placeholder="250" className={inp} />
+              <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? (nutritionTotals ? Math.round(nutritionTotals.carbs) : "")} placeholder="250" className={inp} />
             </div>
             <div>
               <label className={lbl}>Lipides (g)</label>
-              <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? ""} placeholder="80" className={inp} />
+              <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? (nutritionTotals ? Math.round(nutritionTotals.fats) : "")} placeholder="80" className={inp} />
             </div>
             <div>
               <label className={lbl}>Total (kcal)</label>
-              <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? ""} placeholder="2400" className={inp} />
+              <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? (nutritionTotals ? Math.round(nutritionTotals.calories) : "")} placeholder="2400" className={inp} />
             </div>
           </div>
           <div>
