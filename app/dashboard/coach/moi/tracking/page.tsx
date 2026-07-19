@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { isOuraConfigured } from "@/lib/oura";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import { logBiometrics, disconnectOura } from "@/app/dashboard/client/tracking/actions";
 
@@ -42,6 +43,8 @@ export default async function CoachMoiTrackingPage({
         logBiometrics={logBiometrics}
         ouraConnected={!!ouraConnection}
         canConnectOura
+        ouraConfigured={isOuraConfigured()}
+        isCoachView
         disconnectOura={disconnectOura}
         ouraStatus={ouraStatus}
       />

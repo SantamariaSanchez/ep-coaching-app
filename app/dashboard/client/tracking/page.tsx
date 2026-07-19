@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { isOuraConfigured } from "@/lib/oura";
 import { createAdminClient } from "@/lib/supabase-admin";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import { logBiometrics, disconnectOura } from "./actions";
@@ -42,6 +43,7 @@ export default async function ClientTrackingPage({
         logBiometrics={logBiometrics}
         ouraConnected={!!ouraConnection}
         canConnectOura={isSubscribed(profile)}
+        ouraConfigured={isOuraConfigured()}
         disconnectOura={disconnectOura}
         ouraStatus={ouraStatus}
       />

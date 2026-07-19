@@ -67,6 +67,8 @@ export default function TrackingClient({
   logBiometrics,
   ouraConnected = false,
   canConnectOura = true,
+  ouraConfigured = true,
+  isCoachView = false,
   disconnectOura,
   ouraStatus,
 }: {
@@ -78,6 +80,10 @@ export default function TrackingClient({
   ouraConnected?: boolean;
   /** false = membre gratuit, pas de bague offerte, pas de connexion possible */
   canConnectOura?: boolean;
+  /** false = OURA_CLIENT_ID/SECRET pas configurées côté serveur — pas la peine de proposer un bouton qui mène dans un mur */
+  ouraConfigured?: boolean;
+  /** true = le coach regarde son propre suivi, on peut lui montrer le detail technique du blocage */
+  isCoachView?: boolean;
   disconnectOura?: () => Promise<{ error?: string }>;
   /** ?oura=... au retour de /api/oura/connect ou /callback */
   ouraStatus?: string;
@@ -122,9 +128,11 @@ export default function TrackingClient({
 
   const ouraStatusMessage =
     ouraStatus === "not_configured"
-      ? "La connexion Oura n'est pas encore configurée côté serveur (clé API manquante) — préviens ton développeur."
+      ? isCoachView
+        ? "Connexion Oura pas encore activée : il manque OURA_CLIENT_ID / OURA_CLIENT_SECRET dans les variables d'environnement Vercel (voir cloud.ouraring.com/oauth/applications)."
+        : "La connexion à ta bague Oura n'est pas encore activée sur l'app — ton coach est prévenu, réessaie un peu plus tard."
       : ouraStatus === "error"
-      ? "La connexion à Oura a échoué. Réessaie, et si ça persiste, préviens ton développeur."
+      ? "La connexion à Oura a échoué. Réessaie, et si ça persiste, préviens ton coach."
       : ouraStatus === "locked"
       ? "La bague Oura est réservée aux membres en coaching."
       : null;
@@ -157,19 +165,29 @@ export default function TrackingClient({
             </button>
           )}
         </div>
-      ) : canConnectOura ? (
+      ) : canConnectOura && ouraConfigured ? (
         <a
           href="/api/oura/connect"
           className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-xl px-4 py-3 transition-colors"
         >
           <Watch size={15} className="text-[#E01E1E] flex-shrink-0" />
           <span className="text-[11px] text-[#F5EDED]/45 leading-relaxed flex-1">
-            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> pour remplir cet onglet automatiquement.
+            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> — ouvre l&apos;app Oura, connecte-toi, et
+            valide l&apos;accès. C&apos;est tout, aucune donnée à recopier.
           </span>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
             Connecter →
           </span>
         </a>
+      ) : canConnectOura && !ouraConfigured ? (
+        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
+          <Watch size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
+          <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
+            {isCoachView
+              ? "Connexion Oura Ring bientôt disponible — il reste une clé d'application à configurer côté serveur (voir message ci-dessus)."
+              : "Connexion Oura Ring bientôt disponible ici. En attendant, log tes données à la main ci-dessous."}
+          </p>
+        </div>
       ) : (
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
           <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
