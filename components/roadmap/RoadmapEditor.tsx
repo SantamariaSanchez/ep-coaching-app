@@ -390,7 +390,10 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
+  // Vue globale visible par defaut — avant, la vraie vision multi-mois
+  // (blocs de phase sur les semaines) etait cachee derriere un toggle et
+  // seule la liste plate des cartes de phase etait visible d'emblee.
+  const [showCalendar, setShowCalendar] = useState(true);
   const [existingRoadmap, setExistingRoadmap] = useState<Roadmap | null>(null);
 
   const [startDate, setStartDate] = useState("");
@@ -515,7 +518,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
           style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}
         >
           {showCalendar ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showCalendar ? "Masquer" : "Aperçu calendrier"}
+          {showCalendar ? "Masquer la vue d'ensemble" : "Vue d'ensemble"}
         </button>
         <button onClick={handleSave} disabled={saving} className="ep-btn-primary">
           <Save size={14} />
@@ -561,7 +564,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       {showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
-            Aperçu calendrier
+            Vue d&apos;ensemble — les phases sur les mois et les semaines
           </p>
           <div className="ep-card" style={{ padding: 20 }}>
             <RoadmapCalendar
