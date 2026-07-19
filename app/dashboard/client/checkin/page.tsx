@@ -51,7 +51,12 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
     day: "numeric", month: "long", year: "numeric",
   }).format(new Date(checkin.created_at));
 
-  const hasBilan = checkin.bilan_sent_at != null;
+  // coach_notes/coach_rating (répondu depuis l'onglet Check-ins de la fiche
+  // client) est désormais le seul chemin de retour — bilan_text/bilan_rating
+  // n'existe qu'en fallback pour les bilans déjà envoyés avant ce changement.
+  const replyText = checkin.coach_notes ?? checkin.bilan_text;
+  const replyRating = checkin.coach_rating ?? checkin.bilan_rating;
+  const hasBilan = checkin.coach_replied_at != null || checkin.bilan_sent_at != null;
 
   return (
     <div className="ep-card" style={{ padding: "16px 18px" }}>
@@ -164,14 +169,14 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
             <Star size={10} />
             Bilan de ton coach
           </p>
-          {checkin.bilan_rating != null && (
+          {replyRating != null && (
             <div style={{ marginBottom: 8 }}>
-              <BilanRating rating={checkin.bilan_rating} />
+              <BilanRating rating={replyRating} />
             </div>
           )}
-          {checkin.bilan_text && (
+          {replyText && (
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.72)", lineHeight: 1.6, margin: 0 }}>
-              {checkin.bilan_text}
+              {replyText}
             </p>
           )}
           {checkin.coach_video_url && (
@@ -317,24 +322,24 @@ export default async function CheckinPage() {
           </div>
 
           {/* Coach bilan */}
-          {existing.bilan_sent_at ? (
+          {existing.coach_replied_at || existing.bilan_sent_at ? (
             <div className="ep-card-highlighted" style={{ padding: "18px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                 <Star size={13} style={{ color: "#E01E1E" }} />
                 <p className="ep-section-title" style={{ margin: 0 }}>
                   Bilan de ton coach
-                  {existing.bilan_rating != null && (
-                    <span style={{ marginLeft: 8, color: "#fbbf24" }}>{existing.bilan_rating}/10</span>
+                  {(existing.coach_rating ?? existing.bilan_rating) != null && (
+                    <span style={{ marginLeft: 8, color: "#fbbf24" }}>{existing.coach_rating ?? existing.bilan_rating}/10</span>
                   )}
                 </p>
               </div>
-              {existing.bilan_rating != null && (
+              {(existing.coach_rating ?? existing.bilan_rating) != null && (
                 <div style={{ marginBottom: 12 }}>
-                  <BilanRating rating={existing.bilan_rating} />
+                  <BilanRating rating={(existing.coach_rating ?? existing.bilan_rating)!} />
                 </div>
               )}
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0 }}>
-                {existing.bilan_text}
+                {existing.coach_notes ?? existing.bilan_text}
               </p>
               {existing.coach_video_url && (
                 <video

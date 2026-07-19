@@ -93,3 +93,43 @@ export async function attachCoachVideo(
   revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
   return {};
 }
+
+type ActionState = { error?: string; success?: boolean } | null;
+
+// Répondre à une demande de correction technique (soumise depuis Programme
+// > "Poser une question" côté client) — vivait avant dans la page Bilan
+// séparée, déplacé ici pour que tout le suivi hebdo d'un client (check-ins
+// + corrections) se fasse au même endroit.
+export async function sendCorrectionFeedback(
+  correctionId: string,
+  clientId: string,
+  _prev: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
+  const coach_video_link = (formData.get("coach_video_link") as string)?.trim() || null;
+
+  if (!coach_feedback) return { error: "Le retour écrit est obligatoire." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("exercise_corrections")
+    .update({
+      coach_feedback,
+      coach_video_link,
+      status: "answered",
+      answered_at: new Date().toISOString(),
+    })
+    .eq("id", correctionId)
+    .eq("client_id", clientId);
+
+  if (error) return { error: "Erreur lors de l'envoi du retour." };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  revalidatePath(`/dashboard/coach/clients/${clientId}/program`);
+  revalidatePath("/dashboard/client/program");
+  return { success: true };
+}

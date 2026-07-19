@@ -195,57 +195,10 @@ export async function getPendingReplies(): Promise<CheckInWithClient[]> {
 }
 
 // ── Bilan system ──────────────────────────────────────────────────────────────
-
-// Retour vidéo du coach (coach_video_path → coach_video_url signée) — les
-// bilans n'ont pas besoin des photos/vidéo du client ici (déjà pas affichées
-// dans CoachBilanView), seulement du retour vidéo déjà attaché.
-async function withCoachVideoUrl<T extends { coach_video_path: string | null }>(
-  admin: ReturnType<typeof import("@/lib/supabase-admin").createAdminClient>,
-  rows: T[]
-): Promise<(T & { coach_video_url: string | null })[]> {
-  return Promise.all(
-    rows.map(async (row) => {
-      const coach_video_url = row.coach_video_path
-        ? (await admin.storage.from("coach-videos").createSignedUrl(row.coach_video_path, 3600)).data?.signedUrl ?? null
-        : null;
-      return { ...row, coach_video_url };
-    })
-  );
-}
-
-export async function getPendingBilans(): Promise<CheckInWithClientProfile[]> {
-  try {
-    // Admin client: coach reads ALL clients' check-ins (bypasses RLS)
-    const { createAdminClient } = await import("@/lib/supabase-admin");
-    const admin = createAdminClient();
-    const { data } = await admin
-      .from("check_ins")
-      .select("*, profiles:client_id(full_name, email)")
-      .is("bilan_sent_at", null)
-      .order("created_at", { ascending: false });
-    return await withCoachVideoUrl(admin, (data as CheckInWithClientProfile[]) ?? []);
-  } catch {
-    return [];
-  }
-}
-
-export async function getDoneBilans(): Promise<CheckInWithClientProfile[]> {
-  try {
-    const { createAdminClient } = await import("@/lib/supabase-admin");
-    const admin = createAdminClient();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    const { data } = await admin
-      .from("check_ins")
-      .select("*, profiles:client_id(full_name, email)")
-      .not("bilan_sent_at", "is", null)
-      .gte("bilan_sent_at", thirtyDaysAgo.toISOString())
-      .order("bilan_sent_at", { ascending: false });
-    return await withCoachVideoUrl(admin, (data as CheckInWithClientProfile[]) ?? []);
-  } catch {
-    return [];
-  }
-}
+// Le retour au check-in hebdo se fait désormais uniquement depuis l'onglet
+// Check-ins de chaque client (coach_notes/coach_rating/coach_video_path via
+// replyToCheckin/attachCoachVideo) — plus de page Bilan séparée, donc plus
+// besoin de compter sur bilan_sent_at, qui ne bougera plus jamais.
 
 export async function getPendingBilansCount(): Promise<number> {
   try {
@@ -254,7 +207,7 @@ export async function getPendingBilansCount(): Promise<number> {
     const { count } = await admin
       .from("check_ins")
       .select("id", { count: "exact", head: true })
-      .is("bilan_sent_at", null);
+      .is("coach_replied_at", null);
     return count ?? 0;
   } catch {
     return 0;

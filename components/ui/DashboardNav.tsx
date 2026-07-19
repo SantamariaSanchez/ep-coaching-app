@@ -201,7 +201,7 @@ const COACH_TABS: TabItem[] = [
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients", "bilan", "notes"],
+    matchSegments: ["clients"],
     badge: "pending",
   },
   {
@@ -241,7 +241,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Clients",  icon: Users,         segment: "clients",   badge: "pending" },
       { label: "Messages", icon: MessageCircle, segment: "messages",  badge: "messages" },
-      { label: "Bilan",    icon: ClipboardCheck, segment: "bilan",     badge: "pending" },
     ],
   },
   {
@@ -493,7 +492,7 @@ export default function DashboardNav({
 
   useEffect(() => {
     const prefetch = isCoach
-      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/bilan", "/dashboard/coach/messages"]
+      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/messages"]
       : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/progress", "/dashboard/client/messages"];
     prefetch.forEach((p) => router.prefetch(p));
   }, [isCoach, router]);

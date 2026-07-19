@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
 import { getActiveProgram } from "@/utils/programs";
+import { getClientCorrections } from "@/utils/corrections";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getAllClientSessions, getClientPersonalRecords, getSessionsThisWeekCount } from "@/utils/sessions";
 import { getClientTasks } from "@/utils/tasks";
@@ -31,6 +32,7 @@ import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { saveClientIntake, addPeriodLog, deletePeriodLog } from "./intake/actions";
 import { autoGenerateClientPlan } from "./autogenerate/actions";
+import { sendCorrectionFeedback } from "./checkins/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
 
@@ -90,6 +92,7 @@ export default async function ClientDetailPage({
     intake,
     periodLogs,
     scheduleBlocks,
+    corrections,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -111,6 +114,7 @@ export default async function ClientDetailPage({
     getClientIntake(id),
     getPeriodLogs(id),
     getScheduleBlocks(id),
+    getClientCorrections(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -188,6 +192,8 @@ export default async function ClientDetailPage({
         deletePeriodLog={deletePeriodLog}
         scheduleBlocks={scheduleBlocks}
         autoGenerateClientPlan={autoGenerateClientPlan}
+        corrections={corrections}
+        sendCorrectionFeedback={sendCorrectionFeedback}
       />
     </div>
   );

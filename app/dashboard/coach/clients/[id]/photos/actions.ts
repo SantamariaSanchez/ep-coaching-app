@@ -72,7 +72,6 @@ export async function sendPhotoFeedback(
   }
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/photos`);
-  revalidatePath("/dashboard/coach/bilan");
   revalidatePath("/dashboard/client/photos");
   return { success: true };
 }

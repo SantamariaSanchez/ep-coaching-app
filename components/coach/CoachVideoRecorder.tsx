@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Video, Monitor, Circle, Square, Send, RotateCcw, X, Loader2 } from "lucide-react";
+import { Video, Monitor, Upload, Circle, Square, Send, RotateCcw, X, Loader2 } from "lucide-react";
 
 type Source = "webcam" | "screen";
 type Phase = "pick" | "preview" | "recording" | "review";
@@ -31,6 +31,7 @@ export default function CoachVideoRecorder({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   function cleanupStream() {
     streamRef.current?.getTracks().forEach((t) => t.stop());
@@ -121,6 +122,13 @@ export default function CoachVideoRecorder({
     if (intervalRef.current) clearInterval(intervalRef.current);
   }
 
+  function handleFilePicked(file: File) {
+    setError(null);
+    setRecordedBlob(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setPhase("review");
+  }
+
   async function handleSend() {
     if (!recordedBlob) return;
     setSending(true);
@@ -158,7 +166,7 @@ export default function CoachVideoRecorder({
         </div>
 
         {phase === "pick" && (
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             <button
               onClick={() => pickSource("webcam")}
               className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
@@ -173,6 +181,24 @@ export default function CoachVideoRecorder({
               <Monitor size={22} />
               <span className="text-xs font-bold uppercase tracking-wider">Partage d&apos;écran</span>
             </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
+            >
+              <Upload size={22} />
+              <span className="text-xs font-bold uppercase tracking-wider">Importer</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFilePicked(file);
+                e.target.value = "";
+              }}
+            />
           </div>
         )}
 

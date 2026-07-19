@@ -23,7 +23,7 @@ export async function notifyCoachNewCheckin(clientName: string) {
     type: "coach_checkin",
     title: "Nouveau check-in",
     body: `${clientName} vient d'envoyer son check-in hebdomadaire.`,
-    url: "/dashboard/coach/bilan",
+    url: "/dashboard/coach/clients",
   });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
@@ -32,7 +32,7 @@ export async function notifyCoachNewCheckin(clientName: string) {
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouveau check-in reçu</h2>
         <p>${clientName} vient d'envoyer son check-in hebdomadaire.</p>
-        <a href="${APP_URL}/dashboard/coach/bilan"
+        <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
           Voir le bilan
@@ -47,7 +47,7 @@ export async function notifyCoachNewCheckinWithMeasurements(clientName: string) 
     type: "coach_checkin",
     title: "📏 Check-in mensuel reçu",
     body: `${clientName} a envoyé son check-in mensuel avec ses mensurations.`,
-    url: "/dashboard/coach/bilan",
+    url: "/dashboard/coach/clients",
   });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
@@ -56,7 +56,7 @@ export async function notifyCoachNewCheckinWithMeasurements(clientName: string) 
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">📏 Check-in mensuel reçu</h2>
         <p>${clientName} vient d'envoyer son check-in mensuel avec ses nouvelles mensurations.</p>
-        <a href="${APP_URL}/dashboard/coach/bilan"
+        <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
           Voir le bilan
@@ -74,7 +74,7 @@ export async function notifyCoachNewCorrection(
     type: "coach_correction",
     title: "Correction demandée",
     body: `${clientName} demande une correction sur ${exerciseName}.`,
-    url: "/dashboard/coach/bilan",
+    url: "/dashboard/coach/clients",
   });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
@@ -84,7 +84,7 @@ export async function notifyCoachNewCorrection(
         <h2 style="color:#E01E1E;margin-top:0;">Nouvelle correction demandée</h2>
         <p>${clientName} demande une correction sur&nbsp;:
            <strong style="color:white;">${exerciseName}</strong></p>
-        <a href="${APP_URL}/dashboard/coach/bilan"
+        <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
           Voir la correction
@@ -103,7 +103,7 @@ export async function notifyCoachNewPhotoUpdate(
     type: "coach_photo",
     title: "Nouvelle photo update",
     body: `${clientName} : ${type} (${category})`,
-    url: "/dashboard/coach/bilan",
+    url: "/dashboard/coach/clients",
   });
   await sendBrevoEmail({
     to: "peccoux.manu@gmail.com",
@@ -114,7 +114,7 @@ export async function notifyCoachNewPhotoUpdate(
         <p>${clientName} vient d'envoyer une mise à jour photos.</p>
         <p><strong>Type :</strong> ${type}</p>
         <p><strong>Catégorie :</strong> ${category}</p>
-        <a href="${APP_URL}/dashboard/coach/bilan"
+        <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
           Voir les photos

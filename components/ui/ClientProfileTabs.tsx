@@ -41,6 +41,8 @@ import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
+import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
+import type { ExerciseCorrection } from "@/utils/corrections";
 import { generateClientSuggestions } from "@/lib/client-suggestions";
 import type { AutoGenerateResult } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
@@ -140,6 +142,8 @@ export default function ClientProfileTabs({
   deletePeriodLog,
   scheduleBlocks,
   autoGenerateClientPlan,
+  corrections,
+  sendCorrectionFeedback,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -182,6 +186,13 @@ export default function ClientProfileTabs({
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
   scheduleBlocks: ScheduleBlock[];
   autoGenerateClientPlan: (clientId: string) => Promise<AutoGenerateResult>;
+  corrections: ExerciseCorrection[];
+  sendCorrectionFeedback: (
+    correctionId: string,
+    clientId: string,
+    _prev: { error?: string; success?: boolean } | null,
+    formData: FormData
+  ) => Promise<{ error?: string; success?: boolean } | null>;
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -493,6 +504,12 @@ export default function ClientProfileTabs({
               ))}
             </div>
           )}
+
+          <ClientCorrectionsReplySection
+            corrections={corrections}
+            clientId={client.id}
+            sendCorrectionFeedback={sendCorrectionFeedback}
+          />
         </div>
       )}
 
