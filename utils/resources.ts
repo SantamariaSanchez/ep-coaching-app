@@ -1,20 +1,33 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 
+export const RESOURCE_CATEGORIES = [
+  "Entraînement",
+  "Nutrition",
+  "Mental",
+  "Récupération",
+  "Général",
+] as const;
+
+export type ResourceCategory = (typeof RESOURCE_CATEGORIES)[number];
+
 export interface ResourceItem {
   id: string;
   title: string;
   description: string | null;
   file_url: string;
+  category: string | null;
   created_at: string;
 }
+
+const SELECT_FIELDS = "id, title, description, file_url, category, created_at";
 
 export async function getResources(): Promise<ResourceItem[]> {
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase
       .from("resources")
-      .select("id, title, description, file_url, created_at")
+      .select(SELECT_FIELDS)
       .order("created_at", { ascending: false });
     return (data as ResourceItem[]) ?? [];
   } catch {
@@ -29,7 +42,7 @@ export async function getResourcesPublic(): Promise<ResourceItem[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("resources")
-      .select("id, title, description, file_url, created_at")
+      .select(SELECT_FIELDS)
       .order("created_at", { ascending: false });
     return (data as ResourceItem[]) ?? [];
   } catch {

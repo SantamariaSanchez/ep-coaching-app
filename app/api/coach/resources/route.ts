@@ -30,6 +30,7 @@ export async function POST(request: Request) {
   const formData = await request.formData();
   const title = (formData.get("title") as string | null)?.trim();
   const description = (formData.get("description") as string | null)?.trim() || null;
+  const category = (formData.get("category") as string | null)?.trim() || null;
   const file = formData.get("file");
 
   if (!title) {
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
   const { error } = await admin.from("resources").insert({
     title,
     description,
+    category,
     file_url: pub.publicUrl,
     file_path: path,
     created_by: guard.userId,

@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, Trash2, Download } from "lucide-react";
-import type { ResourceItem } from "@/utils/resources";
+import { RESOURCE_CATEGORIES, type ResourceItem } from "@/utils/resources";
 import { getResourceHref } from "@/lib/resource-href";
 
 export default function ResourceManager({ resources }: { resources: ResourceItem[] }) {
@@ -11,10 +11,12 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
   const fileRef = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
 
   async function handleUpload() {
     if (!title.trim() || !file || uploading) return;
@@ -24,6 +26,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
       const formData = new FormData();
       formData.append("title", title.trim());
       formData.append("description", description.trim());
+      formData.append("category", category);
       formData.append("file", file);
 
       const res = await fetch("/api/coach/resources", { method: "POST", body: formData });
@@ -33,6 +36,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
       } else {
         setTitle("");
         setDescription("");
+        setCategory("");
         setFile(null);
         router.refresh();
       }
@@ -48,6 +52,20 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
       router.refresh();
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleCategoryChange(id: string, newCategory: string) {
+    setUpdatingId(id);
+    try {
+      await fetch(`/api/coach/resources/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: newCategory }),
+      });
+      router.refresh();
+    } finally {
+      setUpdatingId(null);
     }
   }
 
@@ -67,6 +85,16 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
           placeholder="Description (optionnel)"
           className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/40"
+        >
+          <option value="">Catégorie — Autres</option>
+          {RESOURCE_CATEGORIES.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
         <div className="flex items-center justify-between pt-1">
           <input
             ref={fileRef}
@@ -120,6 +148,17 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
                   <p className="text-[10px] text-[#F5EDED]/35 truncate">{r.description}</p>
                 )}
               </div>
+              <select
+                value={r.category ?? ""}
+                onChange={(e) => handleCategoryChange(r.id, e.target.value)}
+                disabled={updatingId === r.id}
+                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-[10px] text-[#F5EDED]/60 focus:outline-none focus:border-[#E01E1E]/40 disabled:opacity-40 flex-shrink-0"
+              >
+                <option value="">Autres</option>
+                {RESOURCE_CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
               <a
                 href={getResourceHref(r)}
                 target="_blank"

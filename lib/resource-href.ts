@@ -18,3 +18,22 @@ export function getResourceHref(resource: { id: string; file_url: string }): str
   }
   return resource.file_url;
 }
+
+export type ResourceKind = "pdf" | "video" | "audio" | "image" | "archive" | "doc";
+
+const KIND_EXTENSIONS: Record<ResourceKind, string[]> = {
+  pdf: [".pdf"],
+  video: [".mp4", ".webm", ".mov"],
+  audio: [".mp3", ".wav"],
+  image: [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"],
+  archive: [".zip"],
+  doc: [".html", ".htm"],
+};
+
+export function getResourceKind(fileUrl: string): ResourceKind {
+  const lower = fileUrl.toLowerCase();
+  for (const [kind, exts] of Object.entries(KIND_EXTENSIONS) as [ResourceKind, string[]][]) {
+    if (exts.some((ext) => lower.includes(ext))) return kind;
+  }
+  return "doc";
+}
