@@ -2,6 +2,7 @@
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getAllClientSessions, getClientPersonalRecords, getActiveSession } from "@/utils/sessions";
+import { getClientCheckins } from "@/utils/checkins";
 import LogbookClient from "@/components/client/LogbookClient";
 
 export const dynamic = "force-dynamic";
@@ -13,11 +14,12 @@ export default async function LogbookPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  const [program, sessions, records, activeSession] = await Promise.all([
+  const [program, sessions, records, activeSession, checkins] = await Promise.all([
     getActiveProgram(user.id),
     getAllClientSessions(user.id, 10),
     getClientPersonalRecords(user.id),
     getActiveSession(user.id),
+    getClientCheckins(user.id),
   ]);
 
   return (
@@ -27,6 +29,7 @@ export default async function LogbookPage() {
       records={records}
       isFree={!isSubscribed(profile)}
       activeSession={activeSession}
+      checkins={checkins}
     />
   );
 }

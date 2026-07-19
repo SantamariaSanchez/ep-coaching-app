@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions";
+import type { CheckIn } from "@/utils/checkins";
 import { Play } from "lucide-react";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
+import ClientProgressCharts from "@/components/ui/ClientProgressCharts";
 
 interface Props {
   program: ProgramWithDays | null;
@@ -26,6 +28,8 @@ interface Props {
   isFree?: boolean;
   subNavScope?: "client" | "coach-moi";
   activeSession?: Session | null;
+  /** Poids/adherence issus des check-ins — fusionne l'ancienne page Progression ici */
+  checkins?: CheckIn[];
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -326,7 +330,7 @@ function ImportLogbookButton() {
     </div>
   );
 }
-export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client", activeSession }: Props) {
+export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client", activeSession, checkins = [] }: Props) {
   const router = useRouter();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -500,11 +504,18 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
         </section>
       )}
 
-      {/* ── Mes performances ── */}
-      <section>
-        <SectionLabel>Mes performances</SectionLabel>
+      {/* ── Ma progression ── */}
+      <section className="mb-8">
+        <SectionLabel>Ma progression — par exercice</SectionLabel>
         <ExerciseProgressionChart sessions={sessions} records={records} />
       </section>
+
+      {checkins.length > 0 && (
+        <section>
+          <SectionLabel>Ma progression — poids &amp; nutrition</SectionLabel>
+          <ClientProgressCharts checkins={checkins} />
+        </section>
+      )}
     </div>
   );
 }

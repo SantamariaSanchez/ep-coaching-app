@@ -60,7 +60,7 @@ const CLIENT_TABS: TabItem[] = [
   {
     label: "Suivi",
     icon: TrendingUp,
-    href: "/dashboard/client/progress",
+    href: "/dashboard/client/bilan",
     matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda"],
   },
   {
@@ -325,7 +325,6 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     group: "Suivi",
     items: [
       { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
-      { label: "Progression",    icon: TrendingUp,      segment: "progress" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },
@@ -493,7 +492,7 @@ export default function DashboardNav({
   useEffect(() => {
     const prefetch = isCoach
       ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/messages"]
-      : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/progress", "/dashboard/client/messages"];
+      : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/bilan", "/dashboard/client/messages"];
     prefetch.forEach((p) => router.prefetch(p));
   }, [isCoach, router]);
 
