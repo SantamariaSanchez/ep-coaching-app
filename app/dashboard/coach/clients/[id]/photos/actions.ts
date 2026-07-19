@@ -33,6 +33,7 @@ export async function saveCompetitionSettings(
   revalidatePath(`/dashboard/coach/clients/${clientId}/photos`);
   revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
   revalidatePath("/dashboard/client/nutrition");
+  revalidatePath("/dashboard/coach/moi/photos");
   return { success: true };
 }
 

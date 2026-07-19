@@ -1,4 +1,4 @@
-import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import type { Allergen } from "@/lib/recipes-data";
 
 export interface ClientIntake {
@@ -55,16 +55,25 @@ export interface ClientIntake {
 
 export type ClientIntakeInput = Omit<ClientIntake, "id" | "client_id" | "updated_at">;
 
+// Client admin (bypass RLS) — le client lié aux cookies (RLS) renvoyait
+// systématiquement une ligne vide en lecture, faisant croire que la fiche
+// client ne s'enregistrait jamais alors que l'écriture (déjà en admin,
+// voir intake/actions.ts) fonctionnait bien.
 export async function getClientIntake(clientId: string): Promise<ClientIntake | null> {
   try {
-    const supabase = await createServerSupabase();
-    const { data } = await supabase
+    const supabase = createAdminClient();
+    const { data, error } = await supabase
       .from("client_intake")
       .select("*")
       .eq("client_id", clientId)
       .maybeSingle();
+    if (error) {
+      console.error("getClientIntake:", error.message);
+      return null;
+    }
     return (data as ClientIntake) ?? null;
-  } catch {
+  } catch (e) {
+    console.error("getClientIntake:", e);
     return null;
   }
 }

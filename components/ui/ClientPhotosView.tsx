@@ -101,9 +101,10 @@ function SelfCategoryPicker({
         disabled={isPending}
         className="bg-amber-500/15 hover:bg-amber-500/25 disabled:opacity-50 border border-amber-500/40 text-amber-400 text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
       >
-        {isPending ? "…" : "Valider"}
+        {isPending ? "…" : state?.success ? "✓ Validé" : "Valider"}
       </button>
       {state?.error && <p className="text-[10px] text-red-400">{state.error}</p>}
+      {state?.success && <p className="text-[10px] text-green-400">Catégorie enregistrée.</p>}
     </form>
   );
 }
