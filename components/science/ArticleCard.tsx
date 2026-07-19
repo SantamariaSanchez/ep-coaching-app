@@ -45,11 +45,17 @@ export default function ArticleCard({
             </span>
           )}
         </div>
-        <p className="text-sm font-bold text-white leading-snug">{article.title}</p>
+        <p className="text-sm font-bold text-white leading-snug">{article.title_fr || article.title}</p>
+        {article.title_fr && (
+          <p className="text-[10px] text-[#F5EDED]/25 italic mt-0.5 truncate">{article.title}</p>
+        )}
         <p className="text-[10px] text-[#F5EDED]/35 mt-1">
           {article.journal}
           {article.pub_date ? ` · ${formatDate(article.pub_date)}` : ""}
         </p>
+        {article.summary_fr && (
+          <p className="text-xs text-[#F5EDED]/55 leading-relaxed mt-2 line-clamp-2">{article.summary_fr}</p>
+        )}
       </button>
 
       {expanded && (

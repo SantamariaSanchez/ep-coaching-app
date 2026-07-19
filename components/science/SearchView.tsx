@@ -9,6 +9,20 @@ import type { ImportArticleInput } from "@/app/dashboard/client/science/actions"
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
+// Suggestions cliquables — PubMed n'indexe qu'en anglais, la plupart des
+// clients ne savent pas quel terme medical taper. Mappe des sujets courants
+// en francais vers une requete anglaise qui marche bien.
+const QUICK_TOPICS: { label: string; query: string }[] = [
+  { label: "Créatine", query: "creatine supplementation muscle strength" },
+  { label: "Protéines & prise de muscle", query: "protein intake muscle hypertrophy" },
+  { label: "Perte de gras", query: "fat loss caloric deficit resistance training" },
+  { label: "Sommeil & récupération", query: "sleep recovery athletic performance" },
+  { label: "Jeûne intermittent", query: "intermittent fasting body composition" },
+  { label: "Cardio & santé", query: "cardiovascular exercise health outcomes" },
+  { label: "Stress & cortisol", query: "cortisol stress exercise" },
+  { label: "Cycle féminin & entraînement", query: "menstrual cycle resistance training performance" },
+];
+
 function formatDate(d: string | null): string {
   if (!d) return "";
   try {
@@ -25,9 +39,12 @@ function ImportForm({ result, onImport, onCancel }: {
 }) {
   const [topic, setTopic] = useState<string>(SCIENCE_TOPICS[0]);
   const [articleType, setArticleType] = useState<ScienceArticleType>("autre");
+  const [titleFr, setTitleFr] = useState("");
   const [summaryFr, setSummaryFr] = useState("");
   const [asActualite, setAsActualite] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  const canImport = titleFr.trim().length > 0 && summaryFr.trim().length > 0;
 
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 mt-2 space-y-2">
@@ -43,11 +60,17 @@ function ImportForm({ result, onImport, onCancel }: {
           ))}
         </select>
       </div>
+      <input
+        value={titleFr}
+        onChange={(e) => setTitleFr(e.target.value)}
+        placeholder="Titre en français (obligatoire — c'est ce que le client verra en premier)"
+        className={inputCls}
+      />
       <textarea
         value={summaryFr}
         onChange={(e) => setSummaryFr(e.target.value)}
         rows={2}
-        placeholder="Résumé en langage simple (optionnel)…"
+        placeholder="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…"
         className={`${inputCls} resize-none`}
       />
       <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
@@ -62,6 +85,7 @@ function ImportForm({ result, onImport, onCancel }: {
               pmid: result.pmid,
               doi: result.doi,
               title: result.title,
+              titleFr,
               authors: result.authors,
               journal: result.journal,
               pubDate: result.pubDate,
@@ -74,7 +98,8 @@ function ImportForm({ result, onImport, onCancel }: {
             });
             setSaving(false);
           }}
-          disabled={saving}
+          disabled={saving || !canImport}
+          title={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
           {saving ? "Ajout…" : "Confirmer l'ajout"}
@@ -148,13 +173,14 @@ export default function SearchView({ isCoach, importArticle }: {
   const [error, setError] = useState<string | null>(null);
   const [searched, setSearched] = useState(false);
 
-  async function handleSearch() {
-    if (!query.trim() || loading) return;
+  async function handleSearch(explicitQuery?: string) {
+    const q = explicitQuery ?? query;
+    if (!q.trim() || loading) return;
     setLoading(true);
     setError(null);
     setSearched(true);
     try {
-      const res = await fetch(`/api/science/search?q=${encodeURIComponent(query.trim())}`);
+      const res = await fetch(`/api/science/search?q=${encodeURIComponent(q.trim())}`);
       const json = await res.json();
       if (!res.ok) {
         setError(json.error ?? "Erreur lors de la recherche.");
@@ -183,7 +209,7 @@ export default function SearchView({ isCoach, importArticle }: {
           />
         </div>
         <button
-          onClick={handleSearch}
+          onClick={() => handleSearch()}
           disabled={!query.trim() || loading}
           className="px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors flex-shrink-0"
         >
@@ -193,6 +219,28 @@ export default function SearchView({ isCoach, importArticle }: {
       <p className="text-[10px] text-[#F5EDED]/25">
         Recherche directement sur PubMed (NCBI) en anglais, la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.
       </p>
+
+      {!searched && (
+        <div>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+            Pas d&apos;idée de recherche ? Sujets courants (déjà traduits pour PubMed) :
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {QUICK_TOPICS.map((t) => (
+              <button
+                key={t.label}
+                onClick={() => {
+                  setQuery(t.query);
+                  handleSearch(t.query);
+                }}
+                className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#E01E1E]/50 hover:text-white transition-colors"
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}
 

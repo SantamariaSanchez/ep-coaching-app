@@ -14,6 +14,7 @@ export interface ScienceArticle {
   pmid: string;
   doi: string | null;
   title: string;
+  title_fr: string | null;
   abstract: string | null;
   authors: string | null;
   journal: string | null;

@@ -38,6 +38,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
       if (!q) return true;
       return (
         a.title.toLowerCase().includes(q) ||
+        (a.title_fr ?? "").toLowerCase().includes(q) ||
         (a.authors ?? "").toLowerCase().includes(q) ||
         (a.journal ?? "").toLowerCase().includes(q) ||
         (a.summary_fr ?? "").toLowerCase().includes(q)

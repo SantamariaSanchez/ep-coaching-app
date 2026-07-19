@@ -62,6 +62,7 @@ export interface ImportArticleInput {
   pmid: string;
   doi: string | null;
   title: string;
+  titleFr: string;
   authors: string;
   journal: string;
   pubDate: string | null;
@@ -87,6 +88,7 @@ export async function importArticle(input: ImportArticleInput): Promise<{ error?
         pmid: input.pmid,
         doi: input.doi,
         title: input.title,
+        title_fr: input.titleFr.trim() || null,
         abstract: null,
         authors: input.authors,
         journal: input.journal,
