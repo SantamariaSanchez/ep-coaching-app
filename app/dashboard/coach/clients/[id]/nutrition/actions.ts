@@ -26,6 +26,7 @@ export async function saveNutritionProfile(
       bmr: data.bmr,
       phase: data.phase,
       gender: data.gender,
+      weight: data.weight ?? null,
       height: data.height,
       age: data.age,
       training_type: data.training_type,

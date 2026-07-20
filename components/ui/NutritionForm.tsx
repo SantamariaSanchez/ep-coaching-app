@@ -68,7 +68,10 @@ export default function NutritionForm({
   const [form, setForm] = useState(() => {
     return {
       gender: (existingProfile?.gender ?? "Homme") as "Homme" | "Femme",
-      weight: clientWeight ? String(clientWeight) : "",
+      // La valeur sauvegardée par le coach (override) prime sur le dernier
+      // poids loggé par le client — sinon toute correction manuelle était
+      // écrasée au rechargement suivant.
+      weight: existingProfile?.weight != null ? String(existingProfile.weight) : clientWeight ? String(clientWeight) : "",
       height: existingProfile?.height != null ? String(existingProfile.height) : "",
       age: existingProfile?.age != null ? String(existingProfile.age) : "",
       trainingType: existingProfile?.training_type ?? "Musculation",
@@ -203,6 +206,7 @@ export default function NutritionForm({
       bmr: calc.bmr,
       phase: form.phase,
       gender: form.gender,
+      weight: parseFloat(form.weight) || null,
       height: parseFloat(form.height) || 0,
       age: parseFloat(form.age) || 0,
       training_type: form.trainingType,
@@ -320,6 +324,15 @@ export default function NutritionForm({
               placeholder="80"
               className={inputCls}
             />
+            {clientWeight != null && String(clientWeight) !== form.weight && (
+              <button
+                type="button"
+                onClick={() => set("weight", String(clientWeight))}
+                className="text-[9px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 mt-1"
+              >
+                Dernier pesé : {clientWeight}kg — utiliser
+              </button>
+            )}
           </div>
           <div>
             <label className={labelCls}>Taille (cm)</label>

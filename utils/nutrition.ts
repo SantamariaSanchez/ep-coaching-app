@@ -21,6 +21,7 @@ export interface NutritionProfile {
   bmr: number | null;
   phase: "deficit" | "maintenance" | "surplus" | null;
   gender: "Homme" | "Femme" | null;
+  weight: number | null;
   height: number | null;
   age: number | null;
   training_type: string | null;
@@ -42,6 +43,7 @@ export interface NutritionProfileInput {
   bmr: number;
   phase: string;
   gender: string;
+  weight?: number | null;
   height: number;
   age: number;
   training_type: string;
