@@ -15,6 +15,15 @@ export interface CreateExerciseInput {
   category: ExerciseCategory | null;
   difficulty: ExerciseDifficulty | null;
   instructions: string | null;
+  // Attributs de classification — coach only, jamais montrés au client.
+  position?: string | null;
+  freedom_of_movement?: string | null;
+  is_unilateral?: boolean | null;
+  microloadable?: boolean | null;
+  easy_to_replicate?: string | null;
+  learning_difficulty?: string | null;
+  stability_demand?: string | null;
+  accessibility?: string | null;
 }
 
 // Open to every authenticated member (free or paying client, or coach) —
@@ -40,6 +49,14 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
         category: input.category,
         difficulty: input.difficulty,
         instructions: input.instructions?.trim() || null,
+        position: input.position ?? null,
+        freedom_of_movement: input.freedom_of_movement ?? null,
+        is_unilateral: input.is_unilateral ?? null,
+        microloadable: input.microloadable ?? null,
+        easy_to_replicate: input.easy_to_replicate ?? null,
+        learning_difficulty: input.learning_difficulty ?? null,
+        stability_demand: input.stability_demand ?? null,
+        accessibility: input.accessibility ?? null,
         created_by: guard.userId,
         is_official: false,
       })
@@ -77,6 +94,14 @@ export async function updateExercise(
     if (fields.difficulty !== undefined) updateData.difficulty = fields.difficulty;
     if (fields.instructions !== undefined) updateData.instructions = fields.instructions?.trim() || null;
     if (fields.video_url !== undefined) updateData.video_url = fields.video_url?.trim() || null;
+    if (fields.position !== undefined) updateData.position = fields.position;
+    if (fields.freedom_of_movement !== undefined) updateData.freedom_of_movement = fields.freedom_of_movement;
+    if (fields.is_unilateral !== undefined) updateData.is_unilateral = fields.is_unilateral;
+    if (fields.microloadable !== undefined) updateData.microloadable = fields.microloadable;
+    if (fields.easy_to_replicate !== undefined) updateData.easy_to_replicate = fields.easy_to_replicate;
+    if (fields.learning_difficulty !== undefined) updateData.learning_difficulty = fields.learning_difficulty;
+    if (fields.stability_demand !== undefined) updateData.stability_demand = fields.stability_demand;
+    if (fields.accessibility !== undefined) updateData.accessibility = fields.accessibility;
 
     const { error } = await supabase.from("exercise_library").update(updateData).eq("id", id);
     if (error) return { error: "Erreur lors de la mise à jour." };

@@ -6,6 +6,15 @@ import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import {
+  LIBRARY_MUSCLE_GROUPS,
+  EQUIPMENT_TYPES,
+  EQUIPMENT_TYPE_LABELS,
+  DIFFICULTY_LABELS,
+  CATEGORY_LABELS,
+  getEquipmentType,
+  type EquipmentType,
+} from "@/lib/exercise-library-content";
+import {
   Plus,
   Trash2,
   ChevronLeft,
@@ -14,6 +23,7 @@ import {
   Check,
   Copy,
   Search,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface ExerciseRow {
@@ -106,48 +116,130 @@ function ExerciseNameField({
   onEnter?: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterGroup, setFilterGroup] = useState("");
+  const [filterEquipment, setFilterEquipment] = useState<EquipmentType | "">("");
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+        setShowFilters(false);
+      }
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
+  const hasActiveFilters = !!filterGroup || !!filterEquipment;
   const q = value.trim().toLowerCase();
-  const matches = q.length >= 2 ? library.filter((l) => l.name.toLowerCase().includes(q)).slice(0, 8) : [];
+
+  // Sans filtre actif, il faut taper au moins 2 caractères (comme avant) —
+  // avec un filtre (muscle/matériel), la liste se parcourt même sans texte.
+  const matches =
+    q.length >= 2 || hasActiveFilters
+      ? library
+          .filter((l) => !q || l.name.toLowerCase().includes(q))
+          .filter((l) => !filterGroup || l.muscle_group === filterGroup)
+          .filter((l) => !filterEquipment || getEquipmentType(l.equipment) === filterEquipment)
+          .slice(0, 20)
+      : [];
 
   return (
     <div ref={wrapRef} className="relative flex-1 min-w-0">
-      <input
-        value={value}
-        onChange={(e) => { onChange(e.target.value); setOpen(true); }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") { setOpen(false); onEnter?.(); }
-          if (e.key === "Escape") setOpen(false);
-        }}
-        placeholder="Exercice (recherche...)"
-        className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
-      />
+      <div className="flex items-center gap-1">
+        <input
+          value={value}
+          onChange={(e) => { onChange(e.target.value); setOpen(true); }}
+          onFocus={() => setOpen(true)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { setOpen(false); onEnter?.(); }
+            if (e.key === "Escape") setOpen(false);
+          }}
+          placeholder="Exercice (recherche...)"
+          className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
+        />
+        <button
+          type="button"
+          onClick={() => { setOpen(true); setShowFilters((v) => !v); }}
+          title="Filtrer par muscle / matériel"
+          className={`flex-shrink-0 p-1 rounded transition-colors ${
+            hasActiveFilters ? "text-[#E01E1E]" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
+          }`}
+        >
+          <SlidersHorizontal size={13} />
+        </button>
+      </div>
+
+      {open && (showFilters || hasActiveFilters) && (
+        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl p-2 flex gap-1.5">
+          <select
+            value={filterGroup}
+            onChange={(e) => setFilterGroup(e.target.value)}
+            className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
+          >
+            <option value="">Tout muscle</option>
+            {LIBRARY_MUSCLE_GROUPS.map((g) => (
+              <option key={g} value={g}>{g}</option>
+            ))}
+          </select>
+          <select
+            value={filterEquipment}
+            onChange={(e) => setFilterEquipment(e.target.value as EquipmentType | "")}
+            className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
+          >
+            <option value="">Tout matériel</option>
+            {EQUIPMENT_TYPES.map((t) => (
+              <option key={t} value={t}>{EQUIPMENT_TYPE_LABELS[t]}</option>
+            ))}
+          </select>
+        </div>
+      )}
+
       {open && matches.length > 0 && (
-        <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl max-h-48 overflow-y-auto">
+        <div
+          className={`absolute z-20 left-0 right-0 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl max-h-64 overflow-y-auto ${
+            showFilters || hasActiveFilters ? "top-[calc(100%+38px)]" : "top-full mt-1"
+          }`}
+        >
           {matches.map((lib) => (
             <button
               key={lib.id}
               type="button"
-              onClick={() => { onPick(lib); setOpen(false); }}
-              className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors flex items-center justify-between gap-2"
+              onClick={() => { onPick(lib); setOpen(false); setShowFilters(false); }}
+              className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors border-b border-[#890404]/10 last:border-0"
             >
-              <span className="truncate">{lib.name}</span>
-              <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate font-semibold">{lib.name}</span>
+                <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+              </div>
+              <div className="flex items-center gap-1 mt-1 flex-wrap">
+                {lib.category && (
+                  <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                    {CATEGORY_LABELS[lib.category]}
+                  </span>
+                )}
+                {lib.difficulty && (
+                  <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+                    lib.difficulty === "avance"
+                      ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
+                      : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
+                  }`}>
+                    {DIFFICULTY_LABELS[lib.difficulty]}
+                  </span>
+                )}
+                {lib.equipment && (
+                  <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                    {lib.equipment}
+                  </span>
+                )}
+              </div>
             </button>
           ))}
         </div>
       )}
-      {open && q.length >= 2 && matches.length === 0 && (
+      {open && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
           <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
           <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat — nom libre conservé</span>

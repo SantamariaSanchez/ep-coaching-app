@@ -17,6 +17,16 @@ export interface LibraryExercise {
   created_by: string | null;
   is_official: boolean;
   created_at: string;
+  // Attributs de classification — visibles/filtrables uniquement côté coach
+  // dans le constructeur de programme, jamais affichés au client en séance.
+  position: string | null;
+  freedom_of_movement: string | null;
+  is_unilateral: boolean | null;
+  microloadable: boolean | null;
+  easy_to_replicate: string | null;
+  learning_difficulty: string | null;
+  stability_demand: string | null;
+  accessibility: string | null;
 }
 
 export async function getExerciseLibrary(): Promise<LibraryExercise[]> {

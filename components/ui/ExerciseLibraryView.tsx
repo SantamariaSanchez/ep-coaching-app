@@ -20,7 +20,13 @@ import {
   MACHINE_BRANDS,
   CATEGORY_LABELS,
   DIFFICULTY_LABELS,
+  EQUIPMENT_TYPES,
+  EQUIPMENT_TYPE_LABELS,
+  QUALITATIVE_SCALE,
+  POSITION_OPTIONS,
+  getEquipmentType,
   getSubgroupsFor,
+  type EquipmentType,
 } from "@/lib/exercise-library-content";
 import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -108,6 +114,21 @@ function ExerciseForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Attributs de classification — coach only (construction de programme),
+  // jamais montrés/demandés côté client.
+  const [position, setPosition] = useState(initial?.position ?? "");
+  const [freedomOfMovement, setFreedomOfMovement] = useState(initial?.freedom_of_movement ?? "");
+  const [isUnilateral, setIsUnilateral] = useState<"" | "uni" | "bi">(
+    initial?.is_unilateral == null ? "" : initial.is_unilateral ? "uni" : "bi"
+  );
+  const [microloadable, setMicroloadable] = useState<"" | "oui" | "non">(
+    initial?.microloadable == null ? "" : initial.microloadable ? "oui" : "non"
+  );
+  const [easyToReplicate, setEasyToReplicate] = useState(initial?.easy_to_replicate ?? "");
+  const [learningDifficulty, setLearningDifficulty] = useState(initial?.learning_difficulty ?? "");
+  const [stabilityDemand, setStabilityDemand] = useState(initial?.stability_demand ?? "");
+  const [accessibility, setAccessibility] = useState(initial?.accessibility ?? "");
+
   async function handleVideoUpload(file: File) {
     setUploadingVideo(true);
     setError(null);
@@ -132,7 +153,19 @@ function ExerciseForm({
       category: category || null,
       difficulty: difficulty || null,
       instructions: instructions.trim() || null,
-      ...(showVideoField ? { video_url: videoUrl.trim() || undefined } : {}),
+      ...(showVideoField
+        ? {
+            video_url: videoUrl.trim() || undefined,
+            position: position || null,
+            freedom_of_movement: freedomOfMovement || null,
+            is_unilateral: isUnilateral === "" ? null : isUnilateral === "uni",
+            microloadable: microloadable === "" ? null : microloadable === "oui",
+            easy_to_replicate: easyToReplicate || null,
+            learning_difficulty: learningDifficulty || null,
+            stability_demand: stabilityDemand || null,
+            accessibility: accessibility || null,
+          }
+        : {}),
     });
     setSaving(false);
   }
@@ -217,6 +250,86 @@ function ExerciseForm({
           className={`${inputCls} resize-none`}
         />
       </div>
+
+      {showVideoField && (
+        <div className="border-t border-[#890404]/15 pt-3">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+            Précisions pour la construction de programme (pas montré au client)
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div>
+              <label className={labelCls}>Position</label>
+              <select value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {POSITION_OPTIONS.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Liberté mvt</label>
+              <select value={freedomOfMovement} onChange={(e) => setFreedomOfMovement(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Uni / Bi</label>
+              <select value={isUnilateral} onChange={(e) => setIsUnilateral(e.target.value as typeof isUnilateral)} className={inputCls}>
+                <option value="">-</option>
+                <option value="uni">Uni</option>
+                <option value="bi">Bi</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Microchargeable</label>
+              <select value={microloadable} onChange={(e) => setMicroloadable(e.target.value as typeof microloadable)} className={inputCls}>
+                <option value="">-</option>
+                <option value="oui">Oui</option>
+                <option value="non">Non</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Facile à répliquer</label>
+              <select value={easyToReplicate} onChange={(e) => setEasyToReplicate(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Difficulté d&apos;apprentissage</label>
+              <select value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Stabilité</label>
+              <select value={stabilityDemand} onChange={(e) => setStabilityDemand(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Accessibilité</label>
+              <select value={accessibility} onChange={(e) => setAccessibility(e.target.value)} className={inputCls}>
+                <option value="">-</option>
+                {QUALITATIVE_SCALE.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showVideoField && (
         <div>
@@ -358,6 +471,23 @@ function ExerciseCard({
             <p className="text-sm text-[#F5EDED]/60 leading-relaxed">{exercise.instructions}</p>
           )}
 
+          {isCoach && (
+            (exercise.position || exercise.freedom_of_movement || exercise.is_unilateral != null ||
+              exercise.microloadable != null || exercise.easy_to_replicate || exercise.learning_difficulty ||
+              exercise.stability_demand || exercise.accessibility) && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-3 gap-y-1 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
+                {exercise.position && <p className="text-[10px] text-[#F5EDED]/40">Position <strong className="text-[#F5EDED]/70">{exercise.position}</strong></p>}
+                {exercise.freedom_of_movement && <p className="text-[10px] text-[#F5EDED]/40">Liberté mvt <strong className="text-[#F5EDED]/70">{exercise.freedom_of_movement}</strong></p>}
+                {exercise.is_unilateral != null && <p className="text-[10px] text-[#F5EDED]/40">Uni/Bi <strong className="text-[#F5EDED]/70">{exercise.is_unilateral ? "Uni" : "Bi"}</strong></p>}
+                {exercise.microloadable != null && <p className="text-[10px] text-[#F5EDED]/40">Microcharg. <strong className="text-[#F5EDED]/70">{exercise.microloadable ? "Oui" : "Non"}</strong></p>}
+                {exercise.easy_to_replicate && <p className="text-[10px] text-[#F5EDED]/40">Réplicable <strong className="text-[#F5EDED]/70">{exercise.easy_to_replicate}</strong></p>}
+                {exercise.learning_difficulty && <p className="text-[10px] text-[#F5EDED]/40">Apprentissage <strong className="text-[#F5EDED]/70">{exercise.learning_difficulty}</strong></p>}
+                {exercise.stability_demand && <p className="text-[10px] text-[#F5EDED]/40">Stabilité <strong className="text-[#F5EDED]/70">{exercise.stability_demand}</strong></p>}
+                {exercise.accessibility && <p className="text-[10px] text-[#F5EDED]/40">Accessibilité <strong className="text-[#F5EDED]/70">{exercise.accessibility}</strong></p>}
+              </div>
+            )
+          )}
+
           {exercise.video_url ? (
             hasLockedVideo ? (
               <div className="flex items-center gap-2.5 bg-amber-500/5 border border-amber-500/20 rounded-lg px-3 py-2.5 mt-2">
@@ -429,6 +559,7 @@ export default function ExerciseLibraryView({
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
+  const [activeEquipmentType, setActiveEquipmentType] = useState<EquipmentType | null>(null);
   const [showCreate, setShowCreate] = useState(false);
 
   const groupCounts = useMemo(() => {
@@ -443,11 +574,21 @@ export default function ExerciseLibraryView({
     return map;
   }, [exercises]);
 
+  const equipmentTypeCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const e of exercises) {
+      const t = getEquipmentType(e.equipment);
+      map[t] = (map[t] ?? 0) + 1;
+    }
+    return map;
+  }, [exercises]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return exercises.filter((e) => {
       if (activeGroup && e.muscle_group !== activeGroup) return false;
       if (activeBrand && e.brand !== activeBrand) return false;
+      if (activeEquipmentType && getEquipmentType(e.equipment) !== activeEquipmentType) return false;
       if (!q) return true;
       return (
         e.name.toLowerCase().includes(q) ||
@@ -456,7 +597,7 @@ export default function ExerciseLibraryView({
         (e.brand ?? "").toLowerCase().includes(q)
       );
     });
-  }, [exercises, search, activeGroup, activeBrand]);
+  }, [exercises, search, activeGroup, activeBrand, activeEquipmentType]);
 
   const byGroup = useMemo(() => {
     const map: Record<string, LibraryExercise[]> = {};
@@ -526,6 +667,31 @@ export default function ExerciseLibraryView({
             }`}
           >
             {g} ({groupCounts[g]})
+          </button>
+        ))}
+      </div>
+
+      <div className="flex gap-1.5 overflow-x-auto pb-1">
+        <span className="flex-shrink-0 self-center text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mr-1">
+          Matériel :
+        </span>
+        <button
+          onClick={() => setActiveEquipmentType(null)}
+          className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+            activeEquipmentType === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+          }`}
+        >
+          Tout
+        </button>
+        {EQUIPMENT_TYPES.filter((t) => equipmentTypeCounts[t]).map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveEquipmentType(t)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+              activeEquipmentType === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            }`}
+          >
+            {EQUIPMENT_TYPE_LABELS[t]} ({equipmentTypeCounts[t]})
           </button>
         ))}
       </div>
