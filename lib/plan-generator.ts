@@ -1,6 +1,5 @@
 import type { ClientIntake } from "@/utils/client-intake";
 import type { LibraryExercise } from "@/utils/exercise-library";
-import type { DayInput, ExerciseInput } from "@/utils/programs";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 
 // ── Phase inference ──────────────────────────────────────────────────────────
@@ -131,57 +130,86 @@ function isExcluded(ex: LibraryExercise, excludeText: string): boolean {
   return keywords.some((k) => haystack.includes(k));
 }
 
-function pickForGroup(
+// Débutant < intermédiaire < avancé — un exercice "avancé" (drag curl, sissy
+// squat, JM press...) ne devrait jamais être le premier choix suggéré sans
+// savoir si le client a le niveau technique requis. Le générateur n'a pas
+// accès au niveau réel du client (pas de champ dans la fiche), donc on
+// privilégie par défaut les mouvements les plus simples/robustes plutôt que
+// de tirer au hasard (ancien tri : alphabétique).
+const DIFFICULTY_RANK: Record<string, number> = { debutant: 0, intermediaire: 1, avance: 2 };
+
+function difficultyRank(ex: LibraryExercise): number {
+  return DIFFICULTY_RANK[ex.difficulty ?? "intermediaire"] ?? 1;
+}
+
+export interface ExerciseSuggestion {
+  name: string;
+  category: "compose" | "isolation" | null;
+  difficulty: string | null;
+  equipment: string | null;
+  muscleSubgroup: string | null;
+  reason: string;
+}
+
+function toSuggestion(ex: LibraryExercise): ExerciseSuggestion {
+  const diffLabel =
+    ex.difficulty === "debutant" ? "débutant" : ex.difficulty === "avance" ? "avancé — vérifie la maîtrise technique" : "intermédiaire";
+  return {
+    name: ex.name,
+    category: ex.category,
+    difficulty: ex.difficulty,
+    equipment: ex.equipment,
+    muscleSubgroup: ex.muscle_subgroup,
+    reason: `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` — cible ${ex.muscle_subgroup}` : ""}.`,
+  };
+}
+
+export interface MuscleGroupSuggestion {
+  group: string;
+  compound: ExerciseSuggestion[];
+  isolation: ExerciseSuggestion[];
+}
+
+// Renvoie plusieurs candidats par catégorie (pas un choix figé) — le but est
+// de suggérer des options que le coach compare et choisit lui-même, jamais
+// de décider à sa place.
+function suggestForGroup(
   library: LibraryExercise[],
   group: string,
   excludeText: string,
-  alreadyUsed: Set<string>
-): ExerciseInput[] {
-  const candidates = library.filter(
-    (ex) => ex.muscle_group === group && !isExcluded(ex, excludeText) && !alreadyUsed.has(ex.name)
-  );
-  const compound = candidates.filter((ex) => ex.category === "compose");
-  const isolation = candidates.filter((ex) => ex.category === "isolation");
+  maxPerCategory = 3
+): MuscleGroupSuggestion {
+  const candidates = library.filter((ex) => ex.muscle_group === group && !isExcluded(ex, excludeText));
+  const byQuality = (a: LibraryExercise, b: LibraryExercise) =>
+    difficultyRank(a) - difficultyRank(b) || a.name.localeCompare(b.name, "fr");
 
-  const picks: LibraryExercise[] = [];
-  if (compound[0]) picks.push(compound[0]);
-  if (isolation[0]) picks.push(isolation[0]);
-  else if (compound[1]) picks.push(compound[1]);
+  const compound = candidates.filter((ex) => ex.category === "compose").sort(byQuality).slice(0, maxPerCategory);
+  const isolation = candidates.filter((ex) => ex.category === "isolation").sort(byQuality).slice(0, maxPerCategory);
 
-  return picks.map((ex) => {
-    alreadyUsed.add(ex.name);
-    const isCompound = ex.category === "compose";
-    return {
-      name: ex.name,
-      sets: isCompound ? 4 : 3,
-      reps: isCompound ? "6-8" : "10-12",
-      rir: isCompound ? 2 : 1,
-      rest_seconds: isCompound ? 120 : 75,
-      notes: null,
-      muscle_group: ex.muscle_group,
-      muscle_subgroup: ex.muscle_subgroup,
-      is_direct: true,
-    };
-  });
+  return { group, compound: compound.map(toSuggestion), isolation: isolation.map(toSuggestion) };
 }
 
-export function buildProgramDays(
+export interface ProgramSuggestion {
+  dayLabel: string;
+  groups: MuscleGroupSuggestion[];
+}
+
+// Suggestions pures, jamais un programme prêt à sauvegarder — pas de sets/reps
+// prescrits, pas d'ExerciseInput/DayInput : le coach construit le programme
+// lui-même (via le picker normal) et pioche dans ces pistes s'il veut.
+export function buildProgramSuggestions(
   sessionsPerWeek: number,
   library: LibraryExercise[],
   dislikedEquipment: string | null,
   exercisesProblematic: string | null
-): DayInput[] {
+): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
   const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
-  const alreadyUsedGlobal = new Set<string>();
 
-  return template.map((day) => {
-    const exercises: ExerciseInput[] = [];
-    for (const group of day.groups) {
-      exercises.push(...pickForGroup(library, group, excludeText, alreadyUsedGlobal));
-    }
-    return { day_label: day.label, exercises };
-  });
+  return template.map((day) => ({
+    dayLabel: day.label,
+    groups: day.groups.map((group) => suggestForGroup(library, group, excludeText)),
+  }));
 }
 
 // ── Road map — une phase + objectifs dérivés des buts déclarés ──────────────

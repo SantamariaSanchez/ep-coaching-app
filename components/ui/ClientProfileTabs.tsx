@@ -45,7 +45,7 @@ import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
 import type { ExerciseCorrection } from "@/utils/corrections";
 import { generateClientSuggestions } from "@/lib/client-suggestions";
-import type { AutoGenerateResult } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
+import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
@@ -144,7 +144,7 @@ export default function ClientProfileTabs({
   addPeriodLog,
   deletePeriodLog,
   scheduleBlocks,
-  autoGenerateClientPlan,
+  generatePlanSuggestions,
   corrections,
   sendCorrectionFeedback,
 }: {
@@ -190,7 +190,7 @@ export default function ClientProfileTabs({
   ) => Promise<{ error?: string; id?: string }>;
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
   scheduleBlocks: ScheduleBlock[];
-  autoGenerateClientPlan: (clientId: string) => Promise<AutoGenerateResult>;
+  generatePlanSuggestions: (clientId: string) => Promise<PlanSuggestions>;
   corrections: ExerciseCorrection[];
   sendCorrectionFeedback: (
     correctionId: string,
@@ -374,7 +374,7 @@ export default function ClientProfileTabs({
 
       {activeTab === "intake" && (
         <div>
-          <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} autoGenerateClientPlan={autoGenerateClientPlan} />
+          <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} generatePlanSuggestions={generatePlanSuggestions} />
           <ClientIntakeForm
             clientId={client.id}
             existingIntake={intake}

@@ -32,7 +32,7 @@ import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getStepSettings } from "@/utils/steps";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal } from "./intake/actions";
-import { autoGenerateClientPlan } from "./autogenerate/actions";
+import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft } from "lucide-react";
@@ -196,7 +196,7 @@ export default async function ClientDetailPage({
         addPeriodLog={addPeriodLog}
         deletePeriodLog={deletePeriodLog}
         scheduleBlocks={scheduleBlocks}
-        autoGenerateClientPlan={autoGenerateClientPlan}
+        generatePlanSuggestions={generatePlanSuggestions}
         corrections={corrections}
         sendCorrectionFeedback={sendCorrectionFeedback}
       />
