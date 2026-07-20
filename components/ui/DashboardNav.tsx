@@ -9,7 +9,7 @@ import {
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
-  Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays,
+  Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -61,7 +61,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/bilan",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda", "cycle"],
   },
   {
     label: "Coach",
@@ -332,6 +332,9 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
       { label: "Mindset",        icon: Brain,           segment: "mindset" },
+      // N'apparaît que pour les clientes dont la fiche client indique le
+      // genre "Femme" — filtré dynamiquement dans useNavState (showCycle).
+      { label: "Cycle",          icon: Droplet,         segment: "cycle" },
     ],
   },
   {
@@ -378,12 +381,18 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-function useNavState(isFreeTier: boolean) {
+function useNavState(isFreeTier: boolean, showCycle: boolean) {
   const pathname = usePathname();
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
   const tabs = isCoach ? COACH_TABS : isFreeTier ? CLIENT_TABS_FREE : CLIENT_TABS;
-  const sidebar = isCoach ? COACH_SIDEBAR : isFreeTier ? CLIENT_SIDEBAR_FREE : CLIENT_SIDEBAR;
+  const rawSidebar = isCoach ? COACH_SIDEBAR : isFreeTier ? CLIENT_SIDEBAR_FREE : CLIENT_SIDEBAR;
+  // L'onglet "Cycle" n'a de sens que pour une cliente dont la fiche indique
+  // le genre "Femme" — retiré du rendu tant qu'on ne le sait pas, plutôt que
+  // de le masquer en CSS (la page /cycle redirige de toute façon sinon).
+  const sidebar = showCycle
+    ? rawSidebar
+    : rawSidebar.map((g) => ({ ...g, items: g.items.filter((item) => item.segment !== "cycle") }));
 
   function isTabActive(tab: TabItem): boolean {
     if (tab.exactMatch) return pathname === tab.href;
@@ -444,8 +453,9 @@ export default function DashboardNav({
   initialIsFreeTier?: boolean;
 }) {
   const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
+  const [showCycleTab, setShowCycleTab] = useState(false);
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
-    useNavState(isFreeTier);
+    useNavState(isFreeTier, showCycleTab);
   const router = useRouter();
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -521,12 +531,24 @@ export default function DashboardNav({
         .single()
         .then(({ data }) => {
           if (data) {
+            const role = (data as { role: string }).role;
             setUserName((data as { full_name: string | null }).full_name);
-            setUserRole((data as { role: string }).role);
+            setUserRole(role);
             setIsFreeTier(
-              (data as { role: string; subscription_status: string }).role === "client" &&
+              role === "client" &&
                 (data as { subscription_status: string }).subscription_status !== "active"
             );
+
+            if (role === "client") {
+              supabase
+                .from("client_intake")
+                .select("gender")
+                .eq("client_id", user.id)
+                .maybeSingle()
+                .then(({ data: intake }) => {
+                  setShowCycleTab((intake as { gender: string | null } | null)?.gender === "Femme");
+                });
+            }
           }
         });
 
