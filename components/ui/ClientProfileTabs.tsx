@@ -226,7 +226,12 @@ export default function ClientProfileTabs({
           largeur de l'écran sur mobile, forçant à zoomer/dézoomer et
           défiler sur le côté pour juste choisir un onglet. */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
-        {TABS.filter(({ key }) => key !== "cycle" || intake?.gender === "Femme").map(({ key, label, icon: Icon }) => (
+        {TABS.filter(({ key }) => key !== "cycle" || intake?.gender === "Femme")
+          // Onglet "Photos" = suivi de pose de préparation compétition, pas
+          // les photos de check-in (gérées ailleurs). Masqué sauf pour un
+          // client réellement en préparation, pour ne pas paraître cassé/vide.
+          .filter(({ key }) => key !== "photos" || !!client.competition_category)
+          .map(({ key, label, icon: Icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
