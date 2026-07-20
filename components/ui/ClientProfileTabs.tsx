@@ -219,6 +219,24 @@ export default function ClientProfileTabs({
     [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program]
   );
 
+  // Regroupe les suggestions par onglet concerné — affiché en pastille sur
+  // le bouton pour que la fiche client se répercute directement sur la
+  // navigation au lieu de rester enfermée dans le panneau "Profil" que rien
+  // n'oblige à consulter avant d'aller voir la nutrition ou le programme.
+  const suggestionsByTab = useMemo(() => {
+    // Objet plutôt que Map : "Map" est déjà pris par l'icône lucide-react
+    // importée plus haut dans ce fichier.
+    const byTab: Record<string, { count: number; hasWarning: boolean }> = {};
+    for (const sug of suggestions) {
+      if (!sug.tab) continue;
+      const entry = byTab[sug.tab] ?? { count: 0, hasWarning: false };
+      entry.count += 1;
+      if (sug.severity === "warning") entry.hasWarning = true;
+      byTab[sug.tab] = entry;
+    }
+    return byTab;
+  }, [suggestions]);
+
   return (
     <div>
       {/* Grille de boutons icône + texte plutôt qu'une rangée d'onglets sur
@@ -231,11 +249,13 @@ export default function ClientProfileTabs({
           // les photos de check-in (gérées ailleurs). Masqué sauf pour un
           // client réellement en préparation, pour ne pas paraître cassé/vide.
           .filter(({ key }) => key !== "photos" || !!client.competition_category)
-          .map(({ key, label, icon: Icon }) => (
+          .map(({ key, label, icon: Icon }) => {
+          const badge = suggestionsByTab[key];
+          return (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
+            className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
               activeTab === key
                 ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
                 : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
@@ -243,8 +263,18 @@ export default function ClientProfileTabs({
           >
             <Icon size={17} strokeWidth={activeTab === key ? 2.2 : 1.7} />
             <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{label}</span>
+            {badge && (
+              <span
+                className={`absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[8px] font-black ${
+                  badge.hasWarning ? "bg-[#E01E1E] text-white" : "bg-amber-500/90 text-black"
+                }`}
+              >
+                {badge.count}
+              </span>
+            )}
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {activeTab === "profil" && (
