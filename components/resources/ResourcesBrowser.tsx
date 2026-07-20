@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Search, FileText, Video, Music, Image as ImageIcon, Archive, Download, BookOpen } from "lucide-react";
-import type { ResourceItem } from "@/utils/resources";
+import type { ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref, getResourceKind, type ResourceKind } from "@/lib/resource-href";
 
 const KIND_ICON: Record<ResourceKind, React.ElementType> = {

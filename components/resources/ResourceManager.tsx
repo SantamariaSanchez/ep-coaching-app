@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, Trash2, Download } from "lucide-react";
-import { RESOURCE_CATEGORIES, type ResourceItem } from "@/utils/resources";
+import { RESOURCE_CATEGORIES, type ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
 
 export default function ResourceManager({ resources }: { resources: ResourceItem[] }) {

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, FileText, Download, Heart } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import type { ResourceItem } from "@/utils/resources";
+import type { ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
 import SignupGateModal from "@/components/ressources/SignupGateModal";
 

@@ -49,7 +49,7 @@ export default async function EditProgramPage({
 
       <ClientReferenceCard intake={intake} />
 
-      <ProgramEditor clientId={id} program={program} saveProgram={saveProgram} />
+      <ProgramEditor clientId={id} program={program} saveProgram={saveProgram} intake={intake} />
     </div>
   );
 }

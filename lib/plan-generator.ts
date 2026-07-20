@@ -130,6 +130,65 @@ function isExcluded(ex: LibraryExercise, excludeText: string): boolean {
   return keywords.some((k) => haystack.includes(k));
 }
 
+// ── Vérification de compatibilité exercice / client ─────────────────────────
+// Utilisé dans le constructeur de programme : avant d'ajouter un exercice,
+// on croise son nom/matériel avec les contraintes déclarées dans la fiche
+// client (blessures, exercices problématiques, matériel détesté) + toute
+// contrainte que le coach ajoute lui-même sur le moment si la fiche est
+// incomplète. Pas un blocage silencieux (comme dans le générateur de
+// suggestions) : ici le coach voit exactement pourquoi et décide.
+
+export type ConflictSource = "injuries" | "exercises_problematic" | "disliked_equipment" | "custom";
+
+export interface ExerciseConflict {
+  source: ConflictSource;
+  keyword: string;
+}
+
+const CONFLICT_SOURCE_LABEL: Record<ConflictSource, string> = {
+  injuries: "Blessure/douleur déclarée",
+  exercises_problematic: "Exercice signalé comme problématique",
+  disliked_equipment: "Matériel détesté déclaré",
+  custom: "Contrainte ajoutée par toi",
+};
+
+export function conflictSourceLabel(source: ConflictSource): string {
+  return CONFLICT_SOURCE_LABEL[source];
+}
+
+function findKeywordMatches(haystack: string, text: string): string[] {
+  if (!text.trim()) return [];
+  const keywords = text
+    .toLowerCase()
+    .split(/[,;\n]+/)
+    .map((k) => k.trim())
+    .filter((k) => k.length > 2);
+  return keywords.filter((k) => haystack.includes(k));
+}
+
+export function checkExerciseConflicts(
+  ex: { name: string; equipment: string | null },
+  intake: Pick<ClientIntake, "injuries" | "exercises_problematic" | "disliked_equipment"> | null,
+  customConstraints: string
+): ExerciseConflict[] {
+  const haystack = `${ex.name} ${ex.equipment ?? ""}`.toLowerCase();
+  const conflicts: ExerciseConflict[] = [];
+
+  const sources: [ConflictSource, string | null][] = [
+    ["injuries", intake?.injuries ?? null],
+    ["exercises_problematic", intake?.exercises_problematic ?? null],
+    ["disliked_equipment", intake?.disliked_equipment ?? null],
+    ["custom", customConstraints],
+  ];
+  for (const [source, text] of sources) {
+    if (!text) continue;
+    for (const keyword of findKeywordMatches(haystack, text)) {
+      conflicts.push({ source, keyword });
+    }
+  }
+  return conflicts;
+}
+
 // Débutant < intermédiaire < avancé — un exercice "avancé" (drag curl, sissy
 // squat, JM press...) ne devrait jamais être le premier choix suggéré sans
 // savoir si le client a le niveau technique requis. Le générateur n'a pas

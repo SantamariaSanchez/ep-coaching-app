@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
+import type { ClientIntake } from "@/utils/client-intake";
 import {
   LIBRARY_MUSCLE_GROUPS,
   EQUIPMENT_TYPES,
@@ -14,6 +15,11 @@ import {
   getEquipmentType,
   type EquipmentType,
 } from "@/lib/exercise-library-content";
+import {
+  checkExerciseConflicts,
+  conflictSourceLabel,
+  type ExerciseConflict,
+} from "@/lib/plan-generator";
 import {
   Plus,
   Trash2,
@@ -105,12 +111,16 @@ const inputCls =
 function ExerciseNameField({
   value,
   library,
+  intake,
+  customConstraints,
   onChange,
   onPick,
   onEnter,
 }: {
   value: string;
   library: LibraryExercise[];
+  intake: ClientIntake | null;
+  customConstraints: string;
   onChange: (v: string) => void;
   onPick: (lib: LibraryExercise) => void;
   onEnter?: () => void;
@@ -119,6 +129,7 @@ function ExerciseNameField({
   const [showFilters, setShowFilters] = useState(false);
   const [filterGroup, setFilterGroup] = useState("");
   const [filterEquipment, setFilterEquipment] = useState<EquipmentType | "">("");
+  const [pendingPick, setPendingPick] = useState<{ lib: LibraryExercise; conflicts: ExerciseConflict[] } | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -126,11 +137,23 @@ function ExerciseNameField({
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
         setOpen(false);
         setShowFilters(false);
+        setPendingPick(null);
       }
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
+
+  function attemptPick(lib: LibraryExercise) {
+    const conflicts = checkExerciseConflicts(lib, intake, customConstraints);
+    if (conflicts.length === 0) {
+      onPick(lib);
+      setOpen(false);
+      setShowFilters(false);
+    } else {
+      setPendingPick({ lib, conflicts });
+    }
+  }
 
   const hasActiveFilters = !!filterGroup || !!filterEquipment;
   const q = value.trim().toLowerCase();
@@ -172,7 +195,37 @@ function ExerciseNameField({
         </button>
       </div>
 
-      {open && (showFilters || hasActiveFilters) && (
+      {open && pendingPick && (
+        <div className="absolute z-30 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-amber-500/40 rounded-lg shadow-xl p-3">
+          <p className="text-xs font-bold text-white mb-1.5">{pendingPick.lib.name}</p>
+          <div className="space-y-1 mb-3">
+            {pendingPick.conflicts.map((c, i) => (
+              <p key={i} className="text-[10px] text-amber-300/90 flex items-start gap-1.5">
+                <AlertCircle size={11} className="flex-shrink-0 mt-0.5" />
+                <span><strong>{conflictSourceLabel(c.source)}</strong> — correspond à « {c.keyword} »</span>
+              </p>
+            ))}
+          </div>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { onPick(pendingPick.lib); setPendingPick(null); setOpen(false); setShowFilters(false); }}
+              className="flex-1 py-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500/15 border border-amber-500/40 text-amber-300 hover:bg-amber-500/25 rounded-lg transition-colors"
+            >
+              Ajouter quand même
+            </button>
+            <button
+              type="button"
+              onClick={() => setPendingPick(null)}
+              className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      )}
+
+      {open && !pendingPick && (showFilters || hasActiveFilters) && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl p-2 flex gap-1.5">
           <select
             value={filterGroup}
@@ -197,49 +250,57 @@ function ExerciseNameField({
         </div>
       )}
 
-      {open && matches.length > 0 && (
+      {open && !pendingPick && matches.length > 0 && (
         <div
           className={`absolute z-20 left-0 right-0 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl max-h-64 overflow-y-auto ${
             showFilters || hasActiveFilters ? "top-[calc(100%+38px)]" : "top-full mt-1"
           }`}
         >
-          {matches.map((lib) => (
-            <button
-              key={lib.id}
-              type="button"
-              onClick={() => { onPick(lib); setOpen(false); setShowFilters(false); }}
-              className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors border-b border-[#890404]/10 last:border-0"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate font-semibold">{lib.name}</span>
-                <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
-              </div>
-              <div className="flex items-center gap-1 mt-1 flex-wrap">
-                {lib.category && (
-                  <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
-                    {CATEGORY_LABELS[lib.category]}
-                  </span>
-                )}
-                {lib.difficulty && (
-                  <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
-                    lib.difficulty === "avance"
-                      ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
-                      : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
-                  }`}>
-                    {DIFFICULTY_LABELS[lib.difficulty]}
-                  </span>
-                )}
-                {lib.equipment && (
-                  <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
-                    {lib.equipment}
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
+          {matches.map((lib) => {
+            const conflicts = checkExerciseConflicts(lib, intake, customConstraints);
+            return (
+              <button
+                key={lib.id}
+                type="button"
+                onClick={() => attemptPick(lib)}
+                className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors border-b border-[#890404]/10 last:border-0"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-semibold">{lib.name}</span>
+                  <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+                </div>
+                <div className="flex items-center gap-1 mt-1 flex-wrap">
+                  {conflicts.length > 0 && (
+                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-0.5">
+                      <AlertCircle size={9} /> à vérifier
+                    </span>
+                  )}
+                  {lib.category && (
+                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                      {CATEGORY_LABELS[lib.category]}
+                    </span>
+                  )}
+                  {lib.difficulty && (
+                    <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+                      lib.difficulty === "avance"
+                        ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
+                        : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
+                    }`}>
+                      {DIFFICULTY_LABELS[lib.difficulty]}
+                    </span>
+                  )}
+                  {lib.equipment && (
+                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                      {lib.equipment}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       )}
-      {open && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
+      {open && !pendingPick && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
           <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
           <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat — nom libre conservé</span>
@@ -254,17 +315,26 @@ export default function ProgramEditor({
   program,
   saveProgram,
   successRedirect,
+  intake = null,
 }: {
   clientId: string;
   program: ProgramWithDays | null;
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
   successRedirect?: string;
+  /** Fiche client — sert à vérifier chaque exercice ajouté (blessures, exercices/matériel problématiques). */
+  intake?: ClientIntake | null;
 }) {
   const router = useRouter();
   const [state, setState] = useState(() => initFromProgram(program));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Contraintes ajoutées à la volée par le coach quand la fiche client est
+  // incomplète — croisées avec chaque exercice au même titre que les
+  // blessures/exercices problématiques déclarés dans la fiche. Propre à
+  // cette session d'édition, pas persisté.
+  const [customConstraints, setCustomConstraints] = useState("");
 
   // Bibliothèque d'exercices — sert le picker avec recherche (nom exact +
   // groupe/sous-groupe musculaire auto-remplis en un choix, au lieu de
@@ -549,6 +619,44 @@ export default function ProgramEditor({
         </div>
       </div>
 
+      {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          Vérification automatique des exercices
+        </p>
+        {intake && (intake.injuries || intake.exercises_problematic || intake.disliked_equipment) ? (
+          <div className="space-y-1.5 mb-3">
+            {intake.injuries && (
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Blessures/douleurs :</strong> {intake.injuries}</p>
+            )}
+            {intake.exercises_problematic && (
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Exercices problématiques :</strong> {intake.exercises_problematic}</p>
+            )}
+            {intake.disliked_equipment && (
+              <p className="text-[11px] text-[#F5EDED]/50"><strong className="text-[#F5EDED]/75">Matériel détesté :</strong> {intake.disliked_equipment}</p>
+            )}
+          </div>
+        ) : (
+          <p className="text-[11px] text-[#F5EDED]/30 italic mb-3">
+            Rien de déclaré dans la fiche client sur ce point — remplis-la ou ajoute une contrainte ci-dessous.
+          </p>
+        )}
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          Autres contraintes à vérifier (pas dans la fiche client)
+        </label>
+        <textarea
+          value={customConstraints}
+          onChange={(e) => setCustomConstraints(e.target.value)}
+          rows={2}
+          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…"
+          className={`${inputCls} resize-none`}
+        />
+        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+          Chaque exercice sélectionné depuis la bibliothèque est comparé à tout ça. En cas de correspondance, une
+          confirmation est demandée avant de l&apos;ajouter — jamais un blocage silencieux.
+        </p>
+      </div>
+
       {/* Days */}
       {state.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
@@ -630,6 +738,8 @@ export default function ProgramEditor({
                           <ExerciseNameField
                             value={ex.name}
                             library={library}
+                            intake={intake}
+                            customConstraints={customConstraints}
                             onChange={(v) => updateExercise(day.localId, ex.localId, "name", v)}
                             onPick={(lib) => pickLibraryExercise(day.localId, ex.localId, lib)}
                             onEnter={() => addExercise(day.localId)}

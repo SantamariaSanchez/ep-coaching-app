@@ -13,7 +13,7 @@ import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import type { ClientTask } from "@/utils/tasks";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages, DailyLog } from "@/utils/daily-logs";
-import { groupLogsByWeek } from "@/utils/daily-logs";
+import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
 import type { PhotoUpdate } from "@/utils/photos";
 import type {
   NutritionProfile,

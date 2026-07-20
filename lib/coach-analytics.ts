@@ -52,9 +52,41 @@ function isoDate(d: Date): string {
   return d.toISOString().split("T")[0];
 }
 
+// 1 = lundi … 7 = dimanche (même convention que profiles.checkin_day et
+// CheckinDaySettings.tsx) — Date.getDay() renvoie 0 = dimanche … 6 = samedi.
+function isoWeekday(d: Date): number {
+  const jsDay = d.getDay();
+  return jsDay === 0 ? 7 : jsDay;
+}
+
+// Nombre de jours écoulés depuis la dernière occurrence (aujourd'hui inclus)
+// du jour de semaine "checkinDay" par rapport à "from".
+function daysSinceLastOccurrence(checkinDay: number, from: Date): number {
+  const diff = isoWeekday(from) - checkinDay;
+  return diff < 0 ? diff + 7 : diff;
+}
+
+const CHECKIN_GRACE_DAYS = 2;
+
+// Date à partir de laquelle un check-in manquant devient une vraie alerte —
+// un client dont le jour fixe est samedi n'est jamais "en retard" un jeudi
+// juste parce que 7 jours calendaires se sont écoulés depuis son dernier
+// check-in (cadence hebdomadaire normale). On laisse une marge de 2 jours
+// après le jour prévu avant d'alerter, et si on est encore dans cette marge
+// pour l'occurrence la plus récente, on regarde l'occurrence précédente.
+function checkinCutoff(checkinDay: number | null | undefined, now: Date): Date {
+  if (!checkinDay || checkinDay < 1 || checkinDay > 7) return daysAgo(7);
+  const sinceLast = daysSinceLastOccurrence(checkinDay, now);
+  const sinceGraceExpired = sinceLast >= CHECKIN_GRACE_DAYS ? sinceLast : sinceLast + 7;
+  return daysAgo(sinceGraceExpired);
+}
+
 // ── Per-client alert analysis ─────────────────────────────────────────────────
 
-export async function getClientAlerts(clientId: string): Promise<ClientAlert[]> {
+export async function getClientAlerts(
+  clientId: string,
+  checkinDay?: number | null
+): Promise<ClientAlert[]> {
   const supabase = createAdminClient();
   const alerts: ClientAlert[] = [];
 
@@ -63,7 +95,7 @@ export async function getClientAlerts(clientId: string): Promise<ClientAlert[]> 
   const d21 = daysAgo(21);
   const d3 = daysAgo(3);
 
-  // ── 1. Check-in manquant depuis 7+ jours ─────────────────────────────────
+  // ── 1. Check-in manquant (par rapport au jour fixe du client, + marge) ───
   const { data: lastCheckin } = await supabase
     .from("check_ins")
     .select("week_start")
@@ -75,11 +107,12 @@ export async function getClientAlerts(clientId: string): Promise<ClientAlert[]> 
   const lastCheckinDate = lastCheckin?.week_start
     ? new Date(lastCheckin.week_start + "T12:00:00")
     : null;
-  if (!lastCheckinDate || lastCheckinDate < d7) {
+  const cutoff = checkinCutoff(checkinDay, now);
+  if (!lastCheckinDate || lastCheckinDate < cutoff) {
     alerts.push({
       type: "checkin_missing",
       severity: "high",
-      label: "Aucun check-in depuis 7+ jours",
+      label: "Check-in manquant",
       suggestion: "Envoie un message de rappel au client",
       icon: "AlertTriangle",
     });
@@ -484,7 +517,7 @@ export async function getCoachDashboardData(): Promise<CoachDashboardData> {
   const { data: clients } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, status, competition_date, competition_category"
+      "id, full_name, status, competition_date, competition_category, checkin_day"
     )
     .eq("role", "client")
     .eq("status", "active")
@@ -514,10 +547,11 @@ export async function getCoachDashboardData(): Promise<CoachDashboardData> {
         status: string;
         competition_date: string | null;
         competition_category: string | null;
+        checkin_day: number | null;
       }[]
     ).map(async (client) => {
       const [alerts, highlights, summary] = await Promise.all([
-        getClientAlerts(client.id),
+        getClientAlerts(client.id, client.checkin_day),
         getClientHighlights(client.id),
         getClientSummaryStats(client.id),
       ]);
@@ -580,7 +614,7 @@ export async function getTopUrgentAlerts(limit = 3): Promise<TopAlert[]> {
   const supabase = createAdminClient();
   const { data: clients } = await supabase
     .from("profiles")
-    .select("id, full_name")
+    .select("id, full_name, checkin_day")
     .eq("role", "client")
     .eq("status", "active")
     .eq("subscription_status", "active");
@@ -589,8 +623,8 @@ export async function getTopUrgentAlerts(limit = 3): Promise<TopAlert[]> {
 
   const allAlerts: TopAlert[] = [];
   await Promise.all(
-    (clients as { id: string; full_name: string | null }[]).map(async (c) => {
-      const alerts = await getClientAlerts(c.id);
+    (clients as { id: string; full_name: string | null; checkin_day: number | null }[]).map(async (c) => {
+      const alerts = await getClientAlerts(c.id, c.checkin_day);
       for (const alert of alerts) {
         allAlerts.push({ clientId: c.id, clientName: c.full_name, alert });
       }

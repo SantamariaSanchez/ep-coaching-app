@@ -1,24 +1,8 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { type ResourceItem } from "@/lib/resource-categories";
 
-export const RESOURCE_CATEGORIES = [
-  "Entraînement",
-  "Nutrition",
-  "Mental",
-  "Récupération",
-  "Général",
-] as const;
-
-export type ResourceCategory = (typeof RESOURCE_CATEGORIES)[number];
-
-export interface ResourceItem {
-  id: string;
-  title: string;
-  description: string | null;
-  file_url: string;
-  category: string | null;
-  created_at: string;
-}
+export { RESOURCE_CATEGORIES, type ResourceCategory, type ResourceItem } from "@/lib/resource-categories";
 
 const SELECT_FIELDS = "id, title, description, file_url, category, created_at";
 
