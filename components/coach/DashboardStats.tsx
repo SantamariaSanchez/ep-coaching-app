@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/Skeleton";
 import { Users, TrendingUp, CalendarClock, UserPlus, ChevronRight } from "lucide-react";
 
 interface PendingCheckin {

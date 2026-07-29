@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, CheckCircle2, XCircle, ChevronRight } from "lucide-react";
+import { X } from "lucide-react";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import {
   PHASE_COLORS,
   WEEK_PERFORMANCE_COLORS,
   OBJECTIVE_TERM_COLORS,
-  getWeekPerformanceColor,
   type PerformanceKey,
 } from "@/lib/roadmap-colors";
 import { getWeekStats, type WeekStat } from "@/lib/roadmap-stats";
@@ -426,9 +425,6 @@ export default function RoadmapCalendar({
 
   // Get active phase for today
   const activePhase = getPhaseForDate(phases, today);
-  const activePhaseColors = activePhase
-    ? PHASE_COLORS[activePhase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom
-    : null;
 
   // Present phases in roadmap
   const presentPhaseTypes = [...new Set(phases.map((p) => p.type))];

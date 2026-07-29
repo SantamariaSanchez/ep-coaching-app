@@ -41,7 +41,7 @@ async function checkPushSubscription(userId: string): Promise<boolean> {
   return !!data;
 }
 
-async function requestPushPermission(userId: string): Promise<boolean> {
+async function requestPushPermission(): Promise<boolean> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) return false;
   try {
     const reg = await navigator.serviceWorker.register("/sw.js");
@@ -427,7 +427,7 @@ export default function RemindersPage() {
   async function handleRequestPush() {
     if (!userId) return;
     setRequestingPush(true);
-    const ok = await requestPushPermission(userId);
+    const ok = await requestPushPermission();
     setHasPush(ok);
     setRequestingPush(false);
   }

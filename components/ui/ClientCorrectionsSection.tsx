@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useRef } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { submitCorrection } from "@/app/dashboard/client/program/actions";
 import type { ExerciseCorrection } from "@/utils/corrections";
 import { Video, ExternalLink, CheckCircle2, Clock } from "lucide-react";
@@ -104,10 +104,12 @@ export default function ClientCorrectionsSection({
   );
   const formRef = useRef<HTMLFormElement>(null);
 
-  // Reset form on success
-  if (state?.success && formRef.current) {
-    formRef.current.reset();
-  }
+  // Reset form on success — dans un effet, jamais pendant le render (React
+  // peut rendre plusieurs fois sans committer, la mutation DOM imperative
+  // doit rester hors du corps du composant).
+  useEffect(() => {
+    if (state?.success) formRef.current?.reset();
+  }, [state]);
 
   const inputClass =
     "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";

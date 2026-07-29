@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ExternalLink, CheckCircle2, Clock, Camera, Pencil, Eraser } from "lucide-react";
+import { ExternalLink, CheckCircle2, Camera, Pencil, Eraser } from "lucide-react";
 import { CATEGORIES_BY_GENDER, TYPE_LABELS } from "@/lib/posing-data";
 import { driveImageUrl } from "@/lib/drive-utils";
 import DrawableImage from "@/components/ui/DrawableImage";

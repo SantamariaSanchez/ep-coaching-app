@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Card from "./Card";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
 import { computeObservedTdee } from "@/lib/tdee-suggestion";

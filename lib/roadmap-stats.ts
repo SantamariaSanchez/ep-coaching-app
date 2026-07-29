@@ -27,7 +27,7 @@ export async function getWeekStats(
   const end = new Date(endDate);
 
   // Align current to Monday of the start week
-  let current = new Date(startDate);
+  const current = new Date(startDate);
   const day = current.getDay();
   const diff = current.getDate() - day + (day === 0 ? -6 : 1);
   current.setDate(diff);

@@ -98,7 +98,7 @@ export default async function FormationsPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {formationData.map(({ formation, total, published, completedCount, totalMin: fMin }, i) => {
+          {formationData.map(({ formation, published, completedCount, totalMin: fMin }, i) => {
             const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
             const col = FORMATION_COLORS[i % FORMATION_COLORS.length];
             const isAvailable = published > 0;

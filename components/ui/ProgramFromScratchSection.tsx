@@ -7,7 +7,6 @@ import type { ProgramInput, ProgramWithDays } from "@/utils/programs";
 
 export default function ProgramFromScratchSection({
   clientId,
-  program,
   saveProgram,
 }: {
   clientId: string;

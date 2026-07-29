@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from "react";
 import {
-  Check, ChevronRight, ChevronLeft, Camera, Sparkles, Search, X, Plus,
+  Check, ChevronRight, ChevronLeft, Sparkles, Search, X, Plus,
 } from "lucide-react";
 import type { NutritionProfile, Food, FoodLogWithFood } from "@/utils/nutrition";
 
@@ -34,12 +34,6 @@ const QTY_G: Record<string, number> = {
   moyen: 120,
   grand: 180,
   double: 250,
-};
-const QTY_LABELS: Record<string, string> = {
-  petit:  "Petite (≈70g)",
-  moyen:  "Normale (≈120g)",
-  grand:  "Grande (≈180g)",
-  double: "Double (≈250g)",
 };
 
 function calcMacros(food: Food, qtyKey: string) {
@@ -105,7 +99,6 @@ interface Props {
 type Phase = "slots" | "meal" | "summary" | "done";
 
 export default function NutritionBilanQuiz({
-  nutritionProfile,
   today,
   historyLogs,
   allFoods,

@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { getUser, getProfile, getAllCoaches } from "@/utils/auth";
 import { getCoachBillingInfo } from "@/lib/coach-billing";
 import CoachStatusToggle from "@/components/coach/CoachStatusToggle";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ChevronLeft } from "lucide-react";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   trialing: { label: "Essai gratuit", color: "#facc15" },
@@ -43,6 +44,12 @@ export default async function CoachAdminPage() {
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+      <Link
+        href="/dashboard/coach/profile"
+        className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
+      >
+        <ChevronLeft size={13} /> Retour
+      </Link>
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Administration

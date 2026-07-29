@@ -26,7 +26,7 @@ export default async function FormationDetailPage({
 
   if (!formation) notFound();
 
-  const { total, published, totalMin } = countLessons(formation.modules);
+  const { published, totalMin } = countLessons(formation.modules);
   const completedCount = formation.modules
     .flatMap((m) => m.sections.flatMap((s) => s.lessons))
     .filter((l) => completed.has(l.id)).length;

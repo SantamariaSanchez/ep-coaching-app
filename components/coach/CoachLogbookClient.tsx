@@ -431,7 +431,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function CoachLogbookClient({ clientId, sessions, records }: Props) {
+export default function CoachLogbookClient({ sessions, records }: Props) {
   const [activeTab, setActiveTab] = useState<"semaine" | "progression" | "qualite" | "historique">("semaine");
 
   const tabs = [

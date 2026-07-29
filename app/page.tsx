@@ -133,7 +133,7 @@ export default function HomePage() {
               lineHeight: 1.5,
             }}
           >
-            L'espace de coaching bodybuilding tout-en-un : programmes, nutrition, suivi et formations pour progresser sérieusement.
+            L&apos;espace de coaching bodybuilding tout-en-un : programmes, nutrition, suivi et formations pour progresser sérieusement.
           </p>
         </div>
 

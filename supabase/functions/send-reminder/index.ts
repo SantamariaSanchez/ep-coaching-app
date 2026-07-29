@@ -28,7 +28,7 @@ serve(async (req: Request) => {
       return new Response("No subscription found", { status: 404 });
     }
 
-    // @ts-ignore — Deno ESM import
+    // @ts-expect-error — Deno ESM import
     const webpush = await import("https://esm.sh/web-push@3.6.6");
 
     webpush.default.setVapidDetails(

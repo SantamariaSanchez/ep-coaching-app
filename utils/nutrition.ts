@@ -1,6 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { MICRO_KEYS, type MicroKey } from "@/lib/micro-references";
+import type { MicroKey } from "@/lib/micro-references";
 export { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
 
 // ── Interfaces ────────────────────────────────────────────────────────────────

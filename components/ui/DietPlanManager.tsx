@@ -515,7 +515,7 @@ function PlanDetailRow({
     }
     for (const key of Object.keys(map)) map[key].sort((a, b) => a.position - b.position);
     return map;
-  }, [visibleMeals]);
+  }, [visibleMeals, plan]);
 
   const totals = useMemo(() => {
     return visibleMeals.reduce(

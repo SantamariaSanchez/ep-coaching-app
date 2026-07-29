@@ -75,7 +75,6 @@ export default function NotificationBell({
       document.removeEventListener("mousedown", handleClickOutside);
       if (channel) supabase.removeChannel(channel);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleOpen() {

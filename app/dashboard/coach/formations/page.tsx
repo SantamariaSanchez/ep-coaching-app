@@ -47,7 +47,7 @@ export default async function CoachFormationsPage() {
       <NewFormationButton />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {formationData.map(({ formation, total, published, totalMin, moduleCount }, i) => (
+        {formationData.map(({ formation, total, published, moduleCount }, i) => (
           <Link
             key={formation.id}
             href={`/dashboard/coach/formations/${formation.id}`}

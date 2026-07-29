@@ -283,7 +283,7 @@ export default function ClientRoadmapPage() {
             Mes objectifs
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-            {[nextShort, nextMedium, nextLong].map((obj, i) => {
+            {[nextShort, nextMedium, nextLong].map((obj) => {
               if (!obj) return null;
               return (
                 <ObjectiveCard key={obj.id} obj={obj} roadmapStart={roadmap.start_date} />

@@ -27,7 +27,7 @@ export async function loginAction(formData: FormData) {
 
   // Use admin client to read role — bypasses RLS so it always works
   const admin = createAdminClient()
-  const { data: profile, error: profileError } = await admin
+  const { data: profile } = await admin
     .from("profiles")
     .select("role")
     .eq("id", userId)

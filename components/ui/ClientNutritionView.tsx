@@ -259,7 +259,6 @@ export default function ClientNutritionView({
   const [recipeServings, setRecipeServings] = useState("1");
   const [quantityInput, setQuantityInput] = useState("");
   const [addingError, setAddingError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Create food modal
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -465,7 +464,6 @@ export default function ClientNutritionView({
 
     setTodayLogs((prev) => [...prev, optimisticLog]);
     closeModal();
-    setIsSubmitting(true);
 
     const result = await addFoodLog({
       foodId: selectedFood.id,
@@ -477,8 +475,6 @@ export default function ClientNutritionView({
       fats: macros.fats,
       loggedAt: today,
     });
-
-    setIsSubmitting(false);
 
     if (result.error) {
       setTodayLogs((prev) =>
@@ -1700,7 +1696,7 @@ function DietPlanCard({
       map[key].sort((a, b) => a.position - b.position);
     }
     return map;
-  }, [dayMeals]);
+  }, [dayMeals, plan]);
 
   // Match each plan item to an unclaimed log of the same food/slot/quantity logged today
   const checkedMap = useMemo(() => {

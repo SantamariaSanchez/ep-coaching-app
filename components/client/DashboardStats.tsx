@@ -2,11 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Skeleton } from "@/components/ui/Skeleton";
 import ProgressRing from "@/components/ui/ProgressRing";
 import {
   ClipboardList, CheckCircle2, ChevronRight, Apple, Dumbbell,
-  ClipboardCheck, Flame, Circle, Scale,
+  ClipboardCheck, Scale,
 } from "lucide-react";
 
 interface Stats {
