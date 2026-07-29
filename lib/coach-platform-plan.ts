@@ -1,16 +1,20 @@
 // Abonnement plateforme pour les coachs tiers qui utilisent EP Coaching
 // pour suivre leurs propres clients (distinct de l'abonnement d'un CLIENT
-// à son coach, voir lib/subscription-plans.ts).
-//
-// ⚠️ À CONFIGURER : le prix et l'URL ci-dessous sont des valeurs provisoires.
-// Il faut créer un vrai Payment Link Stripe (Dashboard Stripe > Payment Links)
-// pour ce plan, avec le prix souhaité, puis remplacer COACH_PLATFORM_PLAN.url
-// par ce lien. Le Payment Link doit être configuré pour transmettre
-// client_reference_id (sinon le webhook ne saura pas quel coach activer).
-export const COACH_PLATFORM_PLAN = {
-  id: "coach_platform",
-  label: "Abonnement coach",
-  priceLabel: "97€ / mois",
-  sublabel: "Accès complet à l'outil pour suivre tes propres clients",
-  url: "https://buy.stripe.com/REMPLACE_MOI",
-} as const;
+// à son coach, voir lib/subscription-plans.ts). 2 mois d'essai gratuit sur
+// les deux formules (configuré directement sur les Price Stripe).
+export const COACH_PLATFORM_PLANS = [
+  {
+    id: "monthly",
+    label: "Mensuel",
+    priceLabel: "100€ / mois",
+    sublabel: "2 mois d'essai gratuit, sans engagement",
+    url: "https://buy.stripe.com/9B67sLg4z5Cr33C0PhfIs04",
+  },
+  {
+    id: "semiannual",
+    label: "Semestriel",
+    priceLabel: "480€ / 6 mois",
+    sublabel: "= 80€/mois, 2 mois d'essai gratuit",
+    url: "https://buy.stripe.com/cNi28r2dJ9SH7jS8hJfIs05",
+  },
+] as const;

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { COACH_PLATFORM_PLAN } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { Crown } from "lucide-react";
 import SignOutButton from "@/components/ui/SignOutButton";
 
@@ -14,8 +14,6 @@ export default async function CoachPendingPage() {
   if (profile.is_platform_owner || profile.platform_subscription_status === "active") {
     redirect("/dashboard/coach");
   }
-
-  const checkoutUrl = `${COACH_PLATFORM_PLAN.url}?client_reference_id=${user.id}`;
 
   return (
     <div style={{
@@ -36,16 +34,21 @@ export default async function CoachPendingPage() {
         </h1>
         <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 28px" }}>
           Ton compte coach est créé. Active ton abonnement plateforme
-          ({COACH_PLATFORM_PLAN.priceLabel}) pour accéder à ton espace et
-          commencer à suivre tes propres clients.
+          pour accéder à ton espace et commencer à suivre tes propres clients.
         </p>
-        <a
-          href={checkoutUrl}
-          className="ep-btn-primary"
-          style={{ display: "inline-flex", height: 50, padding: "0 28px", fontSize: 13, textDecoration: "none" }}
-        >
-          Activer mon abonnement
-        </a>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {COACH_PLATFORM_PLANS.map((plan) => (
+            <a
+              key={plan.id}
+              href={`${plan.url}?client_reference_id=${user.id}`}
+              className="ep-btn-primary"
+              style={{ display: "flex", flexDirection: "column", height: "auto", padding: "14px 20px", fontSize: 13, textDecoration: "none" }}
+            >
+              <span>{plan.label} — {plan.priceLabel}</span>
+              <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.85 }}>{plan.sublabel}</span>
+            </a>
+          ))}
+        </div>
         <div style={{ marginTop: 20 }}>
           <SignOutButton />
         </div>

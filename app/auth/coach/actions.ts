@@ -3,12 +3,13 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
-import { COACH_PLATFORM_PLAN } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 
 export interface CoachSignupInput {
   fullName: string;
   email: string;
   password: string;
+  planId: string;
 }
 
 export type CoachSignupResult = { error: string } | { success: true; checkoutUrl: string };
@@ -30,6 +31,9 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   if (!fullName || !email || password.length < 6) {
     return { error: "Nom, email et mot de passe (6 caractères min.) requis." };
   }
+
+  const plan = COACH_PLATFORM_PLANS.find((p) => p.id === input.planId);
+  if (!plan) return { error: "Formule invalide." };
 
   const admin = createAdminClient();
 
@@ -76,7 +80,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
     return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
 
-  const checkoutUrl = `${COACH_PLATFORM_PLAN.url}?client_reference_id=${authData.user.id}`;
+  const checkoutUrl = `${plan.url}?client_reference_id=${authData.user.id}`;
   return { success: true, checkoutUrl };
 }
 

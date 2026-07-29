@@ -3,7 +3,7 @@
 import { useState } from "react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { signupCoach } from "./actions";
-import { COACH_PLATFORM_PLAN } from "@/lib/coach-platform-plan";
+import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -32,6 +32,7 @@ export default function CoachSignupFlow() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [planId, setPlanId] = useState<string>(COACH_PLATFORM_PLANS[0].id);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -44,7 +45,7 @@ export default function CoachSignupFlow() {
     }
     setSubmitting(true);
     try {
-      const result = await signupCoach({ fullName, email, password });
+      const result = await signupCoach({ fullName, email, password, planId });
       if ("error" in result) {
         setError(result.error);
         setSubmitting(false);
@@ -67,9 +68,33 @@ export default function CoachSignupFlow() {
           Utilise EP Coaching pour suivre tes propres clients
         </p>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "6px 0 0", lineHeight: 1.5 }}>
-          {COACH_PLATFORM_PLAN.priceLabel} — {COACH_PLATFORM_PLAN.sublabel}. Tes clients restent
-          les tiens, jamais visibles par un autre coach de la plateforme.
+          Tes clients restent les tiens, jamais visibles par un autre coach de la plateforme.
         </p>
+      </div>
+
+      <div>
+        <label style={labelStyle}>Formule</label>
+        <div style={{ display: "flex", gap: 10 }}>
+          {COACH_PLATFORM_PLANS.map((plan) => {
+            const active = planId === plan.id;
+            return (
+              <button
+                key={plan.id}
+                type="button"
+                onClick={() => setPlanId(plan.id)}
+                style={{
+                  flex: 1, textAlign: "left", padding: "12px 14px", borderRadius: 10, cursor: "pointer",
+                  background: active ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.3)",
+                  border: `1px solid ${active ? "rgba(224,30,30,0.5)" : "rgba(245,237,237,0.1)"}`,
+                }}
+              >
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{plan.label}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 12, fontWeight: 700, color: "#E01E1E" }}>{plan.priceLabel}</p>
+                <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{plan.sublabel}</p>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       <div>
