@@ -268,3 +268,117 @@ create policy "Author or coach can delete a comment" on public.community_comment
     auth.uid() = author_id
     or public.is_platform_owner()
   );
+
+-- ── Buckets photos/vidéos/vocaux privés : jusqu'ici lisibles/écrivables par
+-- N'IMPORTE QUEL utilisateur authentifié (policy "bucket_id = X" sans
+-- restriction de dossier), en s'appuyant uniquement sur des chemins non
+-- devinables. Avec l'inscription libre multi-coach, un simple compte gratuit
+-- suffit désormais à parcourir/lire les photos de check-in, vidéos et
+-- vocaux de N'IMPORTE QUEL client de N'IMPORTE QUEL coach. Le code d'upload
+-- a été changé pour préfixer chaque fichier par l'id du client concerné
+-- (dossier) ; ces policies restreignent l'accès à ce client et à son coach.
+-- ⚠️ Les fichiers déjà uploadés AVANT ce changement n'ont pas ce préfixe de
+-- dossier et deviendront illisibles par ces nouvelles policies (aucune
+-- information de propriétaire n'existe dans leur chemin) — seuls les
+-- nouveaux uploads sont couverts. Une migration de données séparée serait
+-- nécessaire pour re-classer les fichiers historiques par dossier.
+
+drop policy if exists "checkin-media authenticated read" on storage.objects;
+drop policy if exists "checkin-media authenticated upload" on storage.objects;
+create policy "checkin-media owner or coach read" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'checkin-media'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+create policy "checkin-media owner or coach upload" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'checkin-media'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+
+drop policy if exists "photo-updates-media authenticated read" on storage.objects;
+drop policy if exists "photo-updates-media authenticated upload" on storage.objects;
+create policy "photo-updates-media owner or coach read" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'photo-updates-media'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+create policy "photo-updates-media owner or coach upload" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'photo-updates-media'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+
+drop policy if exists "coach-videos authenticated read" on storage.objects;
+drop policy if exists "coach-videos authenticated upload" on storage.objects;
+create policy "coach-videos owner or coach read" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'coach-videos'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+create policy "coach-videos owner or coach upload" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'coach-videos'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+
+-- voice-messages était déjà correctement préfixé par conversationId (=id du
+-- client) côté code — seule la policy était trop large.
+drop policy if exists "voice-messages authenticated read" on storage.objects;
+drop policy if exists "voice-messages authenticated upload" on storage.objects;
+create policy "voice-messages owner or coach read" on storage.objects
+  for select to authenticated
+  using (
+    bucket_id = 'voice-messages'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+create policy "voice-messages owner or coach upload" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'voice-messages'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );
+
+-- message-images reste un bucket public par choix (lien direct partageable,
+-- comme les ressources) — seule la policy d'upload est resserrée pour
+-- empêcher d'écrire dans le dossier d'une conversation qui n'est pas la sienne.
+drop policy if exists "message-images authenticated upload" on storage.objects;
+create policy "message-images owner or coach upload" on storage.objects
+  for insert to authenticated
+  with check (
+    bucket_id = 'message-images'
+    and (
+      (storage.foldername(name))[1] = auth.uid()::text
+      or public.is_own_coach(((storage.foldername(name))[1])::uuid)
+    )
+  );

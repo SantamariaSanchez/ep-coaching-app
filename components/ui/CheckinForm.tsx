@@ -92,8 +92,12 @@ export default function CheckinForm({
   async function uploadFile(file: File): Promise<string | null> {
     try {
       const supabase = createClientSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return null;
       const ext = file.name.split(".").pop() || (file.type.startsWith("video") ? "mp4" : "jpg");
-      const path = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      // Préfixé par l'id du client : la policy RLS du bucket restreint la
+      // lecture à ce dossier (client + son coach), jamais à tout le monde.
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
       const { error } = await supabase.storage
         .from("checkin-media")
         .upload(path, file, { contentType: file.type || undefined, upsert: false });

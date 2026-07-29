@@ -101,7 +101,9 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
   async function handleVideoSend(blob: Blob) {
     setVideoError(null);
     const supabase = createClientSupabase();
-    const path = `${checkin.id}-${Date.now()}.webm`;
+    // Préfixé par l'id du CLIENT (pas celui qui envoie la vidéo) : la policy
+    // RLS restreint la lecture à ce client et à son coach, jamais à tout le monde.
+    const path = `${checkin.client_id}/${checkin.id}-${Date.now()}.webm`;
     const { error: uploadError } = await supabase.storage
       .from("coach-videos")
       .upload(path, blob, { contentType: blob.type || "video/webm", upsert: false });
