@@ -32,7 +32,7 @@ export async function createResourceRequest(
       .select("full_name")
       .eq("id", user.id)
       .single();
-    notifyCoachNewResourceRequest(profile?.full_name ?? "Un membre", title.trim()).catch(() => {});
+    notifyCoachNewResourceRequest(profile?.full_name ?? "Un membre", title.trim(), user.id).catch(() => {});
 
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");

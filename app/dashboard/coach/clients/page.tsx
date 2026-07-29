@@ -10,7 +10,7 @@ export default async function ClientsPage() {
 
   const [profile, clients] = await Promise.all([
     getProfile(user.id),
-    getClients(),
+    getClients(user.id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");

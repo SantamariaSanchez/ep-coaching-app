@@ -1,5 +1,5 @@
 ﻿"use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClient } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -10,7 +10,7 @@ export async function saveCoachNote(
   noteId: string | null,
   data: CoachNoteInput
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
@@ -41,7 +41,7 @@ export async function saveKeyDecision(
   clientId: string,
   data: KeyDecisionInput
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
@@ -61,7 +61,7 @@ export async function deleteKeyDecision(
   clientId: string,
   decisionId: string
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
   try {
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes

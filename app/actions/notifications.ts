@@ -1,32 +1,34 @@
 "use server"
 
 import { sendBrevoEmail } from "@/utils/brevo"
-import { getCoachUserId } from "@/utils/insert-notification"
+import { getCoachForClient } from "@/utils/insert-notification"
 import { notifyUser } from "@/lib/notify"
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 
 // En plus de l'email (seul canal historique), pousse aussi une notif
-// in-app + push au coach — fire-and-forget, ne doit jamais faire échouer
-// l'action appelante.
-function notifyCoach(params: { type: string; title: string; body: string; url: string }) {
-  getCoachUserId()
-    .then((coachId) => {
-      if (coachId) notifyUser(coachId, params);
+// in-app + push au coach ASSIGNÉ à ce client — fire-and-forget, ne doit
+// jamais faire échouer l'action appelante.
+function notifyCoach(clientId: string, params: { type: string; title: string; body: string; url: string }) {
+  getCoachForClient(clientId)
+    .then((coach) => {
+      if (coach) notifyUser(coach.id, params);
     })
     .catch(() => {});
 }
 
-export async function notifyCoachNewCheckin(clientName: string) {
-  notifyCoach({
+export async function notifyCoachNewCheckin(clientName: string, clientId: string) {
+  notifyCoach(clientId, {
     type: "coach_checkin",
     title: "Nouveau check-in",
     body: `${clientName} vient d'envoyer son check-in hebdomadaire.`,
     url: "/dashboard/coach/clients",
   });
+  const coach = await getCoachForClient(clientId);
+  if (!coach?.email) return;
   await sendBrevoEmail({
-    to: "peccoux.manu@gmail.com",
+    to: coach.email,
     subject: `Nouveau check-in de ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
@@ -42,15 +44,17 @@ export async function notifyCoachNewCheckin(clientName: string) {
   })
 }
 
-export async function notifyCoachNewCheckinWithMeasurements(clientName: string) {
-  notifyCoach({
+export async function notifyCoachNewCheckinWithMeasurements(clientName: string, clientId: string) {
+  notifyCoach(clientId, {
     type: "coach_checkin",
     title: "📏 Check-in mensuel reçu",
     body: `${clientName} a envoyé son check-in mensuel avec ses mensurations.`,
     url: "/dashboard/coach/clients",
   });
+  const coach = await getCoachForClient(clientId);
+  if (!coach?.email) return;
   await sendBrevoEmail({
-    to: "peccoux.manu@gmail.com",
+    to: coach.email,
     subject: `Check-in mensuel avec mensurations de ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
@@ -68,16 +72,19 @@ export async function notifyCoachNewCheckinWithMeasurements(clientName: string) 
 
 export async function notifyCoachNewCorrection(
   clientName: string,
-  exerciseName: string
+  exerciseName: string,
+  clientId: string
 ) {
-  notifyCoach({
+  notifyCoach(clientId, {
     type: "coach_correction",
     title: "Correction demandée",
     body: `${clientName} demande une correction sur ${exerciseName}.`,
     url: "/dashboard/coach/clients",
   });
+  const coach = await getCoachForClient(clientId);
+  if (!coach?.email) return;
   await sendBrevoEmail({
-    to: "peccoux.manu@gmail.com",
+    to: coach.email,
     subject: `Correction demandée par ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
@@ -97,16 +104,19 @@ export async function notifyCoachNewCorrection(
 export async function notifyCoachNewPhotoUpdate(
   clientName: string,
   type: string,
-  category: string
+  category: string,
+  clientId: string
 ) {
-  notifyCoach({
+  notifyCoach(clientId, {
     type: "coach_photo",
     title: "Nouvelle photo update",
     body: `${clientName} : ${type} (${category})`,
     url: "/dashboard/coach/clients",
   });
+  const coach = await getCoachForClient(clientId);
+  if (!coach?.email) return;
   await sendBrevoEmail({
-    to: "peccoux.manu@gmail.com",
+    to: coach.email,
     subject: `Nouvelle photo update de ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
@@ -144,7 +154,7 @@ export async function notifyClientPhotoFeedback(
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Retour photo disponible</h2>
         <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Emmanuel a répondu à ta photo update. Connecte-toi pour voir son retour.</p>
+        <p>Ton coach a répondu à ta photo update. Connecte-toi pour voir son retour.</p>
         <a href="${APP_URL}/dashboard/client/photos"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -157,16 +167,19 @@ export async function notifyClientPhotoFeedback(
 
 export async function notifyCoachNewResourceRequest(
   clientName: string,
-  title: string
+  title: string,
+  clientId: string
 ) {
-  notifyCoach({
+  notifyCoach(clientId, {
     type: "coach_resource_request",
     title: "Demande de guide",
     body: `${clientName} demande un guide sur « ${title} ».`,
     url: "/dashboard/coach/ressources",
   });
+  const coach = await getCoachForClient(clientId);
+  if (!coach?.email) return;
   await sendBrevoEmail({
-    to: "peccoux.manu@gmail.com",
+    to: coach.email,
     subject: `Demande de guide de ${clientName}`,
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
@@ -203,7 +216,7 @@ export async function notifyClientRequestAnswered(
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Réponse disponible</h2>
         <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Emmanuel a répondu à ta demande de guide sur&nbsp;: <strong style="color:white;">${title}</strong></p>
+        <p>Ton coach a répondu à ta demande de guide sur&nbsp;: <strong style="color:white;">${title}</strong></p>
         <a href="${APP_URL}/dashboard/client/ressources"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -231,7 +244,7 @@ export async function notifyClientNewLiveEvent(
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">📅 Un appel a été programmé</h2>
         <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Emmanuel a programmé <strong style="color:white;">${title}</strong> le ${dateLabel}.</p>
+        <p>Ton coach a programmé <strong style="color:white;">${title}</strong> le ${dateLabel}.</p>
         <a href="${APP_URL}/dashboard/client/live"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -262,7 +275,7 @@ export async function notifyClientBilanReady(
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Ton bilan de la semaine est disponible</h2>
         <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Emmanuel a répondu à ton check-in. Connecte-toi pour voir son retour.</p>
+        <p>Ton coach a répondu à ton check-in. Connecte-toi pour voir son retour.</p>
         <a href="${APP_URL}/dashboard/client/checkin"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">

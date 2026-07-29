@@ -23,7 +23,7 @@ export default async function CoachClientNotesPage({
 
   const [profile, client, notes, decisions] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getClientNotes(id),
     getClientKeyDecisions(id),
   ]);

@@ -1,5 +1,5 @@
 "use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -9,7 +9,7 @@ export async function saveNutritionProfile(
   clientId: string,
   data: NutritionProfileInput
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
   try {
     // Use admin client - coach writes to another user profile (bypasses RLS)

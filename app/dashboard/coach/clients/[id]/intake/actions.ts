@@ -1,5 +1,5 @@
 "use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ClientIntakeInput } from "@/utils/client-intake";
@@ -8,7 +8,7 @@ export async function saveClientIntake(
   clientId: string,
   data: ClientIntakeInput
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
@@ -34,7 +34,7 @@ export async function updateClientStepGoal(
   clientId: string,
   dailyGoal: number
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
   if (dailyGoal <= 0) return { error: "Objectif invalide." };
 
@@ -54,7 +54,7 @@ export async function addPeriodLog(
   clientId: string,
   data: { start_date: string; end_date: string | null; flow: string | null; symptoms: string[]; notes: string | null }
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
@@ -71,7 +71,7 @@ export async function addPeriodLog(
 }
 
 export async function deletePeriodLog(clientId: string, logId: string): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClientOrSelf(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();

@@ -64,7 +64,8 @@ export async function submitCorrection(
 
   notifyCoachNewCorrection(
     profile?.full_name ?? "Un client",
-    exercise_name
+    exercise_name,
+    user.id
   ).catch(() => {});
 
   revalidatePath("/dashboard/client/program");

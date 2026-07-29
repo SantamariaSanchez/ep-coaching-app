@@ -1,5 +1,5 @@
 "use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getClientIntake } from "@/utils/client-intake";
 import { getLatestWeight } from "@/utils/daily-logs";
@@ -44,7 +44,7 @@ export interface PlanSuggestions {
 // un plan à sa place.
 export async function generatePlanSuggestions(clientId: string): Promise<PlanSuggestions> {
   const empty = { warnings: [], nutrition: null, program: null, roadmap: null };
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error, ...empty };
 
   const intake = await getClientIntake(clientId);

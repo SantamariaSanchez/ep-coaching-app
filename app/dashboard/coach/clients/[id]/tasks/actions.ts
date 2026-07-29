@@ -1,6 +1,6 @@
 "use server";
 
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { revalidatePath } from "next/cache";
@@ -11,7 +11,7 @@ export async function createClientTask(
   icon: string,
   nagMinutes: number
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -45,12 +45,12 @@ export async function deleteClientTask(
   clientId: string,
   taskId: string
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   try {
     const supabase = createAdminClient();
-    await supabase.from("client_tasks").delete().eq("id", taskId);
+    await supabase.from("client_tasks").delete().eq("id", taskId).eq("client_id", clientId);
     revalidatePath(`/dashboard/coach/clients/${clientId}/tasks`);
     return {};
   } catch {
@@ -62,7 +62,7 @@ export async function sendMotivationMessage(
   clientId: string,
   message: string
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   try {

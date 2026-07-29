@@ -19,7 +19,7 @@ export default async function ClientCheckinsPage({
 
   const [profile, client, checkins] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getClientCheckins(id),
   ]);
 

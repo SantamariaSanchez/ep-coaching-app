@@ -17,7 +17,7 @@ export default async function CoachClientLogbookPage({
 
   const [profile, client, sessions, records] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getAllClientSessions(id, 10),
     getClientPersonalRecords(id),
   ]);

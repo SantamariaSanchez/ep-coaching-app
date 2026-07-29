@@ -14,7 +14,7 @@ export async function GET(
   }
 
   const { clientId } = await params;
-  const client = await getClientById(clientId);
+  const client = await getClientById(clientId, user.id);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json({ full_name: client.full_name });

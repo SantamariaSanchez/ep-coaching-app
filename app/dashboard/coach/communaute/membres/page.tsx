@@ -10,7 +10,7 @@ export default async function CoachMembresPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/communaute/victoires");
 
-  const members = await getCommunityMembers();
+  const members = await getCommunityMembers(user.id);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">

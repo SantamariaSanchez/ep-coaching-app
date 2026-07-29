@@ -18,7 +18,7 @@ export default async function CoachClientTasksPage({
 
   const [profile, client, tasks] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getClientTasks(id),
   ]);
 

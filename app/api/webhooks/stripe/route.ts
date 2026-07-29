@@ -28,15 +28,39 @@ export async function POST(request: Request) {
       const userId = session.client_reference_id;
       if (!userId) break;
 
-      await admin
+      const stripeCustomerId = typeof session.customer === "string" ? session.customer : null;
+      const stripeSubscriptionId =
+        typeof session.subscription === "string" ? session.subscription : null;
+
+      // Un même Payment Link mécanisme sert deux abonnements différents :
+      // un client qui paie son coaching (subscription_status), ou un coach
+      // qui paie son accès à la plateforme EP Coaching (platform_subscription_status).
+      // On distingue via le rôle du profil cible, jamais via l'URL utilisée.
+      const { data: profile } = await admin
         .from("profiles")
-        .update({
-          subscription_status: "active",
-          stripe_customer_id: typeof session.customer === "string" ? session.customer : null,
-          stripe_subscription_id:
-            typeof session.subscription === "string" ? session.subscription : null,
-        })
-        .eq("id", userId);
+        .select("role")
+        .eq("id", userId)
+        .single();
+
+      if (profile?.role === "coach") {
+        await admin
+          .from("profiles")
+          .update({
+            platform_subscription_status: "active",
+            platform_stripe_customer_id: stripeCustomerId,
+            platform_stripe_subscription_id: stripeSubscriptionId,
+          })
+          .eq("id", userId);
+      } else {
+        await admin
+          .from("profiles")
+          .update({
+            subscription_status: "active",
+            stripe_customer_id: stripeCustomerId,
+            stripe_subscription_id: stripeSubscriptionId,
+          })
+          .eq("id", userId);
+      }
       break;
     }
 
@@ -49,10 +73,17 @@ export async function POST(request: Request) {
 
       const isActive = subscription.status === "active" || subscription.status === "trialing";
 
+      // Le customerId n'apparaît que dans l'une des deux colonnes selon
+      // qu'il s'agit d'un client ou d'un coach — l'autre update est un no-op.
       await admin
         .from("profiles")
         .update({ subscription_status: isActive ? "active" : "canceled" })
         .eq("stripe_customer_id", customerId);
+
+      await admin
+        .from("profiles")
+        .update({ platform_subscription_status: isActive ? "active" : "canceled" })
+        .eq("platform_stripe_customer_id", customerId);
       break;
     }
 

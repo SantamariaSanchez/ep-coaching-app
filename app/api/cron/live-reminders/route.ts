@@ -22,7 +22,7 @@ export async function GET(req: Request) {
 
   const { data: events } = await supabase
     .from("live_events")
-    .select("id, title, type, invited_client_id, starts_at")
+    .select("id, title, type, invited_client_id, starts_at, host_id")
     .eq("status", "scheduled")
     .is("reminder_sent_at", null)
     .gte("starts_at", now.toISOString())
@@ -44,7 +44,8 @@ export async function GET(req: Request) {
     if (event.type === "1to1" && event.invited_client_id) {
       await notifyUser(event.invited_client_id as string, params);
     } else {
-      const clients = await getClients();
+      // Un webinaire/qna n'est diffusé qu'aux clients DU coach qui l'héberge.
+      const clients = await getClients(event.host_id as string);
       await notifyUsers(clients.map((c) => c.id), {
         ...params,
         title: `⏰ ${LIVE_TYPE_LABELS[event.type as LiveType]} dans quelques minutes`,

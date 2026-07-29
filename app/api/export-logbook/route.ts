@@ -19,7 +19,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "clientId required" }, { status: 400 });
   }
 
-  const client = await getClientById(clientId);
+  const client = await getClientById(clientId, user.id);
   if (!client) {
     return NextResponse.json({ error: "Client not found" }, { status: 404 });
   }

@@ -22,7 +22,7 @@ export default async function CoachClientMessagesPage({
 
   const [profile, client] = await Promise.all([
     getProfile(user.id),
-    getClientById(clientId),
+    getClientById(clientId, user.id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");

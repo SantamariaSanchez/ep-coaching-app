@@ -33,7 +33,7 @@ export default async function CoachClientNutritionPage({
 
   const [profile, client] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");

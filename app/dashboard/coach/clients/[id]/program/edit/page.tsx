@@ -20,7 +20,7 @@ export default async function EditProgramPage({
 
   const [profile, client, program, intake] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getActiveProgram(id),
     getClientIntake(id),
   ]);

@@ -40,6 +40,7 @@ export async function GET(
     .from("profiles")
     .select("full_name")
     .eq("id", clientId)
+    .eq("coach_id", user.id)
     .single();
 
   if (!clientProfile) {

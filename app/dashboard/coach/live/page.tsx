@@ -12,8 +12,8 @@ export default async function CoachLivePage() {
   if (profile?.role === "client") redirect("/dashboard/client/live");
 
   const [events, clients] = await Promise.all([
-    getAllLiveEventsForCoach(),
-    getClients(),
+    getAllLiveEventsForCoach(user.id),
+    getClients(user.id),
   ]);
 
   return (

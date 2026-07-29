@@ -1,5 +1,5 @@
 ﻿"use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClient } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -10,10 +10,10 @@ export async function replyToCheckin(
   prevState: ReplyState,
   formData: FormData
 ): Promise<ReplyState> {
-  const guard = await requireCoach();
-  if (!guard.ok) return { error: guard.error };
   const checkinId = formData.get("checkin_id") as string;
   const clientId = formData.get("client_id") as string;
+  const guard = await requireOwnClient(clientId);
+  if (!guard.ok) return { error: guard.error };
   const coachNotes = (formData.get("coach_notes") as string).trim();
   const coachRating = formData.get("coach_rating") as string;
 
@@ -47,7 +47,7 @@ export async function updateCheckinDay(
   prevState: DaySettingsState,
   formData: FormData
 ): Promise<DaySettingsState> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const day = parseInt(formData.get("checkin_day") as string, 10);
@@ -78,7 +78,7 @@ export async function attachCoachVideo(
   clientId: string,
   videoPath: string
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
@@ -106,7 +106,7 @@ export async function sendCorrectionFeedback(
   _prev: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();

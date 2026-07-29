@@ -1,7 +1,7 @@
 ﻿"use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 
@@ -21,7 +21,7 @@ export async function createDietPlan(
   structure: DietStructure = "daily"
 ): Promise<{ error?: string; id?: string }> {
   try {
-    const guard = await requireCoach();
+    const guard = await requireOwnClientOrSelf(clientId);
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
@@ -72,7 +72,7 @@ export async function deactivateDietPlan(
   planId: string
 ): Promise<{ error?: string }> {
   try {
-    const guard = await requireCoach();
+    const guard = await requireOwnClientOrSelf(clientId);
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
@@ -96,7 +96,7 @@ export async function activateDietPlan(
   planId: string
 ): Promise<{ error?: string }> {
   try {
-    const guard = await requireCoach();
+    const guard = await requireOwnClientOrSelf(clientId);
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
@@ -128,7 +128,7 @@ export async function deleteDietPlan(
   planId: string
 ): Promise<{ error?: string }> {
   try {
-    const guard = await requireCoach();
+    const guard = await requireOwnClientOrSelf(clientId);
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes

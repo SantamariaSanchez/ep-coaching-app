@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { insertNotification, getCoachUserId } from "@/utils/insert-notification";
+import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 
@@ -82,10 +82,10 @@ export async function upsertDailyLog(
 
     // Notify coach — fire-and-forget
     const clientName = profile.full_name ?? "Un client";
-    getCoachUserId().then((coachId) => {
-      if (!coachId) return;
+    getCoachForClient(user.id).then((coach) => {
+      if (!coach) return;
       insertNotification({
-        userId: coachId,
+        userId: coach.id,
         type: "new_daily_log",
         title: `Bilan quotidien de ${clientName}`,
         body: `${clientName} a soumis son bilan du ${log_date}.`,

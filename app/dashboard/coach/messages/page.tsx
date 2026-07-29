@@ -21,7 +21,7 @@ export default async function CoachMessagesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");
 
-  const [clients, supabase] = await Promise.all([getAllMessageableMembers(), createServerSupabase()]);
+  const [clients, supabase] = await Promise.all([getAllMessageableMembers(user.id), createServerSupabase()]);
   const clientIds = clients.map((c) => c.id);
 
   const { data: lastMessages } = await supabase

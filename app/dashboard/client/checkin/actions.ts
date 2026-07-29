@@ -3,7 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getWeekStart, getISOWeek } from "@/utils/checkins";
-import { insertNotification, getCoachUserId } from "@/utils/insert-notification";
+import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCheckin } from "@/app/actions/notifications";
 
@@ -106,13 +106,13 @@ export async function submitCheckin(
   const clientName = profile.full_name ?? "Un client";
 
   // Email via Brevo (fire-and-forget)
-  notifyCoachNewCheckin(clientName).catch(() => {});
+  notifyCoachNewCheckin(clientName, user.id).catch(() => {});
 
   // DB notification (fire-and-forget)
-  getCoachUserId().then((coachId) => {
-    if (!coachId) return;
+  getCoachForClient(user.id).then((coach) => {
+    if (!coach) return;
     insertNotification({
-      userId: coachId,
+      userId: coach.id,
       type: "new_checkin",
       title: `Nouveau check-in de ${clientName}`,
       body: `${clientName} vient d'envoyer son check-in hebdomadaire (S${weekNumber}).`,

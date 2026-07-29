@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Heart, PhoneCall } from "lucide-react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { selfSignup } from "./actions";
@@ -81,6 +81,8 @@ const STEPS: Step[] = ["info", "objectif", "niveau", "source", "choix"];
 
 export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const inviteCode = searchParams.get("coach") ?? undefined;
   const [step, setStep] = useState<Step>("info");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -122,7 +124,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
     setSubmitting(planId ?? "free");
     setError(null);
     try {
-      const result = await selfSignup({ fullName, email, password, objectif, niveau, source });
+      const result = await selfSignup({ fullName, email, password, objectif, niveau, source, inviteCode });
       if ("error" in result) {
         setError(result.error);
         setSubmitting(null);

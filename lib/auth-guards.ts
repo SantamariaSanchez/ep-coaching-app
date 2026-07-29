@@ -35,6 +35,63 @@ export async function requireCoach(): Promise<GuardResult> {
   }
 }
 
+/**
+ * Verify the user is authenticated, has role="coach", AND is the coach
+ * assigned to the given client (multi-coach isolation — a coach must
+ * never be able to read/write another coach's client through a guessed
+ * or crafted clientId).
+ */
+export async function requireOwnClient(clientId: string): Promise<GuardResult> {
+  const guard = await requireCoach();
+  if (!guard.ok) return guard;
+
+  try {
+    const admin = createAdminClient();
+    const { data: client } = await admin
+      .from("profiles")
+      .select("coach_id")
+      .eq("id", clientId)
+      .eq("role", "client")
+      .single();
+
+    if (!client || client.coach_id !== guard.userId) {
+      return { ok: false, error: "Accès non autorisé à ce client." };
+    }
+    return guard;
+  } catch {
+    return { ok: false, error: "Erreur d'authentification." };
+  }
+}
+
+/**
+ * Comme requireOwnClient, mais autorise aussi le coach à agir sur SES
+ * PROPRES données (clientId === son propre id) — plusieurs écrans "Moi"
+ * du coach (profil, nutrition, photos/compétition) réutilisent les mêmes
+ * server actions que la fiche client, avec clientId = l'id du coach.
+ */
+export async function requireOwnClientOrSelf(clientId: string): Promise<GuardResult> {
+  const guard = await requireCoach();
+  if (!guard.ok) return guard;
+  if (clientId === guard.userId) return guard;
+
+  try {
+    const admin = createAdminClient();
+    const { data: client } = await admin
+      .from("profiles")
+      .select("coach_id")
+      .eq("id", clientId)
+      .eq("role", "client")
+      .single();
+
+    if (!client || client.coach_id !== guard.userId) {
+      return { ok: false, error: "Accès non autorisé à ce client." };
+    }
+    return guard;
+  } catch {
+    return { ok: false, error: "Erreur d'authentification." };
+  }
+}
+
 /** Verify the user is authenticated AND has role="client" */
 export async function requireClient(): Promise<GuardResult> {
   try {
@@ -53,6 +110,31 @@ export async function requireClient(): Promise<GuardResult> {
       return { ok: false, error: "Accès réservé au client." };
     }
     return { ok: true, userId: user.id, role: "client" };
+  } catch {
+    return { ok: false, error: "Erreur d'authentification." };
+  }
+}
+
+/**
+ * Verify the user is authenticated AND is the platform owner (EP Coaching)
+ * — pour les écrans d'administration multi-coach (jamais pour un coach tiers).
+ */
+export async function requirePlatformOwner(): Promise<GuardResult> {
+  const guard = await requireCoach();
+  if (!guard.ok) return guard;
+
+  try {
+    const admin = createAdminClient();
+    const { data: profile } = await admin
+      .from("profiles")
+      .select("is_platform_owner")
+      .eq("id", guard.userId)
+      .single();
+
+    if (!profile?.is_platform_owner) {
+      return { ok: false, error: "Accès réservé au propriétaire de la plateforme." };
+    }
+    return guard;
   } catch {
     return { ok: false, error: "Erreur d'authentification." };
   }

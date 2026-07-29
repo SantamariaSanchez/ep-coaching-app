@@ -79,7 +79,8 @@ export async function submitPhotoUpdate(
     notifyCoachNewPhotoUpdate(
       profile.full_name ?? "Un client",
       TYPE_LABELS[type],
-      category
+      category,
+      user.id
     ).catch(() => {});
 
     revalidatePath("/dashboard/client/photos");

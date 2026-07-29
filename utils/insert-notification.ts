@@ -26,14 +26,26 @@ export async function insertNotification({
   });
 }
 
-/** Returns the first profile with role='coach'. Used to notify the coach. */
-export async function getCoachUserId(): Promise<string | null> {
+/**
+ * Returns the coach ASSIGNED to a given client — jamais "un" coach au
+ * hasard : en multi-coach, notifier le mauvais coach serait une vraie
+ * fuite (il verrait qu'un client qui n'est pas le sien vient d'agir).
+ */
+export async function getCoachForClient(
+  clientId: string
+): Promise<{ id: string; email: string | null } | null> {
   const supabase = createAdminClient();
-  const { data } = await supabase
+  const { data: client } = await supabase
     .from("profiles")
-    .select("id")
-    .eq("role", "coach")
-    .limit(1)
+    .select("coach_id")
+    .eq("id", clientId)
     .maybeSingle();
-  return (data as { id: string } | null)?.id ?? null;
+  if (!client?.coach_id) return null;
+
+  const { data: coach } = await supabase
+    .from("profiles")
+    .select("id, email")
+    .eq("id", client.coach_id)
+    .maybeSingle();
+  return (coach as { id: string; email: string | null } | null) ?? null;
 }

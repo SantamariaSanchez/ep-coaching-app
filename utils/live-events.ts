@@ -19,16 +19,21 @@ async function attachInvitedNames(events: Record<string, unknown>[], admin: Retu
   }));
 }
 
-// All events visible to a given client: group events (webinaire/qna) for
-// everyone, plus 1:1 events specifically addressed to them.
-export async function getUpcomingLiveEventsForClient(clientId: string): Promise<LiveEvent[]> {
+// All events visible to a given client: group events (webinaire/qna) hébergés
+// par SON coach, plus les 1:1 spécifiquement adressés à lui — jamais les
+// group events d'un autre coach de la plateforme.
+export async function getUpcomingLiveEventsForClient(clientId: string, coachId: string | null): Promise<LiveEvent[]> {
   try {
     const admin = createAdminClient();
+    // Sans coach attribué (cas limite), on ne montre que les 1:1 adressés
+    // au client — jamais les group events, faute de savoir lesquels sont
+    // "les siens".
+    const groupClause = coachId ? `and(type.neq.1to1,host_id.eq.${coachId})` : "type.eq.__none__";
     const { data } = await admin
       .from("live_events")
       .select("*")
       .eq("status", "scheduled")
-      .or(`type.neq.1to1,invited_client_id.eq.${clientId}`)
+      .or(`${groupClause},invited_client_id.eq.${clientId}`)
       .order("starts_at", { ascending: true });
 
     if (!data) return [];
@@ -41,16 +46,17 @@ export async function getUpcomingLiveEventsForClient(clientId: string): Promise<
 // Lives passés (terminés explicitement par l'hôte, ou dont l'horaire +
 // marge est simplement écoulé) — pas de rediff vidéo (pas d'enregistrement
 // disponible sur ce plan Jitsi gratuit), juste un historique.
-export async function getPastLiveEventsForClient(clientId: string, limit = 15): Promise<LiveEvent[]> {
+export async function getPastLiveEventsForClient(clientId: string, coachId: string | null, limit = 15): Promise<LiveEvent[]> {
   try {
     const admin = createAdminClient();
     const cutoff = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+    const groupClause = coachId ? `and(type.neq.1to1,host_id.eq.${coachId})` : "type.eq.__none__";
     const { data } = await admin
       .from("live_events")
       .select("*")
       .or(`status.eq.ended,starts_at.lt.${cutoff}`)
       .neq("status", "cancelled")
-      .or(`type.neq.1to1,invited_client_id.eq.${clientId}`)
+      .or(`${groupClause},invited_client_id.eq.${clientId}`)
       .order("starts_at", { ascending: false })
       .limit(limit);
 
@@ -61,12 +67,15 @@ export async function getPastLiveEventsForClient(clientId: string, limit = 15): 
   }
 }
 
-export async function getAllLiveEventsForCoach(): Promise<LiveEvent[]> {
+// Un coach ne doit voir que les lives qu'il héberge lui-même — jamais ceux
+// d'un autre coach, même s'ils partagent la même plateforme.
+export async function getAllLiveEventsForCoach(hostId: string): Promise<LiveEvent[]> {
   try {
     const admin = createAdminClient();
     const { data } = await admin
       .from("live_events")
       .select("*")
+      .eq("host_id", hostId)
       .order("starts_at", { ascending: true });
 
     if (!data) return [];

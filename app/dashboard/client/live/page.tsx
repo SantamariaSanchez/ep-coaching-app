@@ -14,8 +14,8 @@ export default async function ClientLivePage() {
   // (status="scheduled") étaient chargés, la section "Passés" de
   // LiveEventsList ne recevait donc jamais rien à afficher.
   const [upcoming, past] = await Promise.all([
-    getUpcomingLiveEventsForClient(user.id),
-    getPastLiveEventsForClient(user.id),
+    getUpcomingLiveEventsForClient(user.id, profile?.coach_id ?? null),
+    getPastLiveEventsForClient(user.id, profile?.coach_id ?? null),
   ]);
   const events = [...upcoming, ...past];
 

@@ -44,10 +44,18 @@ export interface Profile {
   onboarding_completed_at: string | null;
   // Jour de check-in hebdo fixe : 1 = lundi ... 7 = dimanche.
   checkin_day: number;
+  // Multi-coach : à quel coach ce client est rattaché (null = pas encore
+  // attribué). Pour un profil role="coach", identifie le compte d'origine
+  // EP Coaching (exempté d'abonnement plateforme, seul à garder la
+  // Communauté) et son statut d'abonnement à la plateforme elle-même.
+  coach_id: string | null;
+  is_platform_owner: boolean;
+  platform_subscription_status: "inactive" | "active" | "canceled";
+  invite_code: string | null;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, invite_code";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
@@ -63,11 +71,97 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   }
 }
 
-export async function getClients(): Promise<Profile[]> {
+// Multi-coach : chaque coach ne voit que SES propres clients, jamais ceux
+// d'un autre coach (y compris le propriétaire de la plateforme). coachId
+// doit toujours être l'id du coach connecté — jamais une valeur déduite
+// d'un input utilisateur.
+export async function getClients(coachId: string): Promise<Profile[]> {
   try {
-    // Use admin client to bypass RLS — coach must see ALL clients regardless of policies.
-    // Only paying clients show up here — free community members are managed
-    // separately (see getCommunityMembers) since the coach has no oversight on them.
+    // Use admin client to bypass RLS — coach must see ALL of their own
+    // clients regardless of policies. Only paying clients show up here —
+    // free community members are managed separately (see getCommunityMembers).
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(PROFILE_FIELDS)
+      .eq("role", "client")
+      .eq("coach_id", coachId)
+      .eq("subscription_status", "active")
+      .order("full_name");
+    return (data as Profile[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// Total de membres inscrits chez CE coach (clients payants + communauté
+// gratuite), tous statuts confondus — sert de repère de croissance sur le
+// dashboard coach, distinct de getClients() qui ne compte que les payants actifs.
+export async function getTotalMembersCount(coachId: string): Promise<number> {
+  try {
+    const admin = createAdminClient();
+    const { count } = await admin
+      .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "client")
+      .eq("coach_id", coachId);
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+// Le coach doit pouvoir écrire à n'importe quel membre parmi les SIENS
+// (clients payants et membres gratuits de sa communauté), pas seulement
+// ses clients actifs — utilisé par la liste des messages coach.
+export async function getAllMessageableMembers(coachId: string): Promise<Profile[]> {
+  const [clients, communityMembers] = await Promise.all([
+    getClients(coachId),
+    getCommunityMembers(coachId),
+  ]);
+  return [...clients, ...communityMembers];
+}
+
+export async function getCommunityMembers(coachId: string): Promise<Profile[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(PROFILE_FIELDS)
+      .eq("role", "client")
+      .eq("coach_id", coachId)
+      .neq("subscription_status", "active")
+      .order("start_date", { ascending: false });
+    return (data as Profile[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// Renvoie le client uniquement s'il appartient bien à coachId — un coach ne
+// doit jamais pouvoir lire la fiche d'un client qui n'est pas le sien, même
+// en devinant/forgeant un id dans l'URL.
+export async function getClientById(id: string, coachId: string): Promise<Profile | null> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(PROFILE_FIELDS)
+      .eq("id", id)
+      .eq("role", "client")
+      .eq("coach_id", coachId)
+      .single();
+    return (data as Profile) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+// Réservé aux jobs système (cron) qui doivent agir sur tous les clients de
+// la plateforme, tous coachs confondus (ex. rappels programmés) — ne JAMAIS
+// utiliser cette fonction dans une page ou action déclenchée par un coach.
+export async function getAllActiveClientsSystemWide(): Promise<Profile[]> {
+  try {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
@@ -81,65 +175,26 @@ export async function getClients(): Promise<Profile[]> {
   }
 }
 
-// Total de membres inscrits (clients payants + communauté gratuite), tous
-// statuts confondus — sert de repère de croissance sur le dashboard coach,
-// distinct de getClients() qui ne compte que les clients payants actifs.
-export async function getTotalMembersCount(): Promise<number> {
-  try {
-    const admin = createAdminClient();
-    const { count } = await admin
-      .from("profiles")
-      .select("id", { count: "exact", head: true })
-      .eq("role", "client");
-    return count ?? 0;
-  } catch {
-    return 0;
-  }
+export function isSubscribed(profile: Profile | null): boolean {
+  return profile?.subscription_status === "active";
 }
 
-// Le coach doit pouvoir écrire à n'importe quel membre (clients payants
-// et membres gratuits de la communauté), pas seulement à ses clients actifs —
-// utilisé par la liste des messages coach.
-export async function getAllMessageableMembers(): Promise<Profile[]> {
-  const [clients, communityMembers] = await Promise.all([
-    getClients(),
-    getCommunityMembers(),
-  ]);
-  return [...clients, ...communityMembers];
-}
-
-export async function getCommunityMembers(): Promise<Profile[]> {
+// Réservé au propriétaire de la plateforme (is_platform_owner) — liste tous
+// les coachs tiers pour la gestion de leur abonnement plateforme. Ne JAMAIS
+// exposer à un coach normal : ce n'est pas cloisonné par coach_id, par nature.
+export async function getAllCoaches(): Promise<Profile[]> {
   try {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
       .select(PROFILE_FIELDS)
-      .eq("role", "client")
-      .neq("subscription_status", "active")
-      .order("start_date", { ascending: false });
+      .eq("role", "coach")
+      .eq("is_platform_owner", false)
+      .order("full_name");
     return (data as Profile[]) ?? [];
   } catch {
     return [];
   }
-}
-
-export async function getClientById(id: string): Promise<Profile | null> {
-  try {
-    const admin = createAdminClient();
-    const { data } = await admin
-      .from("profiles")
-      .select(PROFILE_FIELDS)
-      .eq("id", id)
-      .eq("role", "client")
-      .single();
-    return (data as Profile) ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export function isSubscribed(profile: Profile | null): boolean {
-  return profile?.subscription_status === "active";
 }
 
 export type RoleBadge = "Coach" | "Premium" | "Membre gratuit";

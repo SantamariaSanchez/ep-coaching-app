@@ -19,7 +19,7 @@ export default async function CoachClientProgramPage({
 
   const [profile, client, program, workoutLogs, sessionsThisWeek] = await Promise.all([
     getProfile(user.id),
-    getClientById(id),
+    getClientById(id, user.id),
     getActiveProgram(id),
     getRecentWorkoutLogs(id),
     getSessionsThisWeekCount(id),

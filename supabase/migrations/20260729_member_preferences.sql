@@ -1,6 +1,8 @@
 -- ═══════════════════════════════════════════════════════════════════════
 -- EP Coaching — Préférences membre (questionnaire de personnalisation)
 -- Exécute dans Supabase SQL Editor
+-- ⚠️ À exécuter APRÈS 20260729b_multi_coach_foundation.sql (dépend de la
+-- fonction is_own_coach() définie là-bas).
 -- ═══════════════════════════════════════════════════════════════════════
 -- Contexte : questionnaire de 5 min proposé à l'onboarding pour adapter
 -- l'appli au profil de la personne (débutant vs confirmé, objectif,
@@ -23,5 +25,5 @@ alter table public.member_preferences enable row level security;
 
 drop policy if exists "Users manage own preferences" on public.member_preferences;
 create policy "Users manage own preferences" on public.member_preferences
-  for all using (id = auth.uid() or public.is_coach())
+  for all using (id = auth.uid() or public.is_own_coach(id))
   with check (id = auth.uid());

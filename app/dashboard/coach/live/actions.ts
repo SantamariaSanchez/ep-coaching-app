@@ -72,7 +72,7 @@ export async function createLiveEvent(
     } else {
       // webinaire / qna — diffusion à tous les clients abonnés (le live
       // n'est pas visible des membres gratuits, pas la peine de les notifier).
-      getClients()
+      getClients(guard.userId)
         .then((clients) =>
           notifyUsers(
             clients.map((c) => c.id),
@@ -156,7 +156,7 @@ export async function updateLiveEvent(
     if (existing.type === "1to1" && input.invitedClientId) {
       notifyUser(input.invitedClientId, params).catch(() => {});
     } else if (existing.type !== "1to1") {
-      getClients()
+      getClients(guard.userId)
         .then((clients) => notifyUsers(clients.map((c) => c.id), params))
         .catch(() => {});
     }
@@ -200,7 +200,7 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
       if (event.type === "1to1" && event.invited_client_id) {
         notifyUser(event.invited_client_id, params).catch(() => {});
       } else {
-        getClients()
+        getClients(guard.userId)
           .then((clients) => notifyUsers(clients.map((c) => c.id), params))
           .catch(() => {});
       }

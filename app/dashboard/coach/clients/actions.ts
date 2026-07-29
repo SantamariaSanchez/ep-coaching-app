@@ -1,5 +1,5 @@
 "use server";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireOwnClient } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
@@ -14,7 +14,7 @@ export async function setClientSubscriptionStatus(
   clientId: string,
   status: "free" | "active" | "canceled"
 ): Promise<{ error?: string; success?: boolean }> {
-  const guard = await requireCoach();
+  const guard = await requireOwnClient(clientId);
   if (!guard.ok) return { error: guard.error };
 
   const admin = createAdminClient();

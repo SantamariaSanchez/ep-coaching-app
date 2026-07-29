@@ -1,7 +1,21 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+
+// Un coach ne peut agir que sur SES propres clients — jamais sur ceux d'un
+// autre coach, même en connaissant leur id.
+async function canAccessRoadmap(userId: string, clientId: string): Promise<boolean> {
+  if (userId === clientId) return true;
+  const admin = createAdminClient();
+  const { data: client } = await admin
+    .from("profiles")
+    .select("coach_id")
+    .eq("id", clientId)
+    .eq("role", "client")
+    .single();
+  return !!client && client.coach_id === userId;
+}
 
 // GET — load roadmap for a client
 export async function GET(
@@ -13,9 +27,9 @@ export async function GET(
 
   const { clientId } = await params;
 
-  // A client can only read their own roadmap; the coach can read any.
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach" && user.id !== clientId) {
+  // A client can only read their own roadmap; the coach can only read
+  // the roadmap of clients assigned to them.
+  if (!(await canAccessRoadmap(user.id, clientId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -50,11 +64,9 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { clientId } = await params;
-  const profile = await getProfile(user.id);
-  // Coach can edit any client's roadmap; a client can only edit their own
-  // (free community members build their own roadmap autonomously).
-  const isOwnRoadmap = profile?.role === "client" && user.id === clientId;
-  if (profile?.role !== "coach" && !isOwnRoadmap) {
+  // Coach can edit only their own clients' roadmap; a client can only edit
+  // their own (free community members build their own roadmap autonomously).
+  if (!(await canAccessRoadmap(user.id, clientId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

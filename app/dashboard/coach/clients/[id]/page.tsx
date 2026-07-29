@@ -62,12 +62,10 @@ export default async function ClientDetailPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client] = await Promise.all([
-    getProfile(user.id),
-    getClientById(id),
-  ]);
-
+  const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");
+
+  const client = await getClientById(id, user.id);
   if (!client) notFound();
 
   const today = new Date().toISOString().split("T")[0];

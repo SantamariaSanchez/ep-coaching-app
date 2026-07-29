@@ -1,9 +1,11 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { Suspense, useActionState, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, Heart } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import PasswordInput from "@/components/ui/PasswordInput";
+import { createClientSupabase } from "@/lib/supabase-client";
 import { loginClient } from "./actions";
 import SignupFlow from "./SignupFlow";
 
@@ -32,8 +34,72 @@ const labelStyle: React.CSSProperties = {
 
 // ── Connexion form ────────────────────────────────────────────────────────────
 
+function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone: () => void }) {
+  const [email, setEmail] = useState(initialEmail);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  async function send() {
+    if (!email.trim()) return;
+    setSending(true);
+    const supabase = createClientSupabase();
+    await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
+    });
+    setSending(false);
+    setSent(true);
+  }
+
+  return (
+    <div style={{
+      marginTop: 4, padding: "14px 16px", borderRadius: 8,
+      background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)",
+    }}>
+      {sent ? (
+        <p style={{ fontSize: 13, color: "#F5EDED", margin: 0 }}>
+          Si un compte existe avec cet email, un lien de réinitialisation vient d&apos;être envoyé.
+        </p>
+      ) : (
+        <>
+          <label style={labelStyle}>Email pour réinitialiser</label>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            placeholder="ton@email.com"
+            style={{ ...inputStyle, marginBottom: 10 }}
+          />
+          <div style={{ display: "flex", gap: 10 }}>
+            <button
+              type="button"
+              onClick={send}
+              disabled={sending}
+              style={{
+                flex: 1, height: 40, borderRadius: 8, border: "none",
+                background: "#E01E1E", color: "#fff", fontWeight: 700, fontSize: 12,
+                textTransform: "uppercase", letterSpacing: "0.05em", cursor: "pointer",
+              }}
+            >
+              {sending ? "Envoi..." : "Envoyer le lien"}
+            </button>
+            <button
+              type="button"
+              onClick={onDone}
+              style={{ background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+            >
+              Annuler
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
   const [state, formAction, pending] = useActionState(loginClient, null);
+  const [email, setEmail] = useState("");
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   return (
     <>
@@ -43,12 +109,32 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
       <form action={formAction} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
           <label style={labelStyle}>Email</label>
-          <input name="email" type="email" required placeholder="ton@email.com" style={inputStyle} />
+          <input
+            name="email"
+            type="email"
+            required
+            placeholder="ton@email.com"
+            style={inputStyle}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
         </div>
         <div>
           <label style={labelStyle}>Mot de passe</label>
-          <input name="password" type="password" required placeholder="••••••••" style={inputStyle} />
+          <PasswordInput name="password" required placeholder="••••••••" inputStyle={inputStyle} autoComplete="current-password" />
+          <button
+            type="button"
+            onClick={() => setForgotOpen((v) => !v)}
+            style={{
+              display: "block", marginTop: 8, background: "none", border: "none",
+              color: "rgba(245,237,237,0.35)", fontSize: 11, fontWeight: 600, cursor: "pointer", padding: 0,
+            }}
+          >
+            Mot de passe oublié ?
+          </button>
         </div>
+
+        {forgotOpen && <ForgotPassword initialEmail={email} onDone={() => setForgotOpen(false)} />}
 
         {state?.error && (
           <div style={{
@@ -143,7 +229,9 @@ export default function ClientAuthPage() {
           {tab === "connexion" ? (
             <ConnexionForm onSignupClick={() => setTab("inscription")} />
           ) : (
-            <SignupFlow onLoginClick={() => setTab("connexion")} />
+            <Suspense fallback={null}>
+              <SignupFlow onLoginClick={() => setTab("connexion")} />
+            </Suspense>
           )}
         </div>
       </div>

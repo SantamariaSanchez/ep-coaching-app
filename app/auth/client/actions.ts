@@ -18,9 +18,40 @@ export interface SelfSignupInput {
   objectif: string;
   niveau: string;
   source: string;
+  // Code d'invitation du coach dont ce nouveau membre est le client
+  // (partagé par le coach, ex. lien /auth/client?coach=CODE). Absent ou
+  // invalide → rattachement au propriétaire de la plateforme (EP Coaching).
+  inviteCode?: string;
 }
 
 export type SelfSignupResult = { error: string } | { success: true; userId: string };
+
+// Résout quel coach doit récupérer ce nouveau membre : le titulaire du code
+// d'invitation s'il est valide et a un abonnement plateforme actif, sinon
+// le propriétaire historique de la plateforme (comportement d'origine).
+async function resolveCoachId(
+  admin: ReturnType<typeof createAdminClient>,
+  inviteCode: string | undefined
+): Promise<{ id: string; email: string | null } | null> {
+  if (inviteCode) {
+    const { data: invited } = await admin
+      .from("profiles")
+      .select("id, email")
+      .eq("role", "coach")
+      .eq("invite_code", inviteCode)
+      .eq("platform_subscription_status", "active")
+      .maybeSingle();
+    if (invited) return invited;
+  }
+
+  const { data: owner } = await admin
+    .from("profiles")
+    .select("id, email")
+    .eq("role", "coach")
+    .eq("is_platform_owner", true)
+    .maybeSingle();
+  return owner ?? null;
+}
 
 // Self-serve signup — anyone can join the free community on their own.
 // Coaching access is unlocked separately via Stripe (see /dashboard/client/abonnement).
@@ -34,6 +65,8 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   }
 
   const admin = createAdminClient();
+
+  const coach = await resolveCoachId(admin, input.inviteCode);
 
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
@@ -59,6 +92,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     source: input.source || null,
     status: "active",
     start_date: new Date().toISOString().split("T")[0],
+    coach_id: coach?.id ?? null,
   });
 
   if (profileError) {
@@ -73,20 +107,22 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
 
-  try {
-    await sendBrevoEmail({
-      to: "peccoux.manu@gmail.com",
-      subject: `Nouveau membre communauté - ${fullName}`,
-      htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-        <h2 style="color:#E01E1E;margin-top:0;">Nouveau membre inscrit</h2>
-        <p><strong>Nom :</strong> ${fullName}</p>
-        <p><strong>Email :</strong> ${email}</p>
-        <p><strong>Objectif :</strong> ${input.objectif}</p>
-        <p><strong>Niveau :</strong> ${input.niveau} · <strong>Source :</strong> ${input.source}</p>
-        <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/coach/communaute/membres" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">Voir la communauté</a>
-      </div>`,
-    });
-  } catch (e) { console.error("Coach email error:", e); }
+  if (coach?.email) {
+    try {
+      await sendBrevoEmail({
+        to: coach.email,
+        subject: `Nouveau membre communauté - ${fullName}`,
+        htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
+          <h2 style="color:#E01E1E;margin-top:0;">Nouveau membre inscrit</h2>
+          <p><strong>Nom :</strong> ${fullName}</p>
+          <p><strong>Email :</strong> ${email}</p>
+          <p><strong>Objectif :</strong> ${input.objectif}</p>
+          <p><strong>Niveau :</strong> ${input.niveau} · <strong>Source :</strong> ${input.source}</p>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/coach/communaute/membres" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">Voir la communauté</a>
+        </div>`,
+      });
+    } catch (e) { console.error("Coach email error:", e); }
+  }
 
   return { success: true, userId: authData.user.id };
 }
