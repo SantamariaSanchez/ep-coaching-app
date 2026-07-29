@@ -3,12 +3,14 @@ import Link from "next/link";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { getLatestCoachNote } from "@/utils/notes";
+import { getMemberPreferences } from "@/utils/member-preferences";
+import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
-  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -114,7 +116,18 @@ const GUIDE_ITEMS = [
   },
 ];
 
-function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: string | null; level: string | null }) {
+function WelcomeGuide({
+  firstName,
+  goal,
+  level,
+  personalization,
+}: {
+  firstName: string;
+  goal: string | null;
+  level: string | null;
+  personalization: ReturnType<typeof derivePersonalization>;
+}) {
+  const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
   return (
     <div
       className="page-transition"
@@ -130,9 +143,7 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
           Salut {firstName} 👋
         </h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
-          Tout ce qui est listé ci-dessous, tu peux l&apos;utiliser dès maintenant,
-          en autonomie. Si un jour tu veux qu&apos;un vrai coach s&apos;occupe de ton
-          programme et ta nutrition, c&apos;est possible en plus, mais rien ne t&apos;y oblige.
+          {personalization.welcomeSubtitle}
         </p>
       </div>
 
@@ -157,11 +168,33 @@ function WelcomeGuide({ firstName, goal, level }: { firstName: string; goal: str
         </section>
       )}
 
+      {/* Idées reçues, adressées direct pour les profils qui en ont besoin */}
+      {personalization.mythBusters.length > 0 && (
+        <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
+          <p className="ep-section-title">On répond direct</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {personalization.mythBusters.map((m) => (
+              <div
+                key={m.id}
+                className="ep-card"
+                style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "flex-start" }}
+              >
+                <Lightbulb size={16} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 2 }} strokeWidth={1.8} />
+                <div>
+                  <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{m.title}</p>
+                  <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>{m.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Mini-guide */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
         <p className="ep-section-title">Ce qui est disponible</p>
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {GUIDE_ITEMS.map(({ href, icon: Icon, title, desc, locked }) => (
+          {items.map(({ href, icon: Icon, title, desc, locked }) => (
             <Link
               key={href}
               href={href}
@@ -272,6 +305,7 @@ export default async function ClientDashboard() {
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
+    const preferences = await getMemberPreferences(user.id);
     return (
       <>
         <PushPermission userId={user.id} />
@@ -279,6 +313,7 @@ export default async function ClientDashboard() {
           firstName={profile?.full_name?.split(" ")[0] ?? ""}
           goal={profile?.goal ?? null}
           level={profile?.level ?? null}
+          personalization={derivePersonalization(preferences)}
         />
       </>
     );

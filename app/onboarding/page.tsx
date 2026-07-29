@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import OnboardingTour from "@/components/onboarding/OnboardingTour";
+import OnboardingFlow from "@/components/onboarding/OnboardingFlow";
 
 export default async function OnboardingPage() {
   const user = await getUser();
@@ -11,5 +11,5 @@ export default async function OnboardingPage() {
   if (profile.role === "coach") redirect("/dashboard/coach");
   if (profile.onboarding_completed_at) redirect("/dashboard/client");
 
-  return <OnboardingTour />;
+  return <OnboardingFlow />;
 }

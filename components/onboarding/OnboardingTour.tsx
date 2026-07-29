@@ -1,14 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Dumbbell, Apple, Heart, Crown, ArrowRight, X,
   Image as ImageIcon, Sparkles, FlaskConical, Trophy,
-  GraduationCap,
+  GraduationCap, Lightbulb,
 } from "lucide-react";
-import { completeOnboarding } from "@/app/onboarding/actions";
+import type { PersonalizationProfile } from "@/lib/personalization";
 
 interface Slide {
   icon: React.ElementType;
@@ -81,6 +80,23 @@ const SLIDES: Slide[] = [
   },
 ];
 
+// Insère un slide "on répond direct" juste après l'accueil quand le
+// questionnaire de personnalisation a identifié des freins/idées reçues —
+// jamais pour les profils confirmés qui n'en ont pas besoin.
+function buildSlides(personalization: PersonalizationProfile): Slide[] {
+  if (personalization.mythBusters.length === 0) return SLIDES;
+
+  const mythSlide: Slide = {
+    icon: Lightbulb,
+    eyebrow: "On sait ce que tu penses",
+    title: "On répond direct à ce qui te freine",
+    desc: personalization.mythBusters.map((m) => `${m.title} — ${m.body}`).join("\n\n"),
+    bullets: personalization.mythBusters.map((m) => m.title.replace(/^"|"$/g, "")),
+  };
+
+  return [SLIDES[0], mythSlide, ...SLIDES.slice(1)];
+}
+
 function BulletRow({ items }: { items: string[] }) {
   return (
     <div className="flex flex-wrap gap-2 justify-center mt-5">
@@ -96,31 +112,28 @@ function BulletRow({ items }: { items: string[] }) {
   );
 }
 
-export default function OnboardingTour() {
-  const router = useRouter();
+export default function OnboardingTour({
+  personalization,
+  onSkip,
+  onFinish,
+  finishing,
+}: {
+  personalization: PersonalizationProfile;
+  onSkip: () => void;
+  onFinish: () => void;
+  finishing: boolean;
+}) {
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [finishing, setFinishing] = useState(false);
 
-  const isLast = step === SLIDES.length - 1;
-  const slide = SLIDES[step];
+  const slides = buildSlides(personalization);
+  const isLast = step === slides.length - 1;
+  const slide = slides[step];
   const Icon = slide.icon;
 
   function go(next: number, dir: 1 | -1) {
     setDirection(dir);
     setStep(next);
-  }
-
-  async function finish() {
-    setFinishing(true);
-    try {
-      await completeOnboarding();
-    } catch {
-      // Best-effort — un souci réseau ou un redéploiement ne doit jamais
-      // bloquer l'utilisateur ici : au pire il reverra l'onboarding.
-    }
-    router.push("/dashboard/client");
-    router.refresh();
   }
 
   return (
@@ -136,7 +149,7 @@ export default function OnboardingTour() {
       {/* Progress dots + skip */}
       <div style={{ padding: "24px 24px 0", display: "flex", alignItems: "center", gap: 10 }}>
         <div style={{ display: "flex", gap: 6, flex: 1 }}>
-          {SLIDES.map((_, i) => (
+          {slides.map((_, i) => (
             <div
               key={i}
               style={{
@@ -150,7 +163,7 @@ export default function OnboardingTour() {
           ))}
         </div>
         <button
-          onClick={finish}
+          onClick={onSkip}
           disabled={finishing}
           style={{
             display: "flex", alignItems: "center", gap: 5,
@@ -160,10 +173,10 @@ export default function OnboardingTour() {
             cursor: "pointer",
             color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.06em",
-            flexShrink: 0, padding: "7px 12px",
+            flexShrink: 0, padding: "7px 12px", whiteSpace: "nowrap",
           }}
         >
-          Passer <X size={13} />
+          Passer, accéder à l&apos;appli <X size={13} />
         </button>
       </div>
 
@@ -214,7 +227,7 @@ export default function OnboardingTour() {
               {slide.title}
             </h1>
 
-            <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0 }}>
+            <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0, whiteSpace: "pre-line" }}>
               {slide.desc}
             </p>
 
@@ -239,7 +252,7 @@ export default function OnboardingTour() {
         )}
         {isLast ? (
           <button
-            onClick={finish}
+            onClick={onFinish}
             disabled={finishing}
             className="ep-btn-primary"
             style={{ flex: 1, height: 52, fontSize: 13 }}
