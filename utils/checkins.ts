@@ -202,9 +202,11 @@ export async function getPendingReplies(): Promise<CheckInWithClient[]> {
 
 export async function getPendingBilansCount(): Promise<number> {
   try {
-    const { createAdminClient } = await import("@/lib/supabase-admin");
-    const admin = createAdminClient();
-    const { count } = await admin
+    // Client de session (pas admin) : la RLS de check_ins filtre déjà par
+    // client_id = auth.uid() ou is_own_coach(client_id), donc un coach ne
+    // voit jamais que les bilans de ses propres clients.
+    const supabase = await createServerSupabase();
+    const { count } = await supabase
       .from("check_ins")
       .select("id", { count: "exact", head: true })
       .is("coach_replied_at", null);

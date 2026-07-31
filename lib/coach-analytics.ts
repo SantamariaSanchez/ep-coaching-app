@@ -610,14 +610,15 @@ export interface TopAlert {
   alert: ClientAlert;
 }
 
-export async function getTopUrgentAlerts(limit = 3): Promise<TopAlert[]> {
+export async function getTopUrgentAlerts(coachId: string, limit = 3): Promise<TopAlert[]> {
   const supabase = createAdminClient();
   const { data: clients } = await supabase
     .from("profiles")
     .select("id, full_name, checkin_day")
     .eq("role", "client")
     .eq("status", "active")
-    .eq("subscription_status", "active");
+    .eq("subscription_status", "active")
+    .eq("coach_id", coachId);
 
   if (!clients || clients.length === 0) return [];
 

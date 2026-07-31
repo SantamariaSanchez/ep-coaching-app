@@ -10,7 +10,7 @@ export async function GET() {
   if (profile?.role !== "coach") return NextResponse.json({ alerts: [] });
 
   try {
-    const alerts = await getTopUrgentAlerts(3);
+    const alerts = await getTopUrgentAlerts(user.id, 3);
     return NextResponse.json({ alerts });
   } catch {
     return NextResponse.json({ alerts: [] });
