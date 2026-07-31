@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getUser, getProfile, getAllCoaches } from "@/utils/auth";
+import { getUser, getProfile, getAllCoaches, getClients } from "@/utils/auth";
 import { getCoachBillingInfo } from "@/lib/coach-billing";
 import CoachStatusToggle from "@/components/coach/CoachStatusToggle";
+import CoachClientsToggle from "@/components/coach/CoachClientsToggle";
 import { ExternalLink, ChevronLeft } from "lucide-react";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
@@ -31,9 +32,10 @@ export default async function CoachAdminPage() {
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
 
   const coaches = await getAllCoaches();
-  const billing = await Promise.all(
-    coaches.map((c) => getCoachBillingInfo(c.platform_stripe_customer_id, c.platform_stripe_subscription_id))
-  );
+  const [billing, clientsByCoach] = await Promise.all([
+    Promise.all(coaches.map((c) => getCoachBillingInfo(c.platform_stripe_customer_id, c.platform_stripe_subscription_id))),
+    Promise.all(coaches.map((c) => getClients(c.id))),
+  ]);
 
   // MRR estimé : ramène chaque abonnement actif/en essai à un équivalent mensuel.
   const mrr = billing.reduce((sum, b) => {
@@ -56,7 +58,7 @@ export default async function CoachAdminPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Coachs</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients.
+          Coachs tiers inscrits sur la plateforme. Chacun ne voit que ses propres clients, toi seul peux consulter la liste de chacun ci-dessous (lecture seule, sans y accéder toi-même).
         </p>
       </div>
 
@@ -129,6 +131,15 @@ export default async function CoachAdminPage() {
                     </a>
                   )}
                 </div>
+
+                <CoachClientsToggle
+                  clients={(clientsByCoach[i] ?? []).map((c) => ({
+                    id: c.id,
+                    full_name: c.full_name,
+                    email: c.email,
+                    subscription_status: c.subscription_status,
+                  }))}
+                />
               </div>
             );
           })}

@@ -35,7 +35,7 @@ export default function InviteLinkCard({ inviteCode }: { inviteCode: string | nu
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
           Partage ce lien à tes clients pour qu&apos;ils s&apos;inscrivent et soient
-          automatiquement rattachés à toi — jamais à un autre coach de la plateforme.
+          automatiquement rattachés à toi, jamais à un autre coach de la plateforme.
         </p>
         {link ? (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
