@@ -18,6 +18,8 @@ export default async function CoachLiveRoomPage({
 
   const event = await getLiveEventById(id);
   if (!event || event.status !== "scheduled") notFound();
+  // Un coach ne peut héberger que ses propres lives, jamais ceux d'un autre coach.
+  if (event.host_id !== profile?.id) notFound();
 
   return (
     <JitsiRoom
