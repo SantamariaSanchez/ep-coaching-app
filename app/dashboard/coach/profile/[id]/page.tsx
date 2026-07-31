@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCommunityPostCount } from "@/utils/community";
+import { requireOwnClient } from "@/lib/auth-guards";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import BackButton from "@/components/ui/BackButton";
@@ -16,6 +17,11 @@ export default async function CoachPublicProfilePage({
 
   const { id } = await params;
   if (id === user.id) redirect("/dashboard/coach/profile");
+
+  // Un coach ne doit consulter la fiche détaillée (email, tél., abonnement)
+  // que de ses propres clients — jamais celle d'un client d'un autre coach.
+  const guard = await requireOwnClient(id);
+  if (!guard.ok) notFound();
 
   const profile = await getProfile(id);
   if (!profile) notFound();
