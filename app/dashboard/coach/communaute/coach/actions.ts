@@ -16,7 +16,7 @@ export async function createCoachPost(
     const supabase = await createServerSupabase();
     const { data, error } = await supabase
       .from("coach_posts")
-      .insert({ author_id: guard.userId, title: title.trim(), content: content.trim() })
+      .insert({ author_id: guard.userId, coach_id: guard.userId, title: title.trim(), content: content.trim() })
       .select("id")
       .single();
 

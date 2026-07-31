@@ -13,7 +13,7 @@ export default async function CoachPostsPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const posts = await getCoachPosts();
+  const posts = await getCoachPosts(profile.id);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getUser } from "@/utils/auth";
+import { getUser, getProfile } from "@/utils/auth";
 import { getCoachPosts } from "@/utils/coach-posts";
 import { MessageSquareText } from "lucide-react";
 
@@ -15,7 +15,9 @@ export default async function ClientCoachPostsPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const posts = await getCoachPosts();
+  const profile = await getProfile(user.id);
+  const coachId = profile?.role === "coach" ? profile.id : profile?.coach_id;
+  const posts = coachId ? await getCoachPosts(coachId) : [];
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
