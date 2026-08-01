@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { submitCorrection } from "@/app/dashboard/client/program/actions";
-import type { ExerciseCorrection } from "@/utils/corrections";
-import { Video, ExternalLink, CheckCircle2, Clock } from "lucide-react";
+import { createClientSupabase } from "@/lib/supabase-client";
+import type { ExerciseCorrectionResolved } from "@/utils/corrections";
+import { Video, ExternalLink, CheckCircle2, Clock, Loader2, X } from "lucide-react";
 
 function StatusBadge({ status }: { status: "pending" | "answered" }) {
   return status === "answered" ? (
@@ -19,7 +20,7 @@ function StatusBadge({ status }: { status: "pending" | "answered" }) {
   );
 }
 
-function CorrectionCard({ c }: { c: ExerciseCorrection }) {
+function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
   const date = new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "short",
@@ -53,16 +54,20 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
             {c.client_question}
           </p>
         )}
-        <a
-          href={c.video_link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium"
-        >
-          <Video size={11} />
-          Voir ma vidéo
-          <ExternalLink size={10} />
-        </a>
+        {c.video_url ? (
+          <video src={c.video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 4 }} />
+        ) : c.video_link ? (
+          <a
+            href={c.video_link}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium"
+          >
+            <Video size={11} />
+            Voir ma vidéo
+            <ExternalLink size={10} />
+          </a>
+        ) : null}
       </div>
 
       {c.status === "answered" && (
@@ -73,7 +78,9 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
           <p className="text-xs text-[#F5EDED]/75 leading-relaxed">
             {c.coach_feedback}
           </p>
-          {c.coach_video_link && (
+          {c.coach_video_url ? (
+            <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10 }} />
+          ) : c.coach_video_link ? (
             <a
               href={c.coach_video_link}
               target="_blank"
@@ -84,7 +91,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrection }) {
               Vidéo coach
               <ExternalLink size={10} />
             </a>
-          )}
+          ) : null}
         </div>
       )}
     </div>
@@ -96,20 +103,53 @@ const INITIAL_STATE = null as { error?: string; success?: boolean } | null;
 export default function ClientCorrectionsSection({
   corrections,
 }: {
-  corrections: ExerciseCorrection[];
+  corrections: ExerciseCorrectionResolved[];
 }) {
   const [state, formAction, isPending] = useActionState(
     submitCorrection,
     INITIAL_STATE
   );
   const formRef = useRef<HTMLFormElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [videoName, setVideoName] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(false);
 
   // Reset form on success — dans un effet, jamais pendant le render (React
   // peut rendre plusieurs fois sans committer, la mutation DOM imperative
   // doit rester hors du corps du composant).
   useEffect(() => {
-    if (state?.success) formRef.current?.reset();
+    if (state?.success) {
+      formRef.current?.reset();
+      setVideoPath(null);
+      setVideoName(null);
+      setUploadError(false);
+    }
   }, [state]);
+
+  async function handleVideoSelected(file: File) {
+    setUploading(true);
+    setUploadError(false);
+    setVideoName(file.name);
+    try {
+      const supabase = createClientSupabase();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error();
+      const ext = file.name.split(".").pop() || "mp4";
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("correction-videos")
+        .upload(path, file, { contentType: file.type || undefined, upsert: false });
+      if (error) throw error;
+      setVideoPath(path);
+    } catch {
+      setUploadError(true);
+      setVideoPath(null);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   const inputClass =
     "w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors";
@@ -163,15 +203,52 @@ export default function ClientCorrectionsSection({
 
           <div>
             <label className={labelClass}>
-              Lien Google Drive (vidéo) <span className="text-[#E01E1E]">*</span>
+              Vidéo de l&apos;exercice <span className="text-[#E01E1E]">*</span>
             </label>
+            <input type="hidden" name="video_path" value={videoPath ?? ""} required />
             <input
-              name="video_link"
-              type="url"
-              required
-              placeholder="https://drive.google.com/..."
-              className={inputClass}
+              ref={videoInputRef}
+              type="file"
+              accept="video/*"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleVideoSelected(file);
+              }}
             />
+            {videoPath ? (
+              <div className="flex items-center gap-2 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5">
+                <CheckCircle2 size={14} className="text-green-400 flex-shrink-0" />
+                <span className="text-sm text-white truncate flex-1">{videoName}</span>
+                <button
+                  type="button"
+                  onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
+                  className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                disabled={uploading}
+                className={`${inputClass} flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60`}
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin" /> Envoi de la vidéo…
+                  </>
+                ) : (
+                  <>
+                    <Video size={14} /> Choisir une vidéo
+                  </>
+                )}
+              </button>
+            )}
+            {uploadError && (
+              <p className="text-[#FDC4C4] text-xs mt-1.5">Échec de l&apos;envoi, réessaie.</p>
+            )}
           </div>
 
           <div>
@@ -195,7 +272,7 @@ export default function ClientCorrectionsSection({
 
           <button
             type="submit"
-            disabled={isPending}
+            disabled={isPending || uploading || !videoPath}
             className="w-full bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold uppercase tracking-widest py-3 rounded-lg transition-colors"
           >
             {isPending ? "Envoi…" : "Envoyer"}

@@ -110,7 +110,7 @@ export async function sendCorrectionFeedback(
   if (!guard.ok) return { error: guard.error };
 
   const coach_feedback = (formData.get("coach_feedback") as string)?.trim();
-  const coach_video_link = (formData.get("coach_video_link") as string)?.trim() || null;
+  const coach_video_path = (formData.get("coach_video_path") as string)?.trim() || null;
 
   if (!coach_feedback) return { error: "Le retour écrit est obligatoire." };
 
@@ -119,7 +119,7 @@ export async function sendCorrectionFeedback(
     .from("exercise_corrections")
     .update({
       coach_feedback,
-      coach_video_link,
+      coach_video_path,
       status: "answered",
       answered_at: new Date().toISOString(),
     })

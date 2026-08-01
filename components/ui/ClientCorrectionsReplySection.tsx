@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
-import { Video, ExternalLink, CheckCircle2, Clock } from "lucide-react";
-import type { ExerciseCorrection } from "@/utils/corrections";
+import { useActionState, useRef, useState } from "react";
+import { Video, ExternalLink, CheckCircle2, Clock, Loader2, X } from "lucide-react";
+import { createClientSupabase } from "@/lib/supabase-client";
+import type { ExerciseCorrectionResolved } from "@/utils/corrections";
 
 type ActionState = { error?: string; success?: boolean } | null;
 
@@ -11,12 +12,40 @@ function ReplyForm({
   clientId,
   action,
 }: {
-  correction: ExerciseCorrection;
+  correction: ExerciseCorrectionResolved;
   clientId: string;
   action: (correctionId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
   const bound = action.bind(null, correction.id, clientId);
   const [state, formAction, isPending] = useActionState(bound, null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [videoName, setVideoName] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState(false);
+
+  async function handleVideoSelected(file: File) {
+    setUploading(true);
+    setUploadError(false);
+    setVideoName(file.name);
+    try {
+      const supabase = createClientSupabase();
+      const ext = file.name.split(".").pop() || "mp4";
+      // Préfixé par l'id du CLIENT (pas celui du coach) : la policy RLS
+      // restreint la lecture à ce client et à son coach.
+      const path = `${clientId}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error } = await supabase.storage
+        .from("coach-videos")
+        .upload(path, file, { contentType: file.type || undefined, upsert: false });
+      if (error) throw error;
+      setVideoPath(path);
+    } catch {
+      setUploadError(true);
+      setVideoPath(null);
+    } finally {
+      setUploading(false);
+    }
+  }
 
   if (state?.success) {
     return <p className="text-green-400 text-xs font-semibold">✓ Retour envoyé.</p>;
@@ -31,16 +60,54 @@ function ReplyForm({
         placeholder="Observations sur la technique, corrections à apporter..."
         className="w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
       />
+
+      <input type="hidden" name="coach_video_path" value={videoPath ?? ""} />
       <input
-        name="coach_video_link"
-        type="url"
-        placeholder="Lien Loom (facultatif)"
-        className="w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors"
+        ref={videoInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handleVideoSelected(file);
+        }}
       />
+      {videoPath ? (
+        <div className="flex items-center gap-2 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2">
+          <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />
+          <span className="text-xs text-white truncate flex-1">{videoName}</span>
+          <button
+            type="button"
+            onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
+            className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
+          >
+            <X size={13} />
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => videoInputRef.current?.click()}
+          disabled={uploading}
+          className="w-full flex items-center justify-center gap-2 bg-[#150000] border border-[#890404]/30 hover:border-[#E01E1E]/60 disabled:opacity-60 rounded-lg px-3 py-2 text-xs text-[#F5EDED]/60 transition-colors"
+        >
+          {uploading ? (
+            <>
+              <Loader2 size={12} className="animate-spin" /> Envoi de la vidéo…
+            </>
+          ) : (
+            <>
+              <Video size={12} /> Ajouter une vidéo (facultatif)
+            </>
+          )}
+        </button>
+      )}
+      {uploadError && <p className="text-[#FDC4C4] text-xs">Échec de l&apos;envoi, réessaie.</p>}
+
       {state?.error && <p className="text-[#FDC4C4] text-xs">{state.error}</p>}
       <button
         type="submit"
-        disabled={isPending}
+        disabled={isPending || uploading}
         className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors"
       >
         {isPending ? "Envoi…" : "Envoyer le retour"}
@@ -54,7 +121,7 @@ export default function ClientCorrectionsReplySection({
   clientId,
   sendCorrectionFeedback,
 }: {
-  corrections: ExerciseCorrection[];
+  corrections: ExerciseCorrectionResolved[];
   clientId: string;
   sendCorrectionFeedback: (correctionId: string, clientId: string, _prev: ActionState, formData: FormData) => Promise<ActionState>;
 }) {
@@ -98,28 +165,34 @@ export default function ClientCorrectionsReplySection({
                 {c.client_question}
               </p>
             )}
-            <a
-              href={c.video_link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium text-xs"
-            >
-              <Video size={11} /> Vidéo <ExternalLink size={10} />
-            </a>
+            {c.video_url ? (
+              <video src={c.video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
+            ) : c.video_link ? (
+              <a
+                href={c.video_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium text-xs"
+              >
+                <Video size={11} /> Vidéo <ExternalLink size={10} />
+              </a>
+            ) : null}
 
             {c.status === "answered" ? (
               <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
                 <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{c.coach_feedback}</p>
-                {c.coach_video_link && (
+                {c.coach_video_url ? (
+                  <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
+                ) : c.coach_video_link ? (
                   <a
                     href={c.coach_video_link}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-1.5 text-green-400/70 hover:text-green-400 transition-colors text-xs font-medium"
                   >
-                    <Video size={11} /> Loom <ExternalLink size={10} />
+                    <Video size={11} /> Vidéo coach <ExternalLink size={10} />
                   </a>
-                )}
+                ) : null}
               </div>
             ) : (
               <ReplyForm correction={c} clientId={clientId} action={sendCorrectionFeedback} />

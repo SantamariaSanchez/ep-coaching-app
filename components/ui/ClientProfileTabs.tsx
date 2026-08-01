@@ -43,7 +43,7 @@ import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
-import type { ExerciseCorrection } from "@/utils/corrections";
+import type { ExerciseCorrectionResolved } from "@/utils/corrections";
 import { generateClientSuggestions } from "@/lib/client-suggestions";
 import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
@@ -191,7 +191,7 @@ export default function ClientProfileTabs({
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
   scheduleBlocks: ScheduleBlock[];
   generatePlanSuggestions: (clientId: string) => Promise<PlanSuggestions>;
-  corrections: ExerciseCorrection[];
+  corrections: ExerciseCorrectionResolved[];
   sendCorrectionFeedback: (
     correctionId: string,
     clientId: string,

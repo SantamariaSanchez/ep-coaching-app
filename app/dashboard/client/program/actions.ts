@@ -37,11 +37,11 @@ export async function submitCorrection(
 
   const exercise_name = (formData.get("exercise_name") as string)?.trim();
   const objective = (formData.get("objective") as string)?.trim();
-  const video_link = (formData.get("video_link") as string)?.trim();
+  const video_path = (formData.get("video_path") as string)?.trim();
   const client_question =
     (formData.get("client_question") as string)?.trim() || null;
 
-  if (!exercise_name || !objective || !video_link) {
+  if (!exercise_name || !objective || !video_path) {
     return { error: "Remplis tous les champs obligatoires." };
   }
 
@@ -49,7 +49,7 @@ export async function submitCorrection(
     client_id: user.id,
     exercise_name,
     objective,
-    video_link,
+    video_path,
     client_question,
   });
 
