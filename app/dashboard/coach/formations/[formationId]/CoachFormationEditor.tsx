@@ -159,14 +159,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   }
 
   async function handleAddModule() {
-    const title = prompt("Titre du module :");
+    const title = prompt("Titre de la section :");
     if (!title?.trim()) return;
     await addModule(formation.id, title.trim(), formation.modules.length);
     window.location.reload();
   }
 
   async function handleAddSection(moduleId: string, currentCount: number) {
-    const title = prompt("Titre de la section :");
+    const title = prompt("Titre du module :");
     if (!title?.trim()) return;
     await addSection(moduleId, title.trim(), currentCount);
     window.location.reload();
@@ -180,13 +180,13 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   }
 
   async function handleDeleteModule(moduleId: string, title: string) {
-    if (!confirm(`Supprimer le module "${title}" et tout son contenu (sections, vidéos) ?`)) return;
+    if (!confirm(`Supprimer la section "${title}" et tout son contenu (modules, vidéos) ?`)) return;
     await deleteModule(moduleId);
     window.location.reload();
   }
 
   async function handleDeleteSection(sectionId: string, title: string) {
-    if (!confirm(`Supprimer la section "${title}" et ses vidéos ?`)) return;
+    if (!confirm(`Supprimer le module "${title}" et ses vidéos ?`)) return;
     await deleteSection(sectionId);
     window.location.reload();
   }
@@ -281,12 +281,12 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         </div>
       </div>
 
-      {/* Modules */}
+      {/* Sections */}
       {formation.modules.map((mod, mi) => {
         const totalLessons = mod.sections.reduce((acc, s) => acc + s.lessons.length, 0);
         return (
           <div key={mod.id} className="ep-card" style={{ overflow: "hidden" }}>
-            {/* Module header */}
+            {/* Section header */}
             <div
               onClick={() => toggleModule(mod.id)}
               role="button"
@@ -305,7 +305,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             >
               <div style={{ display: "flex", alignItems: "center", gap: 10, minWidth: 0 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.55)", flexShrink: 0 }}>
-                  M{mi + 1}
+                  S{mi + 1}
                 </span>
                 <EditableTitle
                   value={mod.title}
@@ -313,13 +313,13 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   textStyle={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", letterSpacing: "-0.02em" }}
                 />
                 <span style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 600, flexShrink: 0 }}>
-                  ({mod.sections.length} section{mod.sections.length !== 1 ? "s" : ""} · {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""})
+                  ({mod.sections.length} module{mod.sections.length !== 1 ? "s" : ""} · {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""})
                 </span>
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id, mod.title); }}
-                  title="Supprimer le module"
+                  title="Supprimer la section"
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
                   <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
@@ -331,12 +331,12 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
               </div>
             </div>
 
-            {/* Sections */}
+            {/* Modules */}
             {openModules.has(mod.id) && (
               <div>
                 {mod.sections.map((sec, si) => (
                   <div key={sec.id} style={{ borderBottom: "1px solid rgba(224,30,30,0.06)" }}>
-                    {/* Section header */}
+                    {/* Module header */}
                     <div
                       onClick={() => toggleSection(sec.id)}
                       role="button"
@@ -356,7 +356,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                         <Layers size={11} style={{ color: "rgba(224,30,30,0.4)", flexShrink: 0 }} />
                         <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", flexShrink: 0 }}>
-                          {si + 1}.
+                          M{si + 1}
                         </span>
                         <EditableTitle
                           value={sec.title}
@@ -370,7 +370,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteSection(sec.id, sec.title); }}
-                          title="Supprimer la section"
+                          title="Supprimer le module"
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
                           <Trash2 size={12} style={{ color: "rgba(224,30,30,0.35)" }} />
@@ -399,6 +399,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         ))}
 
                         {/* Add lesson in section */}
+                        {/* Ajouter une vidéo dans ce module */}
                         <div style={{ padding: "8px 18px 8px 36px" }}>
                           <button
                             onClick={() => handleAddLesson(sec.id, sec.lessons.length)}
@@ -446,7 +447,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                       textTransform: "uppercase",
                     }}
                   >
-                    <Plus size={12} /> Ajouter une section
+                    <Plus size={12} /> Ajouter un module
                   </button>
                 </div>
               </div>
@@ -455,13 +456,13 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         );
       })}
 
-      {/* Add module */}
+      {/* Add section */}
       <button
         onClick={handleAddModule}
         className="ep-btn-secondary"
         style={{ alignSelf: "flex-start" }}
       >
-        <Plus size={14} /> Ajouter un module
+        <Plus size={14} /> Ajouter une section
       </button>
     </div>
   );

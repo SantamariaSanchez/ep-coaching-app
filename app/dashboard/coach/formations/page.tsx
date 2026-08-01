@@ -83,7 +83,7 @@ export default async function CoachFormationsPage() {
               </div>
               <div style={{ display: "flex", gap: 12 }}>
                 <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
-                  {moduleCount} module{moduleCount !== 1 ? "s" : ""}
+                  {moduleCount} section{moduleCount !== 1 ? "s" : ""}
                 </span>
                 <span style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
                   <PlayCircle size={9} />

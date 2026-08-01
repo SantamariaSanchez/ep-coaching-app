@@ -117,12 +117,12 @@ export default async function FormationDetailPage({
         </div>
       </div>
 
-      {/* Modules */}
+      {/* Sections */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {formation.modules.length === 0 ? (
           <div className="ep-card" style={{ padding: "36px 20px", textAlign: "center" }}>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-              Les modules seront disponibles prochainement
+              Les sections seront disponibles prochainement
             </p>
           </div>
         ) : (
@@ -151,7 +151,7 @@ export default async function FormationDetailPage({
                       textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
                       margin: "0 0 2px",
                     }}>
-                      Module {mi + 1}
+                      Section {mi + 1}
                     </p>
                     <h3 style={{ fontSize: 14, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
                       {mod.title}
