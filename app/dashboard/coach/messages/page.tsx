@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
+import { getUser, getProfile, getAllMessageableMembers, roleBadge } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Mail } from "lucide-react";
 import { PushPermission } from "@/components/messaging/PushPermission";
+import RoleBadge from "@/components/ui/RoleBadge";
 
 interface LastMessage {
   conversation_id: string;
@@ -87,6 +88,15 @@ export default async function CoachMessagesPage() {
             </span>
           )}
         </div>
+        {!profile?.is_platform_owner && (
+          <a
+            href="mailto:peccoux.manu@gmail.com"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(245,237,237,0.35)", fontSize: 11, textDecoration: "none" }}
+          >
+            <Mail size={11} />
+            Une question pour le support ? peccoux.manu@gmail.com
+          </a>
+        )}
       </div>
 
       {clients.length === 0 ? (
@@ -149,15 +159,7 @@ export default async function CoachMessagesPage() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6 }}>
                     {client.full_name ?? "Client"}
-                    {client.subscription_status !== "active" && (
-                      <span style={{
-                        fontSize: 8, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase",
-                        color: "rgba(245,237,237,0.35)", border: "1px solid rgba(245,237,237,0.15)",
-                        borderRadius: 6, padding: "2px 5px", flexShrink: 0,
-                      }}>
-                        Gratuit
-                      </span>
-                    )}
+                    <RoleBadge label={roleBadge(client)} />
                   </p>
                   {client.msg ? (
                     <p style={{

@@ -1,7 +1,8 @@
 ﻿import { redirect, notFound } from "next/navigation";
-import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { getUser, getProfile, getClientById, roleBadge } from "@/utils/auth";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
+import RoleBadge from "@/components/ui/RoleBadge";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
@@ -56,11 +57,9 @@ export default async function CoachClientMessagesPage({
           </span>
         </div>
         <div>
-          <p className="text-sm font-black text-white">
+          <p className="text-sm font-black text-white flex items-center gap-1.5">
             {client.full_name ?? "Client"}
-          </p>
-          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
-            Client
+            <RoleBadge label={roleBadge(client)} />
           </p>
         </div>
       </div>

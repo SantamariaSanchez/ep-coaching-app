@@ -5,7 +5,9 @@ import PointsProgressCard from "@/components/ui/PointsProgressCard";
 
 function BadgePill({ badge }: { badge: ReturnType<typeof roleBadge> }) {
   const styles =
-    badge === "Coach"
+    badge === "Fondateur"
+      ? { bg: "rgba(224,30,30,0.18)", border: "rgba(224,30,30,0.45)", color: "#E01E1E", Icon: Crown }
+      : badge === "Coach"
       ? { bg: "rgba(224,30,30,0.14)", border: "rgba(224,30,30,0.35)", color: "#E01E1E", Icon: ShieldCheck }
       : badge === "Premium"
       ? { bg: "rgba(250,204,21,0.1)", border: "rgba(250,204,21,0.3)", color: "#FACC15", Icon: Crown }

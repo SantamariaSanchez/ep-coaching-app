@@ -238,15 +238,34 @@ export async function getAllCoaches(): Promise<Profile[]> {
   }
 }
 
-export type RoleBadge = "Coach" | "Premium" | "Membre gratuit";
+// Le fondateur (Emmanuel) gère le support pour tout le monde, quel que soit
+// le coach réellement assigné — utilisé pour épingler sa conversation en
+// tête de liste dans la messagerie, côté client comme côté coach.
+export async function getPlatformOwner(): Promise<Profile | null> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select(PROFILE_FIELDS)
+      .eq("role", "coach")
+      .eq("is_platform_owner", true)
+      .maybeSingle();
+    return (data as Profile) ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type RoleBadge = "Fondateur" | "Coach" | "Premium" | "Membre gratuit";
 
 // Single source of truth for how a member's status is displayed app-wide:
-// coach -> "Coach", paying client -> "Premium", everyone else (free
-// community member) -> "Membre gratuit".
+// fondateur -> "Fondateur", coach tiers -> "Coach", paying client ->
+// "Premium", everyone else (free community member) -> "Membre gratuit".
 export function roleBadge(
-  profile: Pick<Profile, "role" | "subscription_status"> | null | undefined
+  profile: Pick<Profile, "role" | "subscription_status" | "is_platform_owner"> | null | undefined
 ): RoleBadge {
   if (!profile) return "Membre gratuit";
+  if (profile.is_platform_owner) return "Fondateur";
   if (profile.role === "coach") return "Coach";
   if (profile.subscription_status === "active") return "Premium";
   return "Membre gratuit";

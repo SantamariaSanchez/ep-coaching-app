@@ -1,8 +1,10 @@
 ﻿import { redirect } from "next/navigation";
-import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed, isClientCapable, roleBadge } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
+import RoleBadge from "@/components/ui/RoleBadge";
+import { Mail } from "lucide-react";
 
 // Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
 // lui répondre une fois qu'il a ouvert la conversation, pour éviter que le
@@ -46,7 +48,7 @@ export default async function ClientMessagesPage() {
   const admin = createAdminClient();
   const { data: coachProfile } = await admin
     .from("profiles")
-    .select("full_name")
+    .select("full_name, is_platform_owner, role, subscription_status")
     .eq("id", coachId)
     .maybeSingle();
   const coachName: string = coachProfile?.full_name ?? "Ton coach";
@@ -56,6 +58,14 @@ export default async function ClientMessagesPage() {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+  const coachBadge = roleBadge(
+    coachProfile as {
+      role: "coach" | "client";
+      subscription_status: "free" | "active" | "canceled";
+      is_platform_owner: boolean;
+    } | null
+  );
+  const coachIsFounder = coachProfile?.is_platform_owner === true;
 
   // conversation_id is always the client's ID
   const conversationId = user.id;
@@ -72,10 +82,19 @@ export default async function ClientMessagesPage() {
           <span className="text-xs font-black text-[#E01E1E]">{coachInitials}</span>
         </div>
         <div>
-          <p className="text-sm font-black text-white">{coachName}</p>
-          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
-            Coach
+          <p className="text-sm font-black text-white flex items-center gap-1.5">
+            {coachName}
+            <RoleBadge label={coachBadge} />
           </p>
+          {!coachIsFounder && (
+            <a
+              href="mailto:peccoux.manu@gmail.com"
+              className="text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 flex items-center gap-1 mt-0.5"
+            >
+              <Mail size={9} />
+              Une question pour le support ? peccoux.manu@gmail.com
+            </a>
+          )}
         </div>
       </div>
 

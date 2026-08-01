@@ -230,9 +230,15 @@ function VoiceRecorderButton({
 function MessageBubble({
   msg,
   isOwn,
+  fromFounder,
 }: {
   msg: Message;
   isOwn: boolean;
+  /** true si ce message vient du fondateur alors que l'interlocuteur affiché
+   * en tête de conversation est quelqu'un d'autre (le fondateur peut écrire
+   * dans n'importe quelle conversation pour le support/la modération) —
+   * sans ça le message apparaîtrait à tort comme venant du pair habituel. */
+  fromFounder?: boolean;
 }) {
   const time = new Intl.DateTimeFormat("fr-FR", {
     hour: "2-digit",
@@ -243,8 +249,17 @@ function MessageBubble({
 
   return (
     <div className={`flex ${isOwn ? "justify-end" : "justify-start"} mb-2`}>
+      <div className={`max-w-[75%] ${isOwn ? "" : "flex flex-col items-start"}`}>
+        {fromFounder && (
+          <span
+            className="inline-flex items-center rounded-full font-bold uppercase tracking-wide mb-1 text-[8px] px-1.5 py-0.5"
+            style={{ background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.35)", color: "#E01E1E" }}
+          >
+            Emmanuel · Fondateur
+          </span>
+        )}
       <div
-        className={`max-w-[75%] rounded-2xl px-3.5 py-2.5 ${
+        className={`rounded-2xl px-3.5 py-2.5 ${
           isOwn
             ? "bg-[#E01E1E] rounded-br-sm"
             : "bg-[#3a0a0a] border border-[#890404]/30 rounded-bl-sm"
@@ -278,6 +293,7 @@ function MessageBubble({
           </p>
         )}
         <p className="text-[8px] mt-1 text-white/40 text-right">{time}</p>
+      </div>
       </div>
     </div>
   );
@@ -583,6 +599,7 @@ export default function ConversationView({
             key={msg.id}
             msg={msg}
             isOwn={msg.sender_id === userId}
+            fromFounder={msg.sender_id !== userId && msg.sender_id !== peerId}
           />
         ))}
         <div ref={bottomRef} />
