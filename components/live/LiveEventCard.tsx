@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
-import { Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil, Check, FileText } from "lucide-react";
-import { LIVE_TYPE_LABELS, type LiveEvent } from "@/lib/live-types";
+import {
+  Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil, Check, FileText,
+  ClipboardCheck, Repeat, Zap, GraduationCap,
+} from "lucide-react";
+import { LIVE_TYPE_LABELS, isOneToOneType, type LiveEvent } from "@/lib/live-types";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import LiveEditForm from "@/components/live/LiveEditForm";
 
@@ -11,6 +14,10 @@ const TYPE_ICONS = {
   "1to1": User,
   webinaire: Video,
   qna: MessageCircle,
+  audit: ClipboardCheck,
+  checkin_hebdo: Repeat,
+  acces_direct: Zap,
+  atelier: GraduationCap,
 } as const;
 
 function formatDateTime(iso: string): string {
@@ -110,16 +117,21 @@ export default function LiveEventCard({
           <p className="text-[11px] text-[#F5EDED]/40 mt-1 flex items-center gap-1.5">
             <Clock size={11} /> {formatDateTime(event.starts_at)} · {event.duration_minutes} min
           </p>
-          {event.type === "1to1" && event.invited_client_name && (
+          {isOneToOneType(event.type) && event.invited_client_name && (
             <p className="text-[11px] text-[#F5EDED]/30 flex items-center gap-1.5 mt-0.5">
               <Users size={11} /> Avec {event.invited_client_name}
+            </p>
+          )}
+          {event.guest_name && (
+            <p className="text-[11px] text-[#F5EDED]/30 flex items-center gap-1.5 mt-0.5">
+              <GraduationCap size={11} /> Avec {event.guest_name}
             </p>
           )}
           {event.description && (
             <p className="text-xs text-[#F5EDED]/55 mt-2">{event.description}</p>
           )}
 
-          {event.type !== "1to1" && !cancelled && !ended && (
+          {!isOneToOneType(event.type) && !cancelled && !ended && (
             <div className="mt-2.5">
               {isCoach ? (
                 <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#F5EDED]/40">

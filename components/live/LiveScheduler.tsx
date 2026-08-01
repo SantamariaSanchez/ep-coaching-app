@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Loader2, AlertCircle } from "lucide-react";
-import { LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
+import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
 import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 const inputCls =
@@ -20,6 +20,7 @@ export default function LiveScheduler({
   const [description, setDescription] = useState("");
   const [type, setType] = useState<LiveType>("webinaire");
   const [clientId, setClientId] = useState("");
+  const [guestName, setGuestName] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [duration, setDuration] = useState("30");
@@ -38,7 +39,8 @@ export default function LiveScheduler({
       title,
       description,
       type,
-      invitedClientId: type === "1to1" ? clientId || null : null,
+      invitedClientId: isOneToOneType(type) ? clientId || null : null,
+      guestName: type === "atelier" ? guestName.trim() || null : null,
       startsAt,
       durationMinutes: parseInt(duration) || 30,
     });
@@ -49,6 +51,7 @@ export default function LiveScheduler({
       setTitle("");
       setDescription("");
       setClientId("");
+      setGuestName("");
       setDate("");
       setTime("");
       setOpen(false);
@@ -76,13 +79,22 @@ export default function LiveScheduler({
         ))}
       </select>
 
-      {type === "1to1" && (
+      {isOneToOneType(type) && (
         <select value={clientId} onChange={(e) => setClientId(e.target.value)} className={inputCls}>
           <option value="">Choisir un client</option>
           {clients.map((c) => (
             <option key={c.id} value={c.id}>{c.full_name ?? "Client"}</option>
           ))}
         </select>
+      )}
+
+      {type === "atelier" && (
+        <input
+          value={guestName}
+          onChange={(e) => setGuestName(e.target.value)}
+          placeholder="Intervenant invité (optionnel)"
+          className={inputCls}
+        />
       )}
 
       <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre / sujet" className={inputCls} />

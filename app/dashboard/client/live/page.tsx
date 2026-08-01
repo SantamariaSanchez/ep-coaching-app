@@ -4,6 +4,7 @@ import { CalendarPlus } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
 import LiveEventsList from "@/components/live/LiveEventsList";
+import FlashRequestButton from "@/components/client/FlashRequestButton";
 import { toggleRsvp } from "./actions";
 
 export default async function ClientLivePage() {
@@ -44,6 +45,7 @@ export default async function ClientLivePage() {
           <CalendarPlus size={13} />
           Réserver un appel 1:1
         </Link>
+        <FlashRequestButton />
       </div>
 
       <LiveEventsList

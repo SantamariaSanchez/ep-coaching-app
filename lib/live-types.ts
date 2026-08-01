@@ -2,8 +2,23 @@
 // client components. utils/live-events.ts (server-only data fetching) also
 // re-exports these for server-side callers.
 
-export type LiveType = "1to1" | "webinaire" | "qna";
+export type LiveType =
+  | "1to1"
+  | "webinaire"
+  | "qna"
+  | "audit"
+  | "checkin_hebdo"
+  | "acces_direct"
+  | "atelier";
 export type LiveStatus = "scheduled" | "cancelled" | "ended";
+
+// Types qui restent des échanges 1 pair (un seul client invité), par
+// opposition aux lives de groupe (webinaire/qna/atelier) qui ont un RSVP.
+export const ONE_TO_ONE_TYPES: LiveType[] = ["1to1", "audit", "checkin_hebdo", "acces_direct"];
+
+export function isOneToOneType(type: LiveType): boolean {
+  return ONE_TO_ONE_TYPES.includes(type);
+}
 
 export interface LiveEvent {
   id: string;
@@ -18,8 +33,11 @@ export interface LiveEvent {
   duration_minutes: number;
   status: LiveStatus;
   created_at: string;
-  /** Notes du coach écrites après coup — compense l'absence de rediff. */
+  /** Notes du coach écrites après coup — compense l'absence de rediff, et
+   * sert aussi de livrable pour un audit stratégique (ex. plan C.A.R.V.). */
   recap: string | null;
+  /** Intervenant invité pour un atelier (spécialiste externe), le cas échéant. */
+  guest_name: string | null;
   /** Nombre de clients ayant confirmé leur présence (lives de groupe uniquement). */
   rsvp_count?: number;
   /** Le client courant a-t-il confirmé sa présence ? */
@@ -30,6 +48,10 @@ export const LIVE_TYPE_LABELS: Record<LiveType, string> = {
   "1to1": "Appel 1:1",
   webinaire: "Webinaire / Présentation",
   qna: "Live Q&A",
+  audit: "Audit stratégique",
+  checkin_hebdo: "Suivi hebdomadaire",
+  acces_direct: "Accès direct",
+  atelier: "Atelier expert",
 };
 
 export function generateRoomSlug(): string {

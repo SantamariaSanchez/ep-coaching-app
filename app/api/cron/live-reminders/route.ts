@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
-import { LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
+import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
 
 // Rappelle aux clients concernés qu'un live commence bientôt — déclenché
 // toutes les 5 min par Supabase pg_cron (voir
@@ -41,7 +41,7 @@ export async function GET(req: Request) {
       url: "/dashboard/client/live",
     };
 
-    if (event.type === "1to1" && event.invited_client_id) {
+    if (isOneToOneType(event.type as LiveType) && event.invited_client_id) {
       await notifyUser(event.invited_client_id as string, params);
     } else {
       // Un webinaire/qna n'est diffusé qu'aux clients DU coach qui l'héberge.

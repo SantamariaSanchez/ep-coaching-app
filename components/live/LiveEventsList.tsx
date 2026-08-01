@@ -8,7 +8,7 @@ function isStillRelevant(startsAt: string): boolean {
   return new Date(startsAt).getTime() > Date.now() - 2 * 60 * 60 * 1000;
 }
 import LiveScheduler from "@/components/live/LiveScheduler";
-import type { LiveEvent } from "@/lib/live-types";
+import { isOneToOneType, type LiveEvent } from "@/lib/live-types";
 import type { CreateLiveEventInput, UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 export default function LiveEventsList({
@@ -61,9 +61,9 @@ export default function LiveEventsList({
                 ...e,
                 title: input.title,
                 description: input.description || null,
-                invited_client_id: e.type === "1to1" ? input.invitedClientId : e.invited_client_id,
+                invited_client_id: isOneToOneType(e.type) ? input.invitedClientId : e.invited_client_id,
                 invited_client_name:
-                  e.type === "1to1"
+                  isOneToOneType(e.type)
                     ? clients?.find((c) => c.id === input.invitedClientId)?.full_name ?? e.invited_client_name
                     : e.invited_client_name,
                 starts_at: input.startsAt,

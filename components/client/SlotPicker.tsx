@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check } from "lucide-react";
-import { bookAvailabilitySlot } from "@/app/dashboard/client/live/actions";
+import { bookAvailabilitySlot, bookWeeklyCheckin } from "@/app/dashboard/client/live/actions";
 import type { AvailabilitySlot } from "@/utils/live-events";
 
 function formatDayLabel(iso: string): string {
@@ -17,6 +17,7 @@ function formatTime(iso: string): string {
 
 export default function SlotPicker({ coachId, slots }: { coachId: string; slots: AvailabilitySlot[] }) {
   const router = useRouter();
+  const [recurring, setRecurring] = useState(false);
   const [bookedSlot, setBookedSlot] = useState<string | null>(null);
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -26,11 +27,17 @@ export default function SlotPicker({ coachId, slots }: { coachId: string; slots:
     setError("");
     setPendingSlot(slot.startsAt);
     startTransition(async () => {
-      const result = await bookAvailabilitySlot({
-        coachId,
-        startsAt: slot.startsAt,
-        durationMinutes: slot.durationMinutes,
-      });
+      const result = recurring
+        ? await bookWeeklyCheckin({
+            coachId,
+            startsAt: slot.startsAt,
+            durationMinutes: slot.durationMinutes,
+          })
+        : await bookAvailabilitySlot({
+            coachId,
+            startsAt: slot.startsAt,
+            durationMinutes: slot.durationMinutes,
+          });
       if (result.error) {
         setError(result.error);
       } else {
@@ -59,6 +66,15 @@ export default function SlotPicker({ coachId, slots }: { coachId: string; slots:
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "rgba(245,237,237,0.55)", cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={recurring}
+          onChange={(e) => setRecurring(e.target.checked)}
+          style={{ accentColor: "#E01E1E", width: 15, height: 15 }}
+        />
+        Suivi hebdomadaire (répète ce créneau chaque semaine pendant 8 semaines)
+      </label>
       {error && <p style={{ color: "#ff6b6b", fontSize: 12 }}>{error}</p>}
       {[...byDay.entries()].map(([dayKey, daySlots]) => (
         <div key={dayKey}>

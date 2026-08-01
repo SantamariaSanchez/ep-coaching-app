@@ -3,7 +3,7 @@
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
-import { generateRoomSlug, LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
+import { generateRoomSlug, isOneToOneType, LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
 import { notifyClientNewLiveEvent } from "@/app/actions/notifications";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
@@ -13,6 +13,7 @@ export interface CreateLiveEventInput {
   description: string;
   type: LiveType;
   invitedClientId: string | null;
+  guestName?: string | null;
   startsAt: string; // ISO
   durationMinutes: number;
 }
@@ -24,8 +25,8 @@ export async function createLiveEvent(
   if (!guard.ok) return { error: guard.error };
 
   if (!input.title.trim()) return { error: "Le titre est requis." };
-  if (input.type === "1to1" && !input.invitedClientId) {
-    return { error: "Choisis un client pour un appel 1:1." };
+  if (isOneToOneType(input.type) && !input.invitedClientId) {
+    return { error: "Choisis un client pour ce type de live." };
   }
 
   try {
@@ -39,7 +40,8 @@ export async function createLiveEvent(
         title: input.title.trim(),
         description: input.description.trim() || null,
         type: input.type,
-        invited_client_id: input.type === "1to1" ? input.invitedClientId : null,
+        invited_client_id: isOneToOneType(input.type) ? input.invitedClientId : null,
+        guest_name: input.guestName || null,
         room_slug: roomSlug,
         starts_at: input.startsAt,
         duration_minutes: input.durationMinutes,
@@ -54,7 +56,7 @@ export async function createLiveEvent(
       weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
     }).format(new Date(input.startsAt));
 
-    if (input.type === "1to1" && input.invitedClientId) {
+    if (isOneToOneType(input.type) && input.invitedClientId) {
       const { data: client } = await admin
         .from("profiles")
         .select("email, full_name")
@@ -125,8 +127,8 @@ export async function updateLiveEvent(
       .single();
 
     if (!existing) return { error: "Live introuvable." };
-    if (existing.type === "1to1" && !input.invitedClientId) {
-      return { error: "Choisis un client pour un appel 1:1." };
+    if (isOneToOneType(existing.type) && !input.invitedClientId) {
+      return { error: "Choisis un client pour ce type de live." };
     }
 
     const { error } = await admin
@@ -134,7 +136,7 @@ export async function updateLiveEvent(
       .update({
         title: input.title.trim(),
         description: input.description.trim() || null,
-        invited_client_id: existing.type === "1to1" ? input.invitedClientId : null,
+        invited_client_id: isOneToOneType(existing.type) ? input.invitedClientId : null,
         starts_at: input.startsAt,
         duration_minutes: input.durationMinutes,
       })
@@ -153,9 +155,9 @@ export async function updateLiveEvent(
       body: `${input.title.trim()} : ${dateLabel}`,
       url: "/dashboard/client/live",
     };
-    if (existing.type === "1to1" && input.invitedClientId) {
+    if (isOneToOneType(existing.type) && input.invitedClientId) {
       notifyUser(input.invitedClientId, params).catch(() => {});
-    } else if (existing.type !== "1to1") {
+    } else if (!isOneToOneType(existing.type)) {
       getClients(guard.userId)
         .then((clients) => notifyUsers(clients.map((c) => c.id), params))
         .catch(() => {});
@@ -197,7 +199,7 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
         body: event.title,
         url: "/dashboard/client/live",
       };
-      if (event.type === "1to1" && event.invited_client_id) {
+      if (isOneToOneType(event.type) && event.invited_client_id) {
         notifyUser(event.invited_client_id, params).catch(() => {});
       } else {
         getClients(guard.userId)
@@ -334,6 +336,121 @@ export async function addAvailabilityRule(input: {
   if (error) return { error: "Erreur lors de l'ajout." };
 
   revalidatePath("/dashboard/coach/live/disponibilites");
+  return {};
+}
+
+// ── Accès direct : demandes de point flash ──────────────────────────────
+
+export interface FlashRequest {
+  id: string;
+  client_id: string;
+  client_name: string | null;
+  reason: string;
+  status: string;
+  created_at: string;
+}
+
+export async function getPendingFlashRequests(): Promise<FlashRequest[]> {
+  const guard = await requireCoach();
+  if (!guard.ok) return [];
+
+  const admin = createAdminClient();
+  const { data: requests } = await admin
+    .from("live_flash_requests")
+    .select("id, client_id, reason, status, created_at")
+    .eq("coach_id", guard.userId)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false });
+  if (!requests || requests.length === 0) return [];
+
+  const clientIds = [...new Set(requests.map((r) => r.client_id))];
+  const { data: clients } = await admin.from("profiles").select("id, full_name").in("id", clientIds);
+  const nameMap: Record<string, string> = {};
+  for (const c of (clients ?? []) as { id: string; full_name: string | null }[]) {
+    nameMap[c.id] = c.full_name ?? "Client";
+  }
+
+  return requests.map((r) => ({ ...r, client_name: nameMap[r.client_id] ?? null }));
+}
+
+export async function scheduleFlashCall(
+  requestId: string,
+  startsAt: string
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { data: request } = await admin
+    .from("live_flash_requests")
+    .select("client_id, reason")
+    .eq("id", requestId)
+    .eq("coach_id", guard.userId)
+    .eq("status", "pending")
+    .single();
+  if (!request) return { error: "Demande introuvable." };
+
+  const { data: event, error: eventError } = await admin
+    .from("live_events")
+    .insert({
+      host_id: guard.userId,
+      title: `Point flash : ${request.reason.slice(0, 60)}`,
+      type: "acces_direct",
+      invited_client_id: request.client_id,
+      room_slug: generateRoomSlug(),
+      starts_at: startsAt,
+      duration_minutes: 15,
+    })
+    .select("id")
+    .single();
+  if (eventError || !event) return { error: "Erreur lors de la programmation." };
+
+  await admin
+    .from("live_flash_requests")
+    .update({ status: "scheduled", live_event_id: event.id, resolved_at: new Date().toISOString() })
+    .eq("id", requestId);
+
+  notifyUser(request.client_id, {
+    type: "live_scheduled",
+    title: "⚡ Ton point flash est programmé",
+    body: new Intl.DateTimeFormat("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt)),
+    url: "/dashboard/client/live",
+  }).catch(() => {});
+
+  revalidatePath("/dashboard/coach/live");
+  revalidatePath("/dashboard/client/live");
+  return {};
+}
+
+export async function declineFlashCall(requestId: string): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { data: request } = await admin
+    .from("live_flash_requests")
+    .select("client_id")
+    .eq("id", requestId)
+    .eq("coach_id", guard.userId)
+    .single();
+
+  const { error } = await admin
+    .from("live_flash_requests")
+    .update({ status: "declined", resolved_at: new Date().toISOString() })
+    .eq("id", requestId)
+    .eq("coach_id", guard.userId);
+  if (error) return { error: "Erreur." };
+
+  if (request) {
+    notifyUser(request.client_id, {
+      type: "flash_declined",
+      title: "Point flash non retenu",
+      body: "Ton coach n'a pas pu accepter cette demande, écris-lui en message.",
+      url: "/dashboard/client/messages",
+    }).catch(() => {});
+  }
+
+  revalidatePath("/dashboard/coach/live");
   return {};
 }
 

@@ -5,7 +5,11 @@ import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS } from "@/lib/live-types";
 import LiveEventsList from "@/components/live/LiveEventsList";
-import { createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent, updateLiveRecap } from "./actions";
+import FlashRequestsPanel from "@/components/coach/FlashRequestsPanel";
+import {
+  createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent, updateLiveRecap,
+  getPendingFlashRequests,
+} from "./actions";
 
 function formatRelativeDate(iso: string): string {
   const target = new Date(iso);
@@ -23,9 +27,10 @@ export default async function CoachLivePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/live");
 
-  const [events, clients] = await Promise.all([
+  const [events, clients, flashRequests] = await Promise.all([
     getAllLiveEventsForCoach(user.id),
     getClients(user.id),
+    getPendingFlashRequests(),
   ]);
 
   const now = Date.now();
@@ -76,6 +81,8 @@ export default async function CoachLivePage() {
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{thisWeekCount}</p>
         </div>
       </div>
+
+      <FlashRequestsPanel requests={flashRequests} />
 
       <LiveEventsList
         initialEvents={events}

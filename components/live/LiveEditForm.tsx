@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, AlertCircle, X } from "lucide-react";
-import type { LiveEvent } from "@/lib/live-types";
+import { isOneToOneType, type LiveEvent } from "@/lib/live-types";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 const inputCls =
@@ -49,7 +49,7 @@ export default function LiveEditForm({
     const res = await onUpdate(event.id, {
       title,
       description,
-      invitedClientId: event.type === "1to1" ? clientId || null : null,
+      invitedClientId: isOneToOneType(event.type) ? clientId || null : null,
       startsAt,
       durationMinutes: parseInt(duration) || 30,
     });
@@ -70,7 +70,7 @@ export default function LiveEditForm({
         </button>
       </div>
 
-      {event.type === "1to1" && (
+      {isOneToOneType(event.type) && (
         <select value={clientId} onChange={(e) => setClientId(e.target.value)} className={inputCls}>
           <option value="">Choisir un client</option>
           {clients.map((c) => (
