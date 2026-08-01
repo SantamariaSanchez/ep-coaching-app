@@ -261,3 +261,94 @@ export async function deleteLiveEvent(id: string): Promise<{ error?: string }> {
     return { error: "Erreur inattendue." };
   }
 }
+
+// Notes écrites par le coach après un live — seul moyen pour un client de
+// s'y référer après coup, faute de rediff disponible sur ce plan Jitsi.
+export async function updateLiveRecap(id: string, recap: string): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("live_events")
+      .update({ recap: recap.trim() || null })
+      .eq("id", id)
+      .eq("host_id", guard.userId);
+
+    if (error) return { error: "Erreur lors de l'enregistrement." };
+
+    revalidatePath("/dashboard/coach/live");
+    revalidatePath("/dashboard/client/live");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// ── Disponibilités 1:1 en libre-service ──────────────────────────────────
+
+export interface AvailabilityRule {
+  id: string;
+  day_of_week: number;
+  start_time: string;
+  end_time: string;
+  slot_duration_minutes: number;
+}
+
+export async function getMyAvailabilityRules(): Promise<AvailabilityRule[]> {
+  const guard = await requireCoach();
+  if (!guard.ok) return [];
+
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("coach_availability")
+    .select("id, day_of_week, start_time, end_time, slot_duration_minutes")
+    .eq("coach_id", guard.userId)
+    .order("day_of_week");
+
+  return data ?? [];
+}
+
+export async function addAvailabilityRule(input: {
+  dayOfWeek: number;
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
+}): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  if (input.startTime >= input.endTime) {
+    return { error: "L'heure de fin doit être après l'heure de début." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_availability").insert({
+    coach_id: guard.userId,
+    day_of_week: input.dayOfWeek,
+    start_time: input.startTime,
+    end_time: input.endTime,
+    slot_duration_minutes: input.slotDurationMinutes,
+  });
+  if (error) return { error: "Erreur lors de l'ajout." };
+
+  revalidatePath("/dashboard/coach/live/disponibilites");
+  return {};
+}
+
+export async function deleteAvailabilityRule(id: string): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("coach_availability")
+    .delete()
+    .eq("id", id)
+    .eq("coach_id", guard.userId);
+  if (error) return { error: "Erreur lors de la suppression." };
+
+  revalidatePath("/dashboard/coach/live/disponibilites");
+  return {};
+}

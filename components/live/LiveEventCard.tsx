@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
-import { Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil, Check, FileText } from "lucide-react";
 import { LIVE_TYPE_LABELS, type LiveEvent } from "@/lib/live-types";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import LiveEditForm from "@/components/live/LiveEditForm";
@@ -45,6 +45,8 @@ export default function LiveEventCard({
   onCancel,
   onDelete,
   onUpdate,
+  onToggleRsvp,
+  onSaveRecap,
 }: {
   event: LiveEvent;
   basePath: string;
@@ -53,11 +55,39 @@ export default function LiveEventCard({
   onCancel?: () => void;
   onDelete?: () => void;
   onUpdate?: (id: string, input: UpdateLiveEventInput) => Promise<{ error?: string }>;
+  onToggleRsvp?: (id: string) => Promise<{ error?: string; rsvped?: boolean }>;
+  onSaveRecap?: (id: string, recap: string) => Promise<{ error?: string }>;
 }) {
   const { canJoin, isPast, isSoon } = useJoinWindow(event.starts_at, event.duration_minutes);
   const Icon = TYPE_ICONS[event.type];
   const cancelled = event.status === "cancelled";
+  const ended = isPast || event.status === "ended";
   const [editing, setEditing] = useState(false);
+  const [rsvped, setRsvped] = useState(!!event.has_rsvped);
+  const [rsvpCount, setRsvpCount] = useState(event.rsvp_count ?? 0);
+  const [rsvpPending, startRsvpTransition] = useTransition();
+  const [editingRecap, setEditingRecap] = useState(false);
+  const [recapDraft, setRecapDraft] = useState(event.recap ?? "");
+  const [savingRecap, startRecapTransition] = useTransition();
+
+  function handleToggleRsvp() {
+    if (!onToggleRsvp) return;
+    startRsvpTransition(async () => {
+      const res = await onToggleRsvp(event.id);
+      if (!res.error && res.rsvped !== undefined) {
+        setRsvped(res.rsvped);
+        setRsvpCount((c) => (res.rsvped ? c + 1 : Math.max(0, c - 1)));
+      }
+    });
+  }
+
+  function handleSaveRecap() {
+    if (!onSaveRecap) return;
+    startRecapTransition(async () => {
+      const res = await onSaveRecap(event.id, recapDraft);
+      if (!res.error) setEditingRecap(false);
+    });
+  }
 
   return (
     <div className={`bg-[#1f0101] border rounded-xl p-4 ${cancelled ? "border-[#890404]/10 opacity-50" : "border-[#890404]/20"}`}>
@@ -87,6 +117,76 @@ export default function LiveEventCard({
           )}
           {event.description && (
             <p className="text-xs text-[#F5EDED]/55 mt-2">{event.description}</p>
+          )}
+
+          {event.type !== "1to1" && !cancelled && !ended && (
+            <div className="mt-2.5">
+              {isCoach ? (
+                <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#F5EDED]/40">
+                  <Users size={11} /> {rsvpCount} inscrit{rsvpCount !== 1 ? "s" : ""}
+                </span>
+              ) : onToggleRsvp ? (
+                <button
+                  onClick={handleToggleRsvp}
+                  disabled={rsvpPending}
+                  className={`inline-flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full transition-colors disabled:opacity-50 ${
+                    rsvped
+                      ? "bg-green-500/10 text-green-400 border border-green-500/25"
+                      : "bg-[#890404]/10 text-[#F5EDED]/45 border border-[#890404]/25 hover:text-white"
+                  }`}
+                >
+                  {rsvped ? <Check size={11} /> : <Users size={11} />}
+                  {rsvped ? "J'y serai" : "Confirmer ma présence"}
+                  {rsvpCount > 0 && ` · ${rsvpCount}`}
+                </button>
+              ) : null}
+            </div>
+          )}
+
+          {ended && !cancelled && (event.recap || isCoach) && (
+            <div className="mt-2.5 bg-black/20 border border-[#890404]/15 rounded-lg p-2.5">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1 mb-1.5">
+                <FileText size={10} /> Notes du live
+              </p>
+              {editingRecap ? (
+                <div className="space-y-1.5">
+                  <textarea
+                    value={recapDraft}
+                    onChange={(e) => setRecapDraft(e.target.value)}
+                    rows={3}
+                    placeholder="Résumé, points clés, ressources partagées..."
+                    className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      onClick={handleSaveRecap}
+                      disabled={savingRecap}
+                      className="text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444]"
+                    >
+                      {savingRecap ? "..." : "Enregistrer"}
+                    </button>
+                    <button
+                      onClick={() => setEditingRecap(false)}
+                      className="text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#F5EDED]/60"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              ) : event.recap ? (
+                <p className="text-xs text-[#F5EDED]/60 whitespace-pre-wrap">{event.recap}</p>
+              ) : isCoach ? (
+                <p className="text-[11px] text-[#F5EDED]/25 italic">Pas de notes pour l&apos;instant</p>
+              ) : null}
+              {isCoach && onSaveRecap && !editingRecap && (
+                <button
+                  onClick={() => setEditingRecap(true)}
+                  className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#E01E1E] mt-1.5"
+                >
+                  <Pencil size={10} /> {event.recap ? "Modifier" : "Ajouter des notes"}
+                </button>
+              )}
+            </div>
           )}
 
           <div className="flex items-center gap-2 mt-3 flex-wrap">

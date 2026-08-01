@@ -19,6 +19,35 @@ async function attachInvitedNames(events: Record<string, unknown>[], admin: Retu
   }));
 }
 
+// Ajoute le nombre de RSVP (lives de groupe) — et, si viewerId est fourni,
+// si CE viewer a lui-même confirmé sa présence.
+async function attachRsvps(
+  events: Record<string, unknown>[],
+  admin: ReturnType<typeof createAdminClient>,
+  viewerId?: string
+) {
+  const eventIds = events.map((e) => e.id as string);
+  if (eventIds.length === 0) return events.map((e) => ({ ...e, rsvp_count: 0, has_rsvped: false }));
+
+  const { data: rsvps } = await admin
+    .from("live_event_rsvps")
+    .select("event_id, client_id")
+    .in("event_id", eventIds);
+
+  const counts: Record<string, number> = {};
+  const mine = new Set<string>();
+  for (const r of (rsvps ?? []) as { event_id: string; client_id: string }[]) {
+    counts[r.event_id] = (counts[r.event_id] ?? 0) + 1;
+    if (viewerId && r.client_id === viewerId) mine.add(r.event_id);
+  }
+
+  return events.map((e) => ({
+    ...e,
+    rsvp_count: counts[e.id as string] ?? 0,
+    has_rsvped: mine.has(e.id as string),
+  }));
+}
+
 // All events visible to a given client: group events (webinaire/qna) hébergés
 // par SON coach, plus les 1:1 spécifiquement adressés à lui — jamais les
 // group events d'un autre coach de la plateforme.
@@ -37,7 +66,8 @@ export async function getUpcomingLiveEventsForClient(clientId: string, coachId: 
       .order("starts_at", { ascending: true });
 
     if (!data) return [];
-    return (await attachInvitedNames(data, admin)) as LiveEvent[];
+    const withNames = await attachInvitedNames(data, admin);
+    return (await attachRsvps(withNames, admin, clientId)) as LiveEvent[];
   } catch {
     return [];
   }
@@ -61,7 +91,8 @@ export async function getPastLiveEventsForClient(clientId: string, coachId: stri
       .limit(limit);
 
     if (!data) return [];
-    return (await attachInvitedNames(data, admin)) as LiveEvent[];
+    const withNames = await attachInvitedNames(data, admin);
+    return (await attachRsvps(withNames, admin, clientId)) as LiveEvent[];
   } catch {
     return [];
   }
@@ -79,7 +110,8 @@ export async function getAllLiveEventsForCoach(hostId: string): Promise<LiveEven
       .order("starts_at", { ascending: true });
 
     if (!data) return [];
-    return (await attachInvitedNames(data, admin)) as LiveEvent[];
+    const withNames = await attachInvitedNames(data, admin);
+    return (await attachRsvps(withNames, admin)) as LiveEvent[];
   } catch {
     return [];
   }
@@ -93,5 +125,81 @@ export async function getLiveEventById(id: string): Promise<LiveEvent | null> {
     return { ...data, invited_client_name: null } as LiveEvent;
   } catch {
     return null;
+  }
+}
+
+// Réservation en libre-service d'un créneau de disponibilité 1:1 — renvoie
+// les créneaux libres des N prochains jours en soustrayant les créneaux déjà
+// pris par un live_event de type 1to1 pour ce coach.
+export interface AvailabilitySlot {
+  startsAt: string; // ISO
+  durationMinutes: number;
+}
+
+export async function getAvailableSlotsForCoach(coachId: string, daysAhead = 14): Promise<AvailabilitySlot[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: rules } = await admin
+      .from("coach_availability")
+      .select("day_of_week, start_time, end_time, slot_duration_minutes")
+      .eq("coach_id", coachId);
+    if (!rules || rules.length === 0) return [];
+
+    const now = new Date();
+    const horizon = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+
+    const { data: booked } = await admin
+      .from("live_events")
+      .select("starts_at, duration_minutes")
+      .eq("host_id", coachId)
+      .eq("type", "1to1")
+      .neq("status", "cancelled")
+      .gte("starts_at", now.toISOString())
+      .lte("starts_at", horizon.toISOString());
+
+    const bookedRanges = ((booked ?? []) as { starts_at: string; duration_minutes: number }[]).map((b) => ({
+      start: new Date(b.starts_at).getTime(),
+      end: new Date(b.starts_at).getTime() + b.duration_minutes * 60 * 1000,
+    }));
+
+    const slots: AvailabilitySlot[] = [];
+    for (let dayOffset = 0; dayOffset <= daysAhead; dayOffset++) {
+      const day = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
+      const isoWeekday = day.getDay() === 0 ? 7 : day.getDay(); // 1=lundi...7=dimanche
+
+      for (const rule of rules as {
+        day_of_week: number;
+        start_time: string;
+        end_time: string;
+        slot_duration_minutes: number;
+      }[]) {
+        if (rule.day_of_week !== isoWeekday) continue;
+
+        const [startH, startM] = rule.start_time.split(":").map(Number);
+        const [endH, endM] = rule.end_time.split(":").map(Number);
+        const dayStart = new Date(day);
+        dayStart.setHours(startH, startM, 0, 0);
+        const dayEnd = new Date(day);
+        dayEnd.setHours(endH, endM, 0, 0);
+
+        for (
+          let slotStart = dayStart.getTime();
+          slotStart + rule.slot_duration_minutes * 60 * 1000 <= dayEnd.getTime();
+          slotStart += rule.slot_duration_minutes * 60 * 1000
+        ) {
+          const slotEnd = slotStart + rule.slot_duration_minutes * 60 * 1000;
+          if (slotStart < now.getTime() + 60 * 60 * 1000) continue; // au moins 1h de délai
+
+          const overlaps = bookedRanges.some((b) => slotStart < b.end && slotEnd > b.start);
+          if (!overlaps) {
+            slots.push({ startsAt: new Date(slotStart).toISOString(), durationMinutes: rule.slot_duration_minutes });
+          }
+        }
+      }
+    }
+
+    return slots.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
+  } catch {
+    return [];
   }
 }

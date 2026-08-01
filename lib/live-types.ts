@@ -18,6 +18,12 @@ export interface LiveEvent {
   duration_minutes: number;
   status: LiveStatus;
   created_at: string;
+  /** Notes du coach écrites après coup — compense l'absence de rediff. */
+  recap: string | null;
+  /** Nombre de clients ayant confirmé leur présence (lives de groupe uniquement). */
+  rsvp_count?: number;
+  /** Le client courant a-t-il confirmé sa présence ? */
+  has_rsvped?: boolean;
 }
 
 export const LIVE_TYPE_LABELS: Record<LiveType, string> = {

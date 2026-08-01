@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
-import { Calendar, Users2 } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Users2, CalendarClock } from "lucide-react";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS } from "@/lib/live-types";
 import LiveEventsList from "@/components/live/LiveEventsList";
-import { createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent } from "./actions";
+import { createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent, updateLiveRecap } from "./actions";
 
 function formatRelativeDate(iso: string): string {
   const target = new Date(iso);
@@ -43,6 +44,13 @@ export default async function CoachLivePage() {
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Programme tes appels 1:1, tes webinaires et tes lives Q&amp;A. La salle vidéo est intégrée.
         </p>
+        <Link
+          href="/dashboard/coach/live/disponibilites"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E01E1E] mt-2"
+        >
+          <CalendarClock size={13} />
+          Gérer mes disponibilités 1:1 (réservation libre-service)
+        </Link>
       </div>
 
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 24, marginBottom: 24, flexWrap: "wrap" }}>
@@ -78,6 +86,7 @@ export default async function CoachLivePage() {
         onCancel={cancelLiveEvent}
         onDelete={deleteLiveEvent}
         onUpdate={updateLiveEvent}
+        onSaveRecap={updateLiveRecap}
       />
     </div>
   );

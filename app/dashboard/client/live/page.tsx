@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { CalendarPlus } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
 import LiveEventsList from "@/components/live/LiveEventsList";
+import { toggleRsvp } from "./actions";
 
 export default async function ClientLivePage() {
   const user = await getUser();
@@ -34,9 +37,21 @@ export default async function ClientLivePage() {
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Appels 1:1 avec ton coach, webinaires et lives Q&amp;A, directement dans l&apos;appli.
         </p>
+        <Link
+          href="/dashboard/client/live/reserver"
+          className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#E01E1E] mt-2"
+        >
+          <CalendarPlus size={13} />
+          Réserver un appel 1:1
+        </Link>
       </div>
 
-      <LiveEventsList initialEvents={events} basePath="/dashboard/client" isCoach={false} />
+      <LiveEventsList
+        initialEvents={events}
+        basePath="/dashboard/client"
+        isCoach={false}
+        onToggleRsvp={toggleRsvp}
+      />
     </div>
   );
 }

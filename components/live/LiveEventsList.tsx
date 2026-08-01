@@ -20,6 +20,8 @@ export default function LiveEventsList({
   onCancel,
   onDelete,
   onUpdate,
+  onToggleRsvp,
+  onSaveRecap,
 }: {
   initialEvents: LiveEvent[];
   basePath: string;
@@ -29,6 +31,8 @@ export default function LiveEventsList({
   onCancel?: (id: string) => Promise<{ error?: string }>;
   onDelete?: (id: string) => Promise<{ error?: string }>;
   onUpdate?: (id: string, input: UpdateLiveEventInput) => Promise<{ error?: string }>;
+  onToggleRsvp?: (id: string) => Promise<{ error?: string; rsvped?: boolean }>;
+  onSaveRecap?: (id: string, recap: string) => Promise<{ error?: string }>;
 }) {
   const [events, setEvents] = useState(initialEvents);
 
@@ -96,6 +100,8 @@ export default function LiveEventsList({
               onCancel={isCoach ? () => handleCancel(event.id) : undefined}
               onDelete={isCoach ? () => handleDelete(event.id) : undefined}
               onUpdate={isCoach && onUpdate ? handleUpdate : undefined}
+              onToggleRsvp={!isCoach ? onToggleRsvp : undefined}
+              onSaveRecap={isCoach ? onSaveRecap : undefined}
             />
           ))}
         </div>
@@ -114,6 +120,7 @@ export default function LiveEventsList({
                 basePath={basePath}
                 isCoach={isCoach}
                 onDelete={isCoach ? () => handleDelete(event.id) : undefined}
+                onSaveRecap={isCoach ? onSaveRecap : undefined}
               />
             ))}
           </div>
