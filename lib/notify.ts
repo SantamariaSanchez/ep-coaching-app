@@ -6,6 +6,8 @@ export interface NotifyParams {
   title: string;
   body?: string;
   url?: string;
+  /** Qui a déclenché la notification, pour l'affichage (prénom + badge de rôle). */
+  senderId?: string;
 }
 
 // Combine la notif in-app (cloche, toujours enregistrée) et le push

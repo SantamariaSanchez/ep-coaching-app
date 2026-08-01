@@ -13,7 +13,7 @@ const APP_URL =
 function notifyCoach(clientId: string, params: { type: string; title: string; body: string; url: string }) {
   getCoachForClient(clientId)
     .then((coach) => {
-      if (coach) notifyUser(coach.id, params);
+      if (coach) notifyUser(coach.id, { ...params, senderId: clientId });
     })
     .catch(() => {});
 }
@@ -137,7 +137,8 @@ export async function notifyCoachNewPhotoUpdate(
 export async function notifyClientPhotoFeedback(
   clientEmail: string,
   clientName: string,
-  clientId?: string
+  clientId?: string,
+  coachId?: string
 ) {
   if (clientId) {
     notifyUser(clientId, {
@@ -145,6 +146,7 @@ export async function notifyClientPhotoFeedback(
       title: "Retour photo disponible",
       body: "Ton coach a répondu à ta photo update.",
       url: "/dashboard/client/photos",
+      senderId: coachId,
     }).catch(() => {});
   }
   await sendBrevoEmail({
@@ -199,7 +201,8 @@ export async function notifyClientRequestAnswered(
   clientEmail: string,
   clientName: string,
   title: string,
-  clientId?: string
+  clientId?: string,
+  coachId?: string
 ) {
   if (clientId) {
     notifyUser(clientId, {
@@ -207,6 +210,7 @@ export async function notifyClientRequestAnswered(
       title: "Réponse disponible",
       body: `Ton coach a répondu à ta demande de guide « ${title} ».`,
       url: "/dashboard/client/ressources",
+      senderId: coachId,
     }).catch(() => {});
   }
   await sendBrevoEmail({
@@ -258,7 +262,8 @@ export async function notifyClientNewLiveEvent(
 export async function notifyClientBilanReady(
   clientEmail: string,
   clientName: string,
-  clientId?: string
+  clientId?: string,
+  coachId?: string
 ) {
   if (clientId) {
     notifyUser(clientId, {
@@ -266,6 +271,7 @@ export async function notifyClientBilanReady(
       title: "Ton bilan est prêt",
       body: "Ton coach a répondu à ton check-in.",
       url: "/dashboard/client/checkin",
+      senderId: coachId,
     }).catch(() => {});
   }
   await sendBrevoEmail({

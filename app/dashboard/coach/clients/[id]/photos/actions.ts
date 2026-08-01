@@ -69,7 +69,7 @@ export async function sendPhotoFeedback(
     .single();
 
   if (profile?.email && profile?.full_name) {
-    notifyClientPhotoFeedback(profile.email, profile.full_name, clientId).catch(() => {});
+    notifyClientPhotoFeedback(profile.email, profile.full_name, clientId, guard.userId).catch(() => {});
   }
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/photos`);

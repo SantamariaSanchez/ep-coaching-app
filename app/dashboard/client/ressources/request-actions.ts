@@ -79,7 +79,8 @@ export async function respondToResourceRequest(
           authorProfile.email,
           authorProfile.full_name ?? "",
           request.title,
-          request.author_id
+          request.author_id,
+          guard.userId
         ).catch(() => {});
       }
     }

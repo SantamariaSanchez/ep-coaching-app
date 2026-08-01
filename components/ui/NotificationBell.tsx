@@ -4,6 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
+import { roleBadge } from "@/utils/auth";
+import RoleBadge from "@/components/ui/RoleBadge";
+
+interface NotificationSender {
+  full_name: string | null;
+  role: "coach" | "client";
+  is_platform_owner: boolean;
+  subscription_status: "free" | "active" | "canceled";
+}
 
 interface NotificationItem {
   id: string;
@@ -13,6 +22,7 @@ interface NotificationItem {
   url: string | null;
   read_at: string | null;
   created_at: string;
+  sender: NotificationSender | null;
 }
 
 function timeAgo(iso: string): string {
@@ -191,6 +201,14 @@ export default function NotificationBell({
                 }}
               >
                 <p style={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{n.title}</p>
+                {n.sender?.full_name && (
+                  <p style={{ display: "flex", alignItems: "center", gap: 5, margin: "3px 0 0" }}>
+                    <span style={{ fontSize: 10.5, color: "rgba(245,237,237,0.4)", fontWeight: 600 }}>
+                      {n.sender.full_name.split(" ")[0]}
+                    </span>
+                    <RoleBadge label={roleBadge(n.sender)} />
+                  </p>
+                )}
                 {n.body && (
                   <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "2px 0 0" }}>{n.body}</p>
                 )}

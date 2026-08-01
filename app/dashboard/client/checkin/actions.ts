@@ -121,6 +121,7 @@ export async function submitCheckin(
       title: `Nouveau check-in de ${clientName}`,
       body: `${clientName} vient d'envoyer son check-in hebdomadaire (S${weekNumber}).`,
       url: `/dashboard/coach/clients/${user.id}/checkins`,
+      senderId: user.id,
     }).catch(() => {});
   }).catch(() => {});
 

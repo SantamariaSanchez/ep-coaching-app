@@ -91,6 +91,7 @@ export async function upsertDailyLog(
         title: `Bilan quotidien de ${clientName}`,
         body: `${clientName} a soumis son bilan du ${log_date}.`,
         url: `/dashboard/coach/clients/${user.id}/bilan`,
+        senderId: user.id,
       }).catch(() => {});
     }).catch(() => {});
 

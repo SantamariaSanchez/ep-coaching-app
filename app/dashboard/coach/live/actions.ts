@@ -70,6 +70,7 @@ export async function createLiveEvent(
         title: "📅 Appel programmé",
         body: `${input.title.trim()} : ${dateLabel}`,
         url: "/dashboard/client/live",
+        senderId: guard.userId,
       }).catch(() => {});
     } else {
       // webinaire / qna — diffusion à tous les clients abonnés (le live
@@ -83,6 +84,7 @@ export async function createLiveEvent(
               title: `📅 ${LIVE_TYPE_LABELS[input.type]} programmé`,
               body: `${input.title.trim()} : ${dateLabel}`,
               url: "/dashboard/client/live",
+              senderId: guard.userId,
             }
           )
         )
@@ -154,6 +156,7 @@ export async function updateLiveEvent(
       title: "🔄 Live modifié",
       body: `${input.title.trim()} : ${dateLabel}`,
       url: "/dashboard/client/live",
+      senderId: guard.userId,
     };
     if (isOneToOneType(existing.type) && input.invitedClientId) {
       notifyUser(input.invitedClientId, params).catch(() => {});
@@ -198,6 +201,7 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
         title: "❌ Live annulé",
         body: event.title,
         url: "/dashboard/client/live",
+        senderId: guard.userId,
       };
       if (isOneToOneType(event.type) && event.invited_client_id) {
         notifyUser(event.invited_client_id, params).catch(() => {});
@@ -415,6 +419,7 @@ export async function scheduleFlashCall(
     title: "⚡ Ton point flash est programmé",
     body: new Intl.DateTimeFormat("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt)),
     url: "/dashboard/client/live",
+    senderId: guard.userId,
   }).catch(() => {});
 
   revalidatePath("/dashboard/coach/live");
@@ -447,6 +452,7 @@ export async function declineFlashCall(requestId: string): Promise<{ error?: str
       title: "Point flash non retenu",
       body: "Ton coach n'a pas pu accepter cette demande, écris-lui en message.",
       url: "/dashboard/client/messages",
+      senderId: guard.userId,
     }).catch(() => {});
   }
 

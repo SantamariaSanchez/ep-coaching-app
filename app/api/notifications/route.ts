@@ -14,7 +14,9 @@ export async function GET() {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("notifications")
-      .select("id, type, title, body, url, read_at, created_at")
+      .select(
+        "id, type, title, body, url, read_at, created_at, sender:sender_id(full_name, role, is_platform_owner, subscription_status)"
+      )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .limit(20);

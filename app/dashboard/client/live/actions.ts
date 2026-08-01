@@ -100,6 +100,7 @@ export async function bookAvailabilitySlot(input: {
     title: "📅 Nouveau 1:1 réservé",
     body: `${myProfile?.full_name ?? "Un client"} a réservé un créneau.`,
     url: "/dashboard/coach/live",
+    senderId: guard.userId,
   }).catch(() => {});
 
   revalidatePath("/dashboard/client/live");
@@ -162,6 +163,7 @@ export async function bookWeeklyCheckin(input: {
     title: "📅 Suivi hebdomadaire activé",
     body: `${myProfile?.full_name ?? "Un client"} a réservé un suivi hebdomadaire.`,
     url: "/dashboard/coach/live",
+    senderId: guard.userId,
   }).catch(() => {});
 
   revalidatePath("/dashboard/client/live");
@@ -196,6 +198,7 @@ export async function requestFlashCall(reason: string): Promise<{ error?: string
     title: "⚡ Demande de point flash",
     body: `${myProfile.full_name ?? "Un client"} : ${reason.trim().slice(0, 60)}`,
     url: "/dashboard/coach/live",
+    senderId: guard.userId,
   }).catch(() => {});
 
   revalidatePath("/dashboard/client/live");

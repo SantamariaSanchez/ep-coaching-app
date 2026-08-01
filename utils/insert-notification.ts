@@ -6,6 +6,9 @@ interface NotificationPayload {
   title: string;
   body?: string;
   url?: string;
+  /** Qui a déclenché la notification — affiché (prénom + badge de rôle)
+   * dans la cloche de notifications. Absent = notification système. */
+  senderId?: string;
 }
 
 /** Insert a notification row for a given user. Fire-and-forget safe. */
@@ -15,6 +18,7 @@ export async function insertNotification({
   title,
   body,
   url,
+  senderId,
 }: NotificationPayload): Promise<void> {
   const supabase = createAdminClient();
   await supabase.from("notifications").insert({
@@ -23,6 +27,7 @@ export async function insertNotification({
     title,
     body: body ?? null,
     url: url ?? null,
+    sender_id: senderId ?? null,
   });
 }
 
