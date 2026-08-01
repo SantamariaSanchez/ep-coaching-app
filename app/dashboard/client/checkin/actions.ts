@@ -6,6 +6,7 @@ import { getWeekStart, getISOWeek } from "@/utils/checkins";
 import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCheckin } from "@/app/actions/notifications";
+import { awardPoints, POINTS } from "@/lib/gamification";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -102,6 +103,8 @@ export async function submitCheckin(
   });
 
   if (error) return { error: error.message };
+
+  awardPoints(user.id, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart);
 
   const clientName = profile.full_name ?? "Un client";
 

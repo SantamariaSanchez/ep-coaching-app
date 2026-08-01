@@ -35,6 +35,7 @@ export const POINTS = {
   session_complete: 20,
   community_question: 5,
   community_victory: 10,
+  weekly_checkin: 25,
 } as const;
 
 export async function awardPoints(
