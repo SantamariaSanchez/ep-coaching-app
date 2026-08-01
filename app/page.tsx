@@ -235,6 +235,32 @@ export default function HomePage() {
 
         <InstallAppHint />
 
+        {/* ── Legal links ── */}
+        <div
+          className="animate-fade-up stagger-6"
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            flexWrap: "wrap",
+            gap: 14,
+            marginTop: 20,
+          }}
+        >
+          {[
+            { href: "/legal/cgu", label: "CGU" },
+            { href: "/legal/cgv", label: "CGV" },
+            { href: "/legal/confidentialite", label: "Confidentialité" },
+          ].map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              style={{ color: "rgba(245,237,237,0.22)", textDecoration: "none", fontSize: 10.5, fontWeight: 600 }}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </div>
+
         {/* ── Bottom line ── */}
         <p
           className="animate-fade-up stagger-6"
