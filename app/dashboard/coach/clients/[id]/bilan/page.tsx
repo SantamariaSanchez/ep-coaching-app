@@ -44,12 +44,8 @@ export default async function CoachClientBilanPage({
         >
           <ArrowLeft size={13} /> Retour
         </Link>
-        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)", margin: "0 0 4px" }}>
-          Bilans quotidiens
-        </p>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
-          {clientProfile.full_name ?? "Client"}
-        </h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>Bilans quotidiens</p>
+        <h1 className="ep-h1">{clientProfile.full_name ?? "Client"}</h1>
       </div>
 
       <ClientBilanView weeks={weeks} clientId={id} />

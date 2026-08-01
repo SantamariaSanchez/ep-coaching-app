@@ -41,9 +41,7 @@ export default async function CoachFormationDetailPage({
 
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{formation.emoji} Formation</p>
-        <h1 style={{ fontSize: 26, fontWeight: 900, letterSpacing: "-0.04em", color: "#F5EDED", margin: 0 }}>
-          {formation.title}
-        </h1>
+        <h1 className="ep-h1">{formation.title}</h1>
       </div>
 
       <CoachFormationEditor formation={formation} />

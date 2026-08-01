@@ -29,12 +29,8 @@ export default function CoachRoadmapPage() {
           {clientName || "Client"}
         </Link>
         <div style={{ flex: 1 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
-            Road Map Coach
-          </p>
-          <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: "-0.03em", color: "#F5EDED", margin: "2px 0 0" }}>
-            {clientName || "Client"}
-          </h1>
+          <p className="ep-section-title" style={{ margin: 0 }}>Road Map Coach</p>
+          <h1 className="ep-h1" style={{ margin: "2px 0 0" }}>{clientName || "Client"}</h1>
         </div>
       </div>
 

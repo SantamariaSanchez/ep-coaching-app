@@ -178,10 +178,7 @@ export default function ClientBilanView({ weeks, clientId }: { weeks: WeekGroup[
       )}
 
       {weeks.length === 0 ? (
-        <div style={{
-          background: "rgba(255,255,255,0.02)", border: "1px solid rgba(137,4,4,0.12)",
-          borderRadius: 14, padding: "48px 20px", textAlign: "center",
-        }}>
+        <div className="ep-card" style={{ padding: "48px 20px", textAlign: "center" }}>
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.25)", margin: 0 }}>Aucun bilan quotidien pour ce client.</p>
         </div>
       ) : (
