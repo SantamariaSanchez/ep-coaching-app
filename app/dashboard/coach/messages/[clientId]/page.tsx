@@ -20,12 +20,15 @@ export default async function CoachClientMessagesPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client] = await Promise.all([
-    getProfile(user.id),
-    getClientById(clientId, user.id),
-  ]);
-
+  const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client");
+
+  // Le fondateur peut ouvrir une conversation avec n'importe quel utilisateur
+  // de la plateforme (support, modération) — pas seulement ses propres
+  // clients, contrairement à un coach tiers classique.
+  const client = profile?.is_platform_owner
+    ? await getProfile(clientId)
+    : await getClientById(clientId, user.id);
   if (!client) notFound();
 
   // conversation_id = client's ID

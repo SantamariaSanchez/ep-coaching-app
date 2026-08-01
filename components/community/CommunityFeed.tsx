@@ -303,6 +303,7 @@ function PostCard({
   post,
   basePath,
   isCoach,
+  isPlatformOwner,
   currentUserId,
   expanded,
   onToggleExpand,
@@ -315,6 +316,7 @@ function PostCard({
   post: CommunityPost;
   basePath: string;
   isCoach: boolean;
+  isPlatformOwner: boolean;
   currentUserId: string | null;
   expanded: boolean;
   onToggleExpand: () => void;
@@ -327,7 +329,9 @@ function PostCard({
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
-  const canDelete = isCoach || currentUserId === post.author_id;
+  // Modération (suppression) réservée au fondateur, même dans le mur
+  // partagé — un coach tiers peut toujours supprimer SES PROPRES posts.
+  const canDelete = isPlatformOwner || currentUserId === post.author_id;
 
   async function handleDelete() {
     if (!confirm("Supprimer ce post ?")) return;
@@ -453,12 +457,14 @@ export default function CommunityFeed({
   initialPosts,
   initialNextCursor,
   isCoach,
+  isPlatformOwner = false,
   currentUserId,
 }: {
   type: CommunityPostType;
   initialPosts: CommunityPost[];
   initialNextCursor: string | null;
   isCoach: boolean;
+  isPlatformOwner?: boolean;
   currentUserId?: string | null;
 }) {
   const [posts, setPosts] = useState(initialPosts);
@@ -567,6 +573,7 @@ export default function CommunityFeed({
               post={post}
               basePath={basePath}
               isCoach={isCoach}
+              isPlatformOwner={isPlatformOwner}
               currentUserId={currentUserId ?? null}
               expanded={expandedId === post.id}
               onToggleExpand={() => handleToggleExpand(post.id)}

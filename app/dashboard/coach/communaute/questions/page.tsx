@@ -26,6 +26,7 @@ export default async function CoachQuestionsPage() {
         initialPosts={posts}
         initialNextCursor={nextCursor}
         isCoach={true}
+        isPlatformOwner={profile?.is_platform_owner ?? false}
         currentUserId={user.id}
       />
     </div>

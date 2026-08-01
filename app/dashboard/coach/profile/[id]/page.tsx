@@ -6,6 +6,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import BackButton from "@/components/ui/BackButton";
 import SubscriptionToggle from "@/components/ui/SubscriptionToggle";
+import FounderModerationPanel from "@/components/admin/FounderModerationPanel";
 
 export default async function CoachPublicProfilePage({
   params,
@@ -18,10 +19,18 @@ export default async function CoachPublicProfilePage({
   const { id } = await params;
   if (id === user.id) redirect("/dashboard/coach/profile");
 
+  const myProfile = await getProfile(user.id);
+  const isFounder = myProfile?.is_platform_owner === true;
+
   // Un coach ne doit consulter la fiche détaillée (email, tél., abonnement)
   // que de ses propres clients — jamais celle d'un client d'un autre coach.
-  const guard = await requireOwnClient(id);
-  if (!guard.ok) notFound();
+  // Exception : le fondateur peut consulter n'importe quel profil de la
+  // plateforme (nécessaire pour modérer Communauté/Membres tous coachs
+  // confondus).
+  if (!isFounder) {
+    const guard = await requireOwnClient(id);
+    if (!guard.ok) notFound();
+  }
 
   const profile = await getProfile(id);
   if (!profile) notFound();
@@ -44,7 +53,9 @@ export default async function CoachPublicProfilePage({
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />
 
-      {profile.role === "client" && (
+      {/* Le fondateur ne gère l'abonnement que de SES propres clients — pour
+          un client d'un autre coach, seul ce coach décide de son statut. */}
+      {profile.role === "client" && (!isFounder || profile.coach_id === user.id) && (
         <div className="mt-4">
           <SubscriptionToggle
             clientId={profile.id}
@@ -52,6 +63,8 @@ export default async function CoachPublicProfilePage({
           />
         </div>
       )}
+
+      {isFounder && <FounderModerationPanel targetUserId={profile.id} targetName={profile.full_name ?? "cet utilisateur"} />}
     </div>
   );
 }

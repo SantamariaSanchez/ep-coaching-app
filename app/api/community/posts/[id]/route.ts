@@ -50,9 +50,11 @@ export async function DELETE(
 
   const profile = await getProfile(user.id);
   const isOwner = post.author_id === user.id;
-  const isCoach = profile?.role === "coach";
+  // Modération réservée au fondateur, même dans le mur partagé — un coach
+  // tiers ne peut supprimer que ses propres posts, pas ceux des autres.
+  const isModerator = profile?.is_platform_owner === true;
 
-  if (!isOwner && !isCoach) {
+  if (!isOwner && !isModerator) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
