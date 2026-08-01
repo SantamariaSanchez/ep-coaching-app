@@ -29,9 +29,7 @@ export default async function CoachPendingPage() {
         }}>
           <Crown size={28} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
         </div>
-        <h1 style={{ fontSize: 24, fontWeight: 900, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 12px" }}>
-          Plus qu&apos;une étape
-        </h1>
+        <h1 className="ep-h2" style={{ margin: "0 0 12px" }}>Plus qu&apos;une étape</h1>
         <p style={{ fontSize: 14, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 28px" }}>
           Ton compte coach est créé. Active ton abonnement plateforme
           pour accéder à ton espace et commencer à suivre tes propres clients.

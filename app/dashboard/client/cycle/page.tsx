@@ -21,11 +21,9 @@ export default async function ClientCyclePage() {
   const stats = computeCycleStats(logs);
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px 80px" }}>
-      <div style={{ marginBottom: 24, paddingTop: 8 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
-          Mon cycle
-        </h1>
+    <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
+      <div className="animate-fade-up" style={{ marginBottom: 24 }}>
+        <h1 className="ep-h1">Mon cycle</h1>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: "4px 0 0", fontWeight: 600 }}>
           Suivi de tes cycles menstruels
         </p>
