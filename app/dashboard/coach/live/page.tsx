@@ -45,9 +45,9 @@ export default async function CoachLivePage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Live
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Lives & appels</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Coaching live</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Programme tes appels 1:1, tes webinaires et tes lives Q&amp;A. La salle vidéo est intégrée.
+          1:1, audits, suivi hebdo, accès direct, ateliers... tout ton accompagnement en direct, réuni ici.
         </p>
         <Link
           href="/dashboard/coach/live/disponibilites"
@@ -80,6 +80,14 @@ export default async function CoachLivePage() {
           </p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{thisWeekCount}</p>
         </div>
+        {flashRequests.length > 0 && (
+          <div>
+            <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
+              Points flash
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: "#E01E1E", margin: 0 }}>{flashRequests.length}</p>
+          </div>
+        )}
       </div>
 
       <FlashRequestsPanel requests={flashRequests} />

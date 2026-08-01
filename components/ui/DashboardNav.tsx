@@ -68,8 +68,14 @@ const CLIENT_TABS: TabItem[] = [
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "tasks", "live"],
+    matchSegments: ["messages", "checkin", "reminders", "tasks"],
     badge: "messages",
+  },
+  {
+    label: "Live",
+    icon: Video,
+    href: "/dashboard/client/live",
+    matchSegments: ["live"],
   },
   {
     label: "Contenu",
@@ -213,6 +219,12 @@ const COACH_TABS: TabItem[] = [
     badge: "messages",
   },
   {
+    label: "Live",
+    icon: Video,
+    href: "/dashboard/coach/live",
+    matchSegments: ["live"],
+  },
+  {
     label: "Moi",
     icon: Activity,
     href: "/dashboard/coach/moi/bilan",
@@ -228,7 +240,7 @@ const COACH_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/coach/communaute",
-    matchSegments: ["communaute", "live"],
+    matchSegments: ["communaute"],
   },
 ];
 
@@ -279,7 +291,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   },
   {
     group: "Live",
-    items: [{ label: "Lives & appels", icon: Video, segment: "live" }],
+    items: [{ label: "Coaching live", icon: Video, segment: "live" }],
   },
   {
     group: "Mon Suivi",
@@ -345,7 +357,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Mes tâches", icon: ListChecks,  segment: "tasks" },
       { label: "Rappels", icon: Bell,           segment: "reminders" },
       { label: "Check-in", icon: ClipboardList, segment: "checkin" },
-      { label: "Lives & appels", icon: Video,   segment: "live" },
+      { label: "Coaching live", icon: Video,   segment: "live" },
     ],
   },
   {

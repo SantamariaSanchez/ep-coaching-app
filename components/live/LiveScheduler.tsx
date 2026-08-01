@@ -1,12 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Loader2, AlertCircle } from "lucide-react";
+import {
+  Plus, Loader2, AlertCircle, X,
+  User, Video, MessageCircle, ClipboardCheck, Repeat, Zap, GraduationCap,
+} from "lucide-react";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
 import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
+
+const TYPE_CARDS: { type: LiveType; icon: React.ElementType; tagline: string }[] = [
+  { type: "1to1", icon: User, tagline: "Appel individuel classique" },
+  { type: "audit", icon: ClipboardCheck, tagline: "Bilan stratégique approfondi" },
+  { type: "checkin_hebdo", icon: Repeat, tagline: "Suivi récurrent chaque semaine" },
+  { type: "acces_direct", icon: Zap, tagline: "Call stratégique ou point rapide" },
+  { type: "atelier", icon: GraduationCap, tagline: "Formation en direct, invité possible" },
+  { type: "webinaire", icon: Video, tagline: "Présentation ouverte au groupe" },
+  { type: "qna", icon: MessageCircle, tagline: "Questions/réponses en direct" },
+];
 
 export default function LiveScheduler({
   clients,
@@ -26,6 +39,16 @@ export default function LiveScheduler({
   const [duration, setDuration] = useState("30");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function openWithType(t: LiveType) {
+    setType(t);
+    setOpen(true);
+  }
+
+  function closeForm() {
+    setOpen(false);
+    setError(null);
+  }
 
   async function handleSubmit() {
     if (!title.trim() || !date || !time) {
@@ -60,18 +83,57 @@ export default function LiveScheduler({
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors mb-5"
-      >
-        <Plus size={13} /> Programmer un live
-      </button>
+      <div className="mb-6">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          Programmer un live
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {TYPE_CARDS.map(({ type: t, icon: Icon, tagline }) => (
+            <button
+              key={t}
+              onClick={() => openWithType(t)}
+              className="ep-card"
+              style={{
+                padding: "14px 12px",
+                textAlign: "left",
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                cursor: "pointer",
+              }}
+            >
+              <div style={{
+                width: 32, height: 32, borderRadius: 9,
+                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>
+                <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+              </div>
+              <div>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+                  {LIVE_TYPE_LABELS[t]}
+                </p>
+                <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
+                  {tagline}
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-3 mb-5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">Programmer un live</p>
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-3 mb-6">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+          Programmer : {LIVE_TYPE_LABELS[type]}
+        </p>
+        <button onClick={closeForm} className="text-[#F5EDED]/30 hover:text-white transition-colors">
+          <X size={14} />
+        </button>
+      </div>
 
       <select value={type} onChange={(e) => setType(e.target.value as LiveType)} className={inputCls}>
         {Object.entries(LIVE_TYPE_LABELS).map(([k, l]) => (
@@ -124,9 +186,9 @@ export default function LiveScheduler({
           disabled={submitting}
           className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
-          {submitting ? <Loader2 size={13} className="animate-spin" /> : "Programmer"}
+          {submitting ? <Loader2 size={13} className="animate-spin" /> : <><Plus size={13} /> Programmer</>}
         </button>
-        <button onClick={() => setOpen(false)} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
+        <button onClick={closeForm} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
           Annuler
         </button>
       </div>
