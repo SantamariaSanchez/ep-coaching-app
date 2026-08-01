@@ -110,6 +110,7 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/logbook",
     "/dashboard/client/roadmap",
     "/dashboard/client/bilan",
+    "/dashboard/client/aujourdhui",
     "/dashboard/client/photos",
     "/dashboard/client/profile",
     "/dashboard/client/live",

@@ -10,7 +10,7 @@ import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
-  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -37,6 +37,13 @@ const ENGAGEMENT_ITEMS = [
 // ── Free-tier welcome guide ──────────────────────────────────────────────────
 
 const GUIDE_ITEMS = [
+  {
+    href: "/dashboard/client/aujourdhui",
+    icon: Sunrise,
+    title: "Aujourd'hui",
+    desc: "Ton programme du jour, tes habitudes et ton journal, au même endroit.",
+    locked: false,
+  },
   {
     href: "/dashboard/client/program",
     icon: Dumbbell,
@@ -372,6 +379,25 @@ export default async function ClientDashboard() {
 
       {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
       <ClientDashboardStats />
+
+      {/* ── Aujourd'hui ─────────────────────────────────────────────────────── */}
+      <Link
+        href="/dashboard/client/aujourdhui"
+        className="ep-card animate-fade-up stagger-2"
+        style={{
+          display: "flex", alignItems: "center", gap: 12, padding: "14px 18px",
+          marginBottom: 16, textDecoration: "none",
+        }}
+      >
+        <Sunrise size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>Aujourd&apos;hui</p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
+            Programme, habitudes, sommeil et journal du jour
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+      </Link>
 
       {/* ── Mon coach ───────────────────────────────────────────────────────── */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 16 }}>
