@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
 import LiveEventsList from "@/components/live/LiveEventsList";
 
@@ -8,7 +8,12 @@ export default async function ClientLivePage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach/live");
+  if (!isClientCapable(profile)) redirect("/dashboard/coach");
+  // Réservé aux clients payants (voir proxy.ts) — vérification explicite en
+  // plus du middleware, les lives étant un canal direct vers le coach. Un
+  // coach lui-même suivi par un autre coach (double rôle) n'est jamais
+  // soumis à ce paywall entre professionnels (voir Lot 1).
+  if (profile?.role !== "coach" && !isSubscribed(profile)) redirect("/dashboard/client/abonnement");
 
   // Les lives passés étaient invisibles côté client — seuls les "à venir"
   // (status="scheduled") étaient chargés, la section "Passés" de

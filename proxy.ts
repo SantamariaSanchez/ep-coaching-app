@@ -99,7 +99,9 @@ export async function proxy(request: NextRequest) {
   // each page branches its own UI by subscription_status. Only the features
   // that are inherently a channel TO the coach stay paid-only: messages,
   // check-in (weekly report meant for coach review), tasks (coach-assigned),
-  // notes du coach, formations.
+  // notes du coach, formations, live (appels/lives en direct — corrigé : ce
+  // chemin était par erreur dans cette liste "gratuit", ce qui laissait
+  // n'importe quel membre gratuit voir ET rejoindre les lives d'un coach).
   const FREE_TIER_PREFIXES = [
     "/dashboard/client/communaute",
     "/dashboard/client/ressources",
@@ -114,7 +116,6 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/aujourdhui",
     "/dashboard/client/photos",
     "/dashboard/client/profile",
-    "/dashboard/client/live",
     "/dashboard/client/steps",
     "/dashboard/client/mindset",
     "/dashboard/client/exercises",

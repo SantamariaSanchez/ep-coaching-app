@@ -1,5 +1,5 @@
 import { redirect, notFound } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getLiveEventById } from "@/utils/live-events";
 import { isWithinJoinWindow } from "@/lib/live-types";
 import JitsiRoom from "@/components/live/JitsiRoom";
@@ -14,7 +14,12 @@ export default async function ClientLiveRoomPage({
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach/live");
+  if (!isClientCapable(profile)) redirect("/dashboard/coach");
+  // Réservé aux clients payants — sans ce contrôle, un membre gratuit qui
+  // connaît/devine l'URL de la salle pouvait rejoindre le live directement,
+  // même si la liste ne le lui montrait pas. Exception double rôle : voir
+  // page.tsx du même dossier.
+  if (profile?.role !== "coach" && !isSubscribed(profile)) redirect("/dashboard/client/abonnement");
 
   const event = await getLiveEventById(id);
   if (!event || event.status !== "scheduled") notFound();
