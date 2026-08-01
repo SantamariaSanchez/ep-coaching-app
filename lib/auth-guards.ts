@@ -51,7 +51,6 @@ export async function requireOwnClient(clientId: string): Promise<GuardResult> {
       .from("profiles")
       .select("coach_id")
       .eq("id", clientId)
-      .eq("role", "client")
       .single();
 
     if (!client || client.coach_id !== guard.userId) {
@@ -80,7 +79,6 @@ export async function requireOwnClientOrSelf(clientId: string): Promise<GuardRes
       .from("profiles")
       .select("coach_id")
       .eq("id", clientId)
-      .eq("role", "client")
       .single();
 
     if (!client || client.coach_id !== guard.userId) {
@@ -92,7 +90,11 @@ export async function requireOwnClientOrSelf(clientId: string): Promise<GuardRes
   }
 }
 
-/** Verify the user is authenticated AND has role="client" */
+/**
+ * Verify the user is authenticated AND is "client-capable" : soit un vrai
+ * compte role="client", soit un coach qui est lui-même suivi par un autre
+ * coach (double rôle — coach_id renseigné sur un profil role="coach").
+ */
 export async function requireClient(): Promise<GuardResult> {
   try {
     const supabase = await createServerSupabase();
@@ -102,14 +104,16 @@ export async function requireClient(): Promise<GuardResult> {
     const admin = createAdminClient();
     const { data: profile } = await admin
       .from("profiles")
-      .select("role")
+      .select("role, coach_id")
       .eq("id", user.id)
       .single();
 
-    if (profile?.role !== "client") {
+    const isClientCapable =
+      profile?.role === "client" || (profile?.role === "coach" && !!profile?.coach_id);
+    if (!isClientCapable) {
       return { ok: false, error: "Accès réservé au client." };
     }
-    return { ok: true, userId: user.id, role: "client" };
+    return { ok: true, userId: user.id, role: profile!.role as "coach" | "client" };
   } catch {
     return { ok: false, error: "Erreur d'authentification." };
   }

@@ -12,6 +12,8 @@ import ProfileEditor from "@/components/profile/ProfileEditor";
 import AccountActions from "@/components/profile/AccountActions";
 import ClientIntakeForm from "@/components/ui/ClientIntakeForm";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
+import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export default async function CoachProfilePage() {
   const user = await getUser();
@@ -33,6 +35,17 @@ export default async function CoachProfilePage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  let linkedCoachName: string | null = null;
+  if (profile.coach_id) {
+    const admin = createAdminClient();
+    const { data: linkedCoach } = await admin
+      .from("profiles")
+      .select("full_name")
+      .eq("id", profile.coach_id)
+      .maybeSingle();
+    linkedCoachName = linkedCoach?.full_name ?? "ton coach";
+  }
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
@@ -44,7 +57,12 @@ export default async function CoachProfilePage() {
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />
 
-      <ProfileEditor fullName={profile.full_name ?? ""} phone={profile.phone} bio={profile.bio} />
+      <ProfileEditor
+        fullName={profile.full_name ?? ""}
+        phone={profile.phone}
+        bio={profile.bio}
+        instagramHandle={profile.instagram_handle}
+      />
 
       <div className="mt-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
@@ -55,6 +73,8 @@ export default async function CoachProfilePage() {
       </div>
 
       <InviteLinkCard inviteCode={profile.invite_code} />
+
+      {!profile.is_platform_owner && <PersonalCoachCard linkedCoachName={linkedCoachName} />}
 
       {profile.is_platform_owner && (
         <Link

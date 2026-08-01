@@ -56,7 +56,12 @@ export default async function ClientProfilePage() {
 
       <ProfileHeader profile={profile} postCount={postCount} points={points} avatarSrc={avatarSrc} />
 
-      <ProfileEditor fullName={profile.full_name ?? ""} phone={profile.phone} bio={profile.bio} />
+      <ProfileEditor
+        fullName={profile.full_name ?? ""}
+        phone={profile.phone}
+        bio={profile.bio}
+        instagramHandle={profile.instagram_handle}
+      />
 
       {profile.subscription_status === "active" && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">

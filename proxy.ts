@@ -105,6 +105,7 @@ export async function proxy(request: NextRequest) {
     "/dashboard/client/ressources",
     "/dashboard/client/recettes",
     "/dashboard/client/abonnement",
+    "/dashboard/client/coachs",
     "/dashboard/client/program",
     "/dashboard/client/nutrition",
     "/dashboard/client/logbook",
@@ -133,12 +134,14 @@ export async function proxy(request: NextRequest) {
       );
       const { data: prof } = await adminForRole
         .from("profiles")
-        .select("role, subscription_status")
+        .select("role, subscription_status, coach_id")
         .eq("id", user.id)
         .single();
       const role = prof?.role ?? "client";
-      // Coach trying to access client dashboard → redirect to coach dashboard
-      if (role === "coach" && isClientDashboard) {
+      // Coach trying to access client dashboard → redirect to coach dashboard,
+      // SAUF s'il est aussi suivi par un autre coach (double rôle) : dans ce
+      // cas /dashboard/client/* est son propre espace de coaching personnel.
+      if (role === "coach" && isClientDashboard && !prof?.coach_id) {
         const res = NextResponse.redirect(new URL("/dashboard/coach", request.url));
         supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
         return res;

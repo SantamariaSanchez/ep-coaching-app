@@ -9,16 +9,19 @@ export default function ProfileEditor({
   fullName,
   phone,
   bio,
+  instagramHandle,
 }: {
   fullName: string;
   phone: string | null;
   bio: string | null;
+  instagramHandle?: string | null;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(fullName);
   const [phoneVal, setPhoneVal] = useState(phone ?? "");
   const [bioVal, setBioVal] = useState(bio ?? "");
+  const [instagramVal, setInstagramVal] = useState(instagramHandle ?? "");
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -31,6 +34,7 @@ export default function ProfileEditor({
         full_name: name,
         phone: phoneVal.trim() || null,
         bio: bioVal,
+        instagram_handle: instagramVal.trim() || null,
       });
       if (result.error) {
         setStatus("error");
@@ -113,6 +117,17 @@ export default function ProfileEditor({
             value={phoneVal}
             onChange={(e) => setPhoneVal(e.target.value)}
             placeholder="06 12 34 56 78"
+            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
+          />
+        </div>
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
+            Instagram
+          </label>
+          <input
+            value={instagramVal}
+            onChange={(e) => setInstagramVal(e.target.value)}
+            placeholder="tonpseudo"
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
           />
         </div>

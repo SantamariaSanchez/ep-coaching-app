@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireAuth, requireCoach } from "@/lib/auth-guards";
+import { requireAuth, requireClient, requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { ScienceArticleType } from "@/utils/science";
 import { SCIENCE_LIBRARY_SEED } from "@/lib/science-library-seed";
@@ -201,9 +201,8 @@ export async function deleteStudy(id: string): Promise<{ error?: string }> {
 // Rejoindre/quitter une étude — réservé aux membres ayant débloqué la
 // participation (rang Vétéran ou abonnement, voir FEATURE_UNLOCK_POINTS).
 export async function joinStudy(studyId: string): Promise<{ error?: string }> {
-  const guard = await requireAuth();
+  const guard = await requireClient();
   if (!guard.ok) return { error: guard.error };
-  if (guard.role !== "client") return { error: "Réservé aux membres." };
 
   try {
     const [profile, points] = await Promise.all([

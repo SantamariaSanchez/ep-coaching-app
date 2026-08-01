@@ -43,3 +43,52 @@ export async function ensureInviteCode(): Promise<{ error?: string; code?: strin
 
   return { error: "Erreur lors de la génération du lien." };
 }
+
+// Un coach peut aussi être suivi comme client par un autre coach (double
+// rôle) — rattachement via le même code d'invitation que celui utilisé pour
+// les clients classiques (voir /auth/client?coach=CODE).
+export async function joinPersonalCoach(
+  inviteCode: string
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const code = inviteCode.trim();
+  if (!code) return { error: "Code d'invitation requis." };
+
+  const admin = createAdminClient();
+  const { data: target } = await admin
+    .from("profiles")
+    .select("id")
+    .eq("role", "coach")
+    .eq("invite_code", code)
+    .eq("platform_subscription_status", "active")
+    .maybeSingle();
+
+  if (!target) return { error: "Code invalide ou coach non actif." };
+  if (target.id === guard.userId) return { error: "Tu ne peux pas devenir ton propre client." };
+
+  const { error } = await admin
+    .from("profiles")
+    .update({ coach_id: target.id })
+    .eq("id", guard.userId);
+  if (error) return { error: "Erreur lors du rattachement." };
+
+  revalidatePath("/dashboard/coach/profile");
+  return { success: true };
+}
+
+export async function leavePersonalCoach(): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ coach_id: null, subscription_status: "free" })
+    .eq("id", guard.userId);
+  if (error) return { error: "Erreur lors du retrait." };
+
+  revalidatePath("/dashboard/coach/profile");
+  return { success: true };
+}

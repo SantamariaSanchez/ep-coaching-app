@@ -54,10 +54,11 @@ export interface Profile {
   platform_stripe_customer_id: string | null;
   platform_stripe_subscription_id: string | null;
   invite_code: string | null;
+  instagram_handle: string | null;
 }
 
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, platform_stripe_customer_id, platform_stripe_subscription_id, invite_code";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, platform_stripe_customer_id, platform_stripe_subscription_id, invite_code, instagram_handle";
 
 export async function getProfile(userId: string): Promise<Profile | null> {
   try {
@@ -77,6 +78,9 @@ export async function getProfile(userId: string): Promise<Profile | null> {
 // d'un autre coach (y compris le propriétaire de la plateforme). coachId
 // doit toujours être l'id du coach connecté — jamais une valeur déduite
 // d'un input utilisateur.
+// Ne filtre volontairement pas par role="client" : un profil role="coach"
+// peut aussi être le client personnel d'un autre coach (double rôle), et
+// doit apparaître dans la liste de CE coach comme n'importe quel client.
 export async function getClients(coachId: string): Promise<Profile[]> {
   try {
     // Use admin client to bypass RLS — coach must see ALL of their own
@@ -86,7 +90,6 @@ export async function getClients(coachId: string): Promise<Profile[]> {
     const { data } = await admin
       .from("profiles")
       .select(PROFILE_FIELDS)
-      .eq("role", "client")
       .eq("coach_id", coachId)
       .eq("subscription_status", "active")
       .order("full_name");
@@ -105,7 +108,6 @@ export async function getTotalMembersCount(coachId: string): Promise<number> {
     const { count } = await admin
       .from("profiles")
       .select("id", { count: "exact", head: true })
-      .eq("role", "client")
       .eq("coach_id", coachId);
     return count ?? 0;
   } catch {
@@ -130,7 +132,6 @@ export async function getCommunityMembers(coachId: string): Promise<Profile[]> {
     const { data } = await admin
       .from("profiles")
       .select(PROFILE_FIELDS)
-      .eq("role", "client")
       .eq("coach_id", coachId)
       .neq("subscription_status", "active")
       .order("start_date", { ascending: false });
@@ -150,7 +151,6 @@ export async function getClientById(id: string, coachId: string): Promise<Profil
       .from("profiles")
       .select(PROFILE_FIELDS)
       .eq("id", id)
-      .eq("role", "client")
       .eq("coach_id", coachId)
       .single();
     return (data as Profile) ?? null;
@@ -179,6 +179,45 @@ export async function getAllActiveClientsSystemWide(): Promise<Profile[]> {
 
 export function isSubscribed(profile: Profile | null): boolean {
   return profile?.subscription_status === "active";
+}
+
+// Un compte peut être coach ET client d'un autre coach (double rôle) : un
+// profil role='coach' avec coach_id renseigné accède aussi à l'espace
+// /dashboard/client/* pour son propre suivi personnel. Source unique de
+// vérité pour ce calcul, utilisée par le middleware et les guards serveur.
+export function isClientCapable(
+  profile: Pick<Profile, "role" | "coach_id"> | null | undefined
+): boolean {
+  if (!profile) return false;
+  if (profile.role === "client") return true;
+  return profile.role === "coach" && !!profile.coach_id;
+}
+
+export interface CoachDiscoveryEntry {
+  id: string;
+  full_name: string | null;
+  bio: string | null;
+  avatar_url: string | null;
+  invite_code: string | null;
+}
+
+// Liste publique (au sein de l'appli) des coachs tiers actifs, utilisée
+// quand un membre sans coach veut en choisir un nouveau — ne renvoie que
+// les champs sûrs à afficher, jamais le Profile complet.
+export async function getActiveCoachesForDiscovery(): Promise<CoachDiscoveryEntry[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("profiles")
+      .select("id, full_name, bio, avatar_url, invite_code")
+      .eq("role", "coach")
+      .eq("is_platform_owner", false)
+      .eq("platform_subscription_status", "active")
+      .order("full_name");
+    return (data as CoachDiscoveryEntry[]) ?? [];
+  } catch {
+    return [];
+  }
 }
 
 // Réservé au propriétaire de la plateforme (is_platform_owner) — liste tous

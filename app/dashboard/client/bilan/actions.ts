@@ -5,6 +5,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { isClientCapable } from "@/utils/auth";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -28,12 +29,12 @@ export async function upsertDailyLog(
 
     const { data: profile } = await serverClient
       .from("profiles")
-      .select("full_name, role")
+      .select("full_name, role, coach_id")
       .eq("id", user.id)
       .single();
 
     if (!profile) return { error: "Profil introuvable." };
-    if (profile.role !== "client") return { error: "Accès refusé." };
+    if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };

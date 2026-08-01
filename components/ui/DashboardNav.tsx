@@ -10,6 +10,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
+  ArrowLeftRight,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -490,6 +491,7 @@ export default function DashboardNav({
   const [unreadMessages,  setUnreadMessages]  = useState(0);
   const [userName,        setUserName]        = useState<string | null>(null);
   const [userRole,        setUserRole]        = useState<string | null>(null);
+  const [hasPersonalCoach, setHasPersonalCoach] = useState(false);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
@@ -526,7 +528,7 @@ export default function DashboardNav({
       if (!user) return;
       supabase
         .from("profiles")
-        .select("full_name, role, subscription_status")
+        .select("full_name, role, subscription_status, coach_id")
         .eq("id", user.id)
         .single()
         .then(({ data }) => {
@@ -534,6 +536,7 @@ export default function DashboardNav({
             const role = (data as { role: string }).role;
             setUserName((data as { full_name: string | null }).full_name);
             setUserRole(role);
+            setHasPersonalCoach(role === "coach" && !!(data as { coach_id: string | null }).coach_id);
             setIsFreeTier(
               role === "client" &&
                 (data as { subscription_status: string }).subscription_status !== "active"
@@ -745,6 +748,40 @@ export default function DashboardNav({
               </div>
             </div>
           </div>
+
+          {userRole === "coach" && hasPersonalCoach && (
+            <Link
+              href={isCoach ? "/dashboard/client" : "/dashboard/coach"}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+                width: "100%",
+                padding: "7px 10px",
+                borderRadius: 8,
+                background: "transparent",
+                color: "rgba(245,237,237,0.4)",
+                fontSize: 12,
+                fontWeight: 600,
+                textDecoration: "none",
+                transition: "all 0.15s",
+                marginBottom: 2,
+              }}
+              onMouseEnter={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = "#E01E1E";
+                el.style.background = "rgba(224,30,30,0.07)";
+              }}
+              onMouseLeave={(e) => {
+                const el = e.currentTarget as HTMLAnchorElement;
+                el.style.color = "rgba(245,237,237,0.4)";
+                el.style.background = "transparent";
+              }}
+            >
+              <ArrowLeftRight size={14} strokeWidth={1.7} />
+              {isCoach ? "Mon coaching perso" : "Mon espace coach"}
+            </Link>
+          )}
 
           {userRole === "client" && (
             <Link

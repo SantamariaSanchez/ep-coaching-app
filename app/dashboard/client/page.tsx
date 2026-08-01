@@ -123,15 +123,56 @@ const GUIDE_ITEMS = [
   },
 ];
 
+function NoCoachBanner() {
+  return (
+    <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+      <div
+        className="ep-card-highlighted"
+        style={{ padding: "20px 20px", display: "flex", flexDirection: "column", gap: 12 }}
+      >
+        <div>
+          <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            Tu n&apos;as plus de coach attitré
+          </p>
+          <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
+            Envie qu&apos;Emmanuel devienne ton coach ? Écris-lui directement sur Instagram. Tu peux
+            aussi choisir un autre coach actif sur la plateforme.
+          </p>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+          <a
+            href="https://instagram.com/santamariasanchez_"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ep-btn-primary"
+            style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
+          >
+            Contacter Emmanuel
+          </a>
+          <Link
+            href="/dashboard/client/coachs"
+            className="ep-btn-secondary"
+            style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
+          >
+            Voir les coachs actifs
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function WelcomeGuide({
   firstName,
   goal,
   level,
+  hasCoach,
   personalization,
 }: {
   firstName: string;
   goal: string | null;
   level: string | null;
+  hasCoach: boolean;
   personalization: ReturnType<typeof derivePersonalization>;
 }) {
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
@@ -148,6 +189,8 @@ function WelcomeGuide({
           {personalization.welcomeSubtitle}
         </p>
       </div>
+
+      {!hasCoach && <NoCoachBanner />}
 
       {/* État des lieux */}
       {(goal || level) && (
@@ -315,6 +358,7 @@ export default async function ClientDashboard() {
           firstName={profile?.full_name?.split(" ")[0] ?? ""}
           goal={profile?.goal ?? null}
           level={profile?.level ?? null}
+          hasCoach={!!profile?.coach_id}
           personalization={derivePersonalization(preferences)}
         />
       </>

@@ -1,25 +1,8 @@
 ﻿import { redirect } from "next/navigation";
-import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
-
-// The coach's user ID — fetched by looking for a profile with role=coach
-async function getCoachId(): Promise<string | null> {
-  try {
-    // Admin client bypasses RLS - client cannot read other users profiles
-    const admin = createAdminClient();
-    const { data } = await admin
-      .from("profiles")
-      .select("id")
-      .eq("role", "coach")
-      .limit(1)
-      .maybeSingle();
-    return data?.id ?? null;
-  } catch {
-    return null;
-  }
-}
 
 // Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
 // lui répondre une fois qu'il a ouvert la conversation, pour éviter que le
@@ -44,9 +27,12 @@ export default async function ClientMessagesPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  if (!isClientCapable(profile)) redirect("/dashboard/coach");
 
-  const coachId = await getCoachId();
+  // Le coach affiché est toujours celui rattaché au profil (profile.coach_id),
+  // jamais "le premier coach trouvé" — indispensable en multi-coach, et pour
+  // un compte coach lui-même suivi par un autre coach (double rôle).
+  const coachId = profile?.coach_id ?? null;
   if (!coachId) {
     return (
       <div className="px-6 py-8 text-center">
@@ -57,9 +43,22 @@ export default async function ClientMessagesPage() {
     );
   }
 
+  const admin = createAdminClient();
+  const { data: coachProfile } = await admin
+    .from("profiles")
+    .select("full_name")
+    .eq("id", coachId)
+    .maybeSingle();
+  const coachName: string = coachProfile?.full_name ?? "Ton coach";
+  const coachInitials = coachName
+    .split(" ")
+    .map((n: string) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
+
   // conversation_id is always the client's ID
   const conversationId = user.id;
-  const coachName = "Emmanuel Peccoux";
   const canSend = isSubscribed(profile) || (await canMemberSend(coachId, user.id));
 
   return (
@@ -70,7 +69,7 @@ export default async function ClientMessagesPage() {
       {/* Header */}
       <div className="px-5 py-4 border-b border-[#890404]/20 flex items-center gap-3">
         <div className="w-9 h-9 rounded-full bg-[#E01E1E]/20 border border-[#E01E1E]/30 flex items-center justify-center flex-shrink-0">
-          <span className="text-xs font-black text-[#E01E1E]">EP</span>
+          <span className="text-xs font-black text-[#E01E1E]">{coachInitials}</span>
         </div>
         <div>
           <p className="text-sm font-black text-white">{coachName}</p>

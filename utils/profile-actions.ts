@@ -7,6 +7,7 @@ export interface UpdateProfileInput {
   full_name?: string;
   phone?: string | null;
   bio?: string | null;
+  instagram_handle?: string | null;
 }
 
 export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error?: string }> {
@@ -19,6 +20,10 @@ export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error
     if (data.full_name !== undefined) update.full_name = data.full_name.trim();
     if (data.phone !== undefined) update.phone = data.phone;
     if (data.bio !== undefined) update.bio = data.bio?.trim() || null;
+    if (data.instagram_handle !== undefined) {
+      const handle = data.instagram_handle?.trim().replace(/^@/, "") || null;
+      update.instagram_handle = handle;
+    }
 
     const { error } = await supabase.from("profiles").update(update).eq("id", user.id);
     if (error) return { error: "Erreur lors de la mise à jour." };

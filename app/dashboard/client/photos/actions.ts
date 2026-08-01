@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewPhotoUpdate } from "@/app/actions/notifications";
+import { isClientCapable } from "@/utils/auth";
 import type { SubmissionType } from "@/lib/posing-data";
 import { TYPE_LABELS } from "@/lib/posing-data";
 
@@ -34,12 +35,12 @@ export async function submitPhotoUpdate(
 
     const { data: profile } = await serverClient
       .from("profiles")
-      .select("full_name, competition_category, role")
+      .select("full_name, competition_category, role, coach_id")
       .eq("id", user.id)
       .single();
 
     if (!profile) return { error: "Profil introuvable" };
-    if (profile.role !== "client") return { error: "Accès refusé." };
+    if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
     const type = formData.get("type") as SubmissionType;
     const notes = (formData.get("notes") as string)?.trim() || null;

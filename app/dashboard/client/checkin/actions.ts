@@ -7,6 +7,7 @@ import { insertNotification, getCoachForClient } from "@/utils/insert-notificati
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCheckin } from "@/app/actions/notifications";
 import { awardPoints, POINTS } from "@/lib/gamification";
+import { isClientCapable } from "@/utils/auth";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -41,12 +42,12 @@ export async function submitCheckin(
 
   const { data: profile } = await serverClient
     .from("profiles")
-    .select("full_name, role, checkin_day")
+    .select("full_name, role, checkin_day, coach_id")
     .eq("id", user.id)
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
-  if (profile.role !== "client") return { error: "Accès refusé." };
+  if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
   const today = new Date();
   const checkinDay = (profile as { checkin_day?: number }).checkin_day ?? 1;

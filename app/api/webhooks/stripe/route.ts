@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -80,10 +81,18 @@ export async function POST(request: Request) {
         .update({ subscription_status: isActive ? "active" : "canceled" })
         .eq("stripe_customer_id", customerId);
 
-      await admin
+      const { data: coachRow } = await admin
         .from("profiles")
         .update({ platform_subscription_status: isActive ? "active" : "canceled" })
-        .eq("platform_stripe_customer_id", customerId);
+        .eq("platform_stripe_customer_id", customerId)
+        .select("id")
+        .maybeSingle();
+
+      // Un coach qui n'a plus d'abonnement plateforme actif n'entraîne
+      // jamais le blocage de ses clients : ils repassent membres libres.
+      if (!isActive && coachRow?.id) {
+        await detachClientsFromCoach(coachRow.id);
+      }
       break;
     }
 

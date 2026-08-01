@@ -2,6 +2,7 @@
 
 import { requirePlatformOwner } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 import { revalidatePath } from "next/cache";
 
 // Filet de sécurité manuel tant que le Payment Link Stripe de l'abonnement
@@ -23,6 +24,12 @@ export async function setCoachPlatformStatus(
     .eq("is_platform_owner", false);
 
   if (error) return { error: error.message };
+
+  // Idem qu'un échec de paiement Stripe : jamais de blocage pour les clients
+  // d'un coach désactivé, ils repassent membres libres.
+  if (status !== "active") {
+    await detachClientsFromCoach(coachId);
+  }
 
   revalidatePath("/dashboard/coach/admin");
   return { success: true };
