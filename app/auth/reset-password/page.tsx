@@ -78,8 +78,6 @@ export default function ResetPasswordPage() {
         alignItems: "center",
         justifyContent: "center",
         padding: "24px 20px",
-        background:
-          "radial-gradient(ellipse 70% 60% at 50% 30%, #3D0505 0%, #1A0101 40%, #0D0000 100%)",
       }}
     >
       <div style={{ width: "100%", maxWidth: 420 }}>

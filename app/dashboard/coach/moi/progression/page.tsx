@@ -13,7 +13,7 @@ function fmtShort(d: string) {
 
 function StatCard({ label, value, unit = "" }: { label: string; value: number | null; unit?: string }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(137,4,4,0.12)", borderRadius: 10, padding: "12px 14px" }}>
+    <div className="ep-card" style={{ padding: "12px 14px" }}>
       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>{label}</p>
       <p style={{ fontSize: 20, fontWeight: 900, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)", margin: 0, letterSpacing: "-0.02em" }}>
         {value !== null ? `${value}${unit}` : "N/A"}
@@ -41,15 +41,13 @@ export default async function CoachProgressionPage() {
   const avg = (arr: number[]) => arr.length ? parseFloat((arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1)) : null;
 
   return (
-    <div style={{ maxWidth: 720, margin: "0 auto", padding: "0 16px 80px" }}>
+    <div className="page-transition" style={{ maxWidth: 720, margin: "0 auto", padding: "32px 16px 80px" }}>
 
-      <div style={{ marginBottom: 28, paddingTop: 8, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+      <div className="animate-fade-up" style={{ marginBottom: 28, display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
             <TrendingUp size={20} style={{ color: "#E01E1E" }} />
-            <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
-              Ma progression
-            </h1>
+            <h1 className="ep-h2">Ma progression</h1>
           </div>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>{logs.length} jours enregistrés</p>
         </div>
@@ -70,7 +68,7 @@ export default async function CoachProgressionPage() {
       </div>
 
       {logs.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "48px 20px", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(137,4,4,0.1)", borderRadius: 14 }}>
+        <div className="ep-card" style={{ textAlign: "center", padding: "48px 20px" }}>
           <p style={{ color: "rgba(245,237,237,0.25)", fontSize: 13, margin: 0 }}>
             Commence à remplir ton bilan quotidien pour voir ta progression ici.
           </p>
@@ -99,7 +97,7 @@ export default async function CoachProgressionPage() {
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {weeks.map(({ weekStart, logs: wLogs, averages }) => (
-              <div key={weekStart} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(137,4,4,0.12)", borderRadius: 12, padding: "14px 16px" }}>
+              <div key={weekStart} className="ep-card" style={{ padding: "14px 16px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: "#F5EDED" }}>Sem. du {fmtShort(weekStart)}</span>
                   <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>{wLogs.length}j</span>

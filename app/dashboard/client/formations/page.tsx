@@ -107,20 +107,14 @@ export default async function FormationsPage() {
               <Link
                 key={formation.id}
                 href={isAvailable ? `/dashboard/client/formations/${formation.id}` : "#"}
-                className="animate-fade-up"
+                className="ep-card animate-fade-up"
                 style={{
                   animationDelay: `${i * 60}ms`,
                   textDecoration: "none",
                   display: "block",
-                  background: "rgba(16,1,1,0.60)",
-                  backdropFilter: "blur(28px)",
-                  WebkitBackdropFilter: "blur(28px)",
-                  border: "1px solid rgba(224,30,30,0.13)",
                   borderRadius: "var(--radius-xl)",
-                  overflow: "hidden",
                   opacity: isAvailable ? 1 : 0.65,
                   cursor: isAvailable ? "pointer" : "default",
-                  boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04), 0 4px 24px rgba(0,0,0,0.4)",
                 }}
               >
                 {/* Top color band */}

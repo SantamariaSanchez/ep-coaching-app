@@ -217,12 +217,7 @@ export default async function CheckinPage() {
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Semaine {weekNum}</p>
-        <h1 style={{
-          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0, lineHeight: 1.05,
-        }}>
-          Check-in
-        </h1>
+        <h1 className="ep-h1">Check-in</h1>
       </div>
 
       {existing ? (
@@ -381,12 +376,7 @@ export default async function CheckinPage() {
       {pastCheckins.length > 0 && (
         <section style={{ marginTop: 40 }}>
           <p className="ep-section-title" style={{ marginBottom: 4 }}>Historique</p>
-          <h2 style={{
-            fontSize: 22, fontWeight: 900, letterSpacing: "-0.03em",
-            color: "#F5EDED", marginBottom: 16,
-          }}>
-            Mes bilans
-          </h2>
+          <h2 className="ep-h2" style={{ marginBottom: 16 }}>Mes bilans</h2>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {pastCheckins.map((c) => (
               <PastCheckinCard key={c.id} checkin={c} />

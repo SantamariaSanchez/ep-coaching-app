@@ -52,18 +52,14 @@ export default async function CoachMonBilanPage() {
   const weeks = groupLogsByWeek(allLogs);
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 16px 80px" }}>
+    <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
 
-      <div style={{ marginBottom: 24, paddingTop: 8 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 900, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
-          Mon bilan du jour
-        </h1>
-        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: "4px 0 0", fontWeight: 600 }}>
-          {fmt(today)}
-        </p>
+      <div className="animate-fade-up" style={{ marginBottom: 24 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{fmt(today)}</p>
+        <h1 className="ep-h1">Mon bilan du jour</h1>
       </div>
 
-      <div style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 16, padding: "20px 16px", marginBottom: 32 }}>
+      <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
         <DailyBilanForm today={today} existing={todayLog} action={upsertCoachDailyLog} />
       </div>
 
@@ -81,7 +77,7 @@ export default async function CoachMonBilanPage() {
                   </span>
                   <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>{logs.length} jour{logs.length > 1 ? "s" : ""}</span>
                 </div>
-                <div style={{ background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.1)", borderRadius: 10, padding: "10px 14px", marginBottom: 10 }}>
+                <div className="ep-card" style={{ padding: "10px 14px", marginBottom: 10 }}>
                   <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 8px" }}>Moyennes</p>
                   <AvgRow label="Poids" value={averages.weight} unit=" kg" />
                   <AvgRow label="Pas" value={averages.steps} />
@@ -92,7 +88,7 @@ export default async function CoachMonBilanPage() {
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   {logs.map((log) => (
-                    <div key={log.id} style={{ background: "rgba(255,255,255,0.025)", border: "1px solid rgba(137,4,4,0.12)", borderRadius: 10, padding: "10px 14px" }}>
+                    <div key={log.id} className="ep-card" style={{ padding: "10px 14px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>{fmtShort(log.log_date)}</span>
                         {log.training_name && <span style={{ fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>}
