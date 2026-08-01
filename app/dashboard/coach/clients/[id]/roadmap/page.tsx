@@ -1,40 +1,23 @@
-"use client";
+import { redirect, notFound } from "next/navigation";
+import { getUser, getProfile } from "@/utils/auth";
+import { requireOwnClient } from "@/lib/auth-guards";
+import CoachClientRoadmapView from "@/components/coach/CoachClientRoadmapView";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import Link from "next/link";
-import { ChevronLeft } from "lucide-react";
-import RoadmapEditor from "@/components/roadmap/RoadmapEditor";
+export default async function CoachRoadmapPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
-export default function CoachRoadmapPage() {
-  const params = useParams<{ id: string }>();
-  const clientId = params.id;
-  const [clientName, setClientName] = useState<string>("");
+  const user = await getUser();
+  if (!user) redirect("/");
 
-  useEffect(() => {
-    fetch(`/api/coach/clients/${clientId}`)
-      .then((r) => r.json())
-      .then((d) => setClientName(d.full_name ?? "Client"))
-      .catch(() => {});
-  }, [clientId]);
+  const profile = await getProfile(user.id);
+  if (profile?.role === "client") redirect("/dashboard/client");
 
-  return (
-    <div style={{ padding: "24px 24px 64px", maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
-        <Link
-          href={`/dashboard/coach/clients/${clientId}`}
-          style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(245,237,237,0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
-        >
-          <ChevronLeft size={14} />
-          {clientName || "Client"}
-        </Link>
-        <div style={{ flex: 1 }}>
-          <p className="ep-section-title" style={{ margin: 0 }}>Road Map Coach</p>
-          <h1 className="ep-h1" style={{ margin: "2px 0 0" }}>{clientName || "Client"}</h1>
-        </div>
-      </div>
+  const guard = await requireOwnClient(id);
+  if (!guard.ok) notFound();
 
-      <RoadmapEditor clientId={clientId} />
-    </div>
-  );
+  return <CoachClientRoadmapView clientId={id} />;
 }
