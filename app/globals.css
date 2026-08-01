@@ -60,6 +60,13 @@
 
 /* ── Keyframes ────────────────────────────────────────────────────────────── */
 
+@keyframes grain {
+  0%,100% { transform: translate(0,0) scale(1.06); }
+  25%      { transform: translate(-2%,-1%) scale(1.06); }
+  50%      { transform: translate(1%,2%) scale(1.06); }
+  75%      { transform: translate(-1%,1%) scale(1.06); }
+}
+
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -155,10 +162,8 @@
     overscroll-behavior-y: contain;
   }
 
-  /* ── Atmospheric ambient background ──────────────────────────────────────
-     Oura reste quasi plat : un seul halo discret en haut de l'écran, pas de
-     grain, pas d'empilement de lueurs. On garde le noir profond de marque
-     mais on laisse le contenu respirer au lieu de le charger visuellement. */
+  /* ── Atmospheric ambient background (identité de marque : noir profond +
+     brume rouge) ── */
   body::before {
     content: '';
     position: fixed;
@@ -166,8 +171,29 @@
     pointer-events: none;
     z-index: 0;
     background:
-      radial-gradient(ellipse 70% 45% at 50% -10%, rgba(137, 4, 4, 0.16) 0%, transparent 62%),
+      /* Main top-center signature glow */
+      radial-gradient(ellipse 80% 60% at 50% -8%,   rgba(200, 5, 5, 0.32)  0%,  transparent 60%),
+      /* Top-left side orb */
+      radial-gradient(ellipse 55% 45% at -5% 20%,   rgba(176, 2, 2, 0.25)  0%,  transparent 55%),
+      /* Bottom-right corner orb */
+      radial-gradient(ellipse 50% 40% at 108% 88%,  rgba(200, 5, 5, 0.20)  0%,  transparent 52%),
+      /* Mid-screen warm depth */
+      radial-gradient(ellipse 70% 35% at 50% 55%,   rgba(50, 2, 2, 0.40)   0%,  transparent 68%),
+      /* Bottom-left subtle */
+      radial-gradient(ellipse 40% 30% at 10% 92%,   rgba(137, 4, 4, 0.12)  0%,  transparent 50%),
       #080000;
+  }
+
+  /* ── Grain film ── */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: -10%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+    opacity: 0.03;
+    pointer-events: none;
+    z-index: 9999;
+    animation: grain 0.65s steps(2) infinite;
   }
 
   input, select, textarea { font-size: max(16px, 1em); }
@@ -192,37 +218,41 @@
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.04),
-      0 2px 16px rgba(0,0,0,0.30);
+      inset 0 1px 0 rgba(255,255,255,0.05),
+      inset 0 0 0 1px rgba(224,30,30,0.06),
+      0 4px 32px rgba(0,0,0,0.45);
   }
   .ep-card::before {
     content: '';
     position: absolute;
     top: 0; left: 10%; right: 10%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.3), transparent);
+    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.45), transparent);
     pointer-events: none;
   }
   .ep-card:hover {
-    border-color: rgba(224,30,30,0.22);
+    border-color: rgba(224,30,30,0.28);
+    transform: translateY(-2px);
     box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.05),
-      0 4px 20px rgba(0,0,0,0.35);
+      inset 0 1px 0 rgba(255,255,255,0.07),
+      0 16px 48px rgba(0,0,0,0.55),
+      0 0 40px rgba(137,4,4,0.06);
   }
 
   .ep-card-highlighted {
     background: rgba(28, 2, 2, 0.72);
     backdrop-filter: var(--blur-card);
     -webkit-backdrop-filter: var(--blur-card);
-    border: 1px solid rgba(224,30,30,0.30);
+    border: 1px solid rgba(224,30,30,0.32);
     border-radius: var(--radius-lg);
     position: relative;
     overflow: hidden;
     box-shadow:
-      inset 0 1px 0 rgba(224,30,30,0.16),
-      0 3px 20px rgba(0,0,0,0.35);
+      0 0 60px rgba(224,30,30,0.08),
+      inset 0 1px 0 rgba(224,30,30,0.2),
+      0 6px 32px rgba(0,0,0,0.5);
   }
   .ep-card-highlighted::before {
     content: '';
@@ -237,20 +267,30 @@
     background: rgba(18, 1, 1, 0.65);
     backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(224,30,30,0.16);
+    border: 1px solid rgba(224,30,30,0.18);
     border-radius: var(--radius-xl);
     position: relative;
     overflow: hidden;
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.05),
-      0 6px 28px rgba(0,0,0,0.40);
+      inset 0 -1px 0 rgba(224,30,30,0.05),
+      0 12px 48px rgba(0,0,0,0.55),
+      0 0 80px rgba(137,4,4,0.05);
   }
   .ep-card-hero::before {
     content: '';
     position: absolute;
     top: 0; left: 15%; right: 15%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.6), transparent);
+    pointer-events: none;
+  }
+  .ep-card-hero::after {
+    content: '';
+    position: absolute;
+    top: -120px; right: -100px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(137,4,4,0.15) 0%, transparent 70%);
     pointer-events: none;
   }
 
@@ -304,7 +344,7 @@
   /* ────────────────────────────── BUTTONS ─────────────────────────────────── */
 
   .ep-btn-primary {
-    background: #E01E1E;
+    background: linear-gradient(135deg, #E01E1E 0%, #7a0303 100%);
     color: #F5EDED;
     border: none;
     border-radius: var(--radius-sm);
@@ -315,20 +355,34 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: filter 0.15s ease, box-shadow 0.15s ease;
+    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 2px 12px rgba(224,30,30,0.28);
+    box-shadow:
+      0 4px 24px rgba(224,30,30,0.35),
+      inset 0 1px 0 rgba(255,255,255,0.12),
+      inset 0 -1px 0 rgba(0,0,0,0.2);
     position: relative;
+    overflow: hidden;
   }
+  .ep-btn-primary::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+    transition: left 0.45s ease;
+  }
+  .ep-btn-primary:hover::before { left: 100%; }
   .ep-btn-primary:hover {
-    filter: brightness(1.08);
-    box-shadow: 0 3px 16px rgba(224,30,30,0.36);
+    filter: brightness(1.15);
+    box-shadow: 0 8px 32px rgba(224,30,30,0.50), inset 0 1px 0 rgba(255,255,255,0.14);
+    transform: translateY(-2px);
   }
-  .ep-btn-primary:active  { filter: brightness(0.96); }
-  .ep-btn-primary:disabled{ opacity: 0.38; cursor: not-allowed; box-shadow: none; }
+  .ep-btn-primary:active  { transform: translateY(0); }
+  .ep-btn-primary:disabled{ opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .ep-btn-secondary {
     background: rgba(224,30,30,0.07);
@@ -351,9 +405,10 @@
     gap: 8px;
   }
   .ep-btn-secondary:hover {
-    border-color: rgba(224,30,30,0.42);
+    border-color: rgba(224,30,30,0.50);
     color: #F5EDED;
     background: rgba(224,30,30,0.13);
+    box-shadow: 0 0 24px rgba(224,30,30,0.12);
   }
 
   .ep-btn-icon {
@@ -570,11 +625,13 @@
     background: rgba(12, 1, 1, 0.75);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
-    border: 1px solid rgba(224,30,30,0.15);
+    border: 1px solid rgba(224,30,30,0.16);
     border-radius: var(--radius-xl);
     box-shadow:
       inset 0 1px 0 rgba(255,255,255,0.04),
-      0 16px 48px rgba(0,0,0,0.50);
+      inset 0 0 0 1px rgba(224,30,30,0.05),
+      0 32px 80px rgba(0,0,0,0.70),
+      0 0 120px rgba(137,4,4,0.08);
     position: relative;
     overflow: hidden;
   }
@@ -583,7 +640,16 @@
     position: absolute;
     top: 0; left: 20%; right: 20%;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.5), transparent);
+    background: linear-gradient(90deg, transparent, rgba(224,30,30,0.7), transparent);
+    pointer-events: none;
+  }
+  .ep-auth-card::after {
+    content: '';
+    position: absolute;
+    top: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(176,2,2,0.14) 0%, transparent 70%);
     pointer-events: none;
   }
 

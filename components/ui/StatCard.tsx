@@ -44,9 +44,10 @@ export function StatCard({
       onMouseEnter={(e) => {
         const el = e.currentTarget as HTMLDivElement;
         el.style.borderColor = isAlert ? "rgba(224,30,30,0.5)" : "rgba(224,30,30,0.22)";
+        el.style.transform = "translateY(-2px)";
         el.style.boxShadow = isAlert
-          ? "0 4px 20px rgba(224,30,30,0.10)"
-          : "0 4px 20px rgba(0,0,0,0.30)";
+          ? "0 12px 40px rgba(224,30,30,0.14)"
+          : "0 8px 32px rgba(0,0,0,0.4)";
       }}
       onMouseLeave={(e) => {
         const el = e.currentTarget as HTMLDivElement;
