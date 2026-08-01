@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 export interface CoachSignupInput {
   fullName: string;
@@ -84,6 +85,11 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   if (signInError) {
     return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
+
+  notifyAdmin("Nouvelle inscription coach tiers", [
+    `<strong>${fullName}</strong> (${email})`,
+    `Formule choisie : ${plan.label} (${plan.priceLabel})`,
+  ]).catch(() => {});
 
   const checkoutUrl = `${plan.url}?client_reference_id=${authData.user.id}`;
   return { success: true, checkoutUrl };

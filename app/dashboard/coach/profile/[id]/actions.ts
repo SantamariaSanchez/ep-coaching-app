@@ -2,6 +2,7 @@
 
 import { requirePlatformOwner } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 // Pouvoirs de modération réservés au fondateur (is_platform_owner), jamais
 // aux coachs tiers — voir la section modération de la Communauté/Membres.
@@ -47,12 +48,22 @@ export async function deleteUserAccountAdmin(
 
   try {
     const admin = createAdminClient();
+    const { data: target } = await admin
+      .from("profiles")
+      .select("full_name, email, role")
+      .eq("id", targetUserId)
+      .maybeSingle();
+
     const { error } = await admin.auth.admin.deleteUser(targetUserId);
     if (error) {
       return {
         error: "Suppression impossible pour le moment (des données sont encore liées à ce compte).",
       };
     }
+    notifyAdmin("Suppression de compte (admin)", [
+      `<strong>${target?.full_name ?? "Utilisateur"}</strong> (${target?.email ?? targetUserId})`,
+      `Rôle : ${target?.role ?? "inconnu"}`,
+    ]).catch(() => {});
     return { success: true };
   } catch {
     return { error: "Erreur inattendue." };

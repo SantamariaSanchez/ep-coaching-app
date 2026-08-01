@@ -3,6 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { notifyAdmin } from "@/lib/admin-notify";
 import { redirect } from "next/navigation";
 
 export interface RequestState {
@@ -32,11 +33,11 @@ export type SelfSignupResult = { error: string } | { success: true; userId: stri
 async function resolveCoachId(
   admin: ReturnType<typeof createAdminClient>,
   inviteCode: string | undefined
-): Promise<{ id: string; email: string | null } | null> {
+): Promise<{ id: string; email: string | null; full_name: string | null } | null> {
   if (inviteCode) {
     const { data: invited } = await admin
       .from("profiles")
-      .select("id, email")
+      .select("id, email, full_name")
       .eq("role", "coach")
       .eq("invite_code", inviteCode)
       .eq("platform_subscription_status", "active")
@@ -46,7 +47,7 @@ async function resolveCoachId(
 
   const { data: owner } = await admin
     .from("profiles")
-    .select("id, email")
+    .select("id, email, full_name")
     .eq("role", "coach")
     .eq("is_platform_owner", true)
     .maybeSingle();
@@ -123,6 +124,11 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
       });
     } catch (e) { console.error("Coach email error:", e); }
   }
+
+  notifyAdmin("Nouvelle inscription membre/client", [
+    `<strong>${fullName}</strong> (${email})`,
+    `Rattaché à : ${coach?.full_name ?? "aucun coach"}`,
+  ]).catch(() => {});
 
   return { success: true, userId: authData.user.id };
 }

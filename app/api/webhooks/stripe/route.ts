@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
+import { notifyAdmin } from "@/lib/admin-notify";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
       // On distingue via le rôle du profil cible, jamais via l'URL utilisée.
       const { data: profile } = await admin
         .from("profiles")
-        .select("role")
+        .select("role, full_name, email")
         .eq("id", userId)
         .single();
 
@@ -52,6 +53,9 @@ export async function POST(request: Request) {
             platform_stripe_subscription_id: stripeSubscriptionId,
           })
           .eq("id", userId);
+        notifyAdmin("Coach tiers : abonnement plateforme activé", [
+          `<strong>${profile.full_name ?? "Coach"}</strong> (${profile.email ?? userId})`,
+        ]).catch(() => {});
       } else {
         await admin
           .from("profiles")
@@ -85,8 +89,21 @@ export async function POST(request: Request) {
         .from("profiles")
         .update({ platform_subscription_status: isActive ? "active" : "canceled" })
         .eq("platform_stripe_customer_id", customerId)
-        .select("id")
+        .select("id, full_name, email")
         .maybeSingle();
+
+      if (coachRow?.id) {
+        if (isActive) {
+          notifyAdmin("Coach tiers : abonnement plateforme activé", [
+            `<strong>${coachRow.full_name ?? "Coach"}</strong> (${coachRow.email ?? coachRow.id})`,
+          ]).catch(() => {});
+        } else {
+          notifyAdmin("Coach tiers : abonnement plateforme résilié", [
+            `<strong>${coachRow.full_name ?? "Coach"}</strong> (${coachRow.email ?? coachRow.id})`,
+            "Ses clients repassent automatiquement membres libres.",
+          ]).catch(() => {});
+        }
+      }
 
       // Un coach qui n'a plus d'abonnement plateforme actif n'entraîne
       // jamais le blocage de ses clients : ils repassent membres libres.
