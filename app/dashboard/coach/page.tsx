@@ -39,16 +39,7 @@ export default async function CoachDashboard() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
           Espace Coach &nbsp;·&nbsp; {formattedDate}
         </p>
-        <h1 style={{
-          fontWeight: 900,
-          fontSize: 34,
-          letterSpacing: "-0.04em",
-          color: "#F5EDED",
-          margin: 0,
-          lineHeight: 1.05,
-        }}>
-          Bonjour, {firstName}
-        </h1>
+        <h1 className="ep-h1">Bonjour, {firstName}</h1>
       </div>
 
       {/* ── Vue plateforme (propriétaire uniquement) ─────────────────────────── */}

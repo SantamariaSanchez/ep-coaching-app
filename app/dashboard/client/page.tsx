@@ -136,12 +136,7 @@ function WelcomeGuide({
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Bienvenue</p>
-        <h1 style={{
-          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0, lineHeight: 1.1,
-        }}>
-          Salut {firstName} 👋
-        </h1>
+        <h1 className="ep-h1">Salut {firstName} 👋</h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
           {personalization.welcomeSubtitle}
         </p>
@@ -362,18 +357,7 @@ export default async function ClientDashboard() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
           {formattedDate}
         </p>
-        <h1
-          style={{
-            fontSize: 34,
-            fontWeight: 900,
-            letterSpacing: "-0.04em",
-            color: "#F5EDED",
-            margin: 0,
-            lineHeight: 1.05,
-          }}
-        >
-          Bonjour {firstName}
-        </h1>
+        <h1 className="ep-h1">Bonjour {firstName}</h1>
         {weeksSinceStart != null && (
           <p style={{
             marginTop: 6,
