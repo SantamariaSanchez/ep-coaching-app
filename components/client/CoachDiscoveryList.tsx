@@ -26,7 +26,7 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
     return (
       <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)" }}>
-          Aucun coach tiers actif pour le moment. Contacte Emmanuel sur Instagram en attendant.
+          Aucun coach tiers actif pour le moment. Contacte Santamaria sur Instagram en attendant.
         </p>
       </div>
     );

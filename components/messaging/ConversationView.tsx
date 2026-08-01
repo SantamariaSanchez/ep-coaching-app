@@ -35,6 +35,9 @@ interface Props {
   peerId: string;
   /** The other participant's display name */
   peerName: string;
+  /** The CURRENT user's own display name — used in push notification text sent
+   * to the peer ("X t'a envoyé un message"), never the peer's own name. */
+  selfName?: string;
   /** conversation_id = clientId always */
   conversationId: string;
   /** Whether the current user is the coach */
@@ -255,7 +258,7 @@ function MessageBubble({
             className="inline-flex items-center rounded-full font-bold uppercase tracking-wide mb-1 text-[8px] px-1.5 py-0.5"
             style={{ background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.35)", color: "#E01E1E" }}
           >
-            Emmanuel · Fondateur
+            Santamaria · Fondateur
           </span>
         )}
       <div
@@ -305,11 +308,16 @@ export default function ConversationView({
   userId,
   peerId,
   peerName,
+  selfName,
   conversationId,
   isCoach,
   pushUrl,
   canSend = true,
 }: Props) {
+  // Nom à afficher dans les notifications push envoyées au pair — c'est
+  // TOUJOURS mon propre nom (l'expéditeur), jamais celui du destinataire.
+  const senderFirstName =
+    selfName?.split(" ")[0] || (isCoach ? "Ton coach" : "Un membre");
   const [messages, setMessages] = useState<Message[]>([]);
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -388,7 +396,7 @@ export default function ConversationView({
 
   async function sendPushNotification(body: string) {
     try {
-      const senderName = isCoach ? "Emmanuel" : peerName.split(" ")[0];
+      const senderName = senderFirstName;
       await fetch("/api/push/send", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -481,8 +489,7 @@ export default function ConversationView({
 
         if (msgData) {
           setMessages((prev) => [...prev, msgData as Message]);
-          const name = isCoach ? "Emmanuel" : peerName.split(" ")[0];
-          await sendPushNotification(`${name} t'a envoyé un vocal`);
+          await sendPushNotification(`${senderFirstName} t'a envoyé un vocal`);
         }
       } catch {
         setSendError("Échec de l'envoi du vocal, réessaie.");
@@ -530,8 +537,7 @@ export default function ConversationView({
 
         if (msgData) {
           setMessages((prev) => [...prev, msgData as Message]);
-          const name = isCoach ? "Emmanuel" : peerName.split(" ")[0];
-          await sendPushNotification(`${name} t'a envoyé une photo`);
+          await sendPushNotification(`${senderFirstName} t'a envoyé une photo`);
         }
       } catch {
         setSendError("Échec de l'envoi de la photo, réessaie.");
@@ -574,7 +580,7 @@ export default function ConversationView({
 
       if (msgData) {
         setMessages((prev) => [...prev, msgData as Message]);
-        await sendPushNotification("Emmanuel t'a envoyé une vidéo");
+        await sendPushNotification(`${senderFirstName} t'a envoyé une vidéo`);
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps

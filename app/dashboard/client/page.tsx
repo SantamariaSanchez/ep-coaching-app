@@ -135,7 +135,7 @@ function NoCoachBanner() {
             Tu n&apos;as plus de coach attitré
           </p>
           <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
-            Envie qu&apos;Emmanuel devienne ton coach ? Écris-lui directement sur Instagram. Tu peux
+            Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux
             aussi choisir un autre coach actif sur la plateforme.
           </p>
         </div>
@@ -147,7 +147,7 @@ function NoCoachBanner() {
             className="ep-btn-primary"
             style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
           >
-            Contacter Emmanuel
+            Contacter Santamaria
           </a>
           <Link
             href="/dashboard/client/coachs"

@@ -102,6 +102,7 @@ export default async function ClientMessagesPage() {
         userId={user.id}
         peerId={coachId}
         peerName={coachName}
+        selfName={profile?.full_name ?? undefined}
         conversationId={conversationId}
         isCoach={false}
         pushUrl="/dashboard/coach/messages"

@@ -240,7 +240,7 @@ export async function getAllCoaches(): Promise<Profile[]> {
   }
 }
 
-// Le fondateur (Emmanuel) gère le support pour tout le monde, quel que soit
+// Le fondateur (Santamaria) gère le support pour tout le monde, quel que soit
 // le coach réellement assigné — utilisé pour épingler sa conversation en
 // tête de liste dans la messagerie, côté client comme côté coach.
 export async function getPlatformOwner(): Promise<Profile | null> {

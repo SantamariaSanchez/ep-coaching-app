@@ -68,6 +68,7 @@ export default async function CoachClientMessagesPage({
         userId={user.id}
         peerId={clientId}
         peerName={client.full_name ?? "Client"}
+        selfName={profile?.full_name ?? undefined}
         conversationId={conversationId}
         isCoach={true}
         pushUrl={`/dashboard/client/messages`}

@@ -17,7 +17,7 @@ export default async function ClientCoachsPage() {
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Coaching</p>
         <h1 className="ep-h1">Choisis ton coach</h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
-          Voici les coachs actifs sur la plateforme. Tu peux aussi contacter Emmanuel directement
+          Voici les coachs actifs sur la plateforme. Tu peux aussi contacter Santamaria directement
           sur Instagram si tu préfères qu&apos;il te suive personnellement.
         </p>
       </div>
