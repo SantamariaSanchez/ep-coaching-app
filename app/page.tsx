@@ -50,37 +50,6 @@ export default function HomePage() {
         overflow: "hidden",
       }}
     >
-      {/* Ambient glows */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "4%",
-          left: "50%",
-          transform: "translateX(-50%)",
-          width: 560,
-          height: 560,
-          background: "radial-gradient(circle, rgba(176,2,2,0.22) 0%, transparent 65%)",
-          pointerEvents: "none",
-          zIndex: 0,
-          filter: "blur(40px)",
-        }}
-      />
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          bottom: "0%",
-          right: "-10%",
-          width: 420,
-          height: 420,
-          background: "radial-gradient(circle, rgba(124,30,30,0.14) 0%, transparent 70%)",
-          pointerEvents: "none",
-          zIndex: 0,
-          filter: "blur(60px)",
-        }}
-      />
-
       <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
 
         {/* ── Logo ── */}
@@ -218,25 +187,14 @@ export default function HomePage() {
         <div className="animate-fade-up stagger-5">
           <Link
             href="/auth/client"
+            className="ep-btn-primary"
             style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 10,
               width: "100%",
               height: 56,
-              background: "linear-gradient(135deg, #E01E1E 0%, #B00202 100%)",
-              color: "#fff",
-              textDecoration: "none",
               borderRadius: "var(--radius-xl)",
-              fontWeight: 800,
-              fontSize: 15,
-              letterSpacing: "-0.01em",
-              boxShadow: "0 12px 32px rgba(224,30,30,0.3)",
-              transition: "transform 0.2s ease",
+              fontSize: 13,
+              textDecoration: "none",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
           >
             <Heart size={18} strokeWidth={2} />
             Rejoindre la communauté
