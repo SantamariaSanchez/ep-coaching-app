@@ -13,6 +13,7 @@ import AccountActions from "@/components/profile/AccountActions";
 import ClientIntakeForm from "@/components/ui/ClientIntakeForm";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
+import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 export default async function CoachProfilePage() {
@@ -74,7 +75,12 @@ export default async function CoachProfilePage() {
 
       <InviteLinkCard inviteCode={profile.invite_code} />
 
-      {!profile.is_platform_owner && <PersonalCoachCard linkedCoachName={linkedCoachName} />}
+      {!profile.is_platform_owner && (
+        <>
+          <PaymentLinkCard initialLink={profile.external_payment_link} />
+          <PersonalCoachCard linkedCoachName={linkedCoachName} />
+        </>
+      )}
 
       {profile.is_platform_owner && (
         <Link

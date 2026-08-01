@@ -10,6 +10,7 @@ export interface CoachSignupInput {
   email: string;
   password: string;
   planId: string;
+  acceptedTerms: boolean;
 }
 
 export type CoachSignupResult = { error: string } | { success: true; checkoutUrl: string };
@@ -30,6 +31,9 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
 
   if (!fullName || !email || password.length < 6) {
     return { error: "Nom, email et mot de passe (6 caractères min.) requis." };
+  }
+  if (!input.acceptedTerms) {
+    return { error: "Tu dois accepter les CGU et les CGV pour continuer." };
   }
 
   const plan = COACH_PLATFORM_PLANS.find((p) => p.id === input.planId);
@@ -64,6 +68,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
       is_platform_owner: false,
       platform_subscription_status: "inactive",
       invite_code: generateInviteCode(),
+      terms_accepted_at: new Date().toISOString(),
     });
     profileError = error;
     if (!error || !error.message.includes("invite_code")) break;

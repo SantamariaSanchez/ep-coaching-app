@@ -53,13 +53,15 @@ export default async function CoachPublicProfilePage({
 
       <ProfileHeader profile={profile} postCount={postCount} avatarSrc={avatarSrc} />
 
-      {/* Le fondateur ne gère l'abonnement que de SES propres clients — pour
-          un client d'un autre coach, seul ce coach décide de son statut. */}
-      {profile.role === "client" && (!isFounder || profile.coach_id === user.id) && (
+      {/* Seul le coach assigné gère l'abonnement — couvre aussi un profil
+          role="coach" qui est le client personnel de ce coach (double rôle). */}
+      {profile.coach_id === user.id && (
         <div className="mt-4">
           <SubscriptionToggle
             clientId={profile.id}
             currentStatus={profile.subscription_status}
+            currentPlan={profile.subscription_plan}
+            currentNextBillingDate={profile.next_billing_date}
           />
         </div>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { signupCoach } from "./actions";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
@@ -33,6 +34,7 @@ export default function CoachSignupFlow() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [planId, setPlanId] = useState<string>(COACH_PLATFORM_PLANS[0].id);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -43,9 +45,13 @@ export default function CoachSignupFlow() {
       setError("Nom, email et mot de passe (6 caractères min.) requis.");
       return;
     }
+    if (!acceptedTerms) {
+      setError("Tu dois accepter les CGU et les CGV pour continuer.");
+      return;
+    }
     setSubmitting(true);
     try {
-      const result = await signupCoach({ fullName, email, password, planId });
+      const result = await signupCoach({ fullName, email, password, planId, acceptedTerms });
       if ("error" in result) {
         setError(result.error);
         setSubmitting(false);
@@ -128,6 +134,27 @@ export default function CoachSignupFlow() {
           inputStyle={inputStyle}
         />
       </div>
+
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={acceptedTerms}
+          onChange={(e) => setAcceptedTerms(e.target.checked)}
+          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
+        />
+        <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
+          J&apos;accepte les{" "}
+          <Link href="/legal/cgu" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
+            CGU
+          </Link>{" "}
+          et les{" "}
+          <Link href="/legal/cgv" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
+            CGV
+          </Link>{" "}
+          d&apos;EP Coaching, y compris l&apos;essai gratuit de 2 mois et la facturation automatique
+          à son terme sauf résiliation.
+        </span>
+      </label>
 
       {error && (
         <div style={{

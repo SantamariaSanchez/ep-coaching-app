@@ -335,6 +335,8 @@ export default function ClientProfileTabs({
           <SubscriptionToggle
             clientId={client.id}
             currentStatus={client.subscription_status}
+            currentPlan={client.subscription_plan}
+            currentNextBillingDate={client.next_billing_date}
           />
 
           <Card title="Informations personnelles">

@@ -78,6 +78,31 @@ export async function joinPersonalCoach(
   return { success: true };
 }
 
+// Chaque coach tiers facture ses propres clients en dehors de l'appli (pas
+// de Stripe Connect) — ce lien lui permet de partager facilement son propre
+// moyen de paiement Stripe à ses clients depuis son profil.
+export async function updateExternalPaymentLink(
+  url: string
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const trimmed = url.trim();
+  if (trimmed && !/^https:\/\//.test(trimmed)) {
+    return { error: "Le lien doit commencer par https://" };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ external_payment_link: trimmed || null })
+    .eq("id", guard.userId);
+  if (error) return { error: "Erreur lors de l'enregistrement." };
+
+  revalidatePath("/dashboard/coach/profile");
+  return { success: true };
+}
+
 export async function leavePersonalCoach(): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
