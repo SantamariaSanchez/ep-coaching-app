@@ -1,24 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Plus, Loader2, AlertCircle, X,
-  User, Video, MessageCircle, ClipboardCheck, Repeat, Zap, GraduationCap,
-} from "lucide-react";
-import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
+import { Plus, Loader2, AlertCircle, X } from "lucide-react";
+import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, isOneToOneType, type LiveType } from "@/lib/live-types";
+import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
-const TYPE_CARDS: { type: LiveType; icon: React.ElementType; tagline: string }[] = [
-  { type: "1to1", icon: User, tagline: "Appel individuel classique" },
-  { type: "audit", icon: ClipboardCheck, tagline: "Bilan stratégique approfondi" },
-  { type: "checkin_hebdo", icon: Repeat, tagline: "Suivi récurrent chaque semaine" },
-  { type: "acces_direct", icon: Zap, tagline: "Call stratégique ou point rapide" },
-  { type: "atelier", icon: GraduationCap, tagline: "Formation en direct, invité possible" },
-  { type: "webinaire", icon: Video, tagline: "Présentation ouverte au groupe" },
-  { type: "qna", icon: MessageCircle, tagline: "Questions/réponses en direct" },
+const TYPE_ORDER: LiveType[] = [
+  "1to1", "audit", "checkin_hebdo", "acces_direct", "atelier", "webinaire", "qna",
 ];
 
 export default function LiveScheduler({
@@ -42,6 +34,7 @@ export default function LiveScheduler({
 
   function openWithType(t: LiveType) {
     setType(t);
+    setDuration(String(LIVE_TYPE_INFO[t].defaultDuration));
     setOpen(true);
   }
 
@@ -88,37 +81,44 @@ export default function LiveScheduler({
           Programmer un live
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-          {TYPE_CARDS.map(({ type: t, icon: Icon, tagline }) => (
-            <button
-              key={t}
-              onClick={() => openWithType(t)}
-              className="ep-card"
-              style={{
-                padding: "14px 12px",
-                textAlign: "left",
-                display: "flex",
-                flexDirection: "column",
-                gap: 8,
-                cursor: "pointer",
-              }}
-            >
-              <div style={{
-                width: 32, height: 32, borderRadius: 9,
-                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-              </div>
-              <div>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
-                  {LIVE_TYPE_LABELS[t]}
-                </p>
-                <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
-                  {tagline}
-                </p>
-              </div>
-            </button>
-          ))}
+          {TYPE_ORDER.map((t) => {
+            const Icon = LIVE_TYPE_ICONS[t];
+            const info = LIVE_TYPE_INFO[t];
+            return (
+              <button
+                key={t}
+                onClick={() => openWithType(t)}
+                className="ep-card"
+                style={{
+                  padding: "14px 12px",
+                  textAlign: "left",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 8,
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{
+                  width: 32, height: 32, borderRadius: 9,
+                  background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}>
+                  <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+                    {LIVE_TYPE_LABELS[t]}
+                  </p>
+                  <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
+                    {info.tagline}
+                  </p>
+                  <p style={{ margin: "6px 0 0", fontSize: 9.5, fontWeight: 700, color: "rgba(224,30,30,0.55)", lineHeight: 1.4, textTransform: "uppercase", letterSpacing: "0.03em" }}>
+                    {info.cadence}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
@@ -134,6 +134,10 @@ export default function LiveScheduler({
           <X size={14} />
         </button>
       </div>
+
+      <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
+        {LIVE_TYPE_INFO[type].description}
+      </p>
 
       <select value={type} onChange={(e) => setType(e.target.value as LiveType)} className={inputCls}>
         {Object.entries(LIVE_TYPE_LABELS).map(([k, l]) => (

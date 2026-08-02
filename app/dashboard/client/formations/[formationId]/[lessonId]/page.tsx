@@ -39,11 +39,13 @@ export default async function LessonPage({
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
-  // Find current module and section
-  const currentModule = formation.modules.find((m) =>
+  // Terminologie UI (voir CoachFormationEditor.tsx) : formation.modules = la
+  // "Section" affichée à l'écran (regroupement large), mod.sections = le
+  // "Module" affiché (sous-regroupement numéroté).
+  const currentUiSection = formation.modules.find((m) =>
     m.sections.some((s) => s.lessons.some((l) => l.id === lessonId))
   );
-  const currentSection = currentModule?.sections.find((s) =>
+  const currentUiModule = currentUiSection?.sections.find((s) =>
     s.lessons.some((l) => l.id === lessonId)
   ) ?? null;
 
@@ -67,18 +69,18 @@ export default async function LessonPage({
         <ChevronLeft size={13} /> {formation.title}
       </Link>
 
-      {/* Breadcrumb: Module › Section */}
-      {currentModule && (
+      {/* Breadcrumb : Section › Module (termes UI) */}
+      {currentUiSection && (
         <div className="animate-fade-in" style={{ marginBottom: 10 }}>
           <p style={{
             fontSize: 10, fontWeight: 700, letterSpacing: "0.14em",
             textTransform: "uppercase", color: "rgba(224,30,30,0.55)",
             margin: 0,
           }}>
-            {currentModule.title}
-            {currentSection && (
+            {currentUiSection.title}
+            {currentUiModule && (
               <span style={{ color: "rgba(245,237,237,0.25)", fontWeight: 500, textTransform: "none", letterSpacing: "0.04em" }}>
-                {" › "}{currentSection.title}
+                {" › "}{currentUiModule.title}
               </span>
             )}
           </p>
@@ -197,18 +199,18 @@ export default async function LessonPage({
         )}
       </div>
 
-      {/* Lesson list in current section */}
-      {currentSection && currentSection.lessons.length > 1 && (
+      {/* Liste des leçons du module courant */}
+      {currentUiModule && currentUiModule.lessons.length > 1 && (
         <div className="ep-card animate-fade-up" style={{ overflow: "hidden" }}>
           <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(224,30,30,0.08)" }}>
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 1px" }}>
-              {currentModule?.title}
+              {currentUiSection?.title}
             </p>
             <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.6)", margin: 0 }}>
-              {currentSection.title}
+              {currentUiModule.title}
             </p>
           </div>
-          {currentSection.lessons.map((l, i) => {
+          {currentUiModule.lessons.map((l, i) => {
             const isCurrent = l.id === lessonId;
             const isDone = completed.has(l.id);
             const isAvail = !!(l.is_published && l.youtube_id);

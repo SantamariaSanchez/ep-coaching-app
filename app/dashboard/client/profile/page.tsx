@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Settings, ChevronRight } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCommunityPostCount } from "@/utils/community";
 import { getTotalPoints } from "@/lib/gamification";
-import { createServerSupabase } from "@/lib/supabase-server";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import ProfileEditor from "@/components/profile/ProfileEditor";
-import AccountActions from "@/components/profile/AccountActions";
 
 function weeksSince(dateStr: string): number {
   return Math.floor(
@@ -31,17 +31,11 @@ export default async function ClientProfilePage() {
   if (!profile) redirect("/");
   if (profile.role === "coach") redirect("/dashboard/coach/profile");
 
-  const [postCount, points, supabase, avatarSrc] = await Promise.all([
+  const [postCount, points, avatarSrc] = await Promise.all([
     getCommunityPostCount(user.id),
     getTotalPoints(user.id),
-    createServerSupabase(),
     resolveAvatarUrl(profile.avatar_url),
   ]);
-  const { data: pushSub } = await supabase
-    .from("push_subscriptions")
-    .select("id")
-    .eq("user_id", user.id)
-    .maybeSingle();
 
   const weeks = profile.start_date ? weeksSince(profile.start_date) : null;
 
@@ -80,11 +74,19 @@ export default async function ClientProfilePage() {
         </div>
       )}
 
-      <AccountActions
-        email={profile.email}
-        signOutRedirect="/auth/client"
-        pushSubscribed={!!pushSub}
-      />
+      <Link
+        href="/dashboard/client/parametres"
+        style={{
+          display: "flex", alignItems: "center", gap: 10, marginTop: 8,
+          padding: "14px 16px", borderRadius: 12,
+          background: "rgba(245,237,237,0.03)", border: "1px solid rgba(245,237,237,0.08)",
+          textDecoration: "none", color: "#F5EDED", fontSize: 13, fontWeight: 700,
+        }}
+      >
+        <Settings size={16} style={{ color: "#E01E1E" }} />
+        <span style={{ flex: 1 }}>Paramètres</span>
+        <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)" }} />
+      </Link>
     </div>
   );
 }

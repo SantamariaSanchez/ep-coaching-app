@@ -1,26 +1,21 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { CalendarPlus, Repeat, Zap, GraduationCap } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
+import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, type LiveType } from "@/lib/live-types";
+import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import LiveEventsList from "@/components/live/LiveEventsList";
-import FlashRequestButton from "@/components/client/FlashRequestButton";
 import { toggleRsvp } from "./actions";
 
-function FeatureCard({
-  icon: Icon,
-  title,
-  tagline,
-  href,
-}: {
-  icon: React.ElementType;
-  title: string;
-  tagline: string;
-  href: string;
-}) {
+const INDIVIDUAL_TYPES: LiveType[] = ["1to1", "checkin_hebdo", "audit", "acces_direct"];
+const GROUP_TYPES: LiveType[] = ["atelier", "webinaire", "qna"];
+
+function TypeCard({ type }: { type: LiveType }) {
+  const Icon = LIVE_TYPE_ICONS[type];
+  const info = LIVE_TYPE_INFO[type];
   return (
     <Link
-      href={href}
+      href={`/dashboard/client/live/format/${type}`}
       className="ep-card"
       style={{
         padding: "14px 12px",
@@ -38,9 +33,11 @@ function FeatureCard({
         <Icon size={15} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
       </div>
       <div>
-        <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+        <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>
+          {LIVE_TYPE_LABELS[type]}
+        </p>
         <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.4 }}>
-          {tagline}
+          {info.tagline}
         </p>
       </div>
     </Link>
@@ -80,34 +77,29 @@ export default async function ClientLivePage() {
         </p>
       </div>
 
-      <div className="mb-2">
+      <div className="mb-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          À toi de choisir
+          Tes rendez-vous individuels
         </p>
-        <div className="grid grid-cols-2 gap-2.5 mb-3">
-          <FeatureCard
-            icon={CalendarPlus}
-            title="Réserver un 1:1"
-            tagline="Choisis un créneau libre de ton coach"
-            href="/dashboard/client/live/reserver"
-          />
-          <FeatureCard
-            icon={Repeat}
-            title="Suivi hebdomadaire"
-            tagline="Un rendez-vous chaque semaine, 8 semaines d'un coup"
-            href="/dashboard/client/live/reserver"
-          />
-          <FeatureCard
-            icon={GraduationCap}
-            title="Ateliers & lives de groupe"
-            tagline="Formations en direct programmées par ton coach"
-            href="#lives-a-venir"
-          />
+        <div className="grid grid-cols-2 gap-2.5">
+          {INDIVIDUAL_TYPES.map((t) => (
+            <TypeCard key={t} type={t} />
+          ))}
         </div>
-        <FlashRequestButton />
       </div>
 
-      <div id="lives-a-venir" style={{ scrollMarginTop: 80, marginTop: 24 }}>
+      <div className="mb-2">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+          Lives collectifs
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+          {GROUP_TYPES.map((t) => (
+            <TypeCard key={t} type={t} />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 24 }}>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
           Mes lives
         </p>

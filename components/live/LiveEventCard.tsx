@@ -3,22 +3,12 @@
 import Link from "next/link";
 import { useEffect, useState, useTransition } from "react";
 import {
-  Video, Users, MessageCircle, Clock, Trash2, Ban, User, Pencil, Check, FileText,
-  ClipboardCheck, Repeat, Zap, GraduationCap,
+  Users, Clock, Trash2, Ban, Pencil, Check, FileText, GraduationCap,
 } from "lucide-react";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveEvent } from "@/lib/live-types";
+import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import LiveEditForm from "@/components/live/LiveEditForm";
-
-const TYPE_ICONS = {
-  "1to1": User,
-  webinaire: Video,
-  qna: MessageCircle,
-  audit: ClipboardCheck,
-  checkin_hebdo: Repeat,
-  acces_direct: Zap,
-  atelier: GraduationCap,
-} as const;
 
 function formatDateTime(iso: string): string {
   const s = new Intl.DateTimeFormat("fr-FR", {
@@ -66,7 +56,7 @@ export default function LiveEventCard({
   onSaveRecap?: (id: string, recap: string) => Promise<{ error?: string }>;
 }) {
   const { canJoin, isPast, isSoon } = useJoinWindow(event.starts_at, event.duration_minutes);
-  const Icon = TYPE_ICONS[event.type];
+  const Icon = LIVE_TYPE_ICONS[event.type];
   const cancelled = event.status === "cancelled";
   const ended = isPast || event.status === "ended";
   const [editing, setEditing] = useState(false);

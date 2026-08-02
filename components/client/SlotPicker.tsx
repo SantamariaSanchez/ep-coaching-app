@@ -15,9 +15,17 @@ function formatTime(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", { hour: "2-digit", minute: "2-digit" }).format(new Date(iso));
 }
 
-export default function SlotPicker({ coachId, slots }: { coachId: string; slots: AvailabilitySlot[] }) {
+export default function SlotPicker({
+  coachId,
+  slots,
+  mode,
+}: {
+  coachId: string;
+  slots: AvailabilitySlot[];
+  /** "single" réserve un créneau isolé (1:1) ; "recurring" réserve le même créneau chaque semaine pendant 8 semaines (suivi hebdo). */
+  mode: "single" | "recurring";
+}) {
   const router = useRouter();
-  const [recurring, setRecurring] = useState(false);
   const [bookedSlot, setBookedSlot] = useState<string | null>(null);
   const [pendingSlot, setPendingSlot] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -27,7 +35,7 @@ export default function SlotPicker({ coachId, slots }: { coachId: string; slots:
     setError("");
     setPendingSlot(slot.startsAt);
     startTransition(async () => {
-      const result = recurring
+      const result = mode === "recurring"
         ? await bookWeeklyCheckin({
             coachId,
             startsAt: slot.startsAt,
@@ -66,15 +74,12 @@ export default function SlotPicker({ coachId, slots }: { coachId: string; slots:
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "rgba(245,237,237,0.55)", cursor: "pointer" }}>
-        <input
-          type="checkbox"
-          checked={recurring}
-          onChange={(e) => setRecurring(e.target.checked)}
-          style={{ accentColor: "#E01E1E", width: 15, height: 15 }}
-        />
-        Suivi hebdomadaire (répète ce créneau chaque semaine pendant 8 semaines)
-      </label>
+      {mode === "recurring" && (
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: 0 }}>
+          En choisissant un créneau, il sera automatiquement réservé chaque semaine à la même heure,
+          pendant 8 semaines.
+        </p>
+      )}
       {error && <p style={{ color: "#ff6b6b", fontSize: 12 }}>{error}</p>}
       {[...byDay.entries()].map(([dayKey, daySlots]) => (
         <div key={dayKey}>

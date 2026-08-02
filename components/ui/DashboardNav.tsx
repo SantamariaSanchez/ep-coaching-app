@@ -10,7 +10,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight,
+  ArrowLeftRight, Settings,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -87,7 +87,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement", "profile"],
+    matchSegments: ["communaute", "abonnement", "profile", "parametres"],
   },
 ];
 
@@ -130,7 +130,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile"],
+    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile", "parametres"],
   },
 ];
 
@@ -192,7 +192,10 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
   },
   {
     group: "Compte",
-    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
+    items: [
+      { label: "Mon profil", icon: User, segment: "profile" },
+      { label: "Paramètres", icon: Settings, segment: "parametres" },
+    ],
   },
 ];
 
@@ -228,7 +231,7 @@ const COACH_TABS: TabItem[] = [
     label: "Moi",
     icon: Activity,
     href: "/dashboard/coach/moi/bilan",
-    matchSegments: ["moi", "profile"],
+    matchSegments: ["moi", "profile", "parametres"],
   },
   {
     label: "Contenu",
@@ -311,7 +314,10 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   },
   {
     group: "Compte",
-    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
+    items: [
+      { label: "Mon profil", icon: User, segment: "profile" },
+      { label: "Paramètres", icon: Settings, segment: "parametres" },
+    ],
   },
 ];
 
@@ -388,7 +394,10 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   },
   {
     group: "Compte",
-    items: [{ label: "Mon profil", icon: User, segment: "profile" }],
+    items: [
+      { label: "Mon profil", icon: User, segment: "profile" },
+      { label: "Paramètres", icon: Settings, segment: "parametres" },
+    ],
   },
 ];
 
