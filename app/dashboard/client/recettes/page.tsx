@@ -4,6 +4,7 @@ import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getAllFoods } from "@/utils/nutrition";
 import { getTotalPoints } from "@/lib/gamification";
 import { getClientIntake } from "@/utils/client-intake";
+import { goalToPhase } from "@/lib/recipes-data";
 import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "./actions";
 import { createCustomFood } from "@/app/dashboard/client/nutrition/actions";
@@ -48,6 +49,7 @@ export default async function ClientRecettesPage() {
         createCustomFood={createCustomFood}
         presetDiet={intake?.diet_type ?? null}
         presetAllergens={intake ? intake.allergens : null}
+        recommendedPhase={goalToPhase(profile?.goal)}
       />
     </div>
   );

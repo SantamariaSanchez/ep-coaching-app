@@ -153,6 +153,7 @@ function RecipeCard({
   canDelete,
   onDelete,
   locked,
+  recommended,
 }: {
   recipe: DisplayRecipe;
   expanded: boolean;
@@ -161,6 +162,7 @@ function RecipeCard({
   canDelete: boolean;
   onDelete: () => void;
   locked: boolean;
+  recommended: boolean;
 }) {
   if (locked) {
     return (
@@ -194,6 +196,11 @@ function RecipeCard({
               {recipe.exclusive && (
                 <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 flex-shrink-0">
                   <Sparkles size={9} /> Exclusive
+                </span>
+              )}
+              {recommended && (
+                <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-300 border border-green-500/25 flex-shrink-0">
+                  <Sparkles size={9} /> Recommandé pour toi
                 </span>
               )}
             </div>
@@ -331,6 +338,7 @@ export default function RecipesClient({
   createCustomFood,
   presetDiet,
   presetAllergens,
+  recommendedPhase,
 }: {
   communityRecipes: CommunityRecipe[];
   foods: Food[];
@@ -353,9 +361,26 @@ export default function RecipesClient({
   // questions dans le créateur de recette quand le coach les a déjà remplies.
   presetDiet?: Diet | null;
   presetAllergens?: Allergen[] | null;
+  // Phase nutritionnelle déduite de profiles.goal (voir goalToPhase) — sert
+  // à faire remonter les recettes pertinentes pour le client, jamais utilisé
+  // côté coach qui parcourt le catalogue pour plusieurs clients différents.
+  recommendedPhase?: Phase | null;
 }) {
   const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
   const recipesUnlocked = isCoach || hasUnlocked("exclusive_recipes", points, isSubscribed);
+
+  // Une recette "recommandée" correspond au régime ET à la phase déduits du
+  // profil du client (jamais pour le coach, qui parcourt le catalogue pour
+  // plusieurs clients). Sans donnée de profil, personne n'est mis en avant :
+  // le catalogue reste identique à avant.
+  function isRecommended(r: DisplayRecipe): boolean {
+    if (isCoach) return false;
+    if (r.exclusive && !recipesUnlocked) return false;
+    if (!presetDiet && !recommendedPhase) return false;
+    const dietMatch = !presetDiet || r.diet.includes(presetDiet);
+    const phaseMatch = !recommendedPhase || r.phases.includes(recommendedPhase);
+    return dietMatch && phaseMatch;
+  }
   const [foods, setFoods] = useState<Food[]>(initialFoods);
   const [tab, setTab] = useState<"bibliotheque" | "creer">("bibliotheque");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -396,8 +421,15 @@ export default function RecipesClient({
       if (macroProfiles.size && !classifyMacroProfiles(r).some((p) => macroProfiles.has(p))) return false;
       if (excludedAllergens.size && r.allergens.some((a) => excludedAllergens.has(a))) return false;
       return true;
-    }).sort((a, b) => a.name.localeCompare(b.name, "fr"));
-  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens]);
+    }).sort((a, b) => {
+      const ra = isRecommended(a) ? 0 : 1;
+      const rb = isRecommended(b) ? 0 : 1;
+      if (ra !== rb) return ra - rb;
+      return a.name.localeCompare(b.name, "fr");
+    });
+  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens, isCoach, presetDiet, recommendedPhase, recipesUnlocked]);
+
+  const recommendedCount = isCoach ? 0 : filtered.filter(isRecommended).length;
 
   const activeFilterCount =
     meals.size + diets.size + phases.size + seasons.size + temps.size + macroProfiles.size + excludedAllergens.size;
@@ -570,11 +602,16 @@ export default function RecipesClient({
             </div>
           )}
 
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-3 flex items-center gap-1.5">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-3 flex items-center gap-1.5 flex-wrap">
             {filtered.length} recette{filtered.length > 1 ? "s" : ""}
             {communityRecipes.length > 0 && (
               <span className="flex items-center gap-1 text-[#E01E1E]/70">
                 <Heart size={10} /> dont {communityRecipes.length} de la communauté
+              </span>
+            )}
+            {recommendedCount > 0 && (
+              <span className="flex items-center gap-1 text-green-400/70">
+                <Sparkles size={10} /> dont {recommendedCount} recommandées pour toi
               </span>
             )}
           </p>
@@ -596,6 +633,7 @@ export default function RecipesClient({
                   canDelete={r.isCommunity && (r.authorId === currentUserId || isCoach)}
                   onDelete={() => handleDelete(r.id)}
                   locked={!!r.exclusive && !recipesUnlocked}
+                  recommended={isRecommended(r)}
                 />
               ))}
             </div>

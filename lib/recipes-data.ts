@@ -5193,3 +5193,22 @@ export const RECIPES: Recipe[] = [
 export function macroBadge(r: Recipe): string {
   return `${r.kcal} kcal · P ${r.protein}g · G ${r.carbs}g · L ${r.fat}g`;
 }
+
+// Déduit une phase nutritionnelle probable à partir de profiles.goal (texte
+// libellé fixé par le quiz de personnalisation post inscription, voir
+// app/onboarding/actions.ts GOAL_LABELS). Sert uniquement à mettre en avant
+// des recettes déjà pertinentes, jamais à filtrer ou cacher quoi que ce soit.
+export function goalToPhase(goal: string | null | undefined): Phase | null {
+  switch (goal) {
+    case "Perte de poids":
+      return "deficit";
+    case "Prise de muscle":
+      return "surplus";
+    case "Performance":
+    case "Santé & bien-être":
+    case "Remise en forme":
+      return "maintenance";
+    default:
+      return null;
+  }
+}
