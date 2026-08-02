@@ -130,7 +130,7 @@ export default function TrackingClient({
     ouraStatus === "not_configured"
       ? isCoachView
         ? "Connexion Oura pas encore activée : il manque OURA_CLIENT_ID / OURA_CLIENT_SECRET dans les variables d'environnement Vercel (voir cloud.ouraring.com/oauth/applications)."
-        : "La connexion à ta bague Oura n'est pas encore activée sur l'app — ton coach est prévenu, réessaie un peu plus tard."
+        : "La connexion à ta bague Oura n'est pas encore activée sur l'app. Ton coach est prévenu, réessaie un peu plus tard."
       : ouraStatus === "error"
       ? "La connexion à Oura a échoué. Réessaie, et si ça persiste, préviens ton coach."
       : ouraStatus === "locked"
@@ -152,7 +152,7 @@ export default function TrackingClient({
         <div className="bg-[#150000] border border-green-500/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
           <Watch size={15} className="text-green-400 flex-shrink-0" />
           <p className="text-[11px] text-[#F5EDED]/60 leading-relaxed flex-1">
-            Bague Oura connectée — sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.
+            Bague Oura connectée : sommeil, récupération, HRV et FC repos se remplissent automatiquement chaque matin.
           </p>
           {!readOnly && disconnectOura && (
             <button
@@ -172,7 +172,7 @@ export default function TrackingClient({
         >
           <Watch size={15} className="text-[#E01E1E] flex-shrink-0" />
           <span className="text-[11px] text-[#F5EDED]/45 leading-relaxed flex-1">
-            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> — ouvre l&apos;app Oura, connecte-toi, et
+            Connecte ta bague <strong className="text-[#F5EDED]">Oura Ring</strong> : ouvre l&apos;app Oura, connecte-toi, et
             valide l&apos;accès. C&apos;est tout, aucune donnée à recopier.
           </span>
           <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
@@ -184,7 +184,7 @@ export default function TrackingClient({
           <Watch size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
             {isCoachView
-              ? "Connexion Oura Ring bientôt disponible — il reste une clé d'application à configurer côté serveur (voir message ci-dessus)."
+              ? "Connexion Oura Ring bientôt disponible. Il reste une clé d'application à configurer côté serveur (voir message ci-dessus)."
               : "Connexion Oura Ring bientôt disponible ici. En attendant, log tes données à la main ci-dessous."}
           </p>
         </div>
@@ -192,7 +192,7 @@ export default function TrackingClient({
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
           <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
-            La bague Oura Ring est offerte aux membres en coaching — passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.
+            La bague Oura Ring est offerte aux membres en coaching. Passe en coaching payant pour la recevoir et connecter automatiquement tes données ici. En attendant, log tes données à la main ci-dessous.
           </p>
         </div>
       )}

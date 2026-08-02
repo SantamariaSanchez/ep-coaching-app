@@ -94,19 +94,19 @@ export default function ClientPeriodTracking({
   return (
     <div className="space-y-4">
       <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
-        Suivi du cycle — utile pour comprendre les fluctuations d&apos;énergie, de poids d&apos;eau et de performance
+        Suivi du cycle. Utile pour comprendre les fluctuations d&apos;énergie, de poids d&apos;eau et de performance
         au fil du mois. Log le début de chaque cycle, la durée moyenne se calcule automatiquement.
       </p>
 
       <div className="grid grid-cols-3 gap-2">
-        <StatCard label="Cycle moyen" value={stats.avgCycleLength ? `${stats.avgCycleLength}j` : "—"} />
-        <StatCard label="Règles (moy.)" value={stats.avgPeriodLength ? `${stats.avgPeriodLength}j` : "—"} />
+        <StatCard label="Cycle moyen" value={stats.avgCycleLength ? `${stats.avgCycleLength}j` : "···"} />
+        <StatCard label="Règles (moy.)" value={stats.avgPeriodLength ? `${stats.avgPeriodLength}j` : "···"} />
         <StatCard
           label="Prochain cycle"
           value={
             stats.nextEstimated
               ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(stats.nextEstimated))
-              : "—"
+              : "···"
           }
         />
       </div>

@@ -793,7 +793,7 @@ export default function DashboardNav({
                 color: "rgba(245,237,237,0.28)",
                 textTransform: "capitalize",
               }}>
-                {userRole ?? "-"}
+                {userRole ?? "…"}
               </div>
             </div>
           </div>

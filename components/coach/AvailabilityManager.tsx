@@ -92,7 +92,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
             <div key={rule.id} className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-lg px-3.5 py-2.5">
               <p className="text-xs text-[#F5EDED]/70">
                 <strong className="text-white">{DAYS.find((d) => d.value === rule.day_of_week)?.label}</strong>
-                {" "}{rule.start_time.slice(0, 5)}–{rule.end_time.slice(0, 5)} · créneaux de {rule.slot_duration_minutes} min
+                {" "}{rule.start_time.slice(0, 5)} à {rule.end_time.slice(0, 5)} · créneaux de {rule.slot_duration_minutes} min
               </p>
               <button onClick={() => handleDelete(rule.id)} disabled={isPending} className="text-[#F5EDED]/25 hover:text-red-400">
                 <Trash2 size={14} />

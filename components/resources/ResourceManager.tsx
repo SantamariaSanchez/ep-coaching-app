@@ -90,7 +90,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
           onChange={(e) => setCategory(e.target.value)}
           className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/40"
         >
-          <option value="">Catégorie — Autres</option>
+          <option value="">Catégorie : Autres</option>
           {RESOURCE_CATEGORIES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}

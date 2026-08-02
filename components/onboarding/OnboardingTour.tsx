@@ -22,7 +22,7 @@ const SLIDES: Slide[] = [
     icon: Sparkles,
     eyebrow: "Bienvenue",
     title: "T'es officiellement dans la place 👋",
-    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux — bilans persos, appels live, accompagnement mindset, et une bague Oura Ring offerte. 100% optionnel. Let's go.",
+    desc: "1 minute pour tout comprendre : ton compte est gratuit, à vie. Un vrai coach en plus, c'est possible si tu veux : bilans persos, appels live, accompagnement mindset, et une bague Oura Ring offerte. 100% optionnel. Let's go.",
   },
   {
     icon: Dumbbell,
@@ -90,7 +90,7 @@ function buildSlides(personalization: PersonalizationProfile): Slide[] {
     icon: Lightbulb,
     eyebrow: "On sait ce que tu penses",
     title: "On répond direct à ce qui te freine",
-    desc: personalization.mythBusters.map((m) => `${m.title} — ${m.body}`).join("\n\n"),
+    desc: personalization.mythBusters.map((m) => `${m.title} : ${m.body}`).join("\n\n"),
     bullets: personalization.mythBusters.map((m) => m.title.replace(/^"|"$/g, "")),
   };
 

@@ -195,7 +195,7 @@ export default function AujourdhuiView({
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{b.label}</p>
                   <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
-                    {b.start_time.slice(0, 5)} – {b.end_time.slice(0, 5)}
+                    {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
                   </p>
                 </div>
               </div>
@@ -221,19 +221,19 @@ export default function AujourdhuiView({
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>Sommeil</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
-                  {biometric.sleep_hours != null ? `${biometric.sleep_hours}h` : "–"}
+                  {biometric.sleep_hours != null ? `${biometric.sleep_hours}h` : "···"}
                 </p>
               </div>
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>Récup.</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
-                  {biometric.readiness_score != null ? biometric.readiness_score : "–"}
+                  {biometric.readiness_score != null ? biometric.readiness_score : "···"}
                 </p>
               </div>
               <div>
                 <p className="ep-label" style={{ marginBottom: 4 }}>HRV</p>
                 <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
-                  {biometric.hrv_ms != null ? `${biometric.hrv_ms}ms` : "–"}
+                  {biometric.hrv_ms != null ? `${biometric.hrv_ms}ms` : "···"}
                 </p>
               </div>
             </div>

@@ -213,7 +213,7 @@ export default function WeeklyAgenda({
                     >
                       <p className="text-[9px] font-bold text-white leading-tight truncate">{block.label}</p>
                       <p className="text-[8px] text-[#F5EDED]/50 leading-tight">
-                        {block.start_time.slice(0, 5)}–{block.end_time.slice(0, 5)}
+                        {block.start_time.slice(0, 5)} à {block.end_time.slice(0, 5)}
                       </p>
                     </button>
                   ))}
@@ -230,7 +230,7 @@ export default function WeeklyAgenda({
           <div className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-black uppercase tracking-widest text-white">
-                {editingBlockId ? "Modifier le bloc" : `Nouveau bloc — ${DAY_LABELS[form.day_of_week]}`}
+                {editingBlockId ? "Modifier le bloc" : `Nouveau bloc : ${DAY_LABELS[form.day_of_week]}`}
               </p>
               <button onClick={close} className="text-[#F5EDED]/40 hover:text-white">
                 <X size={18} />

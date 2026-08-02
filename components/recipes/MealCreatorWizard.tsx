@@ -500,7 +500,7 @@ export default function MealCreatorWizard({
           {step === "macroProfile" && (
             <div>
               <h2 className="text-xl font-black text-white mb-1">Quel profil de macros ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour varier — plus riche en glucides, en protéines, ou équilibré.</p>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour varier : plus riche en glucides, en protéines, ou équilibré.</p>
               <div className="flex flex-col gap-2.5">
                 {(Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]).map((p) => (
                   <button

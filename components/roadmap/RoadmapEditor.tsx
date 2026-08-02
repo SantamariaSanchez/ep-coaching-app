@@ -564,7 +564,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       {showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
-            Vue d&apos;ensemble — les phases sur les mois et les semaines
+            Vue d&apos;ensemble : les phases sur les mois et les semaines
           </p>
           <div className="ep-card" style={{ padding: 20 }}>
             <RoadmapCalendar

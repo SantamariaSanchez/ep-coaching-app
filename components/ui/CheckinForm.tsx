@@ -443,7 +443,7 @@ export default function CheckinForm({
           }}
         />
         <p style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", marginTop: 6 }}>
-          Optionnel — pour un retour technique de ton coach sur un exercice précis.
+          Optionnel : pour un retour technique de ton coach sur un exercice précis.
         </p>
       </div>
 

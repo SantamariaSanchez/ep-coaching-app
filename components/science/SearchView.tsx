@@ -63,7 +63,7 @@ function ImportForm({ result, onImport, onCancel }: {
       <input
         value={titleFr}
         onChange={(e) => setTitleFr(e.target.value)}
-        placeholder="Titre en français (obligatoire — c'est ce que le client verra en premier)"
+        placeholder="Titre en français (obligatoire, c'est ce que le client verra en premier)"
         className={inputCls}
       />
       <textarea

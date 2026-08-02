@@ -51,7 +51,7 @@ export default function AutoGeneratePlanButton({
           <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 leading-relaxed">
             Calcule des objectifs nutrition indicatifs et propose plusieurs exercices possibles par groupe
             musculaire (jamais un seul choix imposé). <strong className="text-[#F5EDED]/60">Rien n&apos;est
-            enregistré automatiquement</strong> — c&apos;est à toi de reporter ce qui te semble pertinent dans le
+            enregistré automatiquement.</strong> C&apos;est à toi de reporter ce qui te semble pertinent dans le
             calculateur TDEE ou l&apos;éditeur de programme.
           </p>
           {!hasIntake && (
@@ -79,7 +79,7 @@ export default function AutoGeneratePlanButton({
                 <p className="text-[10px] text-[#F5EDED]/40 leading-relaxed">
                   Sélection basée sur la difficulté déclarée (débutant/intermédiaire d&apos;abord) et la catégorie
                   (composé/isolation) de chaque exercice de ta bibliothèque, filtrée sur le matériel détesté /
-                  problématique déclaré. Ce n&apos;est pas une recherche dans la littérature scientifique —
+                  problématique déclaré. Ce n&apos;est pas une recherche dans la littérature scientifique,
                   vérifie toujours la pertinence pour ce client précis.
                 </p>
               </div>
@@ -87,7 +87,7 @@ export default function AutoGeneratePlanButton({
               {result.nutrition && (
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-                    Nutrition suggérée — {PHASE_LABEL[result.nutrition.phase]}
+                    Nutrition suggérée : {PHASE_LABEL[result.nutrition.phase]}
                   </p>
                   <div className="grid grid-cols-4 gap-2">
                     {[
@@ -155,12 +155,12 @@ export default function AutoGeneratePlanButton({
                   <div className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5 space-y-1.5">
                     {result.roadmap.phases.map((p) => (
                       <p key={p.label} className="text-xs text-white">
-                        <strong>{p.label}</strong> — {p.start_date} → {p.end_date}
+                        <strong>{p.label}</strong> : {p.start_date} → {p.end_date}
                       </p>
                     ))}
                     {result.roadmap.objectives.map((o) => (
                       <p key={o.label} className="text-[11px] text-[#F5EDED]/50">
-                        🎯 {o.label} — objectif {o.term === "short" ? "court terme" : "long terme"} pour {o.target_date}
+                        🎯 {o.label} : objectif {o.term === "short" ? "court terme" : "long terme"} pour {o.target_date}
                       </p>
                     ))}
                   </div>

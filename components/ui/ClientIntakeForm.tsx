@@ -149,7 +149,7 @@ export default function ClientIntakeForm({
       const looksLikeMissingTable = /relation .* does not exist|schema cache/i.test(res.error);
       setError(
         looksLikeMissingTable
-          ? `${isSelf ? "Ta fiche n'est" : "La fiche client n'est"} pas encore activée côté base de données — la migration SQL doit être exécutée dans Supabase avant de pouvoir enregistrer. Rien n'a été perdu, réessaie une fois que c'est fait.`
+          ? `${isSelf ? "Ta fiche n'est" : "La fiche client n'est"} pas encore activée côté base de données. La migration SQL doit être exécutée dans Supabase avant de pouvoir enregistrer. Rien n'a été perdu, réessaie une fois que c'est fait.`
           : res.error
       );
     } else {
@@ -175,7 +175,7 @@ export default function ClientIntakeForm({
         </Field>
         <Field label="Sexe biologique">
           <select value={txt("gender")} onChange={(e) => set("gender", (e.target.value || null) as ClientIntakeInput["gender"])} className={inputClass}>
-            <option value="">—</option>
+            <option value="">Non renseigné</option>
             <option value="Homme">Homme</option>
             <option value="Femme">Femme</option>
             <option value="Autre">Autre</option>
@@ -192,7 +192,7 @@ export default function ClientIntakeForm({
         </Field>
         <Field label="Emploi du temps">
           <select value={txt("schedule_type")} onChange={(e) => set("schedule_type", (e.target.value || null) as ClientIntakeInput["schedule_type"])} className={inputClass}>
-            <option value="">—</option>
+            <option value="">Non renseigné</option>
             <option value="fixe">Fixe</option>
             <option value="variable">Variable</option>
           </select>
@@ -224,7 +224,7 @@ export default function ClientIntakeForm({
           </div>
           <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
             Ce chiffre est celui affiché dans l&apos;app du client, dans &quot;Pas &amp; routine&quot;. Le client ne peut
-            plus le modifier lui-même — seul toi, le coach, le règles ici.
+            plus le modifier lui-même. C&apos;est toi, le coach, qui le règles ici.
           </p>
           <div className="flex items-center gap-2">
             <input
@@ -328,7 +328,7 @@ export default function ClientIntakeForm({
       </div>
 
       <div className="mt-3">
-        <label className={labelClass}>Régime alimentaire (utilisé partout dans l&apos;appli — recettes, plans...)</label>
+        <label className={labelClass}>Régime alimentaire (utilisé partout dans l&apos;appli : recettes, plans...)</label>
         <div className="flex flex-wrap gap-2 mt-1">
           {(Object.keys(DIET_LABELS) as Diet[]).map((d) => (
             <button
@@ -368,14 +368,14 @@ export default function ClientIntakeForm({
       <div className="grid sm:grid-cols-2 gap-3 mt-3">
         <Field label="Préférence de plan">
           <select value={txt("plan_preference")} onChange={(e) => set("plan_preference", (e.target.value || null) as ClientIntakeInput["plan_preference"])} className={inputClass}>
-            <option value="">—</option>
+            <option value="">Non renseigné</option>
             <option value="fixe">Plan fixe</option>
             <option value="flexible">Macros flexibles</option>
           </select>
         </Field>
         <Field label="Apport calorique">
           <select value={txt("calorie_preference")} onChange={(e) => set("calorie_preference", (e.target.value || null) as ClientIntakeInput["calorie_preference"])} className={inputClass}>
-            <option value="">—</option>
+            <option value="">Non renseigné</option>
             <option value="lineaire">Linéaire chaque jour</option>
             <option value="variable">Varie selon les jours</option>
           </select>
