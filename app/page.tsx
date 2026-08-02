@@ -228,13 +228,13 @@ export default function HomePage() {
               alignItems: "center",
               gap: 6,
               marginTop: 32,
-              color: "rgba(245,237,237,0.55)",
+              color: "rgba(245,237,237,0.7)",
               textDecoration: "none",
-              fontSize: 14,
+              fontSize: 16,
               fontWeight: 600,
             }}
           >
-            <Shield size={15} />
+            <Shield size={17} />
             Espace coach
           </Link>
         </div>

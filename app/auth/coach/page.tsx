@@ -75,7 +75,7 @@ export default function CoachLoginPage() {
   const [state, formAction, pending] = useActionState(loginCoach, null);
   const [email, setEmail] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
-  const [tab, setTab] = useState<"connexion" | "inscription">("connexion");
+  const [tab, setTab] = useState<"connexion" | "inscription">("inscription");
 
   return (
     <div
@@ -121,7 +121,7 @@ export default function CoachLoginPage() {
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
               <Shield size={12} style={{ color: "rgba(224,30,30,0.65)" }} strokeWidth={2} />
               <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
-                Accès restreint
+                Espace professionnel
               </span>
             </div>
             <h1
@@ -141,7 +141,7 @@ export default function CoachLoginPage() {
 
           {/* Tabs */}
           <div className="animate-fade-up stagger-2" style={{ display: "flex", gap: 8, marginBottom: 24 }}>
-            {(["connexion", "inscription"] as const).map((t) => (
+            {(["inscription", "connexion"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
