@@ -42,7 +42,7 @@ export default async function CoachPendingPage() {
               className="ep-btn-primary"
               style={{ display: "flex", flexDirection: "column", height: "auto", padding: "14px 20px", fontSize: 13, textDecoration: "none" }}
             >
-              <span>{plan.label} — {plan.priceLabel}</span>
+              <span>{plan.label} : {plan.priceLabel}</span>
               <span style={{ fontSize: 11, fontWeight: 500, opacity: 0.85 }}>{plan.sublabel}</span>
             </a>
           ))}

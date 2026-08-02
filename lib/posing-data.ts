@@ -29,9 +29,9 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     },
     notes: "Emphase sur symétrie et présentation. Tronc court 4.5\" max.",
     tips: [
-      "Enchaîne les poses sans temps mort — chaque transition doit rester gracieuse, jamais brusque.",
+      "Enchaîne les poses sans temps mort, chaque transition doit rester gracieuse, jamais brusque.",
       "Contracte 1-2 secondes avant que le mouvement soit terminé, pas après : ça donne l'impression que la pose est déjà là.",
-      "Respire en réserve pendant les poses statiques — bloquer sa respiration tire des grimaces qui cassent la prestation.",
+      "Respire en réserve pendant les poses statiques, bloquer sa respiration tire des grimaces qui cassent la prestation.",
       "Entraîne-toi devant un miroir en pointant les mêmes repères visuels (cadre de porte, ligne au sol) pour reproduire un cadrage identique à chaque photo de suivi.",
     ],
   },
@@ -52,7 +52,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     },
     notes: "Boardshorts obligatoires. Look athlétique, pas extrême.",
     tips: [
-      "Le quarter turn se marche, ne se pivote pas sec sur place — un vrai pas de côté donne une ligne plus longue.",
+      "Le quarter turn se marche, ne se pivote pas sec sur place, un vrai pas de côté donne une ligne plus longue.",
       "Épaules basses et relâchées : la tension dans le trapèze remonte le cou et casse la ligne épaules-taille recherchée en Physique.",
       "Garde le menton légèrement relevé et le regard fixe vers l'avant sur toute la présentation, pas seulement sur les poses statiques.",
     ],
@@ -77,7 +77,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     notes: "Conditionnement extrême valorisé. Tronc standard.",
     tips: [
       "Verrouille toujours le côté fort vers le jury/l'appareil photo pour Side Chest et Side Triceps.",
-      "Sur Most Muscular, expire fort en contractant — le relâchement du diaphragme aide à saturer le pump visuellement.",
+      "Sur Most Muscular, expire fort en contractant, le relâchement du diaphragme aide à saturer le pump visuellement.",
       "Vérifie ta symétrie gauche/droite en photo de face avant d'envoyer : un déséquilibre se corrige à l'entraînement, pas sur scène.",
     ],
   },
@@ -99,7 +99,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     tips: [
       "Le walk compte autant que la pose : hanches engagées, pas fluide, sourire dès l'entrée en scène.",
       "Cambre légèrement le bas du dos sur le quarter turn dos pour dessiner la ligne fessiers-jambes.",
-      "Entraîne-toi en talons dès maintenant — l'équilibre et le placement du bassin changent complètement avec la hauteur du talon.",
+      "Entraîne-toi en talons dès maintenant, l'équilibre et le placement du bassin changent complètement avec la hauteur du talon.",
     ],
   },
   Wellness: {
@@ -119,7 +119,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     notes:
       "Catégorie centrée sur le ratio haut du corps féminin / bas du corps développé. Ne pas confondre avec Bikini (plus léger) ni Figure (plus musclée en haut).",
     tips: [
-      "La pose de dos est celle qui compte le plus ici — prends-en systématiquement une par semaine pour suivre le développement fessiers/ischios.",
+      "La pose de dos est celle qui compte le plus ici, prends-en systématiquement une par semaine pour suivre le développement fessiers/ischios.",
       "Garde les épaules ouvertes et la taille gainée même de dos : le contraste taille/bassin est le critère clé de la catégorie.",
       "Varie les angles de 3/4 dos en plus du quarter turn classique pour mieux juger la rondeur du développement au fil des semaines.",
     ],
@@ -140,7 +140,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     notes:
       "Balance égale haut/bas du corps. Aucune partie ne doit dominer.",
     tips: [
-      "Contracte les bras discrètement même sur les poses \"relâchées\" — le tonus doit rester visible sans donner l'impression de forcer.",
+      "Contracte les bras discrètement même sur les poses \"relâchées\", le tonus doit rester visible sans donner l'impression de forcer.",
       "Vérifie que le développement des épaules ne prend pas le pas sur le bas du corps en photo de face : c'est l'équilibre qui est jugé, pas la taille pure.",
     ],
   },
@@ -162,7 +162,7 @@ export const POSING_CATEGORIES: Record<string, PosingCategoryData> = {
     notes: "Look athlétique féminin valorisé.",
     tips: [
       "Position intermédiaire entre Bikini et Figure : évite les poses trop statiques (Bikini) comme les contractions trop marquées (Figure).",
-      "Le jury valorise le dynamisme — garde une posture engagée et un regard vif sur toute la présentation.",
+      "Le jury valorise le dynamisme, garde une posture engagée et un regard vif sur toute la présentation.",
     ],
   },
 };

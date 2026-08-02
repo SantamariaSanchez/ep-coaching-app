@@ -1268,7 +1268,7 @@ export default function ClientNutritionView({
           {shoppingList.items.length === 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center">
               <p className="text-xs text-[#F5EDED]/35">
-                Pas encore assez de données — logue tes repas quelques jours, ou demande à ton coach un plan.
+                Pas encore assez de données. Logue tes repas quelques jours, ou demande à ton coach un plan.
               </p>
             </div>
           ) : (

@@ -492,7 +492,7 @@ function WarmupStep({
       {/* Exercises list — suggestions éditables : retire ce que tu ne veux
           pas, ajoute les tiens. */}
       <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-        Suggestions — modifie librement
+        Suggestions, modifie librement
       </p>
       <div className="space-y-2 mb-3">
         {exercises.map((ex, i) => (
@@ -525,7 +525,7 @@ function WarmupStep({
         ))}
         {exercises.length === 0 && (
           <p className="text-xs text-[#F5EDED]/25 italic text-center py-3">
-            Aucun exercice — ajoute le tien ci-dessous.
+            Aucun exercice. Ajoute le tien ci-dessous.
           </p>
         )}
       </div>

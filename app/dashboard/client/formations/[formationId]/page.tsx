@@ -136,7 +136,7 @@ export default async function FormationDetailPage({
             </p>
           </div>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "0 0 10px", lineHeight: 1.5 }}>
-            Tu peux parcourir tout le programme dès maintenant — les vidéos se débloquent avec l&apos;accompagnement.
+            Tu peux parcourir tout le programme dès maintenant. Les vidéos se débloquent avec l&apos;accompagnement.
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
             Réserver un appel découverte

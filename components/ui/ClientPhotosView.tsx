@@ -279,7 +279,7 @@ function SubmissionForm({
             <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
             <p className="text-xs text-amber-400">
               {isSelfTracking
-                ? "Catégorie non définie — choisis-la ci-dessous."
+                ? "Catégorie non définie. Choisis-la ci-dessous."
                 : "Catégorie non définie. Ton coach va la configurer prochainement."}
             </p>
           </div>

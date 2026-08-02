@@ -68,7 +68,7 @@ export async function submitCheckin(
   const attitudeRating = num(formData.get("attitude_rating"));
   const attitudeExplanation = txt(formData.get("attitude_explanation"));
   if (attitudeRating != null && (attitudeRating <= 3 || attitudeRating >= 8) && !attitudeExplanation) {
-    return { error: "Explique ta note d'attitude — c'est requis quand elle est très basse ou très haute." };
+    return { error: "Explique ta note d'attitude. C'est requis quand elle est très basse ou très haute." };
   }
 
   const feedbackFormat = txt(formData.get("preferred_feedback_format"));

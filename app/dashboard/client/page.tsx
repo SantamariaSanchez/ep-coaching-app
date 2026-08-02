@@ -19,7 +19,7 @@ const ENGAGEMENT_ITEMS = [
     href: "/dashboard/client/communaute/victoires",
     icon: Trophy,
     title: "Partage une victoire",
-    desc: "Même petite, elle compte — la régularité se fête aussi.",
+    desc: "Même petite, elle compte. La régularité se fête aussi.",
   },
   {
     href: "/dashboard/client/communaute/questions",

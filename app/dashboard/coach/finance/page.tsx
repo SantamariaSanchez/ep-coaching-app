@@ -91,7 +91,7 @@ export default async function CoachFinancePage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Finance</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Revenus réels traités par Stripe — abonnements plateforme des coachs tiers et abonnements
+          Revenus réels traités par Stripe. Abonnements plateforme des coachs tiers et abonnements
           directs des clients. Les paiements gérés hors app (lien externe d&apos;un coach, virement) n&apos;y
           figurent pas.
         </p>

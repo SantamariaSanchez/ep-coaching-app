@@ -65,7 +65,7 @@ export function derivePersonalization(prefs: MemberPreferences | null): Personal
       mythBusters.push({
         id: "tracking-utile",
         title: "\"Suivre mes calories, ça sert à rien\"",
-        body: "Ce n'est pas fait pour te transformer en calculatrice à vie — juste pour comprendre, une fois, ce que tu manges vraiment. La plupart des gens sous-estiment ou surestiment leur apport de 20 à 30%. Deux semaines de journal alimentaire suffisent souvent à voir clair.",
+        body: "Ce n'est pas fait pour te transformer en calculatrice à vie, juste pour comprendre, une fois, ce que tu manges vraiment. La plupart des gens sous-estiment ou surestiment leur apport de 20 à 30%. Deux semaines de journal alimentaire suffisent souvent à voir clair.",
       });
     }
     if (prefs?.biggest_obstacle === "sais_pas_par_ou_commencer") {
@@ -86,7 +86,7 @@ export function derivePersonalization(prefs: MemberPreferences | null): Personal
       mythBusters.push({
         id: "petit-pas",
         title: "\"J'ai pas le temps / la motiv'\"",
-        body: "3 séances de 30 min valent mieux qu'1 séance de 2h qu'on ne fait jamais. Commence petit, la régularité crée la motivation — pas l'inverse.",
+        body: "3 séances de 30 min valent mieux qu'1 séance de 2h qu'on ne fait jamais. Commence petit, la régularité crée la motivation, pas l'inverse.",
       });
     }
   }

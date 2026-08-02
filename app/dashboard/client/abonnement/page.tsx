@@ -33,7 +33,7 @@ const COACHING_PILLARS = [
   {
     icon: Watch,
     title: "Bague Oura Ring offerte",
-    body: "Ton sommeil, ta récupération et ta variabilité cardiaque connectés automatiquement à ton suivi — aucune saisie manuelle, juste les bonnes décisions au bon moment.",
+    body: "Ton sommeil, ta récupération et ta variabilité cardiaque connectés automatiquement à ton suivi. Aucune saisie manuelle, juste les bonnes décisions au bon moment.",
   },
   {
     icon: GraduationCap,

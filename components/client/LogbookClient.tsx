@@ -203,7 +203,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
           </button>
         </div>
         <p className="text-[9px] text-[#F5EDED]/25 mt-2">
-          Sert à proposer un échauffement adapté — modifiable ensuite si besoin.
+          Sert à proposer un échauffement adapté, modifiable ensuite si besoin.
         </p>
         {startError && (
           <p className="text-xs text-red-400 mt-1.5">{startError}</p>
@@ -506,13 +506,13 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
 
       {/* ── Ma progression ── */}
       <section className="mb-8">
-        <SectionLabel>Ma progression — par exercice</SectionLabel>
+        <SectionLabel>Ma progression : par exercice</SectionLabel>
         <ExerciseProgressionChart sessions={sessions} records={records} />
       </section>
 
       {checkins.length > 0 && (
         <section>
-          <SectionLabel>Ma progression — poids &amp; nutrition</SectionLabel>
+          <SectionLabel>Ma progression : poids &amp; nutrition</SectionLabel>
           <ClientProgressCharts checkins={checkins} />
         </section>
       )}

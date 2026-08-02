@@ -282,7 +282,7 @@ export default function ClientProfileTabs({
           <ClientSuggestionsPanel suggestions={suggestions} />
 
           {intake ? (
-            <Card title="Fiche client — l'essentiel">
+            <Card title="Fiche client : l'essentiel">
               <div className="space-y-3">
                 {(intake.goal_3_months || intake.goal_12_months) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -317,9 +317,9 @@ export default function ClientProfileTabs({
               </div>
             </Card>
           ) : (
-            <Card title="Fiche client — l'essentiel">
+            <Card title="Fiche client : l'essentiel">
               <p className="text-xs text-[#F5EDED]/40 mb-2">
-                Pas encore de fiche client remplie pour ce client — objectifs, régime, blessures... tout ce qui
+                Pas encore de fiche client remplie pour ce client. Objectifs, régime, blessures... tout ce qui
                 sert ensuite dans le créateur de recette, de programme et de plan nutrition.
               </p>
               <button
@@ -430,7 +430,7 @@ export default function ClientProfileTabs({
       {activeTab === "agenda" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
-            Emploi du temps du client — lecture seule, c&apos;est lui qui le gère depuis son espace.
+            Emploi du temps du client. Lecture seule, c&apos;est lui qui le gère depuis son espace.
           </p>
           <WeeklyAgenda blocks={scheduleBlocks} editable={false} />
         </div>

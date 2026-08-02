@@ -60,7 +60,7 @@ export default function ClientsSection({
             Aucun client pour l&apos;instant
           </p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-            Les clients s&apos;inscrivent eux-mêmes depuis l&apos;appli, ils apparaîtront ici — il ne te reste
+            Les clients s&apos;inscrivent eux-mêmes depuis l&apos;appli, ils apparaîtront ici. Il ne te reste
             plus qu&apos;à activer leur coaching.
           </p>
         </div>

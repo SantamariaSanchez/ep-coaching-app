@@ -86,7 +86,7 @@ export default async function FormationsPage() {
             </p>
           </div>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "0 0 12px", lineHeight: 1.5 }}>
-            Parcours le catalogue librement — les vidéos se débloquent dès que tu rejoins l&apos;accompagnement.
+            Parcours le catalogue librement. Les vidéos se débloquent dès que tu rejoins l&apos;accompagnement.
           </p>
           <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
             Réserver un appel découverte

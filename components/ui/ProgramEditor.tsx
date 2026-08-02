@@ -202,7 +202,7 @@ function ExerciseNameField({
             {pendingPick.conflicts.map((c, i) => (
               <p key={i} className="text-[10px] text-amber-300/90 flex items-start gap-1.5">
                 <AlertCircle size={11} className="flex-shrink-0 mt-0.5" />
-                <span><strong>{conflictSourceLabel(c.source)}</strong> — correspond à « {c.keyword} »</span>
+                <span><strong>{conflictSourceLabel(c.source)}</strong> : correspond à « {c.keyword} »</span>
               </p>
             ))}
           </div>
@@ -303,7 +303,7 @@ function ExerciseNameField({
       {open && !pendingPick && q.length >= 2 && !hasActiveFilters && matches.length === 0 && (
         <div className="absolute z-20 top-full left-0 right-0 mt-1 bg-[#1a0000] border border-[#890404]/40 rounded-lg shadow-xl px-3 py-2 flex items-center gap-2">
           <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
-          <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat — nom libre conservé</span>
+          <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat, nom libre conservé</span>
         </div>
       )}
     </div>
@@ -638,7 +638,7 @@ export default function ProgramEditor({
           </div>
         ) : (
           <p className="text-[11px] text-[#F5EDED]/30 italic mb-3">
-            Rien de déclaré dans la fiche client sur ce point — remplis-la ou ajoute une contrainte ci-dessous.
+            Rien de déclaré dans la fiche client sur ce point. Remplis-la ou ajoute une contrainte ci-dessous.
           </p>
         )}
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
@@ -653,7 +653,7 @@ export default function ProgramEditor({
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
           Chaque exercice sélectionné depuis la bibliothèque est comparé à tout ça. En cas de correspondance, une
-          confirmation est demandée avant de l&apos;ajouter — jamais un blocage silencieux.
+          confirmation est demandée avant de l&apos;ajouter, jamais un blocage silencieux.
         </p>
       </div>
 

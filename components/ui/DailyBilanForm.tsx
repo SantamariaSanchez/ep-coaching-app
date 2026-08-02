@@ -115,7 +115,7 @@ function WeightCard({ today, existing, action }: { today: string; existing: Dail
           </div>
           <div>
             <label className={lbl}>Heure de pesée</label>
-            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07h00" className={inp} />
+            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" className={inp} />
           </div>
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
@@ -182,7 +182,7 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
             </div>
             <p className={hint}>
               La note de la séance se donne à la fin de l&apos;entraînement, directement depuis le{" "}
-              <Link href="/dashboard/client/logbook" style={{ color: "#E01E1E", fontWeight: 700 }}>logbook</Link> — pas besoin de la redonner ici.
+              <Link href="/dashboard/client/logbook" style={{ color: "#E01E1E", fontWeight: 700 }}>logbook</Link>. Pas besoin de la redonner ici.
             </p>
           </div>
         )}
@@ -206,7 +206,7 @@ function LifestyleCard({ today, existing, action }: { today: string; existing: D
             <input name="steps" type="number" min="0" max="100000" defaultValue={existing?.steps ?? ""} placeholder="8500" className={inp} />
             <p className={hint}>
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
-              Regarde dans l&apos;app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone — pas besoin d&apos;inventer.
+              Regarde dans l&apos;app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d&apos;inventer.
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -220,7 +220,7 @@ function LifestyleCard({ today, existing, action }: { today: string; existing: D
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
-            Ton iPhone/montre connectée donne ces chiffres dans l&apos;app Santé/Sommeil — sinon, une estimation à l&apos;instinct suffit.
+            Ton iPhone/montre connectée donne ces chiffres dans l&apos;app Santé/Sommeil, sinon une estimation à l&apos;instinct suffit.
           </p>
           <div>
             <label className={lbl}>Digestion</label>
@@ -253,7 +253,7 @@ function NutritionCard({
       <CardShell icon={Apple} title="Nutrition" saved={!!state?.success}>
         {nutritionTotals && existing?.calories_kcal == null ? (
           <p style={{ fontSize: 10, color: "rgba(74,222,128,0.6)", margin: "-6px 0 12px" }}>
-            Pré-rempli depuis ce que tu as déjà loggé dans Nutrition aujourd&apos;hui — modifiable si besoin.
+            Pré-rempli depuis ce que tu as déjà loggé dans Nutrition aujourd&apos;hui, modifiable si besoin.
           </p>
         ) : (
           <p className={hint} style={{ margin: "-6px 0 12px" }}>

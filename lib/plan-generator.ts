@@ -212,14 +212,14 @@ export interface ExerciseSuggestion {
 
 function toSuggestion(ex: LibraryExercise): ExerciseSuggestion {
   const diffLabel =
-    ex.difficulty === "debutant" ? "débutant" : ex.difficulty === "avance" ? "avancé — vérifie la maîtrise technique" : "intermédiaire";
+    ex.difficulty === "debutant" ? "débutant" : ex.difficulty === "avance" ? "avancé, vérifie la maîtrise technique" : "intermédiaire";
   return {
     name: ex.name,
     category: ex.category,
     difficulty: ex.difficulty,
     equipment: ex.equipment,
     muscleSubgroup: ex.muscle_subgroup,
-    reason: `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` — cible ${ex.muscle_subgroup}` : ""}.`,
+    reason: `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` (cible ${ex.muscle_subgroup})` : ""}.`,
   };
 }
 
@@ -340,7 +340,7 @@ export function buildRoadmapPayload(intake: ClientIntake, phase: InferredPhase, 
         label: PHASE_LABEL[phase],
         start_date: startDate,
         end_date: endDate,
-        notes: "Phase générée automatiquement depuis la fiche client — à ajuster.",
+        notes: "Phase générée automatiquement depuis la fiche client, à ajuster.",
         position: 0,
       },
     ],

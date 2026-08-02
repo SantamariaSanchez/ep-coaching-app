@@ -30,7 +30,7 @@ export default function ClientReferenceCard({ intake }: { intake: ClientIntake |
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-6">
       <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-3">
-        <ClipboardList size={11} /> Fiche client — à garder en tête
+        <ClipboardList size={11} /> Fiche client : à garder en tête
       </p>
       <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
         {rows.map(({ label, value }) => (

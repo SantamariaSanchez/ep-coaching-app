@@ -57,7 +57,7 @@ export function generateClientSuggestions(
     s.push({
       id: "stress",
       severity: "warning",
-      text: `Stress élevé déclaré (${intake.stress_level}/10) — envisage d'alléger le volume ou l'intensité cette semaine plutôt que de pousser plus fort.`,
+      text: `Stress élevé déclaré (${intake.stress_level}/10), envisage d'alléger le volume ou l'intensité cette semaine plutôt que de pousser plus fort.`,
       tab: "programme",
     });
   }
@@ -69,7 +69,7 @@ export function generateClientSuggestions(
     s.push({
       id: "sleep",
       severity: "warning",
-      text: "Sommeil faible ou de mauvaise qualité déclaré — la récupération est probablement le facteur limitant avant toute progression de charge.",
+      text: "Sommeil faible ou de mauvaise qualité déclaré, la récupération est probablement le facteur limitant avant toute progression de charge.",
       tab: "bilans",
     });
   }
@@ -82,7 +82,7 @@ export function generateClientSuggestions(
     s.push({
       id: "no-refeed",
       severity: "info",
-      text: "Zéro écart déclaré alors que l'objectif est une sèche — envisage un repas ou une journée de refeed planifiée pour limiter le risque de craquage incontrôlé.",
+      text: "Zéro écart déclaré alors que l'objectif est une sèche, envisage un repas ou une journée de refeed planifiée pour limiter le risque de craquage incontrôlé.",
       tab: "nutrition",
     });
   }
@@ -95,7 +95,7 @@ export function generateClientSuggestions(
     s.push({
       id: "calorie-mismatch",
       severity: "warning",
-      text: `Écart important entre ce que le client dit manger actuellement (${intake.known_calories} kcal) et l'objectif fixé (${nutritionProfile.calories_target} kcal) — vaut le coup d'en discuter avant d'ajuster le plan.`,
+      text: `Écart important entre ce que le client dit manger actuellement (${intake.known_calories} kcal) et l'objectif fixé (${nutritionProfile.calories_target} kcal), vaut le coup d'en discuter avant d'ajuster le plan.`,
       tab: "nutrition",
     });
   }
@@ -112,7 +112,7 @@ export function generateClientSuggestions(
         s.push({
           id: `macro-mismatch-${label}`,
           severity: "info",
-          text: `${label === "glucides" ? "Glucides" : "Lipides"} déclarés (${known}g) très éloignés de la cible du plan (${target}g) — vérifie que le plan correspond vraiment à ce que le client mange déjà.`,
+          text: `${label === "glucides" ? "Glucides" : "Lipides"} déclarés (${known}g) très éloignés de la cible du plan (${target}g), vérifie que le plan correspond vraiment à ce que le client mange déjà.`,
           tab: "nutrition",
         });
       }
@@ -127,7 +127,7 @@ export function generateClientSuggestions(
     s.push({
       id: "meal-frequency",
       severity: "info",
-      text: `Le client fait ${intake.meals_current} repas/jour mais en voudrait idéalement ${intake.meals_ideal} — vaut le coup de l'aider à structurer ça plutôt que de rester sur l'existant par défaut.`,
+      text: `Le client fait ${intake.meals_current} repas/jour mais en voudrait idéalement ${intake.meals_ideal}, vaut le coup de l'aider à structurer ça plutôt que de rester sur l'existant par défaut.`,
       tab: "nutrition",
     });
   }
@@ -141,7 +141,7 @@ export function generateClientSuggestions(
     s.push({
       id: "low-steps",
       severity: "info",
-      text: `Objectif de perte de poids mais seulement ~${intake.avg_daily_steps} pas/jour déclarés — augmenter le NEAT (pas quotidiens) est souvent le levier le plus simple avant de couper encore les calories.`,
+      text: `Objectif de perte de poids mais seulement ~${intake.avg_daily_steps} pas/jour déclarés, augmenter le NEAT (pas quotidiens) est souvent le levier le plus simple avant de couper encore les calories.`,
       tab: "bilans",
     });
   }
@@ -152,7 +152,7 @@ export function generateClientSuggestions(
     s.push({
       id: "wearable-unused",
       severity: "info",
-      text: `Appareil connecté déclaré ("${intake.wearable_device}") mais aucune moyenne de pas renseignée — vaut le coup de vérifier que les données remontent bien plutôt que de compter sur du déclaratif.`,
+      text: `Appareil connecté déclaré ("${intake.wearable_device}") mais aucune moyenne de pas renseignée, vaut le coup de vérifier que les données remontent bien plutôt que de compter sur du déclaratif.`,
       tab: "bilans",
     });
   }
@@ -161,7 +161,7 @@ export function generateClientSuggestions(
     s.push({
       id: "injuries",
       severity: "warning",
-      text: `Blessures/douleurs déclarées : "${intake.injuries}" — vérifie que le programme actuel les contourne.`,
+      text: `Blessures/douleurs déclarées : "${intake.injuries}", vérifie que le programme actuel les contourne.`,
       tab: "programme",
     });
   }
@@ -172,7 +172,7 @@ export function generateClientSuggestions(
     s.push({
       id: "health-issues",
       severity: "warning",
-      text: `Problèmes de santé déclarés : "${intake.health_issues}" — à garder en tête pour le programme et le plan nutritionnel, pas juste pour l'entraînement.`,
+      text: `Problèmes de santé déclarés : "${intake.health_issues}", à garder en tête pour le programme et le plan nutritionnel, pas juste pour l'entraînement.`,
       tab: "programme",
     });
   }
@@ -186,14 +186,14 @@ export function generateClientSuggestions(
       s.push({
         id: "age-recovery",
         severity: "info",
-        text: `${age} ans — progression de charge probablement plus lente à envisager, avec une récupération entre séances à surveiller de près.`,
+        text: `${age} ans, progression de charge probablement plus lente à envisager, avec une récupération entre séances à surveiller de près.`,
         tab: "programme",
       });
     } else if (age > 0 && age < 16) {
       s.push({
         id: "age-young",
         severity: "warning",
-        text: `${age} ans déclarés — vérifie l'encadrement adapté (charges, technique, supervision) pour un public aussi jeune.`,
+        text: `${age} ans déclarés, vérifie l'encadrement adapté (charges, technique, supervision) pour un public aussi jeune.`,
         tab: "programme",
       });
     }
@@ -211,7 +211,7 @@ export function generateClientSuggestions(
     s.push({
       id: "cardio-aversion",
       severity: "info",
-      text: `Cardio explicitement pas apprécié ("${intake.cardio_preference}") alors que l'objectif est une perte de poids — mise sur le NEAT et le déficit alimentaire plutôt que sur du cardio imposé qui a peu de chances d'être tenu.`,
+      text: `Cardio explicitement pas apprécié ("${intake.cardio_preference}") alors que l'objectif est une perte de poids, mise sur le NEAT et le déficit alimentaire plutôt que sur du cardio imposé qui a peu de chances d'être tenu.`,
       tab: "programme",
     });
   }
@@ -224,7 +224,7 @@ export function generateClientSuggestions(
     s.push({
       id: "exercises-that-work",
       severity: "info",
-      text: `Exercices qui fonctionnent bien pour ce client : "${intake.exercises_that_work}" — à garder ou réintégrer si une refonte de programme est en cours.`,
+      text: `Exercices qui fonctionnent bien pour ce client : "${intake.exercises_that_work}", à garder ou réintégrer si une refonte de programme est en cours.`,
       tab: "programme",
     });
   }
@@ -237,7 +237,7 @@ export function generateClientSuggestions(
     s.push({
       id: "session-gap",
       severity: "info",
-      text: `Le client fait ${intake.sessions_current} séances/semaine mais en voudrait ${intake.sessions_desired} — monter progressivement plutôt que de programmer directement la cible évite l'échec par surcharge.`,
+      text: `Le client fait ${intake.sessions_current} séances/semaine mais en voudrait ${intake.sessions_desired}, monter progressivement plutôt que de programmer directement la cible évite l'échec par surcharge.`,
       tab: "programme",
     });
   }
@@ -246,7 +246,7 @@ export function generateClientSuggestions(
     s.push({
       id: "cycle-tracking",
       severity: "info",
-      text: "Cliente sans aucun cycle encore loggé — pense à activer le suivi (onglet Cycle), utile pour interpréter les fluctuations de poids et d'énergie.",
+      text: "Cliente sans aucun cycle encore loggé, pense à activer le suivi (onglet Cycle), utile pour interpréter les fluctuations de poids et d'énergie.",
       tab: "cycle",
     });
   }
@@ -264,14 +264,14 @@ export function generateClientSuggestions(
       s.push({
         id: "weight-trend-mismatch-gain",
         severity: "warning",
-        text: `Objectif de prise de masse mais le poids a baissé de ${Math.abs(deltaKg).toFixed(1)}kg sur les pesées récentes — les calories sont probablement trop basses par rapport à l'objectif affiché.`,
+        text: `Objectif de prise de masse mais le poids a baissé de ${Math.abs(deltaKg).toFixed(1)}kg sur les pesées récentes, les calories sont probablement trop basses par rapport à l'objectif affiché.`,
         tab: "nutrition",
       });
     } else if (wantsLoss && deltaKg > 0.5) {
       s.push({
         id: "weight-trend-mismatch-loss",
         severity: "warning",
-        text: `Objectif de perte mais le poids a augmenté de ${deltaKg.toFixed(1)}kg sur les pesées récentes — vaut le coup de vérifier l'adhésion au plan ou la fenêtre calorique.`,
+        text: `Objectif de perte mais le poids a augmenté de ${deltaKg.toFixed(1)}kg sur les pesées récentes, vaut le coup de vérifier l'adhésion au plan ou la fenêtre calorique.`,
         tab: "nutrition",
       });
     }
@@ -291,7 +291,7 @@ export function generateClientSuggestions(
     s.push({
       id: "no-goals",
       severity: "warning",
-      text: "Aucun objectif (3 mois / 12 mois) renseigné dans la fiche — difficile de justifier les choix de programme/nutrition sans ça.",
+      text: "Aucun objectif (3 mois / 12 mois) renseigné dans la fiche, difficile de justifier les choix de programme/nutrition sans ça.",
     });
   }
 
@@ -300,7 +300,7 @@ export function generateClientSuggestions(
     s.push({
       id: "plan-calorie-conflict",
       severity: "info",
-      text: "Le client veut un plan fixe mais un apport calorique qui varie selon les jours — vaut le coup de clarifier ce qu'il attend concrètement avant de construire le plan.",
+      text: "Le client veut un plan fixe mais un apport calorique qui varie selon les jours, vaut le coup de clarifier ce qu'il attend concrètement avant de construire le plan.",
       tab: "nutrition",
     });
   }
@@ -315,7 +315,7 @@ export function generateClientSuggestions(
     s.push({
       id: "plant-protein-gap",
       severity: "warning",
-      text: `Régime ${intake.diet_type === "vegan" ? "vegan" : "végétarien"} avec ${intake.known_protein}g de protéines déclarées contre ${nutritionProfile.proteins_target}g visés — sources protéiques végétales à identifier avec le client (les options sont plus limitées qu'en omnivore).`,
+      text: `Régime ${intake.diet_type === "vegan" ? "vegan" : "végétarien"} avec ${intake.known_protein}g de protéines déclarées contre ${nutritionProfile.proteins_target}g visés, sources protéiques végétales à identifier avec le client (les options sont plus limitées qu'en omnivore).`,
       tab: "nutrition",
     });
   }
@@ -330,7 +330,7 @@ export function generateClientSuggestions(
     s.push({
       id: "sedentary-job",
       severity: "info",
-      text: "Métier plutôt sédentaire et peu de pas déclarés — des rappels de marche répartis dans la journée (plutôt qu'un bloc unique) seront probablement plus faciles à tenir pour ce profil.",
+      text: "Métier plutôt sédentaire et peu de pas déclarés, des rappels de marche répartis dans la journée (plutôt qu'un bloc unique) seront probablement plus faciles à tenir pour ce profil.",
       tab: "bilans",
     });
   }
@@ -340,7 +340,7 @@ export function generateClientSuggestions(
     s.push({
       id: "no-supplement-budget",
       severity: "info",
-      text: `Aucun budget compléments déclaré — les leviers pour ce client passent uniquement par l'alimentation et le mode de vie (ex. impact des écarts déclaré : "${intake.cheat_meal_impact}").`,
+      text: `Aucun budget compléments déclaré, les leviers pour ce client passent uniquement par l'alimentation et le mode de vie (ex. impact des écarts déclaré : "${intake.cheat_meal_impact}").`,
       tab: "nutrition",
     });
   }
@@ -350,7 +350,7 @@ export function generateClientSuggestions(
     s.push({
       id: "restrictions-no-diet-type",
       severity: "warning",
-      text: `Restrictions alimentaires déclarées ("${intake.dietary_restrictions}") mais aucun type de régime sélectionné — vérifie que le créateur de recette/plan en tient bien compte.`,
+      text: `Restrictions alimentaires déclarées ("${intake.dietary_restrictions}") mais aucun type de régime sélectionné, vérifie que le créateur de recette/plan en tient bien compte.`,
       tab: "nutrition",
     });
   }
@@ -370,7 +370,7 @@ export function generateClientSuggestions(
         s.push({
           id: `program-conflict-${term}`,
           severity: "warning",
-          text: `Le programme assigné contient "${match}" alors que le client a signalé "${term}" comme problématique ou détesté — vaut le coup de vérifier/remplacer.`,
+          text: `Le programme assigné contient "${match}" alors que le client a signalé "${term}" comme problématique ou détesté, vaut le coup de vérifier/remplacer.`,
           tab: "programme",
         });
       }
@@ -382,7 +382,7 @@ export function generateClientSuggestions(
     s.push({
       id: "program-days-gap",
       severity: "info",
-      text: `Le client veut ${intake.sessions_desired} séances/semaine mais le programme assigné n'a que ${program.days.length} jour${program.days.length > 1 ? "s" : ""} — écart à combler ou à clarifier avec lui.`,
+      text: `Le client veut ${intake.sessions_desired} séances/semaine mais le programme assigné n'a que ${program.days.length} jour${program.days.length > 1 ? "s" : ""}, écart à combler ou à clarifier avec lui.`,
       tab: "programme",
     });
   }
@@ -394,7 +394,7 @@ export function generateClientSuggestions(
     s.push({
       id: "preferred-split-reminder",
       severity: "info",
-      text: `Split préféré déclaré : "${intake.preferred_split}" — vérifie que le programme assigné s'en approche.`,
+      text: `Split préféré déclaré : "${intake.preferred_split}", vérifie que le programme assigné s'en approche.`,
       tab: "programme",
     });
   }
@@ -404,7 +404,7 @@ export function generateClientSuggestions(
     s.push({
       id: "gym-no-link",
       severity: "info",
-      text: `Salle "${intake.gym_name}" renseignée sans lien — si elle existe dans l'annuaire des salles, ça vaut le coup de la relier pour que le client la retrouve facilement.`,
+      text: `Salle "${intake.gym_name}" renseignée sans lien, si elle existe dans l'annuaire des salles, ça vaut le coup de la relier pour que le client la retrouve facilement.`,
     });
   }
 

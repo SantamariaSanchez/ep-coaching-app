@@ -329,7 +329,7 @@ export default function NutritionForm({
                 onClick={() => set("weight", String(clientWeight))}
                 className="text-[9px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 mt-1"
               >
-                Dernier pesé : {clientWeight}kg — utiliser
+                Dernier pesé : {clientWeight}kg, utiliser
               </button>
             )}
           </div>
@@ -477,7 +477,7 @@ export default function NutritionForm({
         <p className={labelCls + " mb-1"}>Jours de repos / high day (optionnel)</p>
         <p className="text-[10px] text-[#F5EDED]/30 mb-4">
           L&apos;objectif ci-dessus est celui des jours d&apos;entraînement. Défini un écart pour
-          les jours de repos ou les journées &laquo;&nbsp;high&nbsp;&raquo; — l&apos;écart est absorbé en
+          les jours de repos ou les journées &laquo;&nbsp;high&nbsp;&raquo;. L&apos;écart est absorbé en
           glucides, protéines et lipides restent stables.
         </p>
         <div className="grid grid-cols-2 gap-3">

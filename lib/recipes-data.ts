@@ -3867,7 +3867,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : PRÉ-TRAINING (glucides rapides) ───────────────────────────
   {
     id: "ctx-riz-banane-miel-pretraining",
-    name: "Riz blanc, banane et miel — pré-training glucides rapides",
+    name: "Riz blanc, banane et miel : pré-training glucides rapides",
     meal: "pre-training",
     diet: ["vegan", "vegetarien", "omnivore", "pescetarien"],
     phases: ["surplus", "maintenance"],
@@ -3892,7 +3892,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-pain-blanc-blanc-oeuf-pretraining",
-    name: "Pain blanc, confiture et blancs d'œufs — collation pré-training",
+    name: "Pain blanc, confiture et blancs d'œufs : collation pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -3917,7 +3917,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-dattes-compote-pretraining",
-    name: "Dattes et compote de pomme — collation pré-training express",
+    name: "Dattes et compote de pomme : collation pré-training express",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance", "deficit"],
@@ -3938,7 +3938,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-riz-au-lait-matin-pretraining",
-    name: "Bol de riz au lait léger et miel — petit-déj pré-training matinal",
+    name: "Bol de riz au lait léger et miel : petit-déj pré-training matinal",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -3962,7 +3962,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-galette-riz-banane-pretraining",
-    name: "Galette de riz, banane écrasée et miel — collation pré-training express",
+    name: "Galette de riz, banane écrasée et miel : collation pré-training express",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance", "deficit"],
@@ -3985,7 +3985,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : POST-TRAINING (glucides + protéines) ───────────────────────────
   {
     id: "ctx-riz-poulet-miel-soja-post",
-    name: "Bol riz blanc, poulet et miel-soja — post-training glucides + protéines",
+    name: "Bol riz blanc, poulet et miel-soja : post-training glucides + protéines",
     meal: "post-training",
     diet: ["omnivore"],
     phases: ["surplus", "maintenance"],
@@ -4032,7 +4032,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-patate-douce-oeufs-post",
-    name: "Patate douce écrasée, œufs brouillés et miel — post-training",
+    name: "Patate douce écrasée, œufs brouillés et miel : post-training",
     meal: "post-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4082,7 +4082,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-bagel-dinde-miel-moutarde-post",
-    name: "Bagel blanc, dinde et miel-moutarde — post-training sandwich rapide",
+    name: "Bagel blanc, dinde et miel-moutarde : post-training sandwich rapide",
     meal: "post-training",
     diet: ["omnivore"],
     phases: ["surplus", "maintenance"],
@@ -4132,7 +4132,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : RICHE PROTÉINES / FAIBLE GLUCIDES ───────────────────────────
   {
     id: "ctx-poulet-blancs-oeufs-asperges-hp",
-    name: "Poulet, blancs d'œufs et asperges — riche en protéines, faible en glucides",
+    name: "Poulet, blancs d'œufs et asperges : riche en protéines, faible en glucides",
     meal: "dejeuner",
     diet: ["omnivore"],
     phases: ["deficit", "maintenance"],
@@ -4158,7 +4158,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-cabillaud-brocoli-citron-hp",
-    name: "Cabillaud vapeur, brocoli et sauce citron légère — riche protéines, faible glucides",
+    name: "Cabillaud vapeur, brocoli et sauce citron légère : riche protéines, faible glucides",
     meal: "diner",
     diet: ["pescetarien"],
     phases: ["deficit"],
@@ -4183,7 +4183,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-steak-hache-haricots-oeuf-hp",
-    name: "Steak haché 5%, haricots verts et œuf au plat — riche protéines",
+    name: "Steak haché 5%, haricots verts et œuf au plat : riche protéines",
     meal: "diner",
     diet: ["omnivore"],
     phases: ["deficit", "maintenance"],
@@ -4209,7 +4209,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-crevettes-avocat-roquette-hp",
-    name: "Salade de crevettes, avocat et roquette — riche protéines",
+    name: "Salade de crevettes, avocat et roquette : riche protéines",
     meal: "dejeuner",
     diet: ["pescetarien"],
     phases: ["deficit", "maintenance"],
@@ -4234,7 +4234,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-poulet-cottage-concombre-hp",
-    name: "Blancs de poulet effilochés, cottage cheese et concombre — snack riche protéines",
+    name: "Blancs de poulet effilochés, cottage cheese et concombre : snack riche protéines",
     meal: "collation",
     diet: ["omnivore"],
     phases: ["deficit"],
@@ -4255,7 +4255,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-omelette-blancs-dinde-epinards-hp",
-    name: "Omelette blancs d'œufs, dinde fumée et épinards — riche protéines du matin",
+    name: "Omelette blancs d'œufs, dinde fumée et épinards : riche protéines du matin",
     meal: "petit-dej",
     diet: ["omnivore"],
     phases: ["deficit", "maintenance"],
@@ -4282,7 +4282,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : FAIBLE GLUCIDES / RICHE LIPIDES (jour off) ───────────────────────────
   {
     id: "ctx-saumon-avocat-legumes-lc",
-    name: "Saumon, avocat et légumes verts — faible glucides, riche lipides",
+    name: "Saumon, avocat et légumes verts : faible glucides, riche lipides",
     meal: "diner",
     diet: ["pescetarien"],
     phases: ["deficit", "maintenance"],
@@ -4307,7 +4307,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-bowl-avocat-oeufs-saumon-fume-lc",
-    name: "Bowl avocat, œufs et saumon fumé — faible glucides",
+    name: "Bowl avocat, œufs et saumon fumé : faible glucides",
     meal: "petit-dej",
     diet: ["pescetarien"],
     phases: ["deficit", "maintenance"],
@@ -4332,7 +4332,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-poelee-legumes-verts-poulet-huile-lc",
-    name: "Poêlée de légumes verts, poulet et huile d'olive généreuse — faible glucides",
+    name: "Poêlée de légumes verts, poulet et huile d'olive généreuse : faible glucides",
     meal: "dejeuner",
     diet: ["omnivore"],
     phases: ["deficit", "maintenance"],
@@ -4382,7 +4382,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-curry-poulet-coco-sans-riz-lc",
-    name: "Curry de poulet au lait de coco sans riz — faible glucides",
+    name: "Curry de poulet au lait de coco sans riz : faible glucides",
     meal: "diner",
     diet: ["omnivore"],
     phases: ["deficit", "maintenance"],
@@ -4409,7 +4409,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : HIGH DAY / REFEED (gros repas glucides) ───────────────────────────
   {
     id: "ctx-pates-boeuf-parmesan-highday",
-    name: "Grand bol de pâtes, bœuf haché et parmesan — high day glucides",
+    name: "Grand bol de pâtes, bœuf haché et parmesan : high day glucides",
     meal: "diner",
     diet: ["omnivore"],
     phases: ["surplus"],
@@ -4434,7 +4434,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-riz-poulet-teriyaki-xl-highday",
-    name: "Riz, poulet teriyaki et légumes sautés (portion XL) — high day",
+    name: "Riz, poulet teriyaki et légumes sautés (portion XL) : high day",
     meal: "dejeuner",
     diet: ["omnivore"],
     phases: ["surplus"],
@@ -4460,7 +4460,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-pizza-maison-poulet-legumes-highday",
-    name: "Pizza maison pâte fine, poulet et légumes — high day plaisir",
+    name: "Pizza maison pâte fine, poulet et légumes : high day plaisir",
     meal: "diner",
     diet: ["omnivore"],
     phases: ["surplus"],
@@ -4485,7 +4485,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-burger-maison-patates-highday",
-    name: "Burger maison, steak haché, pain complet et patates au four — high day",
+    name: "Burger maison, steak haché, pain complet et patates au four : high day",
     meal: "diner",
     diet: ["omnivore"],
     phases: ["surplus"],
@@ -4513,7 +4513,7 @@ export const RECIPES: Recipe[] = [
   // ─────────────────────────── CONTEXTE : VÉGÉTAL CIBLÉ (glucides / protéines / lipides) ───────────────────────────
   {
     id: "ctx-vegan-smoothie-avoine-banane-pretraining",
-    name: "Smoothie riz-avoine-banane — pré-training glucides rapides (vegan)",
+    name: "Smoothie riz-avoine-banane : pré-training glucides rapides (vegan)",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4534,7 +4534,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-vegan-tofu-riz-brocoli-post",
-    name: "Bol tofu, riz et brocoli — riche protéines végétal post-training",
+    name: "Bol tofu, riz et brocoli : riche protéines végétal post-training",
     meal: "post-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4560,7 +4560,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-vegan-seitan-lentilles-hp",
-    name: "Seitan, lentilles et légumes rôtis — riche protéines végétal",
+    name: "Seitan, lentilles et légumes rôtis : riche protéines végétal",
     meal: "dejeuner",
     diet: ["vegan", "vegetarien"],
     phases: ["deficit", "maintenance"],
@@ -4586,7 +4586,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "ctx-vegan-buddha-bowl-avocat-noix-lipide",
-    name: "Buddha bowl avocat, noix et légumineuses — riche lipides végétal",
+    name: "Buddha bowl avocat, noix et légumineuses : riche lipides végétal",
     meal: "dejeuner",
     diet: ["vegan", "vegetarien"],
     phases: ["maintenance", "surplus"],
@@ -4634,7 +4634,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-toast-miel-confiture",
-    name: "Toast miel et confiture — pré-training",
+    name: "Toast miel et confiture : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4655,7 +4655,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-barre-dattes-riz-souffle",
-    name: "Barre maison dattes et riz soufflé — pré-training",
+    name: "Barre maison dattes et riz soufflé : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4680,7 +4680,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-smoothie-orange-banane",
-    name: "Smoothie orange-banane — pré-training",
+    name: "Smoothie orange-banane : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4701,7 +4701,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-riz-souffle-miel-lait",
-    name: "Riz soufflé au miel dans du lait — pré-training",
+    name: "Riz soufflé au miel dans du lait : pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4722,7 +4722,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-gaufre-sirop-erable",
-    name: "Gaufre nature et sirop d'érable — pré-training",
+    name: "Gaufre nature et sirop d'érable : pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4743,7 +4743,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-jus-raisin-biscottes",
-    name: "Jus de raisin et biscottes — pré-training",
+    name: "Jus de raisin et biscottes : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance", "deficit"],
@@ -4764,7 +4764,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-boisson-glucidique-maison",
-    name: "Boisson glucidique maison miel-citron-sel — pré-training",
+    name: "Boisson glucidique maison miel-citron-sel : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance", "deficit"],
@@ -4785,7 +4785,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-cereales-riz-souffle-lait",
-    name: "Céréales de riz soufflé et lait demi-écrémé — pré-training",
+    name: "Céréales de riz soufflé et lait demi-écrémé : pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4806,7 +4806,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-pates-fruits-the-sucre",
-    name: "Pâtes de fruits et thé sucré — pré-training",
+    name: "Pâtes de fruits et thé sucré : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance", "deficit"],
@@ -4827,7 +4827,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-crepe-nature-sucre",
-    name: "Crêpe nature et sucre — pré-training",
+    name: "Crêpe nature et sucre : pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4848,7 +4848,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-bouillie-avoine-legere",
-    name: "Bouillie d'avoine légère miel-banane — pré-training",
+    name: "Bouillie d'avoine légère miel-banane : pré-training",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4872,7 +4872,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-fruits-secs-eau",
-    name: "Fruits secs (abricots, raisins) et eau — pré-training léger",
+    name: "Fruits secs (abricots, raisins) et eau : pré-training léger",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["deficit", "maintenance"],
@@ -4893,7 +4893,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-pain-epices-the",
-    name: "Pain d'épices et thé — pré-training",
+    name: "Pain d'épices et thé : pré-training",
     meal: "pre-training",
     diet: ["vegetarien"],
     phases: ["surplus", "maintenance"],
@@ -4914,7 +4914,7 @@ export const RECIPES: Recipe[] = [
   },
   {
     id: "pretrain2-boisson-isotonique-banane",
-    name: "Boisson isotonique maison et banane — pré-training effort long",
+    name: "Boisson isotonique maison et banane : pré-training effort long",
     meal: "pre-training",
     diet: ["vegan", "vegetarien"],
     phases: ["surplus", "maintenance"],
