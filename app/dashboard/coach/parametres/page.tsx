@@ -1,6 +1,4 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Shield, TrendingUp } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -66,27 +64,10 @@ export default async function CoachParametresPage() {
         </div>
       )}
 
-      {profile.is_platform_owner && (
-        <div className="mt-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-            Administration
-          </p>
-          <Link
-            href="/dashboard/coach/finance"
-            className="flex items-center gap-2.5 mb-2 px-4 py-3.5 rounded-xl bg-[#1f0101] border border-[#890404]/25 text-white text-sm font-bold"
-          >
-            <TrendingUp size={16} style={{ color: "#E01E1E" }} />
-            Finance
-          </Link>
-          <Link
-            href="/dashboard/coach/admin"
-            className="flex items-center gap-2.5 mb-4 px-4 py-3.5 rounded-xl bg-[#1f0101] border border-[#890404]/25 text-white text-sm font-bold"
-          >
-            <Shield size={16} style={{ color: "#E01E1E" }} />
-            Gérer les coachs de la plateforme
-          </Link>
-        </div>
-      )}
+      {/* Finance et gestion des coachs vivent désormais dans un vrai groupe
+          de nav "Administration" (sidebar desktop + sous-bande Accueil sur
+          mobile) — un tap depuis l'accueil au lieu de Paramètres → scroll →
+          bouton. Rien à dupliquer ici. */}
 
       <LegalLinksCard />
     </div>

@@ -79,7 +79,7 @@ export default async function CoachFinancePage() {
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
-        href="/dashboard/coach/parametres"
+        href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} /> Retour

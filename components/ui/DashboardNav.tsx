@@ -10,7 +10,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings,
+  ArrowLeftRight, Settings, Shield,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -400,9 +400,18 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   },
 ];
 
+// Réservé au propriétaire de la plateforme — auparavant enterré à
+// Paramètres → section Administration → bouton (3 niveaux pour une action
+// consultée souvent). Un groupe de nav dédié y accède en un geste, sans
+// pour autant ajouter d'onglet en bas (voir useNavState/mobileSubItems).
+const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
+  { label: "Finance", icon: TrendingUp, segment: "finance" },
+  { label: "Coachs", icon: Shield, segment: "admin" },
+];
+
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-function useNavState(isFreeTier: boolean, showCycle: boolean) {
+function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: boolean) {
   const pathname = usePathname();
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
@@ -411,9 +420,13 @@ function useNavState(isFreeTier: boolean, showCycle: boolean) {
   // L'onglet "Cycle" n'a de sens que pour une cliente dont la fiche indique
   // le genre "Femme" — retiré du rendu tant qu'on ne le sait pas, plutôt que
   // de le masquer en CSS (la page /cycle redirige de toute façon sinon).
-  const sidebar = showCycle
+  const withoutCycle = showCycle
     ? rawSidebar
     : rawSidebar.map((g) => ({ ...g, items: g.items.filter((item) => item.segment !== "cycle") }));
+  const sidebar =
+    isCoach && isPlatformOwner
+      ? [{ group: "Administration", items: ADMIN_SIDEBAR_ITEMS }, ...withoutCycle]
+      : withoutCycle;
 
   function isTabActive(tab: TabItem): boolean {
     // matchSegments s'applique même aux onglets exactMatch (ex. "Aujourd'hui")
@@ -442,12 +455,16 @@ function useNavState(isFreeTier: boolean, showCycle: boolean) {
   const mobileSubItems: SidebarItem[] = (() => {
     if (!activeTab) return [];
     // "Aujourd'hui" (exactMatch) n'a pas de frères dans la sidebar (groupe ""
-    // à part) — plutôt qu'une bande vide, elle affiche le groupe "Compte"
-    // (Mon profil, Paramètres) : le seul point d'entrée cohérent vers ces
-    // pages, qui n'ont de rapport avec aucun onglet de contenu (Moi,
-    // Communauté...) où elles vivaient auparavant.
+    // à part) — plutôt qu'une bande vide, elle affiche "Compte" (Mon profil,
+    // Paramètres), plus "Administration" pour le propriétaire de la
+    // plateforme : le seul point d'entrée cohérent vers ces pages, qui n'ont
+    // de rapport avec aucun onglet de contenu (Moi, Communauté...) où elles
+    // vivaient auparavant.
     if (activeTab.exactMatch) {
-      return sidebar.find((g) => g.group === "Compte")?.items ?? [];
+      return [
+        ...(sidebar.find((g) => g.group === "Administration")?.items ?? []),
+        ...(sidebar.find((g) => g.group === "Compte")?.items ?? []),
+      ];
     }
     return [
       ...flatSidebarItems.filter(
@@ -485,8 +502,9 @@ export default function DashboardNav({
 }) {
   const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
   const [showCycleTab, setShowCycleTab] = useState(false);
+  const [isPlatformOwner, setIsPlatformOwner] = useState(false);
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
-    useNavState(isFreeTier, showCycleTab);
+    useNavState(isFreeTier, showCycleTab, isPlatformOwner);
   const router = useRouter();
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
@@ -558,7 +576,7 @@ export default function DashboardNav({
       if (!user) return;
       supabase
         .from("profiles")
-        .select("full_name, role, subscription_status, coach_id")
+        .select("full_name, role, subscription_status, coach_id, is_platform_owner")
         .eq("id", user.id)
         .single()
         .then(({ data }) => {
@@ -567,6 +585,7 @@ export default function DashboardNav({
             setUserName((data as { full_name: string | null }).full_name);
             setUserRole(role);
             setHasPersonalCoach(role === "coach" && !!(data as { coach_id: string | null }).coach_id);
+            setIsPlatformOwner(!!(data as { is_platform_owner: boolean | null }).is_platform_owner);
             setIsFreeTier(
               role === "client" &&
                 (data as { subscription_status: string }).subscription_status !== "active"
