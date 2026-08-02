@@ -3,8 +3,10 @@ import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getHabitLogs } from "@/utils/mindset";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { getTodayLog } from "@/utils/daily-logs";
 import { getDailyQuote, getPromptOfDay } from "@/lib/mindset-content";
 import { toggleHabitLog, addJournalEntry } from "@/app/dashboard/client/mindset/actions";
+import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
 import AujourdhuiView from "@/components/client/AujourdhuiView";
 
 // 1 = lundi ... 7 = dimanche, cohérent avec ScheduleBlock.day_of_week.
@@ -24,11 +26,15 @@ export default async function AujourdhuiPage() {
   const todayStr = today.toISOString().split("T")[0];
   const subscribed = isSubscribed(profile);
 
-  const [allBlocks, habitLogs, biometricLogs, insights] = await Promise.all([
+  const [allBlocks, habitLogs, biometricLogs, insights, todayLog] = await Promise.all([
     subscribed ? getScheduleBlocks(user.id) : Promise.resolve([]),
     getHabitLogs(user.id, todayStr),
     subscribed ? getBiometricLogs(user.id, 3) : Promise.resolve([]),
     subscribed ? getBiometricInsights(user.id, 5) : Promise.resolve([]),
+    // Le poids se log en 5 secondes ici même, pour un membre gratuit comme
+    // pour un client coaché — pas besoin d'ouvrir le bilan complet juste
+    // pour ça (voir WeightQuickCard dans AujourdhuiView).
+    getTodayLog(user.id),
   ]);
 
   const todayBlocks = allBlocks
@@ -51,6 +57,8 @@ export default async function AujourdhuiPage() {
       todayStr={todayStr}
       toggleHabitLog={toggleHabitLog}
       addJournalEntry={addJournalEntry}
+      todayWeight={todayLog?.weight_morning ?? null}
+      logWeight={upsertDailyLog}
     />
   );
 }

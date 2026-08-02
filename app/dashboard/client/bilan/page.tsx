@@ -137,7 +137,7 @@ export default async function ClientBilanPage() {
       </div>
 
       {/* Form */}
-      <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
+      <div className="animate-scale-in" style={{ marginBottom: 32 }}>
         <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} />
       </div>
 

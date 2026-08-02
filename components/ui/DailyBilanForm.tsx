@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useState } from "react";
+import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
-import { CheckCircle2 } from "lucide-react";
+import { Check, Scale, Dumbbell, Moon, Apple, Footprints } from "lucide-react";
 
 type BilanAction = (
   prev: { error?: string; success?: boolean } | null,
@@ -11,18 +12,8 @@ type BilanAction = (
 
 const inp =
   "w-full bg-[rgba(0,0,0,0.4)] border border-[rgba(137,4,4,0.3)] rounded-lg px-3 py-2.5 text-sm text-[#F5EDED] placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-
 const lbl = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
-
-function Section({ title }: { title: string }) {
-  return (
-    <div style={{ borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 4, marginBottom: 16 }}>
-      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: 0 }}>
-        {title}
-      </p>
-    </div>
-  );
-}
+const hint = "text-[10.5px] text-[#F5EDED]/30 mt-1.5 leading-snug";
 
 function TriScale({ name, defaultValue }: { name: string; defaultValue?: string | null }) {
   const opts = [
@@ -54,116 +45,169 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
   );
 }
 
-function RatingInput({ name, defaultValue }: { name: string; defaultValue?: number | null }) {
+function CardShell({
+  icon: Icon,
+  title,
+  saved,
+  children,
+}: {
+  icon: React.ElementType;
+  title: string;
+  saved: boolean;
+  children: React.ReactNode;
+}) {
   return (
-    <div style={{ display: "flex", gap: 4 }}>
-      {Array.from({ length: 10 }, (_, i) => i + 1).map((v) => (
-        <label key={v} style={{ flex: 1, cursor: "pointer" }}>
-          <input type="radio" name={name} value={v} defaultChecked={defaultValue === v} className="sr-only peer" />
-          <span style={{
-            display: "flex", alignItems: "center", justifyContent: "center",
-            height: 32, borderRadius: 6,
-            border: "1px solid rgba(137,4,4,0.25)",
-            fontSize: 10, fontWeight: 700,
-            color: "rgba(245,237,237,0.35)",
-          }}
-          className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
-          >
-            {v}
+    <div className="ep-card" style={{ padding: "18px 16px", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
+        <Icon size={14} style={{ color: "#E01E1E" }} strokeWidth={2} />
+        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)", margin: 0, flex: 1 }}>
+          {title}
+        </p>
+        {saved && (
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#4ade80" }}>
+            <Check size={12} /> Enregistré
           </span>
-        </label>
-      ))}
+        )}
+      </div>
+      {children}
     </div>
   );
 }
 
-type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
+function SaveButton({ pending, label = "Enregistrer" }: { pending: boolean; label?: string }) {
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      style={{
+        marginTop: 14,
+        background: pending ? "rgba(224,30,30,0.5)" : "#E01E1E",
+        color: "#fff",
+        border: "none",
+        borderRadius: 10,
+        padding: "10px 18px",
+        fontSize: 11.5,
+        fontWeight: 800,
+        letterSpacing: "0.05em",
+        textTransform: "uppercase",
+        cursor: pending ? "wait" : "pointer",
+      }}
+    >
+      {pending ? "..." : label}
+    </button>
+  );
+}
 
-export default function DailyBilanForm({
-  today,
-  existing,
-  action: serverAction,
-  nutritionTotals,
-}: {
-  today: string;
-  existing: DailyLog | null;
-  action: BilanAction;
-  /** Totaux du jour deja loggues dans Nutrition — pre-remplit au lieu de faire retaper les macros */
-  nutritionTotals?: NutritionTotals | null;
-}) {
-  const formRef = useRef<HTMLFormElement>(null);
-  const [state, action, pending] = useActionState(serverAction, null);
-
-  useEffect(() => {
-    if (state?.success) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [state]);
-
-  if (state?.success) {
-    return (
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 20px", textAlign: "center", gap: 12 }}>
-        <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <CheckCircle2 size={22} style={{ color: "#4ade80" }} />
-        </div>
-        <p style={{ fontSize: 14, fontWeight: 800, color: "#4ade80", margin: 0, letterSpacing: "-0.01em" }}>
-          Bilan enregistré
-        </p>
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.3)", margin: 0 }}>
-          Tu peux le modifier jusqu&apos;à la fin de la journée.
-        </p>
-        <button
-          onClick={() => window.location.reload()}
-          style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#E01E1E", background: "none", border: "none", cursor: "pointer", letterSpacing: "0.05em", textTransform: "uppercase" }}
-        >
-          Modifier
-        </button>
-      </div>
-    );
-  }
+// ── Poids du matin — carte autonome, en tête de page, pensée pour être
+// remplie en 5 secondes au réveil sans toucher au reste du bilan. ──────────
+function WeightCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+  const [state, formAction, pending] = useActionState(action, null);
+  const nowHour = new Date().toTimeString().slice(0, 5);
 
   return (
-    <form ref={formRef} action={action} style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+    <form action={formAction}>
       <input type="hidden" name="log_date" value={today} />
-
-      {/* ── Programme ─────────────────────────────────────────────────────────── */}
-      <div>
-        <Section title="Programme" />
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
-            <div>
-              <label className={lbl}>Entraînement du jour</label>
-              <input name="training_name" defaultValue={existing?.training_name ?? ""} placeholder="Pull, Push, Legs, Repos…" className={inp} />
-            </div>
-            <div style={{ width: 80 }}>
-              <label className={lbl}>Cardio</label>
-              <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" className={inp} />
-            </div>
+      <CardShell icon={Scale} title="Poids du matin" saved={!!state?.success}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div>
+            <label className={lbl}>Poids à jeun (kg)</label>
+            <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" className={inp} autoFocus />
           </div>
           <div>
-            <label className={lbl}>Note de la séance /10</label>
-            <RatingInput name="training_rating" defaultValue={existing?.training_rating} />
+            <label className={lbl}>Heure de pesée</label>
+            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07h00" className={inp} />
           </div>
         </div>
-      </div>
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} label={existing?.weight_morning != null ? "Mettre à jour" : "Enregistrer le poids"} />
+      </CardShell>
+    </form>
+  );
+}
 
-      {/* ── Lifestyle ─────────────────────────────────────────────────────────── */}
-      <div>
-        <Section title="Lifestyle" />
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div>
-              <label className={lbl}>Poids à jeun (kg)</label>
-              <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" className={inp} />
+// ── Entraînement — bascule repos/entraînement d'abord, pour ne pas forcer
+// une réponse "Pull, Push, Legs" absurde un jour off. Pas de note de séance
+// ici : elle vit déjà dans le logbook à la fin de la séance, pas de doublon. ──
+function TrainingCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+  const [state, formAction, pending] = useActionState(action, null);
+  const [isRestDay, setIsRestDay] = useState(existing?.training_name === "Repos");
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="log_date" value={today} />
+      <CardShell icon={Dumbbell} title="Entraînement du jour" saved={!!state?.success}>
+        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+          <button
+            type="button"
+            onClick={() => setIsRestDay(false)}
+            style={{
+              flex: 1, height: 38, borderRadius: 8, fontSize: 11.5, fontWeight: 700,
+              border: `1px solid ${!isRestDay ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
+              background: !isRestDay ? "#E01E1E" : "transparent",
+              color: !isRestDay ? "#fff" : "rgba(245,237,237,0.5)", cursor: "pointer",
+            }}
+          >
+            Jour d&apos;entraînement
+          </button>
+          <button
+            type="button"
+            onClick={() => setIsRestDay(true)}
+            style={{
+              flex: 1, height: 38, borderRadius: 8, fontSize: 11.5, fontWeight: 700,
+              border: `1px solid ${isRestDay ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
+              background: isRestDay ? "#E01E1E" : "transparent",
+              color: isRestDay ? "#fff" : "rgba(245,237,237,0.5)", cursor: "pointer",
+            }}
+          >
+            Jour de repos
+          </button>
+        </div>
+
+        {isRestDay ? (
+          <>
+            <input type="hidden" name="training_name" value="Repos" />
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>Profite du repos. 💪</p>
+          </>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
+              <div>
+                <label className={lbl}>Séance</label>
+                <input name="training_name" defaultValue={existing?.training_name === "Repos" ? "" : (existing?.training_name ?? "")} placeholder="Pull, Push, Legs…" className={inp} />
+              </div>
+              <div style={{ width: 80 }}>
+                <label className={lbl}>Cardio</label>
+                <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" className={inp} />
+              </div>
             </div>
-            <div>
-              <label className={lbl}>Heure de pesée</label>
-              <input name="weight_time" defaultValue={existing?.weight_time ?? ""} placeholder="07h00" className={inp} />
-            </div>
+            <p className={hint}>
+              La note de la séance se donne à la fin de l&apos;entraînement, directement depuis le{" "}
+              <Link href="/dashboard/client/logbook" style={{ color: "#E01E1E", fontWeight: 700 }}>logbook</Link> — pas besoin de la redonner ici.
+            </p>
           </div>
+        )}
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} />
+      </CardShell>
+    </form>
+  );
+}
+
+function LifestyleCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+  const [state, formAction, pending] = useActionState(action, null);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="log_date" value={today} />
+      <CardShell icon={Moon} title="Lifestyle" saved={!!state?.success}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label className={lbl}>Pas dans la journée</label>
             <input name="steps" type="number" min="0" max="100000" defaultValue={existing?.steps ?? ""} placeholder="8500" className={inp} />
+            <p className={hint}>
+              <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
+              Regarde dans l&apos;app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone — pas besoin d&apos;inventer.
+            </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
@@ -175,6 +219,9 @@ export default function DailyBilanForm({
               <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" className={inp} />
             </div>
           </div>
+          <p className={hint} style={{ marginTop: -8 }}>
+            Ton iPhone/montre connectée donne ces chiffres dans l&apos;app Santé/Sommeil — sinon, une estimation à l&apos;instinct suffit.
+          </p>
           <div>
             <label className={lbl}>Digestion</label>
             <input name="digestion" defaultValue={existing?.digestion ?? ""} placeholder="OK, Ballonné, Lourd…" className={inp} />
@@ -184,14 +231,35 @@ export default function DailyBilanForm({
             <TriScale name="stress" defaultValue={existing?.stress} />
           </div>
         </div>
-      </div>
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} />
+      </CardShell>
+    </form>
+  );
+}
 
-      {/* ── Nutrition ─────────────────────────────────────────────────────────── */}
-      <div>
-        <Section title="Nutrition" />
-        {nutritionTotals && existing?.calories_kcal == null && (
-          <p style={{ fontSize: 10, color: "rgba(74,222,128,0.6)", margin: "-8px 0 12px" }}>
+type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
+
+function NutritionCard({
+  today, existing, action, nutritionTotals,
+}: {
+  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null;
+}) {
+  const [state, formAction, pending] = useActionState(action, null);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="log_date" value={today} />
+      <CardShell icon={Apple} title="Nutrition" saved={!!state?.success}>
+        {nutritionTotals && existing?.calories_kcal == null ? (
+          <p style={{ fontSize: 10, color: "rgba(74,222,128,0.6)", margin: "-6px 0 12px" }}>
             Pré-rempli depuis ce que tu as déjà loggé dans Nutrition aujourd&apos;hui — modifiable si besoin.
+          </p>
+        ) : (
+          <p className={hint} style={{ margin: "-6px 0 12px" }}>
+            Log tes aliments dans{" "}
+            <Link href="/dashboard/client/nutrition" style={{ color: "#E01E1E", fontWeight: 700 }}>Nutrition</Link>{" "}
+            pour que ces champs se remplissent automatiquement, plutôt que de calculer à la main.
           </p>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -218,32 +286,30 @@ export default function DailyBilanForm({
             <TriScale name="hunger" defaultValue={existing?.hunger} />
           </div>
         </div>
-      </div>
-
-      {state?.error && (
-        <p style={{ fontSize: 12, color: "#FDC4C4", textAlign: "center", margin: 0 }}>{state.error}</p>
-      )}
-
-      <button
-        type="submit"
-        disabled={pending}
-        style={{
-          width: "100%",
-          background: pending ? "rgba(224,30,30,0.5)" : "#E01E1E",
-          color: "#fff",
-          border: "none",
-          borderRadius: 12,
-          padding: "14px 0",
-          fontSize: 13,
-          fontWeight: 800,
-          letterSpacing: "0.08em",
-          textTransform: "uppercase",
-          cursor: pending ? "wait" : "pointer",
-          transition: "background 0.15s",
-        }}
-      >
-        {pending ? "Enregistrement…" : existing ? "Mettre à jour le bilan" : "Enregistrer le bilan"}
-      </button>
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} />
+      </CardShell>
     </form>
+  );
+}
+
+export default function DailyBilanForm({
+  today,
+  existing,
+  action,
+  nutritionTotals,
+}: {
+  today: string;
+  existing: DailyLog | null;
+  action: BilanAction;
+  nutritionTotals?: NutritionTotals | null;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <WeightCard today={today} existing={existing} action={action} />
+      <TrainingCard today={today} existing={existing} action={action} />
+      <LifestyleCard today={today} existing={existing} action={action} />
+      <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />
+    </div>
   );
 }

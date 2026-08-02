@@ -53,29 +53,41 @@ export async function upsertDailyLog(
 
     const supabase = createAdminClient();
 
-    const { error } = await supabase.from("daily_logs").upsert(
-      {
-        client_id: user.id,
-        log_date,
-        training_name: txt(formData.get("training_name")),
-        training_rating: num(formData.get("training_rating")),
-        cardio: txt(formData.get("cardio")),
-        steps: num(formData.get("steps")),
-        weight_morning: num(formData.get("weight_morning")),
-        weight_time: txt(formData.get("weight_time")),
-        sleep_hours: num(formData.get("sleep_hours")),
-        sleep_rating: num(formData.get("sleep_rating")),
-        digestion: txt(formData.get("digestion")),
-        stress: txt(formData.get("stress")),
-        proteins_g: num(formData.get("proteins_g")),
-        carbs_g: num(formData.get("carbs_g")),
-        fats_g: num(formData.get("fats_g")),
-        calories_kcal: num(formData.get("calories_kcal")),
-        hunger: txt(formData.get("hunger")),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "client_id,log_date" }
-    );
+    // Écriture partielle : seuls les champs réellement présents dans le
+    // formData sont inclus dans le payload d'upsert. Supabase ne touche
+    // alors que ces colonnes sur ON CONFLICT — un mini-formulaire (ex.
+    // juste le poids du matin) ne réinitialise plus le reste du bilan du
+    // jour, contrairement à l'ancien comportement qui mettait tout le
+    // reste à null dès qu'un seul champ était soumis seul.
+    const FIELD_SPEC: Array<{ key: string; kind: "num" | "txt" }> = [
+      { key: "training_name", kind: "txt" },
+      { key: "cardio", kind: "txt" },
+      { key: "steps", kind: "num" },
+      { key: "weight_morning", kind: "num" },
+      { key: "weight_time", kind: "txt" },
+      { key: "sleep_hours", kind: "num" },
+      { key: "sleep_rating", kind: "num" },
+      { key: "digestion", kind: "txt" },
+      { key: "stress", kind: "txt" },
+      { key: "proteins_g", kind: "num" },
+      { key: "carbs_g", kind: "num" },
+      { key: "fats_g", kind: "num" },
+      { key: "calories_kcal", kind: "num" },
+      { key: "hunger", kind: "txt" },
+    ];
+
+    const payload: Record<string, unknown> = {
+      client_id: user.id,
+      log_date,
+      updated_at: new Date().toISOString(),
+    };
+    for (const f of FIELD_SPEC) {
+      if (formData.has(f.key)) {
+        payload[f.key] = f.kind === "num" ? num(formData.get(f.key)) : txt(formData.get(f.key));
+      }
+    }
+
+    const { error } = await supabase.from("daily_logs").upsert(payload, { onConflict: "client_id,log_date" });
 
     if (error) return { error: error.message };
 

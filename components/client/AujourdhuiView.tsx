@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
   ClipboardList, Wind, GlassWater, Activity, Backpack, Flag, Check,
-  BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight,
+  BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight, Scale,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -43,6 +43,8 @@ export default function AujourdhuiView({
   todayStr,
   toggleHabitLog,
   addJournalEntry,
+  todayWeight,
+  logWeight,
 }: {
   firstName: string;
   todayBlocks: ScheduleBlock[];
@@ -55,6 +57,8 @@ export default function AujourdhuiView({
   todayStr: string;
   toggleHabitLog: (habitKey: string, date: string, checked: boolean) => Promise<{ error?: string }>;
   addJournalEntry: (params: { promptKey: string | null; content: string; mood: number | null }) => Promise<{ error?: string; id?: string }>;
+  todayWeight: number | null;
+  logWeight: (prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean }>;
 }) {
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
   const [isPending, startTransition] = useTransition();
@@ -62,6 +66,24 @@ export default function AujourdhuiView({
   const [journalMood, setJournalMood] = useState<number | null>(null);
   const [journalSaved, setJournalSaved] = useState(false);
   const [journalSaving, setJournalSaving] = useState(false);
+  const [weightValue, setWeightValue] = useState(todayWeight != null ? String(todayWeight) : "");
+  const [weightSaved, setWeightSaved] = useState(false);
+  const [weightSaving, setWeightSaving] = useState(false);
+  const [weightError, setWeightError] = useState<string | null>(null);
+
+  async function handleSaveWeight() {
+    if (!weightValue.trim()) return;
+    setWeightSaving(true);
+    setWeightError(null);
+    const fd = new FormData();
+    fd.set("log_date", todayStr);
+    fd.set("weight_morning", weightValue);
+    fd.set("weight_time", new Date().toTimeString().slice(0, 5));
+    const res = await logWeight(null, fd);
+    setWeightSaving(false);
+    if (res.error) setWeightError(res.error);
+    else setWeightSaved(true);
+  }
 
   function handleToggleHabit(key: string) {
     const wasChecked = loggedKeys.has(key);
@@ -101,6 +123,53 @@ export default function AujourdhuiView({
           </p>
         </div>
       </div>
+
+      {/* Poids du matin — accès direct, sans passer par le bilan complet */}
+      <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+        <SectionLabel icon={Scale}>Poids du matin</SectionLabel>
+        <div className="ep-card" style={{ padding: "14px 16px" }}>
+          {weightSaved ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Check size={15} style={{ color: "#4ade80" }} strokeWidth={3} />
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#4ade80" }}>
+                {weightValue} kg enregistrés
+              </p>
+              <button
+                type="button"
+                onClick={() => setWeightSaved(false)}
+                style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)", background: "none", border: "none", cursor: "pointer" }}
+              >
+                Modifier
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <input
+                type="number"
+                step="0.1"
+                min="30"
+                max="300"
+                value={weightValue}
+                onChange={(e) => setWeightValue(e.target.value)}
+                placeholder="82.5 kg"
+                className="ep-input"
+                style={{ flex: 1 }}
+                autoFocus={todayWeight == null}
+              />
+              <button
+                type="button"
+                onClick={handleSaveWeight}
+                disabled={weightSaving || !weightValue.trim()}
+                className="ep-btn-primary"
+                style={{ fontSize: 11, padding: "10px 16px", whiteSpace: "nowrap" }}
+              >
+                {weightSaving ? "…" : "Enregistrer"}
+              </button>
+            </div>
+          )}
+          {weightError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
+        </div>
+      </section>
 
       {/* Agenda du jour */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
