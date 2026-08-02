@@ -228,13 +228,13 @@ export default function HomePage() {
               alignItems: "center",
               gap: 6,
               marginTop: 32,
-              color: "rgba(245,237,237,0.25)",
+              color: "rgba(245,237,237,0.55)",
               textDecoration: "none",
-              fontSize: 11,
+              fontSize: 14,
               fontWeight: 600,
             }}
           >
-            <Shield size={12} />
+            <Shield size={15} />
             Espace coach
           </Link>
         </div>
@@ -260,7 +260,7 @@ export default function HomePage() {
             <Link
               key={l.href}
               href={l.href}
-              style={{ color: "rgba(245,237,237,0.22)", textDecoration: "none", fontSize: 10.5, fontWeight: 600 }}
+              style={{ color: "#E01E1E", textDecoration: "none", fontSize: 12.5, fontWeight: 600 }}
             >
               {l.label}
             </Link>
