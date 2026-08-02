@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { Crown, CheckCircle2, ChevronDown, ChevronUp, History } from "lucide-react";
 import { setClientSubscriptionStatus, getSubscriptionHistory } from "@/app/dashboard/coach/clients/actions";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
@@ -31,7 +30,6 @@ export default function SubscriptionToggle({
   currentPlan?: string | null;
   currentNextBillingDate?: string | null;
 }) {
-  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
@@ -40,7 +38,17 @@ export default function SubscriptionToggle({
   const [note, setNote] = useState("");
   const [history, setHistory] = useState<HistoryEntry[] | null>(null);
 
-  const isActive = currentStatus === "active";
+  // État local plutôt que router.refresh() après chaque bascule : la fiche
+  // client charge ~20 sources de données en parallèle sur la page parente,
+  // un refresh() les relance toutes juste pour ce simple toggle — visible
+  // et lent. Le serveur reste la source de vérité (revalidatePath rafraîchit
+  // les autres écrans qui dépendent de ce statut), mais cet écran-ci n'a
+  // pas besoin d'attendre un aller-retour complet pour se mettre à jour.
+  const [status, setStatus] = useState(currentStatus);
+  const [displayPlan, setDisplayPlan] = useState(currentPlan ?? null);
+  const [displayBillingDate, setDisplayBillingDate] = useState(currentNextBillingDate ?? null);
+
+  const isActive = status === "active";
 
   useEffect(() => {
     if (expanded && history === null) {
@@ -61,9 +69,11 @@ export default function SubscriptionToggle({
         setError(result.error);
         return;
       }
+      setStatus(nextStatus);
+      setDisplayPlan(plan || null);
+      setDisplayBillingDate(nextBillingDate || null);
       setNote("");
       setHistory(null);
-      router.refresh();
     });
   }
 
@@ -81,7 +91,7 @@ export default function SubscriptionToggle({
           </p>
           <p className="text-[11px] text-[#F5EDED]/40">
             {isActive
-              ? `${planLabel(currentPlan ?? null)}${currentNextBillingDate ? ` · échéance le ${new Date(currentNextBillingDate).toLocaleDateString("fr-FR")}` : ""}`
+              ? `${planLabel(displayPlan)}${displayBillingDate ? ` · échéance le ${new Date(displayBillingDate).toLocaleDateString("fr-FR")}` : ""}`
               : "Autonome, accès aux outils gratuits uniquement."}
           </p>
           {error && <p className="text-[11px] text-red-400 mt-1">{error}</p>}
