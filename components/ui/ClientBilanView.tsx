@@ -172,7 +172,7 @@ export default function ClientBilanView({ weeks, clientId }: { weeks: WeekGroup[
             }}
           >
             <Download size={13} />
-            Export CSV
+            Exporter CSV
           </a>
         </div>
       )}

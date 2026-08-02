@@ -26,7 +26,7 @@ export default function CoachClientRoadmapView({ clientId }: { clientId: string 
           {clientName || "Client"}
         </Link>
         <div style={{ flex: 1 }}>
-          <p className="ep-section-title" style={{ margin: 0 }}>Road Map Coach</p>
+          <p className="ep-section-title" style={{ margin: 0 }}>Road Map</p>
           <h1 className="ep-h1" style={{ margin: "2px 0 0" }}>{clientName || "Client"}</h1>
         </div>
       </div>

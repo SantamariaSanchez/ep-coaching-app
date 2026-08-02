@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Camera, Trash2, Lock, Loader2 } from "lucide-react";
 import type { PersonalPhoto } from "@/utils/personal-photos";
 
@@ -23,8 +24,12 @@ export default function PersonalPhotosView({
   uploadPersonalPhoto,
   deletePersonalPhoto,
 }: Props) {
+  const router = useRouter();
   const [photos, setPhotos] = useState(initialPhotos);
   const [notes, setNotes] = useState("");
+  // Resynchronise après un router.refresh() (ex. après l'upload d'une photo,
+  // qui a besoin de repasser par le serveur pour obtenir l'URL signée).
+  useEffect(() => setPhotos(initialPhotos), [initialPhotos]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -43,9 +48,10 @@ export default function PersonalPhotosView({
       return;
     }
     setNotes("");
-    // Optimistic reload isn't practical without the signed URL, donc on
-    // recharge la page pour récupérer la nouvelle photo avec son URL signée.
-    window.location.reload();
+    // Optimistic update isn't practical without the signed URL, donc on
+    // rafraîchit les données serveur pour récupérer la nouvelle photo avec
+    // son URL signée, sans le flash blanc d'un rechargement complet.
+    router.refresh();
   }
 
   async function handleDelete(photo: PersonalPhoto) {

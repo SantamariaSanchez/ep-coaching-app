@@ -515,6 +515,7 @@ function JournalTab({
   }
 
   async function handleDelete(id: string) {
+    if (!confirm("Supprimer cette entrée du journal ?")) return;
     const prev = localEntries;
     setLocalEntries((cur) => cur.filter((e) => e.id !== id));
     const result = await onDelete(id);

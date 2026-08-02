@@ -68,7 +68,7 @@ export default async function CoachAdminPage() {
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{coaches.length}</p>
         </div>
         <div>
-          <p className="ep-label" style={{ marginBottom: 4 }}>MRR estimé</p>
+          <p className="ep-label" style={{ marginBottom: 4 }}>Revenu mensuel estimé</p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#4ade80", margin: 0 }}>
             {mrr.toLocaleString("fr-FR", { maximumFractionDigits: 0 })}€
           </p>
