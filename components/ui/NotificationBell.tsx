@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, CheckCheck } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import { roleBadge } from "@/utils/auth";
+import { roleBadge } from "@/utils/auth-client";
 import RoleBadge from "@/components/ui/RoleBadge";
 
 interface NotificationSender {
