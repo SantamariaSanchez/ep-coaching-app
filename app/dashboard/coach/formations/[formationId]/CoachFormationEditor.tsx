@@ -140,61 +140,61 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function renameFormation(title: string) {
     await updateFormation(formation.id, { title });
-    window.location.reload();
+    router.refresh();
   }
 
   async function renameModule(moduleId: string, title: string) {
     await updateModuleTitle(moduleId, title);
-    window.location.reload();
+    router.refresh();
   }
 
   async function renameSection(sectionId: string, title: string) {
     await updateSectionTitle(sectionId, title);
-    window.location.reload();
+    router.refresh();
   }
 
   async function renameLessonTitle(lessonId: string, title: string) {
     await updateLessonTitle(lessonId, title);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleAddModule() {
     const title = prompt("Titre de la section :");
     if (!title?.trim()) return;
     await addModule(formation.id, title.trim(), formation.modules.length);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleAddSection(moduleId: string, currentCount: number) {
     const title = prompt("Titre du module :");
     if (!title?.trim()) return;
     await addSection(moduleId, title.trim(), currentCount);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleAddLesson(sectionId: string, currentCount: number) {
     const title = prompt("Titre de la vidéo :");
     if (!title?.trim()) return;
     await addLesson(sectionId, title.trim(), currentCount);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleDeleteModule(moduleId: string, title: string) {
     if (!confirm(`Supprimer la section "${title}" et tout son contenu (modules, vidéos) ?`)) return;
     await deleteModule(moduleId);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleDeleteSection(sectionId: string, title: string) {
     if (!confirm(`Supprimer le module "${title}" et ses vidéos ?`)) return;
     await deleteSection(sectionId);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleDeleteLesson(lessonId: string, title: string) {
     if (!confirm(`Supprimer la vidéo "${title}" ?`)) return;
     await deleteLesson(lessonId);
-    window.location.reload();
+    router.refresh();
   }
 
   async function handleDeleteFormation() {
@@ -205,7 +205,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function saveMetaField(field: "subtitle" | "description" | "emoji", value: string) {
     await updateFormation(formation.id, { [field]: value });
-    window.location.reload();
+    router.refresh();
   }
 
   return (
