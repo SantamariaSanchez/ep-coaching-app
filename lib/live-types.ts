@@ -76,7 +76,10 @@ export type LiveBookingMode =
 
 export interface LiveTypeInfo {
   tagline: string;
+  /** Texte affiché côté client (voix 2e personne : "ton coach...") — pages dédiées /live/[type]. */
   description: string;
+  /** Texte affiché côté coach (voix 2e personne coach : "tes clients...", but de l'event) — LiveScheduler. */
+  coachDescription: string;
   format: string;
   cadence: string;
   includes: string[];
@@ -89,6 +92,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Appel individuel classique",
     description:
       "Un échange individuel avec ton coach en visio, pour faire le point, ajuster ton programme ou répondre à tes questions du moment.",
+    coachDescription:
+      "Un échange individuel en visio avec un de tes clients, pour faire le point, ajuster son programme ou répondre à ses questions du moment.",
     format: "Visio, en tête-à-tête",
     cadence: "À la demande, selon les disponibilités de ton coach",
     includes: [
@@ -103,6 +108,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Bilan stratégique approfondi",
     description:
       "Un bilan approfondi de ta progression et de ta stratégie (entraînement, nutrition, organisation). Ton coach prépare une analyse complète et t'en restitue les conclusions en direct.",
+    coachDescription:
+      "Un bilan approfondi de la progression et de la stratégie d'un client (entraînement, nutrition, organisation). Tu prépares une analyse complète et tu lui en restitues les conclusions en direct.",
     format: "Visio, format long",
     cadence: "Programmé par ton coach, sur demande ou à une étape clé de ton accompagnement",
     includes: [
@@ -117,6 +124,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Suivi récurrent chaque semaine",
     description:
       "Un rendez-vous récurrent, chaque semaine au même créneau, pour garder le cap : ajustements, motivation, réponses à tes questions.",
+    coachDescription:
+      "Un rendez-vous récurrent avec un client, chaque semaine au même créneau, pour garder le cap : ajustements, motivation, réponses à ses questions.",
     format: "Visio, en tête-à-tête, format court",
     cadence: "Chaque semaine, réservé sur 8 semaines en une fois",
     includes: [
@@ -131,6 +140,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Call stratégique ou point rapide",
     description:
       "Un accès facilité à ton coach en dehors des rendez-vous classiques : un call stratégique programmé, ou une réponse rapide sur une décision clé via un point flash.",
+    coachDescription:
+      "Un accès facilité que tu offres à tes clients en dehors des rendez-vous classiques : un call stratégique programmé, ou une réponse rapide sur une décision clé via un point flash.",
     format: "Visio, programmé ou en point flash court",
     cadence: "Call programmé + demandes ponctuelles de point flash",
     includes: [
@@ -145,6 +156,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Formation en direct, invité possible",
     description:
       "Une session de formation en direct, parfois animée avec un intervenant invité, sur un sujet précis : technique, nutrition, mindset. Un vrai temps d'apprentissage collectif.",
+    coachDescription:
+      "Une session de formation en direct pour tes clients, avec un intervenant invité si besoin, sur un sujet précis : technique, nutrition, mindset.",
     format: "Visio de groupe, avec contenu et exercices",
     cadence: "Programmé par ton coach, ponctuellement",
     includes: [
@@ -159,6 +172,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Présentation ouverte au groupe",
     description:
       "Une présentation en direct ouverte à tous les clients suivis par ton coach, sur un thème donné : nouveauté, méthode, actualité.",
+    coachDescription:
+      "Une présentation en direct ouverte à tous tes clients, sur un thème donné : nouveauté, méthode, actualité.",
     format: "Visio de groupe, présentation structurée",
     cadence: "Programmé par ton coach, selon l'actualité",
     includes: [
@@ -173,6 +188,8 @@ export const LIVE_TYPE_INFO: Record<LiveType, LiveTypeInfo> = {
     tagline: "Questions/réponses en direct",
     description:
       "Un format libre où tu poses tes questions en direct à ton coach, sans ordre du jour imposé : entraînement, nutrition, organisation, tout y passe.",
+    coachDescription:
+      "Un format libre où tes clients posent leurs questions en direct, sans ordre du jour imposé : entraînement, nutrition, organisation, tout y passe.",
     format: "Visio de groupe, format libre",
     cadence: "Programmé par ton coach, régulièrement",
     includes: [

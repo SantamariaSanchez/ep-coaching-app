@@ -136,7 +136,7 @@ export default function LiveScheduler({
       </div>
 
       <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
-        {LIVE_TYPE_INFO[type].description}
+        {LIVE_TYPE_INFO[type].coachDescription}
       </p>
 
       <select value={type} onChange={(e) => setType(e.target.value as LiveType)} className={inputCls}>
