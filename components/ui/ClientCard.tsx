@@ -7,7 +7,6 @@ interface ClientCardProps {
   phase?: string | null;
   weight?: number | null;
   weekNum?: number | null;
-  adherence?: number | null;
   alerts?: number;
   href?: string;
   delay?: number;
@@ -21,7 +20,6 @@ export function ClientCard({
   phase,
   weight,
   weekNum,
-  adherence,
   alerts = 0,
   delay = 0,
   onClick,
@@ -43,12 +41,6 @@ export function ClientCard({
     : phase === "surplus"  ? "Surplus"
     : phase ? "Maintenance"
     : null;
-
-  const adherenceColor =
-    adherence == null   ? "rgba(245,237,237,0.4)"
-    : adherence >= 80   ? "#4ade80"
-    : adherence >= 50   ? "#fbbf24"
-    : "#E01E1E";
 
   return (
     <div
@@ -184,13 +176,12 @@ export function ClientCard({
       {/* Stats grid */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "1fr 1fr 1fr",
+        gridTemplateColumns: "1fr 1fr",
         gap: 8,
       }}>
         {[
-          { label: "Semaine",  value: weekNum   != null ? `S${weekNum}`     : "···" },
-          { label: "Poids",    value: weight    != null ? `${weight} kg`    : "···" },
-          { label: "Adhésion", value: adherence != null ? `${adherence}%`   : "···", color: adherenceColor },
+          { label: "Semaine",       value: weekNum != null ? `S${weekNum}`  : "···" },
+          { label: "Poids initial", value: weight  != null ? `${weight} kg` : "···" },
         ].map((stat) => (
           <div key={stat.label} style={{
             background: "rgba(0,0,0,0.3)",

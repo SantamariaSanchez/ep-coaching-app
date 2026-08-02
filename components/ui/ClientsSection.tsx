@@ -5,6 +5,17 @@ import { Users } from "lucide-react";
 import type { Profile } from "@/utils/auth";
 import { ClientCard } from "./ClientCard";
 
+// Semaine de coaching en cours, calculée depuis start_date (déjà chargé avec
+// le profil, aucune requête supplémentaire) — même logique que le calcul
+// utilisé sur la page de profil client (weeksSince).
+function weekNumber(startDate: string | null): number | null {
+  if (!startDate) return null;
+  const weeks = Math.floor(
+    (Date.now() - new Date(startDate + "T12:00:00").getTime()) / (7 * 24 * 60 * 60 * 1000)
+  );
+  return weeks >= 0 ? weeks + 1 : null;
+}
+
 export default function ClientsSection({
   clients,
   ouraEligibleIds = [],
@@ -78,9 +89,7 @@ export default function ClientsSection({
               name={client.full_name ?? "Sans nom"}
               phase={null}
               weight={client.weight_start}
-              weekNum={null}
-              adherence={null}
-              alerts={0}
+              weekNum={weekNumber(client.start_date)}
               delay={i * 60}
               onClick={() => router.push(`/dashboard/coach/clients/${client.id}`)}
               ouraEligible={ouraEligibleIds.includes(client.id)}
