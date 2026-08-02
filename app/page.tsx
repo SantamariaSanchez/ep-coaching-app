@@ -14,26 +14,32 @@ import {
   Users,
   Activity,
   MessageCircle,
+  FlaskConical,
+  Map,
+  UtensilsCrossed,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 
 const FEATURES = [
   { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
-  { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et recettes personnalisées" },
+  { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },
   { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { icon: ClipboardList, title: "Logbook séances", desc: "Enregistre tes performances en temps réel" },
-  { icon: BookOpen, title: "Formations vidéo", desc: "80h+ de contenu pour progresser sérieusement" },
-  { icon: Video, title: "Lives & coaching vidéo", desc: "Sessions en direct avec ton coach" },
+  { icon: BookOpen, title: "5 formations complètes", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
   { icon: Activity, title: "Tracker quotidien", desc: "Pas, sommeil, biométrie au jour le jour" },
   { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
   { icon: Users, title: "Communauté", desc: "Échange avec des membres aussi motivés que toi" },
+  { icon: FlaskConical, title: "Science & recherche", desc: "Études et actualité sourcées, sans blabla" },
+  { icon: Map, title: "Road Map", desc: "Tes objectifs et les étapes pour les atteindre" },
+  { icon: UtensilsCrossed, title: "Recettes", desc: "Des idées de repas healthy et gourmands" },
 ];
 
 const STATS = [
-  { value: "80h+", label: "Formations" },
+  { value: "5", label: "Formations" },
+  { value: "7", label: "Formats live" },
   { value: "100%", label: "Personnalisé" },
-  { value: "∞", label: "Suivi" },
 ];
 
 export default function HomePage() {

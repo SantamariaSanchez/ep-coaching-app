@@ -1,8 +1,9 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
+import { isSubscribed } from "@/utils/auth-client";
 import { getFormationWithModules, getUserProgress, countLessons } from "@/utils/formations";
-import { ChevronLeft, PlayCircle, CheckCircle2, Clock, Lock, ChevronRight } from "lucide-react";
+import { ChevronLeft, PlayCircle, CheckCircle2, Clock, Lock, Crown, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -17,7 +18,7 @@ export default async function FormationDetailPage({
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
-  if (profile?.subscription_status !== "active") redirect("/dashboard/client/abonnement");
+  const isFreeTier = !isSubscribed(profile);
 
   const [formation, completed] = await Promise.all([
     getFormationWithModules(formationId),
@@ -117,6 +118,32 @@ export default async function FormationDetailPage({
         </div>
       </div>
 
+      {/* Free tier upsell */}
+      {isFreeTier && (
+        <div
+          className="ep-card animate-fade-up"
+          style={{
+            padding: "16px 18px",
+            marginBottom: 20,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)",
+            border: "1px solid rgba(224,30,30,0.25)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <Crown size={13} style={{ color: "#E01E1E" }} />
+            <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
+              Vidéos réservées aux clients coachés
+            </p>
+          </div>
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "0 0 10px", lineHeight: 1.5 }}>
+            Tu peux parcourir tout le programme dès maintenant — les vidéos se débloquent avec l&apos;accompagnement.
+          </p>
+          <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
+            Réserver un appel découverte
+          </Link>
+        </div>
+      )}
+
       {/* Sections */}
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {formation.modules.length === 0 ? (
@@ -208,7 +235,9 @@ export default async function FormationDetailPage({
 
                         {/* Lessons */}
                         {sec.lessons.map((lesson, li) => {
-                          const isAvailable = !!(lesson.is_published && lesson.youtube_id);
+                          const isPublished = !!(lesson.is_published && lesson.youtube_id);
+                          const isAvailable = isPublished && !isFreeTier;
+                          const isPremiumLocked = isPublished && isFreeTier;
                           const isDone = completed.has(lesson.id);
 
                           return (
@@ -261,21 +290,29 @@ export default async function FormationDetailPage({
                               ) : (
                                 <div style={{
                                   display: "flex", alignItems: "center", gap: 12,
-                                  padding: "11px 18px", opacity: 0.4,
+                                  padding: "11px 18px", opacity: isPremiumLocked ? 0.7 : 0.4,
                                 }}>
                                   <div style={{
                                     width: 26, height: 26, borderRadius: "50%",
-                                    background: "rgba(255,255,255,0.03)",
-                                    border: "1px solid rgba(255,255,255,0.08)",
+                                    background: isPremiumLocked ? "rgba(224,30,30,0.08)" : "rgba(255,255,255,0.03)",
+                                    border: isPremiumLocked ? "1px solid rgba(224,30,30,0.2)" : "1px solid rgba(255,255,255,0.08)",
                                     display: "flex", alignItems: "center", justifyContent: "center",
                                     flexShrink: 0,
                                   }}>
-                                    <Lock size={10} style={{ color: "rgba(245,237,237,0.3)" }} />
+                                    {isPremiumLocked
+                                      ? <Crown size={10} style={{ color: "#E01E1E" }} />
+                                      : <Lock size={10} style={{ color: "rgba(245,237,237,0.3)" }} />
+                                    }
                                   </div>
                                   <div style={{ flex: 1 }}>
-                                    <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+                                    <p style={{ fontSize: 12, color: isPremiumLocked ? "rgba(245,237,237,0.55)" : "rgba(245,237,237,0.4)", margin: 0 }}>
                                       {lesson.title}
                                     </p>
+                                    {isPremiumLocked && (
+                                      <p style={{ fontSize: 9.5, color: "rgba(224,30,30,0.6)", margin: "2px 0 0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+                                        Réservé aux clients coachés
+                                      </p>
+                                    )}
                                   </div>
                                   <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)" }}>
                                     {lesson.duration_min}min

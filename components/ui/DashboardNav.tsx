@@ -179,7 +179,6 @@ const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
         label: "Formations",
         icon: GraduationCap,
         segment: "formations",
-        href: "/dashboard/client/abonnement",
         locked: true,
       },
     ],

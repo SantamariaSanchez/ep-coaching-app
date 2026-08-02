@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
+import { isSubscribed } from "@/utils/auth-client";
 import { getFormations, getUserProgress, getFormationWithModules, countLessons } from "@/utils/formations";
-import { BookOpen, Lock, PlayCircle, ChevronRight, Clock } from "lucide-react";
+import { BookOpen, Lock, Crown, PlayCircle, ChevronRight, Clock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -19,7 +20,10 @@ export default async function FormationsPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
-  if (profile?.subscription_status !== "active") redirect("/dashboard/client/abonnement");
+  // Un membre gratuit parcourt le catalogue complet (structure, titres,
+  // durées) pour se donner envie — seules les vidéos restent réservées aux
+  // clients coachés, verrouillées plus bas plutôt que la page entière.
+  const isFreeTier = !isSubscribed(profile);
 
   const [formations, completed] = await Promise.all([
     getFormations(),
@@ -64,8 +68,34 @@ export default async function FormationsPage() {
         </p>
       </div>
 
+      {/* Free tier upsell */}
+      {isFreeTier && (
+        <div
+          className="ep-card animate-fade-up stagger-1"
+          style={{
+            padding: "18px 20px",
+            marginBottom: 24,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)",
+            border: "1px solid rgba(224,30,30,0.25)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+            <Crown size={14} style={{ color: "#E01E1E" }} />
+            <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
+              {totalLessons} vidéos t&apos;attendent
+            </p>
+          </div>
+          <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "0 0 12px", lineHeight: 1.5 }}>
+            Parcours le catalogue librement — les vidéos se débloquent dès que tu rejoins l&apos;accompagnement.
+          </p>
+          <Link href="/dashboard/client/abonnement" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
+            Réserver un appel découverte
+          </Link>
+        </div>
+      )}
+
       {/* Global progress */}
-      {totalLessons > 0 && (
+      {!isFreeTier && totalLessons > 0 && (
         <div className="ep-card animate-fade-up stagger-2" style={{ padding: "16px 20px", marginBottom: 24 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
             <span className="ep-label">Progression globale</span>
@@ -150,6 +180,9 @@ export default async function FormationsPage() {
                         </p>
                         {!isAvailable && (
                           <Lock size={10} style={{ color: "rgba(245,237,237,0.2)" }} />
+                        )}
+                        {isAvailable && isFreeTier && (
+                          <Crown size={10} style={{ color: "#E01E1E" }} />
                         )}
                       </div>
                       <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.2 }}>
