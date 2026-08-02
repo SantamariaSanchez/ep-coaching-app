@@ -49,7 +49,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Aujourd'hui",
     icon: Home,
     href: "/dashboard/client",
-    matchSegments: [],
+    matchSegments: ["profile", "parametres"],
     exactMatch: true,
   },
   {
@@ -87,7 +87,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Communauté",
     icon: Heart,
     href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement", "profile", "parametres"],
+    matchSegments: ["communaute", "abonnement"],
   },
 ];
 
@@ -99,7 +99,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Accueil",
     icon: Home,
     href: "/dashboard/client",
-    matchSegments: [],
+    matchSegments: ["profile", "parametres"],
     exactMatch: true,
   },
   {
@@ -130,7 +130,7 @@ const CLIENT_TABS_FREE: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "abonnement", "profile", "parametres"],
+    matchSegments: ["ressources", "formations", "recettes", "abonnement"],
   },
 ];
 
@@ -203,7 +203,7 @@ const COACH_TABS: TabItem[] = [
     label: "Aujourd'hui",
     icon: Home,
     href: "/dashboard/coach",
-    matchSegments: [],
+    matchSegments: ["profile", "parametres"],
     exactMatch: true,
   },
   {
@@ -230,7 +230,7 @@ const COACH_TABS: TabItem[] = [
     label: "Moi",
     icon: Activity,
     href: "/dashboard/coach/moi/bilan",
-    matchSegments: ["moi", "profile", "parametres"],
+    matchSegments: ["moi"],
   },
   {
     label: "Contenu",
@@ -416,10 +416,12 @@ function useNavState(isFreeTier: boolean, showCycle: boolean) {
     : rawSidebar.map((g) => ({ ...g, items: g.items.filter((item) => item.segment !== "cycle") }));
 
   function isTabActive(tab: TabItem): boolean {
-    if (tab.exactMatch) return pathname === tab.href;
-    return tab.matchSegments.some((seg) =>
-      pathname.startsWith(`${base}/${seg}`)
-    );
+    // matchSegments s'applique même aux onglets exactMatch (ex. "Aujourd'hui")
+    // pour couvrir des pages sans rapport avec le contenu de l'onglet mais
+    // rattachées à lui malgré tout — voir "Compte" (profil/paramètres)
+    // ci-dessous, seul point d'entrée cohérent indépendant du rôle affiché.
+    const exact = tab.exactMatch ? pathname === tab.href : false;
+    return exact || tab.matchSegments.some((seg) => pathname.startsWith(`${base}/${seg}`));
   }
 
   function isSidebarActive(segment: string): boolean {
@@ -437,21 +439,29 @@ function useNavState(isFreeTier: boolean, showCycle: boolean) {
   type SidebarItem = SidebarGroup["items"][number];
   const activeTab = tabs.find(isTabActive);
   const flatSidebarItems = sidebar.flatMap((g) => g.items);
-  const mobileSubItems: SidebarItem[] =
-    activeTab && !activeTab.exactMatch
-      ? [
-          ...flatSidebarItems.filter(
-            (item) =>
-              !item.segment.startsWith("science/") &&
-              activeTab.matchSegments.some(
-                (seg) => item.segment === seg || item.segment.startsWith(`${seg}/`)
-              )
-          ),
-          ...(activeTab.matchSegments.includes("science")
-            ? [{ label: "Science", icon: FlaskConical, segment: "science", href: `${base}/science/recherche` } as SidebarItem]
-            : []),
-        ]
-      : [];
+  const mobileSubItems: SidebarItem[] = (() => {
+    if (!activeTab) return [];
+    // "Aujourd'hui" (exactMatch) n'a pas de frères dans la sidebar (groupe ""
+    // à part) — plutôt qu'une bande vide, elle affiche le groupe "Compte"
+    // (Mon profil, Paramètres) : le seul point d'entrée cohérent vers ces
+    // pages, qui n'ont de rapport avec aucun onglet de contenu (Moi,
+    // Communauté...) où elles vivaient auparavant.
+    if (activeTab.exactMatch) {
+      return sidebar.find((g) => g.group === "Compte")?.items ?? [];
+    }
+    return [
+      ...flatSidebarItems.filter(
+        (item) =>
+          !item.segment.startsWith("science/") &&
+          activeTab.matchSegments.some(
+            (seg) => item.segment === seg || item.segment.startsWith(`${seg}/`)
+          )
+      ),
+      ...(activeTab.matchSegments.includes("science")
+        ? [{ label: "Science", icon: FlaskConical, segment: "science", href: `${base}/science/recherche` } as SidebarItem]
+        : []),
+    ];
+  })();
 
   return {
     isCoach,
