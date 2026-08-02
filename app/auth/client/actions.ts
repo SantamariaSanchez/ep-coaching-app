@@ -15,10 +15,8 @@ export interface RequestState {
 export interface SelfSignupInput {
   fullName: string;
   email: string;
+  phone: string;
   password: string;
-  objectif: string;
-  niveau: string;
-  source: string;
   // Code d'invitation du coach dont ce nouveau membre est le client
   // (partagé par le coach, ex. lien /auth/client?coach=CODE). Absent ou
   // invalide → rattachement au propriétaire de la plateforme (EP Coaching).
@@ -59,10 +57,11 @@ async function resolveCoachId(
 export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResult> {
   const fullName = input.fullName.trim();
   const email = input.email.trim().toLowerCase();
+  const phone = input.phone.trim();
   const password = input.password;
 
-  if (!fullName || !email || password.length < 6) {
-    return { error: "Nom, email et mot de passe (6 caractères min.) requis." };
+  if (!fullName || !email || !phone || password.length < 6) {
+    return { error: "Nom, email, téléphone et mot de passe (6 caractères min.) requis." };
   }
 
   const admin = createAdminClient();
@@ -88,9 +87,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     role: "client",
     full_name: fullName,
     email,
-    goal: input.objectif || null,
-    level: input.niveau || null,
-    source: input.source || null,
+    phone,
     status: "active",
     start_date: new Date().toISOString().split("T")[0],
     coach_id: coach?.id ?? null,
@@ -117,8 +114,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
           <h2 style="color:#E01E1E;margin-top:0;">Nouveau membre inscrit</h2>
           <p><strong>Nom :</strong> ${fullName}</p>
           <p><strong>Email :</strong> ${email}</p>
-          <p><strong>Objectif :</strong> ${input.objectif}</p>
-          <p><strong>Niveau :</strong> ${input.niveau} · <strong>Source :</strong> ${input.source}</p>
+          <p><strong>Téléphone :</strong> ${phone}</p>
           <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/coach/communaute/membres" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">Voir la communauté</a>
         </div>`,
       });

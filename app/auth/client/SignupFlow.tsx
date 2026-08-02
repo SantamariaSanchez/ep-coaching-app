@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ChevronLeft, ChevronRight, Heart, PhoneCall } from "lucide-react";
+import { ChevronRight, Heart, PhoneCall } from "lucide-react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { selfSignup } from "./actions";
 
@@ -33,51 +33,7 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 7,
 };
 
-const OBJECTIFS = ["Perte de poids", "Prise de muscle", "Performance", "Santé & bien-être"];
-const NIVEAUX = ["Débutant", "Intermédiaire", "Avancé"];
-const SOURCES = ["Instagram", "TikTok", "Bouche à oreille", "Autre"];
-
-function ChoiceGrid({
-  options,
-  value,
-  onChange,
-}: {
-  options: string[];
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-      {options.map((opt) => {
-        const active = value === opt;
-        return (
-          <button
-            key={opt}
-            type="button"
-            onClick={() => onChange(opt)}
-            style={{
-              padding: "16px 12px",
-              borderRadius: 10,
-              border: `1px solid ${active ? "rgba(224,30,30,0.5)" : "rgba(224,30,30,0.15)"}`,
-              background: active ? "rgba(224,30,30,0.12)" : "rgba(0,0,0,0.3)",
-              color: active ? "#F5EDED" : "rgba(245,237,237,0.55)",
-              fontWeight: active ? 700 : 600,
-              fontSize: 13,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              textAlign: "center",
-            }}
-          >
-            {opt}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-type Step = "info" | "objectif" | "niveau" | "source" | "choix";
-const STEPS: Step[] = ["info", "objectif", "niveau", "source", "choix"];
+type Step = "info" | "choix";
 
 export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void }) {
   const router = useRouter();
@@ -86,92 +42,69 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   const [step, setStep] = useState<Step>("info");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [objectif, setObjectif] = useState("");
-  const [niveau, setNiveau] = useState("");
-  const [source, setSource] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState<string | null>(null); // "free" | plan.id | null
+  const [creatingAccount, setCreatingAccount] = useState(false);
+  const [submitting, setSubmitting] = useState<string | null>(null); // "free" | "coaching" | null
 
-  const stepIndex = STEPS.indexOf(step);
-
-  function goNext() {
+  async function handleCreateAccount(e: React.FormEvent) {
+    e.preventDefault();
     setError(null);
-    if (step === "info") {
-      if (!fullName.trim() || !email.trim() || password.length < 6) {
-        setError("Prénom, email et mot de passe (6 caractères min.) requis.");
-        return;
-      }
-      setStep("objectif");
-    } else if (step === "objectif") {
-      if (!objectif) return setError("Choisis un objectif.");
-      setStep("niveau");
-    } else if (step === "niveau") {
-      if (!niveau) return setError("Choisis ton niveau.");
-      setStep("source");
-    } else if (step === "source") {
-      if (!source) return setError("Choisis une option.");
-      setStep("choix");
+    if (!fullName.trim() || !email.trim() || !phone.trim() || password.length < 6) {
+      setError("Prénom, email, téléphone et mot de passe (6 caractères min.) requis.");
+      return;
     }
-  }
-
-  function goBack() {
-    setError(null);
-    if (stepIndex > 0) setStep(STEPS[stepIndex - 1]);
-  }
-
-  async function handleChoice(planId: string | null, planUrl?: string) {
-    setSubmitting(planId ?? "free");
-    setError(null);
+    setCreatingAccount(true);
     try {
-      const result = await selfSignup({ fullName, email, password, objectif, niveau, source, inviteCode });
+      const result = await selfSignup({ fullName, email, phone, password, inviteCode });
       if ("error" in result) {
         setError(result.error);
-        setSubmitting(null);
+        setCreatingAccount(false);
         return;
       }
-      if (planUrl) {
-        window.location.href = planUrl;
-      } else {
-        router.push("/dashboard/client");
-        router.refresh();
-      }
+      setStep("choix");
     } catch {
       setError("Une erreur est survenue. Réessaie.");
-      setSubmitting(null);
+    }
+    setCreatingAccount(false);
+  }
+
+  // Le compte existe déjà à ce stade (créé à l'étape précédente) : ces deux
+  // choix ne font que rediriger, jamais perdre ce que la personne a saisi.
+  function handleChoice(choice: "free" | "coaching") {
+    setSubmitting(choice);
+    if (choice === "coaching") {
+      window.location.href = PREQUALIFICATION_URL;
+    } else {
+      router.push("/dashboard/client");
+      router.refresh();
     }
   }
 
   return (
     <div>
-      {/* Progress dots */}
-      <div style={{ display: "flex", gap: 5, marginBottom: 22 }}>
-        {STEPS.map((s, i) => (
-          <div
-            key={s}
-            style={{
-              flex: 1,
-              height: 3,
-              borderRadius: 2,
-              background: i <= stepIndex ? "#E01E1E" : "rgba(224,30,30,0.15)",
-              transition: "background 0.2s",
-            }}
-          />
-        ))}
-      </div>
-
       {step === "info" && (
-        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
-            Crée ton compte
-          </h2>
+        <form onSubmit={handleCreateAccount} className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ marginBottom: 2 }}>
+            <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
+              Crée ton compte
+            </h2>
+            <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
+              Accès immédiat à la communauté, aux recettes et au suivi. Gratuit, en 30 secondes.
+            </p>
+          </div>
           <div>
-            <label style={labelStyle}>Prénom et Nom</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Jean Dupont" style={inputStyle} />
+            <label style={labelStyle}>Prénom et nom</label>
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Ton prénom et nom" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Email</label>
             <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="ton@email.com" style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Téléphone</label>
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="06 12 34 56 78" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Mot de passe</label>
@@ -183,41 +116,28 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               autoComplete="new-password"
             />
           </div>
-        </div>
-      )}
 
-      {step === "objectif" && (
-        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
-            Quel est ton objectif principal ?
-          </h2>
-          <ChoiceGrid options={OBJECTIFS} value={objectif} onChange={setObjectif} />
-        </div>
-      )}
+          {error && (
+            <div style={{
+              padding: "12px 16px",
+              background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
+              borderRadius: 8, fontSize: 13, color: "#FDC4C4",
+            }}>
+              ⚠ {error}
+            </div>
+          )}
 
-      {step === "niveau" && (
-        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
-            Ton niveau actuel ?
-          </h2>
-          <ChoiceGrid options={NIVEAUX} value={niveau} onChange={setNiveau} />
-        </div>
-      )}
-
-      {step === "source" && (
-        <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 2px" }}>
-            Comment as-tu connu EP Coaching ?
-          </h2>
-          <ChoiceGrid options={SOURCES} value={source} onChange={setSource} />
-        </div>
+          <button type="submit" disabled={creatingAccount} className="ep-btn-primary" style={{ width: "100%", height: 48, fontSize: 13, marginTop: 4 }}>
+            {creatingAccount ? "Création du compte…" : "Créer mon compte"}
+          </button>
+        </form>
       )}
 
       {step === "choix" && (
         <div className="animate-fade-up" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <h2 style={{ fontWeight: 800, fontSize: 19, color: "#F5EDED", letterSpacing: "-0.02em", margin: "0 0 4px" }}>
-              Dernière étape
+              Compte créé 🎉
             </h2>
             <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", margin: 0 }}>
               Rejoins la communauté gratuitement, ou passe directement en coaching premium.
@@ -226,7 +146,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
           <button
             type="button"
-            onClick={() => handleChoice(null)}
+            onClick={() => handleChoice("free")}
             disabled={submitting !== null}
             style={{
               display: "flex", alignItems: "center", gap: 12,
@@ -258,7 +178,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
 
           <button
             type="button"
-            onClick={() => handleChoice("coaching", PREQUALIFICATION_URL)}
+            onClick={() => handleChoice("coaching")}
             disabled={submitting !== null}
             style={{
               display: "flex", alignItems: "center", gap: 12,
@@ -284,49 +204,19 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
         </div>
       )}
 
-      {error && (
-        <div style={{
-          marginTop: 14, padding: "12px 16px",
-          background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
-          borderRadius: 8, fontSize: 13, color: "#FDC4C4",
-        }}>
-          ⚠ {error}
-        </div>
+      {step === "info" && (
+        <button
+          type="button"
+          onClick={onLoginClick}
+          style={{
+            display: "block", width: "100%", textAlign: "center",
+            marginTop: 18, background: "none", border: "none",
+            color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
+          }}
+        >
+          Déjà membre ? <span style={{ color: "#E01E1E" }}>Me connecter</span>
+        </button>
       )}
-
-      {step !== "choix" && (
-        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-          {stepIndex > 0 && (
-            <button
-              type="button"
-              onClick={goBack}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                width: 48, height: 48, borderRadius: 10,
-                border: "1px solid rgba(245,237,237,0.12)", background: "transparent",
-                color: "rgba(245,237,237,0.4)", cursor: "pointer", flexShrink: 0,
-              }}
-            >
-              <ChevronLeft size={18} />
-            </button>
-          )}
-          <button onClick={goNext} className="ep-btn-primary" style={{ flex: 1, height: 48, fontSize: 13 }}>
-            Continuer
-          </button>
-        </div>
-      )}
-
-      <button
-        type="button"
-        onClick={onLoginClick}
-        style={{
-          display: "block", width: "100%", textAlign: "center",
-          marginTop: 18, background: "none", border: "none",
-          color: "rgba(245,237,237,0.3)", fontSize: 12, fontWeight: 600, cursor: "pointer",
-        }}
-      >
-        Déjà membre ? <span style={{ color: "#E01E1E" }}>Me connecter</span>
-      </button>
     </div>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ProfileSetupStep from "./ProfileSetupStep";
 import PersonalizationQuiz from "./PersonalizationQuiz";
 import OnboardingTour from "./OnboardingTour";
 import { completeOnboarding, saveMemberPreferences } from "@/app/onboarding/actions";
@@ -11,11 +12,11 @@ import {
   type PersonalizationProfile,
 } from "@/lib/personalization";
 
-type Step = "quiz" | "tour";
+type Step = "profile" | "quiz" | "tour";
 
 export default function OnboardingFlow() {
   const router = useRouter();
-  const [step, setStep] = useState<Step>("quiz");
+  const [step, setStep] = useState<Step>("profile");
   const [personalization, setPersonalization] = useState<PersonalizationProfile>(() =>
     derivePersonalization(null)
   );
@@ -49,6 +50,10 @@ export default function OnboardingFlow() {
       })
     );
     setStep("tour");
+  }
+
+  if (step === "profile") {
+    return <ProfileSetupStep onDone={() => setStep("quiz")} finishing={finishing} />;
   }
 
   if (step === "quiz") {
