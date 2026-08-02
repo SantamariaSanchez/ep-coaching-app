@@ -286,6 +286,11 @@ export default function VolumeIntensitySection({
 
   return (
     <div className="space-y-5 mb-8">
+      {(hasRealized || hasVolume) && (
+        <p className="text-[10px] text-[#F5EDED]/25 leading-relaxed">
+          MEV : volume minimum utile. MAV : volume optimal. MRV : volume maximum récupérable avant de nuire à la récupération.
+        </p>
+      )}
       {/* ── Adherence this week ── */}
       {sessionsThisWeek != null && frequency != null && (
         <div className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-xl px-5 py-3.5">
