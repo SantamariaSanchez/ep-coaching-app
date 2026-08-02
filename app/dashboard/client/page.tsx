@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { getLatestCoachNote } from "@/utils/notes";
+import { getClientIntake } from "@/utils/client-intake";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import ClientDashboardStats from "@/components/client/DashboardStats";
@@ -364,6 +365,12 @@ export default async function ClientDashboard() {
       </>
     );
   }
+
+  // Tout début du coaching : le client remplit sa fiche complète une seule
+  // fois, avant de voir le dashboard coaché — remplace l'ancien passage par
+  // formulaire externe + email, les réponses vont directement dans sa fiche.
+  const intake = await getClientIntake(user.id);
+  if (!intake) redirect("/onboarding/intake");
 
   const [thisWeekCheckin, latestNote] = await Promise.all([
     getThisWeekCheckin(user.id),

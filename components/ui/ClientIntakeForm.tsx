@@ -74,6 +74,12 @@ function emptyIntake(): ClientIntakeInput {
     gym_name: null,
     gym_link: null,
     additional_notes: null,
+    resting_heart_rate: null,
+    cycle_length_days: null,
+    hormonal_contraceptive: null,
+    known_nutrition_text: null,
+    gym_photo_paths: [],
+    physique_photo_paths: [],
   };
 }
 

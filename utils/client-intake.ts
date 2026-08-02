@@ -50,6 +50,12 @@ export interface ClientIntake {
   gym_name: string | null;
   gym_link: string | null;
   additional_notes: string | null;
+  resting_heart_rate: number | null;
+  cycle_length_days: number | null;
+  hormonal_contraceptive: string | null;
+  known_nutrition_text: string | null;
+  gym_photo_paths: string[];
+  physique_photo_paths: string[];
   updated_at: string;
 }
 
