@@ -35,6 +35,9 @@ export default async function CoachMoiTrackingPage({
           Mon suivi
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Sommeil</h1>
+        <p className="text-sm text-[#F5EDED]/45 mt-2">
+          Sommeil, récupération, HRV : des données qui débouchent sur de vraies suggestions d&apos;ajustement.
+        </p>
       </div>
 
       <TrackingClient

@@ -12,19 +12,54 @@ export default function CoachStatusToggle({
 }) {
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(status);
+  const [confirming, setConfirming] = useState(false);
 
-  function toggle() {
-    const next = current === "active" ? "canceled" : "active";
+  function apply(next: "inactive" | "active" | "canceled") {
     startTransition(async () => {
       const result = await setCoachPlatformStatus(coachId, next);
       if (result.success) setCurrent(next);
+      setConfirming(false);
     });
+  }
+
+  function handleClick() {
+    if (current === "active") {
+      // Désactive l'accès d'un coach potentiellement payant : jamais en un
+      // seul clic, un mis-clic ne doit pas couper son accès sans confirmation.
+      setConfirming(true);
+    } else {
+      apply("active");
+    }
+  }
+
+  if (confirming) {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)" }}>Désactiver ce coach ?</span>
+        <button
+          type="button"
+          onClick={() => apply("canceled")}
+          disabled={pending}
+          style={{ fontSize: 11, fontWeight: 700, color: "#ff6b6b", background: "none", border: "none", cursor: "pointer" }}
+        >
+          {pending ? "…" : "Confirmer"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setConfirming(false)}
+          disabled={pending}
+          style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer" }}
+        >
+          Annuler
+        </button>
+      </div>
+    );
   }
 
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={handleClick}
       disabled={pending}
       style={{
         height: 32, padding: "0 14px", borderRadius: 8, border: "none",

@@ -20,6 +20,15 @@ export default async function ClientCoachsPage() {
           Voici les coachs actifs sur la plateforme. Tu peux aussi contacter Santamaria directement
           sur Instagram si tu préfères qu&apos;il te suive personnellement.
         </p>
+        <a
+          href="https://instagram.com/santamariasanchez_"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ep-btn-primary"
+          style={{ display: "inline-flex", marginTop: 12, textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
+        >
+          Contacter Santamaria sur Instagram
+        </a>
       </div>
 
       <CoachDiscoveryList coaches={coaches} />

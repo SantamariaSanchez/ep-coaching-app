@@ -2240,7 +2240,8 @@ export default function SessionView({
         <div className="max-w-md mx-auto">
           <button
             onClick={() => setStep("recap")}
-            className="w-full py-3.5 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 text-white text-xs font-black uppercase tracking-widest rounded-xl transition-colors"
+            className="ep-btn-primary w-full"
+            style={{ padding: "14px 24px", fontSize: 12, borderRadius: 12 }}
           >
             Terminer la séance →
           </button>

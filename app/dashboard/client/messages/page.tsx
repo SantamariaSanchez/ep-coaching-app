@@ -4,7 +4,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 import RoleBadge from "@/components/ui/RoleBadge";
-import { Mail } from "lucide-react";
+import { Mail, ChevronRight, Users } from "lucide-react";
+import Link from "next/link";
 
 // Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
 // lui répondre une fois qu'il a ouvert la conversation, pour éviter que le
@@ -37,10 +38,24 @@ export default async function ClientMessagesPage() {
   const coachId = profile?.coach_id ?? null;
   if (!coachId) {
     return (
-      <div className="px-6 py-8 text-center">
-        <p className="text-[#F5EDED]/40 text-sm">
-          Ton coach n&apos;est pas encore configuré.
+      <div className="px-6 py-16 text-center max-w-sm mx-auto">
+        <div className="w-14 h-14 rounded-2xl bg-[#890404]/10 flex items-center justify-center mx-auto mb-4">
+          <Users size={22} className="text-[#F5EDED]/25" strokeWidth={1.5} />
+        </div>
+        <p className="text-[#F5EDED]/60 text-sm font-semibold mb-1">
+          Tu n&apos;as pas encore de coach.
         </p>
+        <p className="text-[#F5EDED]/35 text-xs mb-5">
+          Choisis un coach pour pouvoir lui écrire directement.
+        </p>
+        <Link
+          href="/dashboard/client/coachs"
+          className="ep-btn-primary"
+          style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, textDecoration: "none" }}
+        >
+          Trouver un coach
+          <ChevronRight size={14} />
+        </Link>
       </div>
     );
   }

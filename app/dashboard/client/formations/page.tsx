@@ -137,6 +137,8 @@ export default async function FormationsPage() {
               <Link
                 key={formation.id}
                 href={isAvailable ? `/dashboard/client/formations/${formation.id}` : "#"}
+                onClick={isAvailable ? undefined : (e) => e.preventDefault()}
+                aria-disabled={!isAvailable}
                 className="ep-card animate-fade-up"
                 style={{
                   animationDelay: `${i * 60}ms`,

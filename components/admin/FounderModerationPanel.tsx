@@ -17,10 +17,12 @@ export default function FounderModerationPanel({
   const [error, setError] = useState("");
   const [status, setStatus] = useState<"idle" | "disconnected" | "deleted">("idle");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [confirmingDisconnect, setConfirmingDisconnect] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   function handleDisconnect() {
     setError("");
+    setConfirmingDisconnect(false);
     startTransition(async () => {
       const result = await disconnectUser(targetUserId);
       if (result.error) setError(result.error);
@@ -57,15 +59,35 @@ export default function FounderModerationPanel({
           Message direct
         </Link>
 
-        <button
-          onClick={handleDisconnect}
-          disabled={isPending}
-          className="ep-btn-secondary"
-          style={{ fontSize: 11 }}
-        >
-          <LogOut size={13} />
-          Déconnecter
-        </button>
+        {!confirmingDisconnect ? (
+          <button
+            onClick={() => setConfirmingDisconnect(true)}
+            disabled={isPending}
+            className="ep-btn-secondary"
+            style={{ fontSize: 11 }}
+          >
+            <LogOut size={13} />
+            Déconnecter
+          </button>
+        ) : (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-[#F5EDED]/60">Forcer la déconnexion de {targetName} ?</span>
+            <button
+              onClick={handleDisconnect}
+              disabled={isPending}
+              className="text-[11px] font-bold text-red-400 hover:text-red-300"
+            >
+              Confirmer
+            </button>
+            <button
+              onClick={() => setConfirmingDisconnect(false)}
+              disabled={isPending}
+              className="text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/60"
+            >
+              Annuler
+            </button>
+          </div>
+        )}
 
         {!confirmingDelete ? (
           <button
