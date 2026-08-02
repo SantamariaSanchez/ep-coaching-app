@@ -35,7 +35,7 @@ import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal }
 import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, FileText } from "lucide-react";
 
 const STATUS_BADGE = {
   active: {
@@ -141,7 +141,7 @@ export default async function ClientDetailPage({
         Tous les clients
       </Link>
 
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex items-center gap-3 mb-8 flex-wrap">
         <div>
           <h1 className="text-3xl font-black uppercase tracking-tight">
             {client.full_name ?? "Client"}
@@ -152,6 +152,13 @@ export default async function ClientDetailPage({
         >
           {badge.label}
         </span>
+        <Link
+          href={`/dashboard/coach/clients/${id}/notes`}
+          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+        >
+          <FileText size={12} />
+          Mes notes
+        </Link>
       </div>
 
       <ClientProfileTabs
