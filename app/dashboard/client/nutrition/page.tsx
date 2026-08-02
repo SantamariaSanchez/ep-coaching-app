@@ -7,9 +7,12 @@ import {
   getAllFoods,
   getActiveDietPlan,
   getAllDietPlansWithMeals,
+  getMostLoggedFoodsGlobal,
 } from "@/utils/nutrition";
 import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getCommunityRecipes } from "@/utils/community-recipes";
+import { getSavedMeals } from "@/utils/saved-meals";
+import { getClientIntake } from "@/utils/client-intake";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
 import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
@@ -24,6 +27,9 @@ import {
   deactivateOwnDietPlan,
   deleteOwnDietPlan,
   setOwnSeasonMode,
+  createSavedMeal,
+  deleteSavedMeal,
+  logMealItems,
 } from "./actions";
 
 export default async function ClientNutritionPage() {
@@ -39,7 +45,7 @@ export default async function ClientNutritionPage() {
   // historique) et plans perso, comme les clients coachés : seule la
   // provenance du plan change (auto-géré, pas de coach).
   if (!isSubscribed(profile)) {
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs] =
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs, savedMeals, mostUsedGlobal, intake] =
       await Promise.all([
         getNutritionProfile(user.id),
         getTodayLogs(user.id, today),
@@ -50,6 +56,9 @@ export default async function ClientNutritionPage() {
         getCommunityRecipes(),
         getLatestWeight(user.id),
         getClientDailyLogs(user.id, 21),
+        getSavedMeals(user.id),
+        getMostLoggedFoodsGlobal(),
+        getClientIntake(user.id),
       ]);
 
     return (
@@ -88,9 +97,15 @@ export default async function ClientNutritionPage() {
           activePlan={activePlan}
           seasonMode={profile?.season_mode}
           isOwnPlan
+          intake={intake}
+          savedMeals={savedMeals}
+          mostUsedGlobal={mostUsedGlobal}
           addFoodLog={addFoodLog}
           removeFoodLog={removeFoodLog}
           createCustomFood={createCustomFood}
+          createSavedMeal={createSavedMeal}
+          deleteSavedMeal={deleteSavedMeal}
+          logMealItems={logMealItems}
         />
 
         <OwnDietPlansSection
@@ -105,7 +120,7 @@ export default async function ClientNutritionPage() {
     );
   }
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes, savedMeals, mostUsedGlobal, intake] =
     await Promise.all([
       getNutritionProfile(user.id),
       getTodayLogs(user.id, today),
@@ -113,6 +128,9 @@ export default async function ClientNutritionPage() {
       getAllFoods(),
       getActiveDietPlan(user.id),
       getCommunityRecipes(),
+      getSavedMeals(user.id),
+      getMostLoggedFoodsGlobal(),
+      getClientIntake(user.id),
     ]);
 
   return (
@@ -126,9 +144,15 @@ export default async function ClientNutritionPage() {
       dietMode={activePlan?.mode ?? "flexible"}
       activePlan={activePlan}
       seasonMode={profile?.season_mode}
+      intake={intake}
+      savedMeals={savedMeals}
+      mostUsedGlobal={mostUsedGlobal}
       addFoodLog={addFoodLog}
       removeFoodLog={removeFoodLog}
       createCustomFood={createCustomFood}
+      createSavedMeal={createSavedMeal}
+      deleteSavedMeal={deleteSavedMeal}
+      logMealItems={logMealItems}
     />
   );
 }

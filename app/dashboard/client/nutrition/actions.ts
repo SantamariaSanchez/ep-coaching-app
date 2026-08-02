@@ -315,3 +315,106 @@ export async function deleteOwnDietPlan(planId: string): Promise<{ error?: strin
     return { error: "Erreur inattendue." };
   }
 }
+
+// ── Repas enregistrés — logger un repas complet en un tap au lieu de
+// rechercher/ajouter chaque aliment un par un ────────────────────────────
+
+export async function createSavedMeal(
+  name: string,
+  items: { foodId: string; quantityG: number }[]
+): Promise<{ error?: string; id?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  if (!name.trim() || items.length === 0) return { error: "Nom et au moins un aliment requis." };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { data: meal, error } = await supabase
+      .from("saved_meals")
+      .insert({ owner_id: guard.userId, name: name.trim() })
+      .select("id")
+      .single();
+    if (error || !meal) return { error: "Erreur lors de la sauvegarde du repas." };
+
+    const { error: itemsError } = await supabase.from("saved_meal_items").insert(
+      items.map((it) => ({ saved_meal_id: meal.id, food_id: it.foodId, quantity_g: it.quantityG }))
+    );
+    if (itemsError) return { error: "Erreur lors de la sauvegarde des aliments du repas." };
+
+    revalidatePath("/dashboard/client/nutrition");
+    return { id: meal.id };
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deleteSavedMeal(mealId: string): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    await supabase.from("saved_meals").delete().eq("id", mealId).eq("owner_id", guard.userId);
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Logue en une fois tous les aliments d'un repas enregistré (ou du plan
+// actif) dans un créneau donné — le calcul des macros est refait ici à
+// partir des données aliment officielles plutôt que de faire confiance à
+// des valeurs recalculées côté client pour un lot entier.
+export async function logMealItems(
+  items: { foodId: string; quantityG: number }[],
+  mealSlot: string,
+  loggedAt: string
+): Promise<{ error?: string; count?: number }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  if (items.length === 0) return { error: "Repas vide." };
+
+  try {
+    const admin = createAdminClient();
+    const { data: foodsData } = await admin
+      .from("foods")
+      .select("id, calories_per_100, proteins_per_100, carbs_per_100, fats_per_100")
+      .in("id", items.map((it) => it.foodId));
+    const byId = new Map(
+      ((foodsData ?? []) as { id: string; calories_per_100: number; proteins_per_100: number; carbs_per_100: number; fats_per_100: number }[]).map(
+        (f) => [f.id, f]
+      )
+    );
+
+    const rows = items
+      .map((it) => {
+        const food = byId.get(it.foodId);
+        if (!food) return null;
+        const ratio = it.quantityG / 100;
+        return {
+          client_id: guard.userId,
+          food_id: it.foodId,
+          meal_slot: mealSlot,
+          quantity_g: it.quantityG,
+          logged_at: loggedAt,
+          calories: Math.round(food.calories_per_100 * ratio),
+          proteins: Math.round(food.proteins_per_100 * ratio * 10) / 10,
+          carbs: Math.round(food.carbs_per_100 * ratio * 10) / 10,
+          fats: Math.round(food.fats_per_100 * ratio * 10) / 10,
+        };
+      })
+      .filter((r): r is NonNullable<typeof r> => r !== null);
+
+    if (rows.length === 0) return { error: "Aucun aliment valide dans ce repas." };
+
+    const { error } = await admin.from("food_logs").insert(rows);
+    if (error) return { error: "Erreur lors de l'ajout." };
+
+    awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
+    revalidatePath("/dashboard/client/nutrition");
+    return { count: rows.length };
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}

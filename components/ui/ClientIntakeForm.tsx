@@ -89,12 +89,17 @@ export default function ClientIntakeForm({
   saveClientIntake,
   stepGoal,
   updateClientStepGoal,
+  isSelf = false,
 }: {
   clientId: string;
   existingIntake: ClientIntake | null;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
   stepGoal?: number;
   updateClientStepGoal?: (clientId: string, dailyGoal: number) => Promise<{ error?: string }>;
+  // Un coach remplit aussi cette fiche pour lui-même (son propre suivi
+  // perso) — les textes qui parlent de "la fiche client"/"le client"
+  // n'ont alors aucun sens, ce prop bascule sur un phrasé à la 1re personne.
+  isSelf?: boolean;
 }) {
   const [form, setForm] = useState<ClientIntakeInput>(existingIntake ?? emptyIntake());
   const [saving, setSaving] = useState(false);
@@ -144,7 +149,7 @@ export default function ClientIntakeForm({
       const looksLikeMissingTable = /relation .* does not exist|schema cache/i.test(res.error);
       setError(
         looksLikeMissingTable
-          ? "La fiche client n'est pas encore activée côté base de données — la migration SQL doit être exécutée dans Supabase avant de pouvoir enregistrer. Rien n'a été perdu, réessaie une fois que c'est fait."
+          ? `${isSelf ? "Ta fiche n'est" : "La fiche client n'est"} pas encore activée côté base de données — la migration SQL doit être exécutée dans Supabase avant de pouvoir enregistrer. Rien n'a été perdu, réessaie une fois que c'est fait.`
           : res.error
       );
     } else {
@@ -439,7 +444,7 @@ export default function ClientIntakeForm({
           disabled={saving}
           className="w-full flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest py-3.5 rounded-xl transition-colors"
         >
-          {saving ? "Enregistrement…" : saved ? <><Check size={14} /> Enregistré</> : <><Save size={14} /> Enregistrer la fiche client</>}
+          {saving ? "Enregistrement…" : saved ? <><Check size={14} /> Enregistré</> : <><Save size={14} /> {isSelf ? "Enregistrer ma fiche" : "Enregistrer la fiche client"}</>}
         </button>
       </div>
     </div>

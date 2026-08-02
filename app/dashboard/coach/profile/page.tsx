@@ -47,7 +47,7 @@ export default async function CoachProfilePage() {
           Ma fiche
         </p>
         <h2 className="text-xl font-black uppercase tracking-tight mb-4">Mes infos personnelles</h2>
-        <ClientIntakeForm clientId={user.id} existingIntake={intake} saveClientIntake={saveClientIntake} />
+        <ClientIntakeForm clientId={user.id} existingIntake={intake} saveClientIntake={saveClientIntake} isSelf />
       </div>
 
       <Link

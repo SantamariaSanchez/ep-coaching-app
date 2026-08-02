@@ -282,6 +282,29 @@ export async function getAllFoods(): Promise<Food[]> {
   }
 }
 
+// Aliments les plus loggués tous utilisateurs confondus — "utilisé par les
+// autres", en plus de l'historique personnel (recentFoods côté client).
+// S'appuie sur la vue food_log_popularity (GROUP BY non disponible via
+// PostgREST directement).
+export async function getMostLoggedFoodsGlobal(limit = 10): Promise<Food[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: popularity } = await admin
+      .from("food_log_popularity")
+      .select("food_id, log_count")
+      .order("log_count", { ascending: false })
+      .limit(limit);
+    if (!popularity || popularity.length === 0) return [];
+
+    const ids = (popularity as { food_id: string; log_count: number }[]).map((p) => p.food_id);
+    const { data: foodsData } = await admin.from("foods").select("*").in("id", ids);
+    const byId = new Map(((foodsData ?? []) as Food[]).map((f) => [f.id, f]));
+    return ids.map((id) => byId.get(id)).filter((f): f is Food => !!f);
+  } catch {
+    return [];
+  }
+}
+
 // ── Diet plan queries ─────────────────────────────────────────────────────────
 
 export async function getActiveDietPlan(

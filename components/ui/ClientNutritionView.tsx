@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed } from "lucide-react";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
@@ -15,6 +15,9 @@ import type {
   DietPlanMeal,
 } from "@/utils/nutrition";
 import type { CommunityRecipe } from "@/utils/community-recipes";
+import type { SavedMeal } from "@/utils/saved-meals";
+import type { ClientIntake } from "@/utils/client-intake";
+import { buildWatchKeywords, matchesWatchKeyword } from "@/lib/food-watch-keywords";
 import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -137,24 +140,35 @@ function MacroRing({
   );
 }
 
-function FoodResultButton({ food, onClick }: { food: Food; onClick: () => void }) {
+function FoodResultButton({
+  food,
+  onClick,
+  watchKeywords,
+}: {
+  food: Food;
+  onClick: () => void;
+  watchKeywords?: string[];
+}) {
+  const watchHit = watchKeywords && watchKeywords.length > 0 ? matchesWatchKeyword(food.name, watchKeywords) : null;
   return (
     <button
       onClick={onClick}
       className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
     >
-      <p className="text-sm text-white font-medium leading-tight">
+      <p className="text-sm text-white font-medium leading-tight flex items-center gap-1.5">
         {food.name}
         {food.is_custom && (
           <span className="ml-1.5 text-[9px] text-[#E01E1E] uppercase font-bold">
             custom
           </span>
         )}
+        {watchHit && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
       </p>
       <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
         {food.calories_per_100} kcal/100g · P{" "}
         {food.proteins_per_100}g · G {food.carbs_per_100}g ·
         L {food.fats_per_100}g
+        {watchHit && <span className="text-amber-400/80"> · à vérifier ({watchHit})</span>}
       </p>
     </button>
   );
@@ -175,6 +189,11 @@ interface Props {
   // Membre gratuit gérant lui-même son plan (pas de coach) — adapte les
   // libellés qui supposent normalement un coach ("Plan de ton coach", etc.).
   isOwnPlan?: boolean;
+  // Fiche client — sert uniquement à signaler (jamais filtrer) les aliments
+  // à vérifier pendant la recherche (allergies, aliments détestés connus).
+  intake?: ClientIntake | null;
+  savedMeals?: SavedMeal[];
+  mostUsedGlobal?: Food[];
   addFoodLog: (params: {
     foodId: string | null;
     mealSlot: string;
@@ -195,6 +214,9 @@ interface Props {
     fats_per_100: number;
     fibers_per_100: number;
   }) => Promise<{ food?: Food; error?: string }>;
+  createSavedMeal?: (name: string, items: { foodId: string; quantityG: number }[]) => Promise<{ error?: string; id?: string }>;
+  deleteSavedMeal?: (mealId: string) => Promise<{ error?: string }>;
+  logMealItems?: (items: { foodId: string; quantityG: number }[], mealSlot: string, loggedAt: string) => Promise<{ error?: string; count?: number }>;
 }
 
 export default function ClientNutritionView({
@@ -208,9 +230,15 @@ export default function ClientNutritionView({
   activePlan,
   seasonMode,
   isOwnPlan = false,
+  intake = null,
+  savedMeals: initialSavedMeals = [],
+  mostUsedGlobal = [],
   addFoodLog,
   removeFoodLog,
   createCustomFood,
+  createSavedMeal,
+  deleteSavedMeal,
+  logMealItems,
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
@@ -250,10 +278,19 @@ export default function ClientNutritionView({
     return map;
   }, [shoppingList]);
 
+  // Repas enregistrés — état local pour refléter création/suppression sans
+  // recharger la page (même pattern que `foods`).
+  const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(initialSavedMeals);
+  const [savingMealSlot, setSavingMealSlot] = useState<string | null>(null);
+  const [savingMealName, setSavingMealName] = useState("");
+  const [savingMealBusy, setSavingMealBusy] = useState(false);
+
+  const watchKeywords = useMemo(() => buildWatchKeywords(intake), [intake]);
+
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchTab, setSearchTab] = useState<"aliments" | "recettes">("aliments");
+  const [searchTab, setSearchTab] = useState<"aliments" | "recettes" | "repas">("aliments");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
   const [recipeServings, setRecipeServings] = useState("1");
@@ -362,6 +399,28 @@ export default function ClientNutritionView({
     }
     return list;
   }, [historyLogs]);
+
+  // Aliments les plus souvent loggués par CE client (fréquence sur
+  // l'historique chargé), complétés par les plus loggués tous utilisateurs
+  // confondus si l'historique perso est trop mince pour remplir la liste —
+  // évite une section vide pour un nouveau client sans casser la pertinence
+  // pour un client avec de l'historique.
+  const mostUsedFoods = useMemo(() => {
+    const counts = new Map<string, { food: Food; count: number }>();
+    for (const log of historyLogs) {
+      if (!log.food_id || !log.foods) continue;
+      const entry = counts.get(log.food_id);
+      if (entry) entry.count += 1;
+      else counts.set(log.food_id, { food: log.foods, count: 1 });
+    }
+    const personal = [...counts.values()]
+      .filter((e) => e.count > 1)
+      .sort((a, b) => b.count - a.count)
+      .map((e) => e.food);
+    const seen = new Set(personal.map((f) => f.id));
+    const fill = mostUsedGlobal.filter((f) => !seen.has(f.id));
+    return [...personal, ...fill].slice(0, 8);
+  }, [historyLogs, mostUsedGlobal]);
 
   // historyLogs is ordered most-recent-first, so the first hit per food is
   // the last quantity actually eaten — used to pre-fill the quantity field.
@@ -488,6 +547,86 @@ export default function ClientNutritionView({
         )
       );
     }
+  }
+
+  // Logue en un tap tous les aliments d'un repas enregistré dans le
+  // créneau ouvert — même logique optimiste que handleAddFood, mais en lot.
+  async function handleLogSavedMeal(meal: SavedMeal) {
+    if (!addingToSlot || !logMealItems || meal.saved_meal_items.length === 0) return;
+    const slot = addingToSlot;
+    const items = meal.saved_meal_items.filter((it) => it.foods);
+
+    const optimisticLogs: FoodLogWithFood[] = items.map((it) => {
+      const macros = calcMacros(it.foods!, it.quantity_g);
+      return {
+        id: `optimistic-${Date.now()}-${it.food_id}`,
+        client_id: "",
+        food_id: it.food_id,
+        meal_slot: slot,
+        quantity_g: it.quantity_g,
+        logged_at: today,
+        calories: macros.calories,
+        proteins: macros.proteins,
+        carbs: macros.carbs,
+        fats: macros.fats,
+        foods: it.foods,
+      };
+    });
+
+    setTodayLogs((prev) => [...prev, ...optimisticLogs]);
+    closeModal();
+
+    const result = await logMealItems(
+      items.map((it) => ({ foodId: it.food_id, quantityG: it.quantity_g })),
+      slot,
+      today
+    );
+    if (result.error) {
+      const ids = new Set(optimisticLogs.map((l) => l.id));
+      setTodayLogs((prev) => prev.filter((l) => !ids.has(l.id)));
+      setAddingError(result.error);
+    }
+  }
+
+  function openSaveMealPrompt(slotKey: string) {
+    setSavingMealSlot(slotKey);
+    setSavingMealName("");
+  }
+
+  async function handleSaveSlotAsMeal() {
+    if (!savingMealSlot || !createSavedMeal || !savingMealName.trim()) return;
+    const slotLogs = todayLogs.filter((l) => l.meal_slot === savingMealSlot && l.food_id);
+    if (slotLogs.length === 0) return;
+
+    setSavingMealBusy(true);
+    const name = savingMealName.trim();
+    const result = await createSavedMeal(
+      name,
+      slotLogs.map((l) => ({ foodId: l.food_id!, quantityG: l.quantity_g }))
+    );
+    setSavingMealBusy(false);
+    if (!result.error && result.id) {
+      const newMeal: SavedMeal = {
+        id: result.id,
+        owner_id: "",
+        name,
+        created_at: new Date().toISOString(),
+        saved_meal_items: slotLogs.map((l, i) => ({
+          id: `local-${i}`,
+          food_id: l.food_id!,
+          quantity_g: l.quantity_g,
+          foods: l.foods,
+        })),
+      };
+      setSavedMeals((prev) => [newMeal, ...prev]);
+      setSavingMealSlot(null);
+    }
+  }
+
+  async function handleDeleteSavedMeal(mealId: string) {
+    if (!deleteSavedMeal) return;
+    setSavedMeals((prev) => prev.filter((m) => m.id !== mealId));
+    await deleteSavedMeal(mealId);
   }
 
   async function handleTogglePlanItem(meal: DietPlanMeal, matchedLogId: string | undefined) {
@@ -983,6 +1122,7 @@ export default function ClientNutritionView({
                 today={today}
                 onAdd={() => openModal(slot.key)}
                 onDelete={handleDelete}
+                onSaveAsMeal={createSavedMeal ? () => openSaveMealPrompt(slot.key) : undefined}
               />
             );
           })}
@@ -1227,10 +1367,10 @@ export default function ClientNutritionView({
               </button>
             </div>
 
-            {/* Tab switcher: Aliments / Recettes */}
+            {/* Tab switcher: Aliments / Recettes / Repas */}
             {!selectedFood && !selectedRecipe && (
               <div className="flex px-5 pt-2 pb-0 gap-1 flex-shrink-0">
-                {(["aliments", "recettes"] as const).map((t) => (
+                {(["aliments", "repas", "recettes"] as const).map((t) => (
                   <button
                     key={t}
                     onClick={() => { setSearchTab(t); setSearchQuery(""); }}
@@ -1240,7 +1380,9 @@ export default function ClientNutritionView({
                         : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
                     }`}
                   >
-                    {t === "aliments" ? "Aliments" : <span className="flex items-center gap-1"><BookOpen size={10} />Recettes</span>}
+                    {t === "aliments" && "Aliments"}
+                    {t === "repas" && <span className="flex items-center gap-1"><UtensilsCrossed size={10} />Repas</span>}
+                    {t === "recettes" && <span className="flex items-center gap-1"><BookOpen size={10} />Recettes</span>}
                   </button>
                 ))}
               </div>
@@ -1263,25 +1405,93 @@ export default function ClientNutritionView({
 
                 {searchTab === "aliments" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
+                    {watchKeywords.length > 0 && (
+                      <div className="mx-1 mt-2 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
+                        <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
+                          À vérifier pour toi : {watchKeywords.join(", ")}
+                        </p>
+                      </div>
+                    )}
                     {!searchQuery && recentFoods.length > 0 && (
                       <div className="mb-1">
                         <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
                           <Clock size={10} /> Récents
                         </p>
                         {recentFoods.map((food) => (
-                          <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} />
+                          <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
                         ))}
                       </div>
                     )}
-                    {!searchQuery && recentFoods.length > 0 && (
+                    {!searchQuery && mostUsedFoods.length > 0 && (
+                      <div className="mb-1">
+                        <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1.5">
+                          <Flame size={10} /> Les plus utilisés
+                        </p>
+                        {mostUsedFoods.map((food) => (
+                          <FoodResultButton key={`used-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
+                        ))}
+                      </div>
+                    )}
+                    {!searchQuery && (recentFoods.length > 0 || mostUsedFoods.length > 0) && (
                       <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Tous les aliments</p>
                     )}
                     {filteredFoods.length === 0 ? (
                       <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucun résultat</p>
                     ) : (
                       filteredFoods.map((food) => (
-                        <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} />
+                        <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
                       ))
+                    )}
+                  </div>
+                )}
+
+                {searchTab === "repas" && (
+                  <div className="flex-1 overflow-y-auto px-3 pb-3 pt-2">
+                    {savedMeals.length === 0 ? (
+                      <div className="text-center py-8 px-4">
+                        <UtensilsCrossed size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+                        <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                          Aucun repas enregistré. Ajoute des aliments à un créneau, puis touche l&apos;icône{" "}
+                          <Bookmark size={11} className="inline text-[#F5EDED]/40" /> à côté pour le sauvegarder et le réutiliser en un tap.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2">
+                        {savedMeals.map((meal) => {
+                          const totalKcal = meal.saved_meal_items.reduce(
+                            (s, it) => s + (it.foods ? it.foods.calories_per_100 * (it.quantity_g / 100) : 0),
+                            0
+                          );
+                          return (
+                            <div
+                              key={meal.id}
+                              className="flex items-center gap-3 bg-[#150000] border border-[#890404]/25 rounded-xl px-3.5 py-3"
+                            >
+                              <button
+                                onClick={() => handleLogSavedMeal(meal)}
+                                className="flex-1 min-w-0 text-left flex items-center gap-3"
+                              >
+                                <div className="w-8 h-8 rounded-lg bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
+                                  <UtensilsCrossed size={14} className="text-[#E01E1E]" strokeWidth={1.8} />
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-sm text-white font-bold truncate">{meal.name}</p>
+                                  <p className="text-[10px] text-[#F5EDED]/35">
+                                    {meal.saved_meal_items.length} aliment{meal.saved_meal_items.length > 1 ? "s" : ""} · {fmt(totalKcal)} kcal
+                                  </p>
+                                </div>
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSavedMeal(meal.id)}
+                                className="text-[#F5EDED]/20 hover:text-red-500 transition-colors flex-shrink-0 p-1"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
                     )}
                   </div>
                 )}
@@ -1454,6 +1664,43 @@ export default function ClientNutritionView({
                 </div>
               </div>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* ── SAVE MEAL MODAL ───────────────────────────────────────────────── */}
+      {savingMealSlot && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setSavingMealSlot(null)}
+          />
+          <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
+                <Bookmark size={13} className="text-[#E01E1E]" /> Enregistrer ce repas
+              </p>
+              <button onClick={() => setSavingMealSlot(null)} className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
+                <X size={16} />
+              </button>
+            </div>
+            <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
+              Donne-lui un nom pour le retrouver et le reloguer en un tap la prochaine fois.
+            </p>
+            <input
+              autoFocus
+              value={savingMealName}
+              onChange={(e) => setSavingMealName(e.target.value)}
+              placeholder="Ex : Mon petit-déj habituel"
+              className={inputCls}
+            />
+            <button
+              onClick={handleSaveSlotAsMeal}
+              disabled={savingMealBusy || !savingMealName.trim()}
+              className="w-full mt-4 py-2.5 text-xs font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors"
+            >
+              {savingMealBusy ? "…" : "Enregistrer"}
+            </button>
           </div>
         </div>
       )}
@@ -1834,6 +2081,7 @@ function MealSlotCard({
   today,
   onAdd,
   onDelete,
+  onSaveAsMeal,
 }: {
   slotKey: string;
   label: string;
@@ -1842,6 +2090,7 @@ function MealSlotCard({
   today: string;
   onAdd: () => void;
   onDelete: (id: string) => void;
+  onSaveAsMeal?: () => void;
 }) {
   const [expanded, setExpanded] = useState(true);
   const [hasPhoto, setHasPhoto] = useState(() => !!loadMealPhoto(today, slotKey));
@@ -1891,6 +2140,18 @@ function MealSlotCard({
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {onSaveAsMeal && logs.length > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSaveAsMeal();
+              }}
+              className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
+              title="Enregistrer ce repas pour le réutiliser en un tap"
+            >
+              <Bookmark size={13} />
+            </button>
+          )}
           {/* Quick photo capture */}
           <label
             onClick={(e) => e.stopPropagation()}
