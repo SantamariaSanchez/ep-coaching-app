@@ -1,13 +1,15 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Shield } from "lucide-react";
+import { Shield, TrendingUp } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { getCoachBillingInfo } from "@/lib/coach-billing";
 import AccountActions from "@/components/profile/AccountActions";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
 import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
+import MyPlatformSubscriptionCard from "@/components/coach/MyPlatformSubscriptionCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 
 export default async function CoachParametresPage() {
@@ -36,6 +38,10 @@ export default async function CoachParametresPage() {
     linkedCoachName = linkedCoach?.full_name ?? "ton coach";
   }
 
+  const myBilling = !profile.is_platform_owner
+    ? await getCoachBillingInfo(profile.platform_stripe_customer_id, profile.platform_stripe_subscription_id)
+    : null;
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
@@ -53,6 +59,7 @@ export default async function CoachParametresPage() {
 
       {!profile.is_platform_owner && (
         <div className="mt-4">
+          <MyPlatformSubscriptionCard billing={myBilling} />
           <InviteLinkCard inviteCode={profile.invite_code} />
           <PaymentLinkCard initialLink={profile.external_payment_link} />
           <PersonalCoachCard linkedCoachName={linkedCoachName} />
@@ -64,6 +71,13 @@ export default async function CoachParametresPage() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
             Administration
           </p>
+          <Link
+            href="/dashboard/coach/finance"
+            className="flex items-center gap-2.5 mb-2 px-4 py-3.5 rounded-xl bg-[#1f0101] border border-[#890404]/25 text-white text-sm font-bold"
+          >
+            <TrendingUp size={16} style={{ color: "#E01E1E" }} />
+            Finance
+          </Link>
           <Link
             href="/dashboard/coach/admin"
             className="flex items-center gap-2.5 mb-4 px-4 py-3.5 rounded-xl bg-[#1f0101] border border-[#890404]/25 text-white text-sm font-bold"

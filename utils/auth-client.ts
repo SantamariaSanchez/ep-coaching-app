@@ -44,6 +44,8 @@ export interface Profile {
   instagram_handle: string | null;
   next_billing_date: string | null;
   external_payment_link: string | null;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
 }
 
 export function isSubscribed(profile: Profile | null): boolean {
