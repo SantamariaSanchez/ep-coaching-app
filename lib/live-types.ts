@@ -55,7 +55,7 @@ export interface LiveEvent {
 export const LIVE_TYPE_LABELS: Record<LiveType, string> = {
   "1to1": "Appel 1:1",
   webinaire: "Webinaire / Présentation",
-  qna: "Live Q&A",
+  qna: "Questions / Réponses",
   audit: "Audit stratégique",
   checkin_hebdo: "Suivi hebdomadaire",
   acces_direct: "Accès direct",

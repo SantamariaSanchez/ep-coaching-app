@@ -630,7 +630,9 @@ export default function ConversationView({
           </p>
         </div>
       ) : (
-      <div className="border-t border-[#890404]/20 bg-[#150000] px-3 py-3 flex items-center gap-2">
+      <div className="border-t border-[#890404]/20 bg-[#150000] px-3 pt-1.5 pb-3 flex flex-col gap-1">
+      <p className="text-[9px] text-[#F5EDED]/25 pl-1">Maintiens l&apos;icône micro pour enregistrer un message vocal.</p>
+      <div className="flex items-center gap-2">
         <VoiceRecorderButton onSend={sendVoice} />
 
         <button
@@ -686,6 +688,7 @@ export default function ConversationView({
             <Send size={15} className="text-white" />
           )}
         </button>
+      </div>
       </div>
       )}
     </div>

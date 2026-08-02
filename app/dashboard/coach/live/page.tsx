@@ -71,7 +71,7 @@ export default async function CoachLivePage() {
               </p>
             </>
           ) : (
-            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Rien de programmé</p>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Rien de programmé. Planifie ton prochain live ci-dessous.</p>
           )}
         </div>
         <div>
