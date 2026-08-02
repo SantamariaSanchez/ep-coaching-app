@@ -12,10 +12,37 @@ import {
   ChevronDown,
   ChevronUp,
   PlayCircle,
+  AlertTriangle,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { calculateNutrients } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import type { ClientIntake } from "@/utils/client-intake";
+import { ALLERGEN_LABELS } from "@/lib/recipes-data";
+
+// Mots-clés dérivés de la fiche client pour signaler (jamais masquer — la
+// base d'aliments n'a pas de tag allergène fiable par ingrédient, un filtre
+// silencieux donnerait une fausse sécurité) les aliments à vérifier pendant
+// la construction du plan, sans que le coach ait à rouvrir/relire la fiche.
+function buildWatchKeywords(intake: ClientIntake | null | undefined): string[] {
+  if (!intake) return [];
+  const keywords: string[] = intake.allergens.map((a) => ALLERGEN_LABELS[a].toLowerCase());
+  if (intake.disliked_foods) {
+    keywords.push(
+      ...intake.disliked_foods
+        .toLowerCase()
+        .split(/[,;\n.]+/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 2)
+    );
+  }
+  return keywords;
+}
+
+function matchesWatchKeyword(foodName: string, keywords: string[]): string | null {
+  const name = foodName.toLowerCase();
+  return keywords.find((k) => name.includes(k) || k.includes(name)) ?? null;
+}
 
 export const MEAL_SLOTS = [
   { key: "breakfast", label: "Petit-déjeuner" },
@@ -60,9 +87,11 @@ interface PlanMealRow {
 export function PlanBuilder({
   foods,
   onCreate,
+  intake,
 }: {
   foods: Food[];
   onCreate: (name: string, mode: DietMode, meals: DietPlanMealInput[], structure: DietStructure) => Promise<void>;
+  intake?: ClientIntake | null;
 }) {
   const [planName, setPlanName] = useState("");
   const [mode, setMode] = useState<DietMode>("fixed");
@@ -78,6 +107,8 @@ export function PlanBuilder({
   const [success, setSuccess] = useState(false);
 
   const currentDay = structure === "weekly" ? activeDay : null;
+
+  const watchKeywords = useMemo(() => buildWatchKeywords(intake), [intake]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -392,6 +423,14 @@ export function PlanBuilder({
 
             {!selectedFood ? (
               <>
+                {watchKeywords.length > 0 && (
+                  <div className="mx-5 mt-3 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2 flex-shrink-0">
+                    <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                    <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
+                      À vérifier pour ce client : {watchKeywords.join(", ")}
+                    </p>
+                  </div>
+                )}
                 <div className="px-5 py-3 flex-shrink-0">
                   <input
                     autoFocus
@@ -402,18 +441,25 @@ export function PlanBuilder({
                   />
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
-                  {filtered.map((food) => (
-                    <button
-                      key={food.id}
-                      onClick={() => { setSelectedFood(food); setQty("100"); }}
-                      className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
-                    >
-                      <p className="text-sm text-white font-medium">{food.name}</p>
-                      <p className="text-[10px] text-[#F5EDED]/35">
-                        {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
-                      </p>
-                    </button>
-                  ))}
+                  {filtered.map((food) => {
+                    const watchHit = watchKeywords.length > 0 ? matchesWatchKeyword(food.name, watchKeywords) : null;
+                    return (
+                      <button
+                        key={food.id}
+                        onClick={() => { setSelectedFood(food); setQty("100"); }}
+                        className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
+                      >
+                        <p className="text-sm text-white font-medium flex items-center gap-1.5">
+                          {food.name}
+                          {watchHit && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
+                        </p>
+                        <p className="text-[10px] text-[#F5EDED]/35">
+                          {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
+                          {watchHit && <span className="text-amber-400/80"> · à vérifier ({watchHit})</span>}
+                        </p>
+                      </button>
+                    );
+                  })}
                 </div>
               </>
             ) : (

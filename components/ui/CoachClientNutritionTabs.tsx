@@ -364,6 +364,7 @@ export default function CoachClientNutritionTabs({
             <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
               <PlanBuilder
                 foods={foods}
+                intake={intake}
                 onCreate={async (name, mode, meals, structure) => {
                   await createDietPlan(clientId, name, mode, meals, structure);
                   setShowBuilder(false);
