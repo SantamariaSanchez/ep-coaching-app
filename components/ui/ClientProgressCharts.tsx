@@ -78,7 +78,7 @@ function WeightChart({ data }: { data: WeightPoint[] }) {
         />
         <Tooltip
           {...TOOLTIP_STYLE}
-          formatter={(v) => [`${v ?? "N/A"} kg`, "Poids"]}
+          formatter={(v) => [`${v ?? "···"} kg`, "Poids"]}
         />
         <Line
           type="monotone"
@@ -125,7 +125,7 @@ function AdherenceChart({ data }: { data: AdherencePoint[] }) {
         />
         <Tooltip
           {...TOOLTIP_STYLE}
-          formatter={(v) => [`${v ?? "N/A"}%`, "Adhésion"]}
+          formatter={(v) => [`${v ?? "···"}%`, "Adhésion"]}
         />
         <Bar dataKey="adherence" radius={[4, 4, 0, 0]}>
           {data.map((entry, i) => (

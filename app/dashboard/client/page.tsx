@@ -622,7 +622,7 @@ export default async function ClientDashboard() {
                             </span>
                           </>
                         ) : (
-                          <span style={{ color: "rgba(245,237,237,0.2)" }}>N/A</span>
+                          <span style={{ color: "rgba(245,237,237,0.2)" }}>···</span>
                         )}
                       </p>
                     </div>

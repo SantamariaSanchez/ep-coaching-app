@@ -16,7 +16,7 @@ function StatCard({ label, value, unit = "" }: { label: string; value: number | 
     <div className="ep-card" style={{ padding: "12px 14px" }}>
       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>{label}</p>
       <p style={{ fontSize: 20, fontWeight: 900, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)", margin: 0, letterSpacing: "-0.02em" }}>
-        {value !== null ? `${value}${unit}` : "N/A"}
+        {value !== null ? `${value}${unit}` : "···"}
       </p>
     </div>
   );
@@ -116,7 +116,7 @@ export default async function CoachProgressionPage() {
                     <div key={k}>
                       <p style={{ fontSize: 8, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.2)", margin: "0 0 2px" }}>{k}</p>
                       <p style={{ fontSize: 12, fontWeight: 800, color: v !== null ? "#F5EDED" : "rgba(245,237,237,0.12)", margin: 0 }}>
-                        {v !== null ? `${v}${u}` : "N/A"}
+                        {v !== null ? `${v}${u}` : "···"}
                       </p>
                     </div>
                   ))}

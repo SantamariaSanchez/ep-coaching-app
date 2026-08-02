@@ -862,20 +862,20 @@ function SetRow({
         <div className="space-y-2">
           <div className="flex gap-4 text-sm font-black text-white">
             <span>
-              {set.weightKg || "N/A"}
+              {set.weightKg || "···"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 kg
               </span>
             </span>
             <span>
-              {set.repsActual || "N/A"}
+              {set.repsActual || "···"}
               <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
                 reps
               </span>
             </span>
             <span>
               RIR{" "}
-              <span className="text-[#E01E1E]">{set.rirActual || "N/A"}</span>
+              <span className="text-[#E01E1E]">{set.rirActual || "···"}</span>
             </span>
             {set.standardizationScore && (
               <span className="text-[10px] text-[#F5EDED]/40">
@@ -963,7 +963,7 @@ function SetRow({
                 onChange={(e) => onChange({ rirActual: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
-                <option value="">N/A</option>
+                <option value="">Non renseigné</option>
                 {[0, 1, 2, 3, 4, 5].map((v) => (
                   <option key={v} value={v}>
                     RIR {v}
@@ -983,7 +983,7 @@ function SetRow({
                 }
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
               >
-                <option value="">N/A</option>
+                <option value="">Non renseigné</option>
                 {[1, 2, 3, 4, 5].map((v) => (
                   <option key={v} value={v}>
                     {v} : {STANDARDIZATION_LABELS[String(v)]}
@@ -1941,8 +1941,8 @@ export default function SessionView({
         <div className="grid grid-cols-3 gap-2 mb-6">
           {[
             { label: "Sets", value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
-            { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "N/A", icon: Activity, color: "#4ade80" },
-            { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "N/A", icon: Star, color: "#fbbf24" },
+            { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "···", icon: Activity, color: "#4ade80" },
+            { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "···", icon: Star, color: "#fbbf24" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
@@ -2006,15 +2006,15 @@ export default function SessionView({
           {session.is_completed && (
             <div className="flex gap-4">
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.energy_level ?? "N/A"}</p>
+                <p className="text-2xl font-black text-white">{session.energy_level ?? "···"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Énergie</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.pump ?? "N/A"}</p>
+                <p className="text-2xl font-black text-white">{session.pump ?? "···"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Pump</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-black text-white">{session.general_feeling ?? "N/A"}</p>
+                <p className="text-2xl font-black text-white">{session.general_feeling ?? "···"}</p>
                 <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">Feeling</p>
               </div>
             </div>

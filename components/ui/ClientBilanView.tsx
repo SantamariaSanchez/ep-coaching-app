@@ -27,7 +27,7 @@ const val = {
 };
 
 function StressChip({ v }: { v: "low" | "medium" | "high" | null }) {
-  if (!v) return <span style={{ color: "rgba(245,237,237,0.15)" }}>N/A</span>;
+  if (!v) return <span style={{ color: "rgba(245,237,237,0.15)" }}>···</span>;
   const colors: Record<string, string> = { low: "#4ade80", medium: "#facc15", high: "#f87171" };
   const labels: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
   return (
@@ -46,7 +46,7 @@ function Avg({ label, value, unit = "" }: { label: string; value: number | null;
     <div style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.07)" }}>
       <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
       <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.12)" }}>
-        {value !== null ? `${value}${unit}` : "N/A"}
+        {value !== null ? `${value}${unit}` : "···"}
       </span>
     </div>
   );

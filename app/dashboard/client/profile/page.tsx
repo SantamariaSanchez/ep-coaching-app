@@ -18,7 +18,7 @@ function InfoRow({ label, value }: { label: string; value: string | null | undef
   return (
     <div className="flex items-center justify-between py-2.5 border-b border-[#890404]/10 last:border-0">
       <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{label}</span>
-      <span className="text-sm font-semibold text-[#F5EDED]/75">{value ?? "N/A"}</span>
+      <span className="text-sm font-semibold text-[#F5EDED]/75">{value ?? "···"}</span>
     </div>
   );
 }

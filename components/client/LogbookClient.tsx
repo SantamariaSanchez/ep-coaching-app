@@ -41,7 +41,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">N/A</span>;
+  if (value == null) return <span className="text-[#F5EDED]/25">···</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (

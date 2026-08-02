@@ -164,7 +164,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
               borderRadius: 10, padding: "10px 12px", fontSize: 13, color: "#F5EDED", outline: "none",
             }}
           >
-            <option value="">N/A</option>
+            <option value="">Non renseigné</option>
             {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
               <option key={n} value={n}>{n}/10</option>
             ))}

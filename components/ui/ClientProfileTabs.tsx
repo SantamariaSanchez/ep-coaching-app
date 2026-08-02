@@ -73,7 +73,7 @@ const TABS = [
 type TabKey = (typeof TABS)[number]["key"];
 
 function formatDate(dateStr: string | null) {
-  if (!dateStr) return "N/A";
+  if (!dateStr) return "Non renseigné";
   return new Intl.DateTimeFormat("fr-FR", {
     day: "numeric",
     month: "long",
@@ -93,7 +93,7 @@ function InfoRow({
       <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
         {label}
       </span>
-      <span className="text-sm text-white font-medium">{value || "N/A"}</span>
+      <span className="text-sm text-white font-medium">{value || "Non renseigné"}</span>
     </div>
   );
 }

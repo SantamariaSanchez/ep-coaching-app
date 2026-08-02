@@ -48,7 +48,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">N/A</span>;
+  if (value == null) return <span className="text-[#F5EDED]/25">···</span>;
   return (
     <div className="flex gap-0.5">
       {Array.from({ length: max }).map((_, i) => (
@@ -162,7 +162,7 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
                 }).format(
                   new Date(lastSession.session_date + "T12:00:00")
                 )
-              : "N/A"}
+              : "···"}
           </p>
           <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
             Dernière
@@ -401,9 +401,9 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                         : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
                     }`}
                   >
-                    {s.weight_kg != null ? `${s.weight_kg}kg` : "N/A"}
+                    {s.weight_kg != null ? `${s.weight_kg}kg` : "···"}
                     {" × "}
-                    {s.reps_actual ?? "N/A"}
+                    {s.reps_actual ?? "···"}
                     {s.rir_actual != null && ` RIR${s.rir_actual}`}
                     {s.is_pr && " 🏆"}
                     {s.video_url && (
