@@ -51,12 +51,9 @@ export default async function CoachParametresPage() {
         pushSubscribed={!!pushSub}
       />
 
-      <div className="mt-4">
-        <InviteLinkCard inviteCode={profile.invite_code} />
-      </div>
-
       {!profile.is_platform_owner && (
         <div className="mt-4">
+          <InviteLinkCard inviteCode={profile.invite_code} />
           <PaymentLinkCard initialLink={profile.external_payment_link} />
           <PersonalCoachCard linkedCoachName={linkedCoachName} />
         </div>
