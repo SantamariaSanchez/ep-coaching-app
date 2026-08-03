@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { Video } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, type LiveType } from "@/lib/live-types";
 import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import LiveEventsList from "@/components/live/LiveEventsList";
+import CoachOnlyGate from "@/components/ui/CoachOnlyGate";
 import { toggleRsvp } from "./actions";
 
 const INDIVIDUAL_TYPES: LiveType[] = ["1to1", "checkin_hebdo", "audit", "acces_direct"];
@@ -50,11 +52,13 @@ export default async function ClientLivePage() {
 
   const profile = await getProfile(user.id);
   if (!isClientCapable(profile)) redirect("/dashboard/coach");
-  // Réservé aux clients payants (voir proxy.ts) — vérification explicite en
-  // plus du middleware, les lives étant un canal direct vers le coach. Un
-  // coach lui-même suivi par un autre coach (double rôle) n'est jamais
-  // soumis à ce paywall entre professionnels (voir Lot 1).
-  if (profile?.role !== "coach" && !isSubscribed(profile)) redirect("/dashboard/client/abonnement");
+  // Réservé aux clients coachés, les lives étant un canal direct vers le
+  // coach. Un coach lui-même suivi par un autre coach (double rôle) n'est
+  // jamais soumis à ce paywall entre professionnels (voir Lot 1). Message
+  // explicite au lieu d'un redirect silencieux vers /abonnement.
+  if (profile?.role !== "coach" && !isSubscribed(profile)) {
+    return <CoachOnlyGate icon={Video} title="Coaching live" />;
+  }
 
   // Les lives passés étaient invisibles côté client — seuls les "à venir"
   // (status="scheduled") étaient chargés, la section "Passés" de

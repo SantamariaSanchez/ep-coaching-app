@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import {
   getThisWeekCheckin,
   getClientPastCheckins,
@@ -11,6 +11,7 @@ import {
 } from "@/utils/checkins";
 import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import CheckinForm from "@/components/ui/CheckinForm";
+import CoachOnlyGate from "@/components/ui/CoachOnlyGate";
 import { CheckCircle2, Clock, Star, ExternalLink, CalendarDays } from "lucide-react";
 
 const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
@@ -199,6 +200,9 @@ export default async function CheckinPage() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Bilan hebdo lu et repondu par un vrai coach, sans coach personne pour le
+  // lire de l'autre cote — reserve aux clients coaches (voir CoachOnlyGate).
+  if (!isSubscribed(profile)) return <CoachOnlyGate icon={CalendarDays} title="Check-in hebdomadaire" />;
 
   const [existing, pastCheckins, recentLogs] = await Promise.all([
     getThisWeekCheckin(user.id),

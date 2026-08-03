@@ -93,38 +93,6 @@ export async function proxy(request: NextRequest) {
     return res;
   }
 
-  // Paths reachable by clients on the free tier (no active subscription).
-  // Free members get self-serve, unmonitored versions of all the personal
-  // tracking tools (program, nutrition, logbook, roadmap, bilan, photos) —
-  // each page branches its own UI by subscription_status. Only the features
-  // that are inherently a channel TO the coach stay paid-only: messages,
-  // check-in (weekly report meant for coach review), tasks (coach-assigned),
-  // notes du coach, formations, live (appels/lives en direct — corrigé : ce
-  // chemin était par erreur dans cette liste "gratuit", ce qui laissait
-  // n'importe quel membre gratuit voir ET rejoindre les lives d'un coach).
-  const FREE_TIER_PREFIXES = [
-    "/dashboard/client/communaute",
-    "/dashboard/client/ressources",
-    "/dashboard/client/recettes",
-    "/dashboard/client/abonnement",
-    "/dashboard/client/coachs",
-    "/dashboard/client/program",
-    "/dashboard/client/nutrition",
-    "/dashboard/client/logbook",
-    "/dashboard/client/roadmap",
-    "/dashboard/client/bilan",
-    "/dashboard/client/aujourdhui",
-    "/dashboard/client/photos",
-    "/dashboard/client/profile",
-    "/dashboard/client/steps",
-    "/dashboard/client/mindset",
-    "/dashboard/client/exercises",
-    "/dashboard/client/gyms",
-  ];
-  const isFreeTierPath =
-    pathname === "/dashboard/client" ||
-    FREE_TIER_PREFIXES.some((p) => pathname.startsWith(p));
-
   // Authenticated: enforce role-based access to dashboards
   if (user && isDashboard) {
     try {
@@ -153,14 +121,14 @@ export async function proxy(request: NextRequest) {
         supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
         return res;
       }
-      // Free-tier client hitting a coaching feature → paywall. The home
-      // dashboard renders its own welcome guide for free members instead
-      // of redirecting away (see app/dashboard/client/page.tsx).
-      if (role === "client" && isClientDashboard && prof?.subscription_status !== "active" && !isFreeTierPath) {
-        const res = NextResponse.redirect(new URL("/dashboard/client/abonnement", request.url));
-        supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
-        return res;
-      }
+      // Toutes les pages du dashboard client restent atteignables pour un
+      // membre gratuit (nav jamais grisée/cachée) — chaque page décide
+      // elle-même de son rendu selon subscription_status : contenu complet
+      // en libre-service (program, nutrition, logbook, bilan, agenda...),
+      // ou message "réservé au coaching" avec CTA vers la préqualif pour
+      // les quelques fonctionnalités qui n'ont de sens qu'avec un coach
+      // humain (checkin, tasks, live — voir CoachOnlyGate). Ça remplace
+      // l'ancien blocage silencieux ici, qui redirigeait sans explication.
     } catch { /* non-blocking */ }
   }
 

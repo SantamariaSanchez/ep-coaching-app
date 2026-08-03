@@ -39,6 +39,9 @@ type SidebarGroup = {
     badge?: BadgeKey;
     href?: string; // overrides the computed `${base}/${segment}` link
     locked?: boolean; // shows a small lock badge (premium teaser for free members)
+    // Réservé aux clients coachés uniquement (checkin, tasks, live) : lock
+    // affiché seulement pour les membres gratuits, jamais pour un client payant.
+    freeLocked?: boolean;
   }>;
 };
 
@@ -88,113 +91,6 @@ const CLIENT_TABS: TabItem[] = [
     icon: Heart,
     href: "/dashboard/client/communaute",
     matchSegments: ["communaute", "abonnement"],
-  },
-];
-
-// Espace gratuit (prospects) — navigation minimaliste centrée sur les outils
-// de découverte et l'écran de conversion coaching. Pas de roadmap, pas de bilan,
-// pas de plan nutrition personnalisable.
-const CLIENT_TABS_FREE: TabItem[] = [
-  {
-    label: "Accueil",
-    icon: Home,
-    href: "/dashboard/client",
-    matchSegments: ["profile", "parametres"],
-    exactMatch: true,
-  },
-  {
-    label: "Training",
-    icon: Dumbbell,
-    href: "/dashboard/client/program",
-    matchSegments: ["program", "logbook"],
-  },
-  {
-    label: "Nutrition",
-    icon: Apple,
-    href: "/dashboard/client/nutrition",
-    matchSegments: ["nutrition"],
-  },
-  {
-    label: "Suivi",
-    icon: ClipboardCheck,
-    href: "/dashboard/client/bilan",
-    matchSegments: ["bilan", "photos", "tracking"],
-  },
-  {
-    label: "Communauté",
-    icon: Heart,
-    href: "/dashboard/client/communaute",
-    matchSegments: ["communaute"],
-  },
-  {
-    label: "Contenu",
-    icon: GraduationCap,
-    href: "/dashboard/client/ressources",
-    matchSegments: ["ressources", "formations", "recettes", "abonnement"],
-  },
-];
-
-const CLIENT_SIDEBAR_FREE: SidebarGroup[] = [
-  {
-    group: "",
-    items: [{ label: "Accueil", icon: Home, segment: "" }],
-  },
-  {
-    group: "Training",
-    items: [
-      { label: "Programme", icon: Dumbbell, segment: "program" },
-      { label: "Logbook", icon: BookOpen, segment: "logbook" },
-    ],
-  },
-  {
-    group: "Nutrition",
-    items: [
-      { label: "Calculateur", icon: Apple, segment: "nutrition" },
-    ],
-  },
-  {
-    group: "Suivi",
-    items: [
-      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
-      { label: "Photos", icon: Image, segment: "photos" },
-      // Onglet accessible mais bague Oura non offerte aux membres gratuits —
-      // la page elle-même explique qu'il faut passer en coaching payant
-      // pour connecter (voir TrackingClient canConnectOura).
-      { label: "Sommeil", icon: Watch, segment: "tracking", locked: true },
-    ],
-  },
-  {
-    group: "Communauté",
-    items: [
-      { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
-      { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
-    ],
-  },
-  {
-    group: "Contenu",
-    items: [
-      { label: "Ressources", icon: BookOpen, segment: "ressources" },
-      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
-      {
-        label: "Formations",
-        icon: GraduationCap,
-        segment: "formations",
-        locked: true,
-      },
-    ],
-  },
-  {
-    group: "Mon coaching",
-    items: [
-      { label: "Réserver un appel avec un coach", icon: Crown, segment: "abonnement" },
-    ],
-  },
-  {
-    group: "Compte",
-    items: [
-      { label: "Mon profil", icon: User, segment: "profile" },
-      { label: "Paramètres", icon: Settings, segment: "parametres" },
-    ],
   },
 ];
 
@@ -359,10 +255,13 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     group: "Coach",
     items: [
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
-      { label: "Mes tâches", icon: ListChecks,  segment: "tasks" },
+      // locked: sans coach personnel, ces trois pages affichent le message
+      // "reserve aux membres coaching" (CoachOnlyGate) plutot que du contenu
+      // vide — voir app/dashboard/client/{tasks,checkin,live}/page.tsx.
+      { label: "Mes tâches", icon: ListChecks,  segment: "tasks", freeLocked: true },
       { label: "Rappels", icon: Bell,           segment: "reminders" },
-      { label: "Check-in", icon: ClipboardList, segment: "checkin" },
-      { label: "Coaching live", icon: Video,   segment: "live" },
+      { label: "Check-in", icon: ClipboardList, segment: "checkin", freeLocked: true },
+      { label: "Coaching live", icon: Video,   segment: "live", freeLocked: true },
     ],
   },
   {
@@ -415,18 +314,33 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
   const pathname = usePathname();
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
-  const tabs = isCoach ? COACH_TABS : isFreeTier ? CLIENT_TABS_FREE : CLIENT_TABS;
-  const rawSidebar = isCoach ? COACH_SIDEBAR : isFreeTier ? CLIENT_SIDEBAR_FREE : CLIENT_SIDEBAR;
+  // Même jeu d'onglets pour tout le monde côté client, gratuit ou coaché :
+  // rien n'est grisé ni caché dans la nav. Les quelques pages qui n'ont de
+  // sens qu'avec un coach humain (checkin, tasks, live) restent listées avec
+  // un badge "freeLocked" pour un membre gratuit, et affichent leur propre
+  // message d'explication (CoachOnlyGate) au clic plutôt qu'un blocage muet.
+  const tabs = isCoach ? COACH_TABS : CLIENT_TABS;
+  const rawSidebar = isCoach ? COACH_SIDEBAR : CLIENT_SIDEBAR;
   // L'onglet "Cycle" n'a de sens que pour une cliente dont la fiche indique
   // le genre "Femme" — retiré du rendu tant qu'on ne le sait pas, plutôt que
   // de le masquer en CSS (la page /cycle redirige de toute façon sinon).
   const withoutCycle = showCycle
     ? rawSidebar
     : rawSidebar.map((g) => ({ ...g, items: g.items.filter((item) => item.segment !== "cycle") }));
-  const sidebar =
+  const sidebarWithAdmin =
     isCoach && isPlatformOwner
       ? [{ group: "Administration", items: ADMIN_SIDEBAR_ITEMS }, ...withoutCycle]
       : withoutCycle;
+  // Résout freeLocked -> locked une bonne fois pour toutes ici, pour que le
+  // rendu (desktop + bande mobile) n'ait jamais à connaître isFreeTier.
+  const sidebar = isCoach
+    ? sidebarWithAdmin
+    : sidebarWithAdmin.map((g) => ({
+        ...g,
+        items: g.items.map((item) =>
+          item.freeLocked ? { ...item, locked: item.locked || isFreeTier } : item
+        ),
+      }));
 
   function isTabActive(tab: TabItem): boolean {
     // matchSegments s'applique même aux onglets exactMatch (ex. "Aujourd'hui")
