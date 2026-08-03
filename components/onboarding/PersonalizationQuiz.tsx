@@ -31,7 +31,7 @@ const QUESTIONS: [
     options: [
       { value: "debutant" as ExperienceLevel, label: "Je débute, ou je m'y suis jamais vraiment mis" },
       { value: "intermediaire" as ExperienceLevel, label: "Je m'entraîne depuis un moment, sans être un·e expert·e" },
-      { value: "confirme" as ExperienceLevel, label: "Je m'entraîne sérieusement depuis des années" },
+      { value: "confirme" as ExperienceLevel, label: "Je m'entraîne sérieusement depuis des années, possible objectif compétition (bodybuilding, physique)" },
     ],
   },
   {
