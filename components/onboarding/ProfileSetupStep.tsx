@@ -4,6 +4,15 @@ import { useRef, useState, useTransition } from "react";
 import { Camera, User, X, ArrowRight } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/utils/profile-actions";
 
+// Empêche un appel serveur qui traîne (ou qui ne répond jamais) de laisser
+// l'utilisateur bloqué sur "Un instant..." à vie.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return Promise.race([
+    promise,
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ]);
+}
+
 export default function ProfileSetupStep({
   onDone,
   finishing,
@@ -38,10 +47,17 @@ export default function ProfileSetupStep({
       return;
     }
     startTransition(async () => {
-      await updateMyProfile({
-        bio: bio.trim() || undefined,
-        instagram_handle: instagram.trim() || undefined,
-      });
+      try {
+        await withTimeout(
+          updateMyProfile({
+            bio: bio.trim() || undefined,
+            instagram_handle: instagram.trim() || undefined,
+          }),
+          4000
+        );
+      } catch {
+        // Best-effort — un souci réseau ne doit jamais bloquer l'utilisateur ici.
+      }
       onDone();
     });
   }

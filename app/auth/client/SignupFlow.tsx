@@ -151,22 +151,22 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
             style={{
               display: "flex", alignItems: "center", gap: 12,
               padding: "16px 18px", borderRadius: 12,
-              border: "1px solid rgba(245,237,237,0.15)",
-              background: "rgba(245,237,237,0.04)",
+              border: "1px solid rgba(245,237,237,0.3)",
+              background: "rgba(245,237,237,0.1)",
               color: "#F5EDED", cursor: "pointer", textAlign: "left",
             }}
           >
-            <Heart size={20} style={{ color: "rgba(245,237,237,0.5)", flexShrink: 0 }} strokeWidth={1.8} />
+            <Heart size={20} style={{ color: "#F5EDED", flexShrink: 0 }} strokeWidth={1.8} />
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontWeight: 800, fontSize: 14 }}>Rejoindre la communauté</span>
-              <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.35)", marginTop: 2 }}>
+              <span style={{ display: "block", fontSize: 11, color: "rgba(245,237,237,0.5)", marginTop: 2 }}>
                 Gratuit · Victoires, Questions, Ressources
               </span>
             </span>
             {submitting === "free" ? (
               <div style={{ width: 16, height: 16, border: "2px solid #F5EDED", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
             ) : (
-              <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)" }} />
+              <ChevronRight size={16} style={{ color: "#F5EDED" }} />
             )}
           </button>
 

@@ -139,9 +139,14 @@ export default function PersonalizationQuiz({
             color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.06em",
             flexShrink: 0, padding: "7px 12px", whiteSpace: "nowrap",
+            opacity: finishing ? 0.6 : 1,
           }}
         >
-          Passer, accéder à l&apos;appli <X size={13} />
+          {finishing ? (
+            <div style={{ width: 12, height: 12, border: "2px solid rgba(245,237,237,0.75)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+          ) : (
+            <>Passer, accéder à l&apos;appli <X size={13} /></>
+          )}
         </button>
       </div>
 

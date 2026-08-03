@@ -14,6 +14,15 @@ import {
 
 type Step = "profile" | "quiz" | "tour";
 
+// Empêche un appel serveur qui traîne (ou qui ne répond jamais) de laisser
+// l'utilisateur bloqué sur un bouton en chargement à vie.
+function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
+  return Promise.race([
+    promise,
+    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
+  ]);
+}
+
 export default function OnboardingFlow() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("profile");
@@ -24,12 +33,14 @@ export default function OnboardingFlow() {
 
   // Skip et fin de tour font strictement la même chose : on marque
   // l'onboarding comme fait et on atterrit direct dans l'appli, sans détour.
+  // Best-effort avec timeout : un souci réseau ou un appel qui ne répond
+  // jamais ne doit jamais bloquer l'utilisateur ici.
   async function goToApp() {
     setFinishing(true);
     try {
-      await completeOnboarding();
+      await withTimeout(completeOnboarding(), 4000);
     } catch {
-      // Best-effort — un souci réseau ne doit jamais bloquer l'utilisateur ici.
+      // Ignoré volontairement.
     }
     router.push("/dashboard/client");
     router.refresh();

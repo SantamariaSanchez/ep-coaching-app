@@ -15,6 +15,7 @@ interface Slide {
   title: string;
   desc: string;
   bullets?: string[];
+  benefits?: { title: string; body: string }[];
 }
 
 const SLIDES: Slide[] = [
@@ -76,7 +77,13 @@ const SLIDES: Slide[] = [
     icon: Crown,
     eyebrow: "Pour aller plus loin (optionnel)",
     title: "Un vrai coach, si tu le souhaites",
-    desc: "Tout ce que tu viens de voir reste gratuit, sans limite de temps. En coaching payant, en plus du programme et de la nutrition sur-mesure : bilan chaque semaine, messages directs avec ton coach, appels live (groupe ou 1:1), accompagnement mindset, et une bague Oura Ring offerte pour connecter sommeil et récupération automatiquement. Réserve un appel découverte gratuit et sans engagement depuis \"Mon coaching\" — tu passes d'abord par un court questionnaire pour qu'on prépare l'appel ensemble.",
+    desc: "Tout ce que tu viens de voir reste gratuit, sans limite de temps. En plus, si tu veux :",
+    benefits: [
+      { title: "Bilan chaque semaine", body: "Ton coach ajuste ton programme selon tes vrais résultats, pas un algorithme qui devine." },
+      { title: "Messages directs", body: "Tu écris, tu as une réponse de ton coach. Pas d'un bot." },
+      { title: "Appels live", body: "Groupe ou 1:1, un vrai échange vocal quand t'en as besoin." },
+      { title: "Bague Oura offerte", body: "Sommeil et récupération trackés automatiquement, connectés à ton suivi." },
+    ],
   },
 ];
 
@@ -95,6 +102,25 @@ function buildSlides(personalization: PersonalizationProfile): Slide[] {
   };
 
   return [SLIDES[0], mythSlide, ...SLIDES.slice(1)];
+}
+
+function BenefitCards({ items }: { items: { title: string; body: string }[] }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 18, textAlign: "left" }}>
+      {items.map((b) => (
+        <div
+          key={b.title}
+          style={{
+            padding: "12px 14px", borderRadius: 12,
+            background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.22)",
+          }}
+        >
+          <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px" }}>{b.title}</p>
+          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.5, margin: 0 }}>{b.body}</p>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 function BulletRow({ items }: { items: string[] }) {
@@ -174,9 +200,14 @@ export default function OnboardingTour({
             color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 700,
             textTransform: "uppercase", letterSpacing: "0.06em",
             flexShrink: 0, padding: "7px 12px", whiteSpace: "nowrap",
+            opacity: finishing ? 0.6 : 1,
           }}
         >
-          Passer, accéder à l&apos;appli <X size={13} />
+          {finishing ? (
+            <div style={{ width: 12, height: 12, border: "2px solid rgba(245,237,237,0.75)", borderTopColor: "transparent", borderRadius: "50%" }} className="animate-spin" />
+          ) : (
+            <>Passer, accéder à l&apos;appli <X size={13} /></>
+          )}
         </button>
       </div>
 
@@ -232,6 +263,7 @@ export default function OnboardingTour({
             </p>
 
             {slide.bullets && <BulletRow items={slide.bullets} />}
+            {slide.benefits && <BenefitCards items={slide.benefits} />}
           </motion.div>
         </AnimatePresence>
       </div>
