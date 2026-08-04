@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
-import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
+import { getThisWeekCheckin, getISOWeek, getWeekStart } from "@/utils/checkins";
+import { createServerSupabase } from "@/lib/supabase-server";
 import { getLatestCoachNote } from "@/utils/notes";
 import { getClientIntake } from "@/utils/client-intake";
 import { getMemberPreferences } from "@/utils/member-preferences";
@@ -480,10 +481,27 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
+    (async () => {
+      try {
+        const supabase = await createServerSupabase();
+        const { count } = await supabase
+          .from("community_posts")
+          .select("id", { count: "exact", head: true })
+          .eq("author_id", user.id)
+          .eq("type", "victory")
+          .gte("created_at", `${getWeekStart()}T00:00:00`);
+        return (count ?? 0) > 0;
+      } catch {
+        return true; // fail-safe : n'affiche pas la relance en cas d'erreur
+      }
+    })(),
   ]);
+  // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
+  // moment naturel pour relancer, sans être insistant (une fois par semaine).
+  const showVictoryNudge = !!thisWeekCheckin && !victoryPostedThisWeek;
 
   const firstName = profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "";
   const today = new Date();
@@ -771,6 +789,32 @@ export default async function ClientDashboard({
               </div>
             )}
           </div>
+        </section>
+      )}
+
+      {/* ── Relance victoire — bilan envoyé cette semaine, rien partagé ──────── */}
+      {showVictoryNudge && (
+        <section className="animate-fade-up stagger-5" style={{ marginBottom: 16 }}>
+          <Link
+            href="/dashboard/client/communaute/victoires"
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "16px 18px", borderRadius: 14, textDecoration: "none",
+              background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
+              border: "1px solid rgba(224,30,30,0.3)",
+            }}
+          >
+            <Trophy size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+                Bilan envoyé, et ta victoire de la semaine ?
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.45)" }}>
+                Partage la avec la communauté, ça motive tout le monde (et ça rapporte des points).
+              </p>
+            </div>
+            <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
+          </Link>
         </section>
       )}
 
