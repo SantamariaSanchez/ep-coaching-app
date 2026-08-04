@@ -114,6 +114,24 @@ export default function NutritionForm({
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // ── Objectifs enregistrés — décorrélés du calcul TDEE ────────────────────
+  // Le TDEE (ci-dessous, "calc") reste affiché comme repère de maintenance,
+  // mais ce n'est plus lui qui verrouille les valeurs sauvegardées. Tant que
+  // le coach n'a rien tapé manuellement, les champs suivent le calcul en
+  // direct (zéro friction pour une première configuration). Dès qu'il tape
+  // une valeur, le calcul arrête de les écraser — modifier calories/macros
+  // devient un geste direct et rapide, plus besoin de bidouiller poids/âge
+  // pour forcer un chiffre rond.
+  const [targetsTouched, setTargetsTouched] = useState(
+    existingProfile?.calories_target != null
+  );
+  const [manualTargets, setManualTargets] = useState({
+    calories: existingProfile?.calories_target != null ? String(existingProfile.calories_target) : "",
+    proteins: existingProfile?.proteins_target != null ? String(existingProfile.proteins_target) : "",
+    carbs: existingProfile?.carbs_target != null ? String(existingProfile.carbs_target) : "",
+    fats: existingProfile?.fats_target != null ? String(existingProfile.fats_target) : "",
+  });
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((prev) => {
       const next = { ...prev, [key]: value };
@@ -173,6 +191,33 @@ export default function NutritionForm({
     };
   }, [form]);
 
+  const effectiveTargets = targetsTouched
+    ? manualTargets
+    : calc
+    ? {
+        calories: String(calc.caloriesTarget),
+        proteins: String(calc.proteinsG),
+        carbs: String(calc.carbsG),
+        fats: String(calc.fatsG),
+      }
+    : manualTargets;
+
+  function setTarget(key: keyof typeof manualTargets, value: string) {
+    setManualTargets({ ...effectiveTargets, [key]: value });
+    setTargetsTouched(true);
+  }
+
+  function resetTargetsToCalc() {
+    if (!calc) return;
+    setManualTargets({
+      calories: String(calc.caloriesTarget),
+      proteins: String(calc.proteinsG),
+      carbs: String(calc.carbsG),
+      fats: String(calc.fatsG),
+    });
+    setTargetsTouched(false);
+  }
+
   // Compare le TDEE formule (ci-dessus, jamais mis à jour tout seul) au TDEE
   // observé réellement à partir du bilan quotidien — poids qui dérive
   // + calories loggées. N'affiche une suggestion que si l'écart est assez
@@ -192,13 +237,21 @@ export default function NutritionForm({
       setError("Remplis tous les champs obligatoires (poids, taille, âge).");
       return;
     }
+    const caloriesTarget = parseInt(effectiveTargets.calories, 10);
+    const proteinsTarget = parseInt(effectiveTargets.proteins, 10);
+    const carbsTarget = parseInt(effectiveTargets.carbs, 10);
+    const fatsTarget = parseInt(effectiveTargets.fats, 10);
+    if (!caloriesTarget || !proteinsTarget || !carbsTarget || !fatsTarget) {
+      setError("Calories et macros doivent être renseignées et supérieures à 0.");
+      return;
+    }
     setError(null);
     setSaving(true);
     const result = await saveNutritionProfile(clientId, {
-      calories_target: calc.caloriesTarget,
-      proteins_target: calc.proteinsG,
-      carbs_target: calc.carbsG,
-      fats_target: calc.fatsG,
+      calories_target: caloriesTarget,
+      proteins_target: proteinsTarget,
+      carbs_target: carbsTarget,
+      fats_target: fatsTarget,
       calories_offset_rest: form.offsetRest ? parseInt(form.offsetRest) : null,
       calories_offset_high: form.offsetHigh ? parseInt(form.offsetHigh) : null,
       tdee: calc.tdee,
@@ -535,36 +588,15 @@ export default function NutritionForm({
             ))}
           </div>
 
-          {/* Targets */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-[#890404]/15 border border-[#890404]/30 rounded-lg px-3 py-2.5 sm:col-span-4">
-              <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
-                TDEE total
-              </p>
-              <p className="text-3xl font-black text-[#E01E1E]">
-                {calc.tdee}
-                <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">kcal/j</span>
-              </p>
-            </div>
-            {[
-              { label: "Objectif calorique", value: calc.caloriesTarget, unit: "kcal", color: "text-white" },
-              { label: "Protéines", value: calc.proteinsG, unit: "g", color: "text-blue-300" },
-              { label: "Glucides", value: calc.carbsG, unit: "g", color: "text-amber-300" },
-              { label: "Lipides", value: calc.fatsG, unit: "g", color: "text-rose-300" },
-            ].map(({ label, value, unit, color }) => (
-              <div
-                key={label}
-                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5"
-              >
-                <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
-                  {label}
-                </p>
-                <p className={`text-2xl font-black ${color}`}>
-                  {value}
-                  <span className="text-[10px] text-[#F5EDED]/40 ml-1 font-normal">{unit}</span>
-                </p>
-              </div>
-            ))}
+          {/* TDEE — repère de maintenance, jamais modifié directement */}
+          <div className="bg-[#890404]/15 border border-[#890404]/30 rounded-lg px-3 py-2.5 mb-4">
+            <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
+              TDEE total (repère de maintenance)
+            </p>
+            <p className="text-3xl font-black text-[#E01E1E]">
+              {calc.tdee}
+              <span className="text-sm text-[#F5EDED]/40 ml-1 font-normal">kcal/j</span>
+            </p>
           </div>
         </div>
       ) : (
@@ -574,6 +606,53 @@ export default function NutritionForm({
           </p>
         </div>
       )}
+
+      {/* Objectifs à enregistrer — décorrélés du TDEE, éditables librement.
+          Pré-remplis depuis le calcul tant que le coach n'a rien tapé, mais
+          modifiables à tout moment sans que le calcul ne les écrase. */}
+      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+        <div className="flex items-center justify-between mb-1">
+          <p className={labelCls + " mb-0"}>Objectifs à enregistrer</p>
+          {calc && targetsTouched && (
+            <button
+              type="button"
+              onClick={resetTargetsToCalc}
+              className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+            >
+              Recalculer depuis le TDEE
+            </button>
+          )}
+        </div>
+        <p className="text-[10px] text-[#F5EDED]/30 mb-4">
+          Modifiable librement, indépendamment du calcul TDEE ci-dessus (qui reste un repère de
+          maintenance). Pré-rempli par le calcul tant que rien n&apos;est tapé ici.
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {(
+            [
+              { key: "calories" as const, label: "Objectif calorique", unit: "kcal", color: "text-white" },
+              { key: "proteins" as const, label: "Protéines", unit: "g", color: "text-blue-300" },
+              { key: "carbs" as const, label: "Glucides", unit: "g", color: "text-amber-300" },
+              { key: "fats" as const, label: "Lipides", unit: "g", color: "text-rose-300" },
+            ]
+          ).map(({ key, label, unit, color }) => (
+            <div key={key} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
+              <label className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold block mb-1">
+                {label}
+              </label>
+              <div className="flex items-baseline gap-1">
+                <input
+                  type="number"
+                  value={effectiveTargets[key]}
+                  onChange={(e) => setTarget(key, e.target.value)}
+                  className={`w-full bg-transparent text-2xl font-black ${color} focus:outline-none`}
+                />
+                <span className="text-[10px] text-[#F5EDED]/40 font-normal">{unit}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {error && (
         <div className="flex items-center gap-2.5 bg-red-950/40 border border-red-500/30 rounded-lg px-4 py-3">
