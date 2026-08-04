@@ -10,7 +10,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig, MapPin,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield,
+  ArrowLeftRight, Settings, Shield, LayoutTemplate,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -132,7 +132,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "programmation"],
   },
   {
     label: "Communauté",
@@ -167,6 +167,12 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Exercices", icon: LibraryBig, segment: "exercises" },
       { label: "Salles", icon: MapPin, segment: "gyms" },
+    ],
+  },
+  {
+    group: "Espace coach",
+    items: [
+      { label: "Programmation", icon: LayoutTemplate, segment: "programmation" },
     ],
   },
   {
