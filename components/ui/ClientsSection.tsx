@@ -3,6 +3,11 @@
 import { useRouter } from "next/navigation";
 import { Users } from "lucide-react";
 import type { Profile } from "@/utils/auth";
+// Import "type" uniquement : purement effacé à la compilation, donc sans
+// risque même si lib/coaching-phase.ts importe du code serveur ailleurs
+// dans le fichier (même précédent que les imports de type déjà présents
+// dans ClientProfileTabs.tsx depuis des modules serveur comme utils/nutrition).
+import type { CoachingPhaseSummary } from "@/lib/coaching-phase";
 import { ClientCard } from "./ClientCard";
 
 // Semaine de coaching en cours, calculée depuis start_date (déjà chargé avec
@@ -19,9 +24,11 @@ function weekNumber(startDate: string | null): number | null {
 export default function ClientsSection({
   clients,
   ouraEligibleIds = [],
+  phaseOverview = {},
 }: {
   clients: Profile[];
   ouraEligibleIds?: string[];
+  phaseOverview?: Record<string, CoachingPhaseSummary>;
 }) {
   const router = useRouter();
 
@@ -93,6 +100,10 @@ export default function ClientsSection({
               delay={i * 60}
               onClick={() => router.push(`/dashboard/coach/clients/${client.id}`)}
               ouraEligible={ouraEligibleIds.includes(client.id)}
+              // Nombre de suggestions de phase de coaching en attente
+              // (décrochage, prêt à changer de phase...) — voir
+              // lib/coaching-phase.ts, jamais affiché côté client.
+              alerts={phaseOverview[client.id]?.suggestionCount ?? 0}
             />
           ))}
         </div>
