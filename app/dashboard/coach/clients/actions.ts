@@ -3,6 +3,7 @@ import { requireOwnClient } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { startCalibrationPhase, endCoachingPhaseTracking } from "@/lib/coaching-phase";
 
 // Activer/désactiver le coaching individuel d'un client manuellement, avec
 // plan/échéance/note optionnels journalisés dans subscription_events. Le
@@ -20,6 +21,17 @@ export async function setClientSubscriptionStatus(
   if (!guard.ok) return { error: guard.error };
 
   const admin = createAdminClient();
+
+  // Statut avant écriture — nécessaire pour ne déclencher le calibrage que
+  // sur une vraie transition vers "active" (pas un simple ré-enregistrement
+  // du plan alors que le client est déjà actif).
+  const { data: before } = await admin
+    .from("profiles")
+    .select("subscription_status")
+    .eq("id", clientId)
+    .maybeSingle();
+  const wasActive = before?.subscription_status === "active";
+
   const { error } = await admin
     .from("profiles")
     .update({
@@ -39,6 +51,14 @@ export async function setClientSubscriptionStatus(
     next_billing_date: options?.nextBillingDate || null,
     note: options?.note?.trim() || null,
   });
+
+  // Phase de coaching : jamais pour un membre gratuit, toujours en
+  // "calibrage" au tout début d'un coaching payant (voir lib/coaching-phase.ts).
+  if (!wasActive && status === "active") {
+    await startCalibrationPhase(clientId, guard.userId);
+  } else if (wasActive && status !== "active") {
+    await endCoachingPhaseTracking(clientId, guard.userId);
+  }
 
   revalidatePath("/dashboard/coach/clients");
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
