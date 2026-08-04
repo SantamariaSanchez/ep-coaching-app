@@ -1,17 +1,8 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
+import { useRef, useState } from "react";
 import { Camera, User, X, ArrowRight } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/utils/profile-actions";
-
-// Empêche un appel serveur qui traîne (ou qui ne répond jamais) de laisser
-// l'utilisateur bloqué sur "Un instant..." à vie.
-function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T | undefined> {
-  return Promise.race([
-    promise,
-    new Promise<undefined>((resolve) => setTimeout(() => resolve(undefined), ms)),
-  ]);
-}
 
 export default function ProfileSetupStep({
   onDone,
@@ -25,7 +16,6 @@ export default function ProfileSetupStep({
   const [uploading, setUploading] = useState(false);
   const [bio, setBio] = useState("");
   const [instagram, setInstagram] = useState("");
-  const [isPending, startTransition] = useTransition();
 
   async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -41,28 +31,20 @@ export default function ProfileSetupStep({
     }
   }
 
+  // Navigation instantanée : la sauvegarde part en arrière-plan (fire-and-
+  // forget), on ne fait jamais attendre la personne pour une étape 100%
+  // facultative.
   function handleContinue() {
-    if (!bio.trim() && !instagram.trim()) {
-      onDone();
-      return;
+    if (bio.trim() || instagram.trim()) {
+      updateMyProfile({
+        bio: bio.trim() || undefined,
+        instagram_handle: instagram.trim() || undefined,
+      }).catch(() => {});
     }
-    startTransition(async () => {
-      try {
-        await withTimeout(
-          updateMyProfile({
-            bio: bio.trim() || undefined,
-            instagram_handle: instagram.trim() || undefined,
-          }),
-          4000
-        );
-      } catch {
-        // Best-effort — un souci réseau ne doit jamais bloquer l'utilisateur ici.
-      }
-      onDone();
-    });
+    onDone();
   }
 
-  const busy = finishing || isPending;
+  const busy = finishing;
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>

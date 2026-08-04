@@ -336,7 +336,11 @@ function WeightDelta({ delta, good }: { delta: number; good: boolean | null }) {
 
 // ── Page ───────────────────────────────────────────────────────────────────────
 
-export default async function ClientDashboard() {
+export default async function ClientDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ onboarded?: string }>;
+}) {
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -345,8 +349,12 @@ export default async function ClientDashboard() {
 
   // Brand-new signups get a one-time animated tour before anything else —
   // existing profiles were grandfathered in via migration (onboarding_completed_at
-  // backfilled), so this only ever fires once per new member.
-  if (profile && !profile.onboarding_completed_at) redirect("/onboarding");
+  // backfilled), so this only ever fires once per new member. La sortie de
+  // l'onboarding navigue ici sans attendre la confirmation serveur (retour
+  // instantané voulu) : ?onboarded=1 evite un aller-retour vers /onboarding
+  // si l'ecriture onboarding_completed_at n'a pas encore atterri en base.
+  const { onboarded } = await searchParams;
+  if (profile && !profile.onboarding_completed_at && onboarded !== "1") redirect("/onboarding");
 
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
