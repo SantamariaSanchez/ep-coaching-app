@@ -6,12 +6,13 @@ import { getLatestCoachNote } from "@/utils/notes";
 import { getClientIntake } from "@/utils/client-intake";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
+import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
-  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise,
+  Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -163,18 +164,111 @@ function NoCoachBanner() {
   );
 }
 
+function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
+  if (items.length === 0) return null;
+  const doneCount = items.filter((i) => i.done).length;
+  const allDone = doneCount === items.length;
+
+  if (allDone) {
+    return (
+      <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+        <div
+          className="ep-card"
+          style={{
+            padding: "16px 18px",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            border: "1px solid rgba(74,222,128,0.25)",
+            background: "rgba(74,222,128,0.06)",
+          }}
+        >
+          <CheckCircle2 size={20} style={{ color: "#4ade80", flexShrink: 0 }} strokeWidth={1.8} />
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+              Bien joué, tu as pris en main l&apos;appli
+            </p>
+            <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
+              Programme, calories, bilan, communauté : tout est lancé.
+            </p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+        <p className="ep-section-title" style={{ marginBottom: 0 }}>Pour bien démarrer</p>
+        <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)" }}>
+          {doneCount}/{items.length}
+        </p>
+      </div>
+      <div
+        style={{
+          height: 4, borderRadius: 999, background: "rgba(137,4,4,0.2)",
+          overflow: "hidden", marginBottom: 12,
+        }}
+      >
+        <div
+          style={{
+            height: "100%", borderRadius: 999, background: "#E01E1E",
+            width: `${(doneCount / items.length) * 100}%`,
+            transition: "width 0.4s ease",
+          }}
+        />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {items.map(({ key, href, title, description, done }) => (
+          <Link
+            key={key}
+            href={href}
+            style={{
+              display: "flex", alignItems: "center", gap: 12,
+              padding: "13px 16px", borderRadius: 12,
+              background: done ? "rgba(74,222,128,0.05)" : "rgba(31,1,1,0.7)",
+              border: done ? "1px solid rgba(74,222,128,0.2)" : "1px solid rgba(137,4,4,0.25)",
+              textDecoration: "none",
+            }}
+          >
+            {done ? (
+              <CheckCircle2 size={18} style={{ color: "#4ade80", flexShrink: 0 }} strokeWidth={1.8} />
+            ) : (
+              <Circle size={18} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} strokeWidth={1.8} />
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                margin: 0, fontSize: 13, fontWeight: 800,
+                color: done ? "rgba(245,237,237,0.5)" : "#F5EDED",
+                textDecoration: done ? "line-through" : "none",
+              }}>
+                {title}
+              </p>
+              <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{description}</p>
+            </div>
+            {!done && <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />}
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function WelcomeGuide({
   firstName,
   goal,
   level,
   hasCoach,
   personalization,
+  checklist,
 }: {
   firstName: string;
   goal: string | null;
   level: string | null;
   hasCoach: boolean;
   personalization: ReturnType<typeof derivePersonalization>;
+  checklist: OnboardingChecklistItem[];
 }) {
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
   return (
@@ -192,6 +286,8 @@ function WelcomeGuide({
       </div>
 
       {!hasCoach && <NoCoachBanner />}
+
+      <StartChecklist items={checklist} />
 
       {/* État des lieux */}
       {(goal || level) && (
@@ -359,7 +455,10 @@ export default async function ClientDashboard({
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
-    const preferences = await getMemberPreferences(user.id);
+    const [preferences, checklist] = await Promise.all([
+      getMemberPreferences(user.id),
+      getOnboardingChecklist(user.id),
+    ]);
     return (
       <>
         <PushPermission userId={user.id} />
@@ -369,6 +468,7 @@ export default async function ClientDashboard({
           level={profile?.level ?? null}
           hasCoach={!!profile?.coach_id}
           personalization={derivePersonalization(preferences)}
+          checklist={checklist}
         />
       </>
     );
