@@ -87,6 +87,20 @@ export function hasUnlocked(feature: UnlockableFeature, points: number, isSubscr
   return points >= FEATURE_UNLOCK_POINTS[feature];
 }
 
+// Barème de points — dupliqué ici (plutôt que dans lib/gamification.ts) pour
+// rester importable depuis des composants client sans entraîner
+// lib/supabase-admin dans le bundle navigateur (même principe que le reste
+// de ce fichier).
+export const POINTS = {
+  formation_lesson: 15,
+  daily_bilan: 10,
+  nutrition_log_day: 8,
+  session_complete: 20,
+  community_question: 5,
+  community_victory: 10,
+  weekly_checkin: 25,
+} as const;
+
 export const LEGEND_RANK_KEY = "legende";
 
 /** Éligible à la récompense réelle (Oura Ring) : abonné + rang Légende atteint. */

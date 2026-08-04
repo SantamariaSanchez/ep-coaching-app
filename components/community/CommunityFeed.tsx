@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
 import RankBadge from "@/components/ui/RankBadge";
+import { POINTS } from "@/lib/gamification-types";
 
 function badgeLabel(role: "coach" | "client", subscriptionStatus: string): string {
   if (role === "coach") return "Coach";
@@ -94,12 +95,15 @@ function Composer({
   const [image, setImage] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justPosted, setJustPosted] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const placeholder =
     type === "victory"
       ? "Partage ta victoire de la semaine : perte de poids, nouveau record, séance réussie..."
       : "Pose ta question à la communauté et au coach...";
+
+  const pointsEarned = type === "victory" ? POINTS.community_victory : POINTS.community_question;
 
   async function handleSubmit() {
     if (!content.trim() || posting) return;
@@ -115,6 +119,8 @@ function Composer({
       if (res.ok) {
         setContent("");
         setImage(null);
+        setJustPosted(true);
+        setTimeout(() => setJustPosted(false), 4000);
         onPosted();
       } else {
         const json = await res.json().catch(() => null);
@@ -158,7 +164,9 @@ function Composer({
             </button>
           </>
         ) : (
-          <span />
+          <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+            +{pointsEarned} points à la publication
+          </span>
         )}
         <button
           onClick={handleSubmit}
@@ -173,8 +181,19 @@ function Composer({
           Publier
         </button>
       </div>
+      {type === "victory" && (
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
+          +{pointsEarned} points à la publication
+        </p>
+      )}
       {error && (
         <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>
+      )}
+      {justPosted && (
+        <p className="text-[11px] font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
+          <CheckCircle2 size={13} strokeWidth={2} />
+          Publié ! +{pointsEarned} points, visible par la communauté et ton coach.
+        </p>
       )}
     </div>
   );
@@ -551,19 +570,27 @@ export default function CommunityFeed({
   }
 
   const Icon = type === "victory" ? Trophy : HelpCircle;
+  const emptyPoints = type === "victory" ? POINTS.community_victory : POINTS.community_question;
 
   return (
     <div>
       <Composer type={type} onPosted={reload} />
 
       {posts.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
-          <Icon size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">
-            {type === "victory"
-              ? "Sois le premier à partager une victoire !"
-              : "Sois le premier à poser une question !"}
+        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
+          <Icon size={28} className="text-[#E01E1E]/70 mx-auto mb-4" strokeWidth={1.5} />
+          <p className="text-base font-black uppercase tracking-tight text-white mb-2">
+            {type === "victory" ? "Sois le premier à partager" : "Sois le premier à demander"}
           </p>
+          <p className="text-sm text-[#F5EDED]/45 max-w-sm mx-auto leading-relaxed">
+            {type === "victory"
+              ? "Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil."
+              : "Une question sur ta nutrition, ton programme ou ta récup ? Ton coach et toute la communauté peuvent te répondre ici."}
+          </p>
+          <div className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1.5">
+            <Trophy size={11} strokeWidth={2} />
+            +{emptyPoints} points à la première publication
+          </div>
         </div>
       ) : (
         <>

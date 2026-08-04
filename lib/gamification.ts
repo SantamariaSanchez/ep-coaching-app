@@ -26,17 +26,8 @@ export {
   hasUnlocked,
   LEGEND_RANK_KEY,
   isEligibleForLegendReward,
+  POINTS,
 } from "@/lib/gamification-types";
-
-export const POINTS = {
-  formation_lesson: 15,
-  daily_bilan: 10,
-  nutrition_log_day: 8,
-  session_complete: 20,
-  community_question: 5,
-  community_victory: 10,
-  weekly_checkin: 25,
-} as const;
 
 export async function awardPoints(
   clientId: string,
