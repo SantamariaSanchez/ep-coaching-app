@@ -19,13 +19,26 @@ export async function uploadPersonalPhoto(
     if (!(file instanceof File) || file.size === 0) {
       return { error: "Choisis une photo." };
     }
+    const ALLOWED_TYPES: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const ext = ALLOWED_TYPES[file.type];
+    if (!ext) {
+      return { error: "Seules les images (jpg, png, webp, gif) sont acceptées." };
+    }
+    const MAX_SIZE = 8 * 1024 * 1024; // 8MB, aligné sur la limite du bucket "progress-photos"
+    if (file.size > MAX_SIZE) {
+      return { error: "Photo trop volumineuse (8MB max)." };
+    }
 
-    const ext = file.name.split(".").pop() || "jpg";
     const path = `${user.id}/${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("progress-photos")
-      .upload(path, file, { contentType: file.type || "image/jpeg" });
+      .upload(path, file, { contentType: file.type });
     if (uploadError) return { error: "Échec de l'envoi de la photo." };
 
     const today = new Date().toISOString().split("T")[0];

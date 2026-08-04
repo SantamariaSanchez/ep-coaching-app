@@ -40,7 +40,21 @@ export async function POST(request: Request) {
   let image_url: string | null = null;
 
   if (image instanceof File && image.size > 0) {
-    const ext = image.name.split(".").pop() ?? "jpg";
+    const ALLOWED_TYPES: Record<string, string> = {
+      "image/jpeg": "jpg",
+      "image/png": "png",
+      "image/webp": "webp",
+      "image/gif": "gif",
+    };
+    const MAX_SIZE = 8 * 1024 * 1024; // 8MB, aligné sur la limite du bucket "community-photos"
+    const ext = ALLOWED_TYPES[image.type];
+    if (!ext) {
+      return NextResponse.json({ error: "Seules les images (jpg, png, webp, gif) sont acceptées." }, { status: 400 });
+    }
+    if (image.size > MAX_SIZE) {
+      return NextResponse.json({ error: "Photo trop volumineuse (8MB max)." }, { status: 400 });
+    }
+
     const path = `${type}/${user.id}/${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("community-photos")
