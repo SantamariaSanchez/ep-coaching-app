@@ -34,6 +34,7 @@ import { getStepSettings } from "@/utils/steps";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
+import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
 import { ChevronLeft, FileText } from "lucide-react";
 
@@ -93,6 +94,7 @@ export default async function ClientDetailPage({
     scheduleBlocks,
     corrections,
     stepSettings,
+    coachingPhase,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -116,9 +118,22 @@ export default async function ClientDetailPage({
     getScheduleBlocks(id),
     getClientCorrections(id),
     getStepSettings(id),
+    // Jamais calculée pour un membre gratuit — voir le rendu conditionnel
+    // dans ClientProfileTabs (client.subscription_status === "active").
+    client.subscription_status === "active" ? getClientCoachingPhase(id) : Promise.resolve(null),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
+
+  // Signaux d'adhérence : uniquement en phase de calibrage, et jamais pour
+  // un membre gratuit (déjà garanti par coachingPhase === null ci-dessus).
+  const calibrationSignals =
+    coachingPhase?.phase === "calibrage"
+      ? await computeCalibrationSignals(id, coachingPhase.since, program)
+      : [];
+  const phaseSuggestions = coachingPhase
+    ? generateCoachingPhaseSuggestions(coachingPhase, calibrationSignals)
+    : [];
 
   const checkinsWithAverages = await Promise.all(
     checkins.map(async (checkin) => ({
@@ -204,6 +219,9 @@ export default async function ClientDetailPage({
         generatePlanSuggestions={generatePlanSuggestions}
         corrections={corrections}
         sendCorrectionFeedback={sendCorrectionFeedback}
+        coachingPhase={coachingPhase}
+        calibrationSignals={calibrationSignals}
+        phaseSuggestions={phaseSuggestions}
       />
     </div>
   );

@@ -41,6 +41,8 @@ import CoachClientNutritionTabs from "./CoachClientNutritionTabs";
 import ClientIntakeForm from "./ClientIntakeForm";
 import ClientPeriodTracking from "./ClientPeriodTracking";
 import ClientSuggestionsPanel from "./ClientSuggestionsPanel";
+import CoachingPhasePanel from "./CoachingPhasePanel";
+import type { CoachingPhaseState, AdherenceSignal, PhaseSuggestion } from "@/lib/coaching-phase-helpers";
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
 import type { ExerciseCorrectionResolved } from "@/utils/corrections";
@@ -147,6 +149,9 @@ export default function ClientProfileTabs({
   generatePlanSuggestions,
   corrections,
   sendCorrectionFeedback,
+  coachingPhase,
+  calibrationSignals,
+  phaseSuggestions,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -198,6 +203,12 @@ export default function ClientProfileTabs({
     _prev: { error?: string; success?: boolean } | null,
     formData: FormData
   ) => Promise<{ error?: string; success?: boolean } | null>;
+  // Phase de coaching — jamais rendue si client.subscription_status !==
+  // "active" (voir plus bas). coachingPhase est déjà null côté page.tsx
+  // pour un membre gratuit, cette prop double juste la garantie côté UI.
+  coachingPhase: CoachingPhaseState | null;
+  calibrationSignals: AdherenceSignal[];
+  phaseSuggestions: PhaseSuggestion[];
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -279,6 +290,17 @@ export default function ClientProfileTabs({
 
       {activeTab === "profil" && (
         <div className="space-y-4">
+          {/* Coach exclusivement — jamais rendu sur /dashboard/client/**,
+              et jamais pour un membre gratuit (pas de coaching à calibrer). */}
+          {client.subscription_status === "active" && (
+            <CoachingPhasePanel
+              clientId={client.id}
+              phase={coachingPhase}
+              signals={calibrationSignals}
+              suggestions={phaseSuggestions}
+            />
+          )}
+
           <ClientSuggestionsPanel suggestions={suggestions} />
 
           {intake ? (
