@@ -12,13 +12,21 @@ import {
   ChevronDown,
   ChevronUp,
   CalendarDays,
+  Map,
+  Target,
 } from "lucide-react";
 import type { ProgramTemplateWithDays } from "@/utils/program-templates";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
+import type { RoadmapTemplateWithDetails } from "@/utils/roadmap-templates";
 import type { Food, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import { PlanBuilder } from "@/components/ui/DietPlanManager";
 import ApplyTemplateModal, { type ApplyTemplateClient } from "@/components/ui/ApplyTemplateModal";
+import { PHASE_COLORS } from "@/lib/roadmap-colors";
+
+function todayISO(): string {
+  return new Date().toISOString().slice(0, 10);
+}
 
 const MODE_LABELS: Record<DietMode, string> = {
   flexible: "Flexible",
@@ -29,6 +37,7 @@ const MODE_LABELS: Record<DietMode, string> = {
 interface Props {
   programTemplates: ProgramTemplateWithDays[];
   dietTemplates: DietPlanTemplateWithMeals[];
+  roadmapTemplates: RoadmapTemplateWithDetails[];
   foods: Food[];
   clients: ApplyTemplateClient[];
   deleteProgramTemplate: (templateId: string) => Promise<{ error?: string }>;
@@ -51,13 +60,20 @@ interface Props {
     clientIds: string[],
     nameOverride?: string
   ) => Promise<{ error?: string; appliedCount?: number }>;
+  deleteRoadmapTemplate: (templateId: string) => Promise<{ error?: string }>;
+  applyRoadmapTemplate: (
+    templateId: string,
+    clientIds: string[],
+    startDate: string
+  ) => Promise<{ error?: string; appliedCount?: number }>;
 }
 
-type Tab = "programmes" | "diet";
+type Tab = "programmes" | "diet" | "roadmap";
 
 export default function ProgrammationHub({
   programTemplates,
   dietTemplates,
+  roadmapTemplates,
   foods,
   clients,
   deleteProgramTemplate,
@@ -65,16 +81,22 @@ export default function ProgrammationHub({
   createDietTemplate,
   deleteDietTemplate,
   applyDietTemplate,
+  deleteRoadmapTemplate,
+  applyRoadmapTemplate,
 }: Props) {
   const [tab, setTab] = useState<Tab>("programmes");
+  // startDate n'existe que pour une application de road map : les décalages
+  // en semaines du modèle se convertissent en dates réelles à partir de
+  // cette date (aujourd'hui par défaut, modifiable avant d'appliquer).
   const [applyTarget, setApplyTarget] = useState<
-    { kind: "programme" | "diet"; id: string; name: string } | null
+    { kind: "programme" | "diet"; id: string; name: string } | { kind: "roadmap"; id: string; name: string; startDate: string } | null
   >(null);
   const [showDietBuilder, setShowDietBuilder] = useState(false);
 
   const tabs: { key: Tab; label: string; icon: React.ElementType; count: number }[] = [
     { key: "programmes", label: "Programmes", icon: Dumbbell, count: programTemplates.length },
     { key: "diet", label: "Diètes", icon: UtensilsCrossed, count: dietTemplates.length },
+    { key: "roadmap", label: "Road Map", icon: Map, count: roadmapTemplates.length },
   ];
 
   return (
@@ -207,6 +229,42 @@ export default function ProgrammationHub({
         </div>
       )}
 
+      {tab === "roadmap" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+              {roadmapTemplates.length} modèle{roadmapTemplates.length !== 1 ? "s" : ""} de road map
+            </p>
+            <Link
+              href="/dashboard/coach/programmation/roadmap/new"
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+            >
+              <Plus size={12} />
+              Nouveau modèle
+            </Link>
+          </div>
+
+          {roadmapTemplates.length === 0 ? (
+            <EmptyState
+              text="Aucun modèle de road map pour l'instant. Conçois une série de phases et de jalons type (prépa compétition, perte de poids, prise de masse) une fois, applique la à chaque nouveau client : les décalages en semaines deviennent de vraies dates."
+              ctaHref="/dashboard/coach/programmation/roadmap/new"
+              ctaLabel="Créer le premier modèle"
+            />
+          ) : (
+            <div className="space-y-2.5">
+              {roadmapTemplates.map((t) => (
+                <RoadmapTemplateRow
+                  key={t.id}
+                  template={t}
+                  onApply={(startDate) => setApplyTarget({ kind: "roadmap", id: t.id, name: t.name, startDate })}
+                  onDelete={() => deleteRoadmapTemplate(t.id)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {applyTarget && (
         <ApplyTemplateModal
           templateName={applyTarget.name}
@@ -214,7 +272,9 @@ export default function ProgrammationHub({
           onApply={(clientIds, nameOverride) =>
             applyTarget.kind === "programme"
               ? applyProgramTemplate(applyTarget.id, clientIds, nameOverride)
-              : applyDietTemplate(applyTarget.id, clientIds, nameOverride)
+              : applyTarget.kind === "diet"
+                ? applyDietTemplate(applyTarget.id, clientIds, nameOverride)
+                : applyRoadmapTemplate(applyTarget.id, clientIds, applyTarget.startDate)
           }
           onClose={() => setApplyTarget(null)}
         />
@@ -324,6 +384,112 @@ function DietTemplateRow({
             >
               <Send size={11} /> Appliquer
             </button>
+            <DeleteButton onDelete={onDelete} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RoadmapTemplateRow({
+  template,
+  onApply,
+  onDelete,
+}: {
+  template: RoadmapTemplateWithDetails;
+  onApply: (startDate: string) => void;
+  onDelete: () => Promise<{ error?: string }>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [startDate, setStartDate] = useState(todayISO());
+
+  return (
+    <div className="rounded-xl border border-[#890404]/20 bg-[#150000] overflow-hidden">
+      <button onClick={() => setExpanded((e) => !e)} className="w-full flex items-center justify-between px-4 py-3 text-left">
+        <div className="min-w-0">
+          <p className="text-sm font-bold text-white truncate">{template.name}</p>
+          {template.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 truncate">{template.objective}</p>}
+          <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap mt-0.5">
+            {template.duration_weeks ? `${template.duration_weeks} semaines` : "Durée libre"}
+            · {template.phases.length} phase{template.phases.length !== 1 ? "s" : ""}
+            · {template.milestones.length} jalon{template.milestones.length !== 1 ? "s" : ""}
+          </p>
+        </div>
+        {expanded ? <ChevronUp size={14} className="text-[#F5EDED]/30 flex-shrink-0" /> : <ChevronDown size={14} className="text-[#F5EDED]/30 flex-shrink-0" />}
+      </button>
+
+      {expanded && (
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
+          {template.phases.length === 0 && template.milestones.length === 0 ? (
+            <p className="text-[10px] text-[#F5EDED]/25 italic">Aucune phase ni jalon dans ce modèle.</p>
+          ) : (
+            <>
+              {template.phases.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
+                    <CalendarDays size={10} /> Phases
+                  </p>
+                  <div className="space-y-1">
+                    {template.phases.map((p) => {
+                      const colors = PHASE_COLORS[p.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
+                      return (
+                        <div key={p.id} className="flex items-center justify-between py-1">
+                          <p className="text-xs text-white truncate">{colors.icon} {p.label}</p>
+                          <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                            Semaine {p.start_week_offset} à {p.end_week_offset}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {template.milestones.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 flex items-center gap-1.5">
+                    <Target size={10} /> Jalons
+                  </p>
+                  <div className="space-y-1">
+                    {template.milestones.map((m) => (
+                      <div key={m.id} className="flex items-center justify-between py-1">
+                        <p className="text-xs text-white truncate">{m.label}</p>
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">Semaine {m.week_offset}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          <div className="pt-2">
+            <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+              Date de démarrage à l&apos;application
+            </label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full bg-[#1f0101] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => onApply(startDate)}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 transition-colors"
+            >
+              <Send size={11} /> Appliquer
+            </button>
+            <Link
+              href={`/dashboard/coach/programmation/roadmap/${template.id}/edit`}
+              className="p-2 text-[#F5EDED]/40 hover:text-white transition-colors"
+              title="Modifier"
+            >
+              <Pencil size={13} />
+            </Link>
             <DeleteButton onDelete={onDelete} />
           </div>
         </div>
