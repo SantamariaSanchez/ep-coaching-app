@@ -80,10 +80,18 @@ export async function POST(request: Request) {
 
       // Le customerId n'apparaît que dans l'une des deux colonnes selon
       // qu'il s'agit d'un client ou d'un coach — l'autre update est un no-op.
-      await admin
+      const { data: clientRow } = await admin
         .from("profiles")
         .update({ subscription_status: isActive ? "active" : "canceled" })
-        .eq("stripe_customer_id", customerId);
+        .eq("stripe_customer_id", customerId)
+        .select("id, full_name, email, coach_id")
+        .maybeSingle();
+
+      if (clientRow?.id && !isActive) {
+        notifyAdmin("Client : résiliation de l'abonnement coaching", [
+          `<strong>${clientRow.full_name ?? "Client"}</strong> (${clientRow.email ?? clientRow.id})`,
+        ]).catch(() => {});
+      }
 
       const { data: coachRow } = await admin
         .from("profiles")
