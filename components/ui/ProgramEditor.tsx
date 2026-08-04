@@ -32,7 +32,7 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 
-interface ExerciseRow {
+export interface ExerciseRow {
   localId: string;
   name: string;
   sets: string;
@@ -45,13 +45,13 @@ interface ExerciseRow {
   is_direct: string; // "true" | "false"
 }
 
-interface DayRow {
+export interface DayRow {
   localId: string;
   day_label: string;
   exercises: ExerciseRow[];
 }
 
-function uid() {
+export function uid() {
   return Math.random().toString(36).slice(2, 9);
 }
 
@@ -59,7 +59,7 @@ function uid() {
 // (le plus souvent identiques d'un exercice à l'autre dans une séance) —
 // avant, chaque nouvel exercice repartait de zéro, avec 4 champs à
 // re-remplir même quand le schéma ne changeait pas.
-function emptyExercise(prefillFrom?: ExerciseRow): ExerciseRow {
+export function emptyExercise(prefillFrom?: ExerciseRow): ExerciseRow {
   return {
     localId: uid(),
     name: "",
@@ -101,14 +101,15 @@ function initFromProgram(program: ProgramWithDays | null) {
   };
 }
 
-const inputCls =
+export const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 // Champ nom d'exercice avec recherche dans la bibliothèque — un choix
 // remplit aussi groupe/sous-groupe musculaire d'un coup. Reste un champ
 // texte libre : taper sans rien sélectionner marche toujours (exercice
-// hors catalogue).
-function ExerciseNameField({
+// hors catalogue). Exporté pour être réutilisé par ProgramTemplateEditor
+// (espace de conception coach, structure identique sans client précis).
+export function ExerciseNameField({
   value,
   library,
   intake,
