@@ -418,3 +418,73 @@ export async function logMealItems(
     return { error: "Erreur inattendue." };
   }
 }
+
+// ── Compléments alimentaires ─────────────────────────────────────────────
+
+export async function addOwnSupplement(input: {
+  name: string;
+  dosage?: string;
+  timing?: string;
+  notes?: string;
+}): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+  if (!input.name.trim()) return { error: "Le nom est requis." };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.from("client_supplements").insert({
+      client_id: guard.userId,
+      name: input.name.trim(),
+      dosage: input.dosage?.trim() || null,
+      timing: input.timing?.trim() || null,
+      notes: input.notes?.trim() || null,
+    });
+    if (error) return { error: "Erreur lors de l'ajout." };
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function setOwnSupplementStatus(
+  supplementId: string,
+  status: "active" | "stopped"
+): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("client_supplements")
+      .update({ status })
+      .eq("id", supplementId)
+      .eq("client_id", guard.userId);
+    if (error) return { error: "Erreur lors de la mise à jour." };
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deleteOwnSupplement(supplementId: string): Promise<{ error?: string }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("client_supplements")
+      .delete()
+      .eq("id", supplementId)
+      .eq("client_id", guard.userId);
+    if (error) return { error: "Erreur lors de la suppression." };
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}

@@ -80,3 +80,77 @@ export async function saveNutritionProfile(
     return { error: "Erreur inattendue." };
   }
 }
+
+// ── Compléments alimentaires — suggestion coach ──────────────────────────
+
+export async function suggestSupplement(
+  clientId: string,
+  input: { name: string; dosage?: string; timing?: string; notes?: string }
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+  if (!input.name.trim()) return { error: "Le nom est requis." };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin.from("client_supplements").insert({
+      client_id: clientId,
+      name: input.name.trim(),
+      dosage: input.dosage?.trim() || null,
+      timing: input.timing?.trim() || null,
+      notes: input.notes?.trim() || null,
+      suggested_by: guard.userId,
+    });
+    if (error) return { error: "Erreur lors de l'ajout." };
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/client/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function setSupplementStatus(
+  clientId: string,
+  supplementId: string,
+  status: "active" | "stopped"
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("client_supplements")
+      .update({ status })
+      .eq("id", supplementId)
+      .eq("client_id", clientId);
+    if (error) return { error: "Erreur lors de la mise à jour." };
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+export async function deleteSupplement(
+  clientId: string,
+  supplementId: string
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const admin = createAdminClient();
+    const { error } = await admin
+      .from("client_supplements")
+      .delete()
+      .eq("id", supplementId)
+      .eq("client_id", clientId);
+    if (error) return { error: "Erreur lors de la suppression." };
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}

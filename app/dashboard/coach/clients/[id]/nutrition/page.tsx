@@ -10,7 +10,13 @@ import {
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
-import { saveNutritionProfile } from "./actions";
+import { getClientSupplements } from "@/utils/supplements";
+import {
+  saveNutritionProfile,
+  suggestSupplement,
+  setSupplementStatus,
+  deleteSupplement,
+} from "./actions";
 import {
   createDietPlan,
   deactivateDietPlan,
@@ -41,7 +47,7 @@ export default async function CoachClientNutritionPage({
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements] =
     await Promise.all([
       getNutritionProfile(id),
       getTodayLogs(id, today),
@@ -51,6 +57,7 @@ export default async function CoachClientNutritionPage({
       getAllDietPlansWithMeals(id),
       getLatestWeight(id),
       getClientDailyLogs(id, 21),
+      getClientSupplements(id),
     ]);
 
   return (
@@ -84,11 +91,15 @@ export default async function CoachClientNutritionPage({
         activePlan={activePlan}
         allPlans={allPlans}
         today={today}
+        supplements={supplements}
         saveNutritionProfile={saveNutritionProfile}
         createDietPlan={createDietPlan}
         deactivateDietPlan={deactivateDietPlan}
         activateDietPlan={activateDietPlan}
         deleteDietPlan={deleteDietPlan}
+        suggestSupplement={suggestSupplement}
+        setSupplementStatus={setSupplementStatus}
+        deleteSupplement={deleteSupplement}
       />
     </div>
   );

@@ -5,7 +5,9 @@ import { X, CheckCircle2, Plus } from "lucide-react";
 import NutritionForm from "@/components/ui/NutritionForm";
 import MicroBarList from "@/components/ui/MicroBarList";
 import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
+import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
+import type { ClientSupplement } from "@/utils/supplements";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
 import type {
   NutritionProfile,
@@ -255,14 +257,18 @@ interface Props {
   allPlans: DietPlanWithMeals[];
   today: string;
   intake?: ClientIntake | null;
+  supplements: ClientSupplement[];
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
   createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+  suggestSupplement: (clientId: string, input: { name: string; dosage?: string; timing?: string; notes?: string }) => Promise<{ error?: string }>;
+  setSupplementStatus: (clientId: string, supplementId: string, status: "active" | "stopped") => Promise<{ error?: string }>;
+  deleteSupplement: (clientId: string, supplementId: string) => Promise<{ error?: string }>;
 }
 
-type Tab = "objectifs" | "plan" | "today" | "history";
+type Tab = "objectifs" | "plan" | "today" | "history" | "supplements";
 
 export default function CoachClientNutritionTabs({
   clientId,
@@ -276,11 +282,15 @@ export default function CoachClientNutritionTabs({
   allPlans,
   today,
   intake = null,
+  supplements,
   saveNutritionProfile,
   createDietPlan,
   deactivateDietPlan,
   activateDietPlan,
   deleteDietPlan,
+  suggestSupplement,
+  setSupplementStatus,
+  deleteSupplement,
 }: Props) {
   const [tab, setTab] = useState<Tab>("objectifs");
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
@@ -290,6 +300,7 @@ export default function CoachClientNutritionTabs({
     { key: "plan", label: "Plans" },
     { key: "today", label: "Suivi du jour" },
     { key: "history", label: "Historique alimentaire" },
+    { key: "supplements", label: "Compléments" },
   ];
 
   return (
@@ -392,6 +403,16 @@ export default function CoachClientNutritionTabs({
           historyLogs={historyLogs}
           today={today}
           targets={{ calories: nutritionProfile?.calories_target ?? 0 }}
+        />
+      )}
+
+      {tab === "supplements" && (
+        <SupplementsSection
+          supplements={supplements}
+          isCoachView
+          onAdd={(input) => suggestSupplement(clientId, input)}
+          onSetStatus={(id, status) => setSupplementStatus(clientId, id, status)}
+          onDelete={(id) => deleteSupplement(clientId, id)}
         />
       )}
     </div>

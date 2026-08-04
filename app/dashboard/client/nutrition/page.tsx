@@ -13,10 +13,12 @@ import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getCommunityRecipes } from "@/utils/community-recipes";
 import { getSavedMeals } from "@/utils/saved-meals";
 import { getClientIntake } from "@/utils/client-intake";
+import { getClientSupplements } from "@/utils/supplements";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import NutritionForm from "@/components/ui/NutritionForm";
 import OwnDietPlansSection from "@/components/ui/OwnDietPlansSection";
 import SeasonModeToggle from "@/components/ui/SeasonModeToggle";
+import SupplementsSection from "@/components/ui/SupplementsSection";
 import {
   addFoodLog,
   removeFoodLog,
@@ -30,6 +32,9 @@ import {
   createSavedMeal,
   deleteSavedMeal,
   logMealItems,
+  addOwnSupplement,
+  setOwnSupplementStatus,
+  deleteOwnSupplement,
 } from "./actions";
 
 export default async function ClientNutritionPage() {
@@ -45,7 +50,7 @@ export default async function ClientNutritionPage() {
   // historique) et plans perso, comme les clients coachés : seule la
   // provenance du plan change (auto-géré, pas de coach).
   if (!isSubscribed(profile)) {
-    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs, savedMeals, mostUsedGlobal, intake] =
+    const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, ownPlans, recipes, latestWeight, recentDailyLogs, savedMeals, mostUsedGlobal, intake, supplements] =
       await Promise.all([
         getNutritionProfile(user.id),
         getTodayLogs(user.id, today),
@@ -59,6 +64,7 @@ export default async function ClientNutritionPage() {
         getSavedMeals(user.id),
         getMostLoggedFoodsGlobal(),
         getClientIntake(user.id),
+        getClientSupplements(user.id),
       ]);
 
     return (
@@ -116,11 +122,20 @@ export default async function ClientNutritionPage() {
           deactivateOwnDietPlan={deactivateOwnDietPlan}
           deleteOwnDietPlan={deleteOwnDietPlan}
         />
+
+        <div className="px-6 max-w-2xl mx-auto mt-6">
+          <SupplementsSection
+            supplements={supplements}
+            onAdd={addOwnSupplement}
+            onSetStatus={setOwnSupplementStatus}
+            onDelete={deleteOwnSupplement}
+          />
+        </div>
       </div>
     );
   }
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes, savedMeals, mostUsedGlobal, intake] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, recipes, savedMeals, mostUsedGlobal, intake, supplements] =
     await Promise.all([
       getNutritionProfile(user.id),
       getTodayLogs(user.id, today),
@@ -131,28 +146,39 @@ export default async function ClientNutritionPage() {
       getSavedMeals(user.id),
       getMostLoggedFoodsGlobal(),
       getClientIntake(user.id),
+      getClientSupplements(user.id),
     ]);
 
   return (
-    <ClientNutritionView
-      today={today}
-      nutritionProfile={nutritionProfile}
-      initialTodayLogs={todayLogs}
-      historyLogs={historyLogs}
-      initialFoods={foods}
-      recipes={recipes}
-      dietMode={activePlan?.mode ?? "flexible"}
-      activePlan={activePlan}
-      seasonMode={profile?.season_mode}
-      intake={intake}
-      savedMeals={savedMeals}
-      mostUsedGlobal={mostUsedGlobal}
-      addFoodLog={addFoodLog}
-      removeFoodLog={removeFoodLog}
-      createCustomFood={createCustomFood}
-      createSavedMeal={createSavedMeal}
-      deleteSavedMeal={deleteSavedMeal}
-      logMealItems={logMealItems}
-    />
+    <div className="pb-24 md:pb-8">
+      <ClientNutritionView
+        today={today}
+        nutritionProfile={nutritionProfile}
+        initialTodayLogs={todayLogs}
+        historyLogs={historyLogs}
+        initialFoods={foods}
+        recipes={recipes}
+        dietMode={activePlan?.mode ?? "flexible"}
+        activePlan={activePlan}
+        seasonMode={profile?.season_mode}
+        intake={intake}
+        savedMeals={savedMeals}
+        mostUsedGlobal={mostUsedGlobal}
+        addFoodLog={addFoodLog}
+        removeFoodLog={removeFoodLog}
+        createCustomFood={createCustomFood}
+        createSavedMeal={createSavedMeal}
+        deleteSavedMeal={deleteSavedMeal}
+        logMealItems={logMealItems}
+      />
+      <div className="px-6 max-w-2xl mx-auto mt-6">
+        <SupplementsSection
+          supplements={supplements}
+          onAdd={addOwnSupplement}
+          onSetStatus={setOwnSupplementStatus}
+          onDelete={deleteOwnSupplement}
+        />
+      </div>
+    </div>
   );
 }
