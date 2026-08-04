@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { applyRoadmapForClient } from "@/utils/roadmap";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 
 // Un coach ne peut agir que sur SES propres clients — jamais sur ceux d'un
@@ -81,35 +82,16 @@ export async function POST(
   // Admin client bypasses RLS for all roadmap writes
   const supabase = createAdminClient();
 
-  const { data: roadmap, error: rmErr } = await supabase
-    .from("roadmaps")
-    .upsert(
-      { client_id: clientId, created_by: user.id, start_date, end_date, updated_at: new Date().toISOString() },
-      { onConflict: "client_id" }
-    )
-    .select("id")
-    .single();
+  const result = await applyRoadmapForClient(supabase, clientId, user.id, {
+    start_date,
+    end_date,
+    phases,
+    objectives,
+  });
 
-  if (rmErr || !roadmap) {
-    console.error("roadmap upsert error:", rmErr);
-    return NextResponse.json({ error: rmErr?.message ?? "Erreur upsert roadmap" }, { status: 500 });
+  if (result.error) {
+    return NextResponse.json({ error: result.error }, { status: 500 });
   }
 
-  const roadmapId = (roadmap as { id: string }).id;
-
-  await supabase.from("roadmap_phases").delete().eq("roadmap_id", roadmapId);
-  if (phases.length > 0) {
-    await supabase.from("roadmap_phases").insert(
-      phases.map((p, i) => ({ ...p, roadmap_id: roadmapId, position: i }))
-    );
-  }
-
-  await supabase.from("roadmap_objectives").delete().eq("roadmap_id", roadmapId);
-  if (objectives.length > 0) {
-    await supabase.from("roadmap_objectives").insert(
-      objectives.map((o) => ({ ...o, roadmap_id: roadmapId }))
-    );
-  }
-
-  return NextResponse.json({ ok: true, roadmapId });
+  return NextResponse.json({ ok: true, roadmapId: result.roadmapId });
 }
