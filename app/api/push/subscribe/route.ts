@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-guards";
 import webpush from "web-push";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getUser } from "@/utils/auth";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 function initVapid() {
@@ -11,11 +11,11 @@ function initVapid() {
 }
 
 export async function POST(req: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const limited = await enforceRateLimit(
-    `push-subscribe:${user.id}`,
+    `push-subscribe:${guard.userId}`,
     30,
     600
   );
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     const supabase = await createServerSupabase();
 
     await supabase.from("push_subscriptions").upsert(
-      { user_id: user.id, subscription },
+      { user_id: guard.userId, subscription },
       { onConflict: "user_id" }
     );
 

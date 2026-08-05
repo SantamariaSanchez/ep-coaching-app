@@ -1,17 +1,18 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
+import { getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ ok: false }, { status: 403 });
 
   // Cette route fait sonner le telephone de quelqu'un d'autre : sans quota,
   // elle devient un outil de harcelement par notifications.
   const limited = await enforceRateLimit(
-    `push-send:${user.id}`,
+    `push-send:${guard.userId}`,
     60,
     600,
     "Trop de notifications envoyées. Réessaie dans un instant."
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
     // On ne peut notifier que son propre interlocuteur de messagerie : son
     // coach (qu'on soit client, ou coach soi-même suivi par un autre coach —
     // double rôle), ou l'un de ses propres clients si on est coach.
-    const profile = await getProfile(user.id);
+    const profile = await getProfile(guard.userId);
     let allowed = !!profile?.coach_id && userId === profile.coach_id;
     if (!allowed && profile?.role === "coach") {
       const admin = createAdminClient();
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
         .select("coach_id")
         .eq("id", userId)
         .maybeSingle();
-      allowed = target?.coach_id === user.id;
+      allowed = target?.coach_id === guard.userId;
     }
     if (!allowed) return NextResponse.json({ ok: false }, { status: 403 });
 

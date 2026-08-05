@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityComments } from "@/utils/community";
 import { LIMITS, requireText } from "@/lib/sanitize";
@@ -9,8 +9,8 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: postId } = await params;
   const comments = await getCommunityComments(postId);
@@ -21,13 +21,13 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: postId } = await params;
 
   const limited = await enforceRateLimit(
-    `community-comment:${user.id}`,
+    `community-comment:${guard.userId}`,
     PRESETS.publish.limit,
     PRESETS.publish.windowSeconds,
     "Tu commentes trop vite. Réessaie dans un instant."
@@ -54,7 +54,7 @@ export async function POST(
   const supabase = await createServerSupabase();
   const { data, error } = await supabase
     .from("community_comments")
-    .insert({ post_id: postId, author_id: user.id, content })
+    .insert({ post_id: postId, author_id: guard.userId, content })
     .select("id")
     .single();
 

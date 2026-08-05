@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { parseWorkoutCsv, deriveProgramDaysFromSessions } from "@/utils/csv-import";
 import { saveProgramForClient } from "@/utils/programs";
@@ -8,13 +8,13 @@ import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 const MAX_FILE_BYTES = 4 * 1024 * 1024; // reste sous la limite de payload des fonctions Vercel
 
 export async function POST(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Un import declenche le parsing d'un CSV de plusieurs mega octets puis des
   // centaines d'insertions : c'est la route la plus couteuse cote base.
   const limited = await enforceRateLimit(
-    `import-logbook:${user.id}`,
+    `import-logbook:${guard.userId}`,
     10,
     3600,
     "Trop d'imports d'affilée. Réessaie dans un moment."
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       const { data: existing } = await supabase
         .from("sessions")
         .select("id")
-        .eq("client_id", user.id)
+        .eq("client_id", guard.userId)
         .eq("session_date", session.date)
         .eq("day_label", session.dayLabel)
         .eq("notes", importNote)
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
       const { data: sessionRow, error: sessionError } = await supabase
         .from("sessions")
         .insert({
-          client_id: user.id,
+          client_id: guard.userId,
           program_id: null,
           day_label: session.dayLabel,
           session_date: session.date,
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       const { data: existingPr } = await supabase
         .from("personal_records")
         .select("weight_kg")
-        .eq("client_id", user.id)
+        .eq("client_id", guard.userId)
         .eq("exercise_name", exerciseName)
         .order("weight_kg", { ascending: false })
         .limit(1)
@@ -132,7 +132,7 @@ export async function POST(request: Request) {
       const existingBest = (existingPr as { weight_kg: number } | null)?.weight_kg ?? 0;
       if (best.weightKg > existingBest) {
         await supabase.from("personal_records").insert({
-          client_id: user.id,
+          client_id: guard.userId,
           exercise_name: exerciseName,
           weight_kg: best.weightKg,
           reps: best.reps,
@@ -149,7 +149,7 @@ export async function POST(request: Request) {
     let programCreated = false;
     const derivedDays = deriveProgramDaysFromSessions(parsed.sessions);
     if (derivedDays.length > 0) {
-      const programResult = await saveProgramForClient(supabase, user.id, {
+      const programResult = await saveProgramForClient(supabase, guard.userId, {
         name: `Programme importé (${sourceLabel})`,
         type: sourceLabel,
         frequency: derivedDays.length,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile } from "@/utils/auth";
+import { getProfile } from "@/utils/auth";
+import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 
 // Coach marks a question as answered.
@@ -7,13 +8,8 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireCoach();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: postId } = await params;
   const body = await request.json();
@@ -34,8 +30,8 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: postId } = await params;
   const supabase = await createServerSupabase();
@@ -48,8 +44,8 @@ export async function DELETE(
 
   if (!post) return NextResponse.json({ error: "Post introuvable." }, { status: 404 });
 
-  const profile = await getProfile(user.id);
-  const isOwner = post.author_id === user.id;
+  const profile = await getProfile(guard.userId);
+  const isOwner = post.author_id === guard.userId;
   // Modération réservée au fondateur, même dans le mur partagé — un coach
   // tiers ne peut supprimer que ses propres posts, pas ceux des autres.
   const isModerator = profile?.is_platform_owner === true;

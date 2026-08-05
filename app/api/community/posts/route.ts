@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
 import { awardPoints, POINTS } from "@/lib/gamification";
@@ -7,8 +7,8 @@ import { cleanText, LIMITS, requireText } from "@/lib/sanitize";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
@@ -25,13 +25,13 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Quota de publication : trente posts par dix minutes ne gênent personne et
   // coupent court au spam automatisé du fil communauté.
   const limited = await enforceRateLimit(
-    `community-post:${user.id}`,
+    `community-post:${guard.userId}`,
     PRESETS.publish.limit,
     PRESETS.publish.windowSeconds,
     "Tu publies trop vite. Réessaie dans un instant."
@@ -71,7 +71,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Photo trop volumineuse (8MB max)." }, { status: 400 });
     }
 
-    const path = `${type}/${user.id}/${Date.now()}.${ext}`;
+    const path = `${type}/${guard.userId}/${Date.now()}.${ext}`;
     const { error: uploadError } = await supabase.storage
       .from("community-photos")
       .upload(path, image, { contentType: image.type });
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("community_posts")
     .insert({
-      author_id: user.id,
+      author_id: guard.userId,
       type,
       content,
       image_url,
@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   }
 
   awardPoints(
-    user.id,
+    guard.userId,
     type === "victory" ? POINTS.community_victory : POINTS.community_question,
     type === "victory" ? "Victoire partagée" : "Question posée",
     `community_${type}`,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile } from "@/utils/auth";
+import { getProfile } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { awardPoints, POINTS } from "@/lib/gamification";
@@ -35,8 +36,8 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: sessionId } = await params;
   const body = (await req.json()) as CompleteBody;
@@ -49,7 +50,7 @@ export async function POST(
     .eq("id", sessionId)
     .single();
 
-  if (!session || (session as { client_id: string }).client_id !== user.id) {
+  if (!session || (session as { client_id: string }).client_id !== guard.userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -70,7 +71,7 @@ export async function POST(
   if (body.prs.length > 0) {
     await supabase.from("personal_records").insert(
       body.prs.map((pr) => ({
-        client_id: user.id,
+        client_id: guard.userId,
         exercise_name: pr.exerciseName,
         weight_kg: pr.weightKg,
         reps: pr.reps,
@@ -90,7 +91,7 @@ export async function POST(
   if (body.workoutData.length > 0) {
     await supabase.from("workout_logs").insert(
       body.workoutData.map((w) => ({
-        client_id: user.id,
+        client_id: guard.userId,
         exercise_name: w.exerciseName,
         muscle_group: w.muscleGroup,
         is_direct: w.isDirect,
@@ -103,10 +104,10 @@ export async function POST(
     );
   }
 
-  awardPoints(user.id, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
+  awardPoints(guard.userId, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
 
   // 4. Email notification to coach
-  const profile = await getProfile(user.id);
+  const profile = await getProfile(guard.userId);
   const clientName = profile?.full_name ?? "Un client";
   const prLine =
     body.prs.length > 0
@@ -128,7 +129,7 @@ export async function POST(
             <li>Feeling : ${body.general_feeling}/5</li>
           </ul>
           ${prLine}
-          <a href="${APP_URL}/dashboard/coach/clients/${user.id}/logbook"
+          <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
              style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                     text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
             Voir le logbook

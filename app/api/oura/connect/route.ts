@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
+import { getProfile, isSubscribed } from "@/utils/auth";
 import { getOuraAuthUrl, isOuraConfigured } from "@/lib/oura";
 
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"));
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.redirect(new URL("/", process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"));
 
-  const profile = await getProfile(user.id);
+  const profile = await getProfile(guard.userId);
   const homePath = profile?.role === "coach" ? "/dashboard/coach/moi/tracking" : "/dashboard/client/tracking";
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 

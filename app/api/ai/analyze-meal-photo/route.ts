@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-guards";
 import Anthropic from "@anthropic-ai/sdk";
-import { getUser } from "@/utils/auth";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Analyse une photo de repas via Claude Vision et retourne une estimation
 // des macros. Réponse JSON : { name, calories, proteins, carbs, fats }.
 // Requiert ANTHROPIC_API_KEY dans les variables d'environnement Vercel.
 export async function POST(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Chaque appel coûte de l'argent : quota par compte. Vingt photos par heure
   // couvrent très largement un usage normal (quelques repas par jour).
   const limited = await enforceRateLimit(
-    `ai-meal-photo:${user.id}`,
+    `ai-meal-photo:${guard.userId}`,
     PRESETS.ai.limit,
     PRESETS.ai.windowSeconds,
     "Tu as analysé beaucoup de photos d'un coup. Réessaie dans un moment."

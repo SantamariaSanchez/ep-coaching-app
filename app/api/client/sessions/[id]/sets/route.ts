@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
@@ -7,13 +7,13 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Limite volontairement large : on enregistre une serie par set effectue,
   // une grosse seance en produit plusieurs dizaines.
   const limited = await enforceRateLimit(
-    `session-sets:${user.id}`,
+    `session-sets:${guard.userId}`,
     600,
     600
   );
@@ -31,7 +31,7 @@ export async function POST(
     .eq("id", sessionId)
     .single();
 
-  if (!session || (session as { client_id: string }).client_id !== user.id) {
+  if (!session || (session as { client_id: string }).client_id !== guard.userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

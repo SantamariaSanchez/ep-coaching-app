@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const limited = await enforceRateLimit(
-    `session-create:${user.id}`,
+    `session-create:${guard.userId}`,
     PRESETS.write.limit,
     PRESETS.write.windowSeconds
   );
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     const { data: existing } = await supabase
       .from("sessions")
       .select("id")
-      .eq("client_id", user.id)
+      .eq("client_id", guard.userId)
       .eq("day_label", dayLabel)
       .eq("session_date", today)
       .eq("is_completed", false)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     const { data, error } = await supabase
       .from("sessions")
       .insert({
-        client_id: user.id,
+        client_id: guard.userId,
         program_id: programId ?? null,
         day_label: dayLabel,
         muscle_groups: muscleGroups ?? null,

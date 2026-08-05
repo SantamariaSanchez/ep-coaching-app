@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { applyRoadmapForClient } from "@/utils/roadmap";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
@@ -24,14 +24,14 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { clientId } = await params;
 
   // A client can only read their own roadmap; the coach can only read
   // the roadmap of clients assigned to them.
-  if (!(await canAccessRoadmap(user.id, clientId))) {
+  if (!(await canAccessRoadmap(guard.userId, clientId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -62,13 +62,13 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Cette route réécrit toutes les phases et tous les objectifs à chaque appel
   // (suppression puis réinsertion) : c'est une écriture lourde.
   const limited = await enforceRateLimit(
-    `roadmap-write:${user.id}`,
+    `roadmap-write:${guard.userId}`,
     PRESETS.write.limit,
     PRESETS.write.windowSeconds
   );
@@ -77,7 +77,7 @@ export async function POST(
   const { clientId } = await params;
   // Coach can edit only their own clients' roadmap; a client can only edit
   // their own (free community members build their own roadmap autonomously).
-  if (!(await canAccessRoadmap(user.id, clientId))) {
+  if (!(await canAccessRoadmap(guard.userId, clientId))) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
@@ -92,7 +92,7 @@ export async function POST(
   // Admin client bypasses RLS for all roadmap writes
   const supabase = createAdminClient();
 
-  const result = await applyRoadmapForClient(supabase, clientId, user.id, {
+  const result = await applyRoadmapForClient(supabase, clientId, guard.userId, {
     start_date,
     end_date,
     phases,

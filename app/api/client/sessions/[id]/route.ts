@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getActiveProgram } from "@/utils/programs";
 import type { Session, SessionSet, PersonalRecord } from "@/utils/sessions";
@@ -21,8 +21,8 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: sessionId } = await params;
   const supabase = await createServerSupabase();
@@ -32,7 +32,7 @@ export async function GET(
     .from("sessions")
     .select("*")
     .eq("id", sessionId)
-    .eq("client_id", user.id)
+    .eq("client_id", guard.userId)
     .single();
 
   if (!session) {
@@ -44,7 +44,7 @@ export async function GET(
   // Fetch exercises for this day (if linked to a program)
   let exercises: Exercise[] = [];
   if (sess.program_id && sess.day_label) {
-    const program = await getActiveProgram(user.id);
+    const program = await getActiveProgram(guard.userId);
     if (program) {
       const day = program.days.find((d) => d.day_label === sess.day_label);
       exercises = day?.exercises ?? [];
@@ -62,7 +62,7 @@ export async function GET(
   const { data: prs } = await supabase
     .from("personal_records")
     .select("exercise_name, weight_kg")
-    .eq("client_id", user.id);
+    .eq("client_id", guard.userId);
 
   const prMap: Record<string, number> = {};
   for (const r of (prs as PersonalRecord[]) ?? []) {
@@ -125,8 +125,8 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: sessionId } = await params;
   const body = await req.json();
@@ -143,7 +143,7 @@ export async function PATCH(
     .from("sessions")
     .update(update)
     .eq("id", sessionId)
-    .eq("client_id", user.id);
+    .eq("client_id", guard.userId);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
@@ -156,8 +156,8 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: sessionId } = await params;
   const supabase = await createServerSupabase();
@@ -166,7 +166,7 @@ export async function DELETE(
     .from("sessions")
     .delete()
     .eq("id", sessionId)
-    .eq("client_id", user.id)
+    .eq("client_id", guard.userId)
     .eq("is_completed", false);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

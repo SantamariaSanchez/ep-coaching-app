@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 
 export async function DELETE(
   req: Request,
   { params }: { params: Promise<{ id: string; setId: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { id: sessionId, setId } = await params;
 
@@ -20,7 +20,7 @@ export async function DELETE(
     .eq("id", sessionId)
     .single();
 
-  if (!session || (session as { client_id: string }).client_id !== user.id) {
+  if (!session || (session as { client_id: string }).client_id !== guard.userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
