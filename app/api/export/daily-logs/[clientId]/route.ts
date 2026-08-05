@@ -3,14 +3,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { DailyLog } from "@/utils/daily-logs";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
-
-function esc(v: string | null | undefined): string {
-  if (v == null) return "";
-  const s = String(v);
-  return s.includes(",") || s.includes('"') || s.includes("\n")
-    ? `"${s.replace(/"/g, '""')}"`
-    : s;
-}
+import { csvEscape as esc, csvNumber } from "@/lib/csv";
 
 const STRESS_FR: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
 const HUNGER_FR: Record<string, string> = { low: "Faible", medium: "Moyenne", high: "Élevée" };
@@ -88,19 +81,19 @@ export async function GET(
     [
       esc(l.log_date),
       esc(l.training_name),
-      l.training_rating ?? "",
+      csvNumber(l.training_rating),
       esc(l.cardio),
-      l.steps ?? "",
-      l.weight_morning ?? "",
+      csvNumber(l.steps),
+      csvNumber(l.weight_morning),
       esc(l.weight_time),
-      l.sleep_hours ?? "",
-      l.sleep_rating ?? "",
+      csvNumber(l.sleep_hours),
+      csvNumber(l.sleep_rating),
       esc(l.digestion),
       esc(l.stress ? (STRESS_FR[l.stress] ?? l.stress) : null),
-      l.proteins_g ?? "",
-      l.carbs_g ?? "",
-      l.fats_g ?? "",
-      l.calories_kcal ?? "",
+      csvNumber(l.proteins_g),
+      csvNumber(l.carbs_g),
+      csvNumber(l.fats_g),
+      csvNumber(l.calories_kcal),
       esc(l.hunger ? (HUNGER_FR[l.hunger] ?? l.hunger) : null),
     ].join(",")
   );

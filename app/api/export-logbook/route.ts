@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientSessionsForExport } from "@/utils/sessions";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { csvEscape, csvNumber } from "@/lib/csv";
 
 export async function GET(request: Request) {
   const user = await getUser();
@@ -43,15 +44,18 @@ export async function GET(request: Request) {
   const rows: string[] = [];
 
   for (const session of sessions) {
+    // Les libelles de seance et noms d'exercice sont saisis a la main : ils
+    // passent par csvEscape, qui gere a la fois les guillemets/virgules et les
+    // debuts de formule interpretes par Excel (voir lib/csv.ts).
     if (session.sets.length === 0) {
       rows.push(
         [
-          session.session_date,
-          `"${session.day_label}"`,
-          session.duration_minutes ?? "",
-          session.general_feeling ?? "",
-          session.energy_level ?? "",
-          session.pump ?? "",
+          csvEscape(session.session_date),
+          csvEscape(session.day_label),
+          csvNumber(session.duration_minutes),
+          csvNumber(session.general_feeling),
+          csvNumber(session.energy_level),
+          csvNumber(session.pump),
           "",
           "",
           "",
@@ -66,20 +70,20 @@ export async function GET(request: Request) {
       for (const set of session.sets) {
         rows.push(
           [
-            session.session_date,
-            `"${session.day_label}"`,
-            session.duration_minutes ?? "",
-            session.general_feeling ?? "",
-            session.energy_level ?? "",
-            session.pump ?? "",
-            `"${set.exercise_name}"`,
-            set.set_number,
-            set.weight_kg ?? "",
-            set.reps_actual ?? "",
-            set.rir_actual ?? "",
-            set.standardization_score ?? "",
+            csvEscape(session.session_date),
+            csvEscape(session.day_label),
+            csvNumber(session.duration_minutes),
+            csvNumber(session.general_feeling),
+            csvNumber(session.energy_level),
+            csvNumber(session.pump),
+            csvEscape(set.exercise_name),
+            csvNumber(set.set_number),
+            csvNumber(set.weight_kg),
+            csvNumber(set.reps_actual),
+            csvNumber(set.rir_actual),
+            csvNumber(set.standardization_score),
             set.is_pr ? "OUI" : "non",
-            set.rest_duration_seconds ?? "",
+            csvNumber(set.rest_duration_seconds),
           ].join(",")
         );
       }
