@@ -31,6 +31,22 @@ export async function createLiveEvent(
 
   try {
     const admin = createAdminClient();
+
+    // Isolation multi-coach : le client invité doit appartenir à CE coach,
+    // jamais faire confiance à l'id transmis depuis le formulaire (un coach
+    // ne doit jamais pouvoir programmer un appel avec le client d'un autre
+    // coach, ni récupérer son email/nom via la notification ci-dessous).
+    if (isOneToOneType(input.type) && input.invitedClientId) {
+      const { data: invited } = await admin
+        .from("profiles")
+        .select("coach_id")
+        .eq("id", input.invitedClientId)
+        .single();
+      if (!invited || invited.coach_id !== guard.userId) {
+        return { error: "Client introuvable." };
+      }
+    }
+
     const roomSlug = generateRoomSlug();
 
     const { data, error } = await admin
@@ -131,6 +147,20 @@ export async function updateLiveEvent(
     if (!existing) return { error: "Live introuvable." };
     if (isOneToOneType(existing.type) && !input.invitedClientId) {
       return { error: "Choisis un client pour ce type de live." };
+    }
+
+    // Isolation multi-coach : même vérification qu'à la création, un coach
+    // ne doit jamais pouvoir réassigner un live à un client qui n'est pas
+    // le sien.
+    if (isOneToOneType(existing.type) && input.invitedClientId) {
+      const { data: invited } = await admin
+        .from("profiles")
+        .select("coach_id")
+        .eq("id", input.invitedClientId)
+        .single();
+      if (!invited || invited.coach_id !== guard.userId) {
+        return { error: "Client introuvable." };
+      }
     }
 
     const { error } = await admin

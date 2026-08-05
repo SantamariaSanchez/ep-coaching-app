@@ -46,7 +46,8 @@ export async function submitCorrectionFeedback(
       status: "answered",
       answered_at: new Date().toISOString(),
     })
-    .eq("id", correctionId);
+    .eq("id", correctionId)
+    .eq("client_id", clientId);
 
   if (error) return { error: "Erreur lors de l'envoi du retour." };
 

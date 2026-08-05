@@ -25,9 +25,13 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // session_id vient toujours du param d'URL déjà vérifié ci-dessus, jamais
+  // du body — sinon un body { session_id: "<autre session>" } écraserait
+  // cette valeur via le spread et permettrait d'insérer une série dans la
+  // séance d'un autre utilisateur.
   const { data, error } = await supabase
     .from("session_sets")
-    .insert({ session_id: sessionId, ...body })
+    .insert({ ...body, session_id: sessionId })
     .select("id")
     .single();
 

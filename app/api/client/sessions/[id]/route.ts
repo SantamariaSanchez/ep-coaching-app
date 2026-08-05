@@ -132,9 +132,16 @@ export async function PATCH(
   const body = await req.json();
   const supabase = await createServerSupabase();
 
+  // Allowlist explicite plutôt que d'écrire le body tel quel : sans ça, un
+  // body forgé pourrait réassigner client_id (ou toute autre colonne) de la
+  // séance au lieu de se limiter au warmup.
+  const update: Record<string, unknown> = {};
+  if (body.warmup_validated !== undefined) update.warmup_validated = body.warmup_validated;
+  if (body.warmup_duration_seconds !== undefined) update.warmup_duration_seconds = body.warmup_duration_seconds;
+
   const { error } = await supabase
     .from("sessions")
-    .update(body)
+    .update(update)
     .eq("id", sessionId)
     .eq("client_id", user.id);
 
