@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { clientIp, enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Resources are public lead-magnet content (see /ressources), so this route
 // intentionally has no auth check — same exposure as the direct Supabase
@@ -17,9 +18,18 @@ const HTML_FIX_CSS = `<style>
   </style>`;
 
 export async function GET(
-    _request: Request,
+    request: Request,
   { params }: { params: Promise<{ id: string }> }
   ) {
+    // Route publique qui sert des fichiers depuis le stockage : sans quota,
+    // elle sert de robinet a bande passante pour n'importe qui.
+    const limited = await enforceRateLimit(
+          `public-resource:${clientIp(request)}`,
+          PRESETS.expensiveRead.limit,
+          PRESETS.expensiveRead.windowSeconds
+    );
+    if (limited) return limited;
+
     const { id } = await params;
     const admin = createAdminClient();
 
