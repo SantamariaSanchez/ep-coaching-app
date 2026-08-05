@@ -469,12 +469,51 @@ export default function DashboardNav({
     return () => mq.removeEventListener("change", h);
   }, []);
 
+  // Prefetch de toute la nav visible, pas seulement de 3 ou 4 routes fixes :
+  // au clic sur un onglet, le RSC payload est déjà en cache et la page
+  // s'affiche sans le temps d'attente perceptible qu'il y avait avant.
+  // Les onglets du bas (ou du haut sur desktop) partent tout de suite, le
+  // reste de la sidebar est étalé ensuite pour ne pas déclencher une rafale
+  // de requêtes pendant le rendu initial de la page courante.
+  // Sérialisés en chaîne : `tabs`/`sidebar` sont recalculés à chaque rendu
+  // (nouvelles références), les passer tels quels en dépendances relancerait
+  // le prefetch en boucle. La chaîne, elle, ne change que si la nav change.
+  const tabHrefsKey = tabs.map((t) => t.href).join("|");
+  const sidebarHrefsKey = sidebar
+    .flatMap((g) => g.items.map(({ segment, href }) => href ?? (segment ? `${base}/${segment}` : base)))
+    .join("|");
+
   useEffect(() => {
-    const prefetch = isCoach
-      ? ["/dashboard/coach", "/dashboard/coach/clients", "/dashboard/coach/messages"]
-      : ["/dashboard/client", "/dashboard/client/program", "/dashboard/client/bilan", "/dashboard/client/messages"];
-    prefetch.forEach((p) => router.prefetch(p));
-  }, [isCoach, router]);
+    const tabHrefs = tabHrefsKey ? tabHrefsKey.split("|") : [];
+    const sidebarHrefs = sidebarHrefsKey ? sidebarHrefsKey.split("|") : [];
+    const seen = new Set<string>();
+    const rest: string[] = [];
+
+    tabHrefs.forEach((href) => {
+      if (seen.has(href)) return;
+      seen.add(href);
+      router.prefetch(href);
+    });
+    sidebarHrefs.forEach((href) => {
+      if (seen.has(href)) return;
+      seen.add(href);
+      rest.push(href);
+    });
+
+    let i = 0;
+    // Une route toutes les ~120 ms : la nav entière est chaude en quelques
+    // secondes sans jamais saturer la connexion au chargement initial.
+    const timer = setInterval(() => {
+      if (i >= rest.length) {
+        clearInterval(timer);
+        return;
+      }
+      router.prefetch(rest[i]);
+      i += 1;
+    }, 120);
+
+    return () => clearInterval(timer);
+  }, [tabHrefsKey, sidebarHrefsKey, router]);
 
   useEffect(() => {
     if (isCoach) {
