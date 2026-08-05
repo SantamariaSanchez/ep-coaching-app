@@ -42,6 +42,28 @@ export interface SelfSignupInput {
 
 export type SelfSignupResult = { error: string } | { success: true; userId: string };
 
+// Repère un compte auth.users existant pour cet email qui n'a jamais reçu de
+// ligne profiles (inscription précédente interrompue entre la création du
+// compte et l'insert du profil). Un tel compte fait échouer toute nouvelle
+// tentative de la même personne avec "email déjà utilisé" sans que le
+// prospect n'ait jamais pu réellement rejoindre l'app — vécu en prod le
+// 2026-08-05. listUsers() plutôt qu'une requête directe sur auth.users : le
+// schéma auth n'est pas exposé via PostgREST, seule l'API admin GoTrue l'est.
+async function findOrphanAuthUserByEmail(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string
+): Promise<{ id: string } | null> {
+  try {
+    const { data } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+    const match = data?.users?.find((u) => u.email?.toLowerCase() === email);
+    if (!match) return null;
+    const { data: profile } = await admin.from("profiles").select("id").eq("id", match.id).maybeSingle();
+    return profile ? null : { id: match.id };
+  } catch {
+    return null;
+  }
+}
+
 // Résout quel coach doit récupérer ce nouveau membre : le titulaire du code
 // d'invitation s'il est valide et a un abonnement plateforme actif, sinon
 // le propriétaire historique de la plateforme (comportement d'origine).
@@ -118,7 +140,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   // suivie à part dans profiles.email_verified_at (null ici), avec un email de
   // confirmation envoyé en tâche de fond juste après. Voir
   // lib/email-verification.ts.
-  const { data: authData, error: authError } = await admin.auth.admin.createUser({
+  let { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
     email_confirm: true,
@@ -126,10 +148,27 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
 
   if (authError || !authData.user) {
     const msg = authError?.message ?? "";
-    if (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("exists")) {
-      return { error: "Cet email est déjà utilisé. Utilise l'onglet Me connecter." };
+    const alreadyExists = msg.toLowerCase().includes("already") || msg.toLowerCase().includes("exists");
+    if (alreadyExists) {
+      // Un compte auth peut exister sans profil (inscription précédente
+      // interrompue avant l'insert, ou rollback qui a échoué en silence) :
+      // dans ce cas précis, la personne ne peut jamais rejoindre, on l'a
+      // vécu en prod. On répare au lieu de bloquer indéfiniment un vrai
+      // prospect derrière un compte fantôme.
+      const orphan = await findOrphanAuthUserByEmail(admin, email);
+      if (orphan) {
+        await admin.auth.admin.deleteUser(orphan.id);
+        const retry = await admin.auth.admin.createUser({ email, password, email_confirm: true });
+        authData = retry.data;
+        authError = retry.error;
+      }
     }
-    return { error: "Erreur création du compte. Réessaie." };
+    if (authError || !authData?.user) {
+      if (alreadyExists) {
+        return { error: "Cet email est déjà utilisé. Utilise l'onglet Me connecter." };
+      }
+      return { error: "Erreur création du compte. Réessaie." };
+    }
   }
 
   const { error: profileError } = await admin.from("profiles").insert({
