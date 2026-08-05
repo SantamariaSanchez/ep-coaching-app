@@ -1,20 +1,16 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { getClientById } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ clientId: string }> }
 ) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  const guard = await requireCoach();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const { clientId } = await params;
-  const client = await getClientById(clientId, user.id);
+  const client = await getClientById(clientId, guard.userId);
   if (!client) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   return NextResponse.json({ full_name: client.full_name });

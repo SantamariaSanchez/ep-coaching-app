@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { getExerciseLibrary } from "@/utils/exercise-library";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
@@ -7,13 +7,13 @@ import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 // de la séance (recherche + sélection) sans exposer utils/exercise-library.ts
 // (client admin Supabase) au bundle client.
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // La route renvoie la bibliotheque entiere : sans quota, elle sert de
   // robinet pour recopier tout le contenu de l'appli.
   const limited = await enforceRateLimit(
-    `exercise-library:${user.id}`,
+    `exercise-library:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );

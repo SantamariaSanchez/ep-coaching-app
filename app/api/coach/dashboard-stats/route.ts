@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server";
 export const revalidate = 30;
-import { getUser, getProfile } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 import { getWeeklyCheckinCount, getPendingReplies } from "@/utils/checkins";
 import { getClients, getTotalMembersCount } from "@/utils/auth";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  // requireCoach() remplace le couple getUser + contrôle de rôle maison :
+  // même règle métier, plus le contrôle de force de session (2FA).
+  const guard = await requireCoach();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Agregations lourdes sur toute la base du coach : quota genereux, mais reel.
   const limited = await enforceRateLimit(
-    `coach-dashboard-stats:${user.id}`,
+    `coach-dashboard-stats:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );
@@ -24,10 +21,10 @@ export async function GET() {
 
   const [clients, weeklyCount, pendingReplies, totalMembers] =
     await Promise.all([
-      getClients(user.id),
+      getClients(guard.userId),
       getWeeklyCheckinCount(),
       getPendingReplies(),
-      getTotalMembersCount(user.id),
+      getTotalMembersCount(guard.userId),
     ]);
 
   const activeCount = clients.filter((c) => c.status === "active").length;

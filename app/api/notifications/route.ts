@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 // Client admin (pas le client lié à la session) — même fix que pour
@@ -7,8 +7,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 // la table dans le dashboard Supabase. Le filtre user_id ci-dessous fait
 // office de garde-fou puisque RLS n'est plus la barrière de sécurité ici.
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ notifications: [] });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ notifications: [] });
 
   try {
     const supabase = createAdminClient();
@@ -17,7 +17,7 @@ export async function GET() {
       .select(
         "id, type, title, body, url, read_at, created_at, sender:sender_id(full_name, role, is_platform_owner, subscription_status)"
       )
-      .eq("user_id", user.id)
+      .eq("user_id", guard.userId)
       .order("created_at", { ascending: false })
       .limit(20);
 

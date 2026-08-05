@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
+import { requireAuth } from "@/lib/auth-guards";
 export const revalidate = 0; // always fresh — this is the daily dashboard
-import { getUser } from "@/utils/auth";
 import { getTodayLogs, getLast7DaysLogs, getNutritionProfile } from "@/utils/nutrition";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   const limited = await enforceRateLimit(
-    `client-dashboard-stats:${user.id}`,
+    `client-dashboard-stats:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );
@@ -24,22 +24,22 @@ export async function GET() {
 
   const [nutritionProfile, todayLogs, last7DaysLogs, thisWeekCheckin, sessionCount, bilanCount, weighInCount] =
     await Promise.all([
-      getNutritionProfile(user.id),
-      getTodayLogs(user.id),
-      getLast7DaysLogs(user.id),
-      getThisWeekCheckin(user.id),
+      getNutritionProfile(guard.userId),
+      getTodayLogs(guard.userId),
+      getLast7DaysLogs(guard.userId),
+      getThisWeekCheckin(guard.userId),
       // Did the user log a workout today?
       supabase
         .from("sessions")
         .select("id", { count: "exact", head: true })
-        .eq("client_id", user.id)
+        .eq("client_id", guard.userId)
         .eq("session_date", todayStr)
         .eq("is_completed", true),
       // Did the user fill their daily bilan today?
       supabase
         .from("daily_logs")
         .select("id", { count: "exact", head: true })
-        .eq("client_id", user.id)
+        .eq("client_id", guard.userId)
         .eq("log_date", todayStr),
       // Le poids du matin est un champ du bilan quotidien mais mérite son
       // propre non-négociable — un bilan peut être rempli sans poids renseigné,
@@ -47,7 +47,7 @@ export async function GET() {
       supabase
         .from("daily_logs")
         .select("id", { count: "exact", head: true })
-        .eq("client_id", user.id)
+        .eq("client_id", guard.userId)
         .eq("log_date", todayStr)
         .not("weight_morning", "is", null),
     ]);

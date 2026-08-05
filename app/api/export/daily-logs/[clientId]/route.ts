@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { requireOwnClient } from "@/lib/auth-guards";
 import type { DailyLog } from "@/utils/daily-logs";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { csvEscape as esc, csvNumber } from "@/lib/csv";
@@ -14,14 +14,16 @@ export async function GET(
 ) {
   const { clientId } = await params;
 
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+  // requireOwnClient() remplace le trio getUser + lecture du rôle + contrôle
+  // d'appartenance fait à la main, et ajoute la force de session (2FA) : un
+  // export déverse tout l'historique quotidien d'un client en clair.
+  const guard = await requireOwnClient(clientId);
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Export complet de l'historique quotidien d'un client : meme garde fou que
   // pour l'export du carnet d'entrainement.
   const limited = await enforceRateLimit(
-    `export-daily-logs:${user.id}`,
+    `export-daily-logs:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );
@@ -29,21 +31,11 @@ export async function GET(
 
   const admin = createAdminClient();
 
-  const { data: coachProfile } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (coachProfile?.role !== "coach") {
-    return NextResponse.json({ error: "Accès refusé" }, { status: 403 });
-  }
-
   const { data: clientProfile } = await admin
     .from("profiles")
     .select("full_name")
     .eq("id", clientId)
-    .eq("coach_id", user.id)
+    .eq("coach_id", guard.userId)
     .single();
 
   if (!clientProfile) {

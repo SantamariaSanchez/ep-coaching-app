@@ -1,26 +1,24 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { getClientById } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 import { getClientSessionsForExport } from "@/utils/sessions";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { csvEscape, csvNumber } from "@/lib/csv";
 
 export async function GET(request: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Un export siphonne l'historique complet d'un client : c'est exactement
+  // le genre d'appel qui doit exiger une session forte quand la 2FA est active.
+  const guard = await requireCoach();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Un export renvoie tout l'historique d'un client en clair : on borne le
   // rythme pour qu'un compte coach compromis ne siphonne pas la base d'un coup.
   const limited = await enforceRateLimit(
-    `export-logbook:${user.id}`,
+    `export-logbook:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );
   if (limited) return limited;
-
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
 
   const { searchParams } = new URL(request.url);
   const clientId = searchParams.get("clientId");
@@ -30,7 +28,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "clientId required" }, { status: 400 });
   }
 
-  const client = await getClientById(clientId, user.id);
+  const client = await getClientById(clientId, guard.userId);
   if (!client) {
     return NextResponse.json({ error: "Client not found" }, { status: 404 });
   }

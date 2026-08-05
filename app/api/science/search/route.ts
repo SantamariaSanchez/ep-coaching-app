@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { searchPubMedIds, fetchPubMedSummaries } from "@/lib/pubmed";
 import { cleanText, LIMITS } from "@/lib/sanitize";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
@@ -8,14 +8,14 @@ import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 // Supabase, c'est un simple proxy vers NCBI E-utilities pour laisser les
 // membres explorer la littérature et se faire leur propre avis.
 export async function GET(req: Request) {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const guard = await requireAuth();
+  if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
   // Chaque recherche déclenche deux appels vers NCBI en notre nom. NCBI limite
   // à 3 requêtes par seconde par outil : sans quota ici, quelqu'un peut faire
   // bannir l'app entière pour tout le monde.
   const limited = await enforceRateLimit(
-    `pubmed-search:${user.id}`,
+    `pubmed-search:${guard.userId}`,
     PRESETS.externalSearch.limit,
     PRESETS.externalSearch.windowSeconds,
     "Trop de recherches d'affilée. Réessaie dans un instant."

@@ -1,26 +1,26 @@
 import { NextResponse } from "next/server";
-import { getUser, getProfile } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 import { getTopUrgentAlerts } from "@/lib/coach-analytics";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET() {
-  const user = await getUser();
-  if (!user) return NextResponse.json({ alerts: [] });
-
-  const profile = await getProfile(user.id);
-  if (profile?.role !== "coach") return NextResponse.json({ alerts: [] });
+  // Échec silencieux (liste vide) comme avant, pour ne pas faire clignoter
+  // une erreur sur le tableau de bord — mais le guard couvre maintenant la
+  // force de session en plus du rôle.
+  const guard = await requireCoach();
+  if (!guard.ok) return NextResponse.json({ alerts: [] });
 
   // getTopUrgentAlerts parcourt tous les clients du coach et leurs donnees
   // biometriques : c'est l'une des lectures les plus lourdes de l'appli.
   const limited = await enforceRateLimit(
-    `coach-urgent-alerts:${user.id}`,
+    `coach-urgent-alerts:${guard.userId}`,
     PRESETS.expensiveRead.limit,
     PRESETS.expensiveRead.windowSeconds
   );
   if (limited) return limited;
 
   try {
-    const alerts = await getTopUrgentAlerts(user.id, 3);
+    const alerts = await getTopUrgentAlerts(guard.userId, 3);
     return NextResponse.json({ alerts });
   } catch {
     return NextResponse.json({ alerts: [] });
