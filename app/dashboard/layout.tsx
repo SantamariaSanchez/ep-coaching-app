@@ -24,22 +24,25 @@ async function requireStrongSessionIfNeeded(
 ) {
   if (!profile) return;
   const hasMfa = profile.mfa_enabled === true;
-  const ownerMustEnroll = profile.is_platform_owner === true && !hasMfa;
-  if (!hasMfa && !ownerMustEnroll) return;
+  // L'obligation d'enrolement pour le fondateur sans 2FA est temporairement
+  // desactivee (2026-08-05) : l'ecran d'activation restait bloque en boucle
+  // pour un compte reel, verrouillant l'acces au dashboard. Le challenge
+  // reste applique normalement pour tout compte qui a deja une 2FA active
+  // et verifiee, seule l'obligation d'ENROLEMENT est suspendue le temps de
+  // fiabiliser cet ecran. Voir /auth/2fa.
+  if (!hasMfa) return;
 
   // Échec fermé : session illisible pour une raison ou une autre, on redemande
   // le code plutôt que de laisser passer.
   let strong = false;
-  if (hasMfa) {
-    try {
-      const supabase = await createServerSupabase();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      strong = isStrongSession(session?.access_token);
-    } catch {
-      strong = false;
-    }
+  try {
+    const supabase = await createServerSupabase();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    strong = isStrongSession(session?.access_token);
+  } catch {
+    strong = false;
   }
   if (!strong) redirect("/auth/2fa");
 }
