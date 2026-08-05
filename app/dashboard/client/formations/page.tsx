@@ -137,8 +137,8 @@ export default async function FormationsPage() {
               <Link
                 key={formation.id}
                 href={isAvailable ? `/dashboard/client/formations/${formation.id}` : "#"}
-                onClick={isAvailable ? undefined : (e) => e.preventDefault()}
                 aria-disabled={!isAvailable}
+                tabIndex={isAvailable ? undefined : -1}
                 className="ep-card animate-fade-up"
                 style={{
                   animationDelay: `${i * 60}ms`,
@@ -147,6 +147,12 @@ export default async function FormationsPage() {
                   borderRadius: "var(--radius-xl)",
                   opacity: isAvailable ? 1 : 0.65,
                   cursor: isAvailable ? "pointer" : "default",
+                  // pointerEvents plutôt qu'un onClick preventDefault : un
+                  // gestionnaire d'événement passé à un Link depuis un composant
+                  // serveur fait planter le rendu ("Event handlers cannot be
+                  // passed to Client Component props"), vécu en prod le
+                  // 2026-08-05 dès qu'une formation avait 0 vidéo publiée.
+                  pointerEvents: isAvailable ? "auto" : "none",
                 }}
               >
                 {/* Top color band */}
