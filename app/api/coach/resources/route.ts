@@ -3,17 +3,20 @@ import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
-// PDF first-class, but also images, video, audio, zip and standalone HTML
-// for interactive guides — the coach is the only one who can publish here
-// (requireCoach below), so trusting richer formats is an acceptable trade-off.
+// Contenu passif uniquement. text/html et image/svg+xml ont ete retires
+// volontairement : les ressources sont publiees telles quelles sur /ressources,
+// une page publique sans authentification, et servies par
+// app/api/resources/[id] avec leur vrai type MIME. Un fichier HTML ou SVG
+// deposé ici s'executerait donc en JavaScript sur notre propre domaine, avec
+// acces au cookie de session (lisible en JS, voir lib/auth-cookies.ts).
+// Les fichiers HTML deja en ligne continuent de s'afficher normalement, seul
+// l'ajout de nouveaux est ferme.
 const ALLOWED_TYPES = new Set([
   "application/pdf",
-  "text/html",
   "image/png",
   "image/jpeg",
   "image/gif",
   "image/webp",
-  "image/svg+xml",
   "video/mp4",
   "video/webm",
   "video/quicktime",
@@ -22,11 +25,38 @@ const ALLOWED_TYPES = new Set([
   "application/zip",
 ]);
 
+// Le type MIME annonce par le navigateur ne suffit pas : app/api/resources/[id]
+// choisit le Content-Type qu'il renvoie a partir de l'EXTENSION du fichier
+// stocke. Un "evil.html" envoye avec un type declare application/pdf serait
+// donc quand meme servi en text/html. On verrouille les deux.
+const BLOCKED_EXTENSIONS = [
+  ".html", ".htm", ".svg", ".xhtml", ".xht", ".xml", ".mhtml", ".mht",
+  ".js", ".mjs", ".swf",
+];
+
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
 export async function POST(request: Request) {
   const guard = await requireCoach();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  // Publier sur /ressources, c'est publier sur une page publique. Un compte
+  // coach s'obtient en libre-service et est actif immediatement, avant tout
+  // paiement (voir app/auth/coach/actions.ts) : sans ce controle, n'importe
+  // qui peut deposer un fichier visible de tous en quelques secondes.
+  const admin = createAdminClient();
+  const { data: coachProfile } = await admin
+    .from("profiles")
+    .select("platform_subscription_status")
+    .eq("id", guard.userId)
+    .single();
+
+  if (coachProfile?.platform_subscription_status !== "active") {
+    return NextResponse.json(
+      { error: "Ton abonnement plateforme doit être actif pour publier une ressource." },
+      { status: 403 }
+    );
+  }
 
   // Chaque envoi peut peser jusqu'a 50 Mo de stockage : quota d'upload.
   const limited = await enforceRateLimit(
@@ -51,7 +81,14 @@ export async function POST(request: Request) {
   }
   if (!ALLOWED_TYPES.has(file.type)) {
     return NextResponse.json(
-      { error: "Format non accepté. PDF, HTML, image, vidéo, audio ou ZIP uniquement." },
+      { error: "Format non accepté. PDF, image, vidéo, audio ou ZIP uniquement." },
+      { status: 400 }
+    );
+  }
+  const lowerName = file.name.toLowerCase();
+  if (BLOCKED_EXTENSIONS.some((ext) => lowerName.endsWith(ext))) {
+    return NextResponse.json(
+      { error: "Ce type de fichier ne peut pas être publié. PDF, image, vidéo, audio ou ZIP uniquement." },
       { status: 400 }
     );
   }
@@ -59,7 +96,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Fichier trop volumineux (50MB max)." }, { status: 400 });
   }
 
-  const admin = createAdminClient();
   const path = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
 
   const { error: uploadError } = await admin.storage

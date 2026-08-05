@@ -1,6 +1,24 @@
 import { NextResponse } from "next/server";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+// Isolation entre coachs : requireCoach() dit seulement "c'est un coach", pas
+// "c'est SON fichier". Sans ce controle, n'importe quel compte coach peut
+// reclasser ou supprimer les ressources publiees par un autre, simplement en
+// devinant un identifiant.
+async function ownsResource(
+  admin: SupabaseClient,
+  id: string,
+  userId: string
+): Promise<boolean> {
+  const { data } = await admin
+    .from("resources")
+    .select("created_by")
+    .eq("id", id)
+    .single();
+  return !!data && data.created_by === userId;
+}
 
 export async function PATCH(
   request: Request,
@@ -18,6 +36,10 @@ export async function PATCH(
   }
 
   const admin = createAdminClient();
+  if (!(await ownsResource(admin, id, guard.userId))) {
+    return NextResponse.json({ error: "Cette ressource ne t'appartient pas." }, { status: 403 });
+  }
+
   const { error } = await admin.from("resources").update({ category }).eq("id", id);
   if (error) return NextResponse.json({ error: "Erreur lors de la mise à jour." }, { status: 500 });
 
@@ -36,9 +58,13 @@ export async function DELETE(
 
   const { data: resource } = await admin
     .from("resources")
-    .select("file_path")
+    .select("file_path, created_by")
     .eq("id", id)
     .single();
+
+  if (!resource || resource.created_by !== guard.userId) {
+    return NextResponse.json({ error: "Cette ressource ne t'appartient pas." }, { status: 403 });
+  }
 
   await admin.from("resources").delete().eq("id", id);
 

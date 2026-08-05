@@ -99,7 +99,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
           <input
             ref={fileRef}
             type="file"
-            accept=".pdf,.html,.htm,.png,.jpg,.jpeg,.gif,.webp,.svg,.mp4,.webm,.mov,.mp3,.wav,.zip,application/pdf,text/html,image/*,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,application/zip"
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov,.mp3,.wav,.zip,application/pdf,image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,application/zip"
             className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
@@ -108,7 +108,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
             className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
           >
             <FileText size={14} strokeWidth={1.8} />
-            {file ? file.name : "Choisir un fichier (PDF, HTML, image, vidéo...)"}
+            {file ? file.name : "Choisir un fichier (PDF, image, vidéo, audio, ZIP)"}
           </button>
           <button
             onClick={handleUpload}
