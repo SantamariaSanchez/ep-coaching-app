@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
+import { sendVerificationEmail } from "@/lib/email-verification";
 import { redirect } from "next/navigation";
 
 export interface RequestState {
@@ -69,6 +70,11 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
 
   const coach = await resolveCoachId(admin, input.inviteCode);
 
+  // email_confirm reste à true : le compte est utilisable immédiatement, la
+  // personne n'attend pas un email pour entrer. La vérification réelle est
+  // suivie à part dans profiles.email_verified_at (null ici), avec un email de
+  // confirmation envoyé en tâche de fond juste après. Voir
+  // lib/email-verification.ts.
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
@@ -92,6 +98,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     status: "active",
     start_date: new Date().toISOString().split("T")[0],
     coach_id: coach?.id ?? null,
+    email_verified_at: null,
   });
 
   if (profileError) {
@@ -105,6 +112,10 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   if (signInError) {
     return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
+
+  // Email de confirmation en tâche de fond : l'écran d'inscription ne l'attend
+  // pas, le membre enchaîne directement sur son espace.
+  sendVerificationEmail(email, fullName).catch(() => {});
 
   if (coach?.email) {
     try {

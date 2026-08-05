@@ -46,6 +46,9 @@ export interface Profile {
   external_payment_link: string | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
+  // Date à laquelle la personne a cliqué sur le lien de confirmation envoyé
+  // par email. null = email jamais vérifié (bandeau affiché dans le dashboard).
+  email_verified_at: string | null;
 }
 
 export function isSubscribed(profile: Profile | null): boolean {

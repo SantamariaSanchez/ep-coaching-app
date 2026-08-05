@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
+import { sendVerificationEmail } from "@/lib/email-verification";
 
 export interface CoachSignupInput {
   fullName: string;
@@ -43,6 +44,9 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
 
   const admin = createAdminClient();
 
+  // email_confirm reste à true : le coach enchaîne immédiatement sur Stripe
+  // sans attendre un email. La vérification réelle est suivie à part dans
+  // profiles.email_verified_at. Voir lib/email-verification.ts.
   const { data: authData, error: authError } = await admin.auth.admin.createUser({
     email,
     password,
@@ -71,6 +75,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
       platform_subscription_status: "inactive",
       invite_code: generateInviteCode(),
       terms_accepted_at: new Date().toISOString(),
+      email_verified_at: null,
     });
     profileError = error;
     if (!error || !error.message.includes("invite_code")) break;
@@ -86,6 +91,10 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   if (signInError) {
     return { error: "Compte créé mais connexion automatique impossible, connecte-toi manuellement." };
   }
+
+  // Email de confirmation en tâche de fond : le coach enchaîne directement sur
+  // le paiement Stripe, il ne l'attend pas.
+  sendVerificationEmail(email, fullName).catch(() => {});
 
   notifyAdmin("Nouvelle inscription coach tiers", [
     `<strong>${fullName}</strong> (${email})`,
