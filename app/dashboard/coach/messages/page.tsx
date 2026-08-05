@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getAllMessageableMembers, roleBadge } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
-import Link from "next/link";
-import { ChevronRight, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
 import { PushPermission } from "@/components/messaging/PushPermission";
-import RoleBadge from "@/components/ui/RoleBadge";
+import CoachConversationsList, { type ConversationRow } from "@/components/messaging/CoachConversationsList";
 
 interface LastMessage {
   conversation_id: string;
@@ -62,8 +61,19 @@ export default async function CoachMessagesPage() {
 
   const totalUnread = Object.values(msgMap).reduce((s, v) => s + v.unread, 0);
 
+  // Le rendu de la liste (recherche, filtres) vit dans un Client Component :
+  // la page reste un Server Component pour la lecture des messages.
+  const rows: ConversationRow[] = clientsWithMsg.map((c) => ({
+    id: c.id,
+    fullName: c.full_name,
+    badge: roleBadge(c),
+    lastContent: c.msg?.content ?? null,
+    lastTime: c.msg?.time ?? null,
+    unread: c.msg?.unread ?? 0,
+  }));
+
   return (
-    <div className="page-transition" style={{ padding: "32px 20px 48px", maxWidth: 600, margin: "0 auto" }}>
+    <div className="page-transition ep-page-medium" style={{ padding: "32px 20px 48px" }}>
       <PushPermission userId={user.id} />
 
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
@@ -104,94 +114,7 @@ export default async function CoachMessagesPage() {
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.35)", margin: 0 }}>Aucun membre encore</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {clientsWithMsg.map((client, i) => {
-            const initials = (client.full_name ?? "?")
-              .split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2);
-
-            return (
-              <Link
-                key={client.id}
-                href={`/dashboard/coach/messages/${client.id}`}
-                className="ep-card animate-fade-up ep-msg-row"
-                style={{
-                  animationDelay: `${i * 40}ms`,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 14,
-                  padding: "14px 16px",
-                  textDecoration: "none",
-                }}
-              >
-                {/* Avatar */}
-                <div style={{
-                  width: 42,
-                  height: 42,
-                  borderRadius: 14,
-                  background: "linear-gradient(135deg, #E01E1E, #890404)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 13,
-                  fontWeight: 800,
-                  color: "#F5EDED",
-                  flexShrink: 0,
-                  position: "relative",
-                }}>
-                  {initials}
-                  {client.msg?.unread > 0 && (
-                    <span style={{
-                      position: "absolute",
-                      top: -4, right: -4,
-                      background: "#E01E1E",
-                      border: "2px solid #0D0000",
-                      borderRadius: "50%",
-                      width: 16, height: 16,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 8, fontWeight: 800, color: "#fff",
-                    }}>
-                      {client.msg.unread > 9 ? "9+" : client.msg.unread}
-                    </span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6 }}>
-                    {client.full_name ?? "Client"}
-                    <RoleBadge label={roleBadge(client)} />
-                  </p>
-                  {client.msg ? (
-                    <p style={{
-                      margin: "2px 0 0",
-                      fontSize: 11,
-                      color: "rgba(245,237,237,0.35)",
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    }}>
-                      {client.msg.content}
-                    </p>
-                  ) : (
-                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.18)", fontStyle: "italic" }}>
-                      Aucun message
-                    </p>
-                  )}
-                </div>
-
-                {/* Right */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-                  {client.msg && (
-                    <span style={{ fontSize: 10, color: "rgba(245,237,237,0.22)" }}>
-                      {client.msg.time}
-                    </span>
-                  )}
-                  <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
-                </div>
-              </Link>
-            );
-          })}
-        </div>
+        <CoachConversationsList rows={rows} />
       )}
     </div>
   );
