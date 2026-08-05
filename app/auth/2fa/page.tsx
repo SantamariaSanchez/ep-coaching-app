@@ -36,13 +36,30 @@ export default async function TwoFactorPage() {
   } = await supabase.auth.getSession();
   const alreadyStrong = isStrongSession(session?.access_token);
 
+  // Source de vérité pour choisir l'écran : les facteurs réellement enrôlés,
+  // pas la colonne miroir profiles.mfa_enabled. Si le miroir se désynchronise
+  // (trigger en échec, restauration...), lire mfa_enabled afficherait l'écran
+  // d'activation à quelqu'un qui a déjà une application configurée, et le
+  // laisserait tourner en rond au lieu de lui demander simplement son code.
+  let hasVerifiedFactor = profile?.mfa_enabled === true;
+  try {
+    const { data: factorList } = await admin.auth.admin.mfa.listFactors({
+      userId: user.id,
+    });
+    hasVerifiedFactor = (factorList?.factors ?? []).some(
+      (f) => f.status === "verified"
+    );
+  } catch {
+    /* on garde la valeur du profil */
+  }
+
   // Rien à faire ici : soit la session est déjà forte, soit le compte n'a
   // aucune obligation de 2FA.
-  if (alreadyStrong || (!profile?.mfa_enabled && !profile?.is_platform_owner)) {
+  if (alreadyStrong || (!hasVerifiedFactor && !profile?.is_platform_owner)) {
     redirect(dest);
   }
 
-  const mode = profile?.mfa_enabled ? "challenge" : "enrollment";
+  const mode = hasVerifiedFactor ? "challenge" : "enrollment";
 
   return (
     <div className="min-h-screen flex items-center justify-center px-5 py-8">

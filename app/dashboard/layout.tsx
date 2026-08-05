@@ -24,12 +24,33 @@ async function requireStrongSessionIfNeeded(
 ) {
   if (!profile) return;
   const hasMfa = profile.mfa_enabled === true;
-  // L'obligation d'enrolement pour le fondateur sans 2FA est temporairement
-  // desactivee (2026-08-05) : l'ecran d'activation restait bloque en boucle
-  // pour un compte reel, verrouillant l'acces au dashboard. Le challenge
-  // reste applique normalement pour tout compte qui a deja une 2FA active
-  // et verifiee, seule l'obligation d'ENROLEMENT est suspendue le temps de
-  // fiabiliser cet ecran. Voir /auth/2fa.
+
+  // L'obligation d'ENROLEMENT pour le fondateur sans 2FA reste desactivee
+  // (incident du 2026-08-05, ou elle a verrouille l'acces au dashboard).
+  //
+  // Ce qui a ete corrige depuis, et verifie en production :
+  //   * enroll / challenge / verify cote Supabase fonctionnent de bout en bout ;
+  //   * le trigger qui remonte profiles.mfa_enabled fonctionne ;
+  //   * le QR code passe par un Blob et non plus par une URL data: de 350 Ko
+  //     non encodee, qui figeait l'affichage (voir TwoFactorSetup) ;
+  //   * l'ecran ne peut plus rester bloque sans message (try/catch) ;
+  //   * /auth/2fa choisit son mode d'apres les facteurs reels, plus d'apres la
+  //     colonne miroir, donc une desynchronisation ne peut plus pieger personne ;
+  //   * la boucle de redirection elle meme est morte : `strong` est desormais
+  //     toujours calcule, alors qu'il restait faux dans la branche enrolement,
+  //     ce qui renvoyait vers /auth/2fa meme avec une session aal2 valide.
+  //
+  // Elle reste neanmoins desactivee tant que le fondateur n'a pas active sa 2FA
+  // au moins une fois depuis /dashboard/coach/parametres : reactiver un blocage
+  // dur sur le seul compte qui administre la plateforme, sans avoir pu rejouer
+  // le scenario exact dans un vrai navigateur, ferait courir le meme risque de
+  // verrouillage qu'aujourd'hui pour un gain faible. Une fois la 2FA active,
+  // mfa_enabled passe a true et le challenge ci dessous s'applique de toute
+  // facon a chaque connexion, ainsi qu'a chaque action serveur
+  // (voir lib/auth-guards.ts) : l'obligation d'enrolement ne sert alors plus.
+  // Pour la retablir : remplacer la ligne ci dessous par
+  //   const ownerMustEnroll = profile.is_platform_owner === true && !hasMfa;
+  //   if (!hasMfa && !ownerMustEnroll) return;
   if (!hasMfa) return;
 
   // Échec fermé : session illisible pour une raison ou une autre, on redemande
