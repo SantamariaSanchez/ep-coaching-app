@@ -7,6 +7,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { isStrongSession } from "@/lib/mfa";
 
 export type GuardResult =
   | { ok: true; userId: string; role: "coach" | "client" }
@@ -131,13 +132,29 @@ export async function requirePlatformOwner(): Promise<GuardResult> {
     const admin = createAdminClient();
     const { data: profile } = await admin
       .from("profiles")
-      .select("is_platform_owner")
+      .select("is_platform_owner, mfa_enabled")
       .eq("id", guard.userId)
       .single();
 
     if (!profile?.is_platform_owner) {
       return { ok: false, error: "Accès réservé au propriétaire de la plateforme." };
     }
+
+    // Les écrans du fondateur sont déjà protégés par le layout du dashboard,
+    // mais une server action reste appelable directement : quelqu'un qui aurait
+    // seulement le mot de passe pourrait la déclencher sans jamais passer par
+    // le code à 6 chiffres. Dès que la 2FA est active sur le compte, on exige
+    // donc aussi une session forte ici.
+    if (profile.mfa_enabled === true) {
+      const supabase = await createServerSupabase();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!isStrongSession(session?.access_token)) {
+        return { ok: false, error: "Double authentification requise pour cette action." };
+      }
+    }
+
     return guard;
   } catch {
     return { ok: false, error: "Erreur d'authentification." };
