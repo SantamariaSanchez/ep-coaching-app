@@ -13,6 +13,37 @@ export type GuardResult =
   | { ok: true; userId: string; role: "coach" | "client" }
   | { ok: false; error: string };
 
+const MFA_REQUIRED_ERROR = "Double authentification requise pour cette action.";
+
+/**
+ * Force de session exigee pour AGIR, et pas seulement pour afficher une page.
+ *
+ * app/dashboard/layout.tsx bloque deja le rendu des pages tant que la session
+ * n'est pas en aal2, mais une server action ou une route API reste appelable
+ * directement, sans jamais charger la moindre page. Quelqu'un qui n'aurait que
+ * le mot de passe d'un compte protege par 2FA pourrait donc agir sur ce compte
+ * sans jamais fournir le code a 6 chiffres. Le controle vit donc ici, au plus
+ * pres de l'action.
+ *
+ * Aucune obligation generale : on n'exige la session forte que si la 2FA est
+ * reellement active sur CE compte. Un compte sans 2FA n'est pas impacte.
+ * Echec ferme : session illisible, on refuse.
+ */
+async function hasRequiredSessionStrength(
+  mfaEnabled: boolean | null | undefined
+): Promise<boolean> {
+  if (mfaEnabled !== true) return true;
+  try {
+    const supabase = await createServerSupabase();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    return isStrongSession(session?.access_token);
+  } catch {
+    return false;
+  }
+}
+
 /** Verify the user is authenticated AND has role="coach" */
 export async function requireCoach(): Promise<GuardResult> {
   try {
@@ -23,12 +54,15 @@ export async function requireCoach(): Promise<GuardResult> {
     const admin = createAdminClient();
     const { data: profile } = await admin
       .from("profiles")
-      .select("role")
+      .select("role, mfa_enabled")
       .eq("id", user.id)
       .single();
 
     if (profile?.role !== "coach") {
       return { ok: false, error: "Accès réservé au coach." };
+    }
+    if (!(await hasRequiredSessionStrength(profile.mfa_enabled))) {
+      return { ok: false, error: MFA_REQUIRED_ERROR };
     }
     return { ok: true, userId: user.id, role: "coach" };
   } catch {
@@ -105,7 +139,7 @@ export async function requireClient(): Promise<GuardResult> {
     const admin = createAdminClient();
     const { data: profile } = await admin
       .from("profiles")
-      .select("role, coach_id")
+      .select("role, coach_id, mfa_enabled")
       .eq("id", user.id)
       .single();
 
@@ -113,6 +147,9 @@ export async function requireClient(): Promise<GuardResult> {
       profile?.role === "client" || (profile?.role === "coach" && !!profile?.coach_id);
     if (!isClientCapable) {
       return { ok: false, error: "Accès réservé au client." };
+    }
+    if (!(await hasRequiredSessionStrength(profile!.mfa_enabled))) {
+      return { ok: false, error: MFA_REQUIRED_ERROR };
     }
     return { ok: true, userId: user.id, role: profile!.role as "coach" | "client" };
   } catch {
@@ -140,19 +177,10 @@ export async function requirePlatformOwner(): Promise<GuardResult> {
       return { ok: false, error: "Accès réservé au propriétaire de la plateforme." };
     }
 
-    // Les écrans du fondateur sont déjà protégés par le layout du dashboard,
-    // mais une server action reste appelable directement : quelqu'un qui aurait
-    // seulement le mot de passe pourrait la déclencher sans jamais passer par
-    // le code à 6 chiffres. Dès que la 2FA est active sur le compte, on exige
-    // donc aussi une session forte ici.
-    if (profile.mfa_enabled === true) {
-      const supabase = await createServerSupabase();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!isStrongSession(session?.access_token)) {
-        return { ok: false, error: "Double authentification requise pour cette action." };
-      }
+    // requireCoach() ci-dessus applique deja la meme regle ; on la garde ici
+    // par defense en profondeur, ces ecrans donnant acces a tous les membres.
+    if (!(await hasRequiredSessionStrength(profile.mfa_enabled))) {
+      return { ok: false, error: MFA_REQUIRED_ERROR };
     }
 
     return guard;
@@ -171,13 +199,16 @@ export async function requireAuth(): Promise<GuardResult> {
     const admin = createAdminClient();
     const { data: profile } = await admin
       .from("profiles")
-      .select("role")
+      .select("role, mfa_enabled")
       .eq("id", user.id)
       .single();
 
     const role = profile?.role as "coach" | "client" | undefined;
     if (!role) return { ok: false, error: "Profil introuvable." };
 
+    if (!(await hasRequiredSessionStrength(profile!.mfa_enabled))) {
+      return { ok: false, error: MFA_REQUIRED_ERROR };
+    }
     return { ok: true, userId: user.id, role };
   } catch {
     return { ok: false, error: "Erreur d'authentification." };
