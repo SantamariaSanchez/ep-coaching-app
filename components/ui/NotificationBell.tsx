@@ -6,6 +6,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { roleBadge } from "@/utils/auth-client";
 import RoleBadge from "@/components/ui/RoleBadge";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 interface NotificationSender {
   full_name: string | null;
@@ -191,7 +192,7 @@ export default function NotificationBell({
             items.map((n) => (
               <Link
                 key={n.id}
-                href={n.url ?? "#"}
+                href={safeExternalUrl(n.url) ?? "#"}
                 onClick={() => setOpen(false)}
                 style={{
                   display: "block",

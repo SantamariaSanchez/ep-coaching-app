@@ -8,6 +8,7 @@ import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
+import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 
 export interface CoachSignupInput {
   fullName: string;
@@ -29,12 +30,20 @@ function generateInviteCode(): string {
 // paiement confirmé (voir app/api/webhooks/stripe/route.ts). Tant que le
 // paiement n'est pas passé, /dashboard/coach reste bloqué (voir page.tsx).
 export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupResult> {
-  const fullName = input.fullName.trim();
-  const email = input.email.trim().toLowerCase();
+  // Bornes appliquées côté serveur : le maxLength du formulaire ne protège de
+  // rien contre une requête forgée directement vers cette server action.
+  const fullName = cleanText(input.fullName, LIMITS.name);
+  const email = cleanText(input.email, LIMITS.shortText)?.toLowerCase();
   const password = input.password;
 
-  if (!fullName || !email || password.length < 6) {
+  if (!fullName || !email || typeof password !== "string" || password.length < 6) {
     return { error: "Nom, email et mot de passe (6 caractères min.) requis." };
+  }
+  if (password.length > 200) {
+    return { error: "Mot de passe trop long (200 caractères max)." };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Adresse email invalide." };
   }
   if (!input.acceptedTerms) {
     return { error: "Tu dois accepter les CGU et les CGV pour continuer." };
@@ -103,8 +112,8 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   sendVerificationEmail(email, fullName).catch(() => {});
 
   notifyAdmin("Nouvelle inscription coach tiers", [
-    `<strong>${fullName}</strong> (${email})`,
-    `Formule choisie : ${plan.label} (${plan.priceLabel})`,
+    `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
+    `Formule choisie : ${escapeHtml(plan.label)} (${escapeHtml(plan.priceLabel)})`,
   ]).catch(() => {});
 
   const checkoutUrl = `${plan.url}?client_reference_id=${authData.user.id}`;

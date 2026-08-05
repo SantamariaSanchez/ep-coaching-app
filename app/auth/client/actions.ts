@@ -7,6 +7,7 @@ import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
+import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { redirect } from "next/navigation";
 
 export interface RequestState {
@@ -58,13 +59,21 @@ async function resolveCoachId(
 // Self-serve signup — anyone can join the free community on their own.
 // Coaching access is unlocked separately via Stripe (see /dashboard/client/abonnement).
 export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResult> {
-  const fullName = input.fullName.trim();
-  const email = input.email.trim().toLowerCase();
-  const phone = input.phone.trim();
+  // Bornes appliquées côté serveur : le maxLength du formulaire ne protège de
+  // rien contre une requête forgée directement vers cette server action.
+  const fullName = cleanText(input.fullName, LIMITS.name);
+  const email = cleanText(input.email, LIMITS.shortText)?.toLowerCase();
+  const phone = cleanText(input.phone, LIMITS.phone);
   const password = input.password;
 
-  if (!fullName || !email || !phone || password.length < 6) {
+  if (!fullName || !email || !phone || typeof password !== "string" || password.length < 6) {
     return { error: "Nom, email, téléphone et mot de passe (6 caractères min.) requis." };
+  }
+  if (password.length > 200) {
+    return { error: "Mot de passe trop long (200 caractères max)." };
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Adresse email invalide." };
   }
 
   // Refuse les mots de passe déjà présents dans une fuite publique connue.
@@ -130,9 +139,9 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
         subject: `Nouveau membre communauté - ${fullName}`,
         htmlContent: `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
           <h2 style="color:#E01E1E;margin-top:0;">Nouveau membre inscrit</h2>
-          <p><strong>Nom :</strong> ${fullName}</p>
-          <p><strong>Email :</strong> ${email}</p>
-          <p><strong>Téléphone :</strong> ${phone}</p>
+          <p><strong>Nom :</strong> ${escapeHtml(fullName)}</p>
+          <p><strong>Email :</strong> ${escapeHtml(email)}</p>
+          <p><strong>Téléphone :</strong> ${escapeHtml(phone)}</p>
           <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/coach/communaute/membres" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">Voir la communauté</a>
         </div>`,
       });
@@ -140,8 +149,8 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   }
 
   notifyAdmin("Nouvelle inscription membre/client", [
-    `<strong>${fullName}</strong> (${email})`,
-    `Rattaché à : ${coach?.full_name ?? "aucun coach"}`,
+    `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
+    `Rattaché à : ${escapeHtml(coach?.full_name ?? "aucun coach")}`,
   ]).catch(() => {});
 
   return { success: true, userId: authData.user.id };

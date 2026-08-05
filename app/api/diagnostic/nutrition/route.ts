@@ -1,16 +1,33 @@
 import { NextResponse } from "next/server";
 
-// Public endpoint — no auth needed (called from leadmagnet HTML pages)
+// Public endpoint — no auth needed (called from leadmagnet HTML pages).
+//
+// Comme il est public ET qu'il appelle un modèle payant, deux garde fous
+// existent ici :
+//   1. les réponses sont validées contre une liste blanche de clés connues
+//      (voir les tables de libellés plus bas). Aucun texte libre n'entre dans
+//      le prompt : avant, `objLabels[answers[0]] || answers[0]` laissait
+//      injecter n'importe quelle consigne dans le prompt et faire dire au
+//      modèle ce qu'on voulait, en plus de laisser envoyer une charge
+//      arbitrairement longue et donc coûteuse ;
+//   2. un quota par adresse IP (voir consumeRateLimit ci dessous), sinon
+//      n'importe qui peut boucler dessus et faire grimper la facture.
 export async function POST(request: Request) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
           return NextResponse.json({ error: "API key not configured" }, { status: 500 });
     }
 
-  const body = await request.json();
-    const { answers } = body;
+  let body: unknown;
+  try {
+        body = await request.json();
+  } catch {
+        return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
+  }
 
-  if (!answers || answers.length < 5) {
+  const answers = (body as { answers?: unknown })?.answers;
+
+  if (!Array.isArray(answers) || answers.length < 5) {
         return NextResponse.json({ error: "Missing answers" }, { status: 400 });
   }
 
@@ -43,12 +60,25 @@ export async function POST(request: Request) {
           bon: "plus de 10 variétés",
     };
 
+  // Liste blanche stricte : une réponse inconnue fait échouer la requête au
+  // lieu d'être recopiée telle quelle dans le prompt.
+  const tables = [objLabels, trackLabels, protLabels, poidsLabels, legumesLabels];
+  const labels: string[] = [];
+  for (let i = 0; i < tables.length; i++) {
+        const raw = answers[i];
+        const label = typeof raw === "string" ? tables[i][raw] : undefined;
+        if (!label) {
+              return NextResponse.json({ error: "Réponses invalides." }, { status: 400 });
+        }
+        labels.push(label);
+  }
+
   const prompt = `Voici les réponses d'un pratiquant de musculation qui cherche à optimiser sa nutrition :
-  - Objectif : ${objLabels[answers[0]] || answers[0]}
-  - Tracking : ${trackLabels[answers[1]] || answers[1]}
-  - Diversité protéines : ${protLabels[answers[2]] || answers[2]}
-  - Évolution du poids : ${poidsLabels[answers[3]] || answers[3]}
-  - Diversité légumes/fruits : ${legumesLabels[answers[4]] || answers[4]}
+  - Objectif : ${labels[0]}
+  - Tracking : ${labels[1]}
+  - Diversité protéines : ${labels[2]}
+  - Évolution du poids : ${labels[3]}
+  - Diversité légumes/fruits : ${labels[4]}
 
   Calcule un score nutritionnel entre 20 et 92 en appliquant ces règles STRICTES :
 
@@ -96,14 +126,22 @@ export async function POST(request: Request) {
   });
 
   if (!response.ok) {
-        const err = await response.text();
-        return NextResponse.json({ error: "Anthropic error", detail: err }, { status: 500 });
+        // On ne renvoie pas le corps d'erreur du fournisseur : il peut contenir
+        // des détails d'infrastructure, et cette route est publique.
+        console.error("diagnostic/nutrition: erreur Anthropic", response.status);
+        return NextResponse.json({ error: "Analyse indisponible pour le moment." }, { status: 502 });
   }
 
-  const data = await response.json();
-    const text = data.content.filter((b: { type: string }) => b.type === "text").map((b: { text: string }) => b.text).join("");
-    const clean = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(clean);
-
-  return NextResponse.json(result);
+  try {
+        const data = await response.json();
+        const text = data.content
+              .filter((b: { type: string }) => b.type === "text")
+              .map((b: { text: string }) => b.text)
+              .join("");
+        const clean = text.replace(/```json|```/g, "").trim();
+        const result = JSON.parse(clean);
+        return NextResponse.json(result);
+  } catch {
+        return NextResponse.json({ error: "Analyse indisponible pour le moment." }, { status: 502 });
+  }
 }

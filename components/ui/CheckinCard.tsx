@@ -8,6 +8,7 @@ import type { WeeklyAverages } from "@/utils/daily-logs";
 import { replyToCheckin, attachCoachVideo } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
 
@@ -385,7 +386,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
           {(checkin.photo_urls.length > 0 || checkin.video_url) && (
             <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
               {checkin.photo_urls.map((url, i) => (
-                <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
@@ -396,7 +397,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               ))}
               {checkin.video_url && (
                 <a
-                  href={checkin.video_url}
+                  href={safeExternalUrl(checkin.video_url) ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -417,7 +418,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
             <div style={{ display: "flex", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
               {checkin.photo_drive_link && (
                 <a
-                  href={checkin.photo_drive_link}
+                  href={safeExternalUrl(checkin.photo_drive_link) ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
@@ -432,7 +433,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               )}
               {checkin.video_drive_link && (
                 <a
-                  href={checkin.video_drive_link}
+                  href={safeExternalUrl(checkin.video_drive_link) ?? "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{

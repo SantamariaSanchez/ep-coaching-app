@@ -32,6 +32,7 @@ import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 async function uploadExerciseVideo(file: File): Promise<string | null> {
   try {
@@ -78,7 +79,7 @@ function VideoBlock({ url }: { url: string }) {
   }
   return (
     <a
-      href={video.src}
+      href={safeExternalUrl(video.src) ?? "#"}
       target="_blank"
       rel="noopener noreferrer"
       className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors mt-3"

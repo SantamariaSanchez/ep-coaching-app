@@ -9,6 +9,7 @@ import {
 import { createClientSupabase } from "@/lib/supabase-client";
 import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X } from "lucide-react";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -275,7 +276,7 @@ function MessageBubble({
             expiresAt={msg.expires_at}
           />
         ) : msg.type === "image" && msg.image_url ? (
-          <a href={msg.image_url} target="_blank" rel="noopener noreferrer">
+          <a href={safeExternalUrl(msg.image_url) ?? "#"} target="_blank" rel="noopener noreferrer">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={msg.image_url}

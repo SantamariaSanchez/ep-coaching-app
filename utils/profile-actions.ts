@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { cleanText, LIMITS } from "@/lib/sanitize";
 import { revalidatePath } from "next/cache";
 
 export interface UpdateProfileInput {
@@ -16,12 +17,19 @@ export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return { error: "Non authentifié." };
 
+    // Chaque champ est borné côté serveur : sans ça, une requête forgée vers
+    // cette server action pouvait écrire des mégaoctets dans bio, qui est
+    // ensuite affichée à tout le monde dans l'annuaire des coachs.
     const update: Record<string, string | null> = {};
-    if (data.full_name !== undefined) update.full_name = data.full_name.trim();
-    if (data.phone !== undefined) update.phone = data.phone;
-    if (data.bio !== undefined) update.bio = data.bio?.trim() || null;
+    if (data.full_name !== undefined) {
+      const fullName = cleanText(data.full_name, LIMITS.name);
+      if (!fullName) return { error: "Le nom est requis." };
+      update.full_name = fullName;
+    }
+    if (data.phone !== undefined) update.phone = cleanText(data.phone, LIMITS.phone);
+    if (data.bio !== undefined) update.bio = cleanText(data.bio, LIMITS.bio);
     if (data.instagram_handle !== undefined) {
-      const handle = data.instagram_handle?.trim().replace(/^@/, "") || null;
+      const handle = cleanText(data.instagram_handle, LIMITS.handle)?.replace(/^@/, "") || null;
       update.instagram_handle = handle;
     }
 

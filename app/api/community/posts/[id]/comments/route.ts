@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityComments } from "@/utils/community";
+import { LIMITS, requireText } from "@/lib/sanitize";
 
 export async function GET(
   _request: Request,
@@ -23,12 +24,23 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: postId } = await params;
-  const body = await request.json();
-  const content = (body.content as string | undefined)?.trim();
 
-  if (!content) {
-    return NextResponse.json({ error: "Le commentaire est vide." }, { status: 400 });
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Requête invalide." }, { status: 400 });
   }
+
+  const parsed = requireText(
+    (body as { content?: unknown })?.content,
+    LIMITS.comment,
+    "Le commentaire"
+  );
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
+  }
+  const content = parsed.value;
 
   const supabase = await createServerSupabase();
   const { data, error } = await supabase

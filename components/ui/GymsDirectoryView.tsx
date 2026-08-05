@@ -5,6 +5,7 @@ import { Search, Plus, X, Star, MapPin, Pencil, Trash2, Globe, Dumbbell } from "
 import type { GymWithReviews } from "@/utils/gyms";
 import type { CreateGymInput } from "@/app/dashboard/client/gyms/actions";
 import type { GymType } from "@/lib/gyms-seed";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -249,7 +250,7 @@ function GymCard({
             <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
           )}
           {gym.website && (
-            <a href={gym.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors">
+            <a href={safeExternalUrl(gym.website) ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors">
               <Globe size={11} /> Site web
             </a>
           )}

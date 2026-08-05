@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Vérification d'email sans casser l'inscription en 30 secondes.
 //
@@ -16,7 +17,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.a
 export function verificationEmailHtml(firstName: string, link: string): string {
   return `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
     <h2 style="color:#E01E1E;margin-top:0;">Confirme ton adresse email</h2>
-    <p>Salut ${firstName},</p>
+    <p>Salut ${escapeHtml(firstName)},</p>
     <p>Ton compte EP Coaching est déjà actif, tu peux t'en servir tout de suite.</p>
     <p>Il reste juste à confirmer que cette adresse est bien la tienne : c'est ce qui nous permet de te retrouver si tu perds ton mot de passe.</p>
     <a href="${link}" style="background:#E01E1E;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin:12px 0;">Confirmer mon email</a>

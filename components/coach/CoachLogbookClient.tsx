@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 interface Props {
   clientId: string;
@@ -408,7 +409,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
                     {s.is_pr && " 🏆"}
                     {s.video_url && (
                       <a
-                        href={s.video_url}
+                        href={safeExternalUrl(s.video_url) ?? "#"}
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}

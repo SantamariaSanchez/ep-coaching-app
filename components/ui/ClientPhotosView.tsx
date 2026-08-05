@@ -6,6 +6,7 @@ import { POSING_CATEGORIES, CATEGORIES_BY_GENDER, TYPE_LABELS, type SubmissionTy
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 const MAX_PHOTOS = 4;
 
@@ -517,14 +518,14 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
       {(photo.photo_urls.length > 0 || photo.video_url) && (
         <div className="flex gap-1.5 flex-wrap">
           {photo.photo_urls.map((url, i) => (
-            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+            <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-12 h-12 object-cover rounded-lg border border-[#890404]/30" />
             </a>
           ))}
           {photo.video_url && (
             <a
-              href={photo.video_url}
+              href={safeExternalUrl(photo.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
@@ -538,7 +539,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
 
       {photo.drive_link && (
         <a
-          href={photo.drive_link}
+          href={safeExternalUrl(photo.drive_link) ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"

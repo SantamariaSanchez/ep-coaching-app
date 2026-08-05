@@ -3,6 +3,7 @@ import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
 import { awardPoints, POINTS } from "@/lib/gamification";
+import { cleanText, LIMITS, requireText } from "@/lib/sanitize";
 
 export async function GET(request: Request) {
   const user = await getUser();
@@ -10,7 +11,9 @@ export async function GET(request: Request) {
 
   const { searchParams } = new URL(request.url);
   const type = searchParams.get("type");
-  const cursor = searchParams.get("cursor");
+  // Le curseur est une date ISO renvoyée par notre propre pagination : on le
+  // borne pour ne pas laisser passer une valeur arbitrairement longue.
+  const cursor = cleanText(searchParams.get("cursor"), 64);
 
   if (type !== "victory" && type !== "question") {
     return NextResponse.json({ error: "Type invalide." }, { status: 400 });
@@ -26,15 +29,17 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const type = formData.get("type");
-  const content = (formData.get("content") as string | null)?.trim();
   const image = formData.get("image");
 
   if (type !== "victory" && type !== "question") {
     return NextResponse.json({ error: "Type invalide." }, { status: 400 });
   }
-  if (!content) {
-    return NextResponse.json({ error: "Le contenu est requis." }, { status: 400 });
+
+  const parsed = requireText(formData.get("content"), LIMITS.post, "Le contenu");
+  if (!parsed.ok) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
+  const content = parsed.value;
 
   const supabase = await createServerSupabase();
   let image_url: string | null = null;

@@ -45,6 +45,7 @@ import { getTips } from "@/lib/execution-tips";
 import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1182,7 +1183,7 @@ function ExerciseCard({
           </div>
           {libraryTip?.video_url && (
             <a
-              href={libraryTip.video_url}
+              href={safeExternalUrl(libraryTip.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"

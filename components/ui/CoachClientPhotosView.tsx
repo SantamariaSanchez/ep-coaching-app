@@ -7,6 +7,7 @@ import { driveImageUrl } from "@/lib/drive-utils";
 import DrawableImage from "@/components/ui/DrawableImage";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -222,14 +223,14 @@ function PhotoCard({
       {(photo.photo_urls.length > 0 || photo.video_url) && (
         <div className="flex gap-1.5 flex-wrap">
           {photo.photo_urls.map((url, i) => (
-            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+            <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
             </a>
           ))}
           {photo.video_url && (
             <a
-              href={photo.video_url}
+              href={safeExternalUrl(photo.video_url) ?? "#"}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
@@ -243,7 +244,7 @@ function PhotoCard({
 
       {photo.drive_link && (
         <a
-          href={photo.drive_link}
+          href={safeExternalUrl(photo.drive_link) ?? "#"}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
@@ -369,7 +370,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                   {photo.notes && <p className="text-[10px] text-[#F5EDED]/40 italic">{photo.notes}</p>}
                   {photo.video_url && (
                     <a
-                      href={photo.video_url}
+                      href={safeExternalUrl(photo.video_url) ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
@@ -380,7 +381,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                   )}
                   {!photo.video_url && photo.drive_link && (
                     <a
-                      href={photo.drive_link}
+                      href={safeExternalUrl(photo.drive_link) ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors"
