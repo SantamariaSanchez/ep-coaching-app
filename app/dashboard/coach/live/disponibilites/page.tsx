@@ -14,7 +14,7 @@ export default async function CoachAvailabilityPage() {
   const rules = await getMyAvailabilityRules();
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
+    <div className="px-6 py-8 ep-page-medium pb-24 md:pb-8 page-transition">
       <BackButton fallbackHref="/dashboard/coach/live" />
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">

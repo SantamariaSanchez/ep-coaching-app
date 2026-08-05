@@ -373,6 +373,43 @@ export async function addAvailabilityRule(input: {
   return {};
 }
 
+// Ajout groupé : un coach disponible du lundi au vendredi de 9h à 12h devait
+// auparavant répéter cinq fois le même formulaire. Une seule action pour tous
+// les jours cochés, avec un aller retour réseau au lieu de cinq.
+export async function addAvailabilityRules(input: {
+  daysOfWeek: number[];
+  startTime: string;
+  endTime: string;
+  slotDurationMinutes: number;
+}): Promise<{ error?: string; added?: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const days = [...new Set(input.daysOfWeek)].filter((d) => d >= 1 && d <= 7);
+  if (days.length === 0) return { error: "Choisis au moins un jour." };
+  if (input.startTime >= input.endTime) {
+    return { error: "L'heure de fin doit être après l'heure de début." };
+  }
+  if (![15, 30, 45, 60].includes(input.slotDurationMinutes)) {
+    return { error: "Durée de créneau invalide." };
+  }
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_availability").insert(
+    days.map((day) => ({
+      coach_id: guard.userId,
+      day_of_week: day,
+      start_time: input.startTime,
+      end_time: input.endTime,
+      slot_duration_minutes: input.slotDurationMinutes,
+    }))
+  );
+  if (error) return { error: "Erreur lors de l'ajout." };
+
+  revalidatePath("/dashboard/coach/live/disponibilites");
+  return { added: days.length };
+}
+
 // ── Accès direct : demandes de point flash ──────────────────────────────
 
 export interface FlashRequest {
