@@ -1,6 +1,7 @@
 "use client";
 
-import { Gift } from "lucide-react";
+import Link from "next/link";
+import { Gift, ArrowRight } from "lucide-react";
 
 interface ClientCardProps {
   name: string;
@@ -21,6 +22,7 @@ export function ClientCard({
   weight,
   weekNum,
   alerts = 0,
+  href,
   delay = 0,
   onClick,
   ouraEligible = false,
@@ -178,6 +180,7 @@ export function ClientCard({
         display: "grid",
         gridTemplateColumns: "1fr 1fr",
         gap: 8,
+        marginBottom: href ? 14 : 0,
       }}>
         {[
           { label: "Semaine",       value: weekNum != null ? `S${weekNum}`  : "···" },
@@ -211,6 +214,48 @@ export function ClientCard({
           </div>
         ))}
       </div>
+
+      {/* Accès explicite à la fiche. La carte entière reste cliquable (rien
+          ne change pour qui a l'habitude), mais l'action principale est
+          maintenant nommée au lieu d'être devinée. Un Link : Next préchauffe
+          la fiche au survol, l'ouverture est quasi instantanée. */}
+      {href && (
+        <Link
+          href={href}
+          onClick={(e) => e.stopPropagation()}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 7,
+            width: "100%",
+            padding: "10px 12px",
+            borderRadius: 10,
+            background: "rgba(224,30,30,0.1)",
+            border: "1px solid rgba(224,30,30,0.22)",
+            color: "#F5EDED",
+            fontSize: 11.5,
+            fontWeight: 800,
+            letterSpacing: "0.08em",
+            textTransform: "uppercase",
+            textDecoration: "none",
+            transition: "all 0.15s ease",
+          }}
+          onMouseEnter={(e) => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.background = "rgba(224,30,30,0.2)";
+            el.style.borderColor = "rgba(224,30,30,0.45)";
+          }}
+          onMouseLeave={(e) => {
+            const el = e.currentTarget as HTMLAnchorElement;
+            el.style.background = "rgba(224,30,30,0.1)";
+            el.style.borderColor = "rgba(224,30,30,0.22)";
+          }}
+        >
+          Voir la fiche
+          <ArrowRight size={13} strokeWidth={2.4} />
+        </Link>
+      )}
     </div>
   );
 }

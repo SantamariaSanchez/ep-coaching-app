@@ -98,6 +98,7 @@ export default function ClientsSection({
               weight={client.weight_start}
               weekNum={weekNumber(client.start_date)}
               delay={i * 60}
+              href={`/dashboard/coach/clients/${client.id}`}
               onClick={() => router.push(`/dashboard/coach/clients/${client.id}`)}
               ouraEligible={ouraEligibleIds.includes(client.id)}
               // Nombre de suggestions de phase de coaching en attente
