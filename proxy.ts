@@ -109,6 +109,12 @@ export async function proxy(request: NextRequest) {
         .eq("id", user.id)
         .single();
       const role = prof?.role ?? "client";
+      // Le contrôle de double authentification vit dans app/dashboard/layout.tsx
+      // et non ici : le verrou de rafraîchissement ci-dessus fait qu'une requête
+      // concurrente peut réutiliser le résultat d'une autre sans avoir chargé sa
+      // propre session, et lire la session à cet endroit rouvrirait la course à
+      // la rotation du jeton de rafraîchissement. Le layout, lui, s'exécute une
+      // fois par requête avec des cookies déjà à jour.
       // Coach trying to access client dashboard → redirect to coach dashboard,
       // SAUF s'il est aussi suivi par un autre coach (double rôle) : dans ce
       // cas /dashboard/client/* est son propre espace de coaching personnel.

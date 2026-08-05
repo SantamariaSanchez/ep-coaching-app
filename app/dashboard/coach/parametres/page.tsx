@@ -9,6 +9,7 @@ import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
 import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
 import MyPlatformSubscriptionCard from "@/components/coach/MyPlatformSubscriptionCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
+import TwoFactorCard from "@/components/settings/TwoFactorCard";
 
 export default async function CoachParametresPage() {
   const user = await getUser();
@@ -53,6 +54,13 @@ export default async function CoachParametresPage() {
         email={profile.email}
         signOutRedirect="/auth/coach"
         pushSubscribed={!!pushSub}
+      />
+
+      {/* Obligatoire pour le fondateur : ce compte voit tous les membres de la
+          plateforme (voir proxy.ts, qui bloque le dashboard sans 2FA). */}
+      <TwoFactorCard
+        enabled={!!profile.mfa_enabled}
+        mandatory={!!profile.is_platform_owner}
       />
 
       {!profile.is_platform_owner && (

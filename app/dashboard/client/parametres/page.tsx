@@ -3,6 +3,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import AccountActions from "@/components/profile/AccountActions";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
+import TwoFactorCard from "@/components/settings/TwoFactorCard";
 
 export default async function ClientParametresPage() {
   const user = await getUser();
@@ -33,6 +34,9 @@ export default async function ClientParametresPage() {
         signOutRedirect="/auth/client"
         pushSubscribed={!!pushSub}
       />
+
+      {/* Optionnelle côté membre : personne n'est forcé, mais l'option existe. */}
+      <TwoFactorCard enabled={!!profile.mfa_enabled} mandatory={false} />
 
       <div className="mt-4">
         <LegalLinksCard />

@@ -49,6 +49,9 @@ export interface Profile {
   // Date à laquelle la personne a cliqué sur le lien de confirmation envoyé
   // par email. null = email jamais vérifié (bandeau affiché dans le dashboard).
   email_verified_at: string | null;
+  // Miroir de auth.mfa_factors tenu par un trigger : true dès qu'un facteur
+  // TOTP vérifié existe sur le compte.
+  mfa_enabled: boolean;
 }
 
 export function isSubscribed(profile: Profile | null): boolean {
