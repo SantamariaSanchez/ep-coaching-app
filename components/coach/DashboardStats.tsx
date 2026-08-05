@@ -129,13 +129,8 @@ export default function DashboardStats() {
 
   return (
     <>
-      {/* Stats grid */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        gap: 12,
-        marginBottom: 24,
-      }}>
+      {/* Stats grid — deux colonnes sur mobile, quatre dès qu'il y a la place. */}
+      <div className="analytics-stats-grid" style={{ marginBottom: 24 }}>
         {tiles.map(({ label, value, icon, sub, urgent }, i) => (
           <StatTile
             key={label}

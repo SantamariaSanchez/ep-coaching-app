@@ -14,6 +14,10 @@ interface ClientCardProps {
   onClick?: () => void;
   /** Abonné ayant atteint le rang Légende — récompense Oura Ring à remettre. */
   ouraEligible?: boolean;
+  /** Phase de coaching en cours (Calibrage, Optimisation, Performance). */
+  coachingPhase?: string | null;
+  /** Statut du suivi : un client en pause ou terminé doit se repérer d'un coup d'œil. */
+  status?: "active" | "paused" | "ended" | null;
 }
 
 export function ClientCard({
@@ -26,6 +30,8 @@ export function ClientCard({
   delay = 0,
   onClick,
   ouraEligible = false,
+  coachingPhase = null,
+  status = null,
 }: ClientCardProps) {
   const initials = name
     .split(" ")
@@ -42,6 +48,13 @@ export function ClientCard({
     phase === "deficit"  ? "Déficit"
     : phase === "surplus"  ? "Surplus"
     : phase ? "Maintenance"
+    : null;
+
+  // "Actif" n'est pas affiché : c'est le cas normal, le signaler ajouterait
+  // du bruit sur toutes les cartes sans jamais rien apprendre au coach.
+  const statusLabel =
+    status === "paused" ? "En pause"
+    : status === "ended" ? "Terminé"
     : null;
 
   return (
@@ -144,7 +157,7 @@ export function ClientCard({
         }}>
           {initials}
         </div>
-        <div>
+        <div style={{ minWidth: 0 }}>
           <div style={{
             fontWeight: 700,
             fontSize: 15,
@@ -154,24 +167,61 @@ export function ClientCard({
           }}>
             {name}
           </div>
-          {phaseLabel && (
-            <div style={{
-              display: "inline-flex",
-              alignItems: "center",
-              background: `${phaseColor}14`,
-              border: `1px solid ${phaseColor}28`,
-              borderRadius: 20,
-              padding: "2px 10px",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.07em",
-              color: phaseColor,
-              textTransform: "uppercase",
-              marginTop: 5,
-            }}>
-              {phaseLabel}
-            </div>
-          )}
+          {/* Phase de coaching et statut du suivi : deux informations qu'il
+              fallait auparavant ouvrir la fiche pour connaître. */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 5 }}>
+            {phaseLabel && (
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: `${phaseColor}14`,
+                border: `1px solid ${phaseColor}28`,
+                borderRadius: 20,
+                padding: "2px 10px",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.07em",
+                color: phaseColor,
+                textTransform: "uppercase",
+              }}>
+                {phaseLabel}
+              </span>
+            )}
+            {coachingPhase && (
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "rgba(224,30,30,0.1)",
+                border: "1px solid rgba(224,30,30,0.24)",
+                borderRadius: 20,
+                padding: "2px 10px",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.07em",
+                color: "rgba(245,237,237,0.72)",
+                textTransform: "uppercase",
+              }}>
+                {coachingPhase}
+              </span>
+            )}
+            {statusLabel && (
+              <span style={{
+                display: "inline-flex",
+                alignItems: "center",
+                background: "rgba(245,237,237,0.05)",
+                border: "1px solid rgba(245,237,237,0.18)",
+                borderRadius: 20,
+                padding: "2px 10px",
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.07em",
+                color: "rgba(245,237,237,0.45)",
+                textTransform: "uppercase",
+              }}>
+                {statusLabel}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
