@@ -2,10 +2,21 @@ import { NextResponse } from "next/server";
 import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+
+  // Cette route fait sonner le telephone de quelqu'un d'autre : sans quota,
+  // elle devient un outil de harcelement par notifications.
+  const limited = await enforceRateLimit(
+    `push-send:${user.id}`,
+    60,
+    600,
+    "Trop de notifications envoyées. Réessaie dans un instant."
+  );
+  if (limited) return limited;
 
   try {
     const { userId, title, body, url } = await req.json();

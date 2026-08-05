@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // PDF first-class, but also images, video, audio, zip and standalone HTML
 // for interactive guides — the coach is the only one who can publish here
@@ -26,6 +27,15 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 export async function POST(request: Request) {
   const guard = await requireCoach();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  // Chaque envoi peut peser jusqu'a 50 Mo de stockage : quota d'upload.
+  const limited = await enforceRateLimit(
+    `resource-upload:${guard.userId}`,
+    PRESETS.upload.limit,
+    PRESETS.upload.windowSeconds,
+    "Trop d'envois d'affilée. Réessaie dans un instant."
+  );
+  if (limited) return limited;
 
   const formData = await request.formData();
   const title = (formData.get("title") as string | null)?.trim();

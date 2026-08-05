@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server";
 import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limited = await enforceRateLimit(
+    `session-create:${user.id}`,
+    PRESETS.write.limit,
+    PRESETS.write.windowSeconds
+  );
+  if (limited) return limited;
 
   try {
     const body = await request.json();

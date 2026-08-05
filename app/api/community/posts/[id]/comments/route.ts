@@ -3,6 +3,7 @@ import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityComments } from "@/utils/community";
 import { LIMITS, requireText } from "@/lib/sanitize";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET(
   _request: Request,
@@ -24,6 +25,14 @@ export async function POST(
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id: postId } = await params;
+
+  const limited = await enforceRateLimit(
+    `community-comment:${user.id}`,
+    PRESETS.publish.limit,
+    PRESETS.publish.windowSeconds,
+    "Tu commentes trop vite. Réessaie dans un instant."
+  );
+  if (limited) return limited;
 
   let body: unknown;
   try {

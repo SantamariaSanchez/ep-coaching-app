@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { cleanText, LIMITS, requireText } from "@/lib/sanitize";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
   const user = await getUser();
@@ -26,6 +27,16 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Quota de publication : trente posts par dix minutes ne gênent personne et
+  // coupent court au spam automatisé du fil communauté.
+  const limited = await enforceRateLimit(
+    `community-post:${user.id}`,
+    PRESETS.publish.limit,
+    PRESETS.publish.windowSeconds,
+    "Tu publies trop vite. Réessaie dans un instant."
+  );
+  if (limited) return limited;
 
   const formData = await request.formData();
   const type = formData.get("type");

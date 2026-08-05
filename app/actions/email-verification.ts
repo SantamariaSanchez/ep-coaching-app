@@ -3,6 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendVerificationEmail } from "@/lib/email-verification";
+import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export interface ResendResult {
   success?: boolean;
@@ -18,6 +19,17 @@ export async function resendVerificationEmail(): Promise<ResendResult> {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "Non authentifié." };
+
+  // Chaque appel envoie un email réel via Brevo : sans quota, le bouton
+  // "renvoyer" laisse noyer sa propre boîte et brûler le crédit d'envoi.
+  const limited = await checkRateLimit(
+    `resend-verification:${user.id}`,
+    PRESETS.email.limit,
+    PRESETS.email.windowSeconds
+  );
+  if (!limited.allowed) {
+    return { error: "Email déjà renvoyé plusieurs fois. Patiente un moment avant de réessayer." };
+  }
 
   const admin = createAdminClient();
   const { data: profile } = await admin

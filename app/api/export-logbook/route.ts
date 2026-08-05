@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientSessionsForExport } from "@/utils/sessions";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Un export renvoie tout l'historique d'un client en clair : on borne le
+  // rythme pour qu'un compte coach compromis ne siphonne pas la base d'un coup.
+  const limited = await enforceRateLimit(
+    `export-logbook:${user.id}`,
+    PRESETS.expensiveRead.limit,
+    PRESETS.expensiveRead.windowSeconds
+  );
+  if (limited) return limited;
 
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") {

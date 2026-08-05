@@ -3,12 +3,23 @@ import { getUser } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { parseWorkoutCsv, deriveProgramDaysFromSessions } from "@/utils/csv-import";
 import { saveProgramForClient } from "@/utils/programs";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024; // reste sous la limite de payload des fonctions Vercel
 
 export async function POST(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Un import declenche le parsing d'un CSV de plusieurs mega octets puis des
+  // centaines d'insertions : c'est la route la plus couteuse cote base.
+  const limited = await enforceRateLimit(
+    `import-logbook:${user.id}`,
+    10,
+    3600,
+    "Trop d'imports d'affilée. Réessaie dans un moment."
+  );
+  if (limited) return limited;
 
   try {
     const formData = await request.formData();

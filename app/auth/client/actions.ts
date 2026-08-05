@@ -8,7 +8,20 @@ import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/log
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
+import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+
+// Adresse IP de l'appelant, pour les quotas des actions publiques.
+async function callerIp(): Promise<string> {
+  try {
+    const h = await headers();
+    const forwarded = h.get("x-forwarded-for");
+    return forwarded?.split(",")[0]?.trim() || h.get("x-real-ip")?.trim() || "inconnu";
+  } catch {
+    return "inconnu";
+  }
+}
 
 export interface RequestState {
   success?: boolean;
@@ -74,6 +87,21 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Adresse email invalide." };
+  }
+
+  // Quota par adresse IP. Attention : cette inscription passe par
+  // admin.auth.admin.createUser, qui est une API d'administration et ne
+  // consomme donc PAS le rate limit natif de Supabase Auth. Sans le quota
+  // ci dessous, on peut créer des comptes en boucle, et chaque création
+  // déclenche deux emails (coach + fondateur).
+  const ip = await callerIp();
+  const signupLimit = await checkRateLimit(
+    `signup-client:${ip}`,
+    PRESETS.signup.limit,
+    PRESETS.signup.windowSeconds
+  );
+  if (!signupLimit.allowed) {
+    return { error: "Trop de tentatives d'inscription. Réessaie dans un moment." };
   }
 
   // Refuse les mots de passe déjà présents dans une fuite publique connue.

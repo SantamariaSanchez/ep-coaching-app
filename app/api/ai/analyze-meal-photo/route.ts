@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { getUser } from "@/utils/auth";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Analyse une photo de repas via Claude Vision et retourne une estimation
 // des macros. Réponse JSON : { name, calories, proteins, carbs, fats }.
@@ -8,6 +9,16 @@ import { getUser } from "@/utils/auth";
 export async function POST(request: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  // Chaque appel coûte de l'argent : quota par compte. Vingt photos par heure
+  // couvrent très largement un usage normal (quelques repas par jour).
+  const limited = await enforceRateLimit(
+    `ai-meal-photo:${user.id}`,
+    PRESETS.ai.limit,
+    PRESETS.ai.windowSeconds,
+    "Tu as analysé beaucoup de photos d'un coup. Réessaie dans un moment."
+  );
+  if (limited) return limited;
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(

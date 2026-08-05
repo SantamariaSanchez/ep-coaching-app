@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { DailyLog } from "@/utils/daily-logs";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 function esc(v: string | null | undefined): string {
   if (v == null) return "";
@@ -23,6 +24,15 @@ export async function GET(
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
+
+  // Export complet de l'historique quotidien d'un client : meme garde fou que
+  // pour l'export du carnet d'entrainement.
+  const limited = await enforceRateLimit(
+    `export-daily-logs:${user.id}`,
+    PRESETS.expensiveRead.limit,
+    PRESETS.expensiveRead.windowSeconds
+  );
+  if (limited) return limited;
 
   const admin = createAdminClient();
 

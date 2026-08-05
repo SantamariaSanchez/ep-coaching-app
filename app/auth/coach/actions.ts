@@ -9,6 +9,19 @@ import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/log
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
+import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { headers } from "next/headers";
+
+// Adresse IP de l'appelant, pour les quotas des actions publiques.
+async function callerIp(): Promise<string> {
+  try {
+    const h = await headers();
+    const forwarded = h.get("x-forwarded-for");
+    return forwarded?.split(",")[0]?.trim() || h.get("x-real-ip")?.trim() || "inconnu";
+  } catch {
+    return "inconnu";
+  }
+}
 
 export interface CoachSignupInput {
   fullName: string;
@@ -47,6 +60,20 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   }
   if (!input.acceptedTerms) {
     return { error: "Tu dois accepter les CGU et les CGV pour continuer." };
+  }
+
+  // Quota par adresse IP. Comme pour l'inscription client, on passe par
+  // admin.auth.admin.createUser, qui ne consomme pas le rate limit natif de
+  // Supabase Auth : sans ce garde fou, rien n'empêche de créer des comptes
+  // coach en boucle.
+  const ip = await callerIp();
+  const signupLimit = await checkRateLimit(
+    `signup-coach:${ip}`,
+    PRESETS.signup.limit,
+    PRESETS.signup.windowSeconds
+  );
+  if (!signupLimit.allowed) {
+    return { error: "Trop de tentatives d'inscription. Réessaie dans un moment." };
   }
 
   // Refuse les mots de passe déjà présents dans une fuite publique connue.

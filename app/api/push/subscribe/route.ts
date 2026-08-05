@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import webpush from "web-push";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getUser } from "@/utils/auth";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 function initVapid() {
   if (process.env.VAPID_EMAIL && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {
@@ -13,9 +14,29 @@ export async function POST(req: Request) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+  const limited = await enforceRateLimit(
+    `push-subscribe:${user.id}`,
+    30,
+    600
+  );
+  if (limited) return limited;
+
   try {
     initVapid();
     const { subscription } = await req.json();
+
+    // La colonne est en jsonb : sans contrôle de forme, n'importe quel objet
+    // (ou n'importe quel volume) pouvait y être stocké.
+    if (
+      !subscription ||
+      typeof subscription !== "object" ||
+      typeof (subscription as { endpoint?: unknown }).endpoint !== "string" ||
+      (subscription as { endpoint: string }).endpoint.length > 2000 ||
+      !/^https:\/\//.test((subscription as { endpoint: string }).endpoint)
+    ) {
+      return NextResponse.json({ error: "Abonnement invalide." }, { status: 400 });
+    }
+
     const supabase = await createServerSupabase();
 
     await supabase.from("push_subscriptions").upsert(

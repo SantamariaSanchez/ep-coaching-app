@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientIp, enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Public endpoint — no auth needed (called from leadmagnet HTML pages).
 //
@@ -17,6 +18,16 @@ export async function POST(request: Request) {
     if (!apiKey) {
           return NextResponse.json({ error: "API key not configured" }, { status: 500 });
     }
+
+  // Quota par adresse IP. Le diagnostic se fait une fois, pas cinq par heure :
+  // la limite ne gene personne et coupe court a une boucle automatisee.
+  const limited = await enforceRateLimit(
+        `diagnostic-nutrition:${clientIp(request)}`,
+        PRESETS.aiPublic.limit,
+        PRESETS.aiPublic.windowSeconds,
+        "Trop de diagnostics demandés. Réessaie dans un moment."
+  );
+  if (limited) return limited;
 
   let body: unknown;
   try {

@@ -3,6 +3,7 @@ import { getUser } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { applyRoadmapForClient } from "@/utils/roadmap";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Un coach ne peut agir que sur SES propres clients — jamais sur ceux d'un
 // autre coach, même en connaissant leur id.
@@ -63,6 +64,15 @@ export async function POST(
 ) {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  // Cette route réécrit toutes les phases et tous les objectifs à chaque appel
+  // (suppression puis réinsertion) : c'est une écriture lourde.
+  const limited = await enforceRateLimit(
+    `roadmap-write:${user.id}`,
+    PRESETS.write.limit,
+    PRESETS.write.windowSeconds
+  );
+  if (limited) return limited;
 
   const { clientId } = await params;
   // Coach can edit only their own clients' roadmap; a client can only edit

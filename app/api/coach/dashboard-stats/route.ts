@@ -3,6 +3,7 @@ export const revalidate = 30;
 import { getUser, getProfile } from "@/utils/auth";
 import { getWeeklyCheckinCount, getPendingReplies } from "@/utils/checkins";
 import { getClients, getTotalMembersCount } from "@/utils/auth";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET() {
   const user = await getUser();
@@ -12,6 +13,14 @@ export async function GET() {
   if (profile?.role !== "coach") {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
+
+  // Agregations lourdes sur toute la base du coach : quota genereux, mais reel.
+  const limited = await enforceRateLimit(
+    `coach-dashboard-stats:${user.id}`,
+    PRESETS.expensiveRead.limit,
+    PRESETS.expensiveRead.windowSeconds
+  );
+  if (limited) return limited;
 
   const [clients, weeklyCount, pendingReplies, totalMembers] =
     await Promise.all([

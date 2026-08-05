@@ -4,10 +4,18 @@ import { getUser } from "@/utils/auth";
 import { getTodayLogs, getLast7DaysLogs, getNutritionProfile } from "@/utils/nutrition";
 import { getThisWeekCheckin, getISOWeek } from "@/utils/checkins";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function GET() {
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const limited = await enforceRateLimit(
+    `client-dashboard-stats:${user.id}`,
+    PRESETS.expensiveRead.limit,
+    PRESETS.expensiveRead.windowSeconds
+  );
+  if (limited) return limited;
 
   const today = new Date();
   const todayStr = today.toISOString().split("T")[0];
