@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 
 export interface CoachSignupInput {
   fullName: string;
@@ -99,8 +100,13 @@ export async function loginCoach(
   _prev: { error?: string } | null,
   formData: FormData
 ): Promise<{ error: string }> {
-  const email = formData.get("email") as string;
+  const email = (formData.get("email") as string).trim();
   const password = formData.get("password") as string;
+
+  // Verrouillage temporaire après plusieurs échecs sur le même email : évite
+  // qu'un robot teste des mots de passe à l'infini.
+  const locked = await getLoginLock(email);
+  if (locked) return { error: locked };
 
   const supabase = await createServerSupabase();
   const { data: authData, error } = await supabase.auth.signInWithPassword({
@@ -109,7 +115,8 @@ export async function loginCoach(
   });
 
   if (error || !authData.user) {
-    return { error: "Identifiants incorrects." };
+    const nowLocked = await registerFailedLogin(email);
+    return { error: nowLocked ?? "Identifiants incorrects." };
   }
 
   // Verify role with admin client (bypasses RLS)
@@ -125,6 +132,8 @@ export async function loginCoach(
     await supabase.auth.signOut();
     return { error: "Accès non autorisé. Ce compte n'est pas un compte coach." };
   }
+
+  await clearLoginAttempts(email);
 
   redirect("/dashboard/coach");
 }

@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { redirect } from "next/navigation";
 
 export interface RequestState {
@@ -136,10 +137,18 @@ export async function loginClient(
   const email    = (formData.get("email")    as string).trim();
   const password = formData.get("password") as string;
 
+  // Verrouillage temporaire après plusieurs échecs sur le même email : évite
+  // qu'un robot teste des mots de passe à l'infini.
+  const locked = await getLoginLock(email);
+  if (locked) return { error: locked };
+
   const supabase = await createServerSupabase();
   const { data: authData, error } = await supabase.auth.signInWithPassword({ email, password });
 
-  if (error || !authData.user) return { error: "Email ou mot de passe incorrect." };
+  if (error || !authData.user) {
+    const nowLocked = await registerFailedLogin(email);
+    return { error: nowLocked ?? "Email ou mot de passe incorrect." };
+  }
 
   const admin = createAdminClient();
   const { data: profile } = await admin
@@ -149,6 +158,8 @@ export async function loginClient(
     await supabase.auth.signOut();
     return { error: "Ton acces n est pas encore cree. Contacte ton coach." };
   }
+
+  await clearLoginAttempts(email);
 
   if (profile.role === "coach") redirect("/dashboard/coach");
   redirect("/dashboard/client");
