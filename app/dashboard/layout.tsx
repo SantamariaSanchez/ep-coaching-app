@@ -64,8 +64,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
       <NavigationProgress />
-      {showEmailBanner && <EmailVerificationBanner email={profile.email} />}
-      <DashboardNav initialIsFreeTier={initialIsFreeTier}>{children}</DashboardNav>
+      {/* Dans les enfants et non au dessus de DashboardNav : la barre latérale
+          desktop est en position fixed et recouvrirait les 220 premiers pixels
+          du bandeau. Ici, il hérite du décalage du contenu. */}
+      <DashboardNav initialIsFreeTier={initialIsFreeTier}>
+        {showEmailBanner && <EmailVerificationBanner email={profile.email} />}
+        {children}
+      </DashboardNav>
     </div>
   );
 }
