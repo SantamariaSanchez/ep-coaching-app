@@ -1,6 +1,6 @@
 "use server";
 
-import { getUser } from "@/utils/auth";
+import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -23,13 +23,13 @@ export async function addScheduleBlock(data: {
   color: string;
   notes: string | null;
 }): Promise<{ error?: string; block?: ScheduleBlock }> {
-  const user = await getUser();
-  if (!user) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
   const { data: row, error } = await supabase
     .from("schedule_blocks")
-    .insert({ owner_id: user.id, ...data })
+    .insert({ owner_id: guard.userId, ...data })
     .select()
     .single();
 
@@ -51,15 +51,15 @@ export async function updateScheduleBlock(
     notes: string | null;
   }
 ): Promise<{ error?: string }> {
-  const user = await getUser();
-  if (!user) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("schedule_blocks")
     .update(data)
     .eq("id", blockId)
-    .eq("owner_id", user.id);
+    .eq("owner_id", guard.userId);
 
   if (error) return { error: error.message };
 
@@ -69,15 +69,15 @@ export async function updateScheduleBlock(
 }
 
 export async function deleteScheduleBlock(blockId: string): Promise<{ error?: string }> {
-  const user = await getUser();
-  if (!user) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
 
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("schedule_blocks")
     .delete()
     .eq("id", blockId)
-    .eq("owner_id", user.id);
+    .eq("owner_id", guard.userId);
 
   if (error) return { error: error.message };
 

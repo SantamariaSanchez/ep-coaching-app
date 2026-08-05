@@ -7,7 +7,7 @@ import { insertNotification, getCoachForClient } from "@/utils/insert-notificati
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewCheckin } from "@/app/actions/notifications";
 import { awardPoints, POINTS } from "@/lib/gamification";
-import { isClientCapable } from "@/utils/auth";
+import { requireClient } from "@/lib/auth-guards";
 
 type SubmitState = { error: string } | { success: true } | null;
 
@@ -36,18 +36,20 @@ export async function submitCheckin(
   prevState: SubmitState,
   formData: FormData
 ): Promise<SubmitState> {
-  const serverClient = await createServerSupabase();
-  const { data: { user } } = await serverClient.auth.getUser();
-  if (!user) return { error: "Non authentifié." };
+  // requireClient() valide l'identité, le rôle ET la force de session
+  // (2FA exigée si le compte l'a activée) — l'insertion se faisant ensuite
+  // via le client admin, qui court-circuite la RLS.
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
 
+  const serverClient = await createServerSupabase();
   const { data: profile } = await serverClient
     .from("profiles")
-    .select("full_name, role, checkin_day, coach_id")
-    .eq("id", user.id)
+    .select("full_name, checkin_day")
+    .eq("id", guard.userId)
     .single();
 
   if (!profile) return { error: "Profil introuvable." };
-  if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
   const today = new Date();
   const checkinDay = (profile as { checkin_day?: number }).checkin_day ?? 1;
@@ -76,7 +78,7 @@ export async function submitCheckin(
   const supabase = createAdminClient();
 
   const { error } = await supabase.from("check_ins").insert({
-    client_id: user.id,
+    client_id: guard.userId,
     week_start: weekStart,
     week_number: weekNumber,
     weight: num(formData.get("weight")),
@@ -105,23 +107,23 @@ export async function submitCheckin(
 
   if (error) return { error: error.message };
 
-  awardPoints(user.id, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart);
+  awardPoints(guard.userId, POINTS.weekly_checkin, "Check-in hebdomadaire envoyé", "weekly_checkin", weekStart);
 
   const clientName = profile.full_name ?? "Un client";
 
   // Email via Brevo (fire-and-forget)
-  notifyCoachNewCheckin(clientName, user.id).catch(() => {});
+  notifyCoachNewCheckin(clientName, guard.userId).catch(() => {});
 
   // DB notification (fire-and-forget)
-  getCoachForClient(user.id).then((coach) => {
+  getCoachForClient(guard.userId).then((coach) => {
     if (!coach) return;
     insertNotification({
       userId: coach.id,
       type: "new_checkin",
       title: `Nouveau check-in de ${clientName}`,
       body: `${clientName} vient d'envoyer son check-in hebdomadaire (S${weekNumber}).`,
-      url: `/dashboard/coach/clients/${user.id}/checkins`,
-      senderId: user.id,
+      url: `/dashboard/coach/clients/${guard.userId}/checkins`,
+      senderId: guard.userId,
     }).catch(() => {});
   }).catch(() => {});
 

@@ -1,7 +1,9 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/auth-guards";
 import type {
   Allergen,
   Diet,
@@ -36,9 +38,12 @@ export async function createCommunityRecipe(
   input: CommunityRecipeInput
 ): Promise<{ error?: string; id?: string }> {
   try {
+    // requireAuth() plutôt qu'un getUser() nu : la publication est ouverte
+    // aux clients comme au coach, mais reste une écriture, donc soumise à la
+    // 2FA quand le compte l'a activée.
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
 
     if (!input.name.trim()) return { error: "Le nom de la recette est requis." };
     if (input.ingredients.filter((i) => i.trim()).length === 0) {
@@ -48,7 +53,7 @@ export async function createCommunityRecipe(
     const { data, error } = await supabase
       .from("community_recipes")
       .insert({
-        author_id: user.id,
+        author_id: guard.userId,
         name: input.name.trim(),
         meal: input.meal,
         diet: input.diet,
@@ -83,10 +88,23 @@ export async function createCommunityRecipe(
 
 export async function deleteCommunityRecipe(id: string): Promise<{ error?: string }> {
   try {
-    const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
 
+    // Défense en profondeur : la RLS autorise déjà l'auteur ou un coach,
+    // on redit la même règle ici plutôt que de dépendre d'elle seule.
+    const admin = createAdminClient();
+    const { data: recipe } = await admin
+      .from("community_recipes")
+      .select("author_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (!recipe) return { error: "Recette introuvable." };
+    if (recipe.author_id !== guard.userId && guard.role !== "coach") {
+      return { error: "Tu ne peux supprimer que tes propres recettes." };
+    }
+
+    const supabase = await createServerSupabase();
     const { error } = await supabase.from("community_recipes").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
 

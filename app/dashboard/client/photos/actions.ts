@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { notifyCoachNewPhotoUpdate } from "@/app/actions/notifications";
-import { isClientCapable } from "@/utils/auth";
+import { requireClient } from "@/lib/auth-guards";
 import type { SubmissionType } from "@/lib/posing-data";
 import { TYPE_LABELS } from "@/lib/posing-data";
 
@@ -28,19 +28,20 @@ export async function submitPhotoUpdate(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    // Verify user identity explicitly (RLS bypassed via adminClient)
-    const serverClient = await createServerSupabase();
-    const { data: { user } } = await serverClient.auth.getUser();
-    if (!user) return { error: "Non authentifié" };
+    // Verify user identity explicitly (RLS bypassed via adminClient).
+    // requireClient() couvre aussi la force de session : un compte avec 2FA
+    // activée doit avoir validé son code avant d'écrire ici.
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
 
+    const serverClient = await createServerSupabase();
     const { data: profile } = await serverClient
       .from("profiles")
-      .select("full_name, competition_category, role, coach_id")
-      .eq("id", user.id)
+      .select("full_name, competition_category")
+      .eq("id", guard.userId)
       .single();
 
     if (!profile) return { error: "Profil introuvable" };
-    if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
     const type = formData.get("type") as SubmissionType;
     const notes = (formData.get("notes") as string)?.trim() || null;
@@ -65,7 +66,7 @@ export async function submitPhotoUpdate(
     // Use admin client to bypass RLS — user identity verified above
     const supabase = createAdminClient();
     const { error } = await supabase.from("photo_updates").insert({
-      client_id: user.id,
+      client_id: guard.userId,
       submitted_at,
       week_number,
       type,
@@ -81,7 +82,7 @@ export async function submitPhotoUpdate(
       profile.full_name ?? "Un client",
       TYPE_LABELS[type],
       category,
-      user.id
+      guard.userId
     ).catch(() => {});
 
     revalidatePath("/dashboard/client/photos");

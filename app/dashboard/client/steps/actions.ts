@@ -2,16 +2,16 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/lib/auth-guards";
 
-async function getCurrentUserId(): Promise<string | null> {
-  const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
-}
-
+// Les pas sont suivis côté client (/dashboard/client/steps) comme côté coach
+// pour lui-même (/dashboard/coach/moi/steps), d'où requireAuth() plutôt qu'un
+// guard de rôle. Le guard applique aussi la 2FA quand le compte l'a activée,
+// ce que l'ancien getUser() maison ne faisait pas.
 export async function updateStepGoal(dailyGoal: number): Promise<{ error?: string }> {
-  const userId = await getCurrentUserId();
-  if (!userId) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const userId = guard.userId;
   if (dailyGoal <= 0) return { error: "Objectif invalide." };
 
   try {
@@ -32,8 +32,9 @@ export async function addRoutineItem(
   label: string,
   timeLabel: string
 ): Promise<{ error?: string; id?: string }> {
-  const userId = await getCurrentUserId();
-  if (!userId) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const userId = guard.userId;
   if (!label.trim()) return { error: "Le libellé est requis." };
 
   try {
@@ -59,8 +60,9 @@ export async function addRoutineItem(
 }
 
 export async function deleteRoutineItem(id: string): Promise<{ error?: string }> {
-  const userId = await getCurrentUserId();
-  if (!userId) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const userId = guard.userId;
 
   try {
     const supabase = await createServerSupabase();
@@ -83,8 +85,9 @@ export async function logSteps(
   stepsActual: number,
   completedItems: string[]
 ): Promise<{ error?: string }> {
-  const userId = await getCurrentUserId();
-  if (!userId) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const userId = guard.userId;
 
   try {
     const supabase = await createServerSupabase();

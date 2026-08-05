@@ -2,6 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { requireClient } from "@/lib/auth-guards";
 
 // Suivi photo perso (membres gratuits) : upload direct, aucune notification
 // coach, aucun lien Drive à gérer soi-même — juste une photo pour se
@@ -10,9 +11,9 @@ export async function uploadPersonalPhoto(
   formData: FormData
 ): Promise<{ error?: string }> {
   try {
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
 
     const file = formData.get("photo");
     const notes = (formData.get("notes") as string | null)?.trim() || null;
@@ -34,7 +35,7 @@ export async function uploadPersonalPhoto(
       return { error: "Photo trop volumineuse (8MB max)." };
     }
 
-    const path = `${user.id}/${Date.now()}.${ext}`;
+    const path = `${guard.userId}/${Date.now()}.${ext}`;
 
     const { error: uploadError } = await supabase.storage
       .from("progress-photos")
@@ -43,7 +44,7 @@ export async function uploadPersonalPhoto(
 
     const today = new Date().toISOString().split("T")[0];
     const { error } = await supabase.from("personal_photos").insert({
-      client_id: user.id,
+      client_id: guard.userId,
       taken_at: today,
       storage_path: path,
       notes,
@@ -62,16 +63,16 @@ export async function deletePersonalPhoto(
   storagePath: string
 ): Promise<{ error?: string }> {
   try {
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
 
     await supabase.storage.from("progress-photos").remove([storagePath]);
     const { error } = await supabase
       .from("personal_photos")
       .delete()
       .eq("id", id)
-      .eq("client_id", user.id);
+      .eq("client_id", guard.userId);
     if (error) return { error: "Échec de la suppression." };
 
     revalidatePath("/dashboard/client/photos");

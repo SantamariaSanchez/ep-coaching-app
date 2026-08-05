@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
-import { isClientCapable } from "@/utils/auth";
+import { requireClient } from "@/lib/auth-guards";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -23,18 +23,18 @@ export async function upsertDailyLog(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const serverClient = await createServerSupabase();
-    const { data: { user } } = await serverClient.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
+    // requireClient() valide l'identité, le rôle ET la force de session
+    // (2FA exigée si le compte l'a activée) — indispensable ici, l'écriture
+    // se faisant ensuite via le client admin qui court-circuite la RLS.
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
 
+    const serverClient = await createServerSupabase();
     const { data: profile } = await serverClient
       .from("profiles")
-      .select("full_name, role, coach_id")
-      .eq("id", user.id)
+      .select("full_name")
+      .eq("id", guard.userId)
       .single();
-
-    if (!profile) return { error: "Profil introuvable." };
-    if (!isClientCapable(profile)) return { error: "Accès refusé." };
 
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
@@ -77,7 +77,7 @@ export async function upsertDailyLog(
     ];
 
     const payload: Record<string, unknown> = {
-      client_id: user.id,
+      client_id: guard.userId,
       log_date,
       updated_at: new Date().toISOString(),
     };
@@ -91,19 +91,19 @@ export async function upsertDailyLog(
 
     if (error) return { error: error.message };
 
-    awardPoints(user.id, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
+    awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
 
     // Notify coach — fire-and-forget
-    const clientName = profile.full_name ?? "Un client";
-    getCoachForClient(user.id).then((coach) => {
+    const clientName = profile?.full_name ?? "Un client";
+    getCoachForClient(guard.userId).then((coach) => {
       if (!coach) return;
       insertNotification({
         userId: coach.id,
         type: "new_daily_log",
         title: `Bilan quotidien de ${clientName}`,
         body: `${clientName} a soumis son bilan du ${log_date}.`,
-        url: `/dashboard/coach/clients/${user.id}/bilan`,
-        senderId: user.id,
+        url: `/dashboard/coach/clients/${guard.userId}/bilan`,
+        senderId: guard.userId,
       }).catch(() => {});
     }).catch(() => {});
 

@@ -2,7 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
@@ -88,14 +88,14 @@ export async function addFoodLog(params: {
   loggedAt: string;
 }): Promise<{ id?: string; error?: string }> {
   try {
-    const user = await getUser();
-    if (!user) return { error: "Non authentifié" };
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
     const { data, error } = await supabase
       .from("food_logs")
       .insert({
-        client_id: user.id,
+        client_id: guard.userId,
         food_id: params.foodId,
         meal_slot: params.mealSlot,
         quantity_g: params.quantityG,
@@ -114,7 +114,7 @@ export async function addFoodLog(params: {
     }
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
 
-    awardPoints(user.id, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
+    awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
 
     return { id: data.id };
   } catch {
@@ -126,15 +126,15 @@ export async function removeFoodLog(
   logId: string
 ): Promise<{ error?: string }> {
   try {
-    const user = await getUser();
-    if (!user) return { error: "Non authentifié" };
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
     await supabase
       .from("food_logs")
       .delete()
       .eq("id", logId)
-      .eq("client_id", user.id);
+      .eq("client_id", guard.userId);
 
     return {};
   } catch {
@@ -152,8 +152,8 @@ export async function createCustomFood(params: {
   fibers_per_100: number;
 }): Promise<{ food?: Food; error?: string }> {
   try {
-    const user = await getUser();
-    if (!user) return { error: "Non authentifié" };
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
 
     // Admin client — bypasses RLS regardless of how the foods table was set
     // up, since this is shared reference content.
@@ -163,7 +163,7 @@ export async function createCustomFood(params: {
       .insert({
         ...params,
         is_custom: true,
-        created_by: user.id,
+        created_by: guard.userId,
       })
       .select()
       .single();

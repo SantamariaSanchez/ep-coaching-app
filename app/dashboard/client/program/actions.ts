@@ -29,11 +29,9 @@ export async function submitCorrection(
   _prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireClient();
+  if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Non connecté" };
 
   const exercise_name = (formData.get("exercise_name") as string)?.trim();
   const objective = (formData.get("objective") as string)?.trim();
@@ -46,7 +44,7 @@ export async function submitCorrection(
   }
 
   const { error } = await supabase.from("exercise_corrections").insert({
-    client_id: user.id,
+    client_id: guard.userId,
     exercise_name,
     objective,
     video_path,
@@ -59,13 +57,13 @@ export async function submitCorrection(
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name")
-    .eq("id", user.id)
+    .eq("id", guard.userId)
     .single();
 
   notifyCoachNewCorrection(
     profile?.full_name ?? "Un client",
     exercise_name,
-    user.id
+    guard.userId
   ).catch(() => {});
 
   revalidatePath("/dashboard/client/program");
