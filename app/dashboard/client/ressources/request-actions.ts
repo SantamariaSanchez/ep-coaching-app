@@ -3,7 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
-import { requireCoach } from "@/lib/auth-guards";
+import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import {
   notifyCoachNewResourceRequest,
   notifyClientRequestAnswered,
@@ -14,14 +14,14 @@ export async function createResourceRequest(
   content: string
 ): Promise<{ error?: string; id?: string }> {
   try {
-    const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
     if (!title.trim() || !content.trim()) return { error: "Titre et description requis." };
 
+    const supabase = await createServerSupabase();
     const { data, error } = await supabase
       .from("resource_requests")
-      .insert({ author_id: user.id, title: title.trim(), content: content.trim() })
+      .insert({ author_id: guard.userId, title: title.trim(), content: content.trim() })
       .select("id")
       .single();
 
@@ -30,9 +30,9 @@ export async function createResourceRequest(
     const { data: profile } = await supabase
       .from("profiles")
       .select("full_name")
-      .eq("id", user.id)
+      .eq("id", guard.userId)
       .single();
-    notifyCoachNewResourceRequest(profile?.full_name ?? "Un membre", title.trim(), user.id).catch(() => {});
+    notifyCoachNewResourceRequest(profile?.full_name ?? "Un membre", title.trim(), guard.userId).catch(() => {});
 
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");
@@ -95,6 +95,24 @@ export async function respondToResourceRequest(
 
 export async function deleteResourceRequest(id: string): Promise<{ error?: string }> {
   try {
+    // Cette action n'avait AUCUNE vérification applicative : elle s'en
+    // remettait entièrement à la policy RLS "Author or coach can delete a
+    // request". On redit ici la même règle (auteur ou coach), en défense en
+    // profondeur, et le guard applique au passage la 2FA sur le compte.
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
+
+    const admin = createAdminClient();
+    const { data: request } = await admin
+      .from("resource_requests")
+      .select("author_id")
+      .eq("id", id)
+      .maybeSingle();
+    if (!request) return { error: "Demande introuvable." };
+    if (request.author_id !== guard.userId && guard.role !== "coach") {
+      return { error: "Tu ne peux supprimer que tes propres demandes." };
+    }
+
     const supabase = await createServerSupabase();
     const { error } = await supabase.from("resource_requests").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
