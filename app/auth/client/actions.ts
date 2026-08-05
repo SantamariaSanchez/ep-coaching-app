@@ -6,6 +6,7 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
+import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { redirect } from "next/navigation";
 
 export interface RequestState {
@@ -64,6 +65,11 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
 
   if (!fullName || !email || !phone || password.length < 6) {
     return { error: "Nom, email, téléphone et mot de passe (6 caractères min.) requis." };
+  }
+
+  // Refuse les mots de passe déjà présents dans une fuite publique connue.
+  if (await isPasswordPwned(password)) {
+    return { error: PWNED_PASSWORD_MESSAGE };
   }
 
   const admin = createAdminClient();

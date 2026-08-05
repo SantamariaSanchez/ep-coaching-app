@@ -7,6 +7,7 @@ import { CheckCircle2 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { createClientSupabase } from "@/lib/supabase-client";
+import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
@@ -56,6 +57,15 @@ export default function ResetPasswordPage() {
     }
     setSubmitting(true);
     setError(null);
+
+    // Vérification anti mot de passe fuité : seul le préfixe du SHA1 quitte le
+    // navigateur, jamais le mot de passe (voir lib/pwned-password.ts).
+    if (await isPasswordPwned(password)) {
+      setSubmitting(false);
+      setError(PWNED_PASSWORD_MESSAGE);
+      return;
+    }
+
     const supabase = createClientSupabase();
     const { error: updateError } = await supabase.auth.updateUser({ password });
     setSubmitting(false);

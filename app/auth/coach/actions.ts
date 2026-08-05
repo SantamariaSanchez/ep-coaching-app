@@ -7,6 +7,7 @@ import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
+import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 
 export interface CoachSignupInput {
   fullName: string;
@@ -37,6 +38,11 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   }
   if (!input.acceptedTerms) {
     return { error: "Tu dois accepter les CGU et les CGV pour continuer." };
+  }
+
+  // Refuse les mots de passe déjà présents dans une fuite publique connue.
+  if (await isPasswordPwned(password)) {
+    return { error: PWNED_PASSWORD_MESSAGE };
   }
 
   const plan = COACH_PLATFORM_PLANS.find((p) => p.id === input.planId);
