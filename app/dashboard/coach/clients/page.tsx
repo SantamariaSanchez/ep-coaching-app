@@ -28,7 +28,7 @@ export default async function ClientsPage() {
     .map((c) => c.id);
 
   return (
-    <div className="page-transition" style={{ padding: "32px 24px 48px", maxWidth: 900, margin: "0 auto" }}>
+    <div className="page-transition ep-page-wide" style={{ padding: "32px 24px 48px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
         <h1 style={{

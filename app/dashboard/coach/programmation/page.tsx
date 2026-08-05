@@ -25,7 +25,7 @@ export default async function ProgrammationPage() {
   ]);
 
   return (
-    <div className="px-6 py-8 max-w-6xl mx-auto page-transition">
+    <div className="px-6 py-8 ep-page-wide page-transition">
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Espace de conception

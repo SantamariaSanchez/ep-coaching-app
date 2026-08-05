@@ -26,8 +26,8 @@ export default async function CoachDashboard() {
 
   return (
     <div
-      className="page-transition"
-      style={{ padding: "32px 24px 48px", maxWidth: 900, margin: "0 auto" }}
+      className="page-transition ep-page-wide"
+      style={{ padding: "32px 24px 48px" }}
     >
       {/* ── Header ───────────────────────────────────────────────────────────── */}
       <div className="animate-fade-up" style={{ marginBottom: 32 }}>

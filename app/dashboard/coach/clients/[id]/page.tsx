@@ -147,7 +147,7 @@ export default async function ClientDetailPage({
   const badge = STATUS_BADGE[client.status ?? "active"];
 
   return (
-    <div className="px-6 py-8 max-w-4xl mx-auto page-transition">
+    <div className="px-6 py-8 ep-page-wide page-transition">
       <Link
         href="/dashboard/coach/clients"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"

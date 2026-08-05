@@ -724,3 +724,44 @@
 @media (min-width: 480px) {
   .ep-quick-row { grid-template-columns: repeat(4, 1fr); }
 }
+
+/* ── Largeur de page ────────────────────────────────────────────────────── */
+/* Beaucoup de pages posaient un max-width fixe (480, 640, 900 px) pensé pour
+   le mobile : sur un écran large, la moitié de la place restait vide. Ces
+   classes gardent une colonne confortable sur mobile et laissent le contenu
+   respirer au delà, sans jamais toucher à la charte. */
+.ep-page-wide { width: 100%; max-width: 560px; margin: 0 auto; }
+@media (min-width: 900px)  { .ep-page-wide { max-width: 1120px; } }
+@media (min-width: 1500px) { .ep-page-wide { max-width: 1320px; } }
+
+.ep-page-medium { width: 100%; max-width: 560px; margin: 0 auto; }
+@media (min-width: 900px) { .ep-page-medium { max-width: 920px; } }
+
+/* Colonnes sur grand écran, empilées sur mobile. `align-items: start` pour
+   que deux colonnes de hauteurs différentes ne s'étirent pas l'une sur
+   l'autre. */
+.ep-cols-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 900px) { .ep-cols-2 { grid-template-columns: 1fr 1fr; gap: 20px; } }
+
+/* Colonne principale plus large que la colonne latérale. */
+.ep-cols-main {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 1000px) { .ep-cols-main { grid-template-columns: 1.55fr 1fr; gap: 20px; } }
+
+.ep-cols-3 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 700px)  { .ep-cols-3 { grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1200px) { .ep-cols-3 { grid-template-columns: repeat(3, 1fr); } }

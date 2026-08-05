@@ -69,7 +69,7 @@ export default async function ClientNutritionPage() {
 
     return (
       <div className="pb-24 md:pb-8 page-transition">
-        <div className="px-6 pt-8 max-w-2xl mx-auto">
+        <div className="px-6 pt-8 ep-page-medium">
           <div className="mb-6">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
               Nutrition
@@ -123,7 +123,7 @@ export default async function ClientNutritionPage() {
           deleteOwnDietPlan={deleteOwnDietPlan}
         />
 
-        <div className="px-6 max-w-2xl mx-auto mt-6">
+        <div className="px-6 ep-page-medium mt-6">
           <SupplementsSection
             supplements={supplements}
             onAdd={addOwnSupplement}
@@ -171,7 +171,7 @@ export default async function ClientNutritionPage() {
         deleteSavedMeal={deleteSavedMeal}
         logMealItems={logMealItems}
       />
-      <div className="px-6 max-w-2xl mx-auto mt-6">
+      <div className="px-6 ep-page-medium mt-6">
         <SupplementsSection
           supplements={supplements}
           onAdd={addOwnSupplement}

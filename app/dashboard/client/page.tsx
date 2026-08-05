@@ -274,8 +274,8 @@ function WelcomeGuide({
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
   return (
     <div
-      className="page-transition"
-      style={{ padding: "32px 20px 100px", maxWidth: 480, margin: "0 auto" }}
+      className="page-transition ep-page-medium"
+      style={{ padding: "32px 20px 100px" }}
     >
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
@@ -336,7 +336,7 @@ function WelcomeGuide({
       {/* Mini-guide */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
         <p className="ep-section-title">Ce qui est disponible</p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        <div className="ep-cols-2" style={{ gap: 8 }}>
           {items.map(({ href, icon: Icon, title, desc, locked }) => (
             <Link
               key={href}
@@ -527,11 +527,9 @@ export default async function ClientDashboard({
 
   return (
     <div
-      className="page-transition"
+      className="page-transition ep-page-wide"
       style={{
         padding: "32px 20px 100px",
-        maxWidth: 480,
-        margin: "0 auto",
         position: "relative",
       }}
     >
@@ -576,6 +574,11 @@ export default async function ClientDashboard({
         <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
       </Link>
 
+      {/* Sur grand écran le retour du coach (colonne principale) et le suivi
+          personnel (colonne latérale) se lisent côte à côte plutôt que l'un
+          sous l'autre dans une colonne étroite. Empilé sur mobile. */}
+      <div className="ep-cols-main">
+      <div>
       {/* ── Mon coach ───────────────────────────────────────────────────────── */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 16 }}>
         <p className="ep-section-title">Mon coach</p>
@@ -711,6 +714,9 @@ export default async function ClientDashboard({
         )}
       </section>
 
+      </div>
+
+      <div>
       {/* ── Objectifs & poids ───────────────────────────────────────────────── */}
       {(startWeight != null || currentWeight != null || profile?.goal) && (
         <section className="animate-fade-up stagger-4" style={{ marginBottom: 16 }}>
@@ -850,6 +856,8 @@ export default async function ClientDashboard({
           ))}
         </div>
       </section>
+      </div>
+      </div>
     </div>
   );
 }
