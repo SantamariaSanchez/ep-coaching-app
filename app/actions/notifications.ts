@@ -3,9 +3,20 @@
 import { sendBrevoEmail } from "@/utils/brevo"
 import { getCoachForClient } from "@/utils/insert-notification"
 import { notifyUser } from "@/lib/notify"
+import { requireAuth } from "@/lib/auth-guards"
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
+
+// Ces fonctions sont des server actions exportées : elles sont donc
+// appelables directement depuis un navigateur, avec les arguments qu'on
+// veut, et pas seulement depuis les actions qui les utilisent aujourd'hui.
+// Sans le moindre contrôle, n'importe qui pouvait faire envoyer par l'app
+// un email et une notification push au coach, avec un nom de client et un
+// texte choisis. Chacune exige maintenant requireAuth() — donc aussi une
+// session forte quand le compte a activé la double authentification.
+// Échec silencieux (return sans erreur) : tous les appelants les lancent
+// en fire-and-forget et ne doivent jamais échouer à cause d'elles.
 
 // En plus de l'email (seul canal historique), pousse aussi une notif
 // in-app + push au coach ASSIGNÉ à ce client — fire-and-forget, ne doit
@@ -19,6 +30,8 @@ function notifyCoach(clientId: string, params: { type: string; title: string; bo
 }
 
 export async function notifyCoachNewCheckin(clientName: string, clientId: string) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   notifyCoach(clientId, {
     type: "coach_checkin",
     title: "Nouveau check-in",
@@ -45,6 +58,8 @@ export async function notifyCoachNewCheckin(clientName: string, clientId: string
 }
 
 export async function notifyCoachNewCheckinWithMeasurements(clientName: string, clientId: string) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   notifyCoach(clientId, {
     type: "coach_checkin",
     title: "📏 Check-in mensuel reçu",
@@ -75,6 +90,8 @@ export async function notifyCoachNewCorrection(
   exerciseName: string,
   clientId: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   notifyCoach(clientId, {
     type: "coach_correction",
     title: "Correction demandée",
@@ -107,6 +124,8 @@ export async function notifyCoachNewPhotoUpdate(
   category: string,
   clientId: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   notifyCoach(clientId, {
     type: "coach_photo",
     title: "Nouvelle photo update",
@@ -140,6 +159,8 @@ export async function notifyClientPhotoFeedback(
   clientId?: string,
   coachId?: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   if (clientId) {
     notifyUser(clientId, {
       type: "client_photo_feedback",
@@ -172,6 +193,8 @@ export async function notifyCoachNewResourceRequest(
   title: string,
   clientId: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   notifyCoach(clientId, {
     type: "coach_resource_request",
     title: "Demande de guide",
@@ -204,6 +227,8 @@ export async function notifyClientRequestAnswered(
   clientId?: string,
   coachId?: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   if (clientId) {
     notifyUser(clientId, {
       type: "client_request_answered",
@@ -237,6 +262,8 @@ export async function notifyClientNewLiveEvent(
   title: string,
   startsAt: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   const dateLabel = new Intl.DateTimeFormat("fr-FR", {
     weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
   }).format(new Date(startsAt));
@@ -265,6 +292,8 @@ export async function notifyClientBilanReady(
   clientId?: string,
   coachId?: string
 ) {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
   if (clientId) {
     notifyUser(clientId, {
       type: "client_bilan_ready",

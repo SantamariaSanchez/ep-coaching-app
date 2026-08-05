@@ -2,6 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { requireAuth } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import {
   ONBOARDING_SECTIONS,
@@ -28,9 +29,9 @@ async function uploadPhoto(
 export async function submitOnboardingIntake(
   formData: FormData
 ): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: "Non authentifié." };
 
   const admin = createAdminClient();
   const text = (key: string) => (formData.get(key) as string | null)?.trim() || null;
@@ -46,12 +47,12 @@ export async function submitOnboardingIntake(
     await admin
       .from("profiles")
       .update({ full_name: [prenom, nom].filter(Boolean).join(" ") })
-      .eq("id", user.id);
+      .eq("id", guard.userId);
   }
   if (poids) {
     const w = parseFloat(poids);
     if (!Number.isNaN(w)) {
-      await admin.from("profiles").update({ weight_start: w }).eq("id", user.id);
+      await admin.from("profiles").update({ weight_start: w }).eq("id", guard.userId);
     }
   }
 
@@ -83,7 +84,7 @@ export async function submitOnboardingIntake(
   // ── Photos : salle + physique (upload réel, plus besoin de les joindre à un mail) ──
   const gymFiles = formData.getAll("gym_photos").filter((f): f is File => f instanceof File && f.size > 0);
   const gymPaths = (
-    await Promise.all(gymFiles.map((f, i) => uploadPhoto(supabase, user.id, f, `gym-${i}`)))
+    await Promise.all(gymFiles.map((f, i) => uploadPhoto(supabase, guard.userId, f, `gym-${i}`)))
   ).filter((p): p is string => !!p);
   if (gymPaths.length > 0) intakeUpdate.gym_photo_paths = gymPaths;
 
@@ -92,7 +93,7 @@ export async function submitOnboardingIntake(
   for (const slot of physiqueSlots) {
     const file = formData.get(`photo_${slot}`);
     if (file instanceof File && file.size > 0) {
-      const path = await uploadPhoto(supabase, user.id, file, `physique-${slot}`);
+      const path = await uploadPhoto(supabase, guard.userId, file, `physique-${slot}`);
       if (path) physiquePaths.push(path);
     }
   }
@@ -101,7 +102,7 @@ export async function submitOnboardingIntake(
   const { error } = await admin
     .from("client_intake")
     .upsert(
-      { client_id: user.id, ...intakeUpdate, updated_at: new Date().toISOString() },
+      { client_id: guard.userId, ...intakeUpdate, updated_at: new Date().toISOString() },
       { onConflict: "client_id" }
     );
   if (error) return { error: "Erreur lors de l'enregistrement : " + error.message };

@@ -1,6 +1,7 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { requireAuth } from "@/lib/auth-guards";
 import type { MemberPreferences } from "@/lib/personalization";
 
 // Labels historiques utilisés côté fiche client coach (profiles.goal /
@@ -23,12 +24,12 @@ export async function saveMemberPreferences(
   input: Partial<MemberPreferences>
 ): Promise<{ error?: string }> {
   try {
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
 
     const { error } = await supabase.from("member_preferences").upsert({
-      id: user.id,
+      id: guard.userId,
       ...input,
       completed_at: new Date().toISOString(),
     });
@@ -46,7 +47,7 @@ export async function saveMemberPreferences(
       profileUpdate.level = LEVEL_LABELS[input.experience_level];
     }
     if (Object.keys(profileUpdate).length > 0) {
-      await supabase.from("profiles").update(profileUpdate).eq("id", user.id);
+      await supabase.from("profiles").update(profileUpdate).eq("id", guard.userId);
     }
 
     return {};
@@ -57,14 +58,14 @@ export async function saveMemberPreferences(
 
 export async function completeOnboarding(): Promise<{ error?: string }> {
   try {
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
 
     const { error } = await supabase
       .from("profiles")
       .update({ onboarding_completed_at: new Date().toISOString() })
-      .eq("id", user.id);
+      .eq("id", guard.userId);
 
     if (error) return { error: "Erreur lors de la sauvegarde." };
     return {};

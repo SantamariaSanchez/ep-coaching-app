@@ -1,7 +1,7 @@
 "use server";
 
-import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { requireAuth } from "@/lib/auth-guards";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 
@@ -14,16 +14,13 @@ export interface ResendResult {
 // cible n'est jamais pris dans l'input : il est relu en base pour le compte
 // connecté, sinon n'importe qui pourrait s'en servir pour spammer une adresse.
 export async function resendVerificationEmail(): Promise<ResendResult> {
-  const supabase = await createServerSupabase();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "Non authentifié." };
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
 
   // Chaque appel envoie un email réel via Brevo : sans quota, le bouton
   // "renvoyer" laisse noyer sa propre boîte et brûler le crédit d'envoi.
   const limited = await checkRateLimit(
-    `resend-verification:${user.id}`,
+    `resend-verification:${guard.userId}`,
     PRESETS.email.limit,
     PRESETS.email.windowSeconds
   );
@@ -35,7 +32,7 @@ export async function resendVerificationEmail(): Promise<ResendResult> {
   const { data: profile } = await admin
     .from("profiles")
     .select("email, full_name, email_verified_at")
-    .eq("id", user.id)
+    .eq("id", guard.userId)
     .maybeSingle();
 
   if (!profile?.email) return { error: "Aucune adresse email sur ce compte." };
