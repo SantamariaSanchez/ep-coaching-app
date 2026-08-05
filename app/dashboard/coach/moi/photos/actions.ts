@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { requireCoach } from "@/lib/auth-guards";
 import type { SubmissionType } from "@/lib/posing-data";
 
 function getISOWeekNumber(date: Date): number {
@@ -17,18 +18,19 @@ export async function submitPhotoUpdate(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const serverClient = await createServerSupabase();
-    const { data: { user } } = await serverClient.auth.getUser();
-    if (!user) return { error: "Non authentifié" };
+    // requireCoach() remplace le contrôle de rôle maison et ajoute la force
+    // de session (2FA) — l'écriture passe ensuite par le client admin.
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
 
+    const serverClient = await createServerSupabase();
     const { data: profile } = await serverClient
       .from("profiles")
-      .select("full_name, competition_category, role")
-      .eq("id", user.id)
+      .select("competition_category")
+      .eq("id", guard.userId)
       .single();
 
     if (!profile) return { error: "Profil introuvable" };
-    if (profile.role !== "coach") return { error: "Accès refusé." };
 
     const type = formData.get("type") as SubmissionType;
     const notes = (formData.get("notes") as string)?.trim() || null;
@@ -49,7 +51,7 @@ export async function submitPhotoUpdate(
     const today = new Date();
     const supabase = createAdminClient();
     const { error } = await supabase.from("photo_updates").insert({
-      client_id: user.id,
+      client_id: guard.userId,
       submitted_at: today.toISOString().split("T")[0],
       week_number: getISOWeekNumber(today),
       type,

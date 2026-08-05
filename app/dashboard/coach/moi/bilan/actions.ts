@@ -1,8 +1,8 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
+import { requireCoach } from "@/lib/auth-guards";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -20,17 +20,10 @@ export async function upsertCoachDailyLog(
   formData: FormData
 ): Promise<{ error?: string; success?: boolean }> {
   try {
-    const serverClient = await createServerSupabase();
-    const { data: { user } } = await serverClient.auth.getUser();
-    if (!user) return { error: "Non authentifié." };
-
-    const { data: profile } = await serverClient
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (!profile || profile.role !== "coach") return { error: "Accès réservé au coach." };
+    // requireCoach() remplace le contrôle de rôle maison et ajoute la force
+    // de session (2FA) — l'écriture passe ensuite par le client admin.
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
 
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
@@ -42,7 +35,7 @@ export async function upsertCoachDailyLog(
 
     const { error } = await supabase.from("daily_logs").upsert(
       {
-        client_id: user.id,
+        client_id: guard.userId,
         log_date,
         training_name: txt(formData.get("training_name")),
         training_rating: num(formData.get("training_rating")),

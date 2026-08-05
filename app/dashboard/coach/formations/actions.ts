@@ -1,15 +1,17 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getUser, getProfile } from "@/utils/auth";
+import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 
+// Ce fichier dupliquait requireCoach() à la main (getUser + lecture du rôle),
+// et passait donc à côté du contrôle de force de session : un compte coach
+// avec 2FA activée pouvait éditer tout le catalogue de formations avec le
+// seul mot de passe. On délègue maintenant au vrai guard partagé.
 async function requireCoachForFormations() {
-  const user = await getUser();
-  if (!user) throw new Error("Non authentifié");
-  const profile = await getProfile(user.id);
-  if (!profile || profile.role !== "coach") throw new Error("Accès refusé");
-  return user;
+  const guard = await requireCoach();
+  if (!guard.ok) throw new Error(guard.error);
+  return guard;
 }
 
 export async function updateLessonYoutube(lessonId: string, youtubeId: string, isPublished: boolean) {
