@@ -55,7 +55,7 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet, CalendarDays, Footprints,
+  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -105,6 +105,78 @@ function InfoRow({
   );
 }
 
+// Remplace l'ancien formulaire vide que le coach devait remplir lui-même :
+// la fiche est désormais du ressort du client, via son propre questionnaire
+// d'onboarding (/onboarding/intake), déclenché automatiquement à
+// l'activation du coaching payant. Le coach ne voit/modifie la fiche
+// qu'une fois qu'elle existe réellement — voir sendIntakeReminder plus haut.
+function IntakeWaitingState({
+  clientId,
+  clientFirstName,
+  isClientSubscribed,
+  sendIntakeReminder,
+}: {
+  clientId: string;
+  clientFirstName: string;
+  isClientSubscribed: boolean;
+  sendIntakeReminder: (clientId: string) => Promise<{ error?: string }>;
+}) {
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  async function handleRemind() {
+    setStatus("sending");
+    const res = await sendIntakeReminder(clientId);
+    setStatus(res.error ? "error" : "sent");
+    if (!res.error) setTimeout(() => setStatus("idle"), 4000);
+  }
+
+  return (
+    <Card>
+      <div className="flex flex-col items-center text-center py-6 px-2">
+        <div
+          className="flex items-center justify-center rounded-2xl mb-4"
+          style={{ width: 48, height: 48, background: "rgba(224,30,30,0.1)" }}
+        >
+          <Hourglass size={20} className="text-[#E01E1E]" strokeWidth={1.8} />
+        </div>
+        {!isClientSubscribed ? (
+          <>
+            <p className="text-sm font-black text-white mb-1.5">Coaching pas encore activé</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs">
+              Active le coaching payant de {clientFirstName} depuis l&apos;onglet Profil pour débloquer
+              son questionnaire d&apos;onboarding. Il remplira alors sa fiche lui-même, en autonomie.
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="text-sm font-black text-white mb-1.5">En attente de {clientFirstName}</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed max-w-xs mb-4">
+              Son questionnaire d&apos;onboarding n&apos;est pas encore rempli. Sa fiche se complètera
+              automatiquement dès qu&apos;il le fera, tu pourras alors la consulter et la corriger ici.
+            </p>
+            <button
+              type="button"
+              onClick={handleRemind}
+              disabled={status === "sending"}
+              className="ep-btn-secondary inline-flex items-center gap-1.5"
+              style={{ fontSize: 11, padding: "9px 16px" }}
+            >
+              <Bell size={12} />
+              {status === "sending"
+                ? "Envoi…"
+                : status === "sent"
+                ? "Rappel envoyé"
+                : status === "error"
+                ? "Erreur, réessaie"
+                : "Renvoyer une notification"}
+            </button>
+          </>
+        )}
+      </div>
+    </Card>
+  );
+}
+
 interface RoadmapData {
   roadmap: Roadmap;
   phases: RoadmapPhase[];
@@ -144,6 +216,7 @@ export default function ClientProfileTabs({
   deleteDietPlan,
   intake,
   saveClientIntake,
+  sendIntakeReminder,
   stepGoal,
   updateClientStepGoal,
   periodLogs,
@@ -199,6 +272,7 @@ export default function ClientProfileTabs({
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   intake: ClientIntake | null;
   saveClientIntake: (clientId: string, data: ClientIntakeInput) => Promise<{ error?: string }>;
+  sendIntakeReminder: (clientId: string) => Promise<{ error?: string }>;
   stepGoal: number;
   updateClientStepGoal: (clientId: string, dailyGoal: number) => Promise<{ error?: string }>;
   periodLogs: PeriodLog[];
@@ -375,15 +449,16 @@ export default function ClientProfileTabs({
           ) : (
             <Card title="Fiche client : l'essentiel">
               <p className="text-xs text-[#F5EDED]/40 mb-2">
-                Pas encore de fiche client remplie pour ce client. Objectifs, régime, blessures... tout ce qui
-                sert ensuite dans le créateur de recette, de programme et de plan nutrition.
+                {client.subscription_status === "active"
+                  ? "En attente que le client remplisse son questionnaire d'onboarding. Objectifs, régime, blessures... tout ce qui sert ensuite dans le créateur de recette, de programme et de plan nutrition, se remplira automatiquement dès qu'il l'aura fait."
+                  : "Active le coaching payant de ce client pour débloquer son questionnaire d'onboarding. C'est lui qui remplit sa fiche, pas toi."}
               </p>
               <button
                 type="button"
                 onClick={() => setActiveTab("intake")}
                 className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
               >
-                Remplir la fiche →
+                Voir le statut →
               </button>
             </Card>
           )}
@@ -461,16 +536,25 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "intake" && (
-        <div>
-          <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} generatePlanSuggestions={generatePlanSuggestions} />
-          <ClientIntakeForm
+        intake ? (
+          <div>
+            <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} generatePlanSuggestions={generatePlanSuggestions} />
+            <ClientIntakeForm
+              clientId={client.id}
+              existingIntake={intake}
+              saveClientIntake={saveClientIntake}
+              stepGoal={stepGoal}
+              updateClientStepGoal={updateClientStepGoal}
+            />
+          </div>
+        ) : (
+          <IntakeWaitingState
             clientId={client.id}
-            existingIntake={intake}
-            saveClientIntake={saveClientIntake}
-            stepGoal={stepGoal}
-            updateClientStepGoal={updateClientStepGoal}
+            clientFirstName={client.full_name?.split(" ")[0] ?? "ce client"}
+            isClientSubscribed={client.subscription_status === "active"}
+            sendIntakeReminder={sendIntakeReminder}
           />
-        </div>
+        )
       )}
 
       {activeTab === "cycle" && intake?.gender === "Femme" && (

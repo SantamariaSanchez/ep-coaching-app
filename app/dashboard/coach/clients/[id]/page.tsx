@@ -40,7 +40,7 @@ import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal } from "./intake/actions";
+import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal, sendIntakeReminder } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
@@ -238,6 +238,7 @@ export default async function ClientDetailPage({
         deleteDietPlan={deleteDietPlan}
         intake={intake}
         saveClientIntake={saveClientIntake}
+        sendIntakeReminder={sendIntakeReminder}
         stepGoal={stepSettings.daily_goal}
         updateClientStepGoal={updateClientStepGoal}
         periodLogs={periodLogs}

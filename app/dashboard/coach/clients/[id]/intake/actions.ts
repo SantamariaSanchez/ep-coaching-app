@@ -3,6 +3,7 @@ import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ClientIntakeInput } from "@/utils/client-intake";
+import { notifyUser } from "@/lib/notify";
 
 export async function saveClientIntake(
   clientId: string,
@@ -47,6 +48,23 @@ export async function updateClientStepGoal(
 
   revalidatePath(`/dashboard/coach/clients/${clientId}`);
   revalidatePath("/dashboard/client/steps");
+  return {};
+}
+
+// Relance manuelle, bouton "Renvoyer une notification" affiché tant que la
+// fiche du client est vide (voir IntakeWaitingState dans ClientProfileTabs).
+export async function sendIntakeReminder(clientId: string): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  await notifyUser(clientId, {
+    type: "intake_required",
+    title: "📋 Ta fiche client t'attend",
+    body: "Prends 10 minutes pour remplir ton questionnaire d'onboarding, indispensable pour ton programme sur mesure.",
+    url: "/onboarding/intake",
+    senderId: guard.userId,
+  });
+
   return {};
 }
 

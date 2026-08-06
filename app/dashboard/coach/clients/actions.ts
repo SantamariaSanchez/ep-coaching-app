@@ -4,6 +4,8 @@ import { requireOwnClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { startCalibrationPhase, endCoachingPhaseTracking } from "@/lib/coaching-phase";
+import { notifyUser } from "@/lib/notify";
+import { getClientIntake } from "@/utils/client-intake";
 
 // Activer/désactiver le coaching individuel d'un client manuellement, avec
 // plan/échéance/note optionnels journalisés dans subscription_events. Le
@@ -56,6 +58,21 @@ export async function setClientSubscriptionStatus(
   // "calibrage" au tout début d'un coaching payant (voir lib/coaching-phase.ts).
   if (!wasActive && status === "active") {
     await startCalibrationPhase(clientId, guard.userId);
+
+    // Le client remplit lui-même sa fiche via le questionnaire d'onboarding
+    // (voir /onboarding/intake) — le coach ne la voit/modifie qu'une fois
+    // remplie (voir ClientProfileTabs). On ne le notifie que s'il n'a pas
+    // déjà une fiche (ex. réactivation après une pause, déjà rempli avant).
+    const existingIntake = await getClientIntake(clientId);
+    if (!existingIntake) {
+      await notifyUser(clientId, {
+        type: "intake_required",
+        title: "🎉 Ton coaching est activé !",
+        body: "Remplis ton questionnaire d'onboarding (10 min) pour que ton coach puisse te construire un programme sur mesure.",
+        url: "/onboarding/intake",
+        senderId: guard.userId,
+      });
+    }
   } else if (wasActive && status !== "active") {
     await endCoachingPhaseTracking(clientId, guard.userId);
   }
