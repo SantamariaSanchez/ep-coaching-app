@@ -1,4 +1,6 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import { Users } from "lucide-react";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { getCoachDietTemplates } from "@/utils/diet-templates";
@@ -28,13 +30,21 @@ export default async function ProgrammationPage() {
     <div className="px-6 py-8 ep-page-wide page-transition">
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Espace de conception
+          Programmation
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Programmation</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Bibliothèque de modèles</h1>
         <p className="mt-1 text-xs text-[#F5EDED]/30 max-w-2xl">
-          Conçois des modèles de programme, de diète et de road map réutilisables, indépendants de tout
-          client, puis applique les en quelques clics à un ou plusieurs clients.
+          Le stock de points de départ réutilisables : modèles de programme, de diète et de road map,
+          indépendants de tout client. La conception au cas par cas, elle, se fait directement dans la fiche
+          du client, où ces modèles sont proposés en point de départ et personnalisables à la volée.
         </p>
+        <Link
+          href="/dashboard/coach/clients"
+          className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+        >
+          <Users size={12} />
+          Aller travailler sur un client
+        </Link>
       </div>
 
       <ProgrammationHub

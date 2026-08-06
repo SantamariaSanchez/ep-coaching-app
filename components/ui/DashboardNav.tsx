@@ -103,10 +103,13 @@ const COACH_TABS: TabItem[] = [
     exactMatch: true,
   },
   {
+    // La bibliothèque de modèles vit sous l'onglet Clients : on conçoit un
+    // programme ou une diète dans la fiche d'un client, les modèles sont le
+    // point de départ de ce travail, pas une section de contenu à part.
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients"],
+    matchSegments: ["clients", "programmation"],
     badge: "pending",
   },
   {
@@ -132,7 +135,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "programmation"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science"],
   },
   {
     label: "Communauté",
@@ -150,8 +153,13 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Gestion",
     items: [
-      { label: "Clients",  icon: Users,         segment: "clients",   badge: "pending" },
-      { label: "Messages", icon: MessageCircle, segment: "messages",  badge: "messages" },
+      { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
+      // Juste sous Clients : la conception d'un programme ou d'une diète se
+      // fait dans la fiche du client, et cette bibliothèque est le stock de
+      // points de départ réutilisables de ce travail. Elle était auparavant
+      // dans un groupe "Espace coach" isolé, sans lien avec les clients.
+      { label: "Modèles",  icon: LayoutTemplate, segment: "programmation" },
+      { label: "Messages", icon: MessageCircle,  segment: "messages",  badge: "messages" },
     ],
   },
   {
@@ -167,12 +175,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Exercices", icon: LibraryBig, segment: "exercises" },
       { label: "Salles", icon: MapPin, segment: "gyms" },
-    ],
-  },
-  {
-    group: "Espace coach",
-    items: [
-      { label: "Programmation", icon: LayoutTemplate, segment: "programmation" },
     ],
   },
   {

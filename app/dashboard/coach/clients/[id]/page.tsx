@@ -36,7 +36,7 @@ import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
-import { ChevronLeft, FileText } from "lucide-react";
+import { ChevronLeft, FileText, LayoutTemplate } from "lucide-react";
 
 const STATUS_BADGE = {
   active: {
@@ -167,9 +167,19 @@ export default async function ClientDetailPage({
         >
           {badge.label}
         </span>
+        {/* La bibliothèque de modèles reste à un clic pendant qu'on travaille
+            sur un client : les modèles sont aussi proposés en point de départ
+            directement dans l'éditeur de programme et de diète de sa fiche. */}
+        <Link
+          href="/dashboard/coach/programmation"
+          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+        >
+          <LayoutTemplate size={12} />
+          Modèles
+        </Link>
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}
-          className="ml-auto inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
         >
           <FileText size={12} />
           Mes notes
