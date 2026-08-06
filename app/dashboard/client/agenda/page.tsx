@@ -2,7 +2,15 @@ import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
-import { addScheduleBlock, updateScheduleBlock, deleteScheduleBlock } from "./actions";
+import {
+  addScheduleBlock,
+  addScheduleBlocksBulk,
+  updateScheduleBlock,
+  deleteScheduleBlock,
+  duplicateDayBlocks,
+  clearDayBlocks,
+  createReminderFromBlock,
+} from "./actions";
 import { CalendarDays } from "lucide-react";
 
 export default async function ClientAgendaPage() {
@@ -20,7 +28,8 @@ export default async function ClientAgendaPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon agenda</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Ton emploi du temps type, semaine après semaine. Ajoute tes créneaux (travail, salle, repas,
-          rendez-vous...), renomme-les et ajuste les horaires comme tu veux.
+          rendez-vous...), renomme-les et ajuste les horaires comme tu veux. Un modèle par jour peut se
+          répéter sur plusieurs jours d&apos;un coup, et se transformer en rappel push.
         </p>
       </div>
 
@@ -28,8 +37,12 @@ export default async function ClientAgendaPage() {
         blocks={blocks}
         editable
         addScheduleBlock={addScheduleBlock}
+        addScheduleBlocksBulk={addScheduleBlocksBulk}
         updateScheduleBlock={updateScheduleBlock}
         deleteScheduleBlock={deleteScheduleBlock}
+        duplicateDayBlocks={duplicateDayBlocks}
+        clearDayBlocks={clearDayBlocks}
+        createReminderFromBlock={createReminderFromBlock}
       />
     </div>
   );

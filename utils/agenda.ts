@@ -8,6 +8,7 @@ export interface ScheduleBlock {
   end_time: string;
   label: string;
   color: string;
+  icon: string | null;
   notes: string | null;
   created_at: string;
 }

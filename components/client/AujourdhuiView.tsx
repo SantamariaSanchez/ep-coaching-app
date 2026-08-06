@@ -8,6 +8,7 @@ import {
   BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight, Scale,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
+import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
@@ -189,9 +190,16 @@ export default function AujourdhuiView({
           </Link>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {todayBlocks.map((b) => (
+            {todayBlocks.map((b) => {
+              const BlockIcon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
+              return (
               <div key={b.id} className="ep-card" style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
                 <div style={{ width: 3, height: 28, borderRadius: 2, background: b.color || "#E01E1E", flexShrink: 0 }} />
+                {BlockIcon && (
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: `${b.color}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <BlockIcon size={13} style={{ color: b.color }} strokeWidth={2} />
+                  </div>
+                )}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{b.label}</p>
                   <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
@@ -199,7 +207,8 @@ export default function AujourdhuiView({
                   </p>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </section>

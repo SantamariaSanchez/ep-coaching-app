@@ -2,7 +2,14 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
-import { addScheduleBlock, updateScheduleBlock, deleteScheduleBlock } from "@/app/dashboard/client/agenda/actions";
+import {
+  addScheduleBlock,
+  addScheduleBlocksBulk,
+  updateScheduleBlock,
+  deleteScheduleBlock,
+  duplicateDayBlocks,
+  clearDayBlocks,
+} from "@/app/dashboard/client/agenda/actions";
 import { CalendarDays } from "lucide-react";
 
 export default async function CoachMoiAgendaPage() {
@@ -31,8 +38,11 @@ export default async function CoachMoiAgendaPage() {
         blocks={blocks}
         editable
         addScheduleBlock={addScheduleBlock}
+        addScheduleBlocksBulk={addScheduleBlocksBulk}
         updateScheduleBlock={updateScheduleBlock}
         deleteScheduleBlock={deleteScheduleBlock}
+        duplicateDayBlocks={duplicateDayBlocks}
+        clearDayBlocks={clearDayBlocks}
       />
     </div>
   );
