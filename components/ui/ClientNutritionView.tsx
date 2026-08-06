@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search } from "lucide-react";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
@@ -310,6 +310,11 @@ export default function ClientNutritionView({
   });
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  // Créneau d'où vient la création d'aliment : quand on crée un aliment
+  // parce que la recherche ne renvoyait rien, on revient automatiquement au
+  // log de ce créneau avec l'aliment sélectionné, au lieu de refermer tout
+  // et d'obliger à rouvrir la recherche et retaper le nom.
+  const [createReturnSlot, setCreateReturnSlot] = useState<string | null>(null);
 
   // Quick add (calories-only, for restaurants / unknown foods)
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
@@ -499,6 +504,24 @@ export default function ClientNutritionView({
   function selectFoodForLogging(food: Food) {
     setSelectedFood(food);
     setQuantityInput(String(lastQuantityByFood[food.id] ?? 100));
+  }
+
+  // Ouvre la création d'aliment en reprenant le terme déjà tapé dans la
+  // recherche, et retient le créneau pour y revenir une fois l'aliment créé.
+  function openCreateFood(prefillName: string, returnSlot: string | null) {
+    setCreateForm({
+      name: prefillName.trim(),
+      category: "Divers",
+      calories_per_100: "",
+      proteins_per_100: "",
+      carbs_per_100: "",
+      fats_per_100: "",
+      fibers_per_100: "",
+    });
+    setCreateError(null);
+    setCreateReturnSlot(returnSlot);
+    closeModal();
+    setShowCreateModal(true);
   }
 
   async function handleAddFood() {
@@ -792,9 +815,9 @@ export default function ClientNutritionView({
     setCopyingYesterday(false);
   }
 
-  function openQuickAdd(slot: string) {
+  function openQuickAdd(slot: string, prefillName = "") {
     setQuickAddSlot(slot);
-    setQuickAddForm({ name: "", calories: "", proteins: "", carbs: "", fats: "" });
+    setQuickAddForm({ name: prefillName.trim(), calories: "", proteins: "", carbs: "", fats: "" });
     setQuickAddError(null);
     setShowQuickAddModal(true);
   }
@@ -898,7 +921,8 @@ export default function ClientNutritionView({
     if (result.error) {
       setCreateError(result.error);
     } else if (result.food) {
-      setFoods((prev) => [result.food!, ...prev]);
+      const created = result.food;
+      setFoods((prev) => [created, ...prev]);
       setShowCreateModal(false);
       setCreateForm({
         name: "",
@@ -909,6 +933,14 @@ export default function ClientNutritionView({
         fats_per_100: "",
         fibers_per_100: "",
       });
+      // Création partie d'une recherche infructueuse : on enchaîne direct sur
+      // la saisie de la quantité pour ce créneau plutôt que de tout refermer.
+      if (createReturnSlot) {
+        const slot = createReturnSlot;
+        setCreateReturnSlot(null);
+        openModal(slot);
+        selectFoodForLogging(created);
+      }
     }
   }
 
@@ -937,7 +969,7 @@ export default function ClientNutritionView({
           </p>
         </div>
         <button
-          onClick={() => setShowCreateModal(true)}
+          onClick={() => openCreateFood("", null)}
           className="inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
         >
           <Plus size={11} />
@@ -1437,7 +1469,42 @@ export default function ClientNutritionView({
                       <p className="px-3 pt-2 pb-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Tous les aliments</p>
                     )}
                     {filteredFoods.length === 0 ? (
-                      <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucun résultat</p>
+                      searchQuery.trim() ? (
+                        // Zéro résultat sur un terme tapé : la sortie de secours
+                        // est proposée ici, à l'endroit exact du blocage, avec le
+                        // terme déjà repris, plutôt qu'en petit lien en bas de
+                        // modale que personne ne remarque.
+                        <div className="px-3 py-6 flex flex-col items-center gap-3 text-center">
+                          <Search size={20} className="text-[#F5EDED]/15" strokeWidth={1.5} />
+                          <p className="text-xs text-[#F5EDED]/40 leading-relaxed">
+                            Aucun aliment ne correspond à
+                            <span className="text-white font-bold"> « {searchQuery.trim()} »</span>.
+                            <br />
+                            Crée le maintenant, il restera dans ta liste.
+                          </p>
+                          <button
+                            onClick={() => openCreateFood(searchQuery, addingToSlot)}
+                            className="w-full inline-flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+                          >
+                            <Plus size={13} />
+                            Créer « {searchQuery.trim()} »
+                          </button>
+                          <button
+                            onClick={() => {
+                              const slot = addingToSlot!;
+                              const q = searchQuery;
+                              closeModal();
+                              openQuickAdd(slot, q);
+                            }}
+                            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
+                          >
+                            <Zap size={11} />
+                            Ou juste les calories
+                          </button>
+                        </div>
+                      ) : (
+                        <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucun résultat</p>
+                      )
                     ) : (
                       filteredFoods.map((food) => (
                         <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
@@ -1524,8 +1591,9 @@ export default function ClientNutritionView({
                     <button
                       onClick={() => {
                         const slot = addingToSlot!;
+                        const q = searchQuery;
                         closeModal();
-                        openQuickAdd(slot);
+                        openQuickAdd(slot, q);
                       }}
                       className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors py-2"
                     >
@@ -1533,7 +1601,7 @@ export default function ClientNutritionView({
                       Ajout rapide (juste les calories)
                     </button>
                     <button
-                      onClick={() => { closeModal(); setShowCreateModal(true); }}
+                      onClick={() => openCreateFood(searchQuery, addingToSlot)}
                       className="w-full flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors py-2"
                     >
                       <Plus size={11} />
