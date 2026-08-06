@@ -18,9 +18,17 @@ import {
   getActiveDietPlan,
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
+import { getClientSupplements } from "@/utils/supplements";
+import { getCoachDietTemplates } from "@/utils/diet-templates";
+import { createDietTemplateAction } from "@/app/dashboard/coach/programmation/diet/actions";
 import { createClientTask, deleteClientTask, sendMotivationMessage } from "./tasks/actions";
 import { saveCompetitionSettings, sendPhotoFeedback } from "./photos/actions";
-import { saveNutritionProfile } from "./nutrition/actions";
+import {
+  saveNutritionProfile,
+  suggestSupplement,
+  setSupplementStatus,
+  deleteSupplement,
+} from "./nutrition/actions";
 import {
   createDietPlan,
   deactivateDietPlan,
@@ -95,6 +103,8 @@ export default async function ClientDetailPage({
     corrections,
     stepSettings,
     coachingPhase,
+    supplements,
+    dietTemplates,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -121,6 +131,8 @@ export default async function ClientDetailPage({
     // Jamais calculée pour un membre gratuit — voir le rendu conditionnel
     // dans ClientProfileTabs (client.subscription_status === "active").
     client.subscription_status === "active" ? getClientCoachingPhase(id) : Promise.resolve(null),
+    getClientSupplements(id),
+    getCoachDietTemplates(user.id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -232,6 +244,12 @@ export default async function ClientDetailPage({
         coachingPhase={coachingPhase}
         calibrationSignals={calibrationSignals}
         phaseSuggestions={phaseSuggestions}
+        supplements={supplements}
+        suggestSupplement={suggestSupplement}
+        setSupplementStatus={setSupplementStatus}
+        deleteSupplement={deleteSupplement}
+        dietTemplates={dietTemplates}
+        saveDietAsTemplate={createDietTemplateAction}
       />
     </div>
   );

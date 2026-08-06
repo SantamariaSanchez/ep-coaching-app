@@ -20,19 +20,13 @@ import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { RoadmapTemplateWithDetails } from "@/utils/roadmap-templates";
 import type { Food, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
-import { PlanBuilder } from "@/components/ui/DietPlanManager";
+import { PlanBuilder, MODE_LABELS } from "@/components/ui/DietPlanManager";
 import ApplyTemplateModal, { type ApplyTemplateClient } from "@/components/ui/ApplyTemplateModal";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
-
-const MODE_LABELS: Record<DietMode, string> = {
-  flexible: "Flexible",
-  fixed: "Fixe",
-  fixed_flexible: "Fixe flexible",
-};
 
 interface Props {
   programTemplates: ProgramTemplateWithDays[];
@@ -203,8 +197,8 @@ export default function ProgrammationHub({
             <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4">
               <PlanBuilder
                 foods={foods}
-                onCreate={async (name, mode, meals, structure) => {
-                  await createDietTemplate(name, mode, meals, structure);
+                onCreate={async (name, mode, meals, structure, objective) => {
+                  await createDietTemplate(name, mode, meals, structure, objective);
                   setShowDietBuilder(false);
                 }}
               />
@@ -269,13 +263,19 @@ export default function ProgrammationHub({
         <ApplyTemplateModal
           templateName={applyTarget.name}
           clients={clients}
-          onApply={(clientIds, nameOverride) =>
-            applyTarget.kind === "programme"
-              ? applyProgramTemplate(applyTarget.id, clientIds, nameOverride)
-              : applyTarget.kind === "diet"
-                ? applyDietTemplate(applyTarget.id, clientIds, nameOverride)
-                : applyRoadmapTemplate(applyTarget.id, clientIds, applyTarget.startDate)
-          }
+          onApply={(clientIds, nameOverride) => {
+            // switch plutôt qu'une cascade de ternaires : c'est la seule
+            // forme où TypeScript restreint bien l'union et voit startDate
+            // sur la branche road map.
+            switch (applyTarget.kind) {
+              case "programme":
+                return applyProgramTemplate(applyTarget.id, clientIds, nameOverride);
+              case "diet":
+                return applyDietTemplate(applyTarget.id, clientIds, nameOverride);
+              default:
+                return applyRoadmapTemplate(applyTarget.id, clientIds, applyTarget.startDate);
+            }
+          }}
           onClose={() => setApplyTarget(null)}
         />
       )}

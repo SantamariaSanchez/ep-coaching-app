@@ -11,6 +11,8 @@ import {
 } from "@/utils/nutrition";
 import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getClientSupplements } from "@/utils/supplements";
+import { getCoachDietTemplates } from "@/utils/diet-templates";
+import { createDietTemplateAction } from "@/app/dashboard/coach/programmation/diet/actions";
 import {
   saveNutritionProfile,
   suggestSupplement,
@@ -47,7 +49,7 @@ export default async function CoachClientNutritionPage({
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates] =
     await Promise.all([
       getNutritionProfile(id),
       getTodayLogs(id, today),
@@ -58,6 +60,7 @@ export default async function CoachClientNutritionPage({
       getLatestWeight(id),
       getClientDailyLogs(id, 21),
       getClientSupplements(id),
+      getCoachDietTemplates(user.id),
     ]);
 
   return (
@@ -92,6 +95,9 @@ export default async function CoachClientNutritionPage({
         allPlans={allPlans}
         today={today}
         supplements={supplements}
+        dietTemplates={dietTemplates}
+        saveDietAsTemplate={createDietTemplateAction}
+        subjectLabel={client.full_name ?? "ce client"}
         saveNutritionProfile={saveNutritionProfile}
         createDietPlan={createDietPlan}
         deactivateDietPlan={deactivateDietPlan}

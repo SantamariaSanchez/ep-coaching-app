@@ -150,6 +150,9 @@ export interface DietPlan {
   is_active: boolean;
   created_by: string | null;
   created_at: string;
+  // Objectif du plan, saisi en phase de conception (migration 20260806).
+  // Optionnel : le code tourne aussi tant que la migration n'est pas passée.
+  objective?: string | null;
 }
 
 export interface DietPlanMeal {

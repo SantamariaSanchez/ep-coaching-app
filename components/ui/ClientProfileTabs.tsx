@@ -25,6 +25,8 @@ import type {
   DietStructure,
 } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
+import type { ClientSupplement } from "@/utils/supplements";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import { ALLERGEN_LABELS, DIET_LABELS } from "@/lib/recipes-data";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
@@ -152,6 +154,12 @@ export default function ClientProfileTabs({
   coachingPhase,
   calibrationSignals,
   phaseSuggestions,
+  supplements,
+  suggestSupplement,
+  setSupplementStatus,
+  deleteSupplement,
+  dietTemplates,
+  saveDietAsTemplate,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -179,7 +187,7 @@ export default function ClientProfileTabs({
   allPlans: DietPlanWithMeals[];
   today: string;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
-  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
+  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure, objective?: string) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
@@ -209,6 +217,23 @@ export default function ClientProfileTabs({
   coachingPhase: CoachingPhaseState | null;
   calibrationSignals: AdherenceSignal[];
   phaseSuggestions: PhaseSuggestion[];
+  // Compléments : ces quatre props manquaient, l'onglet Nutrition > Compléments
+  // de la fiche client rendait SupplementsSection avec une liste undefined.
+  supplements: ClientSupplement[];
+  suggestSupplement: (clientId: string, input: { name: string; dosage?: string; timing?: string; notes?: string }) => Promise<{ error?: string }>;
+  setSupplementStatus: (clientId: string, supplementId: string, status: "active" | "stopped") => Promise<{ error?: string }>;
+  deleteSupplement: (clientId: string, supplementId: string) => Promise<{ error?: string }>;
+  // Conception de la diète : modèles proposés en point de départ, et chemin
+  // inverse pour capitaliser un plan sur mesure en modèle réutilisable.
+  dietTemplates: DietPlanTemplateWithMeals[];
+  saveDietAsTemplate: (
+    name: string,
+    mode: DietMode,
+    meals: DietPlanMealInput[],
+    structure?: DietStructure,
+    objective?: string,
+    notes?: string
+  ) => Promise<{ error?: string; id?: string }>;
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -573,11 +598,18 @@ export default function ClientProfileTabs({
           allPlans={allPlans}
           today={today}
           intake={intake}
+          supplements={supplements}
+          dietTemplates={dietTemplates}
+          saveDietAsTemplate={saveDietAsTemplate}
+          subjectLabel={client.full_name ?? "ce client"}
           saveNutritionProfile={saveNutritionProfile}
           createDietPlan={createDietPlan}
           deactivateDietPlan={deactivateDietPlan}
           activateDietPlan={activateDietPlan}
           deleteDietPlan={deleteDietPlan}
+          suggestSupplement={suggestSupplement}
+          setSupplementStatus={setSupplementStatus}
+          deleteSupplement={deleteSupplement}
         />
       )}
 

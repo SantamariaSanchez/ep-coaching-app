@@ -9,6 +9,7 @@ import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
 import type { ClientSupplement } from "@/utils/supplements";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
+import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type {
   NutritionProfile,
   NutritionProfileInput,
@@ -258,8 +259,20 @@ interface Props {
   today: string;
   intake?: ClientIntake | null;
   supplements: ClientSupplement[];
+  /** Modèles de diète du coach, proposés en point de départ dans le constructeur. */
+  dietTemplates?: DietPlanTemplateWithMeals[];
+  /** Chemin inverse : enregistrer le plan sur mesure comme modèle réutilisable. */
+  saveDietAsTemplate?: (
+    name: string,
+    mode: DietMode,
+    meals: DietPlanMealInput[],
+    structure?: DietStructure,
+    objective?: string,
+    notes?: string
+  ) => Promise<{ error?: string; id?: string }>;
+  subjectLabel?: string;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
-  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure) => Promise<{ error?: string; id?: string }>;
+  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure, objective?: string) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
@@ -283,6 +296,9 @@ export default function CoachClientNutritionTabs({
   today,
   intake = null,
   supplements,
+  dietTemplates = [],
+  saveDietAsTemplate,
+  subjectLabel = "ce client",
   saveNutritionProfile,
   createDietPlan,
   deactivateDietPlan,
@@ -376,8 +392,25 @@ export default function CoachClientNutritionTabs({
               <PlanBuilder
                 foods={foods}
                 intake={intake}
-                onCreate={async (name, mode, meals, structure) => {
-                  await createDietPlan(clientId, name, mode, meals, structure);
+                templates={dietTemplates}
+                templatesHref="/dashboard/coach/programmation"
+                subjectLabel={subjectLabel}
+                // Les cibles viennent de l'onglet Objectifs TDEE : on conçoit
+                // en visant la répartition macro décidée, plus en additionnant
+                // des aliments et en découvrant le total à la fin.
+                targets={
+                  nutritionProfile
+                    ? {
+                        calories: nutritionProfile.calories_target ?? 0,
+                        proteins: nutritionProfile.proteins_target ?? 0,
+                        carbs: nutritionProfile.carbs_target ?? 0,
+                        fats: nutritionProfile.fats_target ?? 0,
+                      }
+                    : null
+                }
+                saveAsTemplate={saveDietAsTemplate}
+                onCreate={async (name, mode, meals, structure, objective) => {
+                  await createDietPlan(clientId, name, mode, meals, structure, objective);
                   setShowBuilder(false);
                 }}
               />

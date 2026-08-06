@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import {
   Plus,
   Trash2,
@@ -13,12 +14,68 @@ import {
   ChevronUp,
   PlayCircle,
   AlertTriangle,
+  LayoutTemplate,
+  BookmarkPlus,
+  Check,
+  ExternalLink,
+  Search,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { calculateNutrients } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildWatchKeywords, matchesWatchKeyword } from "@/lib/food-watch-keywords";
+
+export interface MacroTargets {
+  calories: number;
+  proteins: number;
+  carbs: number;
+  fats: number;
+}
+
+// Barre de couverture d'un macro : ce que le plan en construction apporte
+// par rapport à l'objectif fixé dans "Objectifs TDEE". C'est le repère qui
+// manquait pour concevoir une diète en partant de la répartition macro au
+// lieu d'empiler des aliments à l'aveugle et de compter à la fin.
+function MacroCoverage({
+  label,
+  current,
+  target,
+  unit,
+  color,
+}: {
+  label: string;
+  current: number;
+  target: number;
+  unit: string;
+  color: string;
+}) {
+  const pct = target > 0 ? Math.min(150, (current / target) * 100) : 0;
+  const delta = Math.round(target - current);
+  return (
+    <div>
+      <div className="flex items-baseline justify-between gap-2 mb-1">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{label}</p>
+        <p className="text-[10px] text-[#F5EDED]/35">
+          <span className="font-black" style={{ color }}>{Math.round(current)}</span>
+          {target > 0 ? ` / ${Math.round(target)}` : ""}{unit}
+        </p>
+      </div>
+      <div className="h-1.5 rounded-full bg-[#890404]/20 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all"
+          style={{ width: `${pct}%`, background: color }}
+        />
+      </div>
+      {target > 0 && (
+        <p className="text-[9px] mt-1 text-[#F5EDED]/30">
+          {delta > 0 ? `Reste ${delta}${unit}` : delta < 0 ? `Dépasse de ${-delta}${unit}` : "Pile sur la cible"}
+        </p>
+      )}
+    </div>
+  );
+}
 
 export const MEAL_SLOTS = [
   { key: "breakfast", label: "Petit-déjeuner" },
@@ -47,6 +104,12 @@ const MODES: { key: DietMode; label: string; icon: React.ElementType; desc: stri
   { key: "fixed_flexible", label: "Fixe Flexible", icon: Sliders, desc: "Plan avec swaps autorisés dans la même catégorie" },
 ];
 
+export const MODE_LABELS: Record<DietMode, string> = {
+  flexible: "Flexible",
+  fixed: "Fixe",
+  fixed_flexible: "Fixe flexible",
+};
+
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
@@ -64,12 +127,42 @@ export function PlanBuilder({
   foods,
   onCreate,
   intake,
+  templates = [],
+  targets = null,
+  saveAsTemplate,
+  templatesHref,
+  subjectLabel = "ce client",
 }: {
   foods: Food[];
-  onCreate: (name: string, mode: DietMode, meals: DietPlanMealInput[], structure: DietStructure) => Promise<void>;
+  onCreate: (
+    name: string,
+    mode: DietMode,
+    meals: DietPlanMealInput[],
+    structure: DietStructure,
+    objective?: string
+  ) => Promise<void>;
   intake?: ClientIntake | null;
+  /**
+   * Modèles de diète du coach, proposés en point de départ : on charge la
+   * structure de repas d'un modèle et on la personnalise immédiatement pour
+   * ce client. Le modèle d'origine n'est jamais modifié.
+   */
+  templates?: DietPlanTemplateWithMeals[];
+  /** Objectifs macro du client (onglet Objectifs TDEE) — repère de conception. */
+  targets?: MacroTargets | null;
+  /** Fournie, permet de capitaliser le plan sur mesure en modèle réutilisable. */
+  saveAsTemplate?: (
+    name: string,
+    mode: DietMode,
+    meals: DietPlanMealInput[],
+    structure: DietStructure,
+    objective?: string
+  ) => Promise<{ error?: string; id?: string }>;
+  templatesHref?: string;
+  subjectLabel?: string;
 }) {
   const [planName, setPlanName] = useState("");
+  const [objective, setObjective] = useState("");
   const [mode, setMode] = useState<DietMode>("fixed");
   const [structure, setStructure] = useState<DietStructure>("daily");
   const [activeDay, setActiveDay] = useState<DayOfWeek>("lun");
@@ -81,6 +174,15 @@ export function PlanBuilder({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  const [showStartingPoint, setShowStartingPoint] = useState(false);
+  const [loadedTemplateName, setLoadedTemplateName] = useState<string | null>(null);
+
+  const [templateFormOpen, setTemplateFormOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateBusy, setTemplateBusy] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   const currentDay = structure === "weekly" ? activeDay : null;
 
@@ -116,6 +218,28 @@ export function PlanBuilder({
     );
   }, [dayMeals, foods]);
 
+  // Macros apportées par un créneau du jour affiché — permet de raisonner
+  // repas par repas ("mon petit-déj couvre 40 g de protéines") au lieu de ne
+  // voir que le total de fin de journée.
+  function slotTotals(slotKey: string) {
+    return dayMeals
+      .filter((m) => m.slotKey === slotKey)
+      .reduce(
+        (acc, m) => {
+          const food = foods.find((f) => f.id === m.foodId);
+          if (!food) return acc;
+          const n = calculateNutrients(food, m.quantityG);
+          return {
+            calories: acc.calories + n.calories,
+            proteins: acc.proteins + n.proteins,
+            carbs: acc.carbs + n.carbs,
+            fats: acc.fats + n.fats,
+          };
+        },
+        { calories: 0, proteins: 0, carbs: 0, fats: 0 }
+      );
+  }
+
   function addMeal() {
     if (!selectedFood || !addingToSlot) return;
     const q = parseFloat(qty);
@@ -137,22 +261,67 @@ export function PlanBuilder({
     setQty("100");
   }
 
-  async function handleSave() {
-    if (!planName.trim()) { setError("Nom du plan requis."); return; }
-    setSaving(true);
-    setError(null);
-    const inputs: DietPlanMealInput[] = meals.map((m, i) => ({
+  // Charge un modèle de diète dans le constructeur : copie de travail
+  // entièrement modifiable pour ce client, le modèle n'est jamais touché.
+  function loadTemplate(template: DietPlanTemplateWithMeals) {
+    if (
+      meals.length > 0 &&
+      !confirm(`Charger « ${template.name} » va remplacer les repas en cours de construction. Continuer ?`)
+    ) {
+      return;
+    }
+    setPlanName((n) => n.trim() || template.name);
+    setObjective((o) => o.trim() || template.objective || "");
+    setMode(template.mode);
+    setStructure(template.structure);
+    setMeals(
+      template.diet_plan_template_meals.map((m) => ({
+        slotKey: m.meal_slot,
+        foodId: m.food_id,
+        foodName: m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? "Aliment",
+        quantityG: m.quantity_g,
+        day: m.day_of_week,
+      }))
+    );
+    setLoadedTemplateName(template.name);
+    setShowStartingPoint(false);
+  }
+
+  function buildMealInputs(): DietPlanMealInput[] {
+    return meals.map((m, i) => ({
       meal_slot: m.slotKey,
       food_id: m.foodId,
       quantity_g: m.quantityG,
       position: i,
       day_of_week: m.day,
     }));
-    await onCreate(planName.trim(), mode, inputs, structure);
+  }
+
+  async function handleSaveAsTemplate() {
+    if (!saveAsTemplate) return;
+    const name = templateName.trim() || planName.trim();
+    if (!name) { setTemplateError("Donne un nom au modèle."); return; }
+    setTemplateError(null);
+    setTemplateBusy(true);
+    const result = await saveAsTemplate(name, mode, buildMealInputs(), structure, objective.trim() || undefined);
+    setTemplateBusy(false);
+    if (result.error) { setTemplateError(result.error); return; }
+    setTemplateSaved(true);
+    setTemplateFormOpen(false);
+    setTimeout(() => setTemplateSaved(false), 4000);
+  }
+
+  async function handleSave() {
+    if (!planName.trim()) { setError("Nom du plan requis."); return; }
+    setSaving(true);
+    setError(null);
+    await onCreate(planName.trim(), mode, buildMealInputs(), structure, objective.trim() || undefined);
     setSaving(false);
     setSuccess(true);
     setPlanName("");
+    setObjective("");
     setMeals([]);
+    setLoadedTemplateName(null);
   }
 
   if (success) {
@@ -169,6 +338,75 @@ export function PlanBuilder({
 
   return (
     <div className="space-y-5">
+      {/* ── 0. Point de départ ────────────────────────────────────────────── */}
+      {(templates.length > 0 || templatesHref) && (
+        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+              Point de départ <span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">(optionnel)</span>
+            </p>
+            {templates.length > 0 && (
+              <button
+                onClick={() => setShowStartingPoint((v) => !v)}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+              >
+                {showStartingPoint ? "Masquer" : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
+              </button>
+            )}
+          </div>
+          <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
+            Pars d&apos;un de tes modèles de diète et ajuste le pour {subjectLabel}, ou construis tout sur mesure
+            ci dessous.
+          </p>
+
+          {loadedTemplateName && (
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
+              <Check size={11} />
+              Chargé depuis « {loadedTemplateName} », ajuste librement
+            </p>
+          )}
+
+          {showStartingPoint && templates.length > 0 && (
+            <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {templates.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => loadTemplate(t)}
+                  className="text-left bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/45 rounded-xl px-4 py-3 transition-colors group"
+                >
+                  <p className="text-sm font-bold text-white leading-tight">{t.name}</p>
+                  {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
+                  <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+                    {MODE_LABELS[t.mode]}
+                    {t.structure === "weekly" ? " · hebdo" : ""} · {t.diet_plan_template_meals.length} aliment
+                    {t.diet_plan_template_meals.length !== 1 ? "s" : ""}
+                  </p>
+                  <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
+                    <LayoutTemplate size={11} />
+                    Charger et personnaliser
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {templatesHref && (
+            <Link
+              href={templatesHref}
+              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+            >
+              <ExternalLink size={11} />
+              Gérer la bibliothèque de modèles
+            </Link>
+          )}
+        </div>
+      )}
+
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+        1. Objectif &amp; structure
+      </p>
+
       {/* Plan name + mode */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -206,6 +444,18 @@ export function PlanBuilder({
             {MODES.find((m) => m.key === mode)?.desc}
           </p>
         </div>
+      </div>
+
+      <div>
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          Objectif du plan <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+        </label>
+        <input
+          value={objective}
+          onChange={(e) => setObjective(e.target.value)}
+          placeholder="Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes"
+          className={inputCls}
+        />
       </div>
 
       {/* Structure: daily (simple) vs weekly (different days, optional) */}
@@ -272,18 +522,51 @@ export function PlanBuilder({
         </div>
       )}
 
+      {/* Répartition macro : la cible d'abord, le détail des aliments ensuite */}
+      {mode !== "flexible" && (
+        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+            Répartition macro
+            {structure === "weekly" ? ` · ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : ""}
+            {!targets && (
+              <span className="ml-2 font-normal normal-case tracking-normal text-[#F5EDED]/25">
+                aucune cible définie, remplis l&apos;onglet Objectifs TDEE pour piloter au macro près
+              </span>
+            )}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <MacroCoverage label="Calories" current={planTotals.calories} target={targets?.calories ?? 0} unit=" kcal" color="#E01E1E" />
+            <MacroCoverage label="Protéines" current={planTotals.proteins} target={targets?.proteins ?? 0} unit="g" color="#60a5fa" />
+            <MacroCoverage label="Glucides" current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="#fbbf24" />
+            <MacroCoverage label="Lipides" current={planTotals.fats} target={targets?.fats ?? 0} unit="g" color="#fb7185" />
+          </div>
+        </div>
+      )}
+
       {/* Meal slots for fixed modes */}
       {mode !== "flexible" && (
         <>
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+            2. Détail des repas
+          </p>
           <div className="space-y-3">
             {MEAL_SLOTS.map((slot) => {
               const slotMeals = dayMeals.filter((m) => m.slotKey === slot.key);
+              const st = slotTotals(slot.key);
               return (
                 <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/70">
-                      {slot.label}
-                    </p>
+                    <div className="min-w-0">
+                      <p className="text-xs font-bold uppercase tracking-widest text-[#F5EDED]/70">
+                        {slot.label}
+                      </p>
+                      {slotMeals.length > 0 && (
+                        <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+                          {Math.round(st.calories)} kcal · P {Math.round(st.proteins)}g · G {Math.round(st.carbs)}g · L{" "}
+                          {Math.round(st.fats)}g
+                        </p>
+                      )}
+                    </div>
                     <button
                       onClick={() => {
                         setAddingToSlot(slot.key);
@@ -336,41 +619,63 @@ export function PlanBuilder({
             })}
           </div>
 
-          {/* Plan totals */}
-          {meals.length > 0 && (
-            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-                {structure === "weekly" ? `Total : ${DAY_TABS.find((d) => d.key === activeDay)?.label}` : "Total du plan"}
-              </p>
-              <div className="flex gap-4">
-                <div>
-                  <p className="text-lg font-black text-[#E01E1E]">
-                    {Math.round(planTotals.calories)}
-                  </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">kcal</p>
-                </div>
-                <div>
-                  <p className="text-base font-bold text-blue-300">
-                    {Math.round(planTotals.proteins)}g
-                  </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Prot.</p>
-                </div>
-                <div>
-                  <p className="text-base font-bold text-amber-300">
-                    {Math.round(planTotals.carbs)}g
-                  </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Gluc.</p>
-                </div>
-                <div>
-                  <p className="text-base font-bold text-rose-300">
-                    {Math.round(planTotals.fats)}g
-                  </p>
-                  <p className="text-[9px] text-[#F5EDED]/35">Lip.</p>
-                </div>
+        </>
+      )}
+
+      {/* Capitaliser ce plan sur mesure en modèle réutilisable */}
+      {saveAsTemplate && (
+        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+          {templateSaved ? (
+            <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
+              <Check size={13} />
+              Modèle enregistré dans ta bibliothèque
+            </p>
+          ) : templateFormOpen ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  Nom du modèle
+                </label>
+                <input
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder={planName || "Ex. Sèche 2000 kcal, 4 repas"}
+                  className={inputCls}
+                />
+              </div>
+              {templateError && <p className="text-xs text-red-400">{templateError}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveAsTemplate}
+                  disabled={templateBusy}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
+                >
+                  {templateBusy ? "Enregistrement…" : "Enregistrer le modèle"}
+                </button>
               </div>
             </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
+                Cette structure de repas te resservira ? Enregistre la comme modèle réutilisable, sans quitter
+                cette page.
+              </p>
+              <button
+                onClick={() => { setTemplateName(planName); setTemplateFormOpen(true); }}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+              >
+                <BookmarkPlus size={12} />
+                Enregistrer comme modèle
+              </button>
+            </div>
           )}
-        </>
+        </div>
       )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}
@@ -417,6 +722,17 @@ export function PlanBuilder({
                   />
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
+                  {filtered.length === 0 && (
+                    <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
+                      <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
+                      <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                        Aucun aliment ne correspond à
+                        <span className="text-white font-bold"> « {search.trim()} »</span>.
+                        <br />
+                        Essaie un autre terme, ou ajoute le à la bibliothèque d&apos;aliments.
+                      </p>
+                    </div>
+                  )}
                   {filtered.map((food) => {
                     const watchHit = watchKeywords.length > 0 ? matchesWatchKeyword(food.name, watchKeywords) : null;
                     return (

@@ -12,7 +12,13 @@ import {
 } from "@/utils/nutrition";
 import CoachMoiNutritionTabs from "@/components/ui/CoachMoiNutritionTabs";
 import { addFoodLog, removeFoodLog, createCustomFood } from "@/app/dashboard/client/nutrition/actions";
-import { saveNutritionProfile } from "@/app/dashboard/coach/clients/[id]/nutrition/actions";
+import {
+  saveNutritionProfile,
+  suggestSupplement,
+  setSupplementStatus,
+  deleteSupplement,
+} from "@/app/dashboard/coach/clients/[id]/nutrition/actions";
+import { getClientSupplements } from "@/utils/supplements";
 import {
   createDietPlan,
   deactivateDietPlan,
@@ -30,13 +36,14 @@ export default async function CoachMonNutritionPage() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans] = await Promise.all([
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, supplements] = await Promise.all([
     getNutritionProfile(user.id),
     getTodayLogs(user.id, today),
     getLast30DaysLogs(user.id),
     getAllFoods(),
     getActiveDietPlan(user.id),
     getAllDietPlansWithMeals(user.id),
+    getClientSupplements(user.id),
   ]);
 
   return (
@@ -71,11 +78,16 @@ export default async function CoachMonNutritionPage() {
           activePlan,
           allPlans,
           today,
+          supplements,
+          subjectLabel: "moi",
           saveNutritionProfile,
           createDietPlan,
           deactivateDietPlan,
           activateDietPlan,
           deleteDietPlan,
+          suggestSupplement,
+          setSupplementStatus,
+          deleteSupplement,
         }}
       />
     </div>

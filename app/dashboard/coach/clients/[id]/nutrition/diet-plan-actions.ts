@@ -13,12 +13,22 @@ export interface DietPlanMealInput {
   day_of_week?: DayOfWeek | null;
 }
 
+// Colonne `objective` ajoutée par la migration 20260806, exécutée à la main
+// dans le SQL Editor : tant qu'elle n'est pas passée, on recrée le plan sans
+// elle plutôt que de casser la création de plan en production.
+function isUnknownColumnError(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  if (error.code === "42703" || error.code === "PGRST204") return true;
+  return /does not exist|could not find the .* column/i.test(error.message ?? "");
+}
+
 export async function createDietPlan(
   clientId: string,
   name: string,
   mode: DietMode,
   meals: DietPlanMealInput[],
-  structure: DietStructure = "daily"
+  structure: DietStructure = "daily",
+  objective?: string | null
 ): Promise<{ error?: string; id?: string }> {
   try {
     const guard = await requireOwnClientOrSelf(clientId);
@@ -33,19 +43,29 @@ export async function createDietPlan(
       .eq("client_id", clientId)
       .eq("is_active", true);
 
+    const baseRow = {
+      client_id: clientId,
+      name,
+      mode,
+      structure,
+      is_active: true,
+      created_by: guard.userId,
+    };
+
     // Create new plan
-    const { data: plan, error: planError } = await supabase
+    let { data: plan, error: planError } = await supabase
       .from("diet_plans")
-      .insert({
-        client_id: clientId,
-        name,
-        mode,
-        structure,
-        is_active: true,
-        created_by: guard.userId,
-      })
+      .insert({ ...baseRow, objective: objective?.trim() || null })
       .select("id")
       .single();
+
+    if (planError && isUnknownColumnError(planError)) {
+      ({ data: plan, error: planError } = await supabase
+        .from("diet_plans")
+        .insert(baseRow)
+        .select("id")
+        .single());
+    }
 
     if (planError || !plan) return { error: "Erreur lors de la création du plan." };
 

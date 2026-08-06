@@ -73,7 +73,7 @@ export async function applyDietTemplate(
 
   let applied = 0;
   for (const clientId of validClientIds) {
-    const result = await createDietPlan(clientId, name, template.mode, meals, template.structure);
+    const result = await createDietPlan(clientId, name, template.mode, meals, template.structure, template.objective);
     if (!result.error) applied++;
   }
 
