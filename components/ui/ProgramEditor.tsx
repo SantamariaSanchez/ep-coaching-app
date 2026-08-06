@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
@@ -20,6 +21,7 @@ import {
   conflictSourceLabel,
   type ExerciseConflict,
 } from "@/lib/plan-generator";
+import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/program-templates";
 import {
   Plus,
   Trash2,
@@ -30,6 +32,10 @@ import {
   Copy,
   Search,
   SlidersHorizontal,
+  Wand2,
+  LayoutTemplate,
+  BookmarkPlus,
+  ExternalLink,
 } from "lucide-react";
 
 export interface ExerciseRow {
@@ -74,14 +80,55 @@ export function emptyExercise(prefillFrom?: ExerciseRow): ExerciseRow {
   };
 }
 
+export const SPLIT_TYPES = ["PPL", "Upper/Lower", "Full Body", "Custom"] as const;
+
+// Génère les séances vides d'un split donné — la phase de structure se
+// décide avant de remplir le moindre exercice. Partagé avec l'éditeur de
+// modèles (ProgramTemplateEditor) : même raisonnement de conception, qu'on
+// travaille sur un modèle réutilisable ou directement sur un client.
+export function scaffoldDays(type: string, frequencyRaw: string): DayRow[] {
+  const frequency = Math.max(1, Math.min(7, parseInt(frequencyRaw) || 3));
+  let labels: string[];
+  if (type === "PPL") {
+    const cycle = ["Push", "Pull", "Legs"];
+    labels = Array.from({ length: frequency }, (_, i) => cycle[i % 3]);
+  } else if (type === "Upper/Lower") {
+    const cycle = ["Upper", "Lower"];
+    labels = Array.from({ length: frequency }, (_, i) => cycle[i % 2]);
+  } else if (type === "Full Body") {
+    labels = Array.from({ length: frequency }, (_, i) => `Full Body ${String.fromCharCode(65 + i)}`);
+  } else {
+    labels = Array.from({ length: frequency }, (_, i) => `Séance ${String.fromCharCode(65 + i)}`);
+  }
+  // Une même étiquette répétée dans la semaine (Push x2 en PPL 6x) devient
+  // "Push 1" / "Push 2" pour rester lisible dans la liste des séances.
+  const seen: Record<string, number> = {};
+  const totalByLabel: Record<string, number> = {};
+  for (const l of labels) totalByLabel[l] = (totalByLabel[l] ?? 0) + 1;
+  const finalLabels = labels.map((l) => {
+    seen[l] = (seen[l] ?? 0) + 1;
+    return totalByLabel[l] > 1 ? `${l} ${seen[l]}` : l;
+  });
+  return finalLabels.map((label) => ({ localId: uid(), day_label: label, exercises: [] }));
+}
+
 function initFromProgram(program: ProgramWithDays | null) {
   if (!program) {
-    return { name: "Programme", type: "Custom", frequency: "", days: [] as DayRow[] };
+    return {
+      name: "Programme",
+      type: "Custom",
+      frequency: "",
+      objective: "",
+      coach_notes: "",
+      days: [] as DayRow[],
+    };
   }
   return {
     name: program.name,
     type: program.type ?? "Custom",
     frequency: program.frequency != null ? String(program.frequency) : "",
+    objective: program.objective ?? "",
+    coach_notes: program.coach_notes ?? "",
     days: program.days.map((d) => ({
       localId: uid(),
       day_label: d.day_label,
@@ -317,6 +364,10 @@ export default function ProgramEditor({
   saveProgram,
   successRedirect,
   intake = null,
+  templates = [],
+  saveAsTemplate,
+  templatesHref,
+  subjectLabel = "ce client",
 }: {
   clientId: string;
   program: ProgramWithDays | null;
@@ -324,12 +375,37 @@ export default function ProgramEditor({
   successRedirect?: string;
   /** Fiche client — sert à vérifier chaque exercice ajouté (blessures, exercices/matériel problématiques). */
   intake?: ClientIntake | null;
+  /**
+   * Bibliothèque de modèles du coach. Fournie, elle sert de point de départ :
+   * on charge la structure d'un modèle dans l'éditeur et on la personnalise
+   * immédiatement pour ce client, sans aller-retour par la page Programmation
+   * et sans jamais toucher au modèle d'origine.
+   */
+  templates?: ProgramTemplateWithDays[];
+  /** Fournie, ajoute le chemin inverse : capitaliser ce travail sur mesure en modèle réutilisable. */
+  saveAsTemplate?: (input: ProgramTemplateInput) => Promise<{ id?: string; error?: string }>;
+  /** Lien vers la bibliothèque complète (gestion des modèles). */
+  templatesHref?: string;
+  /** Pour qui on conçoit — utilisé dans les textes ("ce client", "moi"). */
+  subjectLabel?: string;
 }) {
   const router = useRouter();
   const [state, setState] = useState(() => initFromProgram(program));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  // Point de départ : replié d'entrée quand le client a déjà un programme
+  // (on vient surtout retoucher), déplié quand la page est vide.
+  const [showStartingPoint, setShowStartingPoint] = useState(() => (program?.days.length ?? 0) === 0);
+  const [loadedTemplateName, setLoadedTemplateName] = useState<string | null>(null);
+
+  // Enregistrement du travail en cours comme modèle réutilisable.
+  const [templateFormOpen, setTemplateFormOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateBusy, setTemplateBusy] = useState(false);
+  const [templateSaved, setTemplateSaved] = useState(false);
+  const [templateError, setTemplateError] = useState<string | null>(null);
 
   // Contraintes ajoutées à la volée par le coach quand la fiche client est
   // incomplète — croisées avec chaque exercice au même titre que les
@@ -350,8 +426,67 @@ export default function ProgramEditor({
 
   // ── Program meta ────────────────────────────────────────────────────────────
 
-  function updateMeta(field: "name" | "type" | "frequency", value: string) {
+  function updateMeta(
+    field: "name" | "type" | "frequency" | "objective" | "coach_notes",
+    value: string
+  ) {
     setState((s) => ({ ...s, [field]: value }));
+  }
+
+  // Génère les séances vides du split choisi — la structure d'abord, les
+  // exercices ensuite.
+  function applyScaffold() {
+    setState((s) => {
+      if (
+        s.days.length > 0 &&
+        !confirm("Regénérer les séances va remplacer la structure actuelle et ses exercices. Continuer ?")
+      ) {
+        return s;
+      }
+      return { ...s, days: scaffoldDays(s.type, s.frequency) };
+    });
+    setLoadedTemplateName(null);
+  }
+
+  // Charge un modèle de la bibliothèque dans l'éditeur. Copie en mémoire :
+  // tout est modifiable dans la foulée pour ce client précis, et le modèle
+  // d'origine n'est jamais touché.
+  function loadTemplate(template: ProgramTemplateWithDays) {
+    if (
+      state.days.length > 0 &&
+      !confirm(
+        `Charger « ${template.name} » va remplacer la structure en cours d'édition. Le programme déjà enregistré n'est modifié qu'au moment où tu sauvegardes. Continuer ?`
+      )
+    ) {
+      return;
+    }
+    setState((s) => ({
+      // Le nom du programme du client reste celui déjà choisi s'il en a un,
+      // sinon on part de celui du modèle.
+      name: s.name && s.name !== "Programme" ? s.name : template.name,
+      type: template.type ?? "Custom",
+      frequency: template.frequency != null ? String(template.frequency) : s.frequency,
+      objective: template.objective ?? s.objective,
+      coach_notes: template.notes ?? s.coach_notes,
+      days: template.days.map((d) => ({
+        localId: uid(),
+        day_label: d.day_label,
+        exercises: d.exercises.map((e) => ({
+          localId: uid(),
+          name: e.name,
+          sets: e.sets != null ? String(e.sets) : "",
+          reps: e.reps ?? "",
+          rir: e.rir != null ? String(e.rir) : "",
+          rest_seconds: e.rest_seconds != null ? String(e.rest_seconds) : "",
+          notes: e.notes ?? "",
+          muscle_group: e.muscle_group ?? "",
+          muscle_subgroup: e.muscle_subgroup ?? "",
+          is_direct: e.is_direct !== false ? "true" : "false",
+        })),
+      })),
+    }));
+    setLoadedTemplateName(template.name);
+    setShowStartingPoint(false);
   }
 
   // ── Day operations ───────────────────────────────────────────────────────────
@@ -521,6 +656,58 @@ export default function ProgramEditor({
 
   // ── Save ─────────────────────────────────────────────────────────────────────
 
+  function buildDays() {
+    return state.days.map((d) => ({
+      day_label: d.day_label || "Séance",
+      exercises: d.exercises
+        .filter((e) => e.name.trim() !== "")
+        .map((e) => ({
+          name: e.name.trim(),
+          sets: e.sets ? parseInt(e.sets) : null,
+          reps: e.reps.trim() || null,
+          rir: e.rir !== "" ? parseInt(e.rir) : null,
+          rest_seconds: e.rest_seconds ? parseInt(e.rest_seconds) : null,
+          notes: e.notes.trim() || null,
+          muscle_group: e.muscle_group || null,
+          muscle_subgroup: e.muscle_subgroup || null,
+          is_direct: e.is_direct !== "false",
+        })),
+    }));
+  }
+
+  // Capitalise le travail sur mesure : la structure conçue pour ce client
+  // devient un modèle réutilisable, sans quitter sa fiche.
+  async function handleSaveAsTemplate() {
+    if (!saveAsTemplate) return;
+    const name = templateName.trim() || state.name.trim();
+    if (!name) {
+      setTemplateError("Donne un nom au modèle.");
+      return;
+    }
+    if (state.days.length === 0) {
+      setTemplateError("Il n'y a aucune séance à enregistrer.");
+      return;
+    }
+    setTemplateError(null);
+    setTemplateBusy(true);
+    const result = await saveAsTemplate({
+      name,
+      type: state.type || null,
+      frequency: state.frequency ? parseInt(state.frequency) : null,
+      objective: state.objective.trim() || null,
+      notes: state.coach_notes.trim() || null,
+      days: buildDays(),
+    });
+    setTemplateBusy(false);
+    if (result.error) {
+      setTemplateError(result.error);
+      return;
+    }
+    setTemplateSaved(true);
+    setTemplateFormOpen(false);
+    setTimeout(() => setTemplateSaved(false), 4000);
+  }
+
   async function handleSave() {
     if (!state.name.trim()) {
       setError("Le nom du programme est requis.");
@@ -531,22 +718,9 @@ export default function ProgramEditor({
       name: state.name.trim(),
       type: state.type || null,
       frequency: state.frequency ? parseInt(state.frequency) : null,
-      days: state.days.map((d) => ({
-        day_label: d.day_label || "Séance",
-        exercises: d.exercises
-          .filter((e) => e.name.trim() !== "")
-          .map((e) => ({
-            name: e.name.trim(),
-            sets: e.sets ? parseInt(e.sets) : null,
-            reps: e.reps.trim() || null,
-            rir: e.rir !== "" ? parseInt(e.rir) : null,
-            rest_seconds: e.rest_seconds ? parseInt(e.rest_seconds) : null,
-            notes: e.notes.trim() || null,
-            muscle_group: e.muscle_group || null,
-            muscle_subgroup: e.muscle_subgroup || null,
-            is_direct: e.is_direct !== "false",
-          })),
-      })),
+      objective: state.objective.trim() || null,
+      coach_notes: state.coach_notes.trim() || null,
+      days: buildDays(),
     };
 
     setError(null);
@@ -571,10 +745,85 @@ export default function ProgramEditor({
 
   return (
     <div className="space-y-6">
-      {/* Program meta */}
+      {/* ── 0. Point de départ ────────────────────────────────────────────── */}
+      {(templates.length > 0 || templatesHref) && (
+        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+          <div className="flex items-center justify-between gap-3 mb-1">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
+              Point de départ <span className="text-[#F5EDED]/20 font-normal normal-case tracking-normal">(optionnel)</span>
+            </p>
+            {templates.length > 0 && (
+              <button
+                onClick={() => setShowStartingPoint((v) => !v)}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+              >
+                {showStartingPoint ? "Masquer" : `Voir mes ${templates.length} modèle${templates.length !== 1 ? "s" : ""}`}
+              </button>
+            )}
+          </div>
+          <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed">
+            Pars d&apos;un de tes modèles et personnalise le à la volée pour {subjectLabel}, ou conçois tout sur
+            mesure ci dessous. Charger un modèle ne le modifie jamais, c&apos;est une copie de travail.
+          </p>
+
+          {loadedTemplateName && (
+            <p className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-lg px-3 py-1.5">
+              <Check size={11} />
+              Chargé depuis « {loadedTemplateName} », personnalise librement
+            </p>
+          )}
+
+          {showStartingPoint && templates.length > 0 && (
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {templates.map((t) => {
+                const exerciseCount = t.days.reduce((acc, d) => acc + d.exercises.length, 0);
+                return (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => loadTemplate(t)}
+                    className="text-left bg-[#150000] border border-[#890404]/25 hover:border-[#E01E1E]/45 rounded-xl px-4 py-3 transition-colors group"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-bold text-white leading-tight">{t.name}</p>
+                      {t.type && (
+                        <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#1f0101] border border-[#890404]/25 text-[#F5EDED]/40">
+                          {t.type}
+                        </span>
+                      )}
+                    </div>
+                    {t.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-1">{t.objective}</p>}
+                    <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+                      {t.days.length} séance{t.days.length !== 1 ? "s" : ""} · {exerciseCount} exercice
+                      {exerciseCount !== 1 ? "s" : ""}
+                      {t.frequency ? ` · ${t.frequency}×/semaine` : ""}
+                    </p>
+                    <span className="mt-2 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 group-hover:text-[#E01E1E] transition-colors">
+                      <LayoutTemplate size={11} />
+                      Charger et personnaliser
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {templatesHref && (
+            <Link
+              href={templatesHref}
+              className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
+            >
+              <ExternalLink size={11} />
+              Gérer la bibliothèque de modèles
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* ── 1. Structure ──────────────────────────────────────────────────── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          Informations
+          1. Structure du programme
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
@@ -590,17 +839,16 @@ export default function ProgramEditor({
           </div>
           <div>
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
-              Type
+              Split
             </label>
             <select
               value={state.type}
               onChange={(e) => updateMeta("type", e.target.value)}
               className={inputCls}
             >
-              <option value="PPL">PPL</option>
-              <option value="Upper/Lower">Upper/Lower</option>
-              <option value="Full Body">Full Body</option>
-              <option value="Custom">Custom</option>
+              {SPLIT_TYPES.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
             </select>
           </div>
           <div>
@@ -618,6 +866,40 @@ export default function ProgramEditor({
             />
           </div>
         </div>
+
+        <div className="mt-4">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Objectif de phase
+          </label>
+          <input
+            value={state.objective}
+            onChange={(e) => updateMeta("objective", e.target.value)}
+            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa"
+            className={inputCls}
+          />
+        </div>
+
+        <div className="mt-4">
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Notes de conception{" "}
+            <span className="text-[#F5EDED]/25 font-normal">(pour toi, jamais affichées côté client)</span>
+          </label>
+          <textarea
+            value={state.coach_notes}
+            onChange={(e) => updateMeta("coach_notes", e.target.value)}
+            rows={2}
+            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…"
+            className={`${inputCls} resize-none`}
+          />
+        </div>
+
+        <button
+          onClick={applyScaffold}
+          className="mt-4 inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+        >
+          <Wand2 size={13} />
+          {state.days.length === 0 ? "Générer les séances de cette structure" : "Regénérer les séances"}
+        </button>
       </div>
 
       {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
@@ -659,10 +941,17 @@ export default function ProgramEditor({
       </div>
 
       {/* Days */}
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
+        2. Séances &amp; exercices
+      </p>
       {state.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
           <p className="text-xs text-[#F5EDED]/35 font-semibold uppercase tracking-widest">
             Aucune séance
+          </p>
+          <p className="text-[11px] text-[#F5EDED]/25 max-w-sm text-center">
+            Choisis un split et une fréquence ci dessus puis génère les séances, charge un de tes modèles, ou
+            ajoute une séance vide directement.
           </p>
           <button
             onClick={addDay}
@@ -944,6 +1233,61 @@ export default function ProgramEditor({
         <div className="flex items-center gap-2.5 bg-red-950/40 border border-red-500/30 rounded-lg px-4 py-3">
           <AlertCircle size={14} className="text-red-400 flex-shrink-0" />
           <p className="text-sm text-red-400">{error}</p>
+        </div>
+      )}
+
+      {/* Enregistrer le travail en cours comme modèle réutilisable */}
+      {saveAsTemplate && state.days.length > 0 && (
+        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+          {templateSaved ? (
+            <p className="inline-flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-green-400">
+              <Check size={13} />
+              Modèle enregistré dans ta bibliothèque
+            </p>
+          ) : templateFormOpen ? (
+            <div className="space-y-3">
+              <div>
+                <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                  Nom du modèle
+                </label>
+                <input
+                  value={templateName}
+                  onChange={(e) => setTemplateName(e.target.value)}
+                  placeholder={state.name || "Ex. PPL Hypertrophie 5x/semaine"}
+                  className={inputCls}
+                />
+              </div>
+              {templateError && <p className="text-xs text-red-400">{templateError}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => { setTemplateFormOpen(false); setTemplateError(null); }}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest border border-[#890404]/40 rounded-lg text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleSaveAsTemplate}
+                  disabled={templateBusy}
+                  className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E]/15 border border-[#E01E1E]/40 rounded-lg text-[#E01E1E] hover:bg-[#E01E1E]/25 disabled:opacity-50 transition-colors"
+                >
+                  {templateBusy ? "Enregistrement…" : "Enregistrer le modèle"}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <p className="text-[11px] text-[#F5EDED]/35 leading-relaxed max-w-md">
+                Cette structure te resservira ? Enregistre la comme modèle réutilisable, sans quitter cette page.
+              </p>
+              <button
+                onClick={() => { setTemplateName(state.name); setTemplateFormOpen(true); }}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors flex-shrink-0"
+              >
+                <BookmarkPlus size={12} />
+                Enregistrer comme modèle
+              </button>
+            </div>
+          )}
         </div>
       )}
 

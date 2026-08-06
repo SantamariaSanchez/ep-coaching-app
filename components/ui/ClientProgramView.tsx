@@ -17,20 +17,30 @@ export default function ClientProgramView({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-end mb-4">
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <div className="min-w-0">
+          {program?.objective && (
+            <p className="text-xs text-[#F5EDED]/45">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 mr-2">
+                Objectif de phase
+              </span>
+              {program.objective}
+            </p>
+          )}
+        </div>
         <Link
           href={`/dashboard/coach/clients/${clientId}/program/edit`}
-          className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          className="inline-flex items-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors flex-shrink-0 ml-auto"
         >
           {program ? (
             <>
               <Pencil size={13} />
-              Modifier
+              Concevoir / modifier
             </>
           ) : (
             <>
               <Plus size={13} />
-              Créer un programme
+              Concevoir le programme
             </>
           )}
         </Link>

@@ -32,6 +32,11 @@ export interface Program {
   frequency: number | null;
   created_at: string;
   is_active: boolean;
+  // Phase de conception (migration 20260806) — objectif de phase lisible par
+  // le client, notes de conception privées du coach. Optionnels : tant que la
+  // migration n'est pas passée en base, tout le reste continue de marcher.
+  objective?: string | null;
+  coach_notes?: string | null;
 }
 
 export interface ProgramWithDays extends Program {
@@ -61,15 +66,29 @@ export interface ProgramInput {
   type: string | null;
   frequency: number | null;
   days: DayInput[];
+  objective?: string | null;
+  coach_notes?: string | null;
+}
+
+// Colonnes de conception ajoutées par la migration 20260806. Le code doit
+// tourner que la migration soit passée ou non (elle s'exécute à la main dans
+// le SQL Editor, le déploiement Vercel ne l'applique pas) : à l'écriture on
+// réessaie sans ces colonnes, à la lecture on reste sur select("*").
+function isUnknownColumnError(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  if (error.code === "42703" || error.code === "PGRST204") return true;
+  const msg = error.message ?? "";
+  return /does not exist|could not find the .* column/i.test(msg);
 }
 
 export async function getActiveProgram(
-  clientId: string
+  clientId: string,
+  opts?: { includeCoachNotes?: boolean }
 ): Promise<ProgramWithDays | null> {
   try {
     const supabase = await createServerSupabase();
 
-    const { data: program } = await supabase
+    const { data: programRow } = await supabase
       .from("programs")
       .select("*")
       .eq("client_id", clientId)
@@ -78,7 +97,13 @@ export async function getActiveProgram(
       .limit(1)
       .maybeSingle();
 
-    if (!program) return null;
+    if (!programRow) return null;
+
+    // coach_notes est une note privée de conception : elle ne quitte le
+    // serveur que pour les écrans coach qui la demandent explicitement, pour
+    // ne jamais se retrouver dans le payload d'une page de l'espace client.
+    const program = { ...(programRow as Program) };
+    if (!opts?.includeCoachNotes) delete program.coach_notes;
 
     const { data: days } = await supabase
       .from("program_days")
@@ -136,17 +161,34 @@ export async function saveProgramForClient(
       return { error: "Erreur lors de la suppression de l'ancien programme." };
     }
 
-    const { data: program, error: programError } = await supabase
+    const baseRow = {
+      client_id: clientId,
+      name: input.name.trim(),
+      type: input.type || null,
+      frequency: input.frequency ?? null,
+      is_active: true,
+    };
+
+    let { data: program, error: programError } = await supabase
       .from("programs")
       .insert({
-        client_id: clientId,
-        name: input.name.trim(),
-        type: input.type || null,
-        frequency: input.frequency ?? null,
-        is_active: true,
+        ...baseRow,
+        objective: input.objective?.trim() || null,
+        coach_notes: input.coach_notes?.trim() || null,
       })
       .select()
       .single();
+
+    // Migration 20260806 pas encore exécutée dans le SQL Editor : on
+    // recrée le programme sans les champs de conception plutôt que de
+    // planter la sauvegarde du coach.
+    if (programError && isUnknownColumnError(programError)) {
+      ({ data: program, error: programError } = await supabase
+        .from("programs")
+        .insert(baseRow)
+        .select()
+        .single());
+    }
 
     if (programError || !program) {
       return { error: "Erreur lors de la création du programme." };

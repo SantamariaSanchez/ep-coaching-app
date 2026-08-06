@@ -11,6 +11,8 @@ import {
   inputCls,
   ExerciseNameField,
   emptyExercise,
+  scaffoldDays,
+  SPLIT_TYPES,
   type ExerciseRow,
   type DayRow,
 } from "@/components/ui/ProgramEditor";
@@ -24,34 +26,6 @@ import {
   Copy,
   Wand2,
 } from "lucide-react";
-
-const SPLIT_TYPES = ["PPL", "Upper/Lower", "Full Body", "Custom"] as const;
-
-function scaffoldDays(type: string, frequencyRaw: string): DayRow[] {
-  const frequency = Math.max(1, Math.min(7, parseInt(frequencyRaw) || 3));
-  let labels: string[];
-  if (type === "PPL") {
-    const cycle = ["Push", "Pull", "Legs"];
-    labels = Array.from({ length: frequency }, (_, i) => cycle[i % 3]);
-  } else if (type === "Upper/Lower") {
-    const cycle = ["Upper", "Lower"];
-    labels = Array.from({ length: frequency }, (_, i) => cycle[i % 2]);
-  } else if (type === "Full Body") {
-    labels = Array.from({ length: frequency }, (_, i) => `Full Body ${String.fromCharCode(65 + i)}`);
-  } else {
-    labels = Array.from({ length: frequency }, (_, i) => `Séance ${String.fromCharCode(65 + i)}`);
-  }
-  // Une même étiquette répétée dans la semaine (Push x2 en PPL 6x) devient
-  // "Push 1" / "Push 2" pour rester lisible dans la liste des séances.
-  const seen: Record<string, number> = {};
-  const totalByLabel: Record<string, number> = {};
-  for (const l of labels) totalByLabel[l] = (totalByLabel[l] ?? 0) + 1;
-  const finalLabels = labels.map((l) => {
-    seen[l] = (seen[l] ?? 0) + 1;
-    return totalByLabel[l] > 1 ? `${l} ${seen[l]}` : l;
-  });
-  return finalLabels.map((label) => ({ localId: uid(), day_label: label, exercises: [] }));
-}
 
 function initFromTemplate(template: ProgramTemplateWithDays | null) {
   if (!template) {

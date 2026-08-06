@@ -233,6 +233,11 @@ export function programTemplateToInput(template: ProgramTemplateWithDays, nameOv
     name: nameOverride?.trim() || template.name,
     type: template.type,
     frequency: template.frequency,
+    // L'intention de conception du modèle suit le programme réel : le coach
+    // qui rouvre la fiche du client retrouve pourquoi ce split a été choisi,
+    // au lieu de devoir retourner lire le modèle d'origine.
+    objective: template.objective,
+    coach_notes: template.notes,
     days: template.days.map((d) => ({
       day_label: d.day_label,
       exercises: d.exercises.map((e) => ({
