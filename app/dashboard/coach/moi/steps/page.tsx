@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
 import StepsClient from "@/components/steps/StepsClient";
 import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps } from "@/app/dashboard/client/steps/actions";
@@ -14,10 +15,12 @@ export default async function CoachMoiStepsPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [settings, routineItems, logs] = await Promise.all([
+  const admin = createAdminClient();
+  const [settings, routineItems, logs, { data: ouraConnection }] = await Promise.all([
     getStepSettings(user.id),
     getStepRoutineItems(user.id),
-    getStepLogs(user.id),
+    getStepLogs(user.id, 35),
+    admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
   ]);
 
   return (
@@ -33,6 +36,8 @@ export default async function CoachMoiStepsPage() {
         settings={settings}
         routineItems={routineItems}
         logs={logs}
+        hasOura={!!ouraConnection}
+        ouraTrackingHref="/dashboard/coach/moi/tracking"
         updateStepGoal={updateStepGoal}
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}

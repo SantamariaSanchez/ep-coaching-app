@@ -38,7 +38,8 @@ import {
 import { getClientIntake } from "@/utils/client-intake";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
-import { getStepSettings } from "@/utils/steps";
+import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
@@ -102,6 +103,9 @@ export default async function ClientDetailPage({
     scheduleBlocks,
     corrections,
     stepSettings,
+    stepRoutineItems,
+    stepLogs,
+    ouraConnection,
     coachingPhase,
     supplements,
     dietTemplates,
@@ -128,6 +132,9 @@ export default async function ClientDetailPage({
     getScheduleBlocks(id),
     getClientCorrections(id),
     getStepSettings(id),
+    getStepRoutineItems(id),
+    getStepLogs(id, 35),
+    createAdminClient().from("oura_connections").select("client_id").eq("client_id", id).maybeSingle(),
     // Jamais calculée pour un membre gratuit — voir le rendu conditionnel
     // dans ClientProfileTabs (client.subscription_status === "active").
     client.subscription_status === "active" ? getClientCoachingPhase(id) : Promise.resolve(null),
@@ -238,6 +245,9 @@ export default async function ClientDetailPage({
         addPeriodLog={addPeriodLog}
         deletePeriodLog={deletePeriodLog}
         scheduleBlocks={scheduleBlocks}
+        stepRoutineItems={stepRoutineItems}
+        stepLogs={stepLogs}
+        clientHasOura={!!ouraConnection.data}
         generatePlanSuggestions={generatePlanSuggestions}
         corrections={corrections}
         sendCorrectionFeedback={sendCorrectionFeedback}

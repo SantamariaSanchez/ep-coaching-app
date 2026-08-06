@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
+import { createAdminClient } from "@/lib/supabase-admin";
 import StepsClient from "@/components/steps/StepsClient";
-import { addRoutineItem, deleteRoutineItem, logSteps } from "./actions";
+import { addRoutineItem, deleteRoutineItem, logSteps, createReminderFromRoutine } from "./actions";
 
 export default async function ClientStepsPage() {
   const user = await getUser();
@@ -11,10 +12,12 @@ export default async function ClientStepsPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/moi/steps");
 
-  const [settings, routineItems, logs] = await Promise.all([
+  const admin = createAdminClient();
+  const [settings, routineItems, logs, { data: ouraConnection }] = await Promise.all([
     getStepSettings(user.id),
     getStepRoutineItems(user.id),
-    getStepLogs(user.id),
+    getStepLogs(user.id, 35),
+    admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
   ]);
 
   return (
@@ -34,6 +37,9 @@ export default async function ClientStepsPage() {
         settings={settings}
         routineItems={routineItems}
         logs={logs}
+        hasOura={!!ouraConnection}
+        ouraTrackingHref="/dashboard/client/tracking"
+        createReminderFromRoutine={createReminderFromRoutine}
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}
         logSteps={logSteps}

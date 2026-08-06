@@ -1,18 +1,101 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Footprints, Plus, Trash2, Check, Target, Flame } from "lucide-react";
+import Link from "next/link";
+import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, RotateCcw } from "lucide-react";
 import type { StepSettings, StepRoutineItem, StepLog } from "@/utils/steps";
+
+const QUICK_ADD_AMOUNTS = [500, 1000, 2500, 5000];
+const HEATMAP_WEEKS = 4;
 
 function todayStr(): string {
   return new Date().toISOString().split("T")[0];
 }
 
-function dayLabel(dateStr: string): string {
-  const s = new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric" }).format(
-    new Date(dateStr + "T12:00:00")
-  );
-  return s.charAt(0).toUpperCase() + s.slice(1);
+function shortDate(dateStr: string): string {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(dateStr + "T12:00:00"));
+}
+
+// Compte les jours consécutifs (objectif atteint) en remontant depuis
+// aujourd'hui pour la série en cours, et la plus longue série sur toute la
+// fenêtre de logs disponible pour le record. Un jour sans log compte comme 0
+// (casse la série), contrairement à un simple parcours des clés du log qui
+// sauterait silencieusement les trous.
+function computeStreaks(
+  logs: StepLog[],
+  goal: number,
+  today: string,
+  todaySteps: number
+): { current: number; best: number } {
+  if (goal <= 0) return { current: 0, best: 0 };
+  const map = new Map(logs.map((l) => [l.log_date, l.steps_actual]));
+  map.set(today, todaySteps);
+
+  const dates = Array.from(map.keys()).sort();
+  if (dates.length === 0) return { current: 0, best: 0 };
+
+  const cursor = new Date(dates[0] + "T12:00:00");
+  const end = new Date(today + "T12:00:00");
+  let best = 0;
+  let run = 0;
+  while (cursor.getTime() <= end.getTime()) {
+    const iso = cursor.toISOString().split("T")[0];
+    const met = (map.get(iso) ?? 0) >= goal;
+    if (met) {
+      run++;
+      best = Math.max(best, run);
+    } else {
+      run = 0;
+    }
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return { current: run, best };
+}
+
+interface HeatmapCell {
+  date: string;
+  steps: number;
+  future: boolean;
+  isToday: boolean;
+}
+
+// Grille alignée sur les semaines calendaires (lundi à dimanche) plutôt
+// qu'un simple "N derniers jours" — se lit comme un vrai historique
+// hebdomadaire, pas une bande glissante illisible.
+function buildHeatmapWeeks(logs: StepLog[], today: string, todaySteps: number, weeks: number): HeatmapCell[][] {
+  const map = new Map(logs.map((l) => [l.log_date, l.steps_actual]));
+  map.set(today, todaySteps);
+
+  const todayDate = new Date(today + "T12:00:00");
+  const dow = todayDate.getDay() === 0 ? 7 : todayDate.getDay();
+  const monday = new Date(todayDate);
+  monday.setDate(todayDate.getDate() - (dow - 1));
+  const start = new Date(monday);
+  start.setDate(monday.getDate() - (weeks - 1) * 7);
+
+  const rows: HeatmapCell[][] = [];
+  for (let w = 0; w < weeks; w++) {
+    const row: HeatmapCell[] = [];
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + w * 7 + d);
+      const iso = date.toISOString().split("T")[0];
+      const future = iso > today;
+      row.push({ date: iso, steps: future ? 0 : map.get(iso) ?? 0, future, isToday: iso === today });
+    }
+    rows.push(row);
+  }
+  return rows;
+}
+
+function cellColor(steps: number, goal: number, future: boolean): string {
+  if (future) return "transparent";
+  if (steps <= 0) return "rgba(245,237,237,0.05)";
+  if (goal <= 0) return "rgba(245,237,237,0.15)";
+  const ratio = steps / goal;
+  if (ratio >= 1) return "#4ade80";
+  if (ratio >= 0.5) return "rgba(224,30,30,0.55)";
+  return "rgba(224,30,30,0.25)";
 }
 
 export default function StepsClient({
@@ -20,19 +103,25 @@ export default function StepsClient({
   routineItems,
   logs,
   readOnly = false,
+  hasOura = false,
+  ouraTrackingHref = "/dashboard/client/tracking",
   updateStepGoal,
   addRoutineItem,
   deleteRoutineItem,
   logSteps,
+  createReminderFromRoutine,
 }: {
   settings: StepSettings;
   routineItems: StepRoutineItem[];
   logs: StepLog[];
   readOnly?: boolean;
+  hasOura?: boolean;
+  ouraTrackingHref?: string;
   updateStepGoal?: (goal: number) => Promise<{ error?: string }>;
   addRoutineItem?: (label: string, timeLabel: string) => Promise<{ error?: string; id?: string }>;
   deleteRoutineItem?: (id: string) => Promise<{ error?: string }>;
   logSteps?: (logDate: string, stepsActual: number, completedItems: string[]) => Promise<{ error?: string }>;
+  createReminderFromRoutine?: (label: string, time: string) => Promise<{ error?: string }>;
 }) {
   const today = todayStr();
   const todayLog = logs.find((l) => l.log_date === today) ?? null;
@@ -49,20 +138,55 @@ export default function StepsClient({
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
+  const [reminderOpenFor, setReminderOpenFor] = useState<string | null>(null);
+  const [reminderTime, setReminderTime] = useState("12:00");
+  const [reminderStatus, setReminderStatus] = useState<Record<string, "idle" | "saving" | "done">>({});
+
   const todaySteps = parseInt(stepsInput) || 0;
   const pct = Math.min(100, Math.round((todaySteps / Math.max(1, goal)) * 100));
 
-  const last14 = useMemo(() => {
-    const map = new Map(logs.map((l) => [l.log_date, l.steps_actual]));
-    const days: { date: string; steps: number }[] = [];
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      const ds = d.toISOString().split("T")[0];
-      days.push({ date: ds, steps: ds === today ? todaySteps : map.get(ds) ?? 0 });
-    }
-    return days;
-  }, [logs, today, todaySteps]);
+  const heatmapWeeks = useMemo(
+    () => buildHeatmapWeeks(logs, today, todaySteps, HEATMAP_WEEKS),
+    [logs, today, todaySteps]
+  );
+  const pastCells = useMemo(() => heatmapWeeks.flat().filter((c) => !c.future), [heatmapWeeks]);
+  const avg7 = useMemo(() => {
+    const last7 = pastCells.slice(-7);
+    if (last7.length === 0) return 0;
+    return Math.round(last7.reduce((s, c) => s + c.steps, 0) / last7.length);
+  }, [pastCells]);
+  const bestDay = useMemo(() => pastCells.reduce((m, c) => Math.max(m, c.steps), 0), [pastCells]);
+  const goalMetCount = useMemo(
+    () => (goal > 0 ? pastCells.filter((c) => c.steps >= goal).length : 0),
+    [pastCells, goal]
+  );
+  const streaks = useMemo(() => computeStreaks(logs, goal, today, todaySteps), [logs, goal, today, todaySteps]);
+
+  // Trois points d'entrée (quick add, reset, saisie manuelle) partagent la
+  // même mécanique de sauvegarde, en trois fonctions "handle*" distinctes
+  // plutôt qu'un helper commun : la règle purity du linter React exige que
+  // l'appel impur (Date.now) reste directement dans le gestionnaire
+  // d'évènement pour prouver qu'il ne peut pas s'exécuter pendant le rendu.
+  async function handleQuickAdd(amount: number) {
+    if (!logSteps) return;
+    const next = Math.max(0, todaySteps + amount);
+    setStepsInput(String(next));
+    setSaving(true);
+    await logSteps(today, next, [...completed]);
+    setSaving(false);
+    setSavedAt(Date.now());
+    setTimeout(() => setSavedAt(null), 2000);
+  }
+
+  async function handleReset() {
+    if (!logSteps) return;
+    setStepsInput("0");
+    setSaving(true);
+    await logSteps(today, 0, [...completed]);
+    setSaving(false);
+    setSavedAt(Date.now());
+    setTimeout(() => setSavedAt(null), 2000);
+  }
 
   async function handleSaveGoal() {
     if (!updateStepGoal) return;
@@ -105,10 +229,35 @@ export default function StepsClient({
     setTimeout(() => setSavedAt(null), 2000);
   }
 
-  const maxSteps = Math.max(goal, ...last14.map((d) => d.steps), 1);
+  async function handleCreateReminder(item: StepRoutineItem) {
+    if (!createReminderFromRoutine) return;
+    setReminderStatus((prev) => ({ ...prev, [item.id]: "saving" }));
+    const res = await createReminderFromRoutine(item.label, reminderTime);
+    setReminderStatus((prev) => ({ ...prev, [item.id]: res.error ? "idle" : "done" }));
+    if (!res.error) setReminderOpenFor(null);
+  }
 
   return (
     <div className="space-y-5">
+      {/* Statut Oura */}
+      {!readOnly && (
+        hasOura ? (
+          <div className="flex items-center gap-2" style={{ fontSize: 11, color: "rgba(74,222,128,0.85)" }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", flexShrink: 0 }} />
+            Connecté à Oura. Tes pas d&apos;hier se synchronisent automatiquement chaque matin.
+          </div>
+        ) : (
+          <Link
+            href={ouraTrackingHref}
+            className="flex items-center gap-2"
+            style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", textDecoration: "none" }}
+          >
+            <Watch size={12} style={{ flexShrink: 0 }} />
+            Connecte ta Oura Ring pour ne plus saisir tes pas à la main
+          </Link>
+        )
+      )}
+
       {/* Goal + today's progress */}
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
@@ -118,42 +267,45 @@ export default function StepsClient({
               Objectif quotidien
             </p>
           </div>
-          {!readOnly && updateStepGoal ? (
-            editingGoal ? (
-              <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={goal}
-                  onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
-                  className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
-                />
-                <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">OK</button>
-              </div>
+          <div className="flex items-center gap-3">
+            {streaks.current > 0 && (
+              <span className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E]">
+                <Flame size={11} /> {streaks.current}j d&apos;affilée
+              </span>
+            )}
+            {!readOnly && updateStepGoal ? (
+              editingGoal ? (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={goal}
+                    onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
+                    className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
+                  />
+                  <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">OK</button>
+                </div>
+              ) : (
+                <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
+                  <Target size={11} /> {goal.toLocaleString("fr-FR")} pas
+                </button>
+              )
             ) : (
-              <button onClick={() => setEditingGoal(true)} className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
-                <Target size={11} /> {goal.toLocaleString("fr-FR")} pas
-              </button>
-            )
-          ) : (
-            <span className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
-              <Target size={11} /> {goal.toLocaleString("fr-FR")} pas/jour
-            </span>
-          )}
+              <span className="text-[10px] font-bold text-[#F5EDED]/40 flex items-center gap-1">
+                <Target size={11} /> {goal.toLocaleString("fr-FR")} pas/jour
+              </span>
+            )}
+          </div>
         </div>
 
-        <div className="flex items-end gap-4 mb-3">
+        <div className="flex items-end justify-between gap-4 mb-3">
           <div>
             <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
             <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
           </div>
-          {!readOnly && logSteps && (
-            <input
-              type="number"
-              value={stepsInput}
-              onChange={(e) => setStepsInput(e.target.value)}
-              placeholder="Mettre à jour"
-              className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
-            />
+          {!readOnly && logSteps && todaySteps > 0 && (
+            <button onClick={handleReset} title="Réinitialiser" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors mb-1">
+              <RotateCcw size={14} />
+            </button>
           )}
         </div>
 
@@ -163,7 +315,40 @@ export default function StepsClient({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-[#F5EDED]/30">{pct}% de l&apos;objectif</p>
+        <p className="text-[10px] text-[#F5EDED]/30 mb-4">{pct}% de l&apos;objectif</p>
+
+        {!readOnly && logSteps && (
+          <>
+            <div className="flex flex-wrap gap-1.5 mb-2.5">
+              {QUICK_ADD_AMOUNTS.map((amount) => (
+                <button
+                  key={amount}
+                  onClick={() => handleQuickAdd(amount)}
+                  disabled={saving}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/50 transition-colors disabled:opacity-40"
+                >
+                  <Plus size={10} /> {amount.toLocaleString("fr-FR")}
+                </button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                value={stepsInput}
+                onChange={(e) => setStepsInput(e.target.value)}
+                placeholder="Saisie précise"
+                className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
+              />
+              <button
+                onClick={handleSaveToday}
+                disabled={saving}
+                className="flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+              >
+                {saving ? "…" : savedAt ? <><Check size={13} /> Ok</> : "Enregistrer"}
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Routine */}
@@ -177,30 +362,62 @@ export default function StepsClient({
           <div className="space-y-1.5 mb-3">
             {items.map((item) => {
               const done = completed.has(item.id);
+              const rStatus = reminderStatus[item.id] ?? "idle";
               return (
-                <div key={item.id} className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
-                  {!readOnly ? (
-                    <button
-                      onClick={() => toggleCompleted(item.id)}
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors ${
-                        done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
-                      }`}
-                    >
-                      {done && <Check size={12} className="text-white" />}
-                    </button>
-                  ) : (
-                    <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"}`}>
-                      {done && <Check size={12} className="text-white" />}
+                <div key={item.id} className="bg-[#150000] border border-[#890404]/15 rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2.5 px-3 py-2.5">
+                    {!readOnly ? (
+                      <button
+                        onClick={() => toggleCompleted(item.id)}
+                        className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 transition-colors ${
+                          done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"
+                        }`}
+                      >
+                        {done && <Check size={12} className="text-white" />}
+                      </button>
+                    ) : (
+                      <div className={`w-5 h-5 rounded-md border flex items-center justify-center flex-shrink-0 ${done ? "bg-[#E01E1E] border-[#E01E1E]" : "border-[#890404]/40"}`}>
+                        {done && <Check size={12} className="text-white" />}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className={`text-xs font-semibold ${done ? "text-[#F5EDED]/40 line-through" : "text-white"}`}>{item.label}</p>
+                      {item.time_label && <p className="text-[10px] text-[#F5EDED]/30">{item.time_label}</p>}
                     </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className={`text-xs font-semibold ${done ? "text-[#F5EDED]/40 line-through" : "text-white"}`}>{item.label}</p>
-                    {item.time_label && <p className="text-[10px] text-[#F5EDED]/30">{item.time_label}</p>}
+                    {!readOnly && createReminderFromRoutine && (
+                      <button
+                        onClick={() => { setReminderOpenFor(reminderOpenFor === item.id ? null : item.id); setReminderTime("12:00"); }}
+                        title="Créer un rappel push"
+                        className={rStatus === "done" ? "text-green-400" : "text-[#F5EDED]/20 hover:text-[#E01E1E] transition-colors"}
+                      >
+                        {rStatus === "done" ? <Check size={13} /> : <Bell size={13} />}
+                      </button>
+                    )}
+                    {!readOnly && deleteRoutineItem && (
+                      <button onClick={() => handleDeleteItem(item.id)} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
-                  {!readOnly && deleteRoutineItem && (
-                    <button onClick={() => handleDeleteItem(item.id)} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
-                      <Trash2 size={13} />
-                    </button>
+                  {reminderOpenFor === item.id && (
+                    <div className="flex items-center gap-2 px-3 py-2.5 border-t border-[#890404]/15">
+                      <input
+                        type="time"
+                        value={reminderTime}
+                        onChange={(e) => setReminderTime(e.target.value)}
+                        className="bg-[#0D0000] border border-[#890404]/25 rounded-md px-2 py-1 text-xs text-white focus:outline-none"
+                      />
+                      <button
+                        onClick={() => handleCreateReminder(item)}
+                        disabled={rStatus === "saving"}
+                        className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] disabled:opacity-40"
+                      >
+                        {rStatus === "saving" ? "…" : "Rappel chaque jour à cette heure"}
+                      </button>
+                      <button onClick={() => setReminderOpenFor(null)} className="text-[#F5EDED]/25 hover:text-white">
+                        <X size={13} />
+                      </button>
+                    </div>
                   )}
                 </div>
               );
@@ -231,42 +448,58 @@ export default function StepsClient({
             </button>
           )
         )}
-
-        {!readOnly && logSteps && (
-          <button
-            onClick={handleSaveToday}
-            disabled={saving}
-            className="w-full mt-4 flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
-          >
-            {saving ? "Sauvegarde…" : savedAt ? <><Check size={13} /> Enregistré</> : "Enregistrer aujourd'hui"}
-          </button>
-        )}
       </div>
 
-      {/* History */}
+      {/* Historique */}
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <div className="flex items-center gap-2 mb-4">
           <Flame size={14} className="text-[#E01E1E]" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            14 derniers jours
+            {HEATMAP_WEEKS} dernières semaines
           </p>
         </div>
-        <div className="flex items-end gap-1.5 h-28">
-          {last14.map((d) => {
-            const h = Math.max(4, (d.steps / maxSteps) * 100);
-            const reached = d.steps >= goal;
-            return (
-              <div key={d.date} className="flex-1 flex flex-col items-center gap-1.5">
-                <div className="w-full flex-1 flex items-end">
-                  <div
-                    className={`w-full rounded-t ${reached ? "bg-green-500" : d.steps > 0 ? "bg-[#E01E1E]/60" : "bg-[#890404]/15"}`}
-                    style={{ height: `${h}%` }}
-                  />
-                </div>
-                <span className="text-[8px] text-[#F5EDED]/25">{dayLabel(d.date).slice(0, 2)}</span>
-              </div>
-            );
-          })}
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, marginBottom: 6 }}>
+          {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
+            <p key={i} style={{ textAlign: "center", fontSize: 8, fontWeight: 700, color: "rgba(245,237,237,0.25)" }}>{d}</p>
+          ))}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {heatmapWeeks.map((row, wi) => (
+            <div key={wi} style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4 }}>
+              {row.map((cell) => (
+                <div
+                  key={cell.date}
+                  title={cell.future ? undefined : `${shortDate(cell.date)} : ${cell.steps.toLocaleString("fr-FR")} pas`}
+                  style={{
+                    aspectRatio: "1",
+                    borderRadius: 5,
+                    background: cellColor(cell.steps, goal, cell.future),
+                    border: cell.isToday ? "1.5px solid #E01E1E" : "1px solid rgba(245,237,237,0.04)",
+                  }}
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-5 mt-4 pt-4" style={{ borderTop: "1px solid rgba(245,237,237,0.06)" }}>
+          <div>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Moyenne 7j</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{avg7.toLocaleString("fr-FR")}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Record</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{bestDay.toLocaleString("fr-FR")}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Objectif atteint</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{goalMetCount}/{pastCells.length}</p>
+          </div>
+          <div>
+            <p style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 2px" }}>Record série</p>
+            <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{streaks.best}j</p>
+          </div>
         </div>
       </div>
     </div>

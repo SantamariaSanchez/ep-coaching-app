@@ -31,7 +31,9 @@ import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import { ALLERGEN_LABELS, DIET_LABELS } from "@/lib/recipes-data";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 import type { ScheduleBlock } from "@/utils/agenda";
+import type { StepRoutineItem, StepLog } from "@/utils/steps";
 import WeeklyAgenda from "./WeeklyAgenda";
+import StepsClient from "@/components/steps/StepsClient";
 import ClientProgramView from "./ClientProgramView";
 import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
@@ -53,7 +55,7 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet, CalendarDays,
+  FileText, Droplet, CalendarDays, Footprints,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -72,6 +74,7 @@ const TABS = [
   { key: "rappels",   label: "Rappels",   icon: ListChecks },
   { key: "cycle",     label: "Cycle",     icon: Droplet },
   { key: "agenda",    label: "Agenda",    icon: CalendarDays },
+  { key: "pas",       label: "Pas",       icon: Footprints },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -148,6 +151,9 @@ export default function ClientProfileTabs({
   addPeriodLog,
   deletePeriodLog,
   scheduleBlocks,
+  stepRoutineItems,
+  stepLogs,
+  clientHasOura,
   generatePlanSuggestions,
   corrections,
   sendCorrectionFeedback,
@@ -203,6 +209,9 @@ export default function ClientProfileTabs({
   ) => Promise<{ error?: string; id?: string }>;
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
   scheduleBlocks: ScheduleBlock[];
+  stepRoutineItems: StepRoutineItem[];
+  stepLogs: StepLog[];
+  clientHasOura: boolean;
   generatePlanSuggestions: (clientId: string) => Promise<PlanSuggestions>;
   corrections: ExerciseCorrectionResolved[];
   sendCorrectionFeedback: (
@@ -480,6 +489,22 @@ export default function ClientProfileTabs({
             Emploi du temps du client. Lecture seule, c&apos;est lui qui le gère depuis son espace.
           </p>
           <WeeklyAgenda blocks={scheduleBlocks} editable={false} />
+        </div>
+      )}
+
+      {activeTab === "pas" && (
+        <div>
+          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+            Suivi de pas du client. Lecture seule, c&apos;est lui qui coche sa routine et logue ses pas
+            au quotidien. L&apos;objectif se règle depuis l&apos;onglet Fiche client.
+          </p>
+          <StepsClient
+            settings={{ client_id: client.id, daily_goal: stepGoal }}
+            routineItems={stepRoutineItems}
+            logs={stepLogs}
+            hasOura={clientHasOura}
+            readOnly
+          />
         </div>
       )}
 

@@ -105,3 +105,28 @@ export async function logSteps(
     return { error: "Erreur inattendue." };
   }
 }
+
+// Transforme une habitude de routine en rappel push quotidien, en un tap —
+// même table et même cron que "Mes rappels" (app/api/cron/send-reminders),
+// aucune nouvelle infra. Client uniquement : "Mes rappels" n'existe pas côté
+// coach (voir app/dashboard/client/reminders).
+export async function createReminderFromRoutine(label: string, time: string): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  if (!label.trim() || !time) return { error: "Rappel invalide." };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.from("reminders").insert({
+      client_id: guard.userId,
+      label: `🚶 ${label.trim()}`,
+      time,
+      days: ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"],
+    });
+    if (error) return { error: "Erreur lors de la création du rappel." };
+    revalidatePath("/dashboard/client/reminders");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
