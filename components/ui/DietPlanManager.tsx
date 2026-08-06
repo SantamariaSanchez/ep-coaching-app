@@ -886,6 +886,9 @@ function PlanDetailRow({
           {plan.is_active && <CheckCircle2 size={13} className="text-green-400 flex-shrink-0" />}
           <div className="min-w-0">
             <p className="text-sm font-bold text-white truncate">{plan.name}</p>
+            {plan.objective && (
+              <p className="text-[11px] text-[#F5EDED]/40 truncate">{plan.objective}</p>
+            )}
             <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest">
               {plan.mode} {isWeekly && "· hebdo"} · {plan.diet_plan_meals.length} aliment{plan.diet_plan_meals.length !== 1 ? "s" : ""} ·{" "}
               {new Date(plan.created_at).toLocaleDateString("fr-FR")}
