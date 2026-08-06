@@ -56,7 +56,54 @@ const FOOD_CATEGORIES = [
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
+// Bornes de la table foods, appliquées en base par des contraintes CHECK
+// (voir supabase/migrations/20260805k_input_hardening_constraints.sql). Les
+// colonnes décrivent un aliment pour 100 g : 1000 kcal et 100 g de macro sont
+// déjà des extrêmes pour 100 g de nourriture.
+const FOOD_MAX_CALORIES_PER_100 = 1000;
+const FOOD_MAX_MACRO_PER_100 = 100;
+
+// Bornes de saisie de l'ajout rapide, alignées sur ce que food_logs accepte.
+// Une journée entière loguée d'un coup reste largement en dessous.
+const QUICK_ADD_MAX_CALORIES = 20000;
+const QUICK_ADD_MAX_MACRO = 2000;
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
+
+// L'ajout rapide saisit le total d'un repas, pas des valeurs pour 100 g. On
+// en déduit une portion de référence cohérente : celle qui garde toutes les
+// valeurs pour 100 g dans les bornes de la table foods. Un repas normal reste
+// sur une portion de 100 g (comportement historique inchangé) ; un repas à
+// 1200 kcal devient une portion de 120 g à 1000 kcal pour 100 g. Dans tous
+// les cas les totaux logués restent exactement ceux saisis.
+function quickAddPortion(totals: {
+  calories: number;
+  proteins: number;
+  carbs: number;
+  fats: number;
+}) {
+  const portionG = Math.ceil(
+    Math.max(
+      100,
+      (totals.calories * 100) / FOOD_MAX_CALORIES_PER_100,
+      (totals.proteins * 100) / FOOD_MAX_MACRO_PER_100,
+      (totals.carbs * 100) / FOOD_MAX_MACRO_PER_100,
+      (totals.fats * 100) / FOOD_MAX_MACRO_PER_100
+    )
+  );
+  const ratio = portionG / 100;
+  // Le min() est une ceinture de sécurité contre les arrondis flottants :
+  // la portion garantit déjà que la valeur tient dans la borne.
+  const per100 = (value: number, max: number) =>
+    Math.min(max, Math.round((value / ratio) * 10) / 10);
+  return {
+    portionG,
+    calories_per_100: per100(totals.calories, FOOD_MAX_CALORIES_PER_100),
+    proteins_per_100: per100(totals.proteins, FOOD_MAX_MACRO_PER_100),
+    carbs_per_100: per100(totals.carbs, FOOD_MAX_MACRO_PER_100),
+    fats_per_100: per100(totals.fats, FOOD_MAX_MACRO_PER_100),
+  };
+}
 
 function calcMacros(food: Food, quantityG: number) {
   const r = quantityG / 100;
@@ -828,24 +875,47 @@ export default function ClientNutritionView({
       setQuickAddError("Indique au moins les calories.");
       return;
     }
-    setQuickAdding(true);
-    setQuickAddError(null);
 
     const proteins = parseFloat(quickAddForm.proteins) || 0;
     const carbs = parseFloat(quickAddForm.carbs) || 0;
     const fats = parseFloat(quickAddForm.fats) || 0;
+
+    if (calories > QUICK_ADD_MAX_CALORIES) {
+      setQuickAddError(
+        `Calories trop élevées (${QUICK_ADD_MAX_CALORIES} kcal maximum). Vérifie ta saisie.`
+      );
+      return;
+    }
+    if (proteins < 0 || carbs < 0 || fats < 0) {
+      setQuickAddError("Les macros ne peuvent pas être négatives.");
+      return;
+    }
+    if (Math.max(proteins, carbs, fats) > QUICK_ADD_MAX_MACRO) {
+      setQuickAddError(
+        `Macros trop élevées (${QUICK_ADD_MAX_MACRO} g maximum par macro). Vérifie ta saisie.`
+      );
+      return;
+    }
+
+    setQuickAdding(true);
+    setQuickAddError(null);
+
     const name = quickAddForm.name.trim() || "Ajout rapide";
 
-    // Quick-add is logged as a one-off custom food whose per-100g values
-    // are the entered totals, paired with a fixed 100g quantity — avoids
-    // needing a separate "absolute amount" log schema.
+    // L'ajout rapide est logué comme un aliment perso jetable. On ne fige plus
+    // la portion à 100 g : un repas complet dépasserait alors les bornes de la
+    // table foods (1000 kcal et 100 g de macro pour 100 g) et l'insertion
+    // échouait. La portion de référence suit maintenant les totaux saisis,
+    // donc le log garde exactement les valeurs entrées.
+    const portion = quickAddPortion({ calories, proteins, carbs, fats });
+
     const foodResult = await createCustomFood({
       name,
       category: "Divers",
-      calories_per_100: calories,
-      proteins_per_100: proteins,
-      carbs_per_100: carbs,
-      fats_per_100: fats,
+      calories_per_100: portion.calories_per_100,
+      proteins_per_100: portion.proteins_per_100,
+      carbs_per_100: portion.carbs_per_100,
+      fats_per_100: portion.fats_per_100,
       fibers_per_100: 0,
     });
 
@@ -862,7 +932,7 @@ export default function ClientNutritionView({
       client_id: "",
       food_id: foodResult.food.id,
       meal_slot: quickAddSlot,
-      quantity_g: 100,
+      quantity_g: portion.portionG,
       logged_at: today,
       calories,
       proteins,
@@ -875,7 +945,7 @@ export default function ClientNutritionView({
     const logResult = await addFoodLog({
       foodId: foodResult.food.id,
       mealSlot: quickAddSlot,
-      quantityG: 100,
+      quantityG: portion.portionG,
       calories,
       proteins,
       carbs,
