@@ -155,6 +155,14 @@ export async function createCustomFood(params: {
     const guard = await requireClient();
     if (!guard.ok) return { error: guard.error };
 
+    // Revalidation serveur du nom : la validation côté client ne protège que
+    // le parcours normal dans l'interface.
+    const name = (params.name ?? "").trim();
+    if (!name) return { error: "Le nom de l'aliment est obligatoire." };
+    if (name.length > 200) {
+      return { error: "Le nom de l'aliment est trop long (200 caractères maximum)." };
+    }
+
     // Admin client — bypasses RLS regardless of how the foods table was set
     // up, since this is shared reference content.
     const supabase = createAdminClient();
@@ -162,13 +170,26 @@ export async function createCustomFood(params: {
       .from("foods")
       .insert({
         ...params,
+        name,
         is_custom: true,
         created_by: guard.userId,
       })
       .select()
       .single();
 
-    if (error || !data) return { error: "Erreur lors de la création." };
+    if (error || !data) {
+      console.error("createCustomFood error:", error);
+      // 23514 = violation d'une contrainte CHECK : les valeurs saisies sortent
+      // des bornes de la table foods. Message explicite plutôt qu'une erreur
+      // générique qui laisse la personne sans piste.
+      if (error?.code === "23514") {
+        return {
+          error:
+            "Valeurs hors bornes : pour 100 g, les calories doivent rester sous 1000 kcal et chaque macro sous 100 g.",
+        };
+      }
+      return { error: "Erreur lors de la création." };
+    }
     return { food: data as Food };
   } catch {
     return { error: "Erreur inattendue." };
