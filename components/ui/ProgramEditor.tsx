@@ -436,15 +436,15 @@ export default function ProgramEditor({
   // Génère les séances vides du split choisi — la structure d'abord, les
   // exercices ensuite.
   function applyScaffold() {
-    setState((s) => {
-      if (
-        s.days.length > 0 &&
-        !confirm("Regénérer les séances va remplacer la structure actuelle et ses exercices. Continuer ?")
-      ) {
-        return s;
-      }
-      return { ...s, days: scaffoldDays(s.type, s.frequency) };
-    });
+    // Le confirm reste hors du updater de setState : un updater peut être
+    // rejoué par React, et la question serait alors posée deux fois.
+    if (
+      state.days.length > 0 &&
+      !confirm("Regénérer les séances va remplacer la structure actuelle et ses exercices. Continuer ?")
+    ) {
+      return;
+    }
+    setState((s) => ({ ...s, days: scaffoldDays(s.type, s.frequency) }));
     setLoadedTemplateName(null);
   }
 
