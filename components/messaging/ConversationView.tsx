@@ -518,7 +518,15 @@ export default function ConversationView({
 
         if (uploadError) throw uploadError;
 
-        const { data: pub } = supabase.storage.from("message-images").getPublicUrl(uploadData.path);
+        // message-images est un bucket prive (photos privees entre un client et
+        // son coach) : getPublicUrl servait un lien permanent et non authentifie,
+        // exactement l'inverse de ce qu'il fallait. createSignedUrl respecte la
+        // RLS du bucket (proprietaire ou son coach uniquement), meme pattern que
+        // voice_url/video_url plus haut dans ce fichier.
+        const { data: signed, error: signError } = await supabase.storage
+          .from("message-images")
+          .createSignedUrl(uploadData.path, 365 * 24 * 60 * 60);
+        if (signError || !signed) throw signError ?? new Error("signed url failed");
 
         const { data: msgData, error: insertError } = await supabase
           .from("messages")
@@ -528,7 +536,7 @@ export default function ConversationView({
             receiver_id: peerId,
             type: "image",
             content: null,
-            image_url: pub.publicUrl,
+            image_url: signed.signedUrl,
             is_read: false,
           })
           .select()
