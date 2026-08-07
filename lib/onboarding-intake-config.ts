@@ -118,9 +118,28 @@ export const ONBOARDING_SECTIONS: SectionDef[] = [
     groups: [["seances_actuel", "seances_voulu"], ["duree_seance"], ["disponibilite"], ["cardio"], ["routine_actuelle"], ["mouvements_ok"], ["mouvements_probleme"], ["split"], ["machines_pas_aimees"]],
   },
   {
+    // Détermine quel matériel peut réellement t'être proposé (voir
+    // lib/plan-generator.ts) — avant, la fiche partait du principe que tout
+    // le monde s'entraîne en salle, y compris pour les suggestions et le
+    // constructeur de programme.
     key: "secG",
+    title: "Ton lieu d'entraînement",
+    kicker: "Section 7",
+    fields: {
+      lieu_entrainement: {
+        type: "radio",
+        label: "Où t'entraînes-tu principalement ?",
+        options: ["En salle de sport", "À la maison, avec du matériel", "À la maison, sans matériel"],
+        required: true,
+      },
+    },
+    groups: [["lieu_entrainement"]],
+  },
+  {
+    key: "secG2",
     title: "Ta salle de sport",
     kicker: "Section 7",
+    conditional: (a) => a.lieu_entrainement === "En salle de sport",
     fields: {
       nom_salle: { type: "text", label: "Le nom ou le lien de ta salle", required: true },
     },
@@ -177,6 +196,7 @@ export const INTAKE_FIELD_MAP: Record<string, string> = {
   mouvements_probleme: "exercises_problematic",
   split: "preferred_split",
   machines_pas_aimees: "disliked_equipment",
+  lieu_entrainement: "training_access",
   nom_salle: "gym_name",
   autre: "additional_notes",
 };
@@ -195,6 +215,11 @@ const RADIO_TO_ENUM: Record<string, Record<string, string>> = {
   emploi_type: { Fixe: "fixe", Variable: "variable" },
   preference_plan: { "Plan fixe": "fixe", "Macros flexibles": "flexible" },
   preference_apport: { "Linéaire": "lineaire", "Qui varie selon les jours": "variable" },
+  lieu_entrainement: {
+    "En salle de sport": "salle",
+    "À la maison, avec du matériel": "domicile_equipe",
+    "À la maison, sans matériel": "domicile_minimal",
+  },
 };
 
 export function mapRadioToEnum(key: string, value: string): string | null {

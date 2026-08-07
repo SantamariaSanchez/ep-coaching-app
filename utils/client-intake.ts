@@ -47,6 +47,9 @@ export interface ClientIntake {
   exercises_problematic: string | null;
   preferred_split: string | null;
   disliked_equipment: string | null;
+  // Où le client s'entraîne réellement — conditionne quel matériel peut lui
+  // être suggéré/utilisé sans que ça reste au hasard (voir lib/plan-generator).
+  training_access: "salle" | "domicile_equipe" | "domicile_minimal" | null;
   gym_name: string | null;
   gym_link: string | null;
   additional_notes: string | null;

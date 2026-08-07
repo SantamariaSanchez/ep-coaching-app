@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
-import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, type MuscleGroup } from "@/lib/volume-data";
+import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, VOLUME_LANDMARKS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { ClientIntake } from "@/utils/client-intake";
 import {
@@ -110,6 +110,77 @@ export function scaffoldDays(type: string, frequencyRaw: string): DayRow[] {
     return totalByLabel[l] > 1 ? `${l} ${seen[l]}` : l;
   });
   return finalLabels.map((label) => ({ localId: uid(), day_label: label, exercises: [] }));
+}
+
+// ── Vérification volume hebdomadaire ────────────────────────────────────────
+// MEV/MAV/MRV (lib/volume-data.ts) existaient déjà en base de code mais
+// n'étaient utilisés nulle part — un vrai repère scientifique (Renaissance
+// Periodization) pour juger un programme construit, pas juste "on a mis des
+// exercices puis on a sauvegardé". Ne compte que le travail direct
+// (is_direct) : le travail indirect (ex. les épaules sollicitées par le
+// développé couché) n'est volontairement pas crédité au groupe, cohérent
+// avec la méthodologie MEV/MAV/MRV qui compte les séries directes.
+function computeWeeklyVolume(days: DayRow[]): Record<string, number> {
+  const volume: Record<string, number> = {};
+  for (const day of days) {
+    for (const ex of day.exercises) {
+      if (ex.is_direct !== "true" || !ex.muscle_group) continue;
+      const sets = parseInt(ex.sets, 10);
+      if (!sets || sets <= 0) continue;
+      volume[ex.muscle_group] = (volume[ex.muscle_group] ?? 0) + sets;
+    }
+  }
+  return volume;
+}
+
+function volumeStatus(sets: number, mev: number, mav: number, mrv: number): { label: string; color: string } {
+  if (sets < mev) return { label: "Insuffisant", color: "#f87171" };
+  if (sets <= mav) return { label: "Optimal", color: "#4ade80" };
+  if (sets <= mrv) return { label: "Élevé, gérable", color: "#fbbf24" };
+  return { label: "Excessif", color: "#f87171" };
+}
+
+function VolumeReviewPanel({ days }: { days: DayRow[] }) {
+  const volume = computeWeeklyVolume(days);
+  const trainedGroups = MUSCLE_GROUPS.filter((g) => (volume[g] ?? 0) > 0);
+  if (trainedGroups.length === 0) return null;
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">
+        Vérification du volume hebdomadaire
+      </p>
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+        Séries directes par groupe musculaire sur la semaine, comparées aux repères MEV/MAV/MRV
+        (Renaissance Periodization). Un repère, pas une vérité absolue : le niveau, la récupération et
+        l&apos;historique du client comptent aussi.
+      </p>
+      <div className="grid sm:grid-cols-2 gap-2">
+        {trainedGroups.map((group) => {
+          const sets = volume[group] ?? 0;
+          const landmark = VOLUME_LANDMARKS[group];
+          if (!landmark) return null;
+          const status = volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv);
+          return (
+            <div key={group} className="flex items-center justify-between gap-2 bg-[#150000] rounded-lg px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white truncate">{group}</p>
+                <p className="text-[9.5px] text-[#F5EDED]/30">
+                  MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}
+                </p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-black" style={{ color: status.color }}>{sets}</p>
+                <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
+                  {status.label}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function initFromProgram(program: ProgramWithDays | null) {
@@ -1227,6 +1298,8 @@ export default function ProgramEditor({
           </button>
         </>
       )}
+
+      <VolumeReviewPanel days={state.days} />
 
       {/* Error */}
       {error && (

@@ -17,7 +17,7 @@ import type {
 import type { CommunityRecipe } from "@/utils/community-recipes";
 import type { SavedMeal } from "@/utils/saved-meals";
 import type { ClientIntake } from "@/utils/client-intake";
-import { buildWatchKeywords, matchesWatchKeyword } from "@/lib/food-watch-keywords";
+import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch, type FoodWatchContext } from "@/lib/food-watch-keywords";
 import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
 
 // ── Constants ────────────────────────────────────────────────────────────────
@@ -190,13 +190,13 @@ function MacroRing({
 function FoodResultButton({
   food,
   onClick,
-  watchKeywords,
+  watchContext,
 }: {
   food: Food;
   onClick: () => void;
-  watchKeywords?: string[];
+  watchContext?: FoodWatchContext;
 }) {
-  const watchHit = watchKeywords && watchKeywords.length > 0 ? matchesWatchKeyword(food.name, watchKeywords) : null;
+  const watchHits = watchContext && hasFoodWatchContext(watchContext) ? checkFoodWatch(food, watchContext) : [];
   return (
     <button
       onClick={onClick}
@@ -209,13 +209,13 @@ function FoodResultButton({
             custom
           </span>
         )}
-        {watchHit && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
+        {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
       </p>
       <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
         {food.calories_per_100} kcal/100g · P{" "}
         {food.proteins_per_100}g · G {food.carbs_per_100}g ·
         L {food.fats_per_100}g
-        {watchHit && <span className="text-amber-400/80"> · à vérifier ({watchHit})</span>}
+        {watchHits.length > 0 && <span className="text-amber-400/80"> · {watchHits.join(", ")}</span>}
       </p>
     </button>
   );
@@ -332,7 +332,8 @@ export default function ClientNutritionView({
   const [savingMealName, setSavingMealName] = useState("");
   const [savingMealBusy, setSavingMealBusy] = useState(false);
 
-  const watchKeywords = useMemo(() => buildWatchKeywords(intake), [intake]);
+  const watchContext = useMemo(() => buildFoodWatchContext(intake), [intake]);
+  const hasWatch = hasFoodWatchContext(watchContext);
 
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
@@ -1507,11 +1508,11 @@ export default function ClientNutritionView({
 
                 {searchTab === "aliments" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
-                    {watchKeywords.length > 0 && (
+                    {hasWatch && (
                       <div className="mx-1 mt-2 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2">
                         <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
                         <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
-                          À vérifier pour toi : {watchKeywords.join(", ")}
+                          À surveiller pour toi : {summarizeFoodWatchContext(watchContext)}.
                         </p>
                       </div>
                     )}
@@ -1521,7 +1522,7 @@ export default function ClientNutritionView({
                           <Clock size={10} /> Récents
                         </p>
                         {recentFoods.map((food) => (
-                          <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
+                          <FoodResultButton key={`recent-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchContext={watchContext} />
                         ))}
                       </div>
                     )}
@@ -1531,7 +1532,7 @@ export default function ClientNutritionView({
                           <Flame size={10} /> Les plus utilisés
                         </p>
                         {mostUsedFoods.map((food) => (
-                          <FoodResultButton key={`used-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
+                          <FoodResultButton key={`used-${food.id}`} food={food} onClick={() => selectFoodForLogging(food)} watchContext={watchContext} />
                         ))}
                       </div>
                     )}
@@ -1577,7 +1578,7 @@ export default function ClientNutritionView({
                       )
                     ) : (
                       filteredFoods.map((food) => (
-                        <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} watchKeywords={watchKeywords} />
+                        <FoodResultButton key={food.id} food={food} onClick={() => selectFoodForLogging(food)} watchContext={watchContext} />
                       ))
                     )}
                   </div>

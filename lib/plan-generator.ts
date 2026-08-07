@@ -1,6 +1,33 @@
 import type { ClientIntake } from "@/utils/client-intake";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+import { getEquipmentType, type EquipmentType } from "@/lib/exercise-library-content";
+
+// ── Accès matériel réel du client ───────────────────────────────────────────
+// Racine du bug remonté : rien dans l'app ne savait si un client s'entraîne
+// en salle ou à la maison, donc les suggestions (et le picker manuel)
+// proposaient des machines à des clients qui n'ont jamais mis les pieds
+// dans une salle. Un seul point de vérité ici, réutilisé par le générateur
+// de suggestions ET par la vérification de conflit du constructeur manuel.
+
+export type TrainingAccess = NonNullable<ClientIntake["training_access"]>;
+
+export const TRAINING_ACCESS_LABELS: Record<TrainingAccess, string> = {
+  salle: "en salle de sport",
+  domicile_equipe: "à la maison, avec du matériel",
+  domicile_minimal: "à la maison, sans matériel",
+};
+
+const ALL_EQUIPMENT_TYPES: EquipmentType[] = ["machine", "poulie", "poids_libre", "poids_du_corps", "autre"];
+
+export function allowedEquipmentTypes(access: ClientIntake["training_access"]): EquipmentType[] {
+  if (access === "salle") return ALL_EQUIPMENT_TYPES;
+  if (access === "domicile_equipe") return ["poids_libre", "poids_du_corps", "autre"];
+  if (access === "domicile_minimal") return ["poids_du_corps", "autre"];
+  // Fiche pas encore renseignée : ne rien filtrer plutôt que de bloquer à
+  // tort (comportement identique à avant l'ajout du champ).
+  return ALL_EQUIPMENT_TYPES;
+}
 
 // ── Phase inference ──────────────────────────────────────────────────────────
 
@@ -138,7 +165,7 @@ function isExcluded(ex: LibraryExercise, excludeText: string): boolean {
 // incomplète. Pas un blocage silencieux (comme dans le générateur de
 // suggestions) : ici le coach voit exactement pourquoi et décide.
 
-export type ConflictSource = "injuries" | "exercises_problematic" | "disliked_equipment" | "custom";
+export type ConflictSource = "injuries" | "exercises_problematic" | "disliked_equipment" | "equipment_access" | "custom";
 
 export interface ExerciseConflict {
   source: ConflictSource;
@@ -149,6 +176,7 @@ const CONFLICT_SOURCE_LABEL: Record<ConflictSource, string> = {
   injuries: "Blessure/douleur déclarée",
   exercises_problematic: "Exercice signalé comme problématique",
   disliked_equipment: "Matériel détesté déclaré",
+  equipment_access: "Matériel indisponible pour ce client",
   custom: "Contrainte ajoutée par toi",
 };
 
@@ -168,7 +196,7 @@ function findKeywordMatches(haystack: string, text: string): string[] {
 
 export function checkExerciseConflicts(
   ex: { name: string; equipment: string | null },
-  intake: Pick<ClientIntake, "injuries" | "exercises_problematic" | "disliked_equipment"> | null,
+  intake: Pick<ClientIntake, "injuries" | "exercises_problematic" | "disliked_equipment" | "training_access"> | null,
   customConstraints: string
 ): ExerciseConflict[] {
   const haystack = `${ex.name} ${ex.equipment ?? ""}`.toLowerCase();
@@ -186,6 +214,21 @@ export function checkExerciseConflicts(
       conflicts.push({ source, keyword });
     }
   }
+
+  // Matériel physiquement indisponible pour ce client (ex. machine suggérée
+  // à quelqu'un qui s'entraîne à la maison) — un vrai empêchement, pas une
+  // préférence, donc vérifié même sans mot-clé déclaré.
+  if (intake?.training_access) {
+    const allowed = allowedEquipmentTypes(intake.training_access);
+    const type = getEquipmentType(ex.equipment);
+    if (!allowed.includes(type)) {
+      conflicts.push({
+        source: "equipment_access",
+        keyword: `${ex.equipment ?? "Matériel"} — client ${TRAINING_ACCESS_LABELS[intake.training_access]}`,
+      });
+    }
+  }
+
   return conflicts;
 }
 
@@ -210,16 +253,31 @@ export interface ExerciseSuggestion {
   reason: string;
 }
 
-function toSuggestion(ex: LibraryExercise): ExerciseSuggestion {
+function toSuggestion(ex: LibraryExercise, trainingAccess: ClientIntake["training_access"]): ExerciseSuggestion {
   const diffLabel =
     ex.difficulty === "debutant" ? "débutant" : ex.difficulty === "avance" ? "avancé, vérifie la maîtrise technique" : "intermédiaire";
+  const parts = [
+    `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` (cible ${ex.muscle_subgroup})` : ""}.`,
+  ];
+  // Justifie le choix par rapport à la situation réelle du client, pas
+  // seulement par les qualités intrinsèques de l'exercice — c'était le
+  // reproche exact : des suggestions "vraies dans l'absolu" mais fausses
+  // pour CE client précis (matériel qu'il n'a pas).
+  if (trainingAccess) {
+    const type = getEquipmentType(ex.equipment);
+    if (trainingAccess === "salle") {
+      parts.push(`Nécessite : ${ex.equipment ?? "matériel de salle"}.`);
+    } else if (type === "poids_du_corps" || type === "autre") {
+      parts.push(`Faisable ${TRAINING_ACCESS_LABELS[trainingAccess]}.`);
+    }
+  }
   return {
     name: ex.name,
     category: ex.category,
     difficulty: ex.difficulty,
     equipment: ex.equipment,
     muscleSubgroup: ex.muscle_subgroup,
-    reason: `${ex.category === "compose" ? "Mouvement composé" : "Isolation"}, niveau ${diffLabel}${ex.muscle_subgroup ? ` (cible ${ex.muscle_subgroup})` : ""}.`,
+    reason: parts.join(" "),
   };
 }
 
@@ -236,16 +294,27 @@ function suggestForGroup(
   library: LibraryExercise[],
   group: string,
   excludeText: string,
+  trainingAccess: ClientIntake["training_access"],
   maxPerCategory = 3
 ): MuscleGroupSuggestion {
-  const candidates = library.filter((ex) => ex.muscle_group === group && !isExcluded(ex, excludeText));
+  const allowed = allowedEquipmentTypes(trainingAccess);
+  const candidates = library.filter(
+    (ex) =>
+      ex.muscle_group === group &&
+      !isExcluded(ex, excludeText) &&
+      allowed.includes(getEquipmentType(ex.equipment))
+  );
   const byQuality = (a: LibraryExercise, b: LibraryExercise) =>
     difficultyRank(a) - difficultyRank(b) || a.name.localeCompare(b.name, "fr");
 
   const compound = candidates.filter((ex) => ex.category === "compose").sort(byQuality).slice(0, maxPerCategory);
   const isolation = candidates.filter((ex) => ex.category === "isolation").sort(byQuality).slice(0, maxPerCategory);
 
-  return { group, compound: compound.map(toSuggestion), isolation: isolation.map(toSuggestion) };
+  return {
+    group,
+    compound: compound.map((ex) => toSuggestion(ex, trainingAccess)),
+    isolation: isolation.map((ex) => toSuggestion(ex, trainingAccess)),
+  };
 }
 
 export interface ProgramSuggestion {
@@ -260,14 +329,15 @@ export function buildProgramSuggestions(
   sessionsPerWeek: number,
   library: LibraryExercise[],
   dislikedEquipment: string | null,
-  exercisesProblematic: string | null
+  exercisesProblematic: string | null,
+  trainingAccess: ClientIntake["training_access"] = null
 ): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
   const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
 
   return template.map((day) => ({
     dayLabel: day.label,
-    groups: day.groups.map((group) => suggestForGroup(library, group, excludeText)),
+    groups: day.groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess)),
   }));
 }
 

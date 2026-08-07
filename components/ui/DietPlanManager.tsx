@@ -25,7 +25,7 @@ import { calculateNutrients } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { ClientIntake } from "@/utils/client-intake";
-import { buildWatchKeywords, matchesWatchKeyword } from "@/lib/food-watch-keywords";
+import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch } from "@/lib/food-watch-keywords";
 
 export interface MacroTargets {
   calories: number;
@@ -186,7 +186,8 @@ export function PlanBuilder({
 
   const currentDay = structure === "weekly" ? activeDay : null;
 
-  const watchKeywords = useMemo(() => buildWatchKeywords(intake), [intake]);
+  const watchContext = useMemo(() => buildFoodWatchContext(intake), [intake]);
+  const hasWatch = hasFoodWatchContext(watchContext);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -704,11 +705,11 @@ export function PlanBuilder({
 
             {!selectedFood ? (
               <>
-                {watchKeywords.length > 0 && (
+                {hasWatch && (
                   <div className="mx-5 mt-3 mb-1 flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2 flex-shrink-0">
                     <AlertTriangle size={12} className="text-amber-400 flex-shrink-0 mt-0.5" />
                     <p className="text-[10.5px] text-amber-300/90 leading-relaxed">
-                      À vérifier pour ce client : {watchKeywords.join(", ")}
+                      À surveiller pour ce client : {summarizeFoodWatchContext(watchContext)}. Détection approximative sur le nom/la catégorie, vérifie toujours toi-même.
                     </p>
                   </div>
                 )}
@@ -734,7 +735,7 @@ export function PlanBuilder({
                     </div>
                   )}
                   {filtered.map((food) => {
-                    const watchHit = watchKeywords.length > 0 ? matchesWatchKeyword(food.name, watchKeywords) : null;
+                    const watchHits = hasWatch ? checkFoodWatch(food, watchContext) : [];
                     return (
                       <button
                         key={food.id}
@@ -743,11 +744,13 @@ export function PlanBuilder({
                       >
                         <p className="text-sm text-white font-medium flex items-center gap-1.5">
                           {food.name}
-                          {watchHit && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
+                          {watchHits.length > 0 && <AlertTriangle size={11} className="text-amber-400 flex-shrink-0" />}
                         </p>
                         <p className="text-[10px] text-[#F5EDED]/35">
                           {food.calories_per_100} kcal/100g · P {food.proteins_per_100}g
-                          {watchHit && <span className="text-amber-400/80"> · à vérifier ({watchHit})</span>}
+                          {watchHits.length > 0 && (
+                            <span className="text-amber-400/80"> · {watchHits.join(", ")}</span>
+                          )}
                         </p>
                       </button>
                     );
@@ -756,6 +759,18 @@ export function PlanBuilder({
               </>
             ) : (
               <div className="px-5 py-4 flex flex-col gap-4">
+                {(() => {
+                  const hits = hasWatch ? checkFoodWatch(selectedFood, watchContext) : [];
+                  if (hits.length === 0) return null;
+                  return (
+                    <div className="flex items-start gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-3 py-2.5">
+                      <AlertTriangle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                      <p className="text-[11px] text-amber-300/90 leading-relaxed">
+                        {selectedFood.name} : {hits.join(", ")}.
+                      </p>
+                    </div>
+                  );
+                })()}
                 <div>
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                     Quantité (g)

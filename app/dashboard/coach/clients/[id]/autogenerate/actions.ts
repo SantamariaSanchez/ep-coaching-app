@@ -91,7 +91,18 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
   if (library.length === 0) {
     warnings.push("Programme : bibliothèque d'exercices vide.");
   } else {
-    program = buildProgramSuggestions(sessionsPerWeek, library, intake.disliked_equipment, intake.exercises_problematic);
+    program = buildProgramSuggestions(
+      sessionsPerWeek,
+      library,
+      intake.disliked_equipment,
+      intake.exercises_problematic,
+      intake.training_access
+    );
+    if (!intake.training_access) {
+      warnings.push(
+        "Programme : lieu d'entraînement non renseigné dans la fiche client — les suggestions incluent aussi bien du matériel de salle que des exercices maison, vérifie avant de les proposer."
+      );
+    }
   }
 
   // ── Road map ───────────────────────────────────────────────────────────

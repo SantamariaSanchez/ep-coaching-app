@@ -71,6 +71,7 @@ function emptyIntake(): ClientIntakeInput {
     exercises_problematic: null,
     preferred_split: null,
     disliked_equipment: null,
+    training_access: null,
     gym_name: null,
     gym_link: null,
     additional_notes: null,
@@ -418,15 +419,29 @@ export default function ClientIntakeForm({
         </Field>
       </div>
 
-      <Section title="Salle de sport" />
-      <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Nom de la salle">
-          <input value={txt("gym_name")} onChange={(e) => set("gym_name", e.target.value || null)} className={inputClass} />
-        </Field>
-        <Field label="Lien de la salle">
-          <input value={txt("gym_link")} onChange={(e) => set("gym_link", e.target.value || null)} className={inputClass} />
-        </Field>
-      </div>
+      <Section title="Lieu d'entraînement" />
+      <Field label="Où s'entraîne-t-il/elle vraiment ? (conditionne le matériel proposable dans les suggestions et le constructeur de programme)">
+        <select
+          value={txt("training_access")}
+          onChange={(e) => set("training_access", (e.target.value || null) as ClientIntakeInput["training_access"])}
+          className={inputClass}
+        >
+          <option value="">Non renseigné</option>
+          <option value="salle">En salle de sport</option>
+          <option value="domicile_equipe">À la maison, avec du matériel</option>
+          <option value="domicile_minimal">À la maison, sans matériel</option>
+        </select>
+      </Field>
+      {form.training_access === "salle" && (
+        <div className="grid sm:grid-cols-2 gap-3 mt-3">
+          <Field label="Nom de la salle">
+            <input value={txt("gym_name")} onChange={(e) => set("gym_name", e.target.value || null)} className={inputClass} />
+          </Field>
+          <Field label="Lien de la salle">
+            <input value={txt("gym_link")} onChange={(e) => set("gym_link", e.target.value || null)} className={inputClass} />
+          </Field>
+        </div>
+      )}
 
       <Section title="Autre" />
       <Field label="Notes libres">
