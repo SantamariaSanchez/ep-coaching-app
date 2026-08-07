@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea,
 } from "recharts";
 import {
-  Moon, Activity, HeartPulse, Gauge, AlertTriangle, Info, CheckCircle2, Watch, Lock, Unlink,
+  Moon, Activity, HeartPulse, Gauge, Thermometer, AlertTriangle, Info, CheckCircle2, Watch, Lock, Unlink, Check, Flame,
 } from "lucide-react";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { LogBiometricsInput } from "@/app/dashboard/client/tracking/actions";
@@ -26,15 +26,72 @@ function formatDay(dateStr: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(dateStr + "T12:00:00"));
 }
 
-function MetricChart({ title, icon: Icon, data, dataKey, unit, color }: {
+function avgOf(values: (number | null | undefined)[]): number | null {
+  const v = values.filter((x): x is number => x != null);
+  return v.length > 0 ? v.reduce((a, b) => a + b, 0) / v.length : null;
+}
+
+// Nuits consécutives ≥ seuil en remontant depuis aujourd'hui — un jour sans
+// log casse la série (contrairement à un simple filtre qui sauterait le
+// trou en silence). Même méthode que les séries de pas (StepsClient).
+function computeSleepStreak(logs: BiometricLog[], today: string, threshold = 7): number {
+  if (logs.length === 0) return 0;
+  const map = new Map(logs.map((l) => [l.log_date, l.sleep_hours]));
+  const earliest = [...logs].map((l) => l.log_date).sort()[0];
+  const cursor = new Date(earliest + "T12:00:00");
+  const end = new Date(today + "T12:00:00");
+  let run = 0;
+  while (cursor.getTime() <= end.getTime()) {
+    const iso = cursor.toISOString().split("T")[0];
+    const v = map.get(iso);
+    if (v != null && v >= threshold) run++;
+    else run = 0;
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return run;
+}
+
+// Moyenne mobile 7 jours en plus de la valeur brute — un jour isolé bas ou
+// haut ne veut souvent rien dire, la tendance si. Rendue comme une ligne
+// pleine lissée par-dessus les valeurs brutes en points épars.
+function withRollingAverage(data: { date: string; value: number | null }[], window = 7) {
+  return data.map((d, i) => {
+    const slice = data.slice(Math.max(0, i - window + 1), i + 1).map((x) => x.value).filter((v): v is number => v != null);
+    const avg = slice.length > 0 ? Math.round((slice.reduce((a, b) => a + b, 0) / slice.length) * 10) / 10 : null;
+    return { ...d, avg };
+  });
+}
+
+function StatTile({ label, value, delta, deltaUnit = "" }: { label: string; value: string; delta?: number | null; deltaUnit?: string }) {
+  const showDelta = delta != null && Math.abs(delta) >= 0.1;
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
+      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
+        {label}
+      </p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>
+        <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{value}</span>
+        {showDelta && (
+          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.4)" }}>
+            {delta! > 0 ? "↑" : "↓"} {Math.abs(delta!).toFixed(1)}{deltaUnit}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MetricChart({ title, icon: Icon, data, unit, color, referenceBand }: {
   title: string;
   icon: React.ElementType;
   data: { date: string; value: number | null }[];
-  dataKey: string;
   unit: string;
   color: string;
+  /** Zone cible affichée en fond (ex. 7-9h de sommeil) — purement indicative. */
+  referenceBand?: [number, number];
 }) {
   const hasData = data.some((d) => d.value != null);
+  const chartData = withRollingAverage(data);
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
       <div className="flex items-center gap-2 mb-3">
@@ -44,12 +101,19 @@ function MetricChart({ title, icon: Icon, data, dataKey, unit, color }: {
       {hasData ? (
         <div style={{ height: 140 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data}>
+            <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.1)" vertical={false} />
               <XAxis dataKey="date" tickFormatter={formatDay} tick={TICK_STYLE} axisLine={false} tickLine={false} />
               <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} width={28} />
-              <Tooltip {...TOOLTIP_STYLE} formatter={(v) => [`${v} ${unit}`, ""]} />
-              <Line type="monotone" dataKey={dataKey} stroke={color} strokeWidth={2} dot={false} connectNulls />
+              <Tooltip
+                {...TOOLTIP_STYLE}
+                formatter={(v, name) => [`${v} ${unit}`, name === "avg" ? "Moyenne 7j" : "Valeur du jour"]}
+              />
+              {referenceBand && (
+                <ReferenceArea y1={referenceBand[0]} y2={referenceBand[1]} fill={color} fillOpacity={0.07} strokeOpacity={0} />
+              )}
+              <Line type="monotone" dataKey="value" stroke="none" dot={{ r: 2.5, fill: color, fillOpacity: 0.6 }} isAnimationActive={false} />
+              <Line type="monotone" dataKey="avg" stroke={color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -65,6 +129,7 @@ export default function TrackingClient({
   insights,
   readOnly = false,
   logBiometrics,
+  acknowledgeBiometricInsight,
   ouraConnected = false,
   canConnectOura = true,
   ouraConfigured = true,
@@ -76,6 +141,7 @@ export default function TrackingClient({
   insights: BiometricInsight[];
   readOnly?: boolean;
   logBiometrics?: (input: LogBiometricsInput) => Promise<{ error?: string }>;
+  acknowledgeBiometricInsight?: (insightId: string) => Promise<{ error?: string }>;
   /** Une bague Oura est déjà connectée pour cet utilisateur */
   ouraConnected?: boolean;
   /** false = membre gratuit, pas de bague offerte, pas de connexion possible */
@@ -98,6 +164,7 @@ export default function TrackingClient({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
 
   async function handleDisconnect() {
     if (!disconnectOura) return;
@@ -121,10 +188,29 @@ export default function TrackingClient({
     setTimeout(() => setSaved(false), 2000);
   }
 
+  async function handleAcknowledge(insightId: string) {
+    if (!acknowledgeBiometricInsight) return;
+    setDismissedIds((prev) => new Set(prev).add(insightId));
+    await acknowledgeBiometricInsight(insightId);
+  }
+
   const sleepData = logs.map((l) => ({ date: l.log_date, value: l.sleep_hours }));
   const readinessData = logs.map((l) => ({ date: l.log_date, value: l.readiness_score }));
   const hrvData = logs.map((l) => ({ date: l.log_date, value: l.hrv_ms }));
   const rhrData = logs.map((l) => ({ date: l.log_date, value: l.resting_hr }));
+  const tempData = logs.map((l) => ({ date: l.log_date, value: l.body_temp_deviation }));
+  const hasTemperatureData = tempData.some((d) => d.value != null);
+
+  const last7 = logs.slice(-7);
+  const prev7 = logs.slice(-14, -7);
+  const avgSleep7 = avgOf(last7.map((l) => l.sleep_hours));
+  const avgSleepPrev7 = avgOf(prev7.map((l) => l.sleep_hours));
+  const avgReadiness7 = avgOf(last7.map((l) => l.readiness_score));
+  const avgReadinessPrev7 = avgOf(prev7.map((l) => l.readiness_score));
+  const sleepStreak = computeSleepStreak(logs, today);
+  const hasWeekStats = logs.length > 0;
+
+  const visibleInsights = insights.filter((i) => !i.acknowledged && !dismissedIds.has(i.id));
 
   const ouraStatusMessage =
     ouraStatus === "not_configured"
@@ -164,6 +250,15 @@ export default function TrackingClient({
               {disconnecting ? "…" : "Déconnecter"}
             </button>
           )}
+        </div>
+      ) : readOnly ? (
+        // Vue coach : jamais de lien de connexion (agirait sur le compte du
+        // coach, pas celui du client) — juste l'information.
+        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-center gap-2.5">
+          <Watch size={15} className="text-[#F5EDED]/25 flex-shrink-0" />
+          <p className="text-[11px] text-[#F5EDED]/40 leading-relaxed">
+            Pas de bague Oura connectée pour ce client, les données ci-dessous sont saisies à la main.
+          </p>
         </div>
       ) : canConnectOura && ouraConfigured ? (
         <a
@@ -234,24 +329,58 @@ export default function TrackingClient({
         </div>
       )}
 
-      {insights.length > 0 && (
+      {hasWeekStats && (
+        <div className="grid grid-cols-3 gap-3">
+          <StatTile
+            label="Sommeil moy. (7j)"
+            value={avgSleep7 != null ? `${avgSleep7.toFixed(1)}h` : "—"}
+            delta={avgSleep7 != null && avgSleepPrev7 != null ? avgSleep7 - avgSleepPrev7 : null}
+            deltaUnit="h"
+          />
+          <StatTile
+            label="Récup. moy. (7j)"
+            value={avgReadiness7 != null ? `${Math.round(avgReadiness7)}` : "—"}
+            delta={avgReadiness7 != null && avgReadinessPrev7 != null ? avgReadiness7 - avgReadinessPrev7 : null}
+          />
+          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
+            <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
+              Nuits ≥ 7h
+            </p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+              <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{sleepStreak}</span>
+              {sleepStreak > 0 && <Flame size={13} className="text-[#E01E1E]" />}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {visibleInsights.length > 0 && (
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             Suggestions d&apos;ajustement
           </p>
           <div className="space-y-2">
-            {insights.map((insight) => {
+            {visibleInsights.map((insight) => {
               const s = SEVERITY_STYLES[insight.severity];
               const Icon = s.icon;
               return (
                 <div key={insight.id} className={`${s.bg} border ${s.border} rounded-xl p-4`}>
                   <div className="flex items-start gap-2.5">
                     <Icon size={15} className={`${s.color} flex-shrink-0 mt-0.5`} />
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-bold text-white">{insight.message}</p>
                       <p className="text-xs text-[#F5EDED]/60 mt-1">{insight.suggestion}</p>
                       <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">{formatDay(insight.log_date)}</p>
                     </div>
+                    {!readOnly && acknowledgeBiometricInsight && (
+                      <button
+                        onClick={() => handleAcknowledge(insight.id)}
+                        title="Marquer comme vu"
+                        className="flex-shrink-0 text-[#F5EDED]/25 hover:text-white transition-colors"
+                      >
+                        <Check size={14} />
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -261,10 +390,13 @@ export default function TrackingClient({
       )}
 
       <div className="grid md:grid-cols-2 gap-4">
-        <MetricChart title="Sommeil" icon={Moon} data={sleepData} dataKey="value" unit="h" color="#818cf8" />
-        <MetricChart title="Récupération" icon={Gauge} data={readinessData} dataKey="value" unit="" color="#4ade80" />
-        <MetricChart title="HRV" icon={Activity} data={hrvData} dataKey="value" unit="ms" color="#E01E1E" />
-        <MetricChart title="FC au repos" icon={HeartPulse} data={rhrData} dataKey="value" unit="bpm" color="#fbbf24" />
+        <MetricChart title="Sommeil" icon={Moon} data={sleepData} unit="h" color="#818cf8" referenceBand={[7, 9]} />
+        <MetricChart title="Récupération" icon={Gauge} data={readinessData} unit="" color="#4ade80" />
+        <MetricChart title="HRV" icon={Activity} data={hrvData} unit="ms" color="#E01E1E" />
+        <MetricChart title="FC au repos" icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" />
+        {hasTemperatureData && (
+          <MetricChart title="Écart de température" icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
+        )}
       </div>
     </div>
   );

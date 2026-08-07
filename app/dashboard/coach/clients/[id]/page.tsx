@@ -39,6 +39,7 @@ import { getClientIntake } from "@/utils/client-intake";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
+import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal, sendIntakeReminder } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
@@ -106,6 +107,8 @@ export default async function ClientDetailPage({
     stepRoutineItems,
     stepLogs,
     ouraConnection,
+    biometricLogs,
+    biometricInsights,
     coachingPhase,
     supplements,
     dietTemplates,
@@ -135,6 +138,8 @@ export default async function ClientDetailPage({
     getStepRoutineItems(id),
     getStepLogs(id, 35),
     createAdminClient().from("oura_connections").select("client_id").eq("client_id", id).maybeSingle(),
+    getBiometricLogs(id),
+    getBiometricInsights(id),
     // Jamais calculée pour un membre gratuit — voir le rendu conditionnel
     // dans ClientProfileTabs (client.subscription_status === "active").
     client.subscription_status === "active" ? getClientCoachingPhase(id) : Promise.resolve(null),
@@ -249,6 +254,8 @@ export default async function ClientDetailPage({
         stepRoutineItems={stepRoutineItems}
         stepLogs={stepLogs}
         clientHasOura={!!ouraConnection.data}
+        biometricLogs={biometricLogs}
+        biometricInsights={biometricInsights}
         generatePlanSuggestions={generatePlanSuggestions}
         corrections={corrections}
         sendCorrectionFeedback={sendCorrectionFeedback}

@@ -6,7 +6,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import { isOuraConfigured } from "@/lib/oura";
 import TrackingClient from "@/components/tracking/TrackingClient";
-import { logBiometrics, disconnectOura } from "@/app/dashboard/client/tracking/actions";
+import { logBiometrics, disconnectOura, acknowledgeBiometricInsight } from "@/app/dashboard/client/tracking/actions";
 
 export default async function CoachMoiTrackingPage({
   searchParams,
@@ -44,6 +44,7 @@ export default async function CoachMoiTrackingPage({
         logs={logs}
         insights={insights}
         logBiometrics={logBiometrics}
+        acknowledgeBiometricInsight={acknowledgeBiometricInsight}
         ouraConnected={!!ouraConnection}
         canConnectOura
         ouraConfigured={isOuraConfigured()}

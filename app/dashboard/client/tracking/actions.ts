@@ -60,7 +60,7 @@ export async function logBiometrics(input: LogBiometricsInput): Promise<{ error?
     since.setDate(since.getDate() - 30);
     const { data: history } = await supabase
       .from("biometric_logs")
-      .select("log_date, sleep_hours, readiness_score, hrv_ms, resting_hr")
+      .select("log_date, sleep_hours, readiness_score, hrv_ms, resting_hr, body_temp_deviation")
       .eq("client_id", guard.userId)
       .gte("log_date", since.toISOString().split("T")[0])
       .order("log_date", { ascending: true });
@@ -93,6 +93,32 @@ export async function logBiometrics(input: LogBiometricsInput): Promise<{ error?
         ).catch(() => {});
       }
     }
+
+    revalidatePath("/dashboard/client/tracking");
+    revalidatePath("/dashboard/coach/moi/tracking");
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Les insights s'accumulaient indéfiniment (jusqu'à 15 dans la liste, voir
+// getBiometricInsights) sans aucun moyen de les faire disparaître une fois
+// lus/traités — la colonne `acknowledged` existait déjà en base mais
+// n'était jamais mise à jour depuis cette page. Un simple bouton "j'ai vu"
+// par carte, qui la retire de la liste affichée.
+export async function acknowledgeBiometricInsight(insightId: string): Promise<{ error?: string }> {
+  try {
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
+    const supabase = await createServerSupabase();
+
+    const { error } = await supabase
+      .from("biometric_insights")
+      .update({ acknowledged: true })
+      .eq("id", insightId)
+      .eq("client_id", guard.userId);
+    if (error) return { error: "Erreur." };
 
     revalidatePath("/dashboard/client/tracking");
     revalidatePath("/dashboard/coach/moi/tracking");

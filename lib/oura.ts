@@ -80,7 +80,6 @@ export async function refreshOuraToken(refreshToken: string): Promise<OuraTokenR
 
 export interface OuraDailySleep {
   day: string;
-  score: number | null;
   // Durée totale de sommeil en secondes, moyennée sur les contributeurs de
   // la nuit — convertie en heures avant stockage.
   total_sleep_duration_seconds: number | null;
@@ -88,28 +87,21 @@ export interface OuraDailySleep {
   lowest_heart_rate: number | null;
 }
 
-// L'API v2 sépare "daily_sleep" (score) de "sleep" (détail par session,
-// incluant durée/HRV/FC) — on combine les deux car le score seul ne suffit
-// pas à peupler sleep_hours/hrv_ms/resting_hr.
+// Uniquement le détail par session ("sleep" — durée/HRV/FC). Le score de
+// sommeil de "daily_sleep" n'est plus récupéré ici : voir
+// fetchOuraReadinessForDate, qui interroge le bon endpoint pour le score de
+// récupération (c'était auparavant mélangé, voir plus bas).
 export async function fetchOuraSleepForDate(
   accessToken: string,
   date: string
 ): Promise<OuraDailySleep | null> {
   try {
-    const [scoreRes, detailRes] = await Promise.all([
-      fetch(`${OURA_API_BASE}/daily_sleep?start_date=${date}&end_date=${date}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }),
-      fetch(`${OURA_API_BASE}/sleep?start_date=${date}&end_date=${date}`, {
-        headers: { Authorization: `Bearer ${accessToken}` },
-      }),
-    ]);
-    if (!scoreRes.ok && !detailRes.ok) return null;
+    const res = await fetch(`${OURA_API_BASE}/sleep?start_date=${date}&end_date=${date}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
 
-    const scoreData = scoreRes.ok ? await scoreRes.json() : { data: [] };
-    const detailData = detailRes.ok ? await detailRes.json() : { data: [] };
-
-    const scoreEntry = scoreData.data?.[0] ?? null;
+    const detailData = await res.json();
     // Plusieurs sessions de sommeil possibles (sieste incluse) — on prend
     // la plus longue comme "nuit principale".
     const sessions = (detailData.data ?? []) as Array<{
@@ -121,14 +113,46 @@ export async function fetchOuraSleepForDate(
       (a, b) => (b.total_sleep_duration ?? 0) - (a.total_sleep_duration ?? 0)
     )[0];
 
-    if (!scoreEntry && !mainSession) return null;
+    if (!mainSession) return null;
 
     return {
       day: date,
-      score: scoreEntry?.score ?? null,
-      total_sleep_duration_seconds: mainSession?.total_sleep_duration ?? null,
-      average_hrv: mainSession?.average_heart_rate_variability ?? null,
-      lowest_heart_rate: mainSession?.lowest_heart_rate ?? null,
+      total_sleep_duration_seconds: mainSession.total_sleep_duration ?? null,
+      average_hrv: mainSession.average_heart_rate_variability ?? null,
+      lowest_heart_rate: mainSession.lowest_heart_rate ?? null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+export interface OuraDailyReadiness {
+  // Score de récupération global Oura (HRV, FC repos, équilibre sommeil,
+  // activité, température...) — PAS le score de sommeil de "daily_sleep",
+  // qui mesure autre chose (qualité de la nuit seule). C'est ce score-ci
+  // qui correspond à "Récupération" dans l'app.
+  score: number | null;
+  // Écart à la température corporelle de référence du client, en °C.
+  // Un écart positif marqué est un signal précoce classique de fatigue
+  // accumulée ou de maladie qui couve (voir lib/biometric-rules.ts).
+  temperature_deviation: number | null;
+}
+
+export async function fetchOuraReadinessForDate(
+  accessToken: string,
+  date: string
+): Promise<OuraDailyReadiness | null> {
+  try {
+    const res = await fetch(`${OURA_API_BASE}/daily_readiness?start_date=${date}&end_date=${date}`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const entry = data.data?.[0];
+    if (!entry) return null;
+    return {
+      score: entry.score ?? null,
+      temperature_deviation: entry.temperature_deviation ?? null,
     };
   } catch {
     return null;

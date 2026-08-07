@@ -10,6 +10,7 @@ export interface BiometricLogInput {
   readiness_score: number | null;
   hrv_ms: number | null;
   resting_hr: number | null;
+  body_temp_deviation: number | null;
 }
 
 export type InsightSeverity = "info" | "warning" | "critical";
@@ -83,7 +84,19 @@ export function generateInsightsForLatest(logsAsc: BiometricLogInput[]): Generat
     });
   }
 
-  // ── 5. Tout est vert — bon jour pour pousser ──
+  // ── 5. Température corporelle nettement élevée (signe précoce de maladie) ──
+  // Seuil aligné sur celui qu'Oura utilise pour son propre badge "élevée"
+  // (~+0.5°C par rapport à la référence personnelle du client).
+  if (today.body_temp_deviation != null && today.body_temp_deviation >= 0.5) {
+    insights.push({
+      type: "temperature_elevated",
+      severity: "warning",
+      message: `Température corporelle à +${today.body_temp_deviation.toFixed(1)}°C au-dessus de ta référence.`,
+      suggestion: "Signe précoce classique de fatigue accumulée ou de maladie qui couve. Allège l'entraînement du jour, priorise repos et hydratation, et surveille l'évolution demain.",
+    });
+  }
+
+  // ── 6. Tout est vert — bon jour pour pousser ──
   if (
     today.readiness_score != null && today.readiness_score >= 85 &&
     today.sleep_hours != null && today.sleep_hours >= 7.5 &&

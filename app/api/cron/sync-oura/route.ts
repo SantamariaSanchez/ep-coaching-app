@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { refreshOuraToken, fetchOuraSleepForDate, fetchOuraStepsForDate } from "@/lib/oura";
+import { refreshOuraToken, fetchOuraSleepForDate, fetchOuraReadinessForDate, fetchOuraStepsForDate } from "@/lib/oura";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
 
 // Synchro quotidienne Oura Ring — voir supabase/migrations/20260717f_oura_integration.sql
@@ -39,22 +39,26 @@ export async function GET(req: NextRequest) {
         }).eq("client_id", conn.client_id);
       }
 
-      const [sleep, steps] = await Promise.all([
+      const [sleep, readiness, steps] = await Promise.all([
         fetchOuraSleepForDate(accessToken, dateStr),
+        fetchOuraReadinessForDate(accessToken, dateStr),
         fetchOuraStepsForDate(accessToken, dateStr),
       ]);
 
-      if (sleep) {
+      if (sleep || readiness) {
         await admin.from("biometric_logs").upsert(
           {
             client_id: conn.client_id,
             log_date: dateStr,
-            sleep_hours: sleep.total_sleep_duration_seconds != null
+            sleep_hours: sleep?.total_sleep_duration_seconds != null
               ? Math.round((sleep.total_sleep_duration_seconds / 3600) * 10) / 10
               : null,
-            readiness_score: sleep.score,
-            hrv_ms: sleep.average_hrv,
-            resting_hr: sleep.lowest_heart_rate,
+            // Score de récupération Oura ("daily_readiness"), pas le score de
+            // sommeil — voir lib/oura.ts pour le détail de la distinction.
+            readiness_score: readiness?.score ?? null,
+            hrv_ms: sleep?.average_hrv ?? null,
+            resting_hr: sleep?.lowest_heart_rate ?? null,
+            body_temp_deviation: readiness?.temperature_deviation ?? null,
             source: "oura",
           },
           { onConflict: "client_id,log_date" }
@@ -66,7 +70,7 @@ export async function GET(req: NextRequest) {
         since.setDate(since.getDate() - 30);
         const { data: history } = await admin
           .from("biometric_logs")
-          .select("log_date, sleep_hours, readiness_score, hrv_ms, resting_hr")
+          .select("log_date, sleep_hours, readiness_score, hrv_ms, resting_hr, body_temp_deviation")
           .eq("client_id", conn.client_id)
           .gte("log_date", since.toISOString().split("T")[0])
           .order("log_date", { ascending: true });

@@ -32,8 +32,10 @@ import { ALLERGEN_LABELS, DIET_LABELS } from "@/lib/recipes-data";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { StepRoutineItem, StepLog } from "@/utils/steps";
+import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import WeeklyAgenda from "./WeeklyAgenda";
 import StepsClient from "@/components/steps/StepsClient";
+import TrackingClient from "@/components/tracking/TrackingClient";
 import ClientProgramView from "./ClientProgramView";
 import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
@@ -55,7 +57,7 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass,
+  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass, Moon,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -75,6 +77,7 @@ const TABS = [
   { key: "cycle",     label: "Cycle",     icon: Droplet },
   { key: "agenda",    label: "Agenda",    icon: CalendarDays },
   { key: "pas",       label: "Pas",       icon: Footprints },
+  { key: "sommeil",   label: "Sommeil",   icon: Moon },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -227,6 +230,8 @@ export default function ClientProfileTabs({
   stepRoutineItems,
   stepLogs,
   clientHasOura,
+  biometricLogs,
+  biometricInsights,
   generatePlanSuggestions,
   corrections,
   sendCorrectionFeedback,
@@ -286,6 +291,8 @@ export default function ClientProfileTabs({
   stepRoutineItems: StepRoutineItem[];
   stepLogs: StepLog[];
   clientHasOura: boolean;
+  biometricLogs: BiometricLog[];
+  biometricInsights: BiometricInsight[];
   generatePlanSuggestions: (clientId: string) => Promise<PlanSuggestions>;
   corrections: ExerciseCorrectionResolved[];
   sendCorrectionFeedback: (
@@ -589,6 +596,16 @@ export default function ClientProfileTabs({
             hasOura={clientHasOura}
             readOnly
           />
+        </div>
+      )}
+
+      {activeTab === "sommeil" && (
+        <div>
+          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+            Sommeil et récupération du client. Lecture seule, c&apos;est lui qui logue ses données ou
+            connecte sa bague Oura depuis son espace.
+          </p>
+          <TrackingClient logs={biometricLogs} insights={biometricInsights} ouraConnected={clientHasOura} readOnly />
         </div>
       )}
 
