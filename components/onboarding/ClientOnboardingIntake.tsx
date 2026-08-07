@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { ONBOARDING_SECTIONS, type FieldDef, type SectionDef } from "@/lib/onboarding-intake-config";
 import { submitOnboardingIntake } from "@/app/onboarding/intake/actions";
+import { compressImage } from "@/lib/image-compress";
 
 type Step =
   | { kind: "intro" }
@@ -133,9 +134,10 @@ function PhotoSlot({
         accept="image/*"
         capture="environment"
         style={{ display: "none" }}
-        onChange={(e) => {
+        onChange={async (e) => {
           const f = e.target.files?.[0];
-          if (f) onPick(f);
+          if (!f) return;
+          onPick(await compressImage(f));
         }}
       />
       {preview ? (
@@ -358,9 +360,11 @@ export default function ClientOnboardingIntake() {
               accept="image/*"
               multiple
               style={{ display: "none" }}
-              onChange={(e) => {
+              onChange={async (e) => {
                 const files = Array.from(e.target.files ?? []);
-                if (files.length) setGymFiles((prev) => [...prev, ...files]);
+                if (files.length === 0) return;
+                const compressed = await Promise.all(files.map((f) => compressImage(f)));
+                setGymFiles((prev) => [...prev, ...compressed]);
               }}
             />
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>

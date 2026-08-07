@@ -35,6 +35,21 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // Next.js limite le corps d'une Server Action à 1 Mo par défaut — beaucoup
+  // trop bas dès qu'un formulaire envoie une photo (onboarding, photos de
+  // progression, check-in...). Une photo de téléphone fait souvent 3 à 10 Mo :
+  // au-dessus de la bague, la requête est rejetée après avoir uploadé tout le
+  // payload sur une connexion mobile, ce qui se traduit par une longue
+  // attente puis un échec silencieux côté utilisateur (bug remonté sur
+  // l'onboarding, mais qui touchait potentiellement tous les envois de
+  // plusieurs photos à la fois). Complété côté client par une compression
+  // des photos avant envoi (voir lib/image-compress.ts), cette limite plus
+  // haute sert surtout de filet pour les cas où la compression échoue.
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "15mb",
+    },
+  },
   async headers() {
     return [{ source: "/:path*", headers: SECURITY_HEADERS }];
   },
