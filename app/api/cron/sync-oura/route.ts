@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { refreshOuraToken, fetchOuraSleepForDate, fetchOuraReadinessForDate, fetchOuraStepsForDate } from "@/lib/oura";
+import {
+  refreshOuraToken, fetchOuraSleepForDate, fetchOuraReadinessForDate, fetchOuraStepsForDate,
+  findWeakestContributor, READINESS_CONTRIBUTOR_INFO,
+} from "@/lib/oura";
 import { generateInsightsForLatest, type BiometricLogInput } from "@/lib/biometric-rules";
 
 // Synchro quotidienne Oura Ring — voir supabase/migrations/20260717f_oura_integration.sql
@@ -84,6 +87,26 @@ export async function GET(req: NextRequest) {
             message: insight.message,
             suggestion: insight.suggestion,
           });
+        }
+
+        // Explique le score plutôt que de juste le constater : Oura calcule
+        // la récupération à partir de 8 sous-scores (contributors), jamais
+        // exploités jusque-là alors qu'ils étaient déjà dans la réponse API.
+        // "Récupération basse" devient "récupération basse À CAUSE DE X",
+        // bien plus actionnable pour le client comme pour le coach.
+        if (readiness?.score != null && readiness.score < 70) {
+          const weakest = findWeakestContributor(readiness.contributors);
+          if (weakest) {
+            const info = READINESS_CONTRIBUTOR_INFO[weakest.key];
+            await admin.from("biometric_insights").insert({
+              client_id: conn.client_id,
+              log_date: dateStr,
+              type: "readiness_contributor",
+              severity: readiness.score < 60 ? "warning" : "info",
+              message: `Récupération à ${readiness.score}/100, tirée vers le bas par : ${info.label} (${weakest.score}/100).`,
+              suggestion: info.tip,
+            });
+          }
         }
       }
 

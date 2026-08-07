@@ -126,6 +126,22 @@ export async function fetchOuraSleepForDate(
   }
 }
 
+// Sous-scores 0-100 qu'Oura combine pour calculer le score global de
+// récupération — récupérés mais jamais exploités jusque-là. Permettent de
+// dire PRÉCISÉMENT ce qui tire la récupération vers le bas plutôt qu'un
+// "récupération basse" générique (voir buildContributorInsight ci-dessous
+// et son usage dans app/api/cron/sync-oura).
+export interface OuraReadinessContributors {
+  activity_balance: number | null;
+  body_temperature: number | null;
+  hrv_balance: number | null;
+  previous_day_activity: number | null;
+  previous_night: number | null;
+  recovery_index: number | null;
+  resting_heart_rate: number | null;
+  sleep_balance: number | null;
+}
+
 export interface OuraDailyReadiness {
   // Score de récupération global Oura (HRV, FC repos, équilibre sommeil,
   // activité, température...) — PAS le score de sommeil de "daily_sleep",
@@ -136,6 +152,7 @@ export interface OuraDailyReadiness {
   // Un écart positif marqué est un signal précoce classique de fatigue
   // accumulée ou de maladie qui couve (voir lib/biometric-rules.ts).
   temperature_deviation: number | null;
+  contributors: OuraReadinessContributors | null;
 }
 
 export async function fetchOuraReadinessForDate(
@@ -153,10 +170,37 @@ export async function fetchOuraReadinessForDate(
     return {
       score: entry.score ?? null,
       temperature_deviation: entry.temperature_deviation ?? null,
+      contributors: entry.contributors ?? null,
     };
   } catch {
     return null;
   }
+}
+
+// Libellé + piste d'action par sous-score Oura — voir OuraReadinessContributors.
+export const READINESS_CONTRIBUTOR_INFO: Record<keyof OuraReadinessContributors, { label: string; tip: string }> = {
+  activity_balance: { label: "Équilibre d'activité", tip: "Les séances récentes sont sans doute trop intenses ou trop rapprochées pour la récupération actuelle." },
+  body_temperature: { label: "Température corporelle", tip: "Écart de température inhabituel, souvent le tout premier signe d'une fatigue ou d'une maladie qui couve." },
+  hrv_balance: { label: "Équilibre HRV", tip: "Le système nerveux montre des signes de fatigue accumulée, un jour de repos serait bénéfique." },
+  previous_day_activity: { label: "Activité de la veille", tip: "La charge d'hier était sans doute trop élevée pour la récupération du moment." },
+  previous_night: { label: "Sommeil de la nuit", tip: "La nuit dernière n'était pas optimale, voir le détail sommeil ci-dessous." },
+  recovery_index: { label: "Indice de récupération", tip: "Le corps met plus de temps que d'habitude à récupérer entre deux nuits." },
+  resting_heart_rate: { label: "FC au repos", tip: "FC au repos plus élevée que d'habitude, signe de fatigue ou de stress accumulé." },
+  sleep_balance: { label: "Équilibre sommeil", tip: "Les horaires de sommeil des derniers jours manquent de régularité." },
+};
+
+// Identifie le sous-score le plus bas (sous 70, seuil Oura pour "à surveiller")
+// pour transformer un score global en explication concrète et actionnable.
+export function findWeakestContributor(
+  contributors: OuraReadinessContributors | null
+): { key: keyof OuraReadinessContributors; score: number } | null {
+  if (!contributors) return null;
+  let weakest: { key: keyof OuraReadinessContributors; score: number } | null = null;
+  for (const [key, score] of Object.entries(contributors) as [keyof OuraReadinessContributors, number | null][]) {
+    if (score == null || score >= 70) continue;
+    if (!weakest || score < weakest.score) weakest = { key, score };
+  }
+  return weakest;
 }
 
 export async function fetchOuraStepsForDate(accessToken: string, date: string): Promise<number | null> {

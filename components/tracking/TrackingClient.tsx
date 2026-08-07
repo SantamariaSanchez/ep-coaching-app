@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from "recharts";
 import {
   Moon, Activity, HeartPulse, Gauge, Thermometer, AlertTriangle, Info, CheckCircle2, Watch, Lock, Unlink, Check, Flame,
@@ -51,6 +51,16 @@ function computeSleepStreak(logs: BiometricLog[], today: string, threshold = 7):
   return run;
 }
 
+// Cumul des écarts à 8h/nuit sur les N derniers jours logués — positif =
+// dette à rattraper, négatif = surplus. Une seule mauvaise nuit isolée
+// n'alarme personne, un déficit qui s'accumule sur la semaine si.
+function computeSleepDebt(logs: BiometricLog[], days = 7, target = 8): number | null {
+  const recent = logs.slice(-days).filter((l) => l.sleep_hours != null);
+  if (recent.length === 0) return null;
+  const debt = recent.reduce((sum, l) => sum + (target - (l.sleep_hours ?? 0)), 0);
+  return Math.round(debt * 10) / 10;
+}
+
 // Moyenne mobile 7 jours en plus de la valeur brute — un jour isolé bas ou
 // haut ne veut souvent rien dire, la tendance si. Rendue comme une ligne
 // pleine lissée par-dessus les valeurs brutes en points épars.
@@ -60,6 +70,53 @@ function withRollingAverage(data: { date: string; value: number | null }[], wind
     const avg = slice.length > 0 ? Math.round((slice.reduce((a, b) => a + b, 0) / slice.length) * 10) / 10 : null;
     return { ...d, avg };
   });
+}
+
+// Boutons +/- à côté du champ plutôt qu'un simple <input type="number"> nu —
+// les flèches natives du navigateur sont minuscules et peu fiables au
+// doigt sur mobile, or ces 4 champs se remplissent surtout au réveil,
+// souvent d'une main. Même esprit que l'ajout rapide de pas (StepsClient).
+function NumberField({ label, value, onChange, step = 1, placeholder }: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  step?: number;
+  placeholder?: string;
+}) {
+  function bump(delta: number) {
+    const current = parseFloat(value) || 0;
+    const next = Math.max(0, Math.round((current + delta) * 100) / 100);
+    onChange(String(next));
+  }
+  return (
+    <div>
+      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">{label}</label>
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => bump(-step)}
+          className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
+        >
+          −
+        </button>
+        <input
+          type="number"
+          step={step}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-2 text-sm text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
+        />
+        <button
+          type="button"
+          onClick={() => bump(step)}
+          className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
 }
 
 function StatTile({ label, value, delta, deltaUnit = "" }: { label: string; value: string; delta?: number | null; deltaUnit?: string }) {
@@ -81,7 +138,7 @@ function StatTile({ label, value, delta, deltaUnit = "" }: { label: string; valu
   );
 }
 
-function MetricChart({ title, icon: Icon, data, unit, color, referenceBand }: {
+function MetricChart({ title, icon: Icon, data, unit, color, referenceBand, baseline }: {
   title: string;
   icon: React.ElementType;
   data: { date: string; value: number | null }[];
@@ -89,6 +146,9 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand }: {
   color: string;
   /** Zone cible affichée en fond (ex. 7-9h de sommeil) — purement indicative. */
   referenceBand?: [number, number];
+  /** Moyenne longue période (30j) tracée en pointillés — "ta normale", pour
+      voir d'un coup d'œil si aujourd'hui dévie, pas juste la tendance 7j. */
+  baseline?: number | null;
 }) {
   const hasData = data.some((d) => d.value != null);
   const chartData = withRollingAverage(data);
@@ -104,13 +164,16 @@ function MetricChart({ title, icon: Icon, data, unit, color, referenceBand }: {
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(137,4,4,0.1)" vertical={false} />
               <XAxis dataKey="date" tickFormatter={formatDay} tick={TICK_STYLE} axisLine={false} tickLine={false} />
-              <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} width={28} />
+              <YAxis tick={TICK_STYLE} axisLine={false} tickLine={false} width={28} domain={["auto", "auto"]} />
               <Tooltip
                 {...TOOLTIP_STYLE}
                 formatter={(v, name) => [`${v} ${unit}`, name === "avg" ? "Moyenne 7j" : "Valeur du jour"]}
               />
               {referenceBand && (
                 <ReferenceArea y1={referenceBand[0]} y2={referenceBand[1]} fill={color} fillOpacity={0.07} strokeOpacity={0} />
+              )}
+              {baseline != null && (
+                <ReferenceLine y={baseline} stroke="rgba(245,237,237,0.3)" strokeDasharray="3 3" strokeWidth={1} />
               )}
               <Line type="monotone" dataKey="value" stroke="none" dot={{ r: 2.5, fill: color, fillOpacity: 0.6 }} isAnimationActive={false} />
               <Line type="monotone" dataKey="avg" stroke={color} strokeWidth={2} dot={false} connectNulls isAnimationActive={false} />
@@ -208,7 +271,16 @@ export default function TrackingClient({
   const avgReadiness7 = avgOf(last7.map((l) => l.readiness_score));
   const avgReadinessPrev7 = avgOf(prev7.map((l) => l.readiness_score));
   const sleepStreak = computeSleepStreak(logs, today);
+  const sleepDebt7 = computeSleepDebt(logs, 7);
   const hasWeekStats = logs.length > 0;
+
+  // "Normale" longue période (30j, tout l'historique chargé) — sert de
+  // ligne de référence sur les graphiques HRV/FC repos/récupération, pour
+  // voir d'un coup d'œil si le chiffre du jour dévie de l'habituel du
+  // client, pas seulement s'il monte ou descend sur 7 jours.
+  const hrvBaseline = avgOf(logs.map((l) => l.hrv_ms));
+  const rhrBaseline = avgOf(logs.map((l) => l.resting_hr));
+  const readinessBaseline = avgOf(logs.map((l) => l.readiness_score));
 
   const visibleInsights = insights.filter((i) => !i.acknowledged && !dismissedIds.has(i.id));
 
@@ -298,26 +370,10 @@ export default function TrackingClient({
             Données du jour
           </p>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Sommeil (h)</label>
-              <input type="number" step="0.1" value={sleepHours} onChange={(e) => setSleepHours(e.target.value)} placeholder="7.5"
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50" />
-            </div>
-            <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Récupération (0-100)</label>
-              <input type="number" value={readiness} onChange={(e) => setReadiness(e.target.value)} placeholder="80"
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50" />
-            </div>
-            <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">HRV (ms)</label>
-              <input type="number" value={hrv} onChange={(e) => setHrv(e.target.value)} placeholder="55"
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50" />
-            </div>
-            <div>
-              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">FC repos (bpm)</label>
-              <input type="number" value={restingHr} onChange={(e) => setRestingHr(e.target.value)} placeholder="58"
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50" />
-            </div>
+            <NumberField label="Sommeil (h)" value={sleepHours} onChange={setSleepHours} step={0.25} placeholder="7.5" />
+            <NumberField label="Récupération (0-100)" value={readiness} onChange={setReadiness} step={1} placeholder="80" />
+            <NumberField label="HRV (ms)" value={hrv} onChange={setHrv} step={1} placeholder="55" />
+            <NumberField label="FC repos (bpm)" value={restingHr} onChange={setRestingHr} step={1} placeholder="58" />
           </div>
           <button
             onClick={handleSave}
@@ -330,7 +386,7 @@ export default function TrackingClient({
       )}
 
       {hasWeekStats && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatTile
             label="Sommeil moy. (7j)"
             value={avgSleep7 != null ? `${avgSleep7.toFixed(1)}h` : "—"}
@@ -341,6 +397,10 @@ export default function TrackingClient({
             label="Récup. moy. (7j)"
             value={avgReadiness7 != null ? `${Math.round(avgReadiness7)}` : "—"}
             delta={avgReadiness7 != null && avgReadinessPrev7 != null ? avgReadiness7 - avgReadinessPrev7 : null}
+          />
+          <StatTile
+            label="Dette sommeil (7j)"
+            value={sleepDebt7 != null ? `${sleepDebt7 > 0 ? "+" : ""}${sleepDebt7}h` : "—"}
           />
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>
@@ -389,11 +449,15 @@ export default function TrackingClient({
         </div>
       )}
 
+      <p className="text-[10px] text-[#F5EDED]/25" style={{ marginBottom: -8 }}>
+        Ligne pointillée = ta moyenne sur toute la période chargée, pour repérer un écart au premier coup d&apos;œil.
+      </p>
+
       <div className="grid md:grid-cols-2 gap-4">
         <MetricChart title="Sommeil" icon={Moon} data={sleepData} unit="h" color="#818cf8" referenceBand={[7, 9]} />
-        <MetricChart title="Récupération" icon={Gauge} data={readinessData} unit="" color="#4ade80" />
-        <MetricChart title="HRV" icon={Activity} data={hrvData} unit="ms" color="#E01E1E" />
-        <MetricChart title="FC au repos" icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" />
+        <MetricChart title="Récupération" icon={Gauge} data={readinessData} unit="" color="#4ade80" baseline={readinessBaseline} />
+        <MetricChart title="HRV" icon={Activity} data={hrvData} unit="ms" color="#E01E1E" baseline={hrvBaseline} />
+        <MetricChart title="FC au repos" icon={HeartPulse} data={rhrData} unit="bpm" color="#fbbf24" baseline={rhrBaseline} />
         {hasTemperatureData && (
           <MetricChart title="Écart de température" icon={Thermometer} data={tempData} unit="°C" color="#fb923c" />
         )}
