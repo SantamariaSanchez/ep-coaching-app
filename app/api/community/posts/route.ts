@@ -5,6 +5,7 @@ import { getCommunityPostsPage, type CommunityPostType } from "@/utils/community
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { cleanText, LIMITS, requireText } from "@/lib/sanitize";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { notifyUser } from "@/lib/notify";
 
 export async function GET(request: Request) {
   const guard = await requireAuth();
@@ -104,6 +105,31 @@ export async function POST(request: Request) {
     `community_${type}`,
     data.id
   );
+
+  // Rien ne prévenait le coach qu'un client venait de publier — un fil
+  // "Victoires" ne prend vie que si quelqu'un réagit vite, et le coach ne
+  // tombait dessus qu'en visitant l'onglet par hasard (0 victoire postée à
+  // ce jour malgré 12 clients actifs). Coach uniquement : un post d'un
+  // autre coach sur le mur partagé n'a pas de destinataire naturel.
+  if (guard.role === "client") {
+    const { data: author } = await supabase
+      .from("profiles")
+      .select("coach_id, full_name")
+      .eq("id", guard.userId)
+      .single();
+    if (author?.coach_id) {
+      notifyUser(author.coach_id, {
+        type: `community_${type}`,
+        title:
+          type === "victory"
+            ? `🏆 ${author.full_name ?? "Un membre"} a partagé une victoire`
+            : `❓ ${author.full_name ?? "Un membre"} a posé une question`,
+        body: content.slice(0, 140),
+        url: `/dashboard/coach/communaute/${type === "victory" ? "victoires" : "questions"}`,
+        senderId: guard.userId,
+      });
+    }
+  }
 
   return NextResponse.json({ id: data.id });
 }

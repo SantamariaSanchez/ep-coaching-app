@@ -47,6 +47,15 @@ import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 import { safeExternalUrl } from "@/lib/sanitize";
 
+// Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
+// (voir le bouton "Partager en Victoire") — le client reste libre de le
+// modifier ou de tout effacer avant de publier.
+function buildPRShareText(prs: { exerciseName: string; weightKg: number; reps: number | null }[]): string {
+  const items = prs.map((pr) => `${pr.exerciseName} à ${pr.weightKg} kg${pr.reps ? ` × ${pr.reps}` : ""}`);
+  if (items.length === 1) return `🏆 Nouveau record : ${items[0]} !`;
+  return `🏆 Nouveaux records aujourd'hui : ${items.join(", ")} !`;
+}
+
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface PrevWeight {
@@ -1325,6 +1334,10 @@ export default function SessionView({
   returnPath?: string;
 }) {
   const router = useRouter();
+  // SessionView est aussi utilisé pour le logbook perso du coach
+  // (/dashboard/coach/moi/logbook) — le lien de partage doit pointer vers
+  // le mur Victoires du bon rôle, pas toujours celui du client.
+  const communityBasePath = returnPath.startsWith("/dashboard/coach") ? "/dashboard/coach" : "/dashboard/client";
 
   // Init state
   const [loading, setLoading] = useState(true);
@@ -1967,7 +1980,7 @@ export default function SessionView({
                 {sessionPRs.length} nouveau{sessionPRs.length > 1 ? "x" : ""} PR
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2 mb-3">
               {sessionPRs.map((pr, i) => (
                 <span
                   key={i}
@@ -1977,6 +1990,16 @@ export default function SessionView({
                 </span>
               ))}
             </div>
+            {/* Le PR est détecté ici, mais rien ne poussait le client vers
+                Victoires ensuite — l'onglet est resté vide malgré des PR
+                réels en logbook. Pré-remplit le post plutôt que de le
+                publier à sa place : partager reste son choix. */}
+            <a
+              href={`${communityBasePath}/communaute/victoires?share=${encodeURIComponent(buildPRShareText(sessionPRs))}`}
+              className="inline-flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30 transition-colors"
+            >
+              <Trophy size={11} /> Partager en Victoire
+            </a>
           </div>
         )}
 

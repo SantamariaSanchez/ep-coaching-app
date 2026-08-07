@@ -86,12 +86,14 @@ function initials(name: string): string {
 
 function Composer({
   type,
+  initialContent,
   onPosted,
 }: {
   type: CommunityPostType;
+  initialContent?: string;
   onPosted: () => void;
 }) {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(initialContent ?? "");
   const [image, setImage] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -478,6 +480,7 @@ export default function CommunityFeed({
   isCoach,
   isPlatformOwner = false,
   currentUserId,
+  initialShareText,
 }: {
   type: CommunityPostType;
   initialPosts: CommunityPost[];
@@ -485,6 +488,7 @@ export default function CommunityFeed({
   isCoach: boolean;
   isPlatformOwner?: boolean;
   currentUserId?: string | null;
+  initialShareText?: string;
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
@@ -574,7 +578,7 @@ export default function CommunityFeed({
 
   return (
     <div>
-      <Composer type={type} onPosted={reload} />
+      <Composer type={type} initialContent={initialShareText} onPosted={reload} />
 
       {posts.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
