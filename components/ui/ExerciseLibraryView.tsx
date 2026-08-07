@@ -12,7 +12,9 @@ import {
   ExternalLink,
   Dumbbell,
   Lock,
+  AlertTriangle,
 } from "lucide-react";
+import type { MissingVideoExercise } from "@/utils/exercise-library";
 import { hasUnlocked, FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import {
   LIBRARY_MUSCLE_GROUPS,
@@ -48,6 +50,14 @@ async function uploadExerciseVideo(file: File): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+// Ouvre une recherche YouTube pré-remplie pour cet exercice — sur 642
+// exercices sans une seule vidéo, "vidéo à venir" est un mur mort pour le
+// client et une tâche vague pour le coach. Un lien direct raccourcit le
+// chemin "je cherche une démo → je colle l'URL dans la fiche".
+function youtubeSearchUrl(exerciseName: string): string {
+  return `https://www.youtube.com/results?search_query=${encodeURIComponent(`${exerciseName} exécution technique musculation`)}`;
 }
 
 const inputCls =
@@ -501,9 +511,20 @@ function ExerciseCard({
               <VideoBlock url={exercise.video_url} />
             )
           ) : (
-            <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
-              <Video size={11} /> Vidéo d&apos;exécution à venir
-            </p>
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              <p className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/25">
+                <Video size={11} /> Vidéo d&apos;exécution à venir
+              </p>
+              <a
+                href={youtubeSearchUrl(exercise.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] transition-colors"
+              >
+                <PlayCircle size={12} /> Chercher une démo
+              </a>
+            </div>
           )}
 
           {isCoach && (
@@ -544,6 +565,8 @@ interface Props {
   createExercise: (input: CreateExerciseInput) => Promise<{ error?: string; id?: string }>;
   updateExercise: (id: string, fields: Partial<CreateExerciseInput> & { video_url?: string | null }) => Promise<{ error?: string }>;
   deleteExercise: (id: string) => Promise<{ error?: string }>;
+  /** Coach uniquement — top des exercices réellement prescrits sans vidéo (voir getTopExercisesMissingVideo). */
+  missingVideoTop?: MissingVideoExercise[];
 }
 
 export default function ExerciseLibraryView({
@@ -554,6 +577,7 @@ export default function ExerciseLibraryView({
   createExercise,
   updateExercise,
   deleteExercise,
+  missingVideoTop = [],
 }: Props) {
   const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
   const [exercises, setExercises] = useState(initialExercises);
@@ -562,6 +586,8 @@ export default function ExerciseLibraryView({
   const [activeBrand, setActiveBrand] = useState<string | null>(null);
   const [activeEquipmentType, setActiveEquipmentType] = useState<EquipmentType | null>(null);
   const [showCreate, setShowCreate] = useState(false);
+  const [showMissingVideo, setShowMissingVideo] = useState(false);
+  const withVideoCount = useMemo(() => exercises.filter((e) => e.video_url).length, [exercises]);
 
   const groupCounts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -611,6 +637,47 @@ export default function ExerciseLibraryView({
 
   return (
     <div className="space-y-5">
+      {isCoach && withVideoCount === 0 && exercises.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
+              <AlertTriangle size={14} className="flex-shrink-0" />
+              0/{exercises.length} exercices ont une vidéo de démonstration — le système de déblocage par points
+              n&apos;a encore rien à débloquer.
+            </p>
+            {missingVideoTop.length > 0 && (
+              <button
+                onClick={() => setShowMissingVideo((v) => !v)}
+                className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
+              >
+                {showMissingVideo ? "Masquer" : `Voir les ${missingVideoTop.length} plus prescrits`}
+              </button>
+            )}
+          </div>
+          {showMissingVideo && (
+            <div className="mt-3 pt-3 border-t border-amber-500/15 grid sm:grid-cols-2 gap-x-6 gap-y-1.5">
+              {missingVideoTop.map((ex) => (
+                <div key={ex.name} className="flex items-center justify-between gap-2">
+                  <span className="text-xs text-[#F5EDED]/70 truncate">{ex.name}</span>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-[10px] font-bold text-amber-300/70">×{ex.timesPrescribed}</span>
+                    <a
+                      href={youtubeSearchUrl(ex.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
+                      title="Chercher une démo"
+                    >
+                      <PlayCircle size={12} />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />

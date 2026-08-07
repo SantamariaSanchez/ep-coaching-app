@@ -37,6 +37,7 @@ import { findFoodSwapCandidate } from "@/lib/food-swap";
 import type { RoadmapWithData } from "@/utils/roadmap";
 import PhaseHeader from "./PhaseHeader";
 import RoadmapContextPanel from "./RoadmapContextPanel";
+import MicroBarList from "./MicroBarList";
 
 export interface MacroTargets {
   calories: number;

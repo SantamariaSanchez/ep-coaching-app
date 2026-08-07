@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Plus, X, Star, MapPin, Pencil, Trash2, Globe, Dumbbell } from "lucide-react";
+import { Search, Plus, X, Star, MapPin, Pencil, Trash2, Globe, Dumbbell, Pin } from "lucide-react";
 import type { GymWithReviews } from "@/utils/gyms";
 import type { CreateGymInput } from "@/app/dashboard/client/gyms/actions";
 import type { GymType } from "@/lib/gyms-seed";
+import { EQUIPMENT_TYPES, EQUIPMENT_TYPE_LABELS, type EquipmentType } from "@/lib/exercise-library-content";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 const inputCls =
@@ -62,15 +63,28 @@ function GymForm({
   const [address, setAddress] = useState(initial?.address ?? "");
   const [type, setType] = useState<GymType>(initial?.type ?? "independante");
   const [equipmentNotes, setEquipmentNotes] = useState(initial?.equipment_notes ?? "");
+  const [equipmentTypes, setEquipmentTypes] = useState<EquipmentType[]>(initial?.equipment_types ?? []);
   const [website, setWebsite] = useState(initial?.website ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleType(t: EquipmentType) {
+    setEquipmentTypes((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  }
 
   async function handleSubmit() {
     if (!name.trim()) { setError("Le nom est requis."); return; }
     setSaving(true);
     setError(null);
-    await onSave({ name, city: city || null, address: address || null, equipment_notes: equipmentNotes || null, website: website || null, type });
+    await onSave({
+      name,
+      city: city || null,
+      address: address || null,
+      equipment_notes: equipmentNotes || null,
+      website: website || null,
+      type,
+      equipment_types: equipmentTypes,
+    });
     setSaving(false);
   }
 
@@ -106,6 +120,28 @@ function GymForm({
             </button>
           ))}
         </div>
+      </div>
+      <div>
+        <label className={labelCls}>Type de matériel disponible (optionnel)</label>
+        <div className="flex flex-wrap gap-1.5">
+          {EQUIPMENT_TYPES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => toggleType(t)}
+              className={`px-2.5 py-1.5 rounded-lg border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                equipmentTypes.includes(t)
+                  ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
+                  : "border-[#890404]/25 text-[#F5EDED]/40"
+              }`}
+            >
+              {EQUIPMENT_TYPE_LABELS[t]}
+            </button>
+          ))}
+        </div>
+        <p className="mt-1 text-[9px] text-[#F5EDED]/25">
+          Sert au filtre et au croisement avec la bibliothèque d&apos;exercices.
+        </p>
       </div>
       <div>
         <label className={labelCls}>Équipement disponible (optionnel)</label>
@@ -183,6 +219,9 @@ function GymCard({
   gym,
   isCoach,
   currentUserId,
+  matchingExerciseCount,
+  isMyGym,
+  onSetAsMyGym,
   onUpdate,
   onDelete,
   onReview,
@@ -191,6 +230,9 @@ function GymCard({
   gym: GymWithReviews;
   isCoach: boolean;
   currentUserId: string;
+  matchingExerciseCount: number | null;
+  isMyGym: boolean;
+  onSetAsMyGym?: () => Promise<void>;
   onUpdate: (input: CreateGymInput) => Promise<void>;
   onDelete: () => Promise<void>;
   onReview: (rating: number, comment: string) => Promise<void>;
@@ -200,6 +242,7 @@ function GymCard({
   const [editing, setEditing] = useState(false);
   const [reviewing, setReviewing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [settingMyGym, setSettingMyGym] = useState(false);
 
   const myReview = gym.reviews.find((r) => r.author_id === currentUserId);
 
@@ -208,7 +251,7 @@ function GymCard({
   }
 
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+    <div className={`bg-[#1f0101] border rounded-xl overflow-hidden ${isMyGym ? "border-[#E01E1E]/50" : "border-[#890404]/20"}`}>
       <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
         <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
           <Dumbbell size={15} className="text-[#E01E1E]" />
@@ -216,6 +259,11 @@ function GymCard({
         <div className="flex-1 min-w-0">
           <p className="text-sm font-bold text-white truncate">{gym.name}</p>
           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            {isMyGym && (
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]">
+                <Pin size={9} /> Ta salle
+              </span>
+            )}
             {gym.type && (
               <span
                 className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
@@ -246,6 +294,30 @@ function GymCard({
       {expanded && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-3">
           {gym.address && <p className="text-xs text-[#F5EDED]/50">{gym.address}</p>}
+          {gym.equipment_types.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {gym.equipment_types.map((t) => (
+                <span key={t} className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border border-[#890404]/25 text-[#F5EDED]/45">
+                  {EQUIPMENT_TYPE_LABELS[t]}
+                </span>
+              ))}
+            </div>
+          )}
+          {matchingExerciseCount != null && (
+            <p className="text-xs text-[#F5EDED]/40">
+              <strong className="text-[#F5EDED]/70">{matchingExerciseCount}</strong> exercice{matchingExerciseCount !== 1 ? "s" : ""} de la
+              bibliothèque réalisable{matchingExerciseCount !== 1 ? "s" : ""} avec ce matériel.
+            </p>
+          )}
+          {!isCoach && onSetAsMyGym && !isMyGym && (
+            <button
+              onClick={async () => { setSettingMyGym(true); await onSetAsMyGym(); setSettingMyGym(false); }}
+              disabled={settingMyGym}
+              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+            >
+              <Pin size={11} /> {settingMyGym ? "…" : "Marquer comme ma salle"}
+            </button>
+          )}
           {gym.equipment_notes && (
             <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
           )}
@@ -325,6 +397,16 @@ interface Props {
   deleteGym: (id: string) => Promise<{ error?: string }>;
   upsertGymReview: (gymId: string, rating: number, comment: string) => Promise<{ error?: string }>;
   deleteGymReview: (reviewId: string) => Promise<{ error?: string }>;
+  // Nombre d'exercices de la bibliothèque par type de matériel — permet
+  // d'afficher, par salle, combien d'exercices y sont réalisables sans
+  // recharger toute la bibliothèque ici (calculé côté page, voir
+  // utils/exercise-library.ts).
+  exerciseTypeCounts?: Record<EquipmentType, number>;
+  // "Ma salle" — coach uniquement en lecture (jamais affiché), côté client
+  // ces deux props activent le bouton "Marquer comme ma salle" sur chaque
+  // fiche (relié à client_intake.gym_name, voir app/dashboard/client/gyms/actions.ts).
+  myGymName?: string | null;
+  onSetMyGym?: (gymName: string, gymWebsite: string | null) => Promise<void>;
 }
 
 export default function GymsDirectoryView({
@@ -336,10 +418,14 @@ export default function GymsDirectoryView({
   deleteGym,
   upsertGymReview,
   deleteGymReview,
+  exerciseTypeCounts,
+  myGymName,
+  onSetMyGym,
 }: Props) {
   const [search, setSearch] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [activeType, setActiveType] = useState<GymType | null>(null);
+  const [activeEquipment, setActiveEquipment] = useState<EquipmentType | null>(null);
 
   const typeCounts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -347,14 +433,26 @@ export default function GymsDirectoryView({
     return map;
   }, [gyms]);
 
+  const equipmentCounts = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const g of gyms) for (const t of g.equipment_types) map[t] = (map[t] ?? 0) + 1;
+    return map;
+  }, [gyms]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     return gyms.filter((g) => {
       if (activeType && g.type !== activeType) return false;
+      if (activeEquipment && !g.equipment_types.includes(activeEquipment)) return false;
       if (!q) return true;
       return g.name.toLowerCase().includes(q) || (g.city ?? "").toLowerCase().includes(q);
     });
-  }, [gyms, search, activeType]);
+  }, [gyms, search, activeType, activeEquipment]);
+
+  function matchingExerciseCount(gym: GymWithReviews): number | null {
+    if (!exerciseTypeCounts || gym.equipment_types.length === 0) return null;
+    return gym.equipment_types.reduce((sum, t) => sum + (exerciseTypeCounts[t] ?? 0), 0);
+  }
 
   return (
     <div className="space-y-5">
@@ -397,6 +495,30 @@ export default function GymsDirectoryView({
         ))}
       </div>
 
+      {Object.keys(equipmentCounts).length > 0 && (
+        <div className="flex gap-1.5 overflow-x-auto pb-1">
+          <button
+            onClick={() => setActiveEquipment(null)}
+            className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+              activeEquipment === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+            }`}
+          >
+            Tout matériel
+          </button>
+          {EQUIPMENT_TYPES.filter((t) => equipmentCounts[t]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setActiveEquipment(t)}
+              className={`flex-shrink-0 px-3 py-1.5 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                activeEquipment === t ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
+              }`}
+            >
+              {EQUIPMENT_TYPE_LABELS[t]} ({equipmentCounts[t]})
+            </button>
+          ))}
+        </div>
+      )}
+
       {showCreate && (
         <GymForm
           onSave={async (input) => {
@@ -414,6 +536,9 @@ export default function GymsDirectoryView({
             gym={gym}
             isCoach={isCoach}
             currentUserId={currentUserId}
+            matchingExerciseCount={matchingExerciseCount(gym)}
+            isMyGym={!!myGymName && gym.name.trim().toLowerCase() === myGymName.trim().toLowerCase()}
+            onSetAsMyGym={onSetMyGym ? async () => { await onSetMyGym(gym.name, gym.website); } : undefined}
             onUpdate={async (input) => { await updateGym(gym.id, input); }}
             onDelete={async () => { await deleteGym(gym.id); }}
             onReview={async (rating, comment) => { await upsertGymReview(gym.id, rating, comment); }}

@@ -48,3 +48,40 @@ export async function getExerciseLibrary(): Promise<LibraryExercise[]> {
     return [];
   }
 }
+
+export interface MissingVideoExercise {
+  name: string;
+  muscleGroup: string;
+  timesPrescribed: number;
+}
+
+// Sur 642 exercices, 0 avaient une vidéo au moment de ce chantier — "642
+// exercices à faire" n'est pas une liste exploitable. Ici, seulement ceux
+// réellement prescrits dans de vrais programmes clients, triés par
+// fréquence — une jointure par nom (pas de vraie clé étrangère entre
+// `exercises`, la table des séances clients, et `exercise_library`, texte
+// libre des deux côtés), faite en mémoire plutôt qu'en SQL : les deux
+// tables restent petites (centaines à quelques milliers de lignes).
+export async function getTopExercisesMissingVideo(limit = 20): Promise<MissingVideoExercise[]> {
+  try {
+    const supabase = createAdminClient();
+    const [{ data: withoutVideo }, { data: prescribed }] = await Promise.all([
+      supabase.from("exercise_library").select("name, muscle_group").is("video_url", null),
+      supabase.from("exercises").select("name"),
+    ]);
+    if (!withoutVideo || !prescribed) return [];
+
+    const counts = new Map<string, number>();
+    for (const row of prescribed as { name: string }[]) {
+      counts.set(row.name, (counts.get(row.name) ?? 0) + 1);
+    }
+
+    return (withoutVideo as { name: string; muscle_group: string }[])
+      .map((ex) => ({ name: ex.name, muscleGroup: ex.muscle_group, timesPrescribed: counts.get(ex.name) ?? 0 }))
+      .filter((ex) => ex.timesPrescribed > 0)
+      .sort((a, b) => b.timesPrescribed - a.timesPrescribed)
+      .slice(0, limit);
+  } catch {
+    return [];
+  }
+}

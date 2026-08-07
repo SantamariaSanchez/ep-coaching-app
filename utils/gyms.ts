@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { GymType } from "@/lib/gyms-seed";
+import type { EquipmentType } from "@/lib/exercise-library-content";
 
 export interface Gym {
   id: string;
@@ -9,6 +10,10 @@ export interface Gym {
   equipment_notes: string | null;
   website: string | null;
   type: GymType | null;
+  // Tags structurés (voir migration gyms_equipment_types) — même taxonomie
+  // que le classement des exercices, pour un filtre réel et le croisement
+  // "exercices réalisables ici" (utils/exercise-library.ts).
+  equipment_types: EquipmentType[];
   created_by: string | null;
   created_at: string;
 }

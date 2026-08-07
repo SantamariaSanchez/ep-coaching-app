@@ -8,7 +8,7 @@ import {
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
-  Brain, MessageSquareText, LibraryBig, MapPin,
+  Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate,
 } from "lucide-react";
@@ -173,8 +173,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Bibliothèque",
     items: [
-      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles", icon: MapPin, segment: "gyms" },
+      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
@@ -238,8 +237,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Bibliothèque",
     items: [
-      { label: "Exercices", icon: LibraryBig, segment: "exercises" },
-      { label: "Salles", icon: MapPin, segment: "gyms" },
+      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {

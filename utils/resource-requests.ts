@@ -35,11 +35,11 @@ export async function getResourceRequests(coachId: string): Promise<ResourceRequ
 
     if (!requests || requests.length === 0) return [];
 
-    const authorIds = [...new Set(requests.map((r) => r.author_id as string))];
+    const requestAuthorIds = [...new Set(requests.map((r) => r.author_id as string))];
     const { data: authors } = await supabase
       .from("profiles")
       .select("id, full_name")
-      .in("id", authorIds);
+      .in("id", requestAuthorIds);
 
     const nameMap: Record<string, string> = {};
     for (const a of (authors ?? []) as { id: string; full_name: string | null }[]) {

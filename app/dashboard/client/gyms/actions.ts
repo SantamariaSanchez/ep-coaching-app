@@ -1,13 +1,16 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireAuth, requireCoach } from "@/lib/auth-guards";
+import { requireAuth, requireCoach, requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { GYMS_SEED, type GymType } from "@/lib/gyms-seed";
+import type { EquipmentType } from "@/lib/exercise-library-content";
 
 function refresh() {
   revalidatePath("/dashboard/client/gyms");
   revalidatePath("/dashboard/coach/gyms");
+  revalidatePath("/dashboard/client/exercises");
+  revalidatePath("/dashboard/coach/exercises");
 }
 
 export interface CreateGymInput {
@@ -17,6 +20,7 @@ export interface CreateGymInput {
   equipment_notes: string | null;
   website: string | null;
   type: GymType;
+  equipment_types: EquipmentType[];
 }
 
 // Open to everyone — coach and members (free or paying) build this directory together.
@@ -36,6 +40,7 @@ export async function createGym(input: CreateGymInput): Promise<{ error?: string
         equipment_notes: input.equipment_notes?.trim() || null,
         website: input.website?.trim() || null,
         type: input.type,
+        equipment_types: input.equipment_types,
         created_by: guard.userId,
       })
       .select("id")
@@ -64,6 +69,7 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
         equipment_notes: input.equipment_notes?.trim() || null,
         website: input.website?.trim() || null,
         type: input.type,
+        equipment_types: input.equipment_types,
       })
       .eq("id", id);
 
@@ -179,6 +185,37 @@ export async function deleteGymReview(reviewId: string): Promise<{ error?: strin
     const supabase = createAdminClient();
     await supabase.from("gym_reviews").delete().eq("id", reviewId).eq("author_id", guard.userId);
     refresh();
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// "Ma salle" — un client pointe une entrée de l'annuaire comme la sienne au
+// lieu de la retaper en texte libre dans sa fiche (gym_name/gym_link,
+// utils/client-intake.ts). Upsert partiel (seulement ces deux colonnes) :
+// ne touche à aucun autre champ de la fiche, contrairement à saveClientIntake
+// qui réécrit la ligne entière depuis le formulaire d'onboarding.
+export async function setMyGym(
+  clientId: string,
+  gymName: string,
+  gymWebsite: string | null
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("client_intake")
+      .upsert(
+        { client_id: clientId, gym_name: gymName, gym_link: gymWebsite, updated_at: new Date().toISOString() },
+        { onConflict: "client_id" }
+      );
+
+    if (error) return { error: "Erreur lors de l'enregistrement." };
+    refresh();
+    revalidatePath(`/dashboard/coach/clients/${clientId}`);
     return {};
   } catch {
     return { error: "Erreur inattendue." };
