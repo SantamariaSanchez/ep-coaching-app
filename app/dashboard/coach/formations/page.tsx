@@ -19,9 +19,17 @@ export default async function CoachFormationsPage() {
     formations.map(async (f) => {
       const withModules = await getFormationWithModules(f.id);
       const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, totalMin: 0 };
-      return { formation: f, ...counts, moduleCount: withModules?.modules.length ?? 0 };
+      // Vidéo renseignée mais pas encore publiée — du contenu prêt qui reste
+      // invisible pour les clients, souvent juste oublié.
+      const readyNotPublished = withModules
+        ? withModules.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons)).filter((l) => l.youtube_id && !l.is_published).length
+        : 0;
+      return { formation: f, ...counts, moduleCount: withModules?.modules.length ?? 0, readyNotPublished };
     })
   );
+
+  const totalReadyNotPublished = formationData.reduce((s, d) => s + d.readyNotPublished, 0);
+  const totalPublished = formationData.reduce((s, d) => s + d.published, 0);
 
   return (
     <div
@@ -43,6 +51,27 @@ export default async function CoachFormationsPage() {
           {formations.length} formation{formations.length !== 1 ? "s" : ""} · Clique pour gérer le contenu
         </p>
       </div>
+
+      {totalReadyNotPublished > 0 && (
+        <div
+          className="ep-card animate-fade-up"
+          style={{
+            padding: "14px 18px",
+            marginBottom: 16,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)",
+            border: "1px solid rgba(224,30,30,0.25)",
+          }}
+        >
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px" }}>
+            {totalReadyNotPublished} vidéo{totalReadyNotPublished !== 1 ? "s" : ""} prête{totalReadyNotPublished !== 1 ? "s" : ""} mais pas encore publiée{totalReadyNotPublished !== 1 ? "s" : ""}
+          </p>
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
+            {totalPublished === 0
+              ? "Aucune vidéo n'est visible côté client pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon) pour que ce contenu serve enfin."
+              : "Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible — pense à la publier."}
+          </p>
+        </div>
+      )}
 
       <NewFormationButton />
 

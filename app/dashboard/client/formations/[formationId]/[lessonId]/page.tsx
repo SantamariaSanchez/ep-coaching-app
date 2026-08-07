@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getLesson, getFormationWithModules, getUserProgress } from "@/utils/formations";
+import { getLesson, getFormationWithModules, getUserProgress, recordLessonView } from "@/utils/formations";
 import VideoPlayer, { VideoComingSoon } from "@/components/formations/VideoPlayer";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 
@@ -25,6 +25,12 @@ export default async function LessonPage({
     getFormationWithModules(formationId),
     getUserProgress(user.id),
   ]);
+
+  // Alimente "Reprendre" sur le catalogue (app/dashboard/client/formations/
+  // page.tsx). Attendu (pas fire-and-forget) : sur Vercel, une fonction
+  // serverless peut se terminer avant qu'une promesse non attendue ait fini
+  // d'écrire — la fonction elle-même ne lève jamais (best-effort interne).
+  await recordLessonView(user.id, lessonId);
 
   if (!lesson || !formation) notFound();
 

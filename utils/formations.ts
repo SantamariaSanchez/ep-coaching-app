@@ -132,6 +132,78 @@ export async function getLessonWithContext(lessonId: string) {
   return lesson;
 }
 
+// ── Reprendre où on en était ─────────────────────────────────────────────────
+// "Vu" (formation_lesson_views) est distinct de "terminé" (formation_progress
+// ci-dessous) — une leçon commencée mais pas terminée doit rester proposée en
+// "Reprendre", pas disparaître du suivi.
+export async function recordLessonView(userId: string, lessonId: string): Promise<void> {
+  try {
+    const supabase = await createServerSupabase();
+    await supabase
+      .from("formation_lesson_views")
+      .upsert({ user_id: userId, lesson_id: lessonId, viewed_at: new Date().toISOString() }, { onConflict: "user_id,lesson_id" });
+  } catch {
+    // Best-effort : ne bloque jamais l'affichage de la leçon pour ça.
+  }
+}
+
+export interface ResumeLesson {
+  lessonId: string;
+  lessonTitle: string;
+  formationId: string;
+  formationTitle: string;
+  formationEmoji: string;
+}
+
+// Dernière leçon vue mais pas encore terminée, en repartant des vues les
+// plus récentes — s'arrête à la première leçon toujours valide (publiée,
+// avec une vidéo) pour ne jamais proposer de reprendre une leçon retirée
+// depuis.
+export async function getResumeLesson(userId: string): Promise<ResumeLesson | null> {
+  try {
+    const supabase = await createServerSupabase();
+    const { data: views } = await supabase
+      .from("formation_lesson_views")
+      .select("lesson_id")
+      .eq("user_id", userId)
+      .order("viewed_at", { ascending: false })
+      .limit(20);
+    if (!views || views.length === 0) return null;
+
+    const { data: completedRows } = await supabase
+      .from("formation_progress")
+      .select("lesson_id")
+      .eq("user_id", userId);
+    const completedIds = new Set((completedRows ?? []).map((r: { lesson_id: string }) => r.lesson_id));
+
+    for (const v of views as { lesson_id: string }[]) {
+      if (completedIds.has(v.lesson_id)) continue;
+      const context = await getLessonWithContext(v.lesson_id);
+      if (!context) continue;
+      const lesson = context as unknown as {
+        id: string;
+        title: string;
+        is_published: boolean;
+        youtube_id: string | null;
+        formation_sections: { formation_modules: { formations: { id: string; title: string; emoji: string } } };
+      };
+      if (!lesson.is_published || !lesson.youtube_id) continue;
+      const formation = lesson.formation_sections?.formation_modules?.formations;
+      if (!formation) continue;
+      return {
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        formationId: formation.id,
+        formationTitle: formation.title,
+        formationEmoji: formation.emoji,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getUserProgress(userId: string): Promise<Set<string>> {
   const supabase = await createServerSupabase();
   const { data } = await supabase

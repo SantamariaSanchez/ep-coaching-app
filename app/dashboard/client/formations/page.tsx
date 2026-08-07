@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
-import { getFormations, getUserProgress, getFormationWithModules, countLessons } from "@/utils/formations";
-import { BookOpen, Lock, Crown, PlayCircle, ChevronRight, Clock } from "lucide-react";
+import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson } from "@/utils/formations";
+import { BookOpen, Lock, Crown, PlayCircle, ChevronRight, Clock, Play } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -25,9 +25,13 @@ export default async function FormationsPage() {
   // clients coachés, verrouillées plus bas plutôt que la page entière.
   const isFreeTier = !isSubscribed(profile);
 
-  const [formations, completed] = await Promise.all([
+  const [formations, completed, resumeLesson] = await Promise.all([
     getFormations(),
     getUserProgress(user.id),
+    // Réservé aux clients coachés — un membre gratuit n'a jamais pu ouvrir
+    // de leçon (redirigé plus haut dans la page de leçon), donc rien à
+    // reprendre.
+    isFreeTier ? Promise.resolve(null) : getResumeLesson(user.id),
   ]);
 
   // Get module/lesson counts for each formation
@@ -67,6 +71,41 @@ export default async function FormationsPage() {
           {totalMin > 0 && ` · ${Math.round(totalMin / 60)}h de contenu`}
         </p>
       </div>
+
+      {/* Reprendre où on en était */}
+      {resumeLesson && (
+        <Link
+          href={`/dashboard/client/formations/${resumeLesson.formationId}/${resumeLesson.lessonId}`}
+          className="ep-card animate-fade-up"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 14,
+            padding: "16px 18px",
+            marginBottom: 20,
+            textDecoration: "none",
+            background: "linear-gradient(135deg, rgba(224,30,30,0.12) 0%, rgba(137,4,4,0.05) 100%)",
+            border: "1px solid rgba(224,30,30,0.3)",
+          }}
+        >
+          <div style={{
+            width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
+            background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.3)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Play size={16} style={{ color: "#E01E1E" }} strokeWidth={2} fill="#E01E1E" />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", margin: "0 0 3px" }}>
+              Reprendre {resumeLesson.formationEmoji} {resumeLesson.formationTitle}
+            </p>
+            <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {resumeLesson.lessonTitle}
+            </p>
+          </div>
+          <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+        </Link>
+      )}
 
       {/* Free tier upsell */}
       {isFreeTier && (

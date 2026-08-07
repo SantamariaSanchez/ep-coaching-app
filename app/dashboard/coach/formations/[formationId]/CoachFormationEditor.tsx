@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Video, Check, ChevronDown, ChevronUp, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2 } from "lucide-react";
+import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
 import {
   updateLessonYoutube,
+  updateLessonDetails,
   updateFormation,
   updateModuleTitle,
   updateSectionTitle,
@@ -17,6 +18,11 @@ import {
   deleteSection,
   deleteLesson,
   deleteFormation,
+  moveModule,
+  moveSection,
+  moveLesson,
+  publishSectionLessons,
+  duplicateModule,
 } from "../actions";
 
 // ── Titre modifiable inline ─────────────────────────────────────────────────
@@ -132,6 +138,17 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
     }
   }
 
+  async function saveLessonDetails(lessonId: string, data: { description?: string; duration_min?: number }) {
+    setSaving(`details-${lessonId}`);
+    const res = await updateLessonDetails(lessonId, data);
+    setSaving(null);
+    if (!res.error) {
+      setSaved(lessonId);
+      setTimeout(() => setSaved(null), 2000);
+      router.refresh();
+    }
+  }
+
   async function togglePublish() {
     setSaving("formation");
     await updateFormation(formation.id, { is_published: !formation.is_published });
@@ -205,6 +222,35 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function saveMetaField(field: "subtitle" | "description" | "emoji", value: string) {
     await updateFormation(formation.id, { [field]: value });
+    router.refresh();
+  }
+
+  async function handleMoveModule(moduleId: string, direction: "up" | "down") {
+    await moveModule(formation.id, moduleId, direction);
+    router.refresh();
+  }
+
+  async function handleMoveSection(moduleId: string, sectionId: string, direction: "up" | "down") {
+    await moveSection(moduleId, sectionId, direction);
+    router.refresh();
+  }
+
+  async function handleMoveLesson(sectionId: string, lessonId: string, direction: "up" | "down") {
+    await moveLesson(sectionId, lessonId, direction);
+    router.refresh();
+  }
+
+  async function handleDuplicateModule(moduleId: string) {
+    setSaving(`dup-${moduleId}`);
+    await duplicateModule(moduleId);
+    setSaving(null);
+    router.refresh();
+  }
+
+  async function handlePublishSection(sectionId: string, publish: boolean) {
+    setSaving(`pub-${sectionId}`);
+    await publishSectionLessons(sectionId, publish);
+    setSaving(null);
     router.refresh();
   }
 
@@ -316,7 +362,31 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   ({mod.sections.length} module{mod.sections.length !== 1 ? "s" : ""} · {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""})
                 </span>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "up"); }}
+                  disabled={mi === 0}
+                  title="Monter"
+                  style={{ display: "flex", background: "none", border: "none", cursor: mi === 0 ? "default" : "pointer", padding: 2, opacity: mi === 0 ? 0.2 : 1 }}
+                >
+                  <ArrowUp size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "down"); }}
+                  disabled={mi === formation.modules.length - 1}
+                  title="Descendre"
+                  style={{ display: "flex", background: "none", border: "none", cursor: mi === formation.modules.length - 1 ? "default" : "pointer", padding: 2, opacity: mi === formation.modules.length - 1 ? 0.2 : 1 }}
+                >
+                  <ArrowDown size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleDuplicateModule(mod.id); }}
+                  disabled={saving === `dup-${mod.id}`}
+                  title="Dupliquer cette section (structure, sans les vidéos)"
+                  style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
+                >
+                  <Copy size={13} style={{ color: "rgba(245,237,237,0.3)" }} />
+                </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id, mod.title); }}
                   title="Supprimer la section"
@@ -367,7 +437,36 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                           ({sec.lessons.length})
                         </span>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                        {sec.lessons.some((l) => l.youtube_id) && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handlePublishSection(sec.id, !sec.lessons.every((l) => l.is_published));
+                            }}
+                            disabled={saving === `pub-${sec.id}`}
+                            title={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"}
+                            style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 2 }}
+                          >
+                            <CheckSquare size={12} style={{ color: sec.lessons.every((l) => l.is_published) ? "#4ade80" : "rgba(245,237,237,0.3)" }} />
+                          </button>
+                        )}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "up"); }}
+                          disabled={si === 0}
+                          title="Monter"
+                          style={{ display: "flex", background: "none", border: "none", cursor: si === 0 ? "default" : "pointer", padding: 2, opacity: si === 0 ? 0.2 : 1 }}
+                        >
+                          <ArrowUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "down"); }}
+                          disabled={si === mod.sections.length - 1}
+                          title="Descendre"
+                          style={{ display: "flex", background: "none", border: "none", cursor: si === mod.sections.length - 1 ? "default" : "pointer", padding: 2, opacity: si === mod.sections.length - 1 ? 0.2 : 1 }}
+                        >
+                          <ArrowDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                        </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteSection(sec.id, sec.title); }}
                           title="Supprimer le module"
@@ -392,9 +491,13 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                             index={li + 1}
                             saving={saving}
                             saved={saved}
+                            canMoveUp={li > 0}
+                            canMoveDown={li < sec.lessons.length - 1}
                             onSave={saveYoutube}
+                            onSaveDetails={saveLessonDetails}
                             onRenameTitle={renameLessonTitle}
                             onDelete={() => handleDeleteLesson(lesson.id, lesson.title)}
+                            onMove={(dir) => handleMoveLesson(sec.id, lesson.id, dir)}
                           />
                         ))}
 
@@ -473,123 +576,215 @@ function LessonEditor({
   index,
   saving,
   saved,
+  canMoveUp,
+  canMoveDown,
   onSave,
+  onSaveDetails,
   onRenameTitle,
   onDelete,
+  onMove,
 }: {
   lesson: FormationLesson;
   index: number;
   saving: string | null;
   saved: string | null;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
   onSave: (id: string, url: string, published: boolean) => void;
+  onSaveDetails: (id: string, data: { description?: string; duration_min?: number }) => void;
   onRenameTitle: (id: string, title: string) => Promise<void>;
   onDelete: () => void;
+  onMove: (direction: "up" | "down") => void;
 }) {
   const [url, setUrl] = useState(lesson.youtube_id ?? "");
   const [published, setPublished] = useState(lesson.is_published);
+  const [showDetails, setShowDetails] = useState(false);
+  const [description, setDescription] = useState(lesson.description ?? "");
+  const [durationMin, setDurationMin] = useState(String(lesson.duration_min));
 
   const isSaving = saving === lesson.id;
   const isSaved = saved === lesson.id;
   const hasChanged = url !== (lesson.youtube_id ?? "") || published !== lesson.is_published;
+  const detailsChanged = description !== (lesson.description ?? "") || durationMin !== String(lesson.duration_min);
+  const isSavingDetails = saving === `details-${lesson.id}`;
 
   return (
     <div style={{
       padding: "10px 18px 10px 36px",
       borderBottom: "1px solid rgba(224,30,30,0.04)",
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
     }}>
-      <span style={{ fontSize: 11, color: "rgba(245,237,237,0.18)", fontWeight: 700, width: 18, flexShrink: 0 }}>
-        {index}
-      </span>
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.18)", fontWeight: 700, width: 18, flexShrink: 0 }}>
+          {index}
+        </span>
 
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ marginBottom: 6 }}>
-          <EditableTitle
-            value={lesson.title}
-            onSave={(title) => onRenameTitle(lesson.id, title)}
-            textStyle={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", lineHeight: 1.2 }}
+        {lesson.youtube_id && (
+          // eslint-disable-next-line @next/next/no-img-element -- miniature YouTube externe, pas une image du projet
+          <img
+            src={`https://i.ytimg.com/vi/${lesson.youtube_id}/mqdefault.jpg`}
+            alt=""
+            width={48}
+            height={27}
+            style={{ borderRadius: 4, flexShrink: 0, objectFit: "cover", background: "rgba(0,0,0,0.4)" }}
           />
-        </div>
+        )}
 
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          <div style={{ position: "relative", flex: 1 }}>
-            <Video
-              size={13}
-              style={{
-                position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
-                color: url ? "#E01E1E" : "rgba(245,237,237,0.2)",
-              }}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ marginBottom: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <EditableTitle
+              value={lesson.title}
+              onSave={(title) => onRenameTitle(lesson.id, title)}
+              textStyle={{ fontSize: 12, fontWeight: 700, color: "#F5EDED", lineHeight: 1.2 }}
             />
-            <input
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              placeholder="URL ou ID YouTube"
-              style={{
-                width: "100%",
-                background: "rgba(0,0,0,0.4)",
-                border: `1px solid ${url ? "rgba(224,30,30,0.25)" : "rgba(255,255,255,0.07)"}`,
-                borderRadius: 8,
-                color: "#F5EDED",
-                padding: "7px 10px 7px 30px",
-                fontSize: 12,
-                fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
-                outline: "none",
-              }}
-            />
+            <button
+              onClick={() => setShowDetails((v) => !v)}
+              title="Description et durée"
+              style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}
+            >
+              {showDetails
+                ? <ChevronUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+                : <ChevronDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
+              }
+            </button>
           </div>
 
-          <button
-            onClick={() => setPublished(!published)}
-            title={published ? "Masquer" : "Publier"}
-            style={{
-              background: published ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)",
-              border: `1px solid ${published ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.08)"}`,
-              borderRadius: 8,
-              padding: "7px 9px",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-            }}
-          >
-            {published
-              ? <Eye size={13} style={{ color: "#4ade80" }} />
-              : <EyeOff size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
-            }
-          </button>
+          <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+            <div style={{ position: "relative", flex: 1 }}>
+              <Video
+                size={13}
+                style={{
+                  position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)",
+                  color: url ? "#E01E1E" : "rgba(245,237,237,0.2)",
+                }}
+              />
+              <input
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                placeholder="URL ou ID YouTube"
+                style={{
+                  width: "100%",
+                  background: "rgba(0,0,0,0.4)",
+                  border: `1px solid ${url ? "rgba(224,30,30,0.25)" : "rgba(255,255,255,0.07)"}`,
+                  borderRadius: 8,
+                  color: "#F5EDED",
+                  padding: "7px 10px 7px 30px",
+                  fontSize: 12,
+                  fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
+                  outline: "none",
+                }}
+              />
+            </div>
 
-          {(hasChanged || isSaving || isSaved) && (
             <button
-              onClick={() => onSave(lesson.id, url, published)}
-              disabled={isSaving}
+              onClick={() => setPublished(!published)}
+              title={published ? "Masquer" : "Publier"}
               style={{
-                background: isSaved ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.12)",
-                border: `1px solid ${isSaved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.25)"}`,
+                background: published ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)",
+                border: `1px solid ${published ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.08)"}`,
                 borderRadius: 8,
                 padding: "7px 9px",
-                cursor: isSaving ? "wait" : "pointer",
+                cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
               }}
             >
-              {isSaved
-                ? <Check size={13} style={{ color: "#4ade80" }} />
-                : <Save size={13} style={{ color: "#E01E1E" }} />
+              {published
+                ? <Eye size={13} style={{ color: "#4ade80" }} />
+                : <EyeOff size={13} style={{ color: "rgba(245,237,237,0.2)" }} />
               }
             </button>
-          )}
 
-          <button
-            onClick={onDelete}
-            title="Supprimer la vidéo"
-            style={{
-              background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8,
-              padding: "7px 9px", cursor: "pointer", display: "flex", alignItems: "center",
-            }}
-          >
-            <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
-          </button>
+            {(hasChanged || isSaving || isSaved) && (
+              <button
+                onClick={() => onSave(lesson.id, url, published)}
+                disabled={isSaving}
+                style={{
+                  background: isSaved ? "rgba(74,222,128,0.1)" : "rgba(224,30,30,0.12)",
+                  border: `1px solid ${isSaved ? "rgba(74,222,128,0.3)" : "rgba(224,30,30,0.25)"}`,
+                  borderRadius: 8,
+                  padding: "7px 9px",
+                  cursor: isSaving ? "wait" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {isSaved
+                  ? <Check size={13} style={{ color: "#4ade80" }} />
+                  : <Save size={13} style={{ color: "#E01E1E" }} />
+                }
+              </button>
+            )}
+
+            <button
+              onClick={() => onMove("up")}
+              disabled={!canMoveUp}
+              title="Monter"
+              style={{ display: "flex", background: "none", border: "none", cursor: canMoveUp ? "pointer" : "default", padding: 2, opacity: canMoveUp ? 1 : 0.2 }}
+            >
+              <ChevronUp size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
+            </button>
+            <button
+              onClick={() => onMove("down")}
+              disabled={!canMoveDown}
+              title="Descendre"
+              style={{ display: "flex", background: "none", border: "none", cursor: canMoveDown ? "pointer" : "default", padding: 2, opacity: canMoveDown ? 1 : 0.2 }}
+            >
+              <ChevronDown size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
+            </button>
+
+            <button
+              onClick={onDelete}
+              title="Supprimer la vidéo"
+              style={{
+                background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8,
+                padding: "7px 9px", cursor: "pointer", display: "flex", alignItems: "center",
+              }}
+            >
+              <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
+            </button>
+          </div>
+
+          {showDetails && (
+            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description affichée au client sous la vidéo…"
+                rows={2}
+                style={{
+                  width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",
+                  borderRadius: 8, color: "#F5EDED", padding: "7px 10px", fontSize: 11.5,
+                  fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif", outline: "none", resize: "vertical",
+                }}
+              />
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <label style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>Durée (min)</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={durationMin}
+                  onChange={(e) => setDurationMin(e.target.value)}
+                  style={{
+                    width: 64, background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",
+                    borderRadius: 8, color: "#F5EDED", padding: "6px 8px", fontSize: 11.5, outline: "none",
+                  }}
+                />
+                {detailsChanged && (
+                  <button
+                    onClick={() => onSaveDetails(lesson.id, { description: description.trim(), duration_min: parseInt(durationMin, 10) || 10 })}
+                    disabled={isSavingDetails}
+                    style={{
+                      background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.25)", borderRadius: 8,
+                      padding: "6px 9px", cursor: isSavingDetails ? "wait" : "pointer", display: "flex", alignItems: "center", gap: 4,
+                      fontSize: 10, fontWeight: 700, color: "#E01E1E",
+                    }}
+                  >
+                    <Save size={12} /> {isSavingDetails ? "…" : "Enregistrer"}
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
