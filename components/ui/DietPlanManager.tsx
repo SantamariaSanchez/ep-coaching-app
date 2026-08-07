@@ -19,6 +19,7 @@ import {
   Check,
   ExternalLink,
   Search,
+  Sparkles,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { calculateNutrients } from "@/utils/nutrition-utils";
@@ -26,6 +27,7 @@ import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutri
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch } from "@/lib/food-watch-keywords";
+import { generateDietDraft, clampMealCount } from "@/lib/diet-generator";
 
 export interface MacroTargets {
   calories: number;
@@ -288,6 +290,38 @@ export function PlanBuilder({
     setShowStartingPoint(false);
   }
 
+  // Génère un brouillon de journée directement dans l'éditeur — pas une
+  // liste à part, les repas générés atterrissent tels quels dans `meals`,
+  // déjà modifiables. Toujours sur le jour affiché (currentDay en mode
+  // hebdo) : régénérable jour par jour si la structure est "weekly".
+  const [generateError, setGenerateError] = useState<string | null>(null);
+  function generateDraft() {
+    setGenerateError(null);
+    if (!targets) {
+      setGenerateError("Renseigne d'abord les objectifs macro de ce client (onglet Objectifs TDEE) pour pouvoir générer une journée.");
+      return;
+    }
+    if (
+      dayMeals.length > 0 &&
+      !confirm("Générer un brouillon va remplacer les repas du jour affiché. Continuer ?")
+    ) {
+      return;
+    }
+    const mealCount = clampMealCount(intake?.meals_ideal ?? intake?.meals_current ?? 4);
+    const draft = generateDietDraft(targets, foods, intake, mealCount);
+    const generated: PlanMealRow[] = draft.flatMap((meal) =>
+      meal.items.map((item) => ({
+        slotKey: meal.slotKey,
+        foodId: item.foodId,
+        foodName: item.foodName,
+        quantityG: item.quantityG,
+        day: currentDay,
+      }))
+    );
+    setMeals((prev) => [...prev.filter((m) => m.day !== currentDay), ...generated]);
+    setLoadedTemplateName(null);
+  }
+
   function buildMealInputs(): DietPlanMealInput[] {
     return meals.map((m, i) => ({
       meal_slot: m.slotKey,
@@ -339,6 +373,28 @@ export function PlanBuilder({
 
   return (
     <div className="space-y-5">
+      {/* ── Génération d'un brouillon ────────────────────────────────────── */}
+      <div className="bg-[#1f0101] border border-green-500/25 rounded-xl p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Générer un brouillon {structure === "weekly" && currentDay ? `— ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
+        </p>
+        <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed mb-3">
+          Répartit les objectifs macro de {subjectLabel} sur des repas remplis d&apos;aliments réels
+          (respecte régime, allergènes détectés et aliments détestés), directement modifiables ci-dessous.
+          Une approximation de départ, pas un calcul parfait — les totaux du jour restent visibles pendant
+          que tu ajustes.
+        </p>
+        <button
+          onClick={generateDraft}
+          disabled={foods.length === 0}
+          className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-green-400 text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+        >
+          <Sparkles size={13} />
+          Générer la journée
+        </button>
+        {generateError && <p className="mt-2 text-xs text-amber-400">{generateError}</p>}
+      </div>
+
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
         <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">

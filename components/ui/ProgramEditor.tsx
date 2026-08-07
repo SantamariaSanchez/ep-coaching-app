@@ -19,6 +19,8 @@ import {
 import {
   checkExerciseConflicts,
   conflictSourceLabel,
+  generateProgramDraft,
+  findSwapCandidate,
   type ExerciseConflict,
 } from "@/lib/plan-generator";
 import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/program-templates";
@@ -36,6 +38,8 @@ import {
   LayoutTemplate,
   BookmarkPlus,
   ExternalLink,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 
 export interface ExerciseRow {
@@ -519,6 +523,93 @@ export default function ProgramEditor({
     setLoadedTemplateName(null);
   }
 
+  // Génère un brouillon complet (jours + exercices + séries/reps/repos par
+  // défaut) directement dans l'éditeur — pas une liste de pistes à part à
+  // retranscrire à la main, un vrai point de départ déjà éditable ici. Rien
+  // n'est enregistré tant que le coach ne clique pas sur Enregistrer.
+  function generateDraft() {
+    if (
+      state.days.length > 0 &&
+      !confirm("Générer un brouillon va remplacer la structure et les exercices actuels de l'éditeur. Continuer ?")
+    ) {
+      return;
+    }
+    const sessionsPerWeek = Math.max(2, Math.min(6, parseInt(state.frequency, 10) || 4));
+    const draft = generateProgramDraft(
+      sessionsPerWeek,
+      library,
+      intake?.disliked_equipment ?? null,
+      intake?.exercises_problematic ?? null,
+      intake?.training_access ?? null
+    );
+    setState((s) => ({
+      ...s,
+      frequency: String(sessionsPerWeek),
+      days: draft.map((d) => ({
+        localId: uid(),
+        day_label: d.dayLabel,
+        exercises: d.exercises.map((ex) => ({
+          localId: uid(),
+          name: ex.name,
+          sets: ex.sets,
+          reps: ex.reps,
+          rir: ex.rir,
+          rest_seconds: ex.rest_seconds,
+          notes: "",
+          muscle_group: ex.muscle_group,
+          muscle_subgroup: ex.muscle_subgroup ?? "",
+          is_direct: ex.is_direct ? "true" : "false",
+        })),
+      })),
+    }));
+    setLoadedTemplateName(null);
+  }
+
+  // Remplace un exercice par le candidat suivant du même groupe/catégorie —
+  // pour itérer exercice par exercice sans tout régénérer. Cherche la
+  // catégorie dans la bibliothèque à partir du nom actuel (pas stockée sur
+  // la ligne elle-même) ; si l'exercice est hors bibliothèque (nom tapé à
+  // la main) ou qu'aucune alternative n'existe, ne fait rien.
+  function swapExercise(dayLocalId: string, exerciseLocalId: string) {
+    const day = state.days.find((d) => d.localId === dayLocalId);
+    const row = day?.exercises.find((e) => e.localId === exerciseLocalId);
+    if (!day || !row) return;
+    const current = library.find((l) => l.name === row.name);
+    if (!current || !current.category) return;
+
+    const namesInDay = day.exercises.map((e) => e.name);
+    const next = findSwapCandidate(
+      { muscle_group: current.muscle_group, category: current.category },
+      library,
+      intake?.disliked_equipment ?? null,
+      intake?.exercises_problematic ?? null,
+      intake?.training_access ?? null,
+      namesInDay
+    );
+    if (!next) return;
+
+    setState((s) => ({
+      ...s,
+      days: s.days.map((d) =>
+        d.localId !== dayLocalId
+          ? d
+          : {
+              ...d,
+              exercises: d.exercises.map((e) =>
+                e.localId !== exerciseLocalId
+                  ? e
+                  : { ...e, name: next.name, muscle_group: next.muscle_group, muscle_subgroup: next.muscle_subgroup ?? "" }
+              ),
+            }
+      ),
+    }));
+  }
+
+  function canSwap(exerciseName: string): boolean {
+    const lib = library.find((l) => l.name === exerciseName);
+    return !!lib?.category;
+  }
+
   // Charge un modèle de la bibliothèque dans l'éditeur. Copie en mémoire :
   // tout est modifiable dans la foulée pour ce client précis, et le modèle
   // d'origine n'est jamais touché.
@@ -964,13 +1055,30 @@ export default function ProgramEditor({
           />
         </div>
 
-        <button
-          onClick={applyScaffold}
-          className="mt-4 inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Wand2 size={13} />
-          {state.days.length === 0 ? "Générer les séances de cette structure" : "Regénérer les séances"}
-        </button>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <button
+            onClick={applyScaffold}
+            className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Wand2 size={13} />
+            {state.days.length === 0 ? "Séances vides de cette structure" : "Regénérer les séances vides"}
+          </button>
+          <button
+            onClick={generateDraft}
+            disabled={library.length === 0}
+            title={library.length === 0 ? "Bibliothèque d'exercices en cours de chargement…" : undefined}
+            className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-green-400 text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
+          >
+            <Sparkles size={13} />
+            Générer le programme complet
+          </button>
+        </div>
+        <p className="mt-2 text-[10px] text-[#F5EDED]/25 leading-relaxed">
+          « Générer le programme complet » choisit un split selon la fréquence (ignore le champ Split
+          ci-dessus), un exercice par créneau selon le matériel de {subjectLabel}, et des séries/reps/repos
+          par défaut. Un brouillon éditable, rien n&apos;est enregistré tant que tu ne cliques pas sur
+          Enregistrer.
+        </p>
       </div>
 
       {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
@@ -1140,6 +1248,15 @@ export default function ProgramEditor({
                                 <path d="M5 8 L1 2 L9 2 Z" />
                               </svg>
                             </button>
+                            {canSwap(ex.name) && (
+                              <button
+                                onClick={() => swapExercise(day.localId, ex.localId)}
+                                title="Remplacer par un autre exercice du même groupe/catégorie"
+                                className="text-[#F5EDED]/25 hover:text-green-400 transition-colors p-0.5 ml-0.5"
+                              >
+                                <RefreshCw size={11} />
+                              </button>
+                            )}
                             <button
                               onClick={() =>
                                 removeExercise(day.localId, ex.localId)

@@ -287,6 +287,30 @@ export interface MuscleGroupSuggestion {
   isolation: ExerciseSuggestion[];
 }
 
+const byQuality = (a: LibraryExercise, b: LibraryExercise) =>
+  difficultyRank(a) - difficultyRank(b) || a.name.localeCompare(b.name, "fr");
+
+// Point commun entre les suggestions (plusieurs pistes) et la génération
+// (un choix ferme) : mêmes règles d'éligibilité (groupe, exclusions,
+// matériel disponible), mêmes plus simples/robustes en tête de liste.
+function filteredCandidates(
+  library: LibraryExercise[],
+  group: string,
+  category: "compose" | "isolation",
+  excludeText: string,
+  allowed: EquipmentType[]
+): LibraryExercise[] {
+  return library
+    .filter(
+      (ex) =>
+        ex.muscle_group === group &&
+        ex.category === category &&
+        !isExcluded(ex, excludeText) &&
+        allowed.includes(getEquipmentType(ex.equipment))
+    )
+    .sort(byQuality);
+}
+
 // Renvoie plusieurs candidats par catégorie (pas un choix figé) — le but est
 // de suggérer des options que le coach compare et choisit lui-même, jamais
 // de décider à sa place.
@@ -298,17 +322,8 @@ function suggestForGroup(
   maxPerCategory = 3
 ): MuscleGroupSuggestion {
   const allowed = allowedEquipmentTypes(trainingAccess);
-  const candidates = library.filter(
-    (ex) =>
-      ex.muscle_group === group &&
-      !isExcluded(ex, excludeText) &&
-      allowed.includes(getEquipmentType(ex.equipment))
-  );
-  const byQuality = (a: LibraryExercise, b: LibraryExercise) =>
-    difficultyRank(a) - difficultyRank(b) || a.name.localeCompare(b.name, "fr");
-
-  const compound = candidates.filter((ex) => ex.category === "compose").sort(byQuality).slice(0, maxPerCategory);
-  const isolation = candidates.filter((ex) => ex.category === "isolation").sort(byQuality).slice(0, maxPerCategory);
+  const compound = filteredCandidates(library, group, "compose", excludeText, allowed).slice(0, maxPerCategory);
+  const isolation = filteredCandidates(library, group, "isolation", excludeText, allowed).slice(0, maxPerCategory);
 
   return {
     group,
@@ -339,6 +354,100 @@ export function buildProgramSuggestions(
     dayLabel: day.label,
     groups: day.groups.map((group) => suggestForGroup(library, group, excludeText, trainingAccess)),
   }));
+}
+
+// ── Génération d'un brouillon complet ───────────────────────────────────────
+// Contrairement à buildProgramSuggestions (des pistes à copier à la main),
+// ceci choisit UN exercice par créneau avec un jeu série/reps/repos par
+// défaut et renvoie des jours directement injectables dans l'éditeur —
+// un vrai point de départ éditable, pas une liste à retranscrire.
+
+export interface GeneratedExercise {
+  name: string;
+  muscle_group: string;
+  muscle_subgroup: string | null;
+  sets: string;
+  reps: string;
+  rir: string;
+  rest_seconds: string;
+  is_direct: boolean;
+}
+
+export interface GeneratedDay {
+  dayLabel: string;
+  exercises: GeneratedExercise[];
+}
+
+function defaultPrescription(category: "compose" | "isolation" | null): Pick<GeneratedExercise, "sets" | "reps" | "rir" | "rest_seconds"> {
+  if (category === "isolation") return { sets: "3", reps: "10-15", rir: "1", rest_seconds: "75" };
+  return { sets: "4", reps: "6-10", rir: "2", rest_seconds: "120" };
+}
+
+function toGeneratedExercise(ex: LibraryExercise): GeneratedExercise {
+  return {
+    name: ex.name,
+    muscle_group: ex.muscle_group,
+    muscle_subgroup: ex.muscle_subgroup,
+    is_direct: true,
+    ...defaultPrescription(ex.category),
+  };
+}
+
+export function generateProgramDraft(
+  sessionsPerWeek: number,
+  library: LibraryExercise[],
+  dislikedEquipment: string | null,
+  exercisesProblematic: string | null,
+  trainingAccess: ClientIntake["training_access"] = null
+): GeneratedDay[] {
+  const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
+  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
+  const allowed = allowedEquipmentTypes(trainingAccess);
+  // Fait tourner le choix quand un même groupe revient plusieurs fois dans
+  // la semaine (ex. Legs A / Legs B) plutôt que de recoller le même
+  // exercice partout — un programme "réfléchi", pas juste répété.
+  const rotation: Record<string, number> = {};
+
+  function pick(group: string, category: "compose" | "isolation"): LibraryExercise | null {
+    const candidates = filteredCandidates(library, group, category, excludeText, allowed);
+    if (candidates.length === 0) return null;
+    const key = `${group}:${category}`;
+    const idx = (rotation[key] ?? 0) % candidates.length;
+    rotation[key] = (rotation[key] ?? 0) + 1;
+    return candidates[idx];
+  }
+
+  return template.map((day) => {
+    const exercises: GeneratedExercise[] = [];
+    for (const group of day.groups) {
+      const compound = pick(group, "compose");
+      if (compound) exercises.push(toGeneratedExercise(compound));
+      const isolation = pick(group, "isolation");
+      if (isolation) exercises.push(toGeneratedExercise(isolation));
+    }
+    return { dayLabel: day.label, exercises };
+  });
+}
+
+// Remplace un exercice par le candidat suivant du même groupe/catégorie —
+// utilisé par le bouton "remplacer" de l'éditeur pour itérer exercice par
+// exercice sans tout régénérer. `excludeNames` évite de retomber sur un
+// exercice déjà utilisé ailleurs dans la même séance.
+export function findSwapCandidate(
+  current: { muscle_group: string; category: "compose" | "isolation" | null },
+  library: LibraryExercise[],
+  dislikedEquipment: string | null,
+  exercisesProblematic: string | null,
+  trainingAccess: ClientIntake["training_access"],
+  excludeNames: string[]
+): LibraryExercise | null {
+  if (!current.category) return null;
+  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
+  const allowed = allowedEquipmentTypes(trainingAccess);
+  const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed).filter(
+    (ex) => !excludeNames.includes(ex.name)
+  );
+  return candidates[0] ?? null;
 }
 
 // ── Road map — une phase + objectifs dérivés des buts déclarés ──────────────
