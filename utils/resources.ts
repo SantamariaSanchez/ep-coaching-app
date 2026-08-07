@@ -6,12 +6,20 @@ export { RESOURCE_CATEGORIES, type ResourceCategory, type ResourceItem } from "@
 
 const SELECT_FIELDS = "id, title, description, file_url, category, created_at";
 
-export async function getResources(): Promise<ResourceItem[]> {
+// Scopée par coach : sans le .eq("created_by", ...), chaque coach de la
+// plateforme voyait les ressources de TOUS les autres coachs (upload comme
+// suppression étaient déjà cloisonnés par propriétaire côté API, mais la
+// lecture, elle, ne l'était pas) — même famille de bug que le cloisonnement
+// multi-coach déjà corrigé ailleurs (études internes, etc.). coachId est le
+// coach lui-même côté dashboard coach, ou profile.coach_id du client côté
+// dashboard client (voir call sites).
+export async function getResources(coachId: string): Promise<ResourceItem[]> {
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase
       .from("resources")
       .select(SELECT_FIELDS)
+      .eq("created_by", coachId)
       .order("created_at", { ascending: false });
     return (data as ResourceItem[]) ?? [];
   } catch {

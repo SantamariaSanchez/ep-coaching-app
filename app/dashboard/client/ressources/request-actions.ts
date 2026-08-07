@@ -56,6 +56,19 @@ export async function respondToResourceRequest(
       .select("author_id, title")
       .eq("id", requestId)
       .single();
+    if (!request) return { error: "Demande introuvable." };
+
+    // Cloisonnement multi-coach : sans ça, n'importe quel coach de la
+    // plateforme peut répondre à la demande d'un client qui n'est pas le
+    // sien (requireCoach() ne vérifie que le rôle, pas la relation).
+    const { data: authorForCheck } = await admin
+      .from("profiles")
+      .select("coach_id")
+      .eq("id", request.author_id)
+      .single();
+    if (request.author_id !== guard.userId && authorForCheck?.coach_id !== guard.userId) {
+      return { error: "Cette demande ne t'appartient pas." };
+    }
 
     const { error } = await admin
       .from("resource_requests")
@@ -109,7 +122,19 @@ export async function deleteResourceRequest(id: string): Promise<{ error?: strin
       .eq("id", id)
       .maybeSingle();
     if (!request) return { error: "Demande introuvable." };
-    if (request.author_id !== guard.userId && guard.role !== "coach") {
+
+    let allowed = request.author_id === guard.userId;
+    // Cloisonnement multi-coach : un coach ne peut supprimer que les
+    // demandes venant de SES clients, pas de n'importe quel coach.
+    if (!allowed && guard.role === "coach") {
+      const { data: authorForCheck } = await admin
+        .from("profiles")
+        .select("coach_id")
+        .eq("id", request.author_id)
+        .single();
+      allowed = authorForCheck?.coach_id === guard.userId;
+    }
+    if (!allowed) {
       return { error: "Tu ne peux supprimer que tes propres demandes." };
     }
 

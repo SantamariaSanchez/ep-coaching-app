@@ -18,8 +18,8 @@ export default async function CoachRessourcesPage() {
   if (profile?.role === "client") redirect("/dashboard/client/ressources");
 
   const [resources, requests] = await Promise.all([
-    getResources(),
-    getResourceRequests(),
+    getResources(user.id),
+    getResourceRequests(user.id),
   ]);
 
   return (

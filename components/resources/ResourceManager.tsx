@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { FileText, Upload, Trash2, Download } from "lucide-react";
+import { FileText, Upload, Trash2, Download, AlertTriangle } from "lucide-react";
 import { RESOURCE_CATEGORIES, type ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
 
@@ -17,6 +17,25 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [onlyUncategorized, setOnlyUncategorized] = useState(false);
+
+  // Une ressource sans catégorie n'apparaît sous aucun filtre côté client
+  // (ResourcesBrowser) tant qu'elle reste seule dans le lot "Autres" — ça se
+  // voit ici, pas là-bas, d'où le besoin de le signaler directement dans
+  // l'éditeur plutôt que de laisser le coach le découvrir par hasard.
+  const uncategorizedCount = resources.filter((r) => !r.category?.trim()).length;
+
+  const visibleResources = useMemo(() => {
+    const list = onlyUncategorized ? resources.filter((r) => !r.category?.trim()) : resources;
+    // Non catégorisées en premier — le classement à faire doit sauter aux
+    // yeux, pas se noyer dans la liste triée par date.
+    return [...list].sort((a, b) => {
+      const aUncat = !a.category?.trim();
+      const bUncat = !b.category?.trim();
+      if (aUncat !== bUncat) return aUncat ? -1 : 1;
+      return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    });
+  }, [resources, onlyUncategorized]);
 
   async function handleUpload() {
     if (!title.trim() || !file || uploading) return;
@@ -126,6 +145,25 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
         {error && <p className="text-xs text-red-400">{error}</p>}
       </div>
 
+      {/* ── Rappel catégorisation ── */}
+      {uncategorizedCount > 0 && (
+        <div className="flex items-center justify-between gap-3 bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3 mb-4">
+          <div className="flex items-center gap-2 min-w-0">
+            <AlertTriangle size={14} className="text-amber-400 flex-shrink-0" />
+            <p className="text-[11.5px] text-amber-300/90 leading-snug">
+              {uncategorizedCount} ressource{uncategorizedCount !== 1 ? "s" : ""} sans catégorie — tant qu&apos;il n&apos;y
+              a qu&apos;une catégorie utilisée (« Autres »), tes clients ne voient aucun filtre pour s&apos;y retrouver.
+            </p>
+          </div>
+          <button
+            onClick={() => setOnlyUncategorized((v) => !v)}
+            className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
+          >
+            {onlyUncategorized ? "Tout afficher" : "Filtrer"}
+          </button>
+        </div>
+      )}
+
       {/* ── List ── */}
       {resources.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
@@ -134,50 +172,57 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
         </div>
       ) : (
         <div className="space-y-2">
-          {resources.map((r) => (
-            <div
-              key={r.id}
-              className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5"
-            >
-              <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-                <FileText size={15} className="text-[#890404]" strokeWidth={1.8} />
+          {visibleResources.map((r) => {
+            const isUncategorized = !r.category?.trim();
+            return (
+              <div
+                key={r.id}
+                className={`flex items-center gap-3 border rounded-xl px-4 py-3.5 transition-colors ${
+                  isUncategorized ? "bg-amber-500/[0.04] border-amber-500/20" : "bg-[#1f0101] border-[#890404]/20"
+                }`}
+              >
+                <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+                  <FileText size={15} className="text-[#890404]" strokeWidth={1.8} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-white truncate">{r.title}</p>
+                  {r.description && (
+                    <p className="text-[10px] text-[#F5EDED]/35 truncate">{r.description}</p>
+                  )}
+                </div>
+                <select
+                  value={r.category ?? ""}
+                  onChange={(e) => handleCategoryChange(r.id, e.target.value)}
+                  disabled={updatingId === r.id}
+                  className={`bg-[#150000] border rounded-lg px-2 py-1.5 text-[10px] focus:outline-none disabled:opacity-40 flex-shrink-0 ${
+                    isUncategorized ? "border-amber-500/40 text-amber-300" : "border-[#890404]/20 text-[#F5EDED]/60 focus:border-[#E01E1E]/40"
+                  }`}
+                >
+                  <option value="">Autres</option>
+                  {RESOURCE_CATEGORIES.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
+                <a
+                  href={getResourceHref(r)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors p-1.5"
+                  title="Voir le fichier"
+                >
+                  <Download size={15} strokeWidth={1.8} />
+                </a>
+                <button
+                  onClick={() => handleDelete(r.id)}
+                  disabled={deletingId === r.id}
+                  className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
+                  title="Supprimer"
+                >
+                  <Trash2 size={15} strokeWidth={1.8} />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-white truncate">{r.title}</p>
-                {r.description && (
-                  <p className="text-[10px] text-[#F5EDED]/35 truncate">{r.description}</p>
-                )}
-              </div>
-              <select
-                value={r.category ?? ""}
-                onChange={(e) => handleCategoryChange(r.id, e.target.value)}
-                disabled={updatingId === r.id}
-                className="bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-[10px] text-[#F5EDED]/60 focus:outline-none focus:border-[#E01E1E]/40 disabled:opacity-40 flex-shrink-0"
-              >
-                <option value="">Autres</option>
-                {RESOURCE_CATEGORIES.map((c) => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-              <a
-                href={getResourceHref(r)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors p-1.5"
-                title="Voir le fichier"
-              >
-                <Download size={15} strokeWidth={1.8} />
-              </a>
-              <button
-                onClick={() => handleDelete(r.id)}
-                disabled={deletingId === r.id}
-                className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
-                title="Supprimer"
-              >
-                <Trash2 size={15} strokeWidth={1.8} />
-              </button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
