@@ -275,7 +275,16 @@ interface Props {
   ) => Promise<{ error?: string; id?: string }>;
   subjectLabel?: string;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
-  createDietPlan: (clientId: string, name: string, mode: DietMode, meals: DietPlanMealInput[], structure?: DietStructure, objective?: string) => Promise<{ error?: string; id?: string }>;
+  createDietPlan: (
+    clientId: string,
+    name: string,
+    mode: DietMode,
+    meals: DietPlanMealInput[],
+    structure?: DietStructure,
+    objective?: string,
+    dayNotes?: Record<string, string> | null,
+    socialNotes?: string | null
+  ) => Promise<{ error?: string; id?: string }>;
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
@@ -416,8 +425,8 @@ export default function CoachClientNutritionTabs({
                     : null
                 }
                 saveAsTemplate={saveDietAsTemplate}
-                onCreate={async (name, mode, meals, structure, objective) => {
-                  await createDietPlan(clientId, name, mode, meals, structure, objective);
+                onCreate={async (name, mode, meals, structure, objective, dayNotes, socialNotes) => {
+                  await createDietPlan(clientId, name, mode, meals, structure, objective, dayNotes, socialNotes);
                   setShowBuilder(false);
                 }}
               />

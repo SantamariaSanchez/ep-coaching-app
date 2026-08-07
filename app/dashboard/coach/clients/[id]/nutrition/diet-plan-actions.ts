@@ -31,7 +31,12 @@ export async function createDietPlan(
   mode: DietMode,
   meals: DietPlanMealInput[],
   structure: DietStructure = "daily",
-  objective?: string | null
+  objective?: string | null,
+  // Décisions de conception propres à ce plan (migration 20260807e) :
+  // pourquoi chaque jour est structuré ainsi, contraintes sociales connues.
+  // Optionnels : les parcours self-serve (client) n'en fournissent pas.
+  dayNotes?: Record<string, string> | null,
+  socialNotes?: string | null
 ): Promise<{ error?: string; id?: string }> {
   try {
     const guard = await requireOwnClientOrSelf(clientId);
@@ -58,7 +63,12 @@ export async function createDietPlan(
     // Create new plan
     let { data: plan, error: planError } = await supabase
       .from("diet_plans")
-      .insert({ ...baseRow, objective: objective?.trim() || null })
+      .insert({
+        ...baseRow,
+        objective: objective?.trim() || null,
+        day_notes: dayNotes && Object.keys(dayNotes).length > 0 ? dayNotes : null,
+        social_notes: socialNotes?.trim() || null,
+      })
       .select("id")
       .single();
 

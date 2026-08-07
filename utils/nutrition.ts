@@ -156,6 +156,10 @@ export interface DietPlan {
   // Objectif du plan, saisi en phase de conception (migration 20260806).
   // Optionnel : le code tourne aussi tant que la migration n'est pas passée.
   objective?: string | null;
+  // Raison de la structure de chaque jour + contraintes sociales connues
+  // (migration 20260807e_diet_plans_day_notes_and_social_notes).
+  day_notes?: Record<string, string> | null;
+  social_notes?: string | null;
 }
 
 export interface DietPlanMeal {

@@ -22,6 +22,7 @@ import {
   ClipboardCheck,
   ShoppingCart,
   CalendarDays,
+  RefreshCw,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
@@ -32,6 +33,7 @@ import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, 
 import { MICRO_DAILY_REF } from "@/lib/micro-references";
 import { CATEGORY_ORDER } from "@/lib/shopping-list";
 import { updateFoodPrepNotes } from "@/app/dashboard/client/nutrition/actions";
+import { findFoodSwapCandidate } from "@/lib/food-swap";
 import type { RoadmapWithData } from "@/utils/roadmap";
 import PhaseHeader from "./PhaseHeader";
 import RoadmapContextPanel from "./RoadmapContextPanel";
@@ -220,7 +222,12 @@ const inputCls =
 
 // ── Plan builder ──────────────────────────────────────────────────────────────
 
+function uid(): string {
+  return Math.random().toString(36).slice(2, 9);
+}
+
 interface PlanMealRow {
+  localId: string;
   slotKey: string;
   foodId: string;
   foodName: string;
@@ -249,7 +256,9 @@ export function PlanBuilder({
     mode: DietMode,
     meals: DietPlanMealInput[],
     structure: DietStructure,
-    objective?: string
+    objective?: string,
+    dayNotes?: Record<string, string>,
+    socialNotes?: string
   ) => Promise<void>;
   intake?: ClientIntake | null;
   /**
@@ -284,6 +293,8 @@ export function PlanBuilder({
   const [search, setSearch] = useState("");
   const [qty, setQty] = useState("100");
   const [mealNotes, setMealNotes] = useState("");
+  const [dayNotes, setDayNotes] = useState<Partial<Record<DayOfWeek, string>>>({});
+  const [socialNotes, setSocialNotes] = useState("");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [editingPrepNotes, setEditingPrepNotes] = useState(false);
   const [prepNotesDraft, setPrepNotesDraft] = useState("");
@@ -397,6 +408,7 @@ export function PlanBuilder({
     setMeals((prev) => [
       ...prev,
       {
+        localId: uid(),
         slotKey: addingToSlot,
         foodId: selectedFood.id,
         foodName: selectedFood.name,
@@ -410,6 +422,26 @@ export function PlanBuilder({
     setSearch("");
     setQty("100");
     setMealNotes("");
+  }
+
+  // Remplace un aliment par un autre de la même catégorie (rotation, ou
+  // aliment qui ne convient plus) — une seule suggestion, jamais imposée
+  // silencieusement : le nom change ici mais reste visible et annulable
+  // (Annuler l'enregistrement) tant que le plan n'est pas sauvegardé.
+  function swapFood(localId: string) {
+    const row = meals.find((m) => m.localId === localId);
+    if (!row) return;
+    const current = foods.find((f) => f.id === row.foodId);
+    if (!current) return;
+    const namesInMeal = meals.filter((m) => m.day === row.day && m.slotKey === row.slotKey).map((m) => m.foodId);
+    const next = findFoodSwapCandidate(current, foods, intake, namesInMeal);
+    if (!next) return;
+    setMeals((prev) => prev.map((m) => (m.localId === localId ? { ...m, foodId: next.id, foodName: next.name } : m)));
+  }
+
+  function canSwapFood(foodId: string): boolean {
+    const food = foods.find((f) => f.id === foodId);
+    return !!food?.category;
   }
 
   // Charge un modèle de diète dans le constructeur : copie de travail
@@ -427,6 +459,7 @@ export function PlanBuilder({
     setStructure(template.structure);
     setMeals(
       template.diet_plan_template_meals.map((m) => ({
+        localId: uid(),
         slotKey: m.meal_slot,
         foodId: m.food_id,
         foodName: m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? "Aliment",
@@ -468,12 +501,25 @@ export function PlanBuilder({
     if (!planName.trim()) { setError("Nom du plan requis."); return; }
     setSaving(true);
     setError(null);
-    await onCreate(planName.trim(), mode, buildMealInputs(), structure, objective.trim() || undefined);
+    const cleanDayNotes = Object.fromEntries(
+      Object.entries(dayNotes).filter(([, v]) => (v ?? "").trim() !== "")
+    ) as Record<string, string>;
+    await onCreate(
+      planName.trim(),
+      mode,
+      buildMealInputs(),
+      structure,
+      objective.trim() || undefined,
+      Object.keys(cleanDayNotes).length > 0 ? cleanDayNotes : undefined,
+      socialNotes.trim() || undefined
+    );
     setSaving(false);
     setSuccess(true);
     setPlanName("");
     setObjective("");
     setMeals([]);
+    setDayNotes({});
+    setSocialNotes("");
     setLoadedTemplateName(null);
   }
 
@@ -631,6 +677,23 @@ export function PlanBuilder({
         />
       </div>
 
+      <div>
+        <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+          Sorties, repas en famille, contraintes sociales connues <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+        </label>
+        <textarea
+          value={socialNotes}
+          onChange={(e) => setSocialNotes(e.target.value)}
+          rows={2}
+          placeholder="Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…"
+          className={`${inputCls} resize-none`}
+        />
+        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
+          Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier — à prendre en compte dans
+          la structure de la semaine ci-dessous.
+        </p>
+      </div>
+
       {/* Structure: daily (simple) vs weekly (different days, optional) */}
       {mode !== "flexible" && (
         <div>
@@ -683,6 +746,21 @@ export function PlanBuilder({
               </button>
             );
           })}
+        </div>
+      )}
+
+      {mode !== "flexible" && structure === "weekly" && (
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+            Pourquoi {DAY_TABS.find((d) => d.key === activeDay)?.label} est structuré ainsi <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+          </label>
+          <textarea
+            value={dayNotes[activeDay] ?? ""}
+            onChange={(e) => setDayNotes((prev) => ({ ...prev, [activeDay]: e.target.value }))}
+            rows={2}
+            placeholder="Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire."
+            className={`${inputCls} resize-none`}
+          />
         </div>
       )}
 
@@ -765,9 +843,9 @@ export function PlanBuilder({
                     <p className="text-[10px] text-[#F5EDED]/20 italic">Aucun aliment</p>
                   ) : (
                     <div className="space-y-1">
-                      {slotMeals.map((m, i) => (
+                      {slotMeals.map((m) => (
                         <div
-                          key={i}
+                          key={m.localId}
                           className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
                         >
                           <div className="min-w-0">
@@ -775,24 +853,23 @@ export function PlanBuilder({
                             <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
                             {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic mt-0.5">{m.notes}</p>}
                           </div>
-                          <button
-                            onClick={() =>
-                              setMeals((prev) =>
-                                prev.filter(
-                                  (meal) =>
-                                    !(
-                                      meal.slotKey === m.slotKey &&
-                                      meal.foodId === m.foodId &&
-                                      meal.quantityG === m.quantityG &&
-                                      meal.day === m.day
-                                    )
-                                )
-                              )
-                            }
-                            className="text-[#F5EDED]/20 hover:text-red-500 transition-colors"
-                          >
-                            <Trash2 size={12} />
-                          </button>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {canSwapFood(m.foodId) && (
+                              <button
+                                onClick={() => swapFood(m.localId)}
+                                title="Remplacer par un autre aliment de la même catégorie (rotation)"
+                                className="text-[#F5EDED]/20 hover:text-green-400 transition-colors p-0.5"
+                              >
+                                <RefreshCw size={12} />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
+                              className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -840,6 +917,28 @@ export function PlanBuilder({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {draftShoppingItems.length > 0 && (
+        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+            Organisation des préparations de repas
+          </p>
+          <ul className="space-y-1.5">
+            {[
+              "Cuire les féculents et les protéines en grande quantité 1 à 2 fois par semaine plutôt qu'à chaque repas — la plupart se conservent 3 à 4 jours au frigo dans une boîte hermétique.",
+              "Portionner tout de suite après cuisson (dans les contenants du repas) : ce qui est déjà pesé et rangé se mange, ce qui reste dans une grande casserole se perd.",
+              "Congeler ce qui ne sera pas mangé sous 3-4 jours (viande cuite, poisson, plats en sauce) plutôt que de le jeter — décongeler au frigo la veille, jamais à température ambiante.",
+              "Légumes et crudités se préparent la veille pour le lendemain, pas plusieurs jours à l'avance (perte de vitamines et de texture).",
+              "Un jour de préparation type : féculent + protéine de la semaine cuits ensemble, légumes lavés/coupés pour 2-3 jours, sauces/assaisonnements préparés à part pour varier le goût sans recuisiner.",
+            ].map((tip) => (
+              <li key={tip} className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex gap-2">
+                <span className="text-[#E01E1E] flex-shrink-0">•</span>
+                {tip}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
