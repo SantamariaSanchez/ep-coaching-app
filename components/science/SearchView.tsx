@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Search, ExternalLink, Plus, X } from "lucide-react";
 import type { PubMedSummary } from "@/lib/pubmed";
-import { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, type ScienceArticleType } from "@/utils/science-types";
+import { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, guessArticleType, type ScienceArticleType } from "@/utils/science-types";
 import type { ImportArticleInput } from "@/app/dashboard/client/science/actions";
 
 const inputCls =
@@ -38,7 +38,7 @@ function ImportForm({ result, onImport, onCancel }: {
   onCancel: () => void;
 }) {
   const [topic, setTopic] = useState<string>(SCIENCE_TOPICS[0]);
-  const [articleType, setArticleType] = useState<ScienceArticleType>("autre");
+  const [articleType, setArticleType] = useState<ScienceArticleType>(guessArticleType(result.title));
   const [titleFr, setTitleFr] = useState("");
   const [summaryFr, setSummaryFr] = useState("");
   const [asActualite, setAsActualite] = useState(true);

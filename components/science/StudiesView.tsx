@@ -1,10 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { FlaskConical, Plus, X, Pencil, Trash2, Lock, Users, LogOut } from "lucide-react";
+import { FlaskConical, Plus, X, Pencil, Trash2, Lock, Users, LogOut, Lightbulb } from "lucide-react";
 import { STUDY_STATUS_LABELS, type ScienceStudy } from "@/utils/science-types";
 import { FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import type { StudyInput } from "@/app/dashboard/client/science/actions";
+
+// Pas de faux protocole en base pour amorcer la liste (une étude engage la
+// crédibilité du coach, ça ne se devine pas) — juste des pistes concrètes
+// pour montrer ce qu'on peut faire d'un questionnement de coach une fois
+// formalisé en protocole testable sur la communauté.
+const EXAMPLE_PROMPTS = [
+  "Mes clients qui font du cardio à jeun perdent-ils du gras plus vite que ceux qui mangent avant ?",
+  "Une semaine de décharge toutes les 6 semaines change-t-elle vraiment la progression à 3 mois ?",
+  "Le suivi du sommeil via tracker améliore-t-il la récupération perçue, ou juste l'attention qu'on y porte ?",
+];
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -309,9 +319,25 @@ export default function StudiesView({
           />
         ))}
         {studies.length === 0 && (
-          <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
+          <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
             <FlaskConical size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-[#F5EDED]/35">Aucune étude interne pour l&apos;instant.</p>
+            <p className="text-sm text-[#F5EDED]/40 max-w-md mx-auto">
+              {isCoach
+                ? "Aucune étude interne pour l'instant. Une question précise sur tes clients, formalisée en protocole, vaut souvent plus qu'une méta-analyse générique."
+                : "Ton coach n'a pas encore lancé d'étude interne."}
+            </p>
+            {isCoach && (
+              <div className="mt-5 max-w-lg mx-auto text-left space-y-2">
+                <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
+                  <Lightbulb size={11} /> Pour t&apos;inspirer
+                </p>
+                {EXAMPLE_PROMPTS.map((p) => (
+                  <p key={p} className="text-xs text-[#F5EDED]/45 italic leading-relaxed">
+                    &ldquo;{p}&rdquo;
+                  </p>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

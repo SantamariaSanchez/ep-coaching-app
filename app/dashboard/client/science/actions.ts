@@ -113,6 +113,44 @@ export async function importArticle(input: ImportArticleInput): Promise<{ error?
   }
 }
 
+export interface UpdateArticleInput {
+  titleFr: string;
+  summaryFr: string;
+  articleType: ScienceArticleType;
+  topic: string;
+  asActualite: boolean;
+}
+
+// Le cron quotidien (voir app/api/cron/sync-pubmed) importe sans titre ni
+// résumé FR faute de pouvoir les rédiger lui-même — jusqu'ici la seule
+// action possible sur ces entrées était de les supprimer. Permet au coach
+// de les compléter/reclasser après coup plutôt que de perdre le contenu.
+export async function updateArticle(id: string, input: UpdateArticleInput): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  if (!input.topic) return { error: "Choisis un thème." };
+
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("science_articles")
+      .update({
+        title_fr: input.titleFr.trim() || null,
+        summary_fr: input.summaryFr.trim() || null,
+        article_type: input.articleType,
+        topic: input.topic,
+        is_actualite: input.asActualite,
+      })
+      .eq("id", id);
+    if (error) return { error: "Erreur lors de la mise à jour." };
+
+    revalidateScience();
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function deleteArticle(id: string): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -169,6 +207,13 @@ export async function updateStudy(id: string, input: Partial<StudyInput>): Promi
 
   try {
     const supabase = createAdminClient();
+    // requireCoach() vérifie le rôle, pas quel coach — sans ce contrôle
+    // n'importe quel coach de la plateforme pourrait modifier l'étude d'un
+    // autre (même faille que celle corrigée sur les participants le
+    // 2026-08-06, ici côté écriture).
+    const { data: existing } = await supabase.from("science_studies").select("created_by").eq("id", id).maybeSingle();
+    if (!existing || existing.created_by !== guard.userId) return { error: "Étude introuvable." };
+
     const { error } = await supabase
       .from("science_studies")
       .update({ ...input, updated_at: new Date().toISOString() })
@@ -188,6 +233,9 @@ export async function deleteStudy(id: string): Promise<{ error?: string }> {
 
   try {
     const supabase = createAdminClient();
+    const { data: existing } = await supabase.from("science_studies").select("created_by").eq("id", id).maybeSingle();
+    if (!existing || existing.created_by !== guard.userId) return { error: "Étude introuvable." };
+
     const { error } = await supabase.from("science_studies").delete().eq("id", id);
     if (error) return { error: "Erreur lors de la suppression." };
 

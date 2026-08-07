@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScienceArticles } from "@/utils/science";
+import { getScienceArticles, getScienceCounts } from "@/utils/science";
 import { FlaskConical } from "lucide-react";
 import ScienceSubNav from "@/components/science/ScienceSubNav";
 import ArticleListView from "@/components/science/ArticleListView";
@@ -15,7 +15,10 @@ export default async function ClientScienceActualitePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/science/actualite");
 
-  const articles = await getScienceArticles({ actualiteOnly: true });
+  const [articles, counts] = await Promise.all([
+    getScienceArticles({ actualiteOnly: true }),
+    getScienceCounts(profile?.coach_id ?? ""),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -29,7 +32,7 @@ export default async function ClientScienceActualitePage() {
         </h1>
       </div>
 
-      <ScienceSubNav base="/dashboard/client/science" />
+      <ScienceSubNav base="/dashboard/client/science" counts={counts} />
 
       <ArticleListView
         articles={articles}

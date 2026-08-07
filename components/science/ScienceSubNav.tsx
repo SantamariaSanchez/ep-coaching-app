@@ -4,20 +4,27 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const ITEMS = [
-  { label: "Recherche", segment: "recherche" },
-  { label: "Actualité", segment: "actualite" },
-  { label: "Bibliothèque", segment: "bibliotheque" },
-  { label: "Nos études", segment: "etudes" },
-];
+  { label: "Recherche", segment: "recherche", countKey: null },
+  { label: "Actualité", segment: "actualite", countKey: "actualite" },
+  { label: "Bibliothèque", segment: "bibliotheque", countKey: "articles" },
+  { label: "Nos études", segment: "etudes", countKey: "studies" },
+] as const;
 
-export default function ScienceSubNav({ base }: { base: "/dashboard/client/science" | "/dashboard/coach/science" }) {
+export default function ScienceSubNav({
+  base,
+  counts,
+}: {
+  base: "/dashboard/client/science" | "/dashboard/coach/science";
+  counts?: { articles: number; actualite: number; studies: number };
+}) {
   const pathname = usePathname();
 
   return (
     <div className="flex gap-1 mb-6 border-b border-[#890404]/20 -mx-1 px-1 overflow-x-auto">
-      {ITEMS.map(({ label, segment }) => {
+      {ITEMS.map(({ label, segment, countKey }) => {
         const href = `${base}/${segment}`;
         const active = pathname === href || pathname.startsWith(`${href}/`);
+        const count = countKey && counts ? counts[countKey] : null;
         return (
           <Link
             key={href}
@@ -29,6 +36,7 @@ export default function ScienceSubNav({ base }: { base: "/dashboard/client/scien
             }`}
           >
             {label}
+            {count != null && <span className="opacity-50"> ({count})</span>}
           </Link>
         );
       })}

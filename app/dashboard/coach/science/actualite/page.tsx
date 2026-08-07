@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScienceArticles } from "@/utils/science";
+import { getScienceArticles, getScienceCounts } from "@/utils/science";
 import { FlaskConical } from "lucide-react";
 import ScienceSubNav from "@/components/science/ScienceSubNav";
 import ArticleListView from "@/components/science/ArticleListView";
-import { deleteArticle } from "@/app/dashboard/client/science/actions";
+import { updateArticle, deleteArticle } from "@/app/dashboard/client/science/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,10 @@ export default async function CoachScienceActualitePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/actualite");
 
-  const articles = await getScienceArticles({ actualiteOnly: true });
+  const [articles, counts] = await Promise.all([
+    getScienceArticles({ actualiteOnly: true }),
+    getScienceCounts(user.id),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -32,12 +35,13 @@ export default async function CoachScienceActualitePage() {
         </p>
       </div>
 
-      <ScienceSubNav base="/dashboard/coach/science" />
+      <ScienceSubNav base="/dashboard/coach/science" counts={counts} />
 
       <ArticleListView
         articles={articles}
         isCoach
         emptyLabel="Aucune actualité scientifique pour l'instant."
+        updateArticle={updateArticle}
         deleteArticle={deleteArticle}
       />
     </div>

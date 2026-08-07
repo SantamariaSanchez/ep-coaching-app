@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { searchPubMedIds, fetchPubMedSummaries } from "@/lib/pubmed";
+import { guessArticleType } from "@/utils/science-types";
 
 // Alimente automatiquement l'onglet "Actualité" avec les dernières études
 // publiées sur les sujets suivis par l'app. Déclenché une fois par jour par
@@ -15,7 +16,12 @@ const TRACKED_TOPICS: Array<{ topic: string; query: string }> = [
   { topic: "Récupération & Sommeil", query: "sleep recovery resistance exercise" },
   { topic: "Hormones & Santé", query: "testosterone resistance training" },
   { topic: "Perte de graisse", query: "fat loss resistance training OR high intensity interval training" },
-  { topic: "Féminin & Spécificités", query: "resistance training women menstrual cycle" },
+  // Version précédente ("resistance training women menstrual cycle", AND
+  // implicite entre tous les termes) : 0 résultat sur 60 jours glissants
+  // depuis des mois, vérifié directement sur l'API PubMed le 2026-08-08 —
+  // pas une pénurie réelle de littérature, juste une requête trop stricte
+  // (1096 résultats sur la même fenêtre avec des OR correctement groupés).
+  { topic: "Féminin & Spécificités", query: "(resistance training OR strength training) AND (menstrual cycle OR female athlete OR hormonal contraceptive OR postmenopausal)" },
 ];
 
 const RECENT_DAYS = 60;
@@ -58,7 +64,7 @@ export async function GET(req: Request) {
           authors: s.authors,
           journal: s.journal,
           pub_date: s.pubDate,
-          article_type: "autre",
+          article_type: guessArticleType(s.title),
           topic,
           summary_fr: null,
           url: s.url,

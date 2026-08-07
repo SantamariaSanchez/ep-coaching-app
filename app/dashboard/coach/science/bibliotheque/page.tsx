@@ -1,10 +1,10 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScienceArticles } from "@/utils/science";
+import { getScienceArticles, getScienceCounts } from "@/utils/science";
 import { FlaskConical } from "lucide-react";
 import ScienceSubNav from "@/components/science/ScienceSubNav";
 import ArticleListView from "@/components/science/ArticleListView";
-import { deleteArticle, seedScienceLibrary } from "@/app/dashboard/client/science/actions";
+import { updateArticle, deleteArticle, seedScienceLibrary } from "@/app/dashboard/client/science/actions";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ export default async function CoachScienceBibliothequePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/bibliotheque");
 
-  const articles = await getScienceArticles();
+  const [articles, counts] = await Promise.all([getScienceArticles(), getScienceCounts(user.id)]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -32,7 +32,7 @@ export default async function CoachScienceBibliothequePage() {
         </p>
       </div>
 
-      <ScienceSubNav base="/dashboard/coach/science" />
+      <ScienceSubNav base="/dashboard/coach/science" counts={counts} />
 
       <ArticleListView
         articles={articles}
@@ -40,6 +40,7 @@ export default async function CoachScienceBibliothequePage() {
         emptyLabel="La bibliothèque scientifique est vide pour l'instant."
         showSeedButton
         seedAction={seedScienceLibrary}
+        updateArticle={updateArticle}
         deleteArticle={deleteArticle}
       />
     </div>

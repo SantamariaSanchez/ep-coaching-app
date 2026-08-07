@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getScienceStudies } from "@/utils/science";
+import { getScienceStudies, getScienceCounts } from "@/utils/science";
 import { FlaskConical } from "lucide-react";
 import ScienceSubNav from "@/components/science/ScienceSubNav";
 import StudiesView from "@/components/science/StudiesView";
@@ -15,7 +15,7 @@ export default async function CoachScienceEtudesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/etudes");
 
-  const studies = await getScienceStudies();
+  const [studies, counts] = await Promise.all([getScienceStudies(user.id), getScienceCounts(user.id)]);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -32,7 +32,7 @@ export default async function CoachScienceEtudesPage() {
         </p>
       </div>
 
-      <ScienceSubNav base="/dashboard/coach/science" />
+      <ScienceSubNav base="/dashboard/coach/science" counts={counts} />
 
       <StudiesView
         studies={studies}

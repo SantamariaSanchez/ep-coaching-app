@@ -72,3 +72,18 @@ export const STUDY_STATUS_LABELS: Record<ScienceStudy["status"], string> = {
   en_cours: "En cours",
   terminee: "Terminée",
 };
+
+// Suggestion de type à partir du titre (mots-clés standards des titres
+// PubMed) — jamais écrit en base tel quel, juste la valeur pré-sélectionnée
+// dans le formulaire d'import/édition, que le coach garde ou change. Le
+// cron quotidien insère "autre" faute de mieux ; ceci lui donne un point de
+// départ plus juste sans jamais décider à la place du coach (même logique
+// que getEquipmentType côté salles).
+export function guessArticleType(title: string): ScienceArticleType {
+  const t = title.toLowerCase();
+  if (/meta-analys|meta analys/.test(t)) return "meta_analyse";
+  if (/systematic review/.test(t)) return "revue_systematique";
+  if (/randomi[sz]ed controlled trial|randomi[sz]ed.{0,20}trial|\brct\b/.test(t)) return "essai_clinique";
+  if (/cohort study|cross-sectional|observational study|prospective study/.test(t)) return "etude_observationnelle";
+  return "autre";
+}

@@ -1,29 +1,111 @@
 "use client";
 
 import { useState } from "react";
-import { ExternalLink, Trash2 } from "lucide-react";
-import type { ScienceArticle } from "@/utils/science-types";
-import { ARTICLE_TYPE_LABELS } from "@/utils/science-types";
+import { ExternalLink, Trash2, Pencil, X } from "lucide-react";
+import type { ScienceArticle, ScienceArticleType } from "@/utils/science-types";
+import { ARTICLE_TYPE_LABELS, SCIENCE_TOPICS, guessArticleType } from "@/utils/science-types";
+import type { UpdateArticleInput } from "@/app/dashboard/client/science/actions";
+
+const inputCls =
+  "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 
 function formatDate(d: string | null): string {
   if (!d) return "";
   try {
-    return new Date(d).toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+    const date = new Date(d);
+    const formatted = date.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+    // PubMed assigne parfois une date d'édition formelle future aux articles
+    // publiés en avance en ligne (epub ahead of print) — un vrai "31 déc.
+    // 2026" affiché tel quel a l'air d'un bug plutôt que d'une pratique
+    // éditoriale normale, donc on le nomme explicitement.
+    return date.getTime() > Date.now() ? `À paraître · ${formatted}` : formatted;
   } catch {
     return d;
   }
 }
 
+function ArticleEditForm({
+  article,
+  onSave,
+  onCancel,
+}: {
+  article: ScienceArticle;
+  onSave: (input: UpdateArticleInput) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [titleFr, setTitleFr] = useState(article.title_fr ?? "");
+  const [summaryFr, setSummaryFr] = useState(article.summary_fr ?? "");
+  const [articleType, setArticleType] = useState<ScienceArticleType>(
+    article.article_type && article.article_type !== "autre" ? article.article_type : guessArticleType(article.title)
+  );
+  const [topic, setTopic] = useState(article.topic);
+  const [asActualite, setAsActualite] = useState(article.is_actualite);
+  const [saving, setSaving] = useState(false);
+
+  return (
+    <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <select value={topic} onChange={(e) => setTopic(e.target.value)} className={inputCls}>
+          {SCIENCE_TOPICS.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
+        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} className={inputCls}>
+          {Object.entries(ARTICLE_TYPE_LABELS).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+      </div>
+      <input
+        value={titleFr}
+        onChange={(e) => setTitleFr(e.target.value)}
+        placeholder="Titre en français"
+        className={inputCls}
+      />
+      <textarea
+        value={summaryFr}
+        onChange={(e) => setSummaryFr(e.target.value)}
+        rows={3}
+        placeholder="Résumé en langage simple, à quoi ça sert concrètement…"
+        className={`${inputCls} resize-none`}
+      />
+      <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
+        <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
+        Afficher aussi dans Actualité
+      </label>
+      <div className="flex gap-2">
+        <button
+          onClick={async () => {
+            setSaving(true);
+            await onSave({ titleFr, summaryFr, articleType, topic, asActualite });
+            setSaving(false);
+          }}
+          disabled={saving}
+          className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
+        >
+          {saving ? "Enregistrement…" : "Enregistrer"}
+        </button>
+        <button onClick={onCancel} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+          <X size={14} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function ArticleCard({
   article,
   isCoach,
+  onUpdate,
   onDelete,
 }: {
   article: ScienceArticle;
   isCoach: boolean;
+  onUpdate?: (input: UpdateArticleInput) => Promise<void>;
   onDelete?: () => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
@@ -44,6 +126,11 @@ export default function ArticleCard({
               Actualité
             </span>
           )}
+          {isCoach && !article.summary_fr && (
+            <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
+              À relire
+            </span>
+          )}
         </div>
         <p className="text-sm font-bold text-white leading-snug">{article.title_fr || article.title}</p>
         {article.title_fr && (
@@ -58,7 +145,17 @@ export default function ArticleCard({
         )}
       </button>
 
-      {expanded && (
+      {expanded && editing && onUpdate && (
+        <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3">
+          <ArticleEditForm
+            article={article}
+            onSave={async (input) => { await onUpdate(input); setEditing(false); }}
+            onCancel={() => setEditing(false)}
+          />
+        </div>
+      )}
+
+      {expanded && !editing && (
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3 space-y-2">
           {article.authors && <p className="text-[11px] text-[#F5EDED]/40 italic">{article.authors}</p>}
 
@@ -94,6 +191,14 @@ export default function ArticleCard({
                 DOI: {article.doi}
               </a>
             )}
+            {isCoach && onUpdate && (
+              <button
+                onClick={() => setEditing(true)}
+                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+              >
+                <Pencil size={11} /> Modifier
+              </button>
+            )}
             {isCoach && onDelete && (
               <button
                 onClick={async () => {
@@ -106,7 +211,7 @@ export default function ArticleCard({
                   setDeleting(false);
                 }}
                 disabled={deleting}
-                className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-40"
+                className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-40 ${onUpdate ? "" : "ml-auto"}`}
               >
                 <Trash2 size={11} /> {confirmDelete ? "Confirmer" : "Supprimer"}
               </button>

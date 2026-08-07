@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
-import { getScienceStudies } from "@/utils/science";
+import { getScienceStudies, getScienceCounts } from "@/utils/science";
 import { getTotalPoints } from "@/lib/gamification";
 import { hasUnlocked } from "@/lib/gamification-types";
 import { FlaskConical } from "lucide-react";
@@ -17,9 +17,10 @@ export default async function ClientScienceEtudesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/science/etudes");
 
-  const [studies, points] = await Promise.all([
-    getScienceStudies(user.id),
+  const [studies, points, counts] = await Promise.all([
+    getScienceStudies(profile?.coach_id ?? "", user.id),
     getTotalPoints(user.id),
+    getScienceCounts(profile?.coach_id ?? ""),
   ]);
   const participationUnlocked = hasUnlocked("study_participation", points, isSubscribed(profile));
 
@@ -35,7 +36,7 @@ export default async function ClientScienceEtudesPage() {
         </h1>
       </div>
 
-      <ScienceSubNav base="/dashboard/client/science" />
+      <ScienceSubNav base="/dashboard/client/science" counts={counts} />
 
       <StudiesView
         studies={studies}
