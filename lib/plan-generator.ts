@@ -197,7 +197,12 @@ function findKeywordMatches(haystack: string, text: string): string[] {
 export function checkExerciseConflicts(
   ex: { name: string; equipment: string | null },
   intake: Pick<ClientIntake, "injuries" | "exercises_problematic" | "disliked_equipment" | "training_access"> | null,
-  customConstraints: string
+  customConstraints: string,
+  // Types de matériel écartés à la main par le coach dans l'inventaire de
+  // la séance de programmation (ex. cette salle précise manque de poulies
+  // aux heures où le client s'entraîne) — un raffinement au-dessus du filtre
+  // automatique par lieu d'entraînement, pas à sa place.
+  extraExcludedEquipment: EquipmentType[] = []
 ): ExerciseConflict[] {
   const haystack = `${ex.name} ${ex.equipment ?? ""}`.toLowerCase();
   const conflicts: ExerciseConflict[] = [];
@@ -225,6 +230,16 @@ export function checkExerciseConflicts(
       conflicts.push({
         source: "equipment_access",
         keyword: `${ex.equipment ?? "Matériel"} — client ${TRAINING_ACCESS_LABELS[intake.training_access]}`,
+      });
+    }
+  }
+
+  if (extraExcludedEquipment.length > 0) {
+    const type = getEquipmentType(ex.equipment);
+    if (extraExcludedEquipment.includes(type)) {
+      conflicts.push({
+        source: "equipment_access",
+        keyword: `${ex.equipment ?? "Matériel"} — écarté dans l'inventaire matériel de cette séance de conception`,
       });
     }
   }

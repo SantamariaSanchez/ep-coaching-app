@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { X, Video, ExternalLink } from "lucide-react";
+import { X, Video, ExternalLink, ClipboardCheck } from "lucide-react";
 import type { LibraryExercise } from "@/utils/exercise-library";
-import { POSITION_OPTIONS, QUALITATIVE_SCALE, CATEGORY_LABELS, DIFFICULTY_LABELS } from "@/lib/exercise-library-content";
+import {
+  POSITION_OPTIONS,
+  QUALITATIVE_SCALE,
+  CATEGORY_LABELS,
+  DIFFICULTY_LABELS,
+  TENSION_FOCUS_OPTIONS,
+  TENSION_FOCUS_LABELS,
+} from "@/lib/exercise-library-content";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
+import type { TensionFocus } from "@/utils/programs";
 
 // Les 7 attributs de classification existent en base depuis longtemps mais
 // n'étaient affichés/éditables que dans la bibliothèque (page à part),
@@ -16,6 +24,15 @@ import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actio
 // bibliothèque n'en ont aucune) : le repère se construit au fil de
 // l'usage réel, par le coach qui connaît vraiment le mouvement, plutôt que
 // d'être inventé en masse.
+//
+// Depuis la migration 20260807, ce panneau porte aussi la partie DÉCISION
+// (section "assignment" ci-dessous) : ce que le coach choisit pour CET
+// exercice DANS CETTE séance précise d'un client précis (tension recherchée,
+// accessoires, amplitude réellement visée, disponibilité vérifiée, seuil
+// d'inconfort). La classification est une donnée de référence partagée
+// entre coachs ; la décision est propre à ce client, à cette place dans le
+// programme, et ne se devine pas automatiquement — ça reste à écrire à la
+// main à chaque exercice ajouté, pas une fois pour toutes.
 
 type QualKey = "freedom_of_movement" | "easy_to_replicate" | "learning_difficulty" | "stability_demand" | "accessibility";
 
@@ -34,7 +51,7 @@ const QUAL_INFO: Record<QualKey, { label: string; help: string }> = {
   },
   stability_demand: {
     label: "Exigence de stabilité",
-    help: "Charge de travail proprioceptive en plus du travail musculaire ciblé. Utile pour le transfert vers le sport ou la vie quotidienne, coûteux en fatigue si le volume est élevé.",
+    help: "Charge de travail proprioceptive en plus du travail musculaire ciblé, donc une part du risque de blessure sur ce mouvement précis. Utile pour le transfert vers le sport ou la vie quotidienne, coûteux en fatigue si le volume est élevé.",
   },
   accessibility: {
     label: "Accessibilité du matériel",
@@ -43,7 +60,7 @@ const QUAL_INFO: Record<QualKey, { label: string; help: string }> = {
 };
 
 const POSITION_HELP =
-  "Où l'effort est le plus grand dans l'amplitude du mouvement. D'après plusieurs études récentes, travailler en position étirée produit une hypertrophie égale ou supérieure au ROM complet pour la plupart des mouvements — un vrai critère de choix, pas un détail cosmétique.";
+  "Où l'effort est le plus grand dans l'amplitude du mouvement — le repère par défaut de cet exercice, pas ce qui est visé pour un client précis (ça se décide plus bas). D'après plusieurs études récentes, travailler en position étirée produit une hypertrophie égale ou supérieure au ROM complet pour la plupart des mouvements.";
 const POSITION_SOURCES = [
   { label: "McMahon et al., J Strength Cond Res 2026", href: "https://doi.org/10.1519/JSC.0000000000005561" },
   { label: "Wolf et al., Sports Med Health Sci 2025 (revue)", href: "https://doi.org/10.1016/j.smhs.2025.03.001" },
@@ -55,11 +72,13 @@ function Pills<T extends string>({
   value,
   onChange,
   disabled,
+  labels,
 }: {
   options: readonly T[];
   value: T | null;
   onChange: (v: T) => void;
   disabled?: boolean;
+  labels?: Record<T, string>;
 }) {
   return (
     <div className="flex flex-wrap gap-1.5">
@@ -75,22 +94,55 @@ function Pills<T extends string>({
               : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
-          {opt}
+          {labels ? labels[opt] : opt}
         </button>
       ))}
     </div>
   );
 }
 
+export interface AssignmentDecisions {
+  tension_focus: TensionFocus | "";
+  resistance_notes: string;
+  rom_notes: string;
+  availability_notes: string;
+  discomfort_notes: string;
+}
+
+export const EMPTY_ASSIGNMENT: AssignmentDecisions = {
+  tension_focus: "",
+  resistance_notes: "",
+  rom_notes: "",
+  availability_notes: "",
+  discomfort_notes: "",
+};
+
+// Une décision compte comme prise quand au moins la tension recherchée et
+// l'amplitude visée sont renseignées — les deux champs qui conditionnent le
+// plus directement l'exécution réelle. Les autres (résistance, dispo,
+// inconfort) ne s'appliquent pas à 100% des exercices (ex. un exercice au
+// poids du corps sans accessoire), donc ne sont pas exigés pour le badge.
+export function isAssignmentConfigured(a: AssignmentDecisions): boolean {
+  return !!a.tension_focus && a.rom_notes.trim().length > 0;
+}
+
 export default function ExerciseDetailPanel({
   exercise,
   onUpdate,
   onClose,
+  assignment,
+  onAssignmentChange,
+  defaultTensionFromClassification,
 }: {
   exercise: LibraryExercise;
   /** Fourni = éditable sur place. Absent = lecture seule. */
   onUpdate?: (id: string, fields: Partial<CreateExerciseInput>) => Promise<{ error?: string }>;
   onClose: () => void;
+  /** Fourni = affiche la section "Décisions pour cette séance" (contexte : ajout d'un exercice à un programme). */
+  assignment?: AssignmentDecisions;
+  onAssignmentChange?: (field: keyof AssignmentDecisions, value: string) => void;
+  /** Position par défaut de l'exercice (classification), affichée en repère dans la section décision. */
+  defaultTensionFromClassification?: string | null;
 }) {
   const [ex, setEx] = useState(exercise);
   const [notes, setNotes] = useState(exercise.setup_notes ?? "");
@@ -117,7 +169,7 @@ export default function ExerciseDetailPanel({
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
       <div className="relative w-full sm:max-w-lg bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
-        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20">
+        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20 z-10">
           <div className="min-w-0">
             <p className="text-sm font-black text-white truncate">{ex.name}</p>
             <div className="flex items-center gap-1.5 mt-1 flex-wrap">
@@ -165,10 +217,100 @@ export default function ExerciseDetailPanel({
             </div>
           )}
 
+          {/* ── Décisions pour cette séance (propres à ce client) ──────────── */}
+          {assignment && onAssignmentChange && (
+            <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4 -mx-1">
+              <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
+                <ClipboardCheck size={12} />
+                Décisions pour cette séance
+              </p>
+              <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
+                Rien ici n&apos;est déduit automatiquement — c&apos;est ce que toi tu choisis pour ce client précis,
+                à cette place précise du programme. La classification ci-dessous est une référence générale sur
+                l&apos;exercice ; ça, c&apos;est la mise en œuvre réelle.
+              </p>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Tension recherchée pour ce client
+                    {defaultTensionFromClassification && (
+                      <span className="text-[#F5EDED]/25 normal-case font-normal">
+                        {" "}· par défaut sur cet exercice : {defaultTensionFromClassification}
+                      </span>
+                    )}
+                  </p>
+                  <Pills
+                    options={TENSION_FOCUS_OPTIONS}
+                    labels={TENSION_FOCUS_LABELS}
+                    value={(assignment.tension_focus || null) as (typeof TENSION_FOCUS_OPTIONS)[number] | null}
+                    onChange={(v) => onAssignmentChange("tension_focus", v)}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Amplitude visée
+                  </p>
+                  <textarea
+                    value={assignment.rom_notes}
+                    onChange={(e) => onAssignmentChange("rom_notes", e.target.value)}
+                    rows={2}
+                    placeholder="Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser."
+                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Résistance &amp; accessoires
+                  </p>
+                  <textarea
+                    value={assignment.resistance_notes}
+                    onChange={(e) => onAssignmentChange("resistance_notes", e.target.value)}
+                    rows={2}
+                    placeholder="Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie."
+                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Disponibilité vérifiée
+                  </p>
+                  <textarea
+                    value={assignment.availability_notes}
+                    onChange={(e) => onAssignmentChange("availability_notes", e.target.value)}
+                    rows={2}
+                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste — prévoir un remplaçant si occupé."
+                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  />
+                </div>
+
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Seuil d&apos;inconfort
+                  </p>
+                  <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed mb-1.5">
+                    À partir de combien de séries, à quelle intensité, ce mouvement devient inconfortable pour ce
+                    client (essoufflement, articulation) au point d&apos;ajuster ?
+                  </p>
+                  <textarea
+                    value={assignment.discomfort_notes}
+                    onChange={(e) => onAssignmentChange("discomfort_notes", e.target.value)}
+                    rows={2}
+                    placeholder="Ex. Passe en amplitude partielle dès la 3e série à RIR 1."
+                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Position / courbe de résistance — seul repère avec citations directes */}
           <div className="border-t border-[#890404]/15 pt-4">
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-              Position dans l&apos;amplitude {!ex.position && <span className="text-amber-400/80 normal-case font-semibold">· non renseigné</span>}
+              Position dans l&apos;amplitude (classification générale) {!ex.position && <span className="text-amber-400/80 normal-case font-semibold">· non renseigné</span>}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">{POSITION_HELP}</p>
             <Pills options={POSITION_OPTIONS} value={ex.position as typeof POSITION_OPTIONS[number] | null} onChange={(v) => setField("position", v)} disabled={!onUpdate || pending === "position"} />
@@ -218,13 +360,14 @@ export default function ExerciseDetailPanel({
             </div>
           </div>
 
-          {/* Adaptations / accessoires */}
+          {/* Adaptations / accessoires (fiche générale de l'exercice) */}
           <div className="border-t border-[#890404]/15 pt-4">
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-              Adaptations &amp; accessoires
+              Adaptations &amp; accessoires (fiche générale de l&apos;exercice)
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
-              Astuces d&apos;installation propres à cet exercice : élastique pour garder la tension en position
+              Astuces d&apos;installation valables pour tous les clients sur cet exercice — pas propre à celui-ci
+              (ça, c&apos;est la section décisions plus haut) : élastique pour garder la tension en position
               raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d&apos;amplitude...
             </p>
             {onUpdate ? (
@@ -250,6 +393,16 @@ export default function ExerciseDetailPanel({
               <p className="text-xs text-[#F5EDED]/60 italic">{ex.setup_notes || "Aucune note pour l'instant."}</p>
             )}
           </div>
+
+          {assignment && onAssignmentChange && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
+            >
+              Terminé pour cet exercice
+            </button>
+          )}
         </div>
       </div>
     </div>

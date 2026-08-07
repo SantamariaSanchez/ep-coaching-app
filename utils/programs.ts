@@ -1,6 +1,11 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+// Décisions du coach propres à CET exercice DANS CETTE séance — distinctes
+// des attributs de classification de exercise_library (partagés par tous les
+// coachs). Voir migration 20260807_exercise_assignment_design_decisions.
+export type TensionFocus = "etire" | "mi_course" | "raccourci" | "complet";
+
 export interface Exercise {
   id: string;
   day_id: string;
@@ -14,6 +19,11 @@ export interface Exercise {
   muscle_group: string | null;
   muscle_subgroup: string | null;
   is_direct: boolean;
+  tension_focus?: TensionFocus | null;
+  resistance_notes?: string | null;
+  rom_notes?: string | null;
+  availability_notes?: string | null;
+  discomfort_notes?: string | null;
 }
 
 export interface ProgramDay {
@@ -22,6 +32,10 @@ export interface ProgramDay {
   day_label: string;
   position: number;
   exercises: Exercise[];
+  // Jour réel de la semaine (1=lundi...7=dimanche), voir migration
+  // 20260807b_program_days_weekday — permet de placer la séance contre
+  // l'agenda réel du client plutôt que de rester une étiquette abstraite.
+  weekday?: number | null;
 }
 
 export interface Program {
@@ -37,6 +51,9 @@ export interface Program {
   // migration n'est pas passée en base, tout le reste continue de marcher.
   objective?: string | null;
   coach_notes?: string | null;
+  // Budget de volume (migration 20260807c) — cibles de séries directes/semaine
+  // par groupe musculaire, décidées avant la construction. Voir VolumeBudgetPanel.
+  volume_targets?: Record<string, number> | null;
 }
 
 export interface ProgramWithDays extends Program {
@@ -54,11 +71,22 @@ export interface ExerciseInput {
   muscle_group: string | null;
   muscle_subgroup: string | null;
   is_direct: boolean;
+  // Décisions de conception propres à ce client (voir migration
+  // 20260807_exercise_assignment_design_decisions) — optionnelles côté type :
+  // les modèles réutilisables, les imports de logbook et les presets de
+  // démarrage n'ont pas de client précis pour qui décider, donc rien à
+  // fournir ici dans ces cas-là.
+  tension_focus?: TensionFocus | null;
+  resistance_notes?: string | null;
+  rom_notes?: string | null;
+  availability_notes?: string | null;
+  discomfort_notes?: string | null;
 }
 
 export interface DayInput {
   day_label: string;
   exercises: ExerciseInput[];
+  weekday?: number | null;
 }
 
 export interface ProgramInput {
@@ -68,6 +96,7 @@ export interface ProgramInput {
   days: DayInput[];
   objective?: string | null;
   coach_notes?: string | null;
+  volume_targets?: Record<string, number> | null;
 }
 
 // Colonnes de conception ajoutées par la migration 20260806. Le code doit
@@ -175,6 +204,7 @@ export async function saveProgramForClient(
         ...baseRow,
         objective: input.objective?.trim() || null,
         coach_notes: input.coach_notes?.trim() || null,
+        volume_targets: input.volume_targets ?? null,
       })
       .select()
       .single();
@@ -205,6 +235,7 @@ export async function saveProgramForClient(
           program_id: program.id,
           day_label: day.day_label || `Séance ${i + 1}`,
           position: i,
+          weekday: day.weekday ?? null,
         }))
       )
       .select();
@@ -227,6 +258,11 @@ export async function saveProgramForClient(
         muscle_group: ex.muscle_group || null,
         muscle_subgroup: ex.muscle_subgroup || null,
         is_direct: ex.is_direct,
+        tension_focus: ex.tension_focus || null,
+        resistance_notes: ex.resistance_notes?.trim() || null,
+        rom_notes: ex.rom_notes?.trim() || null,
+        availability_notes: ex.availability_notes?.trim() || null,
+        discomfort_notes: ex.discomfort_notes?.trim() || null,
       }))
     );
 

@@ -88,3 +88,17 @@ export function getEquipmentType(equipment: string | null): EquipmentType {
 export const QUALITATIVE_SCALE = ["+", "++", "+++"] as const;
 
 export const POSITION_OPTIONS = ["Raccourcie", "Étirée", "Complète", "Neutre"] as const;
+
+// Décision du coach pour un exercice DANS une séance précise (table
+// exercises, colonne tension_focus) — distincte de la classification
+// générale de l'exercice (position, ci-dessus, table exercise_library).
+// Valeurs alignées sur la contrainte SQL de la migration
+// 20260807_exercise_assignment_design_decisions.
+export const TENSION_FOCUS_OPTIONS = ["etire", "mi_course", "raccourci", "complet"] as const;
+export type TensionFocusOption = (typeof TENSION_FOCUS_OPTIONS)[number];
+export const TENSION_FOCUS_LABELS: Record<TensionFocusOption, string> = {
+  etire: "Étirée",
+  mi_course: "Mi-course",
+  raccourci: "Raccourcie",
+  complet: "Amplitude complète",
+};

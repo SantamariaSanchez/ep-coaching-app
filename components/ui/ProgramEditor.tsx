@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import type { ProgramWithDays, ProgramInput } from "@/utils/programs";
+import type { ProgramWithDays, ProgramInput, TensionFocus } from "@/utils/programs";
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, VOLUME_LANDMARKS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { ClientIntake } from "@/utils/client-intake";
@@ -19,10 +19,13 @@ import {
 import {
   checkExerciseConflicts,
   conflictSourceLabel,
-  generateProgramDraft,
   findSwapCandidate,
+  allowedEquipmentTypes,
   type ExerciseConflict,
 } from "@/lib/plan-generator";
+import ExerciseDetailPanel, { isAssignmentConfigured, type AssignmentDecisions } from "./ExerciseDetailPanel";
+import WeeklyStructurePlanner from "./WeeklyStructurePlanner";
+import { DAY_LABELS, type ScheduleBlock } from "@/utils/agenda";
 import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/program-templates";
 import {
   Plus,
@@ -38,12 +41,19 @@ import {
   LayoutTemplate,
   BookmarkPlus,
   ExternalLink,
-  Sparkles,
   RefreshCw,
   Info,
+  ClipboardCheck,
+  X,
 } from "lucide-react";
-import { updateExercise } from "@/app/dashboard/client/exercises/actions";
-import ExerciseDetailPanel from "./ExerciseDetailPanel";
+// Renommé à l'import : un import "updateExercise" tel quel se ferait
+// silencieusement écraser à l'intérieur de ProgramEditor par la fonction
+// locale du même nom (mise à jour d'une ligne de séance) — un vrai bug
+// trouvé ici, les modifications de classification depuis ExerciseDetailPanel
+// n'atteignaient jamais la base tant que ce composant les appelait par ce
+// nom. ExerciseNameField (composant à part, pas de collision) n'était pas
+// concerné.
+import { updateExercise as updateLibraryExercise } from "@/app/dashboard/client/exercises/actions";
 
 export interface ExerciseRow {
   localId: string;
@@ -56,12 +66,26 @@ export interface ExerciseRow {
   muscle_group: string;
   muscle_subgroup: string;
   is_direct: string; // "true" | "false"
+  // Décisions de conception propres à CE client sur CET exercice (voir
+  // ExerciseDetailPanel/AssignmentDecisions) — optionnelles côté type pour
+  // que ProgramTemplateEditor (qui réutilise ExerciseRow mais conçoit des
+  // modèles génériques, sans client, donc sans ces décisions) reste valide
+  // sans avoir à les fournir.
+  tension_focus?: string;
+  resistance_notes?: string;
+  rom_notes?: string;
+  availability_notes?: string;
+  discomfort_notes?: string;
 }
 
 export interface DayRow {
   localId: string;
   day_label: string;
   exercises: ExerciseRow[];
+  // Jour réel de la semaine (1=lundi...7=dimanche) auquel cette séance est
+  // rattachée — décidé dans l'outil de planification hebdomadaire, pas une
+  // fréquence abstraite. null = pas encore placé.
+  weekday?: number | null;
 }
 
 export function uid() {
@@ -84,6 +108,11 @@ export function emptyExercise(prefillFrom?: ExerciseRow): ExerciseRow {
     muscle_group: "",
     muscle_subgroup: "",
     is_direct: "true",
+    tension_focus: "",
+    resistance_notes: "",
+    rom_notes: "",
+    availability_notes: "",
+    discomfort_notes: "",
   };
 }
 
@@ -147,47 +176,50 @@ function volumeStatus(sets: number, mev: number, mav: number, mrv: number): { la
   return { label: "Excessif", color: "#f87171" };
 }
 
-function VolumeReviewPanel({ days }: { days: DayRow[] }) {
-  const volume = computeWeeklyVolume(days);
-  const trainedGroups = MUSCLE_GROUPS.filter((g) => (volume[g] ?? 0) > 0);
-  if (trainedGroups.length === 0) return null;
-
+// ── Budget de volume ─────────────────────────────────────────────────────
+// Décidé AVANT le moindre exercice : combien de séries directes/semaine
+// viser par groupe musculaire, informé par MEV/MAV/MRV mais choisi par le
+// coach (récupération, historique, priorités de ce client précis). Le
+// budget devient ensuite le repère que la construction (plus bas) remplit,
+// pas une case de plus à cocher a posteriori.
+function VolumeBudgetPanel({
+  targets,
+  onSetTarget,
+}: {
+  targets: Record<string, string>;
+  onSetTarget: (group: string, value: string) => void;
+}) {
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">
-        Vérification du volume hebdomadaire
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        Budget de volume hebdomadaire
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Séries directes uniquement (le travail indirect n&apos;est pas compté ici) par groupe musculaire sur la
-        semaine, comparées aux repères MEV/MAV/MRV (Renaissance Periodization). Le volume a un effet réel sur
-        l&apos;hypertrophie mais avec des rendements décroissants au-delà d&apos;un certain seuil — la
-        distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un programme
-        (
-        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
-          Pelland et al., Sports Med 2025
-        </a>
-        ). Un repère, pas une vérité absolue : le niveau, la récupération et l&apos;historique du client
-        comptent aussi.
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-4 leading-relaxed max-w-2xl">
+        Fixe une cible de séries directes/semaine par groupe musculaire avant de choisir le moindre exercice —
+        MEV/MAV/MRV (Renaissance Periodization) comme repère, pas comme règle : la récupération, l&apos;historique
+        et les priorités de ce client comptent tout autant. La construction plus bas suit ce budget en direct.
       </p>
-      <div className="grid sm:grid-cols-2 gap-2">
-        {trainedGroups.map((group) => {
-          const sets = volume[group] ?? 0;
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
+        {MUSCLE_GROUPS.map((group) => {
           const landmark = VOLUME_LANDMARKS[group];
-          if (!landmark) return null;
-          const status = volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv);
           return (
-            <div key={group} className="flex items-center justify-between gap-2 bg-[#150000] rounded-lg px-3 py-2">
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">{group}</p>
-                <p className="text-[9.5px] text-[#F5EDED]/30">
+            <div key={group} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
+              <p className="text-xs font-bold text-white mb-0.5">{group}</p>
+              {landmark && (
+                <p className="text-[9px] text-[#F5EDED]/30 mb-1.5">
                   MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}
                 </p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-black" style={{ color: status.color }}>{sets}</p>
-                <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
-                  {status.label}
-                </p>
+              )}
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  min="0"
+                  value={targets[group] ?? ""}
+                  onChange={(e) => onSetTarget(group, e.target.value)}
+                  placeholder={landmark ? String(landmark.mav) : "0"}
+                  className="w-16 bg-[#1f0101] border border-[#890404]/30 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+                />
+                <span className="text-[9.5px] text-[#F5EDED]/25">séries/semaine visées</span>
               </div>
             </div>
           );
@@ -197,85 +229,108 @@ function VolumeReviewPanel({ days }: { days: DayRow[] }) {
   );
 }
 
-// ── Checklist de conception ─────────────────────────────────────────────────
-// Pas un score, pas un blocage — des questions à se poser réellement pendant
-// la conception, que rien d'automatique ne peut trancher à la place du
-// coach (affluence de la salle à l'heure du client, tolérance réelle à
-// l'inconfort, pertinence d'un mouvement complexe pour CE client précis...).
-// "L'exercice le plus optimal sur le papier n'est pas forcément le plus
-// optimal pour ce client" — le principe qui sous-tend toute cette page.
-const CHECKLIST_GROUPS: { title: string; items: string[] }[] = [
-  {
-    title: "Le client, pas la théorie",
-    items: [
-      "Peut-il réaliser ce mouvement sans douleur ni compensation visible, aujourd'hui, pas dans un monde idéal ?",
-      "L'exercice le plus optimal sur le papier n'est pas forcément le plus optimal pour lui : un choix plus simple mais bien exécuté vaut souvent mieux.",
-      "À partir de combien de séries ce mouvement devient inconfortable vu son intensité actuelle (fatigue articulaire, essoufflement) ?",
-      "A-t-il le niveau technique pour le charger sérieusement, ou faut-il d'abord du rodage à charge légère ?",
-    ],
-  },
-  {
-    title: "Le contexte réel d'entraînement",
-    items: [
-      "Le matériel est-il vraiment disponible chez lui (voir « Lieu d'entraînement » dans la fiche client) ?",
-      "À l'heure où il s'entraîne, cet équipement est-il généralement libre, ou faut-il prévoir un remplaçant si la salle est bondée ?",
-      "Le temps d'installation de l'exercice est-il compatible avec le nombre d'exercices prévus dans la séance ?",
-      "Des accessoires (sangles, cuffs, élastique d'appoint) sont-ils nécessaires, disponibles, et notés quelque part ?",
-    ],
-  },
-  {
-    title: "L'exercice lui-même",
-    items: [
-      "Position de l'effort dans l'amplitude (étirée/raccourcie/complète) : cohérente avec l'objectif ? Voir la fiche détaillée de l'exercice pour les repères récents.",
-      "Le geste est-il standardisable d'une séance à l'autre pour ce client, ou la charge notée ne voudra rien dire ?",
-      "Une machine ou un poste précis a-t-il une limite connue (amplitude coupée, tension nulle en haut/bas) nécessitant une adaptation ?",
-      "Beaucoup de volume sur ce mouvement précis apporte-t-il vraiment plus, ou la fatigue dépasse le bénéfice pour ce groupe musculaire ?",
-    ],
-  },
-];
+// ── Inventaire matériel de la séance de conception ──────────────────────────
+// Le filtre automatique par lieu d'entraînement (intake.training_access,
+// voir lib/plan-generator) répond à "chez lui ou en salle ?" mais pas à "SA
+// salle précise a-t-elle vraiment tout, et à SON horaire ?" — ce que le
+// coach seul peut trancher. Décision de session, pas persistée (comme
+// customConstraints ci-dessus).
+function EquipmentInventoryPanel({
+  trainingAccess,
+  excluded,
+  onToggle,
+  subjectLabel,
+}: {
+  trainingAccess: ClientIntake["training_access"];
+  excluded: EquipmentType[];
+  onToggle: (type: EquipmentType) => void;
+  subjectLabel: string;
+}) {
+  const baseline = allowedEquipmentTypes(trainingAccess);
+  if (baseline.length === 0) return null;
 
-function DesignChecklist() {
-  const [openGroups, setOpenGroups] = useState<Set<number>>(new Set([0]));
-  function toggle(i: number) {
-    setOpenGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(i)) next.delete(i);
-      else next.add(i);
-      return next;
-    });
-  }
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Checklist de conception
+        Inventaire matériel de cette séance
+      </p>
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+        Le lieu d&apos;entraînement de la fiche client filtre déjà le gros du matériel injouable. Ici, affine pour
+        la salle précise de {subjectLabel} et son horaire : une catégorie théoriquement disponible peut être
+        absente de cette salle, ou son poste habituellement pris d&apos;assaut à l&apos;heure d&apos;entraînement
+        habituelle.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {baseline.map((type) => {
+          const isExcluded = excluded.includes(type);
+          return (
+            <button
+              key={type}
+              type="button"
+              onClick={() => onToggle(type)}
+              className={`px-3 py-1.5 rounded-lg text-[10.5px] font-bold border transition-colors ${
+                isExcluded
+                  ? "bg-amber-500/10 border-amber-500/40 text-amber-300"
+                  : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/60 hover:border-[#890404]/45"
+              }`}
+            >
+              {EQUIPMENT_TYPE_LABELS[type]} {isExcluded ? "· écarté pour cette séance" : "· disponible"}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function VolumeReviewPanel({ days, targets }: { days: DayRow[]; targets: Record<string, string> }) {
+  const volume = computeWeeklyVolume(days);
+  const trainedGroups = MUSCLE_GROUPS.filter((g) => (volume[g] ?? 0) > 0 || (targets[g] ?? "").trim() !== "");
+  if (trainedGroups.length === 0) return null;
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">
+        Vérification du volume hebdomadaire
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Rien d&apos;automatique ne peut répondre à ça à ta place — des questions à se reposer à chaque
-        exercice ou presque, pas une case à cocher une fois pour toutes.
+        Séries directes uniquement (le travail indirect n&apos;est pas compté ici) par groupe musculaire sur la
+        semaine, comparées à ton budget (ci-dessus) et aux repères MEV/MAV/MRV (Renaissance Periodization). Le
+        volume a un effet réel sur l&apos;hypertrophie mais avec des rendements décroissants au-delà d&apos;un
+        certain seuil — la distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un
+        programme
+        (
+        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
+          Pelland et al., Sports Med 2025
+        </a>
+        ). Un repère, pas une vérité absolue.
       </p>
-      <div className="space-y-2">
-        {CHECKLIST_GROUPS.map((group, i) => (
-          <div key={group.title} className="border border-[#890404]/20 rounded-lg overflow-hidden">
-            <button
-              type="button"
-              onClick={() => toggle(i)}
-              className="w-full flex items-center justify-between px-3 py-2 bg-[#150000] text-left"
-            >
-              <span className="text-xs font-bold text-white">{group.title}</span>
-              {openGroups.has(i) ? <ChevronLeft size={13} className="text-[#F5EDED]/30 rotate-90" /> : <ChevronRight size={13} className="text-[#F5EDED]/30" />}
-            </button>
-            {openGroups.has(i) && (
-              <ul className="p-3 space-y-2">
-                {group.items.map((item) => (
-                  <li key={item} className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex gap-2">
-                    <span className="text-[#E01E1E] flex-shrink-0">•</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        ))}
+      <div className="grid sm:grid-cols-2 gap-2">
+        {trainedGroups.map((group) => {
+          const sets = volume[group] ?? 0;
+          const landmark = VOLUME_LANDMARKS[group];
+          const target = targets[group] ? parseInt(targets[group], 10) : null;
+          const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "#F5EDED" };
+          return (
+            <div key={group} className="flex items-center justify-between gap-2 bg-[#150000] rounded-lg px-3 py-2">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white truncate">{group}</p>
+                <p className="text-[9.5px] text-[#F5EDED]/30">
+                  {landmark && <>MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}</>}
+                  {target != null && <span className="text-[#E01E1E]/70"> · budget {target}</span>}
+                </p>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <p className="text-sm font-black" style={{ color: status.color }}>
+                  {sets}{target != null && <span className="text-[#F5EDED]/25 font-normal"> /{target}</span>}
+                </p>
+                <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
+                  {status.label}
+                </p>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
@@ -289,6 +344,7 @@ function initFromProgram(program: ProgramWithDays | null) {
       frequency: "",
       objective: "",
       coach_notes: "",
+      volume_targets: {} as Record<string, string>,
       days: [] as DayRow[],
     };
   }
@@ -298,9 +354,13 @@ function initFromProgram(program: ProgramWithDays | null) {
     frequency: program.frequency != null ? String(program.frequency) : "",
     objective: program.objective ?? "",
     coach_notes: program.coach_notes ?? "",
+    volume_targets: Object.fromEntries(
+      Object.entries(program.volume_targets ?? {}).map(([k, v]) => [k, String(v)])
+    ) as Record<string, string>,
     days: program.days.map((d) => ({
       localId: uid(),
       day_label: d.day_label,
+      weekday: d.weekday ?? null,
       exercises: d.exercises.map((e) => ({
         localId: uid(),
         name: e.name,
@@ -312,8 +372,25 @@ function initFromProgram(program: ProgramWithDays | null) {
         muscle_group: e.muscle_group ?? "",
         muscle_subgroup: e.muscle_subgroup ?? "",
         is_direct: e.is_direct !== false ? "true" : "false",
+        tension_focus: e.tension_focus ?? "",
+        resistance_notes: e.resistance_notes ?? "",
+        rom_notes: e.rom_notes ?? "",
+        availability_notes: e.availability_notes ?? "",
+        discomfort_notes: e.discomfort_notes ?? "",
       })),
     })),
+  };
+}
+
+// Convertit les 5 champs de décision d'une ligne d'exercice en objet
+// AssignmentDecisions attendu par ExerciseDetailPanel/AssignmentOnlyPanel.
+export function rowAssignment(row: ExerciseRow): AssignmentDecisions {
+  return {
+    tension_focus: (row.tension_focus ?? "") as TensionFocus | "",
+    resistance_notes: row.resistance_notes ?? "",
+    rom_notes: row.rom_notes ?? "",
+    availability_notes: row.availability_notes ?? "",
+    discomfort_notes: row.discomfort_notes ?? "",
   };
 }
 
@@ -330,6 +407,7 @@ export function ExerciseNameField({
   library,
   intake,
   customConstraints,
+  excludedEquipment = [],
   onChange,
   onPick,
   onEnter,
@@ -338,6 +416,8 @@ export function ExerciseNameField({
   library: LibraryExercise[];
   intake: ClientIntake | null;
   customConstraints: string;
+  /** Types de matériel écartés dans l'inventaire de la séance (voir EquipmentInventoryPanel). */
+  excludedEquipment?: EquipmentType[];
   onChange: (v: string) => void;
   onPick: (lib: LibraryExercise) => void;
   onEnter?: () => void;
@@ -363,7 +443,7 @@ export function ExerciseNameField({
   }, []);
 
   function attemptPick(lib: LibraryExercise) {
-    const conflicts = checkExerciseConflicts(lib, intake, customConstraints);
+    const conflicts = checkExerciseConflicts(lib, intake, customConstraints, excludedEquipment);
     if (conflicts.length === 0) {
       onPick(lib);
       setOpen(false);
@@ -475,7 +555,7 @@ export function ExerciseNameField({
           }`}
         >
           {matches.map((lib) => {
-            const conflicts = checkExerciseConflicts(lib, intake, customConstraints);
+            const conflicts = checkExerciseConflicts(lib, intake, customConstraints, excludedEquipment);
             return (
               <div
                 key={lib.id}
@@ -537,8 +617,83 @@ export function ExerciseNameField({
         </div>
       )}
       {detailFor && (
-        <ExerciseDetailPanel exercise={detailFor} onUpdate={updateExercise} onClose={() => setDetailFor(null)} />
+        <ExerciseDetailPanel exercise={detailFor} onUpdate={updateLibraryExercise} onClose={() => setDetailFor(null)} />
       )}
+    </div>
+  );
+}
+
+// Même section "Décisions pour cette séance" que ExerciseDetailPanel, mais
+// sans la classification générale — pour un exercice tapé en texte libre,
+// hors bibliothèque, qui n'a donc pas de fiche exercise_library à afficher.
+// La décision reste possible même sans fiche : ce n'est pas parce que
+// l'exercice n'est pas catalogué qu'il n'y a rien à décider pour ce client.
+function AssignmentOnlyPanel({
+  name,
+  assignment,
+  onChange,
+  onClose,
+}: {
+  name: string;
+  assignment: AssignmentDecisions;
+  onChange: (field: keyof AssignmentDecisions, value: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full sm:max-w-lg bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[88vh] overflow-y-auto">
+        <div className="sticky top-0 flex items-start justify-between gap-3 px-5 pt-5 pb-3 bg-[#150000] border-b border-[#890404]/20 z-10">
+          <div className="min-w-0">
+            <p className="text-sm font-black text-white truncate">{name || "Exercice"}</p>
+            <p className="text-[10px] text-amber-400/80 font-semibold mt-1">
+              Hors bibliothèque — ajoute-le à la bibliothèque pour avoir sa fiche de classification.
+            </p>
+          </div>
+          <button onClick={onClose} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+            <X size={18} />
+          </button>
+        </div>
+        <div className="p-5">
+          <div className="bg-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4">
+            <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-[#E01E1E] mb-1">
+              <ClipboardCheck size={12} />
+              Décisions pour cette séance
+            </p>
+            <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
+              Ce que toi tu choisis pour ce client précis, à cette place précise du programme.
+            </p>
+            <div className="space-y-4">
+              {(
+                [
+                  { field: "rom_notes" as const, label: "Amplitude visée", placeholder: "Ex. Amplitude complète, pas de limitation connue." },
+                  { field: "resistance_notes" as const, label: "Résistance & accessoires", placeholder: "Ex. Élastique léger pour garder la tension en haut." },
+                  { field: "availability_notes" as const, label: "Disponibilité vérifiée", placeholder: "Ex. Faisable partout, pas de contrainte matériel." },
+                  { field: "discomfort_notes" as const, label: "Seuil d'inconfort", placeholder: "Ex. Passe en partiel dès la 3e série à RIR 1." },
+                ] as const
+              ).map(({ field, label, placeholder }) => (
+                <div key={field}>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{label}</p>
+                  <textarea
+                    value={assignment[field]}
+                    onChange={(e) => onChange(field, e.target.value)}
+                    rows={2}
+                    placeholder={placeholder}
+                    className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-4 w-full py-2.5 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] text-white rounded-lg transition-colors"
+          >
+            Terminé pour cet exercice
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -553,6 +708,7 @@ export default function ProgramEditor({
   saveAsTemplate,
   templatesHref,
   subjectLabel = "ce client",
+  scheduleBlocks = [],
 }: {
   clientId: string;
   program: ProgramWithDays | null;
@@ -560,6 +716,8 @@ export default function ProgramEditor({
   successRedirect?: string;
   /** Fiche client — sert à vérifier chaque exercice ajouté (blessures, exercices/matériel problématiques). */
   intake?: ClientIntake | null;
+  /** Agenda réel du client — croisé dans l'outil de planification hebdomadaire. */
+  scheduleBlocks?: ScheduleBlock[];
   /**
    * Bibliothèque de modèles du coach. Fournie, elle sert de point de départ :
    * on charge la structure d'un modèle dans l'éditeur et on la personnalise
@@ -598,9 +756,15 @@ export default function ProgramEditor({
   // cette session d'édition, pas persisté.
   const [customConstraints, setCustomConstraints] = useState("");
 
-  // Fiche détaillée (repères de sélection + notes d'adaptation) ouverte
-  // depuis un exercice déjà posé dans un jour, pas seulement depuis le picker.
-  const [detailExercise, setDetailExercise] = useState<LibraryExercise | null>(null);
+  // Inventaire matériel de cette séance de conception — raffinement du
+  // filtre automatique par lieu d'entraînement (intake.training_access) :
+  // un client "en salle" a en théorie accès à tout, mais SA salle précise
+  // peut manquer de telle catégorie ou l'avoir occupée à son horaire. Propre
+  // à cette session d'édition comme customConstraints, pas persisté.
+  const [excludedEquipment, setExcludedEquipment] = useState<EquipmentType[]>([]);
+  function toggleExcludedEquipment(type: EquipmentType) {
+    setExcludedEquipment((prev) => (prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]));
+  }
 
   // Bibliothèque d'exercices — sert le picker avec recherche (nom exact +
   // groupe/sous-groupe musculaire auto-remplis en un choix, au lieu de
@@ -613,6 +777,15 @@ export default function ProgramEditor({
       .catch(() => {});
   }, []);
 
+  // Configuration complète (classification + décisions pour ce client) d'un
+  // exercice déjà posé dans un jour — s'ouvre automatiquement après avoir
+  // choisi un exercice dans la bibliothèque (voir pickLibraryExercise), et
+  // peut être rouverte à tout moment via le badge "Configurer" de la ligne.
+  const [configTarget, setConfigTarget] = useState<{ dayId: string; exId: string } | null>(null);
+  const configDay = configTarget ? state.days.find((d) => d.localId === configTarget.dayId) : null;
+  const configRow = configDay?.exercises.find((e) => e.localId === configTarget?.exId) ?? null;
+  const configLib = configRow ? library.find((l) => l.name === configRow.name) ?? null : null;
+
   // ── Program meta ────────────────────────────────────────────────────────────
 
   function updateMeta(
@@ -620,6 +793,12 @@ export default function ProgramEditor({
     value: string
   ) {
     setState((s) => ({ ...s, [field]: value }));
+  }
+
+  // Budget de volume — cible de séries directes/semaine par groupe
+  // musculaire, décidée avant la construction (voir VolumeBudgetPanel).
+  function setVolumeTarget(group: string, value: string) {
+    setState((s) => ({ ...s, volume_targets: { ...s.volume_targets, [group]: value } }));
   }
 
   // Génère les séances vides du split choisi — la structure d'abord, les
@@ -634,48 +813,6 @@ export default function ProgramEditor({
       return;
     }
     setState((s) => ({ ...s, days: scaffoldDays(s.type, s.frequency) }));
-    setLoadedTemplateName(null);
-  }
-
-  // Génère un brouillon complet (jours + exercices + séries/reps/repos par
-  // défaut) directement dans l'éditeur — pas une liste de pistes à part à
-  // retranscrire à la main, un vrai point de départ déjà éditable ici. Rien
-  // n'est enregistré tant que le coach ne clique pas sur Enregistrer.
-  function generateDraft() {
-    if (
-      state.days.length > 0 &&
-      !confirm("Générer un brouillon va remplacer la structure et les exercices actuels de l'éditeur. Continuer ?")
-    ) {
-      return;
-    }
-    const sessionsPerWeek = Math.max(2, Math.min(6, parseInt(state.frequency, 10) || 4));
-    const draft = generateProgramDraft(
-      sessionsPerWeek,
-      library,
-      intake?.disliked_equipment ?? null,
-      intake?.exercises_problematic ?? null,
-      intake?.training_access ?? null
-    );
-    setState((s) => ({
-      ...s,
-      frequency: String(sessionsPerWeek),
-      days: draft.map((d) => ({
-        localId: uid(),
-        day_label: d.dayLabel,
-        exercises: d.exercises.map((ex) => ({
-          localId: uid(),
-          name: ex.name,
-          sets: ex.sets,
-          reps: ex.reps,
-          rir: ex.rir,
-          rest_seconds: ex.rest_seconds,
-          notes: "",
-          muscle_group: ex.muscle_group,
-          muscle_subgroup: ex.muscle_subgroup ?? "",
-          is_direct: ex.is_direct ? "true" : "false",
-        })),
-      })),
-    }));
     setLoadedTemplateName(null);
   }
 
@@ -744,6 +881,9 @@ export default function ProgramEditor({
       frequency: template.frequency != null ? String(template.frequency) : s.frequency,
       objective: template.objective ?? s.objective,
       coach_notes: template.notes ?? s.coach_notes,
+      // Un modèle n'a pas de budget de volume propre à un client — celui déjà
+      // décidé pour ce client (s'il y en a un) est conservé tel quel.
+      volume_targets: s.volume_targets,
       days: template.days.map((d) => ({
         localId: uid(),
         day_label: d.day_label,
@@ -767,14 +907,24 @@ export default function ProgramEditor({
 
   // ── Day operations ───────────────────────────────────────────────────────────
 
-  function addDay() {
+  function addDay(weekday: number | null = null) {
     const letter = String.fromCharCode(65 + state.days.length); // A, B, C…
     setState((s) => ({
       ...s,
       days: [
         ...s.days,
-        { localId: uid(), day_label: `Séance ${letter}`, exercises: [] },
+        { localId: uid(), day_label: weekday ? `${DAY_LABELS[weekday]}` : `Séance ${letter}`, exercises: [], weekday },
       ],
+    }));
+  }
+
+  // Rattache une séance existante à un jour de la semaine (ou l'en détache
+  // avec null) — décision prise dans l'outil de planification hebdomadaire,
+  // jamais déduite automatiquement d'une fréquence.
+  function setDayWeekday(dayLocalId: string, weekday: number | null) {
+    setState((s) => ({
+      ...s,
+      days: s.days.map((d) => (d.localId === dayLocalId ? { ...d, weekday } : d)),
     }));
   }
 
@@ -890,6 +1040,10 @@ export default function ProgramEditor({
           : d
       ),
     }));
+    // Choisir un exercice n'est que la première décision — la configuration
+    // complète (tension, amplitude, matériel, risque...) s'ouvre tout de
+    // suite après, jamais silencieusement laissée de côté.
+    setConfigTarget({ dayId, exId });
   }
 
   function updateExerciseMuscleGroup(
@@ -935,6 +1089,7 @@ export default function ProgramEditor({
   function buildDays() {
     return state.days.map((d) => ({
       day_label: d.day_label || "Séance",
+      weekday: d.weekday ?? null,
       exercises: d.exercises
         .filter((e) => e.name.trim() !== "")
         .map((e) => ({
@@ -947,6 +1102,11 @@ export default function ProgramEditor({
           muscle_group: e.muscle_group || null,
           muscle_subgroup: e.muscle_subgroup || null,
           is_direct: e.is_direct !== "false",
+          tension_focus: (e.tension_focus || null) as TensionFocus | null,
+          resistance_notes: e.resistance_notes?.trim() || null,
+          rom_notes: e.rom_notes?.trim() || null,
+          availability_notes: e.availability_notes?.trim() || null,
+          discomfort_notes: e.discomfort_notes?.trim() || null,
         })),
     }));
   }
@@ -990,12 +1150,19 @@ export default function ProgramEditor({
       return;
     }
 
+    const volumeTargets = Object.fromEntries(
+      Object.entries(state.volume_targets)
+        .filter(([, v]) => v.trim() !== "" && !isNaN(parseInt(v, 10)))
+        .map(([k, v]) => [k, parseInt(v, 10)])
+    );
+
     const input: ProgramInput = {
       name: state.name.trim(),
       type: state.type || null,
       frequency: state.frequency ? parseInt(state.frequency) : null,
       objective: state.objective.trim() || null,
       coach_notes: state.coach_notes.trim() || null,
+      volume_targets: Object.keys(volumeTargets).length > 0 ? volumeTargets : null,
       days: buildDays(),
     };
 
@@ -1019,8 +1186,49 @@ export default function ProgramEditor({
 
   // ── Render ────────────────────────────────────────────────────────────────────
 
+  const placedDays = state.days.filter((d) => d.weekday).length;
+  const volumeTargetsSet = Object.values(state.volume_targets).filter((v) => v.trim() !== "").length;
+  const totalExercises = state.days.reduce((acc, d) => acc + d.exercises.filter((e) => e.name.trim() !== "").length, 0);
+  const configuredExercises = state.days.reduce(
+    (acc, d) => acc + d.exercises.filter((e) => e.name.trim() !== "" && isAssignmentConfigured(rowAssignment(e))).length,
+    0
+  );
+
   return (
     <div className="space-y-6">
+      {/* ── Vue d'ensemble du projet ─────────────────────────────────────────
+          Pas une jauge de progression qui bloque — un sommaire qui montre
+          l'état réel de chaque phase du travail, pour ne jamais perdre de
+          vue l'ensemble en travaillant une section précise. */}
+      <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
+        <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">Ce projet :</span>
+        {[
+          { href: "#phase-contexte", label: "Contexte", detail: intake ? "fiche client chargée" : "fiche client absente" },
+          {
+            href: "#phase-programmation",
+            label: "Programmation",
+            detail: `${placedDays}/${state.days.length || 0} séances placées · ${volumeTargetsSet} groupes budgétés`,
+          },
+          {
+            href: "#phase-construction",
+            label: "Construction",
+            detail: totalExercises === 0 ? "aucun exercice" : `${configuredExercises}/${totalExercises} exercices configurés`,
+          },
+          { href: "#phase-livraison", label: "Livraison", detail: saved ? "sauvegardé" : "brouillon en cours" },
+        ].map((phase) => (
+          <a
+            key={phase.href}
+            href={phase.href}
+            className="flex items-center gap-1.5 bg-[#1f0101] border border-[#890404]/25 hover:border-[#E01E1E]/40 rounded-lg px-2.5 py-1.5 transition-colors"
+          >
+            <span className="text-[10px] font-black uppercase tracking-widest text-white">{phase.label}</span>
+            <span className="text-[9px] text-[#F5EDED]/35">{phase.detail}</span>
+          </a>
+        ))}
+      </div>
+
+      <div id="phase-contexte" />
+
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
@@ -1095,6 +1303,8 @@ export default function ProgramEditor({
           )}
         </div>
       )}
+
+      <div id="phase-programmation" />
 
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
@@ -1177,23 +1387,31 @@ export default function ProgramEditor({
             <Wand2 size={13} />
             {state.days.length === 0 ? "Séances vides de cette structure" : "Regénérer les séances vides"}
           </button>
-          <button
-            onClick={generateDraft}
-            disabled={library.length === 0}
-            title={library.length === 0 ? "Bibliothèque d'exercices en cours de chargement…" : undefined}
-            className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-green-400 text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
-          >
-            <Sparkles size={13} />
-            Générer le programme complet
-          </button>
         </div>
         <p className="mt-2 text-[10px] text-[#F5EDED]/25 leading-relaxed">
-          « Générer le programme complet » choisit un split selon la fréquence (ignore le champ Split
-          ci-dessus), un exercice par créneau selon le matériel de {subjectLabel}, et des séries/reps/repos
-          par défaut. Un brouillon éditable, rien n&apos;est enregistré tant que tu ne cliques pas sur
-          Enregistrer.
+          Ça pose seulement les séances vides du split choisi — aucun exercice n&apos;est choisi à ta place.
+          Chaque exercice ajouté ensuite passe par sa propre configuration complète (position, amplitude,
+          matériel, risque…), volontairement plus lente qu&apos;un remplissage automatique.
         </p>
       </div>
+
+      <WeeklyStructurePlanner
+        scheduleBlocks={scheduleBlocks}
+        days={state.days}
+        onSetWeekday={setDayWeekday}
+        onAddDay={(wd) => addDay(wd)}
+        onRemoveDay={removeDay}
+        subjectLabel={subjectLabel}
+      />
+
+      <VolumeBudgetPanel targets={state.volume_targets} onSetTarget={setVolumeTarget} />
+
+      <EquipmentInventoryPanel
+        trainingAccess={intake?.training_access ?? null}
+        excluded={excludedEquipment}
+        onToggle={toggleExcludedEquipment}
+        subjectLabel={subjectLabel}
+      />
 
       {/* Vérification exercices — fiche client + contraintes ajoutées à la volée */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
@@ -1233,11 +1451,12 @@ export default function ProgramEditor({
         </p>
       </div>
 
-      <DesignChecklist />
+      <div id="phase-construction" />
 
       {/* Days */}
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
-        2. Séances &amp; exercices
+        2. Séances &amp; exercices — chaque exercice se configure entièrement (tension, amplitude, matériel,
+        risque…), pas juste un nom et un chiffre
       </p>
       {state.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
@@ -1249,7 +1468,7 @@ export default function ProgramEditor({
             ajoute une séance vide directement.
           </p>
           <button
-            onClick={addDay}
+            onClick={() => addDay()}
             className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
@@ -1271,7 +1490,17 @@ export default function ProgramEditor({
                   className="w-72 flex-shrink-0 bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
                 >
                   {/* Day header */}
-                  <div className="flex items-center gap-1.5 mb-4 pb-3 border-b border-[#890404]/20">
+                  <div className="mb-4 pb-3 border-b border-[#890404]/20">
+                    {day.weekday ? (
+                      <p className="text-[9px] font-black uppercase tracking-widest text-[#E01E1E]/70 mb-1">
+                        {DAY_LABELS[day.weekday]}
+                      </p>
+                    ) : (
+                      <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 mb-1">
+                        Pas encore placée — voir Planification hebdomadaire
+                      </p>
+                    )}
+                    <div className="flex items-center gap-1.5">
                     <input
                       value={day.day_label}
                       onChange={(e) =>
@@ -1309,6 +1538,7 @@ export default function ProgramEditor({
                     >
                       <Trash2 size={13} />
                     </button>
+                    </div>
                   </div>
 
                   {/* Exercises */}
@@ -1325,6 +1555,7 @@ export default function ProgramEditor({
                             library={library}
                             intake={intake}
                             customConstraints={customConstraints}
+                            excludedEquipment={excludedEquipment}
                             onChange={(v) => updateExercise(day.localId, ex.localId, "name", v)}
                             onPick={(lib) => pickLibraryExercise(day.localId, ex.localId, lib)}
                             onEnter={() => addExercise(day.localId)}
@@ -1373,19 +1604,6 @@ export default function ProgramEditor({
                                 <RefreshCw size={11} />
                               </button>
                             )}
-                            {(() => {
-                              const lib = library.find((l) => l.name === ex.name);
-                              if (!lib) return null;
-                              return (
-                                <button
-                                  onClick={() => setDetailExercise(lib)}
-                                  title="Fiche exercice détaillée"
-                                  className="text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors p-0.5 ml-0.5"
-                                >
-                                  <Info size={11} />
-                                </button>
-                              );
-                            })()}
                             <button
                               onClick={() =>
                                 removeExercise(day.localId, ex.localId)
@@ -1397,6 +1615,25 @@ export default function ProgramEditor({
                             </button>
                           </div>
                         </div>
+
+                        {/* Configuration — tension, amplitude, matériel, risque... pas
+                            un détail optionnel, la vraie deuxième moitié de "ajouter un
+                            exercice". Badge pleine largeur, pas une icône qu'on peut
+                            ignorer sans la voir. */}
+                        {ex.name.trim() !== "" && (
+                          <button
+                            type="button"
+                            onClick={() => setConfigTarget({ dayId: day.localId, exId: ex.localId })}
+                            className={`w-full flex items-center justify-center gap-1.5 py-1.5 rounded-md text-[9.5px] font-black uppercase tracking-widest border transition-colors ${
+                              isAssignmentConfigured(rowAssignment(ex))
+                                ? "bg-green-500/10 border-green-500/30 text-green-400 hover:bg-green-500/15"
+                                : "bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20 animate-pulse"
+                            }`}
+                          >
+                            <ClipboardCheck size={11} />
+                            {isAssignmentConfigured(rowAssignment(ex)) ? "Configuré · modifier" : "Configurer cet exercice"}
+                          </button>
+                        )}
 
                         {/* Sets / Reps / RIR / Rest */}
                         <div className="grid grid-cols-4 gap-1.5">
@@ -1536,7 +1773,7 @@ export default function ProgramEditor({
 
           {/* Add day */}
           <button
-            onClick={addDay}
+            onClick={() => addDay()}
             className="inline-flex items-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
             <Plus size={13} />
@@ -1545,7 +1782,7 @@ export default function ProgramEditor({
         </>
       )}
 
-      <VolumeReviewPanel days={state.days} />
+      <VolumeReviewPanel days={state.days} targets={state.volume_targets} />
 
       {/* Error */}
       {error && (
@@ -1610,6 +1847,8 @@ export default function ProgramEditor({
         </div>
       )}
 
+      <div id="phase-livraison" />
+
       {/* Actions */}
       <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
         <button
@@ -1640,8 +1879,24 @@ export default function ProgramEditor({
         </button>
       </div>
 
-      {detailExercise && (
-        <ExerciseDetailPanel exercise={detailExercise} onUpdate={updateExercise} onClose={() => setDetailExercise(null)} />
+      {configTarget && configRow && (
+        configLib ? (
+          <ExerciseDetailPanel
+            exercise={configLib}
+            onUpdate={updateLibraryExercise}
+            onClose={() => setConfigTarget(null)}
+            assignment={rowAssignment(configRow)}
+            onAssignmentChange={(field, value) => updateExercise(configTarget.dayId, configTarget.exId, field, value)}
+            defaultTensionFromClassification={configLib.position}
+          />
+        ) : (
+          <AssignmentOnlyPanel
+            name={configRow.name}
+            assignment={rowAssignment(configRow)}
+            onChange={(field, value) => updateExercise(configTarget.dayId, configTarget.exId, field, value)}
+            onClose={() => setConfigTarget(null)}
+          />
+        )
       )}
     </div>
   );

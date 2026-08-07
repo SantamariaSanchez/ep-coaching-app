@@ -6,6 +6,7 @@ import { getActiveProgram } from "@/utils/programs";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { getRecentWorkoutLogs } from "@/utils/workout-logs";
 import { getSessionsThisWeekCount } from "@/utils/sessions";
+import { getScheduleBlocks } from "@/utils/agenda";
 import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]/program/actions";
 import ProgramEditor from "@/components/ui/ProgramEditor";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
@@ -19,13 +20,14 @@ export default async function CoachMonProgrammePage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [program, workoutLogs, sessionsThisWeek, templates] = await Promise.all([
+  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks] = await Promise.all([
     // Le coach est ici sur son propre programme : ses notes de conception
     // sont les siennes, aucune raison de les masquer.
     getActiveProgram(user.id, { includeCoachNotes: true }),
     getRecentWorkoutLogs(user.id),
     getSessionsThisWeekCount(user.id),
     getCoachProgramTemplates(user.id),
+    getScheduleBlocks(user.id),
   ]);
 
   return (
@@ -50,6 +52,7 @@ export default async function CoachMonProgrammePage() {
         saveAsTemplate={saveCurrentProgramAsTemplate}
         templatesHref="/dashboard/coach/programmation"
         subjectLabel="moi"
+        scheduleBlocks={scheduleBlocks}
       />
     </div>
   );
