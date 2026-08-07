@@ -87,10 +87,14 @@ function initials(name: string): string {
 function Composer({
   type,
   initialContent,
+  isCoach,
+  basePath,
   onPosted,
 }: {
   type: CommunityPostType;
   initialContent?: string;
+  isCoach: boolean;
+  basePath: string;
   onPosted: () => void;
 }) {
   const [content, setContent] = useState(initialContent ?? "");
@@ -146,6 +150,16 @@ function Composer({
       />
       {image && (
         <p className="text-[10px] text-[#F5EDED]/40 mb-2 truncate">📎 {image.name}</p>
+      )}
+      {type === "question" && !isCoach && (
+        <p className="text-[10px] text-[#F5EDED]/30 mb-2 leading-relaxed">
+          Visible par le coach et toute la communauté — quelqu&apos;un d&apos;autre a probablement la même
+          question. Pour quelque chose de plus personnel,{" "}
+          <Link href={`${basePath}/messages`} className="text-[#F5EDED]/50 hover:text-[#F5EDED]/80 underline underline-offset-2">
+            écris plutôt en privé
+          </Link>
+          .
+        </p>
       )}
       <div className="flex items-center justify-between pt-2 border-t border-[#890404]/15">
         {type === "victory" ? (
@@ -209,12 +223,14 @@ function CommentsThread({
   comments,
   loading,
   onAdded,
+  onAutoAnswered,
 }: {
   postId: string;
   basePath: string;
   comments: CommunityComment[] | undefined;
   loading: boolean;
   onAdded: (comment: CommunityComment) => void;
+  onAutoAnswered?: () => void;
 }) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
@@ -232,6 +248,7 @@ function CommentsThread({
       });
       if (res.ok) {
         const data = await res.json();
+        if (data.autoAnswered) onAutoAnswered?.();
         onAdded({
           id: data.id,
           post_id: postId,
@@ -463,6 +480,7 @@ function PostCard({
               comments={comments}
               loading={commentsLoading}
               onAdded={onCommentAdded}
+              onAutoAnswered={() => onStatusChanged("answered")}
             />
           )}
         </div>
@@ -578,7 +596,13 @@ export default function CommunityFeed({
 
   return (
     <div>
-      <Composer type={type} initialContent={initialShareText} onPosted={reload} />
+      <Composer
+        type={type}
+        initialContent={initialShareText}
+        isCoach={isCoach}
+        basePath={basePath}
+        onPosted={reload}
+      />
 
       {posts.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
@@ -589,7 +613,7 @@ export default function CommunityFeed({
           <p className="text-sm text-[#F5EDED]/45 max-w-sm mx-auto leading-relaxed">
             {type === "victory"
               ? "Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil."
-              : "Une question sur ta nutrition, ton programme ou ta récup ? Ton coach et toute la communauté peuvent te répondre ici."}
+              : "Aucune question n'est trop basique : celle que tu n'oses pas poser, quelqu'un d'autre se la pose aussi. Ton coach et toute la communauté peuvent y répondre ici."}
           </p>
           <div className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1.5">
             <Trophy size={11} strokeWidth={2} />

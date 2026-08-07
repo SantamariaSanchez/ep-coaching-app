@@ -19,7 +19,7 @@ import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type BadgeKey = "pending" | "messages";
+type BadgeKey = "pending" | "messages" | "questions";
 
 type TabItem = {
   label: string;
@@ -142,6 +142,7 @@ const COACH_TABS: TabItem[] = [
     icon: Heart,
     href: "/dashboard/coach/communaute",
     matchSegments: ["communaute"],
+    badge: "questions",
   },
 ];
 
@@ -189,7 +190,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Communauté",
     items: [
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
-      { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
+      { label: "Questions", icon: HelpCircle, segment: "communaute/questions", badge: "questions" },
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
     ],
@@ -456,6 +457,7 @@ export default function DashboardNav({
 
   const [pendingCount,    setPendingCount]    = useState(0);
   const [unreadMessages,  setUnreadMessages]  = useState(0);
+  const [openQuestions,   setOpenQuestions]   = useState(0);
   const [userName,        setUserName]        = useState<string | null>(null);
   const [userRole,        setUserRole]        = useState<string | null>(null);
   const [hasPersonalCoach, setHasPersonalCoach] = useState(false);
@@ -519,6 +521,10 @@ export default function DashboardNav({
       fetch("/api/coach/pending-count")
         .then((r) => r.json())
         .then((d) => setPendingCount(d.count ?? 0))
+        .catch(() => {});
+      fetch("/api/coach/open-questions-count")
+        .then((r) => r.json())
+        .then((d) => setOpenQuestions(d.count ?? 0))
         .catch(() => {});
     }
   }, [isCoach]);
@@ -586,8 +592,9 @@ export default function DashboardNav({
   }
 
   function getBadgeCount(badge?: BadgeKey): number {
-    if (badge === "pending")  return pendingCount;
-    if (badge === "messages") return unreadMessages;
+    if (badge === "pending")   return pendingCount;
+    if (badge === "messages")  return unreadMessages;
+    if (badge === "questions") return openQuestions;
     return 0;
   }
 

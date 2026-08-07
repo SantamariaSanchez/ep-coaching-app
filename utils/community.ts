@@ -189,6 +189,26 @@ export async function getCommunityComments(postId: string): Promise<CommunityCom
   }
 }
 
+// Badge du sous-menu Communauté côté coach — sans ça, une question restait
+// invisible tant que personne n'allait cliquer sur l'onglet par hasard (un
+// cas réel : la seule question jamais postée est restée "open" 5 semaines
+// sans un seul commentaire). Mur partagé entre coachs par conception (pas
+// de coach_id sur community_posts, voir getCommunityPostsPage) : le compte
+// n'est donc pas scopé à un coach en particulier.
+export async function getOpenQuestionsCount(): Promise<number> {
+  try {
+    const supabase = await createServerSupabase();
+    const { count } = await supabase
+      .from("community_posts")
+      .select("id", { count: "exact", head: true })
+      .eq("type", "question")
+      .eq("status", "open");
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 // Used on profile pages to show how many things a member has shared.
 export async function getCommunityPostCount(authorId: string): Promise<number> {
   try {

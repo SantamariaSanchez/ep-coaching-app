@@ -62,5 +62,25 @@ export async function POST(
     return NextResponse.json({ error: "Erreur lors de l'envoi." }, { status: 500 });
   }
 
-  return NextResponse.json({ id: data.id });
+  // Le statut "répondu" ne bougeait que sur un clic manuel dédié — un coach
+  // qui répond juste par un commentaire (le geste naturel) laissait la
+  // question "open" indéfiniment, invisible ensuite dans le compteur de
+  // rappel. Répondre EST la donnée ; pas besoin d'un second geste explicite.
+  let autoAnswered = false;
+  if (guard.role === "coach") {
+    const { data: post } = await supabase
+      .from("community_posts")
+      .select("type, status")
+      .eq("id", postId)
+      .single();
+    if (post?.type === "question" && post.status === "open") {
+      const { error: statusError } = await supabase
+        .from("community_posts")
+        .update({ status: "answered" })
+        .eq("id", postId);
+      autoAnswered = !statusError;
+    }
+  }
+
+  return NextResponse.json({ id: data.id, autoAnswered });
 }
