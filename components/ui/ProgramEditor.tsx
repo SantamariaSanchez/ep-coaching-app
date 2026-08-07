@@ -40,7 +40,10 @@ import {
   ExternalLink,
   Sparkles,
   RefreshCw,
+  Info,
 } from "lucide-react";
+import { updateExercise } from "@/app/dashboard/client/exercises/actions";
+import ExerciseDetailPanel from "./ExerciseDetailPanel";
 
 export interface ExerciseRow {
   localId: string;
@@ -155,9 +158,16 @@ function VolumeReviewPanel({ days }: { days: DayRow[] }) {
         Vérification du volume hebdomadaire
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Séries directes par groupe musculaire sur la semaine, comparées aux repères MEV/MAV/MRV
-        (Renaissance Periodization). Un repère, pas une vérité absolue : le niveau, la récupération et
-        l&apos;historique du client comptent aussi.
+        Séries directes uniquement (le travail indirect n&apos;est pas compté ici) par groupe musculaire sur la
+        semaine, comparées aux repères MEV/MAV/MRV (Renaissance Periodization). Le volume a un effet réel sur
+        l&apos;hypertrophie mais avec des rendements décroissants au-delà d&apos;un certain seuil — la
+        distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un programme
+        (
+        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
+          Pelland et al., Sports Med 2025
+        </a>
+        ). Un repère, pas une vérité absolue : le niveau, la récupération et l&apos;historique du client
+        comptent aussi.
       </p>
       <div className="grid sm:grid-cols-2 gap-2">
         {trainedGroups.map((group) => {
@@ -182,6 +192,90 @@ function VolumeReviewPanel({ days }: { days: DayRow[] }) {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+// ── Checklist de conception ─────────────────────────────────────────────────
+// Pas un score, pas un blocage — des questions à se poser réellement pendant
+// la conception, que rien d'automatique ne peut trancher à la place du
+// coach (affluence de la salle à l'heure du client, tolérance réelle à
+// l'inconfort, pertinence d'un mouvement complexe pour CE client précis...).
+// "L'exercice le plus optimal sur le papier n'est pas forcément le plus
+// optimal pour ce client" — le principe qui sous-tend toute cette page.
+const CHECKLIST_GROUPS: { title: string; items: string[] }[] = [
+  {
+    title: "Le client, pas la théorie",
+    items: [
+      "Peut-il réaliser ce mouvement sans douleur ni compensation visible, aujourd'hui, pas dans un monde idéal ?",
+      "L'exercice le plus optimal sur le papier n'est pas forcément le plus optimal pour lui : un choix plus simple mais bien exécuté vaut souvent mieux.",
+      "À partir de combien de séries ce mouvement devient inconfortable vu son intensité actuelle (fatigue articulaire, essoufflement) ?",
+      "A-t-il le niveau technique pour le charger sérieusement, ou faut-il d'abord du rodage à charge légère ?",
+    ],
+  },
+  {
+    title: "Le contexte réel d'entraînement",
+    items: [
+      "Le matériel est-il vraiment disponible chez lui (voir « Lieu d'entraînement » dans la fiche client) ?",
+      "À l'heure où il s'entraîne, cet équipement est-il généralement libre, ou faut-il prévoir un remplaçant si la salle est bondée ?",
+      "Le temps d'installation de l'exercice est-il compatible avec le nombre d'exercices prévus dans la séance ?",
+      "Des accessoires (sangles, cuffs, élastique d'appoint) sont-ils nécessaires, disponibles, et notés quelque part ?",
+    ],
+  },
+  {
+    title: "L'exercice lui-même",
+    items: [
+      "Position de l'effort dans l'amplitude (étirée/raccourcie/complète) : cohérente avec l'objectif ? Voir la fiche détaillée de l'exercice pour les repères récents.",
+      "Le geste est-il standardisable d'une séance à l'autre pour ce client, ou la charge notée ne voudra rien dire ?",
+      "Une machine ou un poste précis a-t-il une limite connue (amplitude coupée, tension nulle en haut/bas) nécessitant une adaptation ?",
+      "Beaucoup de volume sur ce mouvement précis apporte-t-il vraiment plus, ou la fatigue dépasse le bénéfice pour ce groupe musculaire ?",
+    ],
+  },
+];
+
+function DesignChecklist() {
+  const [openGroups, setOpenGroups] = useState<Set<number>>(new Set([0]));
+  function toggle(i: number) {
+    setOpenGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(i)) next.delete(i);
+      else next.add(i);
+      return next;
+    });
+  }
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        Checklist de conception
+      </p>
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+        Rien d&apos;automatique ne peut répondre à ça à ta place — des questions à se reposer à chaque
+        exercice ou presque, pas une case à cocher une fois pour toutes.
+      </p>
+      <div className="space-y-2">
+        {CHECKLIST_GROUPS.map((group, i) => (
+          <div key={group.title} className="border border-[#890404]/20 rounded-lg overflow-hidden">
+            <button
+              type="button"
+              onClick={() => toggle(i)}
+              className="w-full flex items-center justify-between px-3 py-2 bg-[#150000] text-left"
+            >
+              <span className="text-xs font-bold text-white">{group.title}</span>
+              {openGroups.has(i) ? <ChevronLeft size={13} className="text-[#F5EDED]/30 rotate-90" /> : <ChevronRight size={13} className="text-[#F5EDED]/30" />}
+            </button>
+            {openGroups.has(i) && (
+              <ul className="p-3 space-y-2">
+                {group.items.map((item) => (
+                  <li key={item} className="text-[11px] text-[#F5EDED]/55 leading-relaxed flex gap-2">
+                    <span className="text-[#E01E1E] flex-shrink-0">•</span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -253,6 +347,7 @@ export function ExerciseNameField({
   const [filterGroup, setFilterGroup] = useState("");
   const [filterEquipment, setFilterEquipment] = useState<EquipmentType | "">("");
   const [pendingPick, setPendingPick] = useState<{ lib: LibraryExercise; conflicts: ExerciseConflict[] } | null>(null);
+  const [detailFor, setDetailFor] = useState<LibraryExercise | null>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -382,43 +477,55 @@ export function ExerciseNameField({
           {matches.map((lib) => {
             const conflicts = checkExerciseConflicts(lib, intake, customConstraints);
             return (
-              <button
+              <div
                 key={lib.id}
-                type="button"
-                onClick={() => attemptPick(lib)}
-                className="w-full text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors border-b border-[#890404]/10 last:border-0"
+                className="flex items-stretch gap-1 border-b border-[#890404]/10 last:border-0"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="truncate font-semibold">{lib.name}</span>
-                  <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
-                </div>
-                <div className="flex items-center gap-1 mt-1 flex-wrap">
-                  {conflicts.length > 0 && (
-                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-0.5">
-                      <AlertCircle size={9} /> à vérifier
-                    </span>
-                  )}
-                  {lib.category && (
-                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
-                      {CATEGORY_LABELS[lib.category]}
-                    </span>
-                  )}
-                  {lib.difficulty && (
-                    <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
-                      lib.difficulty === "avance"
-                        ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
-                        : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
-                    }`}>
-                      {DIFFICULTY_LABELS[lib.difficulty]}
-                    </span>
-                  )}
-                  {lib.equipment && (
-                    <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
-                      {lib.equipment}
-                    </span>
-                  )}
-                </div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => attemptPick(lib)}
+                  className="flex-1 min-w-0 text-left px-3 py-2 text-xs text-[#F5EDED]/80 hover:bg-[#890404]/20 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="truncate font-semibold">{lib.name}</span>
+                    <span className="text-[9px] text-[#F5EDED]/30 flex-shrink-0">{lib.muscle_group}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mt-1 flex-wrap">
+                    {conflicts.length > 0 && (
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/40 text-amber-300 flex items-center gap-0.5">
+                        <AlertCircle size={9} /> à vérifier
+                      </span>
+                    )}
+                    {lib.category && (
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                        {CATEGORY_LABELS[lib.category]}
+                      </span>
+                    )}
+                    {lib.difficulty && (
+                      <span className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+                        lib.difficulty === "avance"
+                          ? "bg-amber-500/10 border-amber-500/25 text-amber-400"
+                          : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
+                      }`}>
+                        {DIFFICULTY_LABELS[lib.difficulty]}
+                      </span>
+                    )}
+                    {lib.equipment && (
+                      <span className="text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/20 text-[#F5EDED]/40">
+                        {lib.equipment}
+                      </span>
+                    )}
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDetailFor(lib)}
+                  title="Fiche exercice détaillée"
+                  className="flex-shrink-0 px-2 flex items-center justify-center text-[#F5EDED]/25 hover:text-[#E01E1E] hover:bg-[#890404]/20 transition-colors"
+                >
+                  <Info size={13} />
+                </button>
+              </div>
             );
           })}
         </div>
@@ -428,6 +535,9 @@ export function ExerciseNameField({
           <Search size={11} className="text-[#F5EDED]/20 flex-shrink-0" />
           <span className="text-[10px] text-[#F5EDED]/30">Aucun résultat, nom libre conservé</span>
         </div>
+      )}
+      {detailFor && (
+        <ExerciseDetailPanel exercise={detailFor} onUpdate={updateExercise} onClose={() => setDetailFor(null)} />
       )}
     </div>
   );
@@ -487,6 +597,10 @@ export default function ProgramEditor({
   // blessures/exercices problématiques déclarés dans la fiche. Propre à
   // cette session d'édition, pas persisté.
   const [customConstraints, setCustomConstraints] = useState("");
+
+  // Fiche détaillée (repères de sélection + notes d'adaptation) ouverte
+  // depuis un exercice déjà posé dans un jour, pas seulement depuis le picker.
+  const [detailExercise, setDetailExercise] = useState<LibraryExercise | null>(null);
 
   // Bibliothèque d'exercices — sert le picker avec recherche (nom exact +
   // groupe/sous-groupe musculaire auto-remplis en un choix, au lieu de
@@ -1119,6 +1233,8 @@ export default function ProgramEditor({
         </p>
       </div>
 
+      <DesignChecklist />
+
       {/* Days */}
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
         2. Séances &amp; exercices
@@ -1257,6 +1373,19 @@ export default function ProgramEditor({
                                 <RefreshCw size={11} />
                               </button>
                             )}
+                            {(() => {
+                              const lib = library.find((l) => l.name === ex.name);
+                              if (!lib) return null;
+                              return (
+                                <button
+                                  onClick={() => setDetailExercise(lib)}
+                                  title="Fiche exercice détaillée"
+                                  className="text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors p-0.5 ml-0.5"
+                                >
+                                  <Info size={11} />
+                                </button>
+                              );
+                            })()}
                             <button
                               onClick={() =>
                                 removeExercise(day.localId, ex.localId)
@@ -1510,6 +1639,10 @@ export default function ProgramEditor({
           )}
         </button>
       </div>
+
+      {detailExercise && (
+        <ExerciseDetailPanel exercise={detailExercise} onUpdate={updateExercise} onClose={() => setDetailExercise(null)} />
+      )}
     </div>
   );
 }

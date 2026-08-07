@@ -28,6 +28,28 @@ export interface GymWithReviews extends Gym {
   avgRating: number | null;
 }
 
+// Croise le nom de salle en texte libre de la fiche client (gym_name, pas
+// relié par clé étrangère à la table gyms) avec l'annuaire communautaire —
+// best-effort (correspondance approximative sur le nom), pour donner au
+// coach ce que d'autres ont déjà noté sur le matériel de cette salle sans
+// avoir à aller le chercher séparément.
+export async function findGymEquipmentNotes(gymName: string | null): Promise<string | null> {
+  if (!gymName?.trim()) return null;
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("gyms")
+      .select("equipment_notes")
+      .ilike("name", `%${gymName.trim()}%`)
+      .not("equipment_notes", "is", null)
+      .limit(1)
+      .maybeSingle();
+    return (data as { equipment_notes: string | null } | null)?.equipment_notes ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getGymsWithReviews(): Promise<GymWithReviews[]> {
   try {
     // Shared reference content (not user-scoped) — read via the admin client

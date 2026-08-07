@@ -24,6 +24,8 @@ export interface CreateExerciseInput {
   learning_difficulty?: string | null;
   stability_demand?: string | null;
   accessibility?: string | null;
+  // Adaptations/accessoires/installation — voir migration 20260808b.
+  setup_notes?: string | null;
 }
 
 // Open to every authenticated member (free or paying client, or coach) —
@@ -102,6 +104,7 @@ export async function updateExercise(
     if (fields.learning_difficulty !== undefined) updateData.learning_difficulty = fields.learning_difficulty;
     if (fields.stability_demand !== undefined) updateData.stability_demand = fields.stability_demand;
     if (fields.accessibility !== undefined) updateData.accessibility = fields.accessibility;
+    if (fields.setup_notes !== undefined) updateData.setup_notes = fields.setup_notes?.trim() || null;
 
     const { error } = await supabase.from("exercise_library").update(updateData).eq("id", id);
     if (error) return { error: "Erreur lors de la mise à jour." };

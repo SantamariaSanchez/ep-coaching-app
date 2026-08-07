@@ -27,6 +27,9 @@ export interface LibraryExercise {
   learning_difficulty: string | null;
   stability_demand: string | null;
   accessibility: string | null;
+  // Adaptations/accessoires/installation — distinct des instructions
+  // d'exécution du mouvement (voir migration 20260808b).
+  setup_notes: string | null;
 }
 
 export async function getExerciseLibrary(): Promise<LibraryExercise[]> {

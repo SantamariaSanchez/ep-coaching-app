@@ -7,7 +7,14 @@ import { ClipboardList } from "lucide-react";
 // création/édition de programme et de plan nutritionnel pour que le coach
 // ait sous les yeux objectifs, régime, allergies, blessures et préférences
 // pendant qu'il construit, sans devoir rouvrir un autre onglet.
-export default function ClientReferenceCard({ intake }: { intake: ClientIntake | null }) {
+export default function ClientReferenceCard({
+  intake,
+  gymEquipmentNotes,
+}: {
+  intake: ClientIntake | null;
+  /** Notes matériel de la salle du client, croisées depuis l'annuaire communautaire (best-effort). */
+  gymEquipmentNotes?: string | null;
+}) {
   if (!intake) return null;
 
   const rows: { label: string; value: string }[] = [];
@@ -46,6 +53,14 @@ export default function ClientReferenceCard({ intake }: { intake: ClientIntake |
           </div>
         ))}
       </div>
+      {gymEquipmentNotes && (
+        <div className="mt-3 pt-3 border-t border-[#890404]/15">
+          <span className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
+            Matériel connu de cette salle (annuaire communautaire)
+          </span>
+          <span className="text-xs text-[#F5EDED]/75 leading-relaxed whitespace-pre-wrap">{gymEquipmentNotes}</span>
+        </div>
+      )}
     </div>
   );
 }

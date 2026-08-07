@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getActiveProgram } from "@/utils/programs";
 import { getClientIntake } from "@/utils/client-intake";
+import { findGymEquipmentNotes } from "@/utils/gyms";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { saveProgram, saveCurrentProgramAsTemplate } from "../actions";
 import ProgramEditor from "@/components/ui/ProgramEditor";
@@ -32,6 +33,8 @@ export default async function EditProgramPage({
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
+  const gymEquipmentNotes = await findGymEquipmentNotes(intake?.gym_name ?? null);
+
   return (
     <div className="px-6 py-8 ep-page-wide page-transition">
       <Link
@@ -55,7 +58,7 @@ export default async function EditProgramPage({
         </p>
       </div>
 
-      <ClientReferenceCard intake={intake} />
+      <ClientReferenceCard intake={intake} gymEquipmentNotes={gymEquipmentNotes} />
 
       <ProgramEditor
         clientId={id}
