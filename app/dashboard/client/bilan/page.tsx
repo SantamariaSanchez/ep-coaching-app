@@ -1,97 +1,17 @@
-export const dynamic = "force-dynamic";
-
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getTodayLog, getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
+import { getTodayLog, getClientDailyLogs } from "@/utils/daily-logs";
 import { getTodayLogs } from "@/utils/nutrition";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
+import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertDailyLog } from "./actions";
-
-function fmt(dateStr: string) {
-  return new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(
-    new Date(dateStr + "T12:00:00")
-  );
-}
-
-function fmtShort(dateStr: string) {
-  return new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short" }).format(
-    new Date(dateStr + "T12:00:00")
-  );
-}
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
-
-function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
-  if (!val) return <span style={{ color: "rgba(245,237,237,0.2)" }}>-</span>;
-  const colors: Record<string, string> = {
-    low: "#4ade80",
-    medium: "#facc15",
-    high: "#f87171",
-  };
-  const labels: Record<string, string> = { low: "Bas", medium: "Moyen", high: "Haut" };
-  return (
-    <span style={{
-      display: "inline-block", fontSize: 9, fontWeight: 800, letterSpacing: "0.06em",
-      padding: "2px 8px", borderRadius: 99,
-      background: colors[val] + "20",
-      color: colors[val],
-      border: `1px solid ${colors[val]}40`,
-    }}>
-      {labels[val]}
-    </span>
-  );
-}
-
-function AvgRow({ label, value, unit = "" }: { label: string; value: number | null; unit?: string }) {
-  return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
-      <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)" }}>
-        {value !== null ? `${value}${unit}` : "-"}
-      </span>
-    </div>
-  );
-}
-
-function DayCard({ log }: { log: Awaited<ReturnType<typeof getClientDailyLogs>>[number] }) {
-  return (
-    <div className="ep-card" style={{
-      padding: "10px 14px",
-      display: "grid",
-      gridTemplateColumns: "1fr 1fr",
-      gap: "6px 16px",
-    }}>
-      <div style={{ gridColumn: "1 / -1", marginBottom: 4 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
-          {capitalize(fmtShort(log.log_date))}
-        </span>
-        {log.training_name && (
-          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
-        )}
-      </div>
-      {log.weight_morning != null && <KV k="Poids" v={`${log.weight_morning} kg`} />}
-      {log.steps != null && <KV k="Pas" v={log.steps.toLocaleString("fr-FR")} />}
-      {log.sleep_hours != null && <KV k="Sommeil" v={`${log.sleep_hours}h`} />}
-      {log.calories_kcal != null && <KV k="Kcal" v={`${log.calories_kcal}`} />}
-      {log.proteins_g != null && <KV k="Prot" v={`${log.proteins_g}g`} />}
-      {log.stress && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>Stress</span>
-          <StressChip val={log.stress} />
-        </div>
-      )}
-    </div>
-  );
-}
-
-function KV({ k, v }: { k: string; v: string }) {
-  return (
-    <div style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
-      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>{k}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{v}</span>
-    </div>
+function fmt(dateStr: string) {
+  return capitalize(
+    new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(dateStr + "T12:00:00"))
   );
 }
 
@@ -102,15 +22,16 @@ export default async function ClientBilanPage() {
 
   // Le bilan quotidien (poids, sommeil, ressenti) est un outil de suivi
   // autonome accessible à tous les clients, gratuits ou coachés — c'est le
-  // cœur du suivi de perte de poids en self-service.
+  // cœur du suivi de perte de poids en self-service. La progression
+  // (tendances, moyennes globales, export) vit maintenant dans le même
+  // écran plutôt que dans un onglet séparé qui montrait les mêmes données
+  // autrement — voir components/ui/BilanProgressView.
   const today = new Date().toISOString().split("T")[0];
   const [todayLog, allLogs, todayFoodLogs] = await Promise.all([
     getTodayLog(user.id),
-    getClientDailyLogs(user.id, 42),
+    getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, today),
   ]);
-
-  const weeks = groupLogsByWeek(allLogs);
 
   // Evite de refaire calculer les macros a la main : si le client a deja
   // logge ses aliments du jour dans Nutrition, on pre-remplit le bilan avec
@@ -129,64 +50,16 @@ export default async function ClientBilanPage() {
 
   return (
     <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
-
-      {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>{capitalize(fmt(today))}</p>
-        <h1 className="ep-h1">Bilan du jour</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{fmt(today)}</p>
+        <h1 className="ep-h1">Bilan &amp; progression</h1>
       </div>
 
-      {/* Form */}
       <div className="animate-scale-in" style={{ marginBottom: 32 }}>
         <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} />
       </div>
 
-      {/* Weekly history */}
-      {weeks.length > 0 && (
-        <div>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", marginBottom: 16 }}>
-            Historique du bilan
-          </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-            {weeks.map(({ weekStart, logs, averages }) => (
-              <div key={weekStart}>
-                {/* Week header */}
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 10, marginBottom: 10,
-                  borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 8,
-                }}>
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
-                    Semaine du {capitalize(fmtShort(weekStart))}
-                  </span>
-                  <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
-                    {logs.length} jour{logs.length > 1 ? "s" : ""}
-                  </span>
-                </div>
-
-                {/* Averages */}
-                <div className="ep-card" style={{ padding: "10px 14px", marginBottom: 10 }}>
-                  <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 8px" }}>
-                    Moyennes
-                  </p>
-                  <AvgRow label="Poids" value={averages.weight} unit=" kg" />
-                  <AvgRow label="Pas" value={averages.steps} />
-                  <AvgRow label="Sommeil" value={averages.sleep_hours} unit="h" />
-                  <AvgRow label="Qualité sommeil" value={averages.sleep_rating} unit="%" />
-                  <AvgRow label="Kcal" value={averages.calories_kcal} unit=" kcal" />
-                  <AvgRow label="Protéines" value={averages.proteins_g} unit="g" />
-                  <AvgRow label="Glucides" value={averages.carbs_g} unit="g" />
-                  <AvgRow label="Lipides" value={averages.fats_g} unit="g" />
-                </div>
-
-                {/* Day cards */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {logs.map((log) => <DayCard key={log.id} log={log} />)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />
     </div>
   );
 }

@@ -202,8 +202,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Mon Suivi",
     items: [
-      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "moi/bilan" },
-      { label: "Progression",    icon: TrendingUp,     segment: "moi/progression" },
+      { label: "Bilan & progression", icon: ClipboardCheck, segment: "moi/bilan" },
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
@@ -246,7 +245,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Suivi",
     items: [
-      { label: "Bilan quotidien", icon: ClipboardCheck, segment: "bilan" },
+      { label: "Bilan & progression", icon: ClipboardCheck, segment: "bilan" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
       { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireOwnClient } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/auth-guards";
 import type { DailyLog } from "@/utils/daily-logs";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { csvEscape as esc, csvNumber } from "@/lib/csv";
@@ -14,11 +14,19 @@ export async function GET(
 ) {
   const { clientId } = await params;
 
-  // requireOwnClient() remplace le trio getUser + lecture du rôle + contrôle
-  // d'appartenance fait à la main, et ajoute la force de session (2FA) : un
-  // export déverse tout l'historique quotidien d'un client en clair.
-  const guard = await requireOwnClient(clientId);
+  // requireAuth() plutôt que requireOwnClient() (coach uniquement) : un
+  // client doit pouvoir exporter SES PROPRES bilans, et un coach exportant
+  // les siens (clientId === son propre id, voir /dashboard/coach/moi/bilan)
+  // n'est "propriétaire" d'aucun client au sens coach_id — l'ancien guard
+  // renvoyait donc 403 sur son propre export. Le contrôle d'accès se fait
+  // juste en dessous : soi-même, ou un vrai client dont on est le coach.
+  const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const isSelf = clientId === guard.userId;
+  if (!isSelf && guard.role !== "coach") {
+    return NextResponse.json({ error: "Accès non autorisé." }, { status: 403 });
+  }
 
   // Export complet de l'historique quotidien d'un client : meme garde fou que
   // pour l'export du carnet d'entrainement.
@@ -33,12 +41,11 @@ export async function GET(
 
   const { data: clientProfile } = await admin
     .from("profiles")
-    .select("full_name")
+    .select("full_name, coach_id")
     .eq("id", clientId)
-    .eq("coach_id", guard.userId)
     .single();
 
-  if (!clientProfile) {
+  if (!clientProfile || (!isSelf && clientProfile.coach_id !== guard.userId)) {
     return NextResponse.json({ error: "Client introuvable" }, { status: 404 });
   }
 
