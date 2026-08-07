@@ -66,6 +66,9 @@ export interface Food {
   fibers_per_100?: number;
   is_custom?: boolean;
   created_by?: string | null;
+  // Cuisson/préparation/association — référence partagée entre coachs
+  // (migration 20260807 diet_meal_reasoning_and_food_prep_notes).
+  prep_notes?: string | null;
   // micros (per 100g, default 0)
   vitamin_d?: number;
   vitamin_c?: number;
@@ -163,6 +166,7 @@ export interface DietPlanMeal {
   quantity_g: number;
   position: number;
   day_of_week: DayOfWeek | null;
+  notes?: string | null;
   foods?: Food;
 }
 

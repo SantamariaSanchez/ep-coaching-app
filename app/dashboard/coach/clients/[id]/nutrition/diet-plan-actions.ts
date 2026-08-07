@@ -11,6 +11,9 @@ export interface DietPlanMealInput {
   quantity_g: number;
   position: number;
   day_of_week?: DayOfWeek | null;
+  // Pourquoi ce choix pour ce repas précis — décision du coach (migration
+  // 20260807 diet_meal_reasoning_and_food_prep_notes), jamais déduite.
+  notes?: string | null;
 }
 
 // Colonne `objective` ajoutée par la migration 20260806, exécutée à la main

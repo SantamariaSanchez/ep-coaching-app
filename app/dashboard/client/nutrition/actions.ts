@@ -3,7 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getProfile, isSubscribed } from "@/utils/auth";
-import { requireClient } from "@/lib/auth-guards";
+import { requireClient, requireCoach } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/utils/nutrition";
@@ -191,6 +191,30 @@ export async function createCustomFood(params: {
       return { error: "Erreur lors de la création." };
     }
     return { food: data as Food };
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Note de préparation partagée sur un aliment (cuisson, association, astuce
+// de conservation) — référence commune entre coachs, comme setup_notes sur
+// exercise_library. N'importe quel coach peut l'enrichir, pas seulement
+// celui qui a créé l'aliment (même logique que la bibliothèque d'exercices).
+export async function updateFoodPrepNotes(
+  foodId: string,
+  prepNotes: string
+): Promise<{ error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("foods")
+      .update({ prep_notes: prepNotes.trim() || null })
+      .eq("id", foodId);
+    if (error) return { error: "Erreur lors de l'enregistrement." };
+    return {};
   } catch {
     return { error: "Erreur inattendue." };
   }

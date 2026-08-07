@@ -8,6 +8,7 @@ import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
 import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
 import type { ClientSupplement } from "@/utils/supplements";
+import type { RoadmapWithData } from "@/utils/roadmap";
 import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type {
@@ -258,6 +259,8 @@ interface Props {
   allPlans: DietPlanWithMeals[];
   today: string;
   intake?: ClientIntake | null;
+  roadmap?: RoadmapWithData | null;
+  roadmapHref?: string;
   supplements: ClientSupplement[];
   /** Modèles de diète du coach, proposés en point de départ dans le constructeur. */
   dietTemplates?: DietPlanTemplateWithMeals[];
@@ -295,6 +298,8 @@ export default function CoachClientNutritionTabs({
   allPlans,
   today,
   intake = null,
+  roadmap = null,
+  roadmapHref,
   supplements,
   dietTemplates = [],
   saveDietAsTemplate,
@@ -392,6 +397,8 @@ export default function CoachClientNutritionTabs({
               <PlanBuilder
                 foods={foods}
                 intake={intake}
+                roadmap={roadmap}
+                roadmapHref={roadmapHref}
                 templates={dietTemplates}
                 templatesHref="/dashboard/coach/programmation"
                 subjectLabel={subjectLabel}

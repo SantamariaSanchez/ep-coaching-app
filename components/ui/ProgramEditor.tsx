@@ -25,6 +25,8 @@ import {
 } from "@/lib/plan-generator";
 import ExerciseDetailPanel, { isAssignmentConfigured, type AssignmentDecisions } from "./ExerciseDetailPanel";
 import WeeklyStructurePlanner from "./WeeklyStructurePlanner";
+import PhaseHeader from "./PhaseHeader";
+import RoadmapContextPanel from "./RoadmapContextPanel";
 import { DAY_LABELS, type ScheduleBlock } from "@/utils/agenda";
 import type { RoadmapWithData } from "@/utils/roadmap";
 import type { ProgramTemplateWithDays, ProgramTemplateInput } from "@/utils/program-templates";
@@ -337,27 +339,6 @@ function VolumeReviewPanel({ days, targets }: { days: DayRow[]; targets: Record<
   );
 }
 
-// ── Bannières de phase ───────────────────────────────────────────────────
-// Marque visuellement les 4 temps du travail (réflexion, programmation,
-// construction, livraison) — pas des étapes verrouillées les unes derrière
-// les autres, tout reste visible et modifiable dans n'importe quel ordre,
-// mais la page doit se LIRE comme un projet en 4 temps, pas comme un
-// formulaire plat. Chaque bannière est aussi la cible des liens du bandeau
-// de vue d'ensemble (haut de page).
-function PhaseHeader({ n, title, subtitle, id }: { n: number; title: string; subtitle: string; id: string }) {
-  return (
-    <div id={id} className="flex items-center gap-3 pt-4 scroll-mt-4">
-      <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#E01E1E]/15 border border-[#E01E1E]/40 flex items-center justify-center text-sm font-black text-[#E01E1E]">
-        {n}
-      </span>
-      <div className="min-w-0">
-        <p className="text-sm font-black uppercase tracking-wide text-white leading-tight">{title}</p>
-        <p className="text-[10.5px] text-[#F5EDED]/35">{subtitle}</p>
-      </div>
-    </div>
-  );
-}
-
 // ── Bilan de livraison ───────────────────────────────────────────────────
 // Avant de sauvegarder, un vrai récapitulatif de ce qui reste ouvert — pas
 // pour bloquer (un exercice non configuré ou une séance non placée peut
@@ -413,90 +394,6 @@ function DeliveryReviewPanel({
       <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
         Rien ici n&apos;empêche d&apos;enregistrer — un point ouvert peut être un choix assumé. C&apos;est un
         rappel, pas un blocage.
-      </p>
-    </div>
-  );
-}
-
-// ── Contexte road map ────────────────────────────────────────────────────
-// Le programme n'existe pas isolément — il sert une trajectoire déjà posée
-// (ou pas) dans la road map du client. L'afficher ici, en phase 1, évite de
-// concevoir un programme déconnecté de ce vers quoi ce client travaille
-// réellement sur les prochains mois.
-function RoadmapContextPanel({
-  roadmap,
-  roadmapHref,
-  subjectLabel,
-}: {
-  roadmap: RoadmapWithData;
-  roadmapHref?: string;
-  subjectLabel: string;
-}) {
-  if (!roadmap.roadmap) {
-    return (
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Road map
-        </p>
-        <p className="text-[11px] text-[#F5EDED]/30">
-          Pas de road map posée pour {subjectLabel} — ce programme n&apos;est rattaché à aucune trajectoire déclarée.
-          {roadmapHref && (
-            <>
-              {" "}
-              <a href={roadmapHref} className="text-[#E01E1E] hover:text-[#ff4444] underline">
-                En créer une
-              </a>
-              .
-            </>
-          )}
-        </p>
-      </div>
-    );
-  }
-
-  const today = new Date().toISOString().split("T")[0];
-  const currentPhase =
-    roadmap.phases.find((p) => p.start_date <= today && today <= p.end_date) ??
-    [...roadmap.phases].sort((a, b) => b.end_date.localeCompare(a.end_date))[0] ??
-    null;
-  const upcomingObjectives = roadmap.objectives
-    .filter((o) => !o.is_achieved)
-    .sort((a, b) => a.target_date.localeCompare(b.target_date))
-    .slice(0, 3);
-
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-      <div className="flex items-center justify-between gap-2 mb-2">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          Road map de {subjectLabel}
-        </p>
-        {roadmapHref && (
-          <a href={roadmapHref} className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
-            Voir la road map complète
-          </a>
-        )}
-      </div>
-      {currentPhase ? (
-        <p className="text-xs text-white mb-1">
-          <span className="font-black">Phase en cours : {currentPhase.label}</span>
-          <span className="text-[#F5EDED]/30"> ({currentPhase.start_date} → {currentPhase.end_date})</span>
-        </p>
-      ) : (
-        <p className="text-[11px] text-[#F5EDED]/30 mb-1">Aucune phase active actuellement dans la road map.</p>
-      )}
-      {currentPhase?.notes && <p className="text-[11px] text-[#F5EDED]/50 leading-relaxed mb-2">{currentPhase.notes}</p>}
-      {upcomingObjectives.length > 0 && (
-        <div className="mt-2 pt-2 border-t border-[#890404]/15 space-y-1">
-          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Objectifs à venir</p>
-          {upcomingObjectives.map((o) => (
-            <p key={o.id} className="text-[11px] text-[#F5EDED]/55">
-              {o.label} <span className="text-[#F5EDED]/25">— {o.target_date}</span>
-            </p>
-          ))}
-        </div>
-      )}
-      <p className="text-[10px] text-[#F5EDED]/25 mt-2 leading-relaxed">
-        Ce que tu construis ci-dessous doit servir cette trajectoire, pas exister à côté.
       </p>
     </div>
   );

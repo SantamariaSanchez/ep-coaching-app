@@ -17,7 +17,7 @@ function pctBg(pct: number): string {
   return "bg-red-500/15 border-red-500/20 text-red-400";
 }
 
-export default function MicroBarList({ logs }: { logs: FoodLogWithFood[] }) {
+export default function MicroBarList({ logs }: { logs: Pick<FoodLogWithFood, "foods" | "quantity_g">[] }) {
   const stats = useMemo(
     () => getMicroDeficiencyOrder(logs, MICRO_DAILY_REF),
     [logs]

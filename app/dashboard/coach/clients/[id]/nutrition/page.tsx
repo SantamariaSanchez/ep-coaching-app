@@ -11,6 +11,8 @@ import {
 } from "@/utils/nutrition";
 import { getLatestWeight, getClientDailyLogs } from "@/utils/daily-logs";
 import { getClientSupplements } from "@/utils/supplements";
+import { getClientIntake } from "@/utils/client-intake";
+import { getClientRoadmap } from "@/utils/roadmap";
 import { getCoachDietTemplates } from "@/utils/diet-templates";
 import { createDietTemplateAction } from "@/app/dashboard/coach/programmation/diet/actions";
 import {
@@ -49,7 +51,7 @@ export default async function CoachClientNutritionPage({
 
   const today = new Date().toISOString().split("T")[0];
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates] =
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates, intake, roadmap] =
     await Promise.all([
       getNutritionProfile(id),
       getTodayLogs(id, today),
@@ -61,6 +63,13 @@ export default async function CoachClientNutritionPage({
       getClientDailyLogs(id, 21),
       getClientSupplements(id),
       getCoachDietTemplates(user.id),
+      // Sans ça, ClientReferenceCard et PlanBuilder recevaient intake=null en
+      // silence : la vérification allergènes/régime/aliments détestés
+      // n'était jamais active sur cette page (elle l'était ailleurs, où la
+      // fiche était bien transmise) — même défaut que le "matériel suggéré
+      // sans vérifier le lieu d'entraînement" côté programme.
+      getClientIntake(id),
+      getClientRoadmap(id),
     ]);
 
   return (
@@ -98,6 +107,9 @@ export default async function CoachClientNutritionPage({
         dietTemplates={dietTemplates}
         saveDietAsTemplate={createDietTemplateAction}
         subjectLabel={client.full_name ?? "ce client"}
+        intake={intake}
+        roadmap={roadmap}
+        roadmapHref={`/dashboard/coach/clients/${id}/roadmap`}
         saveNutritionProfile={saveNutritionProfile}
         createDietPlan={createDietPlan}
         deactivateDietPlan={deactivateDietPlan}

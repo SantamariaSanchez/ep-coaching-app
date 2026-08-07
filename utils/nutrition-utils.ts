@@ -26,8 +26,12 @@ export function calculateNutrients(
   };
 }
 
+// N'a besoin que de foods/quantity_g — élargi (au lieu de FoodLogWithFood
+// complet) pour être réutilisable sur un plan en cours de construction
+// (PlanMealRow, pas encore un vrai log) sans fabriquer de faux champs
+// (id, logged_at...) juste pour satisfaire le type.
 export function getMicroDeficiencyOrder(
-  logs: FoodLogWithFood[],
+  logs: Pick<FoodLogWithFood, "foods" | "quantity_g">[],
   refs: typeof import("@/lib/micro-references").MICRO_DAILY_REF
 ): MicroStat[] {
   const totals: Partial<MicroValues> = {};

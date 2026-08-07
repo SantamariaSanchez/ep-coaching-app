@@ -18,6 +18,7 @@ export interface DietPlanTemplateMeal {
   quantity_g: number;
   position: number;
   day_of_week: DayOfWeek | null;
+  notes?: string | null;
   foods?: Food;
 }
 
@@ -134,5 +135,6 @@ export function dietTemplateToMealInputs(template: DietPlanTemplateWithMeals): D
     quantity_g: m.quantity_g,
     position: m.position,
     day_of_week: m.day_of_week,
+    notes: m.notes,
   }));
 }

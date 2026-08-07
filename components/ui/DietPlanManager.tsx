@@ -19,15 +19,22 @@ import {
   Check,
   ExternalLink,
   Search,
-  Sparkles,
+  ClipboardCheck,
+  ShoppingCart,
+  CalendarDays,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
-import { calculateNutrients } from "@/utils/nutrition-utils";
+import { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch } from "@/lib/food-watch-keywords";
-import { generateDietDraft, clampMealCount } from "@/lib/diet-generator";
+import { MICRO_DAILY_REF } from "@/lib/micro-references";
+import { CATEGORY_ORDER } from "@/lib/shopping-list";
+import { updateFoodPrepNotes } from "@/app/dashboard/client/nutrition/actions";
+import type { RoadmapWithData } from "@/utils/roadmap";
+import PhaseHeader from "./PhaseHeader";
+import RoadmapContextPanel from "./RoadmapContextPanel";
 
 export interface MacroTargets {
   calories: number;
@@ -79,6 +86,102 @@ function MacroCoverage({
   );
 }
 
+// ── Contexte nutritionnel ────────────────────────────────────────────────
+// Avant de raisonner en macros : pourquoi CE total calorique pour CE client
+// précis ? Un chiffre sorti d'une formule (Mifflin-St Jeor + activité) ne
+// dit rien de son appétit réel, de son stress, de ses habitudes déjà en
+// place — les mêmes 1800 kcal sont réalistes pour l'un et intenables pour
+// l'autre. Ce panneau met ces signaux sous les yeux avant la conception,
+// pas une checklist à part : des observations concrètes tirées de la fiche
+// client, jamais une recommandation calculée à sa place.
+function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
+  if (!intake) {
+    return (
+      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Contexte nutritionnel
+        </p>
+        <p className="text-[11px] text-[#F5EDED]/30">
+          Fiche client absente — impossible de raisonner appétit/stress/habitudes sans elle.
+        </p>
+      </div>
+    );
+  }
+
+  const signals: { label: string; value: string; flag?: boolean }[] = [];
+  if (intake.stress_level != null) {
+    signals.push({
+      label: "Niveau de stress",
+      value: `${intake.stress_level}/10${intake.stress_level >= 7 ? " — élevé" : ""}`,
+      flag: intake.stress_level >= 7,
+    });
+  }
+  if (intake.sleep_quality != null) {
+    signals.push({
+      label: "Qualité du sommeil",
+      value: `${intake.sleep_quality}/10${intake.sleep_quality <= 4 ? " — faible" : ""}`,
+      flag: intake.sleep_quality <= 4,
+    });
+  }
+  if (intake.sleep_hours != null) {
+    signals.push({ label: "Sommeil", value: `${intake.sleep_hours}h/nuit en moyenne`, flag: intake.sleep_hours < 6.5 });
+  }
+  if (intake.meals_current != null || intake.meals_ideal != null) {
+    signals.push({
+      label: "Nombre de repas",
+      value: `${intake.meals_current ?? "?"} actuellement${intake.meals_ideal != null ? `, ${intake.meals_ideal} visés` : ""}`,
+    });
+  }
+  if (intake.cheat_meals_per_week != null) {
+    signals.push({
+      label: "Écarts/semaine",
+      value: `${intake.cheat_meals_per_week}${intake.cheat_meal_impact ? ` — ${intake.cheat_meal_impact}` : ""}`,
+    });
+  }
+  if (intake.known_calories != null) {
+    signals.push({
+      label: "Apport actuel connu",
+      value: `~${intake.known_calories} kcal${intake.known_protein ? ` · P ${intake.known_protein}g` : ""}${intake.known_carbs ? ` · G ${intake.known_carbs}g` : ""}${intake.known_fat ? ` · L ${intake.known_fat}g` : ""}`,
+    });
+  }
+  if (intake.typical_day) signals.push({ label: "Journée type", value: intake.typical_day });
+  if (intake.supplement_budget != null) {
+    signals.push({ label: "Budget compléments", value: `${intake.supplement_budget}€/mois` });
+  }
+
+  const highStressPoorSleep = (intake.stress_level ?? 0) >= 7 && (intake.sleep_quality ?? 10) <= 4;
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        Contexte nutritionnel
+      </p>
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+        Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule — à prendre en compte
+        avant de fixer un total définitif, pas après.
+      </p>
+      {signals.length === 0 ? (
+        <p className="text-[11px] text-[#F5EDED]/25 italic">Rien de renseigné sur ces points dans la fiche client.</p>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2 mb-3">
+          {signals.map((s) => (
+            <div key={s.label} className="flex flex-col gap-0.5">
+              <span className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30">{s.label}</span>
+              <span className={`text-xs leading-relaxed ${s.flag ? "text-amber-300" : "text-[#F5EDED]/75"}`}>{s.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      {highStressPoorSleep && (
+        <p className="text-[11px] text-amber-300/90 leading-relaxed border-t border-amber-500/20 pt-2.5">
+          Stress élevé + sommeil faible : risque réel d&apos;appétit dérégulé. Une marge plus généreuse qu&apos;un
+          déficit agressif est souvent plus tenable ici — une décision à toi, pas une règle automatique.
+        </p>
+      )}
+    </div>
+  );
+}
+
 export const MEAL_SLOTS = [
   { key: "breakfast", label: "Petit-déjeuner" },
   { key: "morning", label: "Collation matin" },
@@ -123,6 +226,9 @@ interface PlanMealRow {
   foodName: string;
   quantityG: number;
   day: DayOfWeek | null;
+  // Pourquoi ce choix pour ce repas précis — décision du coach, jamais
+  // déduite (migration 20260807 diet_meal_reasoning_and_food_prep_notes).
+  notes: string;
 }
 
 export function PlanBuilder({
@@ -134,6 +240,8 @@ export function PlanBuilder({
   saveAsTemplate,
   templatesHref,
   subjectLabel = "ce client",
+  roadmap = null,
+  roadmapHref,
 }: {
   foods: Food[];
   onCreate: (
@@ -162,6 +270,9 @@ export function PlanBuilder({
   ) => Promise<{ error?: string; id?: string }>;
   templatesHref?: string;
   subjectLabel?: string;
+  /** Trajectoire déjà posée pour ce client — affichée en phase 1 pour concevoir la diète dans son contexte réel. */
+  roadmap?: RoadmapWithData | null;
+  roadmapHref?: string;
 }) {
   const [planName, setPlanName] = useState("");
   const [objective, setObjective] = useState("");
@@ -172,7 +283,11 @@ export function PlanBuilder({
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [qty, setQty] = useState("100");
+  const [mealNotes, setMealNotes] = useState("");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
+  const [editingPrepNotes, setEditingPrepNotes] = useState(false);
+  const [prepNotesDraft, setPrepNotesDraft] = useState("");
+  const [savingPrepNotes, setSavingPrepNotes] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
@@ -221,6 +336,37 @@ export function PlanBuilder({
     );
   }, [dayMeals, foods]);
 
+  // Micronutriments projetés du plan en cours de construction — réutilise
+  // exactement la même logique que le suivi réel (getMicroDeficiencyOrder),
+  // juste appliquée aux repas PLANIFIÉS plutôt qu'aux logs réels.
+  const microLogs = useMemo(
+    () => dayMeals.map((m) => ({ foods: foods.find((f) => f.id === m.foodId) ?? null, quantity_g: m.quantityG })),
+    [dayMeals, foods]
+  );
+
+  // Liste de courses du plan en cours de construction (avant même
+  // d'enregistrer) — journalier : le jour affiché répété sur 7 jours ;
+  // hebdomadaire : somme réelle de tous les jours déjà remplis.
+  const draftShoppingItems = useMemo(() => {
+    const totals = new Map<string, { name: string; category: string; grams: number }>();
+    const rows = structure === "weekly" ? meals : dayMeals;
+    const multiplier = structure === "weekly" ? 1 : 7;
+    for (const m of rows) {
+      const food = foods.find((f) => f.id === m.foodId);
+      if (!food) continue;
+      const existing = totals.get(food.id) ?? { name: food.name, category: food.category ?? "Divers", grams: 0 };
+      existing.grams += m.quantityG * multiplier;
+      totals.set(food.id, existing);
+    }
+    return [...totals.values()]
+      .map((v) => ({ ...v, grams: Math.round(v.grams / 10) * 10 }))
+      .sort((a, b) => {
+        const ai = CATEGORY_ORDER.indexOf(a.category);
+        const bi = CATEGORY_ORDER.indexOf(b.category);
+        return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi) || a.name.localeCompare(b.name, "fr");
+      });
+  }, [meals, dayMeals, foods, structure]);
+
   // Macros apportées par un créneau du jour affiché — permet de raisonner
   // repas par repas ("mon petit-déj couvre 40 g de protéines") au lieu de ne
   // voir que le total de fin de journée.
@@ -256,12 +402,14 @@ export function PlanBuilder({
         foodName: selectedFood.name,
         quantityG: q,
         day: currentDay,
+        notes: mealNotes.trim(),
       },
     ]);
     setAddingToSlot(null);
     setSelectedFood(null);
     setSearch("");
     setQty("100");
+    setMealNotes("");
   }
 
   // Charge un modèle de diète dans le constructeur : copie de travail
@@ -284,42 +432,11 @@ export function PlanBuilder({
         foodName: m.foods?.name ?? foods.find((f) => f.id === m.food_id)?.name ?? "Aliment",
         quantityG: m.quantity_g,
         day: m.day_of_week,
+        notes: m.notes ?? "",
       }))
     );
     setLoadedTemplateName(template.name);
     setShowStartingPoint(false);
-  }
-
-  // Génère un brouillon de journée directement dans l'éditeur — pas une
-  // liste à part, les repas générés atterrissent tels quels dans `meals`,
-  // déjà modifiables. Toujours sur le jour affiché (currentDay en mode
-  // hebdo) : régénérable jour par jour si la structure est "weekly".
-  const [generateError, setGenerateError] = useState<string | null>(null);
-  function generateDraft() {
-    setGenerateError(null);
-    if (!targets) {
-      setGenerateError("Renseigne d'abord les objectifs macro de ce client (onglet Objectifs TDEE) pour pouvoir générer une journée.");
-      return;
-    }
-    if (
-      dayMeals.length > 0 &&
-      !confirm("Générer un brouillon va remplacer les repas du jour affiché. Continuer ?")
-    ) {
-      return;
-    }
-    const mealCount = clampMealCount(intake?.meals_ideal ?? intake?.meals_current ?? 4);
-    const draft = generateDietDraft(targets, foods, intake, mealCount);
-    const generated: PlanMealRow[] = draft.flatMap((meal) =>
-      meal.items.map((item) => ({
-        slotKey: meal.slotKey,
-        foodId: item.foodId,
-        foodName: item.foodName,
-        quantityG: item.quantityG,
-        day: currentDay,
-      }))
-    );
-    setMeals((prev) => [...prev.filter((m) => m.day !== currentDay), ...generated]);
-    setLoadedTemplateName(null);
   }
 
   function buildMealInputs(): DietPlanMealInput[] {
@@ -329,6 +446,7 @@ export function PlanBuilder({
       quantity_g: m.quantityG,
       position: i,
       day_of_week: m.day,
+      notes: m.notes.trim() || null,
     }));
   }
 
@@ -373,27 +491,25 @@ export function PlanBuilder({
 
   return (
     <div className="space-y-5">
-      {/* ── Génération d'un brouillon ────────────────────────────────────── */}
-      <div className="bg-[#1f0101] border border-green-500/25 rounded-xl p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Générer un brouillon {structure === "weekly" && currentDay ? `— ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
-        </p>
-        <p className="text-[11px] text-[#F5EDED]/30 leading-relaxed mb-3">
-          Répartit les objectifs macro de {subjectLabel} sur des repas remplis d&apos;aliments réels
-          (respecte régime, allergènes détectés et aliments détestés), directement modifiables ci-dessous.
-          Une approximation de départ, pas un calcul parfait — les totaux du jour restent visibles pendant
-          que tu ajustes.
-        </p>
-        <button
-          onClick={generateDraft}
-          disabled={foods.length === 0}
-          className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/30 hover:bg-green-500/20 disabled:opacity-40 disabled:cursor-not-allowed text-green-400 text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Sparkles size={13} />
-          Générer la journée
-        </button>
-        {generateError && <p className="mt-2 text-xs text-amber-400">{generateError}</p>}
-      </div>
+      <PhaseHeader
+        id="diet-phase-contexte"
+        n={1}
+        title="Réflexion & contexte"
+        subtitle="Pourquoi ce total calorique, pas juste combien — appétit, stress, habitudes déjà en place."
+      />
+
+      {roadmap && (
+        <RoadmapContextPanel roadmap={roadmap} roadmapHref={roadmapHref} subjectLabel={subjectLabel} workTypeLabel="cette diète" />
+      )}
+
+      <NutritionalContextPanel intake={intake ?? null} />
+
+      <PhaseHeader
+        id="diet-phase-programmation"
+        n={2}
+        title="Programmation"
+        subtitle="Structure de la semaine, nombre de repas, répartition macro visée — avant le moindre aliment."
+      />
 
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
@@ -600,11 +716,20 @@ export function PlanBuilder({
         </div>
       )}
 
+      {mode !== "flexible" && (
+        <PhaseHeader
+          id="diet-phase-construction"
+          n={3}
+          title="Construction"
+          subtitle="Chaque aliment ajouté porte sa raison d'être — pas juste un nom et un grammage."
+        />
+      )}
+
       {/* Meal slots for fixed modes */}
       {mode !== "flexible" && (
         <>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-            2. Détail des repas
+            Détail des repas
           </p>
           <div className="space-y-3">
             {MEAL_SLOTS.map((slot) => {
@@ -645,9 +770,10 @@ export function PlanBuilder({
                           key={i}
                           className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
                         >
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-xs text-white">{m.foodName}</p>
                             <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
+                            {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic mt-0.5">{m.notes}</p>}
                           </div>
                           <button
                             onClick={() =>
@@ -677,6 +803,90 @@ export function PlanBuilder({
           </div>
 
         </>
+      )}
+
+      <PhaseHeader
+        id="diet-phase-livraison"
+        n={4}
+        title="Livraison"
+        subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde — ce que ce client recevra."
+      />
+
+      {mode !== "flexible" && dayMeals.length > 0 && (
+        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+            Couverture des micronutriments {structure === "weekly" && currentDay ? `· ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
+          </p>
+          <MicroBarList logs={microLogs} />
+        </div>
+      )}
+
+      {draftShoppingItems.length > 0 && (
+        <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+            <ShoppingCart size={12} />
+            Liste de courses de ce plan
+          </p>
+          <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
+            {structure === "weekly"
+              ? "Somme réelle des jours déjà remplis."
+              : "Le jour affiché, extrapolé sur 7 jours (structure journalière : mêmes repas chaque jour)."}
+          </p>
+          <div className="grid sm:grid-cols-2 gap-x-6 gap-y-1">
+            {draftShoppingItems.map((item) => (
+              <div key={item.name} className="flex items-center justify-between py-1 border-b border-[#890404]/10">
+                <span className="text-xs text-[#F5EDED]/70">{item.name}</span>
+                <span className="text-xs font-bold text-white flex-shrink-0">{item.grams >= 1000 ? `${(item.grams / 1000).toFixed(1)}kg` : `${item.grams}g`}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {mode !== "flexible" && (
+        <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
+            <ClipboardCheck size={12} />
+            Bilan avant sauvegarde
+          </p>
+          <div className="space-y-1.5">
+            {(() => {
+              const scopedMeals = structure === "weekly" ? meals : dayMeals;
+              const withoutReason = scopedMeals.filter((m) => !m.notes.trim()).length;
+              const emptyDays = structure === "weekly" ? DAY_TABS.filter((d) => meals.filter((m) => m.day === d.key).length === 0).length : 0;
+              const items = [
+                {
+                  ok: !!targets,
+                  okText: "Cible macro définie (onglet Objectifs TDEE).",
+                  warnText: "Pas de cible macro définie — la répartition ci-dessus n'a rien à viser.",
+                },
+                {
+                  ok: withoutReason === 0,
+                  okText: "Chaque aliment porte une raison de choix.",
+                  warnText: `${withoutReason} aliment${withoutReason > 1 ? "s" : ""} sans raison de choix renseignée.`,
+                },
+                ...(structure === "weekly"
+                  ? [
+                      {
+                        ok: emptyDays === 0,
+                        okText: "Tous les jours de la semaine sont remplis.",
+                        warnText: `${emptyDays} jour${emptyDays > 1 ? "s" : ""} de la semaine encore vide${emptyDays > 1 ? "s" : ""}.`,
+                      },
+                    ]
+                  : []),
+              ];
+              return items.map((item, i) => (
+                <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-[#F5EDED]/45" : "text-amber-300/85"}`}>
+                  <span className="flex-shrink-0 mt-0.5">{item.ok ? "✓" : "!"}</span>
+                  {item.ok ? item.okText : item.warnText}
+                </p>
+              ));
+            })()}
+          </div>
+          <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
+            Rien ici n&apos;empêche d&apos;enregistrer — un rappel, pas un blocage.
+          </p>
+        </div>
       )}
 
       {/* Capitaliser ce plan sur mesure en modèle réutilisable */}
@@ -795,7 +1005,7 @@ export function PlanBuilder({
                     return (
                       <button
                         key={food.id}
-                        onClick={() => { setSelectedFood(food); setQty("100"); }}
+                        onClick={() => { setSelectedFood(food); setQty("100"); setMealNotes(""); setEditingPrepNotes(false); setPrepNotesDraft(food.prep_notes ?? ""); }}
                         className="w-full text-left px-3 py-2.5 hover:bg-[#1f0101] rounded-lg transition-colors"
                       >
                         <p className="text-sm text-white font-medium flex items-center gap-1.5">
@@ -840,6 +1050,77 @@ export function PlanBuilder({
                     className={inputCls}
                   />
                 </div>
+
+                {/* Pourquoi ce choix — décision propre à ce repas, ce client. */}
+                <div>
+                  <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
+                    Pourquoi ce choix pour ce repas <span className="text-[#F5EDED]/25 font-normal">(optionnel)</span>
+                  </label>
+                  <textarea
+                    value={mealNotes}
+                    onChange={(e) => setMealNotes(e.target.value)}
+                    rows={2}
+                    placeholder="Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…"
+                    className={`${inputCls} resize-none`}
+                  />
+                </div>
+
+                {/* Référence partagée sur l'aliment — cuisson, association, conservation. */}
+                <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                    Préparation &amp; association (fiche partagée de l&apos;aliment)
+                  </p>
+                  {editingPrepNotes ? (
+                    <>
+                      <textarea
+                        value={prepNotesDraft}
+                        onChange={(e) => setPrepNotesDraft(e.target.value)}
+                        rows={2}
+                        placeholder="Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…"
+                        className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setSavingPrepNotes(true);
+                            const res = await updateFoodPrepNotes(selectedFood.id, prepNotesDraft);
+                            setSavingPrepNotes(false);
+                            if (!res.error) {
+                              setSelectedFood({ ...selectedFood, prep_notes: prepNotesDraft.trim() || null });
+                              setEditingPrepNotes(false);
+                            }
+                          }}
+                          disabled={savingPrepNotes}
+                          className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] disabled:opacity-50"
+                        >
+                          {savingPrepNotes ? "Enregistrement…" : "Enregistrer"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingPrepNotes(false)}
+                          className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-[#F5EDED]/60 italic mb-1.5">
+                        {selectedFood.prep_notes || "Aucune note pour l'instant."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setEditingPrepNotes(true)}
+                        className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
+                      >
+                        {selectedFood.prep_notes ? "Modifier" : "Ajouter une note"}
+                      </button>
+                    </>
+                  )}
+                </div>
+
                 {qty && parseFloat(qty) > 0 && (
                   <div className="bg-[#1f0101] rounded-lg p-3 flex gap-4 text-xs">
                     {(() => {
@@ -1006,8 +1287,11 @@ function PlanDetailRow({
                   <div className="space-y-1">
                     {bySlot[slot.key].map((m) => (
                       <div key={m.id} className="flex items-center justify-between py-1">
-                        <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
-                        <p className="text-[10px] text-[#F5EDED]/35">{m.quantity_g}g</p>
+                        <div className="min-w-0">
+                          <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
+                          {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic">{m.notes}</p>}
+                        </div>
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">{m.quantity_g}g</p>
                       </div>
                     ))}
                   </div>
