@@ -7,7 +7,7 @@ import { getClientIntake } from "@/utils/client-intake";
 import { goalToPhase } from "@/lib/recipes-data";
 import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "./actions";
-import { createCustomFood } from "@/app/dashboard/client/nutrition/actions";
+import { createCustomFood, addFoodLog } from "@/app/dashboard/client/nutrition/actions";
 
 export default async function ClientRecettesPage() {
   const user = await getUser();
@@ -47,6 +47,7 @@ export default async function ClientRecettesPage() {
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
         createCustomFood={createCustomFood}
+        addFoodLog={addFoodLog}
         presetDiet={intake?.diet_type ?? null}
         presetAllergens={intake ? intake.allergens : null}
         recommendedPhase={goalToPhase(profile?.goal)}

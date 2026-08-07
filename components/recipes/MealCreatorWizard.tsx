@@ -444,6 +444,7 @@ export default function MealCreatorWizard({
       ingredients: result.ingredients,
       steps: result.steps,
       tip: result.tip,
+      foods_used: result.foodsUsed.map((f) => ({ food_id: f.foodId, grams: f.grams })),
     };
     const res = await onSaveRecipe(input);
     if (res.error) {

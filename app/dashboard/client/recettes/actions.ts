@@ -32,6 +32,9 @@ export interface CommunityRecipeInput {
   ingredients: string[];
   steps: string[];
   tip: string;
+  // Présent seulement pour les recettes issues du créateur de repas (voir
+  // migration 20260808b) — permet le bouton "Loguer aujourd'hui".
+  foods_used?: { food_id: string; grams: number }[];
 }
 
 export async function createCommunityRecipe(
@@ -72,6 +75,7 @@ export async function createCommunityRecipe(
         ingredients: input.ingredients.filter((i) => i.trim()),
         steps: input.steps.filter((s) => s.trim()),
         tip: input.tip.trim() || null,
+        foods_used: input.foods_used && input.foods_used.length > 0 ? input.foods_used : null,
       })
       .select("id")
       .single();

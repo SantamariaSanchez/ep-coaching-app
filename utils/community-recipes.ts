@@ -32,6 +32,7 @@ export interface CommunityRecipe {
   steps: string[];
   tip: string | null;
   created_at: string;
+  foods_used?: { food_id: string; grams: number }[] | null;
 }
 
 export async function getCommunityRecipes(): Promise<CommunityRecipe[]> {

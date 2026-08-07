@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search, Clock, MapPin, Flame, ChevronDown, X, UtensilsCrossed,
-  Plus, Heart, Trash2, Wand2, BookOpen, Lock, Sparkles,
+  Plus, Heart, Trash2, Wand2, BookOpen, Lock, Sparkles, CalendarPlus, Check,
 } from "lucide-react";
 import { hasUnlocked, FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
 import {
@@ -27,9 +27,25 @@ import {
 import type { CommunityRecipe } from "@/utils/community-recipes";
 import type { CommunityRecipeInput } from "@/app/dashboard/client/recettes/actions";
 import type { Food } from "@/utils/nutrition";
+import { calculateNutrients } from "@/utils/nutrition-utils";
 import AddRecipeForm from "@/components/recipes/AddRecipeForm";
 import MealCreatorWizard from "@/components/recipes/MealCreatorWizard";
 import { MACRO_PROFILE_LABELS, type MacroProfile } from "@/lib/meal-creator";
+
+// Le créateur de repas connaît le créneau food_logs (breakfast/lunch/...)
+// alors que les recettes utilisent leur propre typage MealType
+// (petit-dej/dejeuner/...) — correspondance directe où elle existe,
+// approximation raisonnable sinon (collation → après-midi, dessert → dîner,
+// le moment le plus courant pour un dessert).
+const MEAL_TO_SLOT: Record<MealType, string> = {
+  "petit-dej": "breakfast",
+  dejeuner: "lunch",
+  diner: "dinner",
+  collation: "afternoon",
+  "pre-training": "preworkout",
+  "post-training": "postworkout",
+  dessert: "dinner",
+};
 
 // Classe une recette par profil macro à partir de ses totaux kcal/P/G/L —
 // calculé à la volée plutôt que d'exiger un tag manuel supplémentaire à la
@@ -55,10 +71,11 @@ interface DisplayRecipe extends Recipe {
   authorId: string | null;
   authorName: string | null;
   authorAvatarUrl: string | null;
+  foodsUsed: { food_id: string; grams: number }[] | null;
 }
 
 function toDisplay(r: Recipe): DisplayRecipe {
-  return { ...r, isCommunity: false, authorId: null, authorName: null, authorAvatarUrl: null };
+  return { ...r, isCommunity: false, authorId: null, authorName: null, authorAvatarUrl: null, foodsUsed: null };
 }
 
 function communityToDisplay(r: CommunityRecipe): DisplayRecipe {
@@ -86,6 +103,7 @@ function communityToDisplay(r: CommunityRecipe): DisplayRecipe {
     authorId: r.author_id,
     authorName: r.author_name,
     authorAvatarUrl: r.author_avatar_url,
+    foodsUsed: r.foods_used ?? null,
   };
 }
 
@@ -154,6 +172,7 @@ function RecipeCard({
   onDelete,
   locked,
   recommended,
+  onLogToday,
 }: {
   recipe: DisplayRecipe;
   expanded: boolean;
@@ -163,7 +182,20 @@ function RecipeCard({
   onDelete: () => void;
   locked: boolean;
   recommended: boolean;
+  /** Fourni + recipe.foodsUsed non vide = bouton "Loguer aujourd'hui" affiché. */
+  onLogToday?: () => Promise<void>;
 }) {
+  const [logging, setLogging] = useState(false);
+  const [logged, setLogged] = useState(false);
+
+  async function handleLogToday() {
+    if (!onLogToday || logging) return;
+    setLogging(true);
+    await onLogToday();
+    setLogging(false);
+    setLogged(true);
+    setTimeout(() => setLogged(false), 3000);
+  }
   if (locked) {
     return (
       <div className="bg-[#1f0101] border border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
@@ -307,17 +339,35 @@ function RecipeCard({
             </p>
           )}
 
-          {canDelete && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete();
-              }}
-              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors mt-3"
-            >
-              <Trash2 size={11} /> Supprimer ma recette
-            </button>
-          )}
+          <div className="flex items-center gap-4 mt-3 flex-wrap">
+            {onLogToday && recipe.foodsUsed && recipe.foodsUsed.length > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleLogToday();
+                }}
+                disabled={logging}
+                title="Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui"
+                className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                  logged ? "text-green-400" : "text-[#E01E1E] hover:text-[#ff4444]"
+                } disabled:opacity-50`}
+              >
+                {logged ? <Check size={11} /> : <CalendarPlus size={11} />}
+                {logged ? "Ajouté au journal" : logging ? "Ajout…" : "Loguer aujourd'hui"}
+              </button>
+            )}
+            {canDelete && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete();
+                }}
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+              >
+                <Trash2 size={11} /> Supprimer ma recette
+              </button>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -336,6 +386,7 @@ export default function RecipesClient({
   createRecipe,
   deleteRecipe,
   createCustomFood,
+  addFoodLog,
   presetDiet,
   presetAllergens,
   recommendedPhase,
@@ -357,6 +408,19 @@ export default function RecipesClient({
     fats_per_100: number;
     fibers_per_100: number;
   }) => Promise<{ food?: Food; error?: string }>;
+  // Fournie côté client uniquement (addFoodLog exige un compte client, voir
+  // requireClient()) — active le bouton "Loguer aujourd'hui" sur les
+  // recettes issues du créateur de repas (aliments réels connus).
+  addFoodLog?: (params: {
+    foodId: string | null;
+    mealSlot: string;
+    quantityG: number;
+    calories: number;
+    proteins: number;
+    carbs: number;
+    fats: number;
+    loggedAt: string;
+  }) => Promise<{ id?: string; error?: string }>;
   // Régime/allergies déjà connus via la fiche client — évite de reposer ces
   // questions dans le créateur de recette quand le coach les a déjà remplies.
   presetDiet?: Diet | null;
@@ -451,6 +515,33 @@ export default function RecipesClient({
     }
   }
 
+  // Ajoute chaque aliment réel de la recette (foodsUsed, voir lib/meal-creator)
+  // au journal alimentaire d'aujourd'hui — en parallèle, un seul log par
+  // ingrédient plutôt qu'une entrée "recette" agrégée : cohérent avec le
+  // reste du suivi, qui logue toujours au niveau aliment.
+  async function handleLogRecipeToday(recipe: DisplayRecipe) {
+    if (!addFoodLog || !recipe.foodsUsed || recipe.foodsUsed.length === 0) return;
+    const today = new Date().toISOString().split("T")[0];
+    const slot = MEAL_TO_SLOT[recipe.meal];
+    await Promise.all(
+      recipe.foodsUsed.map(({ food_id, grams }) => {
+        const food = foods.find((f) => f.id === food_id);
+        if (!food) return Promise.resolve();
+        const n = calculateNutrients(food, grams);
+        return addFoodLog({
+          foodId: food.id,
+          mealSlot: slot,
+          quantityG: grams,
+          calories: n.calories,
+          proteins: n.proteins,
+          carbs: n.carbs,
+          fats: n.fats,
+          loggedAt: today,
+        });
+      })
+    );
+  }
+
   return (
     <div>
       {/* Tabs */}
@@ -507,6 +598,7 @@ export default function RecipesClient({
                   ingredients: input.ingredients,
                   steps: input.steps,
                   tip: input.tip,
+                  foods_used: input.foods_used ?? null,
                   created_at: new Date().toISOString(),
                 }),
                 ...prev,
@@ -634,6 +726,7 @@ export default function RecipesClient({
                   onDelete={() => handleDelete(r.id)}
                   locked={!!r.exclusive && !recipesUnlocked}
                   recommended={isRecommended(r)}
+                  onLogToday={!isCoach && addFoodLog ? () => handleLogRecipeToday(r) : undefined}
                 />
               ))}
             </div>

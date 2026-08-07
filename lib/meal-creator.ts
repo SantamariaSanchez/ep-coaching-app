@@ -153,6 +153,10 @@ export interface GeneratedRecipe {
   tip: string;
   prepMinutes: number;
   allergens: Allergen[];
+  // Aliments réels + grammes utilisés pour calculer la recette — permet de
+  // loguer le repas en un clic (voir "Loguer aujourd'hui" dans
+  // RecipesClient) plutôt que de ne garder que le texte formaté ci-dessus.
+  foodsUsed: { foodId: string; grams: number }[];
 }
 
 function baseName(name: string): string {
@@ -350,5 +354,6 @@ export function generateRecipe(
     tip: pickTip(answers.phase),
     prepMinutes: answers.prepTime === "rapide" ? 15 : answers.prepTime === "moyen" ? 25 : 40,
     allergens: [...allergenSet],
+    foodsUsed: allEntries.map(({ food, grams }) => ({ foodId: food.id, grams })),
   };
 }
