@@ -6,6 +6,7 @@ import { getClientIntake } from "@/utils/client-intake";
 import { findGymEquipmentNotes } from "@/utils/gyms";
 import { getCoachProgramTemplates } from "@/utils/program-templates";
 import { getScheduleBlocks } from "@/utils/agenda";
+import { getClientRoadmap } from "@/utils/roadmap";
 import { saveProgram, saveCurrentProgramAsTemplate } from "../actions";
 import ProgramEditor from "@/components/ui/ProgramEditor";
 import ClientReferenceCard from "@/components/ui/ClientReferenceCard";
@@ -21,7 +22,7 @@ export default async function EditProgramPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client, program, intake, templates, scheduleBlocks] = await Promise.all([
+  const [profile, client, program, intake, templates, scheduleBlocks, roadmap] = await Promise.all([
     getProfile(user.id),
     getClientById(id, user.id),
     // includeCoachNotes : page réservée au coach, la note privée de conception
@@ -30,6 +31,7 @@ export default async function EditProgramPage({
     getClientIntake(id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(id),
+    getClientRoadmap(id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
@@ -72,6 +74,8 @@ export default async function EditProgramPage({
         templatesHref="/dashboard/coach/programmation"
         subjectLabel={client.full_name ?? "ce client"}
         scheduleBlocks={scheduleBlocks}
+        roadmap={roadmap}
+        roadmapHref={`/dashboard/coach/clients/${id}/roadmap`}
       />
     </div>
   );
