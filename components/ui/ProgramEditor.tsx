@@ -336,6 +336,27 @@ function VolumeReviewPanel({ days, targets }: { days: DayRow[]; targets: Record<
   );
 }
 
+// ── Bannières de phase ───────────────────────────────────────────────────
+// Marque visuellement les 4 temps du travail (réflexion, programmation,
+// construction, livraison) — pas des étapes verrouillées les unes derrière
+// les autres, tout reste visible et modifiable dans n'importe quel ordre,
+// mais la page doit se LIRE comme un projet en 4 temps, pas comme un
+// formulaire plat. Chaque bannière est aussi la cible des liens du bandeau
+// de vue d'ensemble (haut de page).
+function PhaseHeader({ n, title, subtitle, id }: { n: number; title: string; subtitle: string; id: string }) {
+  return (
+    <div id={id} className="flex items-center gap-3 pt-4 scroll-mt-4">
+      <span className="flex-shrink-0 w-9 h-9 rounded-full bg-[#E01E1E]/15 border border-[#E01E1E]/40 flex items-center justify-center text-sm font-black text-[#E01E1E]">
+        {n}
+      </span>
+      <div className="min-w-0">
+        <p className="text-sm font-black uppercase tracking-wide text-white leading-tight">{title}</p>
+        <p className="text-[10.5px] text-[#F5EDED]/35">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
 function initFromProgram(program: ProgramWithDays | null) {
   if (!program) {
     return {
@@ -1227,7 +1248,12 @@ export default function ProgramEditor({
         ))}
       </div>
 
-      <div id="phase-contexte" />
+      <PhaseHeader
+        id="phase-contexte"
+        n={1}
+        title="Réflexion & contexte"
+        subtitle="Le point de départ : qui est ce client, quelle structure de base, quelles contraintes déjà connues."
+      />
 
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
@@ -1304,12 +1330,17 @@ export default function ProgramEditor({
         </div>
       )}
 
-      <div id="phase-programmation" />
+      <PhaseHeader
+        id="phase-programmation"
+        n={2}
+        title="Programmation"
+        subtitle="Placement réel dans la semaine, budget de volume, matériel disponible — avant le moindre exercice."
+      />
 
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          1. Structure du programme
+          Structure du programme
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="sm:col-span-1">
@@ -1451,12 +1482,16 @@ export default function ProgramEditor({
         </p>
       </div>
 
-      <div id="phase-construction" />
+      <PhaseHeader
+        id="phase-construction"
+        n={3}
+        title="Construction"
+        subtitle="Chaque exercice se configure entièrement : tension, amplitude, matériel, risque. Pas juste un nom."
+      />
 
       {/* Days */}
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
-        2. Séances &amp; exercices — chaque exercice se configure entièrement (tension, amplitude, matériel,
-        risque…), pas juste un nom et un chiffre
+        Séances &amp; exercices
       </p>
       {state.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl gap-4">
@@ -1847,7 +1882,12 @@ export default function ProgramEditor({
         </div>
       )}
 
-      <div id="phase-livraison" />
+      <PhaseHeader
+        id="phase-livraison"
+        n={4}
+        title="Livraison"
+        subtitle="Vérification finale et sauvegarde — ce que ce client verra."
+      />
 
       {/* Actions */}
       <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
