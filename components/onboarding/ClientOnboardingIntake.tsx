@@ -1,8 +1,8 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, CheckCircle2, Loader2, X } from "lucide-react";
+import { Upload, Check, CheckCircle2, Loader2, X } from "lucide-react";
 import { ONBOARDING_SECTIONS, type FieldDef, type SectionDef } from "@/lib/onboarding-intake-config";
 import { submitOnboardingIntake } from "@/app/onboarding/intake/actions";
 import { compressImage } from "@/lib/image-compress";
@@ -16,6 +16,52 @@ type Step =
 
 const inputCls =
   "w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-xl px-4 py-3 text-[15px] text-[#F5EDED] placeholder-[#7a5c5c] outline-none transition-colors";
+
+// ── Brouillon local ──────────────────────────────────────────────────────
+// Un questionnaire à 9 sections perdu d'un coup (page rechargée par l'OS,
+// onglet déchargé pour libérer de la mémoire, connexion coupée...) est une
+// perte de temps inacceptable pour le client. Les réponses texte (légères,
+// sérialisables) sont sauvegardées à chaque changement et restaurées au
+// montage — seules les photos ne survivent pas (un File ne se sérialise
+// pas en localStorage), mais redemander 1 à 6 photos coûte infiniment
+// moins cher que de refaire tout le questionnaire depuis le début.
+const DRAFT_KEY = "ep-onboarding-draft-v1";
+
+interface Draft {
+  answers: Record<string, string>;
+  stepIndex: number;
+}
+
+function loadDraft(): Draft | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(DRAFT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<Draft>;
+    if (!parsed || typeof parsed !== "object" || typeof parsed.answers !== "object") return null;
+    return { answers: parsed.answers ?? {}, stepIndex: typeof parsed.stepIndex === "number" ? parsed.stepIndex : 0 };
+  } catch {
+    return null;
+  }
+}
+
+function saveDraft(draft: Draft) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+  } catch {
+    // Stockage plein ou navigation privée — best-effort, pas bloquant.
+  }
+}
+
+function clearDraft() {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(DRAFT_KEY);
+  } catch {
+    // Ignoré volontairement.
+  }
+}
 
 function FieldControl({
   field,
@@ -128,11 +174,19 @@ function PhotoSlot({
 
   return (
     <div>
+      {/*
+        Pas de `capture="environment"` : ça force l'ouverture de l'appli
+        appareil photo native sur mobile plutôt que de laisser le choix
+        (galerie, fichiers, caméra). Or basculer vers l'appli caméra peut
+        faire décharger l'onglet par l'OS (mémoire), et au retour la page
+        recharge à zéro — tout le questionnaire déjà rempli disparaît avec
+        elle. `accept="image/*"` seul propose le choix et reste dans un
+        sélecteur léger qui ne quitte jamais vraiment la page.
+      */}
       <input
         ref={ref}
         type="file"
         accept="image/*"
-        capture="environment"
         style={{ display: "none" }}
         onChange={async (e) => {
           const f = e.target.files?.[0];
@@ -170,7 +224,7 @@ function PhotoSlot({
             justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(245,237,237,0.4)",
           }}
         >
-          <Camera size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
+          <Upload size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
           <span style={{ fontSize: 11.5, fontWeight: 700 }}>{label}</span>
         </button>
       )}
@@ -180,12 +234,14 @@ function PhotoSlot({
 
 export default function ClientOnboardingIntake() {
   const router = useRouter();
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [initialDraft] = useState(() => loadDraft());
+  const [answers, setAnswers] = useState<Record<string, string>>(() => initialDraft?.answers ?? {});
   const [gymFiles, setGymFiles] = useState<File[]>([]);
   const [physiqueFiles, setPhysiqueFiles] = useState<{ face: File | null; profil: File | null; dos: File | null }>({
     face: null, profil: null, dos: null,
   });
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(() => initialDraft?.stepIndex ?? 0);
+  const restoredFromDraft = !!initialDraft && initialDraft.stepIndex > 0;
   const [fieldError, setFieldError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -206,10 +262,23 @@ export default function ClientOnboardingIntake() {
     return s;
   }, [answers]);
 
-  const current = steps[stepIndex];
+  // Filet de sécurité si un stepIndex restauré ne correspond plus à un index
+  // valide (ex. sections conditionnelles recalculées différemment) — évite
+  // un crash sur steps[stepIndex] undefined plutôt que de faire confiance
+  // aveuglément à une valeur venue du localStorage.
+  const safeStepIndex = Math.min(stepIndex, steps.length - 1);
+  const current = steps[safeStepIndex];
   const totalCountable = steps.length - 2; // sans intro ni final
-  const displayStep = Math.max(1, Math.min(stepIndex, totalCountable));
-  const pct = Math.max(0, Math.min(100, (stepIndex / totalCountable) * 100));
+  const displayStep = Math.max(1, Math.min(safeStepIndex, totalCountable));
+  const pct = Math.max(0, Math.min(100, (safeStepIndex / totalCountable) * 100));
+
+  // Sauvegarde best-effort à chaque changement — un questionnaire abandonné
+  // en cours de route (ex. le client ferme l'onglet) laisse un brouillon
+  // qu'on retrouve à la prochaine visite de /onboarding/intake plutôt que
+  // de reperdre le tout.
+  useEffect(() => {
+    saveDraft({ answers, stepIndex: safeStepIndex });
+  }, [answers, safeStepIndex]);
 
   function setAnswer(key: string, value: string) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
@@ -265,6 +334,7 @@ export default function ClientOnboardingIntake() {
       setSubmitError(res.error);
       return;
     }
+    clearDraft();
     setStepIndex(steps.length - 1);
   }
 
@@ -286,6 +356,16 @@ export default function ClientOnboardingIntake() {
           Onboarding
         </p>
       </div>
+
+      {restoredFromDraft && current.kind !== "final" && (
+        <p style={{
+          fontSize: 11.5, fontWeight: 600, color: "#4ade80", textAlign: "center", marginBottom: 14,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <Check size={13} /> On reprend là où tu t&apos;étais arrêté.
+          {(current.kind === "gym-photos" || current.kind === "physique-photos") && " Il faut juste réajouter tes photos."}
+        </p>
+      )}
 
       {current.kind !== "final" && (
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
@@ -335,7 +415,7 @@ export default function ClientOnboardingIntake() {
             {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>
               <button onClick={goPrev} className="ep-btn-secondary">Retour</button>
-              {stepIndex === steps.length - 2 ? (
+              {safeStepIndex === steps.length - 2 ? (
                 <button onClick={handleFinish} disabled={submitting} className="ep-btn-primary" style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : "Terminer"}
                 </button>
@@ -386,7 +466,7 @@ export default function ClientOnboardingIntake() {
                   justifyContent: "center", gap: 8, cursor: "pointer", color: "rgba(245,237,237,0.4)",
                 }}
               >
-                <Camera size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
+                <Upload size={22} style={{ color: "#E01E1E" }} strokeWidth={1.6} />
                 <span style={{ fontSize: 11.5, fontWeight: 700 }}>Ajouter</span>
               </button>
             </div>
