@@ -357,6 +357,66 @@ function PhaseHeader({ n, title, subtitle, id }: { n: number; title: string; sub
   );
 }
 
+// ── Bilan de livraison ───────────────────────────────────────────────────
+// Avant de sauvegarder, un vrai récapitulatif de ce qui reste ouvert — pas
+// pour bloquer (un exercice non configuré ou une séance non placée peut
+// être un choix assumé), mais pour que rien ne parte au client sans que le
+// coach l'ait au moins vu et décidé consciemment.
+function DeliveryReviewPanel({
+  unplacedDays,
+  unconfiguredExercises,
+  untargetedTrainedGroups,
+  hasObjective,
+}: {
+  unplacedDays: number;
+  unconfiguredExercises: number;
+  untargetedTrainedGroups: number;
+  hasObjective: boolean;
+}) {
+  const items = [
+    {
+      ok: unplacedDays === 0,
+      okText: "Toutes les séances sont placées sur un jour réel de la semaine.",
+      warnText: `${unplacedDays} séance${unplacedDays > 1 ? "s" : ""} pas encore placée${unplacedDays > 1 ? "s" : ""} sur un jour précis.`,
+    },
+    {
+      ok: unconfiguredExercises === 0,
+      okText: "Tous les exercices sont configurés (tension, amplitude, matériel, risque).",
+      warnText: `${unconfiguredExercises} exercice${unconfiguredExercises > 1 ? "s" : ""} pas encore configuré${unconfiguredExercises > 1 ? "s" : ""} en détail.`,
+    },
+    {
+      ok: untargetedTrainedGroups === 0,
+      okText: "Chaque groupe musculaire travaillé a un budget de volume défini.",
+      warnText: `${untargetedTrainedGroups} groupe${untargetedTrainedGroups > 1 ? "s" : ""} musculaire${untargetedTrainedGroups > 1 ? "s" : ""} travaillé${untargetedTrainedGroups > 1 ? "s" : ""} sans budget de volume fixé.`,
+    },
+    {
+      ok: hasObjective,
+      okText: "Objectif de phase renseigné — le client saura pourquoi ce programme.",
+      warnText: "Pas d'objectif de phase renseigné (section Structure, phase 1).",
+    },
+  ];
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-3">
+        Bilan avant sauvegarde
+      </p>
+      <div className="space-y-1.5">
+        {items.map((item, i) => (
+          <p key={i} className={`text-[11px] flex items-start gap-2 ${item.ok ? "text-[#F5EDED]/45" : "text-amber-300/85"}`}>
+            <span className="flex-shrink-0 mt-0.5">{item.ok ? "✓" : "!"}</span>
+            {item.ok ? item.okText : item.warnText}
+          </p>
+        ))}
+      </div>
+      <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
+        Rien ici n&apos;empêche d&apos;enregistrer — un point ouvert peut être un choix assumé. C&apos;est un
+        rappel, pas un blocage.
+      </p>
+    </div>
+  );
+}
+
 function initFromProgram(program: ProgramWithDays | null) {
   if (!program) {
     return {
@@ -1214,6 +1274,10 @@ export default function ProgramEditor({
     (acc, d) => acc + d.exercises.filter((e) => e.name.trim() !== "" && isAssignmentConfigured(rowAssignment(e))).length,
     0
   );
+  const trainedVolumeByGroup = computeWeeklyVolume(state.days);
+  const untargetedTrainedGroups = Object.keys(trainedVolumeByGroup).filter(
+    (g) => trainedVolumeByGroup[g] > 0 && !(state.volume_targets[g] ?? "").trim()
+  ).length;
 
   return (
     <div className="space-y-6">
@@ -1887,6 +1951,13 @@ export default function ProgramEditor({
         n={4}
         title="Livraison"
         subtitle="Vérification finale et sauvegarde — ce que ce client verra."
+      />
+
+      <DeliveryReviewPanel
+        unplacedDays={state.days.length - placedDays}
+        unconfiguredExercises={totalExercises - configuredExercises}
+        untargetedTrainedGroups={untargetedTrainedGroups}
+        hasObjective={state.objective.trim() !== ""}
       />
 
       {/* Actions */}
