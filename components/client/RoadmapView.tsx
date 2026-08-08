@@ -181,7 +181,7 @@ export default function RoadmapView() {
   // Free community members build and edit their own road map — no coach review.
   if (!loading && isFree && userId) {
     return (
-      <div style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
+      <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
         <div style={{ marginBottom: 20 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
             Road Map : Communauté
@@ -245,7 +245,7 @@ export default function RoadmapView() {
   const nextLong = pendingObjectives.find((o) => o.term === "long");
 
   return (
-    <div style={{ padding: "24px 20px 80px", maxWidth: 700, margin: "0 auto" }}>
+    <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 700, margin: "0 auto" }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>

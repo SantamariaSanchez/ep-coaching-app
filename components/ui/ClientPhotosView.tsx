@@ -594,10 +594,10 @@ export default function ClientPhotosView({
   if (!profile) {
     return (
       <div className="px-6 py-8 max-w-2xl mx-auto">
-        <div className="animate-pulse space-y-4">
-          <div className="h-4 w-24 bg-[#1A0101] rounded" />
-          <div className="h-8 w-48 bg-[#1A0101] rounded" />
-          <div className="h-40 bg-[#1A0101] rounded-xl" />
+        <div className="space-y-4">
+          <div className="h-4 w-24 rounded ep-skeleton" />
+          <div className="h-8 w-48 rounded ep-skeleton" />
+          <div className="h-40 rounded-xl ep-skeleton" />
         </div>
       </div>
     );
@@ -613,7 +613,7 @@ export default function ClientPhotosView({
   const isSelfTracking = profile.role === "coach";
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8">
+    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Header */}
       <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">

@@ -20,7 +20,7 @@ export default async function CoachPendingPage() {
       minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center",
       padding: "24px 20px",
     }}>
-      <div style={{ width: "100%", maxWidth: 440, textAlign: "center" }}>
+      <div className="animate-fade-up" style={{ width: "100%", maxWidth: 440, textAlign: "center" }}>
         <div style={{
           width: 64, height: 64, borderRadius: 18, margin: "0 auto 20px",
           background: "linear-gradient(135deg, rgba(224,30,30,0.18), rgba(137,4,4,0.1))",

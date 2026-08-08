@@ -181,8 +181,8 @@ export default function ClientProgressCharts({
   if (!mounted) {
     return (
       <div className="space-y-6">
-        <div className="h-[200px] bg-[#1f0101] border border-[#890404]/20 rounded-xl animate-pulse" />
-        <div className="h-[200px] bg-[#1f0101] border border-[#890404]/20 rounded-xl animate-pulse" />
+        <div className="h-[200px] border border-[#890404]/20 rounded-xl ep-skeleton" />
+        <div className="h-[200px] border border-[#890404]/20 rounded-xl ep-skeleton" />
       </div>
     );
   }

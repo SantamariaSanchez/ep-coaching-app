@@ -63,7 +63,7 @@ export default async function TwoFactorPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center px-5 py-8">
-      <div className="w-full max-w-[400px]">
+      <div className="w-full max-w-[400px] animate-fade-up">
         <div className="flex justify-center mb-6">
           <EPLogo size="md" showCoaching />
         </div>

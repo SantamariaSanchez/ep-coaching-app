@@ -38,7 +38,7 @@ export default async function ClientMessagesPage() {
   const coachId = profile?.coach_id ?? null;
   if (!coachId) {
     return (
-      <div className="px-6 py-16 text-center max-w-sm mx-auto">
+      <div className="px-6 py-16 text-center max-w-sm mx-auto page-transition">
         <div className="w-14 h-14 rounded-2xl bg-[#890404]/10 flex items-center justify-center mx-auto mb-4">
           <Users size={22} className="text-[#F5EDED]/25" strokeWidth={1.5} />
         </div>
@@ -87,7 +87,7 @@ export default async function ClientMessagesPage() {
   const canSend = isSubscribed(profile) || (await canMemberSend(coachId, user.id));
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto page-transition">
       {/* Push permission requested silently */}
       <PushPermission userId={user.id} />
 

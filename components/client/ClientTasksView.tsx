@@ -61,7 +61,7 @@ export default function ClientTasksView() {
   const done = tasks.filter((t) => t.status === "done");
 
   return (
-    <div style={{ padding: "24px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
+    <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
       <div style={{ marginBottom: 24 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", margin: "0 0 4px" }}>
           Coach

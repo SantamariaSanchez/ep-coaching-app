@@ -69,7 +69,7 @@ export default function ProfileSetupStep({
       </div>
 
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 24px" }}>
-        <div style={{ width: "100%", maxWidth: 420 }}>
+        <div className="animate-fade-up" style={{ width: "100%", maxWidth: 420 }}>
           <p style={{
             fontSize: 11, fontWeight: 800, letterSpacing: "0.18em",
             textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px", textAlign: "center",
