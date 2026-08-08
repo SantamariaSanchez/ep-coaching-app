@@ -656,7 +656,7 @@ export default function DashboardNav({
                   <Link
                     key={href}
                     href={href}
-                    className="animate-fade-up"
+                    className="animate-fade-up ep-nav-link"
                     style={{
                       animationDelay: `${(gi * 3 + i) * 30}ms`,
                       display: "flex",
@@ -671,7 +671,6 @@ export default function DashboardNav({
                       fontSize: 13,
                       borderLeft: active ? "2px solid #E01E1E" : "2px solid transparent",
                       marginLeft: active ? -2 : 0,
-                      transition: "all 0.15s ease",
                       textDecoration: "none",
                     }}
                     onMouseEnter={(e) => {
@@ -698,7 +697,7 @@ export default function DashboardNav({
                     )}
                     {count > 0 && (
                       <span
-                        className={count > 0 ? "animate-pulse-glow" : ""}
+                        className="animate-pulse-glow animate-badge-pop"
                         style={{
                           background: "#E01E1E",
                           color: "#fff",
@@ -778,9 +777,9 @@ export default function DashboardNav({
                 fontSize: 12,
                 fontWeight: 600,
                 textDecoration: "none",
-                transition: "all 0.15s",
                 marginBottom: 2,
               }}
+              className="ep-nav-link"
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
                 el.style.color = "#E01E1E";
@@ -812,9 +811,9 @@ export default function DashboardNav({
                 fontSize: 12,
                 fontWeight: 600,
                 textDecoration: "none",
-                transition: "all 0.15s",
                 marginBottom: 2,
               }}
+              className="ep-nav-link"
               onMouseEnter={(e) => {
                 const el = e.currentTarget as HTMLAnchorElement;
                 el.style.color = "#E01E1E";
@@ -912,6 +911,7 @@ export default function DashboardNav({
                 <Link
                   key={href}
                   href={href}
+                  className="ep-nav-link"
                   style={{
                     flexShrink: 0,
                     display: "flex",
@@ -934,6 +934,7 @@ export default function DashboardNav({
                   {locked && <Lock size={10} style={{ flexShrink: 0 }} strokeWidth={2} />}
                   {count > 0 && (
                     <span
+                      className="animate-badge-pop"
                       style={{
                         background: "#E01E1E",
                         color: "#fff",
@@ -981,6 +982,7 @@ export default function DashboardNav({
               <Link
                 key={tab.href}
                 href={tab.href}
+                className="ep-nav-tab"
                 style={{
                   flex: 1,
                   display: "flex",
@@ -990,7 +992,6 @@ export default function DashboardNav({
                   gap: 4,
                   textDecoration: "none",
                   borderRadius: 12,
-                  transition: "background 0.15s",
                   minHeight: 56,
                   position: "relative",
                 }}
@@ -1020,7 +1021,7 @@ export default function DashboardNav({
                     }}
                   />
                   {count > 0 && (
-                    <span style={{
+                    <span className="animate-badge-pop" style={{
                       position: "absolute",
                       top: 1,
                       right: 3,

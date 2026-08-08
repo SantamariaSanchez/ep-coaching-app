@@ -1450,10 +1450,10 @@ export default function ClientNutritionView({
       {addingToSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={closeModal}
           />
-          <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col z-10">
             <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-[#890404]/20 flex-shrink-0">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 {selectedFood
@@ -1811,10 +1811,10 @@ export default function ClientNutritionView({
       {savingMealSlot && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={() => setSavingMealSlot(null)}
           />
-          <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-4">
               <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
                 <Bookmark size={13} className="text-[#E01E1E]" /> Enregistrer ce repas
@@ -1848,10 +1848,10 @@ export default function ClientNutritionView({
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={() => setShowCreateModal(false)}
           />
-          <div className="relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-5">
               <p className="text-xs font-bold uppercase tracking-widest text-white">
                 Créer un aliment
@@ -1953,10 +1953,10 @@ export default function ClientNutritionView({
       {showQuickAddModal && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
           <div
-            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm"
             onClick={() => setShowQuickAddModal(false)}
           />
-          <div className="relative w-full sm:max-w-md bg-[#150000] border border-amber-500/30 rounded-t-2xl sm:rounded-2xl p-5 z-10">
+          <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-amber-500/30 rounded-t-2xl sm:rounded-2xl p-5 z-10">
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5">
                 <Zap size={12} className="text-amber-400" />

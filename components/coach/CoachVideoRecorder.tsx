@@ -156,8 +156,8 @@ export default function CoachVideoRecorder({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={sending ? undefined : close} />
-      <div className="relative w-full max-w-lg bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
+      <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={sending ? undefined : close} />
+      <div className="ep-modal-panel relative w-full max-w-lg bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <p className="text-sm font-black uppercase tracking-widest text-white">Retour vidéo</p>
           <button onClick={close} disabled={sending} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">

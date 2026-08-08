@@ -113,17 +113,12 @@ export default function NotificationBell({
       <button
         onClick={handleOpen}
         aria-label="Notifications"
+        className="ep-btn-icon"
         style={{
           position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
           width: variant === "mobile" ? 36 : 32,
           height: variant === "mobile" ? 36 : 32,
-          borderRadius: 10,
-          border: "1px solid rgba(224,30,30,0.15)",
           background: open ? "rgba(224,30,30,0.12)" : "rgba(245,237,237,0.04)",
-          cursor: "pointer",
         }}
       >
         <Bell size={size} strokeWidth={1.8} style={{ color: count > 0 ? "#E01E1E" : "rgba(245,237,237,0.5)" }} />
@@ -154,10 +149,15 @@ export default function NotificationBell({
 
       {open && (
         <div
+          className="ep-popover"
           style={{
             position: "absolute",
             ...(openUpward ? { bottom: "calc(100% + 8px)" } : { top: "calc(100% + 8px)" }),
             ...(alignLeft ? { left: 0 } : { right: 0 }),
+            // Le panneau s'ouvre depuis le coin où vit la cloche, pas depuis
+            // le centre — sinon l'échelle d'entrée "grandit" visuellement
+            // depuis un point qui n'a aucun rapport avec le déclencheur.
+            transformOrigin: `${openUpward ? "bottom" : "top"} ${alignLeft ? "left" : "right"}`,
             width: 320,
             maxHeight: 420,
             overflowY: "auto",

@@ -183,9 +183,9 @@ export default function ExercisePicker({ onAdd }: Props) {
 
   return createPortal(
     <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
+      <div className="ep-modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={close} />
       <div
-        className="relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-5 space-y-3 overflow-y-auto flex flex-col"
+        className="ep-modal-panel relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-5 space-y-3 overflow-y-auto flex flex-col"
         style={{ maxHeight: "88dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 20px)" }}
       >
         <div className="flex items-center justify-between">

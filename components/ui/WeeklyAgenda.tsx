@@ -622,8 +622,8 @@ export default function WeeklyAgenda({
       {/* Détail en lecture seule (fiche client vue par le coach) */}
       {viewingBlock && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setViewingBlock(null)} />
-          <div className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3">
+          <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setViewingBlock(null)} />
+          <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 min-w-0">
                 {viewingBlock.icon && AGENDA_ICON_MAP[viewingBlock.icon] && (() => {
@@ -657,8 +657,8 @@ export default function WeeklyAgenda({
         const dayBlocks = blocks.filter((b) => b.day_of_week === day);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeDayOptions} />
-            <div className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
+            <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeDayOptions} />
+            <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black uppercase tracking-widest text-white">{DAY_LABELS[day]}</p>
                 <button onClick={closeDayOptions} className="text-[#F5EDED]/40 hover:text-white">
@@ -721,9 +721,9 @@ export default function WeeklyAgenda({
       {/* Création / édition d'un bloc */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={close} />
+          <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={close} />
           <div
-            className="relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3 overflow-y-auto"
+            className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-3 overflow-y-auto"
             style={{ maxHeight: "88vh" }}
           >
             <div className="flex items-center justify-between">

@@ -34,6 +34,14 @@
   --blur-nav:  blur(20px);
 
   --nav-bottom-height: 72px;
+
+  /* Courbes fortes façon Emil Kowalski — les easings CSS natifs (ease,
+     ease-out) manquent de "punch" et rendent les micro-interactions molles.
+     Utilisées pour tout nouveau code ; le CSS existant migre au fil de
+     l'eau plutôt qu'en un seul renommage massif. */
+  --ep-ease-out:    cubic-bezier(0.23, 1, 0.32, 1);
+  --ep-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ep-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 /* ── Tailwind v4 tokens ──────────────────────────────────────────────────── */
@@ -73,7 +81,11 @@
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(28px); }
+  /* 28px→14px : cette animation joue à CHAQUE navigation (page-transition)
+     et pour chaque carte à l'affichage — plusieurs dizaines de fois par
+     session. Une trajectoire plus courte se sent instantanée plutôt que
+     "flottante" sans perdre l'effet de contenu qui "arrive". */
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
@@ -83,7 +95,10 @@
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.88); }
+  /* Jamais scale(0) : rien dans le monde réel n'apparaît de rien. 0.92
+     garde une forme visible dès la première frame (le "ballon pas
+     complètement dégonflé"). */
+  from { opacity: 0; transform: scale(0.92); }
   to   { opacity: 1; transform: scale(1); }
 }
 
@@ -102,6 +117,16 @@
   50%      { box-shadow: 0 0 28px 8px rgba(224,30,30,0.25); }
 }
 
+@keyframes badgePop {
+  /* Léger dépassement (1.08 avant de se stabiliser à 1) : un badge de
+     notification qui apparaît est une indication d'état, pas un simple
+     fondu — un petit "pop" façon iOS confirme qu'il vient d'arriver
+     plutôt que d'avoir toujours été là. */
+  from { opacity: 0; transform: scale(0.5); }
+  60%  { opacity: 1; transform: scale(1.08); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
 /* Logo glow breathe */
 @keyframes logoBreathe {
   0%,100% { text-shadow: 2px 2px 0 #E01E1E, 4px 4px 0 #890404, 0 0 40px rgba(224,30,30,0.2), 0 0 80px rgba(137,4,4,0.1); }
@@ -110,12 +135,18 @@
 
 /* ── Animations ───────────────────────────────────────────────────────────── */
 
-.animate-fade-up    { animation: fadeUp   0.60s cubic-bezier(0.16,1,0.3,1) both; }
-.animate-fade-in    { animation: fadeIn   0.45s ease both; }
-.animate-scale-in   { animation: scaleIn  0.50s cubic-bezier(0.16,1,0.3,1) both; }
-.animate-slide-up   { animation: slideUp  0.45s cubic-bezier(0.16,1,0.3,1) both; }
-.animate-slide-in   { animation: slideIn  0.35s ease both; }
+/* Durées resserrées (600/500/450ms → 350-400ms) : au-delà de ~300-400ms une
+   animation qui joue à chaque navigation ou chaque carte affichée se sent
+   lente plutôt qu'élégante — voir page-transition ci-dessous, qui partage
+   ce même arbitrage. La courbe elle-même (cubic-bezier(0.16,1,0.3,1), un
+   ease-out prononcé) reste inchangée, c'était déjà le bon choix. */
+.animate-fade-up    { animation: fadeUp   0.40s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-fade-in    { animation: fadeIn   0.35s ease both; }
+.animate-scale-in   { animation: scaleIn  0.35s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-slide-up   { animation: slideUp  0.35s cubic-bezier(0.16,1,0.3,1) both; }
+.animate-slide-in   { animation: slideIn  0.30s ease both; }
 .animate-pulse-glow { animation: pulseGlow 2.8s ease infinite; }
+.animate-badge-pop  { animation: badgePop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
 .stagger-1 { animation-delay: 0.06s; }
 .stagger-2 { animation-delay: 0.12s; }
@@ -232,13 +263,24 @@
     background: linear-gradient(90deg, transparent, rgba(224,30,30,0.45), transparent);
     pointer-events: none;
   }
-  .ep-card:hover {
-    border-color: rgba(224,30,30,0.28);
-    transform: translateY(-2px);
-    box-shadow:
-      inset 0 1px 0 rgba(255,255,255,0.07),
-      0 16px 48px rgba(0,0,0,0.55),
-      0 0 40px rgba(137,4,4,0.06);
+  @media (hover: hover) and (pointer: fine) {
+    /* Sans ce garde-fou, :hover se déclenche au tap sur mobile — usage
+       principal de cette appli en PWA installée — et la carte reste
+       "soulevée" jusqu'au tap suivant plutôt que de retomber aussitôt. */
+    .ep-card:hover {
+      border-color: rgba(224,30,30,0.28);
+      transform: translateY(-2px);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,0.07),
+        0 16px 48px rgba(0,0,0,0.55),
+        0 0 40px rgba(137,4,4,0.06);
+    }
+  }
+  /* Beaucoup de .ep-card sont en réalité des <Link> (lignes de liste,
+     raccourcis) — celles qui ne le sont pas ne reçoivent jamais d'event de
+     pression, donc cette règle est sans risque pour les cartes statiques. */
+  a.ep-card:active, button.ep-card:active {
+    transform: scale(0.985);
   }
 
   .ep-card-highlighted {
@@ -355,7 +397,11 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s ease;
+    /* Propriétés explicites, pas "all" : "all" force le navigateur à
+       surveiller chaque propriété CSS pour un changement, plus cher, et
+       transitionne aussi des propriétés qu'on ne veut pas voir glisser
+       (ex. un changement de couleur de texte hérité). */
+    transition: transform 0.16s var(--ep-ease-out), filter 0.2s ease, box-shadow 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -375,13 +421,18 @@
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
     transition: left 0.45s ease;
   }
-  .ep-btn-primary:hover::before { left: 100%; }
-  .ep-btn-primary:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 8px 32px rgba(224,30,30,0.50), inset 0 1px 0 rgba(255,255,255,0.14);
-    transform: translateY(-2px);
+  @media (hover: hover) and (pointer: fine) {
+    .ep-btn-primary:hover::before { left: 100%; }
+    .ep-btn-primary:hover {
+      filter: brightness(1.15);
+      box-shadow: 0 8px 32px rgba(224,30,30,0.50), inset 0 1px 0 rgba(255,255,255,0.14);
+      transform: translateY(-2px);
+    }
   }
-  .ep-btn-primary:active  { transform: translateY(0); }
+  /* scale(0.97) au clic : le retour tactile qui manquait sur CE bouton
+     partagé par toute l'appli — sans ça un tap ne "sent" jamais que
+     l'interface a bien entendu l'utilisateur. */
+  .ep-btn-primary:active  { transform: scale(0.97); }
   .ep-btn-primary:disabled{ opacity: 0.38; cursor: not-allowed; transform: none; box-shadow: none; }
 
   .ep-btn-secondary {
@@ -398,18 +449,21 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: transform 0.16s var(--ep-ease-out), border-color 0.2s ease, color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
   }
-  .ep-btn-secondary:hover {
-    border-color: rgba(224,30,30,0.50);
-    color: #F5EDED;
-    background: rgba(224,30,30,0.13);
-    box-shadow: 0 0 24px rgba(224,30,30,0.12);
+  @media (hover: hover) and (pointer: fine) {
+    .ep-btn-secondary:hover {
+      border-color: rgba(224,30,30,0.50);
+      color: #F5EDED;
+      background: rgba(224,30,30,0.13);
+      box-shadow: 0 0 24px rgba(224,30,30,0.12);
+    }
   }
+  .ep-btn-secondary:active { transform: scale(0.97); }
 
   .ep-btn-icon {
     background: rgba(255,255,255,0.04);
@@ -422,13 +476,19 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: all 0.15s;
+    transition: transform 0.14s var(--ep-ease-out), background 0.15s, border-color 0.15s, color 0.15s;
   }
-  .ep-btn-icon:hover {
-    background: rgba(224,30,30,0.12);
-    border-color: rgba(224,30,30,0.30);
-    color: var(--ep-light);
+  @media (hover: hover) and (pointer: fine) {
+    .ep-btn-icon:hover {
+      background: rgba(224,30,30,0.12);
+      border-color: rgba(224,30,30,0.30);
+      color: var(--ep-light);
+    }
   }
+  /* Un peu plus marqué que les boutons texte (0.92 vs 0.97) : les icon
+     buttons sont petits, une pression plus visible confirme mieux le tap
+     sur une cible réduite. */
+  .ep-btn-icon:active { transform: scale(0.92); }
 
   /* ────────────────────────────── BADGES ─────────────────────────────────── */
 
@@ -580,6 +640,45 @@
     gap: 6px;
   }
 
+  /* ────────────────────────────── MODALS ─────────────────────────────────── */
+  /* Aucune des ~11 modales de l'appli n'avait d'animation d'entrée — elles
+     apparaissaient instantanément, fond noir et panneau d'un coup. Deux
+     classes réutilisables plutôt qu'un composant Modal partagé (trop gros
+     chantier pour l'instant, ~11 implémentations bespoke) : à adopter au
+     fil de l'eau sur l'overlay et le panneau de chaque modale.
+     @starting-style : approche CSS moderne pour l'entrée, dégrade
+     proprement (le panneau apparaît sans animation) sur les navigateurs
+     qui ne la supportent pas encore. Pas de sortie animée — nécessiterait
+     un montage/démontage différé sur chaque modale, hors périmètre ici. */
+  .ep-modal-overlay {
+    opacity: 1;
+    transition: opacity 0.25s ease;
+  }
+  @starting-style {
+    .ep-modal-overlay { opacity: 0; }
+  }
+
+  .ep-modal-panel {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.25s var(--ep-ease-out), transform 0.25s var(--ep-ease-out);
+  }
+  @starting-style {
+    .ep-modal-panel { opacity: 0; transform: translateY(20px) scale(0.96); }
+  }
+
+  /* Popovers/menus contextuels : jamais depuis le centre, depuis le
+     déclencheur — variable posée par le composant appelant. */
+  .ep-popover {
+    transform-origin: var(--transform-origin, top center);
+    opacity: 1;
+    transform: scale(1);
+    transition: opacity 0.16s var(--ep-ease-out), transform 0.16s var(--ep-ease-out);
+  }
+  @starting-style {
+    .ep-popover { opacity: 0; transform: scale(0.95); }
+  }
+
   /* ────────────────────────────── BOTTOM NAV ────────────────────────────── */
 
   .ep-bottom-nav {
@@ -596,10 +695,32 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 
+  /* Barre d'onglets mobile : point de navigation le plus tapé de toute
+     l'appli, sans le moindre retour tactile jusqu'ici. */
+  .ep-nav-tab {
+    transition: transform 0.12s var(--ep-ease-out);
+  }
+  .ep-nav-tab:active {
+    transform: scale(0.90);
+  }
+
+  /* Sidebar desktop — même principe, pression plus subtile (clic souris,
+     pas un doigt). */
+  .ep-nav-link {
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.12s var(--ep-ease-out);
+  }
+  .ep-nav-link:active {
+    transform: scale(0.97);
+  }
+
   /* ────────────────────────────── PAGE ─────────────────────────────────── */
 
   .page-enter, .page-transition {
-    animation: fadeUp 0.50s cubic-bezier(0.16,1,0.3,1) both;
+    /* La transition la plus vue de toute l'appli : elle joue à CHAQUE
+       changement de route, dans les deux rôles, du matin au soir. 500ms
+       ajoutait une latence perçue à chaque tap de nav ; 350ms garde le
+       "contenu qui arrive" sans jamais donner l'impression d'attendre. */
+    animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both;
     position: relative;
     z-index: 1;
   }
@@ -765,3 +886,27 @@
 }
 @media (min-width: 700px)  { .ep-cols-3 { grid-template-columns: 1fr 1fr; } }
 @media (min-width: 1200px) { .ep-cols-3 { grid-template-columns: repeat(3, 1fr); } }
+
+/* ── Mouvement réduit ────────────────────────────────────────────────────── */
+/* Absent jusqu'ici — l'appli n'accommodait personne ayant demandé moins de
+   mouvement au niveau OS/navigateur (motion sickness, trouble vestibulaire).
+   Hors layer exprès : doit gagner sur les règles de @layer base ET
+   @layer components sans dépendre de la spécificité de chaque sélecteur.
+   Garde les fondus (aident à comprendre qu'un changement a eu lieu) mais
+   retire tout déplacement — translation, échelle, grain animé. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .animate-scale-in, .animate-slide-up, .animate-slide-in,
+  .page-enter, .page-transition {
+    animation-name: fadeIn;
+    animation-duration: 0.2s;
+    transform: none !important;
+  }
+  .animate-pulse-glow { animation: none; }
+  .ep-card:hover, a.ep-card:active, button.ep-card:active,
+  .ep-btn-primary:hover, .ep-btn-primary:active,
+  .ep-btn-secondary:active, .ep-btn-icon:active {
+    transform: none;
+  }
+  body::after { animation: none; }
+  html { scroll-behavior: auto; }
+}

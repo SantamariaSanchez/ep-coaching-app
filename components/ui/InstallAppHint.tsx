@@ -51,10 +51,10 @@ export default function InstallAppHint() {
       </button>
 
       {open && (
-        <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
+        <div className="ep-modal-overlay fixed inset-0 z-[200] flex items-end sm:items-center justify-center bg-black/60 p-4" onClick={() => setOpen(false)}>
           <div
             onClick={(e) => e.stopPropagation()}
-            className="bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-5 max-w-xs w-full relative"
+            className="ep-modal-panel bg-[#1f0101] border border-[#890404]/25 rounded-2xl p-5 max-w-xs w-full relative"
           >
             <button
               onClick={() => setOpen(false)}
