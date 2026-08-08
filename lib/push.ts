@@ -25,11 +25,20 @@ export async function sendPushToUser(
     initVapid();
     const supabase = createAdminClient();
 
+    // .maybeSingle(), pas .single() : l'immense majorité des utilisateurs
+    // n'ont aucune ligne ici (push jamais activé), un cas normal et attendu,
+    // pas une erreur. Avec .single(), PostgREST répond 406 sur 0 ligne — sans
+    // vérifier `error` (juste `data`), un appelant qui ne teste que
+    // `reason === "no subscription"` (voir weekly-reengagement) ratait ce
+    // cas et ne repartait jamais sur le repli email. Trouvé en creusant
+    // pourquoi last_reengagement_notified_at n'était renseigné pour AUCUN
+    // client après un mois de cron hebdomadaire, alors que les emails de
+    // vérification (même sendBrevoEmail) arrivent bien à tout le monde.
     const { data } = await supabase
       .from("push_subscriptions")
       .select("subscription")
       .eq("user_id", userId)
-      .single();
+      .maybeSingle();
 
     if (!data?.subscription) {
       return { ok: false, reason: "no subscription" };

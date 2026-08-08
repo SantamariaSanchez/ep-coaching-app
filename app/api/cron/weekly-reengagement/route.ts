@@ -59,10 +59,14 @@ export async function GET(req: Request) {
     const msg = PUSH_MESSAGES[Math.floor(Math.random() * PUSH_MESSAGES.length)];
     const pushResult = await sendPushToUser(client.id, msg.title, msg.body, msg.url);
 
+    // N'importe quel échec push (pas seulement "no subscription" — un
+    // abonnement expiré ou invalide échoue avec une tout autre raison)
+    // doit basculer sur l'email : sinon un client sans push qui échoue
+    // pour une autre raison ne reçoit jamais aucune sollicitation.
     let notified = pushResult.ok;
     if (pushResult.ok) {
       pushed++;
-    } else if (pushResult.reason === "no subscription") {
+    } else {
       const { data: profile } = await supabase
         .from("profiles")
         .select("email")

@@ -18,11 +18,13 @@ serve(async (req: Request) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // .maybeSingle(), pas .single() : 0 ligne (push jamais activé) est le
+    // cas courant, pas une erreur — voir la même correction dans lib/push.ts.
     const { data: sub } = await supabase
       .from("push_subscriptions")
       .select("subscription")
       .eq("user_id", client_id)
-      .single();
+      .maybeSingle();
 
     if (!sub?.subscription) {
       return new Response("No subscription found", { status: 404 });

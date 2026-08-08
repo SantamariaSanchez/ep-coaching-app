@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { getPointsMap } from "@/lib/gamification";
 import type { Profile } from "@/utils/auth-client";
 
 // Réexporte les helpers purs (Profile, roleBadge, isSubscribed,
@@ -109,6 +110,81 @@ export async function getCommunityMembers(coachId: string): Promise<Profile[]> {
     return (data as Profile[]) ?? [];
   } catch {
     return [];
+  }
+}
+
+export interface CommunityMemberActivity {
+  points: number;
+  sessionCount: number;
+  lastSessionAt: string | null;
+  postCount: number;
+  /** Inscrit, onboarding fait ou pas, mais aucune trace d'usage réel de l'appli. */
+  neverReturned: boolean;
+}
+
+export interface CommunityMemberWithActivity extends Profile {
+  activity: CommunityMemberActivity;
+}
+
+// La liste brute des membres gratuits (getCommunityMembers) ne dit rien de
+// qui est réellement actif : sur ce coach, 11 des 12 membres gratuits n'ont
+// ni séance, ni point, ni post — jamais revenus depuis l'inscription. Sans
+// ce signal, le seul qui a 9 séances réelles et progresse depuis des mois
+// se noyait au même rang que les 11 autres, triés uniquement par date
+// d'inscription. 3 requêtes groupées (pas une par membre) pour rester léger
+// même avec beaucoup de membres.
+export async function getCommunityMembersWithActivity(coachId: string): Promise<CommunityMemberWithActivity[]> {
+  const members = await getCommunityMembers(coachId);
+  if (members.length === 0) return [];
+
+  try {
+    const ids = members.map((m) => m.id);
+    const admin = createAdminClient();
+
+    const [pointsMap, sessionsRes, postsRes] = await Promise.all([
+      getPointsMap(ids),
+      admin.from("sessions").select("client_id, created_at").eq("is_completed", true).in("client_id", ids),
+      admin.from("community_posts").select("author_id").in("author_id", ids),
+    ]);
+
+    const sessionCountMap: Record<string, number> = {};
+    const lastSessionMap: Record<string, string> = {};
+    for (const s of sessionsRes.data ?? []) {
+      const cid = s.client_id as string;
+      const createdAt = s.created_at as string;
+      sessionCountMap[cid] = (sessionCountMap[cid] ?? 0) + 1;
+      if (!lastSessionMap[cid] || createdAt > lastSessionMap[cid]) lastSessionMap[cid] = createdAt;
+    }
+
+    const postCountMap: Record<string, number> = {};
+    for (const p of postsRes.data ?? []) {
+      const aid = p.author_id as string;
+      postCountMap[aid] = (postCountMap[aid] ?? 0) + 1;
+    }
+
+    const GRACE_PERIOD_MS = 3 * 24 * 60 * 60 * 1000; // laisse le temps de découvrir l'appli avant de qualifier "jamais revenu"
+
+    return members.map((m) => {
+      const points = pointsMap[m.id] ?? 0;
+      const sessionCount = sessionCountMap[m.id] ?? 0;
+      const postCount = postCountMap[m.id] ?? 0;
+      const pastGracePeriod = m.start_date ? Date.now() - new Date(m.start_date).getTime() > GRACE_PERIOD_MS : true;
+      return {
+        ...m,
+        activity: {
+          points,
+          sessionCount,
+          lastSessionAt: lastSessionMap[m.id] ?? null,
+          postCount,
+          neverReturned: pastGracePeriod && points === 0 && sessionCount === 0 && postCount === 0,
+        },
+      };
+    });
+  } catch {
+    return members.map((m) => ({
+      ...m,
+      activity: { points: 0, sessionCount: 0, lastSessionAt: null, postCount: 0, neverReturned: false },
+    }));
   }
 }
 
