@@ -203,10 +203,10 @@ function Composer({
         </p>
       )}
       {error && (
-        <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>
+        <p className="animate-slide-up text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>
       )}
       {justPosted && (
-        <p className="text-[11px] font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
+        <p className="animate-slide-up text-[11px] font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
           <CheckCircle2 size={13} strokeWidth={2} />
           Publié ! +{pointsEarned} points, visible par la communauté et ton coach.
         </p>
@@ -329,7 +329,7 @@ function CommentsThread({
         </button>
       </div>
       {error && (
-        <p className="text-[10px] text-red-400 font-semibold mt-1.5">⚠ {error}</p>
+        <p className="animate-slide-up text-[10px] text-red-400 font-semibold mt-1.5">⚠ {error}</p>
       )}
     </>
   );

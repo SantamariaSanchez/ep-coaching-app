@@ -352,11 +352,16 @@
     gap: 14px;
     padding: 14px 16px;
     text-decoration: none;
-    transition: border-color 0.2s, background 0.2s;
+    transition: border-color 0.2s, background 0.2s, transform 0.12s var(--ep-ease-out);
   }
-  .ep-msg-row:hover {
-    border-color: rgba(224,30,30,0.32) !important;
-    background: rgba(28, 2, 2, 0.75) !important;
+  @media (hover: hover) and (pointer: fine) {
+    .ep-msg-row:hover {
+      border-color: rgba(224,30,30,0.32) !important;
+      background: rgba(28, 2, 2, 0.75) !important;
+    }
+  }
+  .ep-msg-row:active {
+    transform: scale(0.985);
   }
 
   /* ────────────────────────────── INPUTS ─────────────────────────────────── */
@@ -904,7 +909,8 @@
   .animate-pulse-glow { animation: none; }
   .ep-card:hover, a.ep-card:active, button.ep-card:active,
   .ep-btn-primary:hover, .ep-btn-primary:active,
-  .ep-btn-secondary:active, .ep-btn-icon:active {
+  .ep-btn-secondary:active, .ep-btn-icon:active,
+  .ep-msg-row:active, .ep-nav-tab:active, .ep-nav-link:active {
     transform: none;
   }
   body::after { animation: none; }

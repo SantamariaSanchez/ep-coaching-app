@@ -68,7 +68,7 @@ export function ClientCard({
         borderRadius: "var(--radius-lg)",
         padding: 20,
         cursor: onClick ? "pointer" : "default",
-        transition: "all 0.2s ease",
+        transition: "border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease",
         position: "relative",
         overflow: "hidden",
       }}
@@ -289,7 +289,7 @@ export function ClientCard({
             letterSpacing: "0.08em",
             textTransform: "uppercase",
             textDecoration: "none",
-            transition: "all 0.15s ease",
+            transition: "background 0.15s ease, border-color 0.15s ease",
           }}
           onMouseEnter={(e) => {
             const el = e.currentTarget as HTMLAnchorElement;

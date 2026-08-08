@@ -226,9 +226,15 @@ export default function OnboardingTour({
           <motion.div
             key={step}
             custom={direction}
-            initial={{ opacity: 0, x: direction > 0 ? 40 : -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction > 0 ? -40 : 40 }}
+            // transform en toutes lettres plutôt que le raccourci x de Framer
+            // Motion : x/y/scale passent par un rendu piloté en JS
+            // (requestAnimationFrame, thread principal) tandis qu'un vrai
+            // "transform" anime via le thread de composition du navigateur —
+            // reste fluide même si le thread principal est occupé (ex.
+            // chargement d'une étape suivante).
+            initial={{ opacity: 0, transform: `translateX(${direction > 0 ? 40 : -40}px)` }}
+            animate={{ opacity: 1, transform: "translateX(0px)" }}
+            exit={{ opacity: 0, transform: `translateX(${direction > 0 ? -40 : 40}px)` }}
             transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
             style={{ width: "100%", maxWidth: 420, textAlign: "center" }}
           >

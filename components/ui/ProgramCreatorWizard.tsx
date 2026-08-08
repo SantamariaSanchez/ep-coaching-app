@@ -153,9 +153,10 @@ export default function ProgramCreatorWizard({
         <motion.div
           key={step}
           custom={direction}
-          initial={{ opacity: 0, x: direction > 0 ? 30 : -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: direction > 0 ? -30 : 30 }}
+          // transform explicite, pas le raccourci x (voir OnboardingTour.tsx)
+          initial={{ opacity: 0, transform: `translateX(${direction > 0 ? 30 : -30}px)` }}
+          animate={{ opacity: 1, transform: "translateX(0px)" }}
+          exit={{ opacity: 0, transform: `translateX(${direction > 0 ? -30 : 30}px)` }}
           transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
         >
           {step === "goal" && (

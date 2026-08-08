@@ -56,7 +56,7 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   textTransform: "uppercase",
   cursor: "pointer",
   whiteSpace: "nowrap",
-  transition: "all 0.15s ease",
+  transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease",
   background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
   border: active ? "1px solid rgba(224,30,30,0.35)" : "1px solid rgba(137,4,4,0.25)",
   color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",

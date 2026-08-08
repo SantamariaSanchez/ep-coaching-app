@@ -171,9 +171,10 @@ export default function PersonalizationQuiz({
         <AnimatePresence mode="wait">
           <motion.div
             key={step}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
+            // transform explicite, pas le raccourci x (voir OnboardingTour.tsx)
+            initial={{ opacity: 0, transform: "translateX(40px)" }}
+            animate={{ opacity: 1, transform: "translateX(0px)" }}
+            exit={{ opacity: 0, transform: "translateX(-40px)" }}
             transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{ width: "100%", maxWidth: 460 }}
           >

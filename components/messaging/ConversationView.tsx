@@ -647,7 +647,7 @@ export default function ConversationView({
         <button
           onClick={() => imageInputRef.current?.click()}
           disabled={sending}
-          className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
           title="Envoyer une photo"
         >
           <ImageIcon size={16} />
@@ -689,7 +689,7 @@ export default function ConversationView({
         <button
           onClick={sendText}
           disabled={!text.trim() || sending}
-          className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-colors"
+          className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
         >
           {sending ? (
             <div className="w-4 h-4 border-2 border-white/50 border-t-white rounded-full animate-spin" />

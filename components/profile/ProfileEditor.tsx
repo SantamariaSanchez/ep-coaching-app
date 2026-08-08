@@ -142,12 +142,12 @@ export default function ProfileEditor({
       </button>
 
       {status === "success" && (
-        <div className="flex items-center gap-2 text-green-400 text-xs font-semibold mt-3">
+        <div className="animate-slide-up flex items-center gap-2 text-green-400 text-xs font-semibold mt-3">
           <Check size={12} /> Profil mis à jour
         </div>
       )}
       {status === "error" && (
-        <div className="flex items-center gap-2 text-red-400 text-xs font-semibold mt-3">
+        <div className="animate-slide-up flex items-center gap-2 text-red-400 text-xs font-semibold mt-3">
           <AlertCircle size={12} /> {errorMsg}
         </div>
       )}
