@@ -36,7 +36,7 @@ export default async function CoachClientMessagesPage({
   const conversationId = clientId;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto page-transition">
       <PushPermission userId={user.id} />
 
       {/* Header */}

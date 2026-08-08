@@ -23,7 +23,7 @@ export default async function NoteTemplatesPage({
   if (!client) notFound();
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto">
+    <div className="px-6 py-8 max-w-2xl mx-auto page-transition">
       <div className="flex items-center gap-4 mb-8">
         <Link
           href={`/dashboard/coach/clients/${id}/notes`}

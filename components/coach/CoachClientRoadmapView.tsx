@@ -16,7 +16,7 @@ export default function CoachClientRoadmapView({ clientId }: { clientId: string 
   }, [clientId]);
 
   return (
-    <div style={{ padding: "24px 24px 64px", maxWidth: 900, margin: "0 auto" }}>
+    <div className="page-transition" style={{ padding: "24px 24px 64px", maxWidth: 900, margin: "0 auto" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 28 }}>
         <Link
           href={`/dashboard/coach/clients/${clientId}`}

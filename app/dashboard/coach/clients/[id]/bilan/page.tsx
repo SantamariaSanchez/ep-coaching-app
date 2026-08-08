@@ -34,7 +34,7 @@ export default async function CoachClientBilanPage({
   const weeks = groupLogsByWeek(logs);
 
   return (
-    <div style={{ maxWidth: 700, margin: "0 auto", padding: "32px 20px 80px" }}>
+    <div className="page-transition" style={{ maxWidth: 700, margin: "0 auto", padding: "32px 20px 80px" }}>
 
       {/* Header */}
       <div style={{ marginBottom: 28 }}>

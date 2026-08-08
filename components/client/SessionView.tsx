@@ -423,7 +423,7 @@ function WarmupStep({
   const isLate = elapsed > 900;
 
   return (
-    <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
+    <div className="px-6 py-8 max-w-2xl mx-auto pb-24 page-transition">
       {/* Timer */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -1933,7 +1933,7 @@ export default function SessionView({
       });
 
     return (
-      <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
+      <div className="px-6 py-8 max-w-2xl mx-auto pb-24 page-transition">
         {/* Header */}
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
