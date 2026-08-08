@@ -19,6 +19,8 @@ export default function AccountActions({
   const router = useRouter();
   const sb = createClientSupabase();
   const [push, setPush] = useState(pushSubscribed);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushError, setPushError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -56,25 +58,49 @@ export default function AccountActions({
     setResetSent(true);
   }
 
+  // Chaque étape avait un échec silencieux (return nu ou catch muet) — sur
+  // 13 comptes, seuls 2 ont un jour activé le push, et ce bouton est le seul
+  // chemin pour le faire. Un clic qui échoue sans un mot d'explication a
+  // toutes les chances d'être pris pour "cassé" plutôt que retenté.
   async function enablePush() {
+    setPushLoading(true);
+    setPushError(null);
     try {
-      if (!("serviceWorker" in navigator)) return;
+      if (!("serviceWorker" in navigator)) {
+        setPushError("Ton navigateur ne supporte pas les notifications push.");
+        return;
+      }
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
-      if ((await Notification.requestPermission()) !== "granted") return;
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setPushError(
+          permission === "denied"
+            ? "Notifications bloquées. Autorise-les dans les réglages de ton navigateur pour ce site, puis réessaie."
+            : "Activation annulée."
+        );
+        return;
+      }
       const b64 = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
       const pad = "=".repeat((4 - (b64.length % 4)) % 4);
       const raw = window.atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
       const key = Uint8Array.from([...raw].map((c) => c.charCodeAt(0))).buffer as ArrayBuffer;
       const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-      await fetch("/api/push/subscribe", {
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subscription: sub.toJSON() }),
       });
+      if (!res.ok) {
+        setPushError("Erreur lors de l'enregistrement. Réessaie.");
+        return;
+      }
       setPush(true);
     } catch (e) {
       console.error(e);
+      setPushError("Erreur lors de l'activation. Réessaie.");
+    } finally {
+      setPushLoading(false);
     }
   }
 
@@ -82,24 +108,32 @@ export default function AccountActions({
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">Compte</p>
 
-      <div className="flex items-center justify-between gap-3 pb-4 mb-1 border-b border-[#890404]/10">
-        <div>
-          <p className="text-sm font-semibold text-white">Notifications push</p>
-          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
-            {push ? "Activées sur cet appareil" : "Non activées"}
-          </p>
+      <div className="pb-4 mb-1 border-b border-[#890404]/10">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-white">Notifications push</p>
+            <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+              {push ? "Activées sur cet appareil" : "Non activées"}
+            </p>
+          </div>
+          {push ? (
+            <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full">
+              Activées
+            </span>
+          ) : (
+            <button
+              onClick={enablePush}
+              disabled={pushLoading}
+              className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+            >
+              <Bell size={12} /> {pushLoading ? "Activation…" : "Activer"}
+            </button>
+          )}
         </div>
-        {push ? (
-          <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full">
-            Activées
-          </span>
-        ) : (
-          <button
-            onClick={enablePush}
-            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
-          >
-            <Bell size={12} /> Activer
-          </button>
+        {pushError && (
+          <p className="flex items-start gap-1.5 text-[11px] text-red-400 mt-2.5 leading-relaxed">
+            <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" /> {pushError}
+          </p>
         )}
       </div>
 
