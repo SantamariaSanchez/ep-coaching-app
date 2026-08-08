@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
-import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { getUser, getProfile, getClientById, isSubscribed } from "@/utils/auth";
 import { getClientTasks } from "@/utils/tasks";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import CoachClientTasksView from "@/components/ui/CoachClientTasksView";
 import { createClientTask, deleteClientTask, sendMotivationMessage } from "./actions";
@@ -43,6 +43,17 @@ export default async function CoachClientTasksPage({
           {client.full_name ?? "Client"}
         </h1>
       </div>
+
+      {!isSubscribed(client) && (
+        <div className="mb-6 bg-amber-500/10 border border-amber-500/25 rounded-xl px-4 py-3">
+          <p className="flex items-start gap-2 text-[12px] text-amber-300/90 leading-snug">
+            <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
+            {client.full_name ?? "Ce client"} n&apos;est pas abonné : la page &laquo;&nbsp;Mes tâches&nbsp;&raquo;
+            lui affiche un message &laquo;&nbsp;réservé aux membres coaching&nbsp;&raquo; plutôt que ces tâches — il
+            ne les verra ni les recevra en rappel tant qu&apos;il n&apos;est pas abonné{tasks.length > 0 ? `, malgré les ${tasks.length} déjà assignées` : ""}.
+          </p>
+        </div>
+      )}
 
       <CoachClientTasksView
         clientId={id}

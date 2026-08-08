@@ -20,11 +20,26 @@ export async function GET(req: Request) {
     .select("*")
     .eq("status", "pending");
 
-  const due = (tasks as ClientTask[] | null)?.filter((t) => {
+  // "Mes tâches" est verrouillé côté client tant qu'il n'est pas abonné
+  // (CoachOnlyGate) — nager un membre gratuit l'envoie taper une notif qui
+  // débouche sur un mur "réservé aux membres coaching" au lieu de sa tâche.
+  const dueCandidates = (tasks as ClientTask[] | null)?.filter((t) => {
     if (!t.last_notified_at) return true;
     const elapsedMin = (Date.now() - new Date(t.last_notified_at).getTime()) / 60000;
     return elapsedMin >= t.nag_minutes;
   }) ?? [];
+
+  let due = dueCandidates;
+  if (dueCandidates.length > 0) {
+    const clientIds = [...new Set(dueCandidates.map((t) => t.client_id))];
+    const { data: subscribed } = await supabase
+      .from("profiles")
+      .select("id")
+      .in("id", clientIds)
+      .eq("subscription_status", "active");
+    const subscribedIds = new Set((subscribed ?? []).map((p) => p.id as string));
+    due = dueCandidates.filter((t) => subscribedIds.has(t.client_id));
+  }
 
   let sent = 0;
   for (const task of due) {

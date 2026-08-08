@@ -762,7 +762,18 @@ export default async function ClientDashboard({
                 </div>
 
                 {weightDelta != null && (
-                  <WeightDelta delta={weightDelta} good={null} />
+                  <WeightDelta
+                    delta={weightDelta}
+                    good={
+                      weightDelta === 0 || !profile?.goal
+                        ? null
+                        : profile.goal === "Perte de poids"
+                        ? weightDelta < 0
+                        : profile.goal === "Prise de muscle"
+                        ? weightDelta > 0
+                        : null // "Muscle sec" et autres : sens ambigu, pas de couleur plutôt qu'une couleur fausse
+                    }
+                  />
                 )}
 
                 {(profile?.goal || weeksSinceStart != null) && (

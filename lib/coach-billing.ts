@@ -1,5 +1,22 @@
 import { stripe } from "@/lib/stripe";
 
+// intervalMonths sert à ramener n'importe quel prix Stripe à un montant
+// mensuel (amount / intervalMonths) pour le calcul de MRR — jusqu'ici on
+// prenait interval_count tel quel en supposant toujours interval="month".
+// Aucun plan actuel n'est annuel/hebdo, donc silencieux pour l'instant,
+// mais un futur prix Stripe "1 an" aurait fait diviser un montant annuel
+// par 1 au lieu de 12, gonflant le MRR affiché d'un facteur 12.
+function toIntervalMonths(interval: string | undefined, intervalCount: number | undefined | null): number | null {
+  if (!interval || !intervalCount) return null;
+  switch (interval) {
+    case "month": return intervalCount;
+    case "year": return intervalCount * 12;
+    case "week": return intervalCount / 4.345;
+    case "day": return intervalCount / 30.44;
+    default: return null;
+  }
+}
+
 export interface CoachBillingInfo {
   status: string | null; // trialing | active | past_due | canceled | unpaid...
   planLabel: string | null;
@@ -41,7 +58,7 @@ export async function getCoachBillingInfo(
       planLabel: price?.nickname ?? null,
       amount: price?.unit_amount != null ? price.unit_amount / 100 : null,
       currency: price?.currency ?? null,
-      intervalMonths: price?.recurring?.interval_count ?? null,
+      intervalMonths: toIntervalMonths(price?.recurring?.interval, price?.recurring?.interval_count),
       currentPeriodEnd: item?.current_period_end
         ? new Date(item.current_period_end * 1000).toISOString()
         : null,
