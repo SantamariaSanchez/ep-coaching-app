@@ -709,6 +709,17 @@
     transform: scale(0.90);
   }
 
+  /* Retour de pression générique pour tout élément à style déjà bespoke
+     (inline ou Tailwind) qui n'a pas de classe partagée dédiée — se
+     compose avec n'importe quel autre style sans rien lui imposer d'autre
+     que le scale au clic. */
+  .ep-press {
+    transition: transform 0.12s var(--ep-ease-out);
+  }
+  .ep-press:active {
+    transform: scale(0.97);
+  }
+
   /* Sidebar desktop — même principe, pression plus subtile (clic souris,
      pas un doigt). */
   .ep-nav-link {
@@ -910,9 +921,10 @@
   .ep-card:hover, a.ep-card:active, button.ep-card:active,
   .ep-btn-primary:hover, .ep-btn-primary:active,
   .ep-btn-secondary:active, .ep-btn-icon:active,
-  .ep-msg-row:active, .ep-nav-tab:active, .ep-nav-link:active {
+  .ep-msg-row:active, .ep-nav-tab:active, .ep-nav-link:active, .ep-press:active {
     transform: none;
   }
+  .animate-badge-pop { animation: none; opacity: 1; }
   body::after { animation: none; }
   html { scroll-behavior: auto; }
 }

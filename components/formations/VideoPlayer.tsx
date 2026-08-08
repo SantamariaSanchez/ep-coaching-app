@@ -108,12 +108,15 @@ export default function VideoPlayer({
               letterSpacing: "0.06em",
               textTransform: "uppercase",
               cursor: loading ? "wait" : "pointer",
-              transition: "all 0.2s",
+              transition: "border-color 0.2s, background 0.2s, color 0.2s, transform 0.12s var(--ep-ease-out)",
               flexShrink: 0,
             }}
+            className="ep-press"
           >
             {completed
-              ? <><CheckCircle2 size={15} /> Terminé</>
+              // Petit "pop" à l'instant précis où une leçon passe à terminée —
+              // un vrai jalon, pas une action répétée cent fois par jour.
+              ? <><CheckCircle2 size={15} className="animate-badge-pop" /> Terminé</>
               : <><Circle size={15} /> Marquer</>
             }
           </button>
