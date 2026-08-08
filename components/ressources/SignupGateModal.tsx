@@ -6,6 +6,7 @@ import { EPLogo } from "@/components/ui/EPLogo";
 export default function SignupGateModal() {
   return (
     <div
+      className="ep-modal-overlay"
       style={{
         position: "fixed",
         inset: 0,
@@ -19,7 +20,7 @@ export default function SignupGateModal() {
       }}
     >
       <div
-        className="animate-fade-up"
+        className="ep-modal-panel"
         style={{
           width: "100%",
           maxWidth: 420,
@@ -36,14 +37,8 @@ export default function SignupGateModal() {
         </div>
 
         <h2
-          style={{
-            fontSize: 22,
-            fontWeight: 900,
-            letterSpacing: "-0.03em",
-            color: "#F5EDED",
-            margin: "0 0 10px",
-            lineHeight: 1.25,
-          }}
+          className="ep-h2"
+          style={{ marginBottom: 10, lineHeight: 1.25 }}
         >
           Accède à toutes les ressources gratuitement.
         </h2>

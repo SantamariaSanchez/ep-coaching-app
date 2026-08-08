@@ -104,10 +104,7 @@ export default async function ClientProgramPage() {
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Entraînement</p>
-        <h1 style={{
-          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0, lineHeight: 1.05,
-        }}>
+        <h1 className="ep-h1">
           Mon programme
         </h1>
         {program && (

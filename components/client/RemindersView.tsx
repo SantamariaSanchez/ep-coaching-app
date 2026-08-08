@@ -103,6 +103,7 @@ function DayPills({
             key={day}
             type="button"
             onClick={() => toggle(day)}
+            className="ep-press"
             style={{
               width: 34,
               height: 34,
@@ -113,7 +114,7 @@ function DayPills({
               fontWeight: 700,
               fontSize: 11,
               cursor: "pointer",
-              transition: "all 0.15s",
+              transition: "background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s var(--ep-ease-out)",
             }}
           >
             {DAY_LABELS[day]}
@@ -254,7 +255,7 @@ function ReminderCard({
         borderRadius: 14,
         padding: 16,
         opacity: reminder.is_active ? 1 : 0.55,
-        transition: "all 0.2s",
+        transition: "border-color 0.2s, opacity 0.2s",
       }}
     >
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
@@ -309,13 +310,14 @@ function ReminderCard({
           <button
             onClick={onToggle}
             title={reminder.is_active ? "Désactiver" : "Activer"}
+            className="ep-press"
             style={{
               width: 36, height: 36, borderRadius: 8,
               background: reminder.is_active ? "rgba(74,222,128,0.1)" : "rgba(245,237,237,0.04)",
               border: `1px solid ${reminder.is_active ? "rgba(74,222,128,0.2)" : "rgba(245,237,237,0.06)"}`,
               cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center",
-              transition: "all 0.15s",
+              transition: "background 0.15s, border-color 0.15s, transform 0.12s var(--ep-ease-out)",
             }}
           >
             <Check size={14} style={{ color: reminder.is_active ? "#4ade80" : "rgba(245,237,237,0.2)" }} strokeWidth={2.5} />

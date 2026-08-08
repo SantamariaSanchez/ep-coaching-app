@@ -33,7 +33,7 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
             fontSize: 11, fontWeight: 700, letterSpacing: "0.04em",
             color: "rgba(245,237,237,0.4)",
             cursor: "pointer",
-            transition: "all 0.15s",
+            transition: "background 0.15s, border-color 0.15s, color 0.15s",
           }}
           className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
           >

@@ -116,6 +116,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                 key={d.value}
                 onClick={() => toggleDay(d.value)}
                 aria-pressed={active}
+                className="ep-press"
                 style={{
                   padding: "7px 12px",
                   borderRadius: 999,
@@ -124,7 +125,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                   letterSpacing: "0.04em",
                   textTransform: "uppercase",
                   cursor: "pointer",
-                  transition: "all 0.15s ease",
+                  transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ep-ease-out)",
                   background: active ? "rgba(224,30,30,0.16)" : "rgba(245,237,237,0.04)",
                   border: active ? "1px solid rgba(224,30,30,0.4)" : "1px solid rgba(137,4,4,0.25)",
                   color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",

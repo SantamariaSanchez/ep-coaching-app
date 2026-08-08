@@ -39,11 +39,7 @@ export default async function CoachFormationsPage() {
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
-        <h1 style={{
-          fontSize: 32, fontWeight: 900, letterSpacing: "-0.04em",
-          color: "#F5EDED", margin: 0,
-          display: "flex", alignItems: "center", gap: 12,
-        }}>
+        <h1 className="ep-h1" style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
           Formations
         </h1>

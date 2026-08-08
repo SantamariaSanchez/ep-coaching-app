@@ -181,14 +181,8 @@ export default async function AbonnementPage() {
             Prochaine étape
           </p>
           <h2
-            style={{
-              fontSize: 22,
-              fontWeight: 900,
-              letterSpacing: "-0.03em",
-              color: "#F5EDED",
-              margin: "0 0 12px",
-              lineHeight: 1.2,
-            }}
+            className="ep-h2"
+            style={{ marginBottom: 12 }}
           >
             Un appel de 30 min pour voir si le coaching te correspond
           </h2>

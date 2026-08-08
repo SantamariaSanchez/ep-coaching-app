@@ -98,7 +98,7 @@ function FieldControl({
                 background: checked ? "rgba(224,30,30,0.12)" : "rgba(255,255,255,0.02)",
                 boxShadow: checked ? "0 0 0 1px #E01E1E" : "none",
                 cursor: "pointer", fontSize: 13.5, fontWeight: 600, color: checked ? "#fff" : "#e8dede",
-                transition: "all 0.15s ease",
+                transition: "border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease, color 0.15s ease",
               }}
             >
               <span style={{

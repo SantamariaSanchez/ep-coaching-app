@@ -869,7 +869,7 @@ export default function DashboardNav({
               fontSize: 12,
               fontWeight: 600,
               cursor: "pointer",
-              transition: "all 0.15s",
+              transition: "color 0.15s, background 0.15s",
             }}
             onMouseEnter={(e) => {
               const el = e.currentTarget as HTMLButtonElement;

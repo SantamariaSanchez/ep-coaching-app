@@ -56,7 +56,7 @@ const chipStyle = (active: boolean): React.CSSProperties => ({
   textTransform: "uppercase",
   cursor: "pointer",
   whiteSpace: "nowrap",
-  transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease",
+  transition: "background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.12s var(--ep-ease-out)",
   background: active ? "rgba(224,30,30,0.14)" : "rgba(245,237,237,0.04)",
   border: active ? "1px solid rgba(224,30,30,0.35)" : "1px solid rgba(137,4,4,0.25)",
   color: active ? "#E01E1E" : "rgba(245,237,237,0.45)",
@@ -213,7 +213,7 @@ export default function ClientsSection({
                 : f.key === "paused" ? clients.filter((c) => c.status === "paused" || c.status === "ended").length
                 : clients.filter(isNew).length;
               return (
-                <button key={f.key} onClick={() => setFilter(f.key)} style={chipStyle(filter === f.key)}>
+                <button key={f.key} onClick={() => setFilter(f.key)} className="ep-press" style={chipStyle(filter === f.key)}>
                   {f.label} {count > 0 && <span style={{ opacity: 0.65 }}>{count}</span>}
                 </button>
               );

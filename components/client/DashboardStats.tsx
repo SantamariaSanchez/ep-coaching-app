@@ -63,7 +63,7 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
         background: task.done ? "rgba(74,222,128,0.05)" : "rgba(31,1,1,0.7)",
         border: task.done ? "1px solid rgba(74,222,128,0.18)" : "1px solid rgba(137,4,4,0.22)",
         textDecoration: "none",
-        transition: "all 0.15s ease",
+        transition: "background 0.15s ease, border-color 0.15s ease",
       }}
     >
       <div style={{

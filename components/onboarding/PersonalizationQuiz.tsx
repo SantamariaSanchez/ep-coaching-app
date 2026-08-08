@@ -193,6 +193,7 @@ export default function PersonalizationQuiz({
                   <button
                     key={opt.value}
                     onClick={() => select(opt.value)}
+                    className="ep-press"
                     style={{
                       textAlign: "left",
                       padding: "16px 18px",
@@ -203,7 +204,7 @@ export default function PersonalizationQuiz({
                       color: "#F5EDED",
                       fontSize: 14,
                       fontWeight: 600,
-                      transition: "all 0.15s",
+                      transition: "background 0.15s, border-color 0.15s, transform 0.12s var(--ep-ease-out)",
                     }}
                   >
                     {opt.label}
