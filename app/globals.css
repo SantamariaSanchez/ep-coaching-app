@@ -233,6 +233,19 @@
   ::-webkit-scrollbar-track  { background: transparent; }
   ::-webkit-scrollbar-thumb  { background: rgba(137,4,4,0.55); border-radius: 2px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(224,30,30,0.75); }
+
+  /* Aucun style de focus clavier nulle part dans l'appli avant ça — un
+     utilisateur au clavier (Tab) n'avait que l'anneau bleu par défaut du
+     navigateur, jamais pensé pour ce fond noir/rouge très sombre.
+     :focus-visible (pas :focus) : ne s'affiche qu'à la navigation clavier,
+     jamais sur un clic souris — pas de halo parasite sur chaque bouton
+     tapé. .ep-input garde son propre traitement (outline: none + anneau
+     dédié), plus spécifique donc prioritaire, aucun conflit. */
+  :focus-visible {
+    outline: 2px solid rgba(224, 30, 30, 0.7);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
 }
 
 /* ── Components ──────────────────────────────────────────────────────────── */

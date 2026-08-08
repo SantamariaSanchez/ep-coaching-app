@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
@@ -665,12 +666,10 @@ export default function DashboardNav({
                       padding: "9px 12px",
                       borderRadius: 10,
                       marginBottom: 1,
-                      background: active ? "rgba(224,30,30,0.1)" : "transparent",
+                      position: "relative",
                       color: active ? "#F5EDED" : "rgba(245,237,237,0.32)",
                       fontWeight: active ? 700 : 500,
                       fontSize: 13,
-                      borderLeft: active ? "2px solid #E01E1E" : "2px solid transparent",
-                      marginLeft: active ? -2 : 0,
                       textDecoration: "none",
                     }}
                     onMouseEnter={(e) => {
@@ -686,6 +685,31 @@ export default function DashboardNav({
                       el.style.color = "rgba(245,237,237,0.32)";
                     }}
                   >
+                    {/* layoutId partagé : Framer Motion fait glisser ce fond
+                        d'un item à l'autre au lieu de le faire sauter — un
+                        seul élément "voyage" visuellement entre les deux
+                        positions plutôt que de disparaître puis réapparaître
+                        ailleurs. z-index négatif : passe derrière icône/texte
+                        sans qu'ils aient besoin d'un positionnement dédié. */}
+                    {active && (
+                      <motion.div
+                        layoutId="sidebar-active-pill"
+                        // bounce: 0 — un item de nav qui se sélectionne n'est
+                        // pas un geste avec de l'élan (flick, drag relâché),
+                        // c'est un repositionnement : la doctrine Apple range
+                        // ça avec les déplacements/repositionnements, sans
+                        // rebond, pas avec les interactions à élan.
+                        transition={{ type: "spring", bounce: 0, duration: 0.35 }}
+                        style={{
+                          position: "absolute",
+                          inset: 0,
+                          zIndex: -1,
+                          borderRadius: 10,
+                          background: "rgba(224,30,30,0.1)",
+                          borderLeft: "2px solid #E01E1E",
+                        }}
+                      />
+                    )}
                     <Icon
                       size={16}
                       strokeWidth={active ? 2.2 : 1.7}
@@ -996,7 +1020,9 @@ export default function DashboardNav({
                   position: "relative",
                 }}
               >
-                {/* Icon container with pill */}
+                {/* Icon container with pill — même indicateur partagé que la
+                    sidebar desktop (voir layoutId plus haut), pas de scroll
+                    ici donc rien de plus à gérer. */}
                 <div
                   style={{
                     position: "relative",
@@ -1006,12 +1032,21 @@ export default function DashboardNav({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: active
-                      ? "rgba(224,30,30,0.14)"
-                      : "transparent",
-                    transition: "background 0.2s ease",
                   }}
                 >
+                  {active && (
+                    <motion.div
+                      layoutId="bottom-nav-active-pill"
+                      transition={{ type: "spring", bounce: 0, duration: 0.35 }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        zIndex: -1,
+                        borderRadius: 15,
+                        background: "rgba(224,30,30,0.14)",
+                      }}
+                    />
+                  )}
                   <Icon
                     size={18}
                     strokeWidth={active ? 2.3 : 1.6}
