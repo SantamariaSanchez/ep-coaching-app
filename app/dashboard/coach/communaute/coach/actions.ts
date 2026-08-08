@@ -3,11 +3,13 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import { getAllMessageableMembers } from "@/utils/auth";
+import { notifyUsers } from "@/lib/notify";
 
 export async function createCoachPost(
   title: string,
   content: string
-): Promise<{ error?: string; id?: string }> {
+): Promise<{ error?: string; id?: string; notifiedCount?: number }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
   if (!title.trim() || !content.trim()) return { error: "Titre et contenu requis." };
@@ -22,9 +24,24 @@ export async function createCoachPost(
 
     if (error || !data) return { error: "Erreur lors de la publication." };
 
+    // "Visible par tous les membres" ne voulait rien dire tant que personne
+    // n'était prévenu qu'un post existait — le seul jamais publié (30 juin)
+    // dort depuis sans qu'aucun client ne soit venu le lire de lui-même.
+    const members = await getAllMessageableMembers(guard.userId);
+    await notifyUsers(
+      members.map((m) => m.id),
+      {
+        type: "coach_post",
+        title: `📝 ${title.trim()}`,
+        body: content.trim().slice(0, 140),
+        url: "/dashboard/client/communaute/coach",
+        senderId: guard.userId,
+      }
+    );
+
     revalidatePath("/dashboard/coach/communaute/coach");
     revalidatePath("/dashboard/client/communaute/coach");
-    return { id: data.id };
+    return { id: data.id, notifiedCount: members.length };
   } catch {
     return { error: "Erreur inattendue." };
   }

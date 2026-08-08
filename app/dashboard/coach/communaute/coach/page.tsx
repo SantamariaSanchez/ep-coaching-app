@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
-import { getCoachPosts } from "@/utils/coach-posts";
+import { getUser, getProfile, getAllMessageableMembers } from "@/utils/auth";
+import { getCoachPosts, getCoachPostViewCounts } from "@/utils/coach-posts";
 import CoachPostsManager from "@/components/ui/CoachPostsManager";
 import { createCoachPost, updateCoachPost, deleteCoachPost } from "./actions";
 
@@ -13,7 +13,11 @@ export default async function CoachPostsPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const posts = await getCoachPosts(profile.id);
+  const [posts, members] = await Promise.all([
+    getCoachPosts(profile.id),
+    getAllMessageableMembers(profile.id),
+  ]);
+  const viewCounts = await getCoachPostViewCounts(posts.map((p) => p.id));
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -29,6 +33,8 @@ export default async function CoachPostsPage() {
 
       <CoachPostsManager
         posts={posts}
+        viewCounts={viewCounts}
+        totalMembers={members.length}
         createCoachPost={createCoachPost}
         updateCoachPost={updateCoachPost}
         deleteCoachPost={deleteCoachPost}

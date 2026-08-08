@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getCoachPosts } from "@/utils/coach-posts";
-import { MessageSquareText } from "lucide-react";
+import { getCoachPosts, getViewedPostIds, recordCoachPostView } from "@/utils/coach-posts";
+import { MessageSquareText, Sparkles } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +18,13 @@ export default async function ClientCoachPostsPage() {
   const profile = await getProfile(user.id);
   const coachId = profile?.role === "coach" ? profile.id : profile?.coach_id;
   const posts = coachId ? await getCoachPosts(coachId) : [];
+
+  // Calculé AVANT de marquer comme vu ci-dessous, sinon plus rien ne
+  // ressortirait jamais comme "Nouveau" dès l'affichage de la page.
+  const viewedIds = await getViewedPostIds(user.id, posts.map((p) => p.id));
+  await Promise.all(
+    posts.filter((p) => !viewedIds.has(p.id)).map((p) => recordCoachPostView(user.id, p.id))
+  );
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -37,7 +44,14 @@ export default async function ClientCoachPostsPage() {
         <div className="space-y-3">
           {posts.map((post) => (
             <div key={post.id} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-              <p className="text-base font-black text-white mb-1">{post.title}</p>
+              <div className="flex items-start gap-2 mb-1">
+                <p className="text-base font-black text-white flex-1">{post.title}</p>
+                {!viewedIds.has(post.id) && (
+                  <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 border border-[#E01E1E]/40 text-[#E01E1E] flex-shrink-0">
+                    <Sparkles size={9} /> Nouveau
+                  </span>
+                )}
+              </div>
               <p className="text-[10px] text-[#F5EDED]/30 mb-3">{formatDate(post.created_at)}</p>
               <p className="text-sm text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             </div>

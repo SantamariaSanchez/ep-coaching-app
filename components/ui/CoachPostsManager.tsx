@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, Eye, CheckCircle2 } from "lucide-react";
 import type { CoachPost } from "@/utils/coach-posts";
 
 const inputCls =
@@ -75,18 +75,23 @@ function PostEditor({
 
 export default function CoachPostsManager({
   posts,
+  viewCounts,
+  totalMembers,
   createCoachPost,
   updateCoachPost,
   deleteCoachPost,
 }: {
   posts: CoachPost[];
-  createCoachPost: (title: string, content: string) => Promise<{ error?: string; id?: string }>;
+  viewCounts: Record<string, number>;
+  totalMembers: number;
+  createCoachPost: (title: string, content: string) => Promise<{ error?: string; id?: string; notifiedCount?: number }>;
   updateCoachPost: (postId: string, title: string, content: string) => Promise<{ error?: string }>;
   deleteCoachPost: (postId: string) => Promise<{ error?: string }>;
 }) {
   const [showNew, setShowNew] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [justPublished, setJustPublished] = useState<number | null>(null);
 
   return (
     <div className="space-y-4">
@@ -96,7 +101,7 @@ export default function CoachPostsManager({
         </p>
         {!showNew && (
           <button
-            onClick={() => { setShowNew(true); setEditingId(null); }}
+            onClick={() => { setShowNew(true); setEditingId(null); setJustPublished(null); }}
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
           >
             <Plus size={12} /> Nouveau post
@@ -104,11 +109,19 @@ export default function CoachPostsManager({
         )}
       </div>
 
+      {justPublished != null && (
+        <p className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400">
+          <CheckCircle2 size={13} strokeWidth={2} />
+          Publié ! {justPublished} membre{justPublished !== 1 ? "s" : ""} notifié{justPublished !== 1 ? "s" : ""}.
+        </p>
+      )}
+
       {showNew && (
         <PostEditor
           onSave={async (title, content) => {
-            await createCoachPost(title, content);
+            const res = await createCoachPost(title, content);
             setShowNew(false);
+            setJustPublished(res.notifiedCount ?? 0);
           }}
           onCancel={() => setShowNew(false)}
         />
@@ -160,7 +173,12 @@ export default function CoachPostsManager({
                   )}
                 </div>
               </div>
-              <p className="text-[10px] text-[#F5EDED]/30 mb-2">{formatDate(post.created_at)}</p>
+              <p className="flex items-center gap-2 text-[10px] text-[#F5EDED]/30 mb-2">
+                {formatDate(post.created_at)}
+                <span className="inline-flex items-center gap-1 text-[#F5EDED]/25">
+                  <Eye size={10} /> Lu par {viewCounts[post.id] ?? 0}/{totalMembers}
+                </span>
+              </p>
               <p className="text-sm text-[#F5EDED]/60 leading-relaxed whitespace-pre-wrap">{post.content}</p>
             </div>
           )
