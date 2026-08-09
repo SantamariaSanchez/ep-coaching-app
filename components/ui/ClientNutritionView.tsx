@@ -864,11 +864,13 @@ export default function ClientNutritionView({
       )
     );
 
+    let failedCount = 0;
     setTodayLogs((prev) => {
       let next = [...prev];
       results.forEach((result, i) => {
         const { optimisticId } = entries[i];
         if (result.error) {
+          failedCount++;
           next = next.filter((l) => l.id !== optimisticId);
         } else if (result.id) {
           next = next.map((l) => (l.id === optimisticId ? { ...l, id: result.id! } : l));
@@ -876,6 +878,17 @@ export default function ClientNutritionView({
       });
       return next;
     });
+
+    // Sans ça, un aliment qui échoue (ex. supprimé depuis hier) disparaissait
+    // silencieusement de l'optimistic update — rien n'indiquait que la copie
+    // n'avait pas tout récupéré.
+    if (failedCount > 0) {
+      setAddingError(
+        failedCount === entries.length
+          ? "Impossible de copier les repas d'hier."
+          : `${failedCount} repas sur ${entries.length} n'ont pas pu être copiés.`
+      );
+    }
 
     setCopyingYesterday(false);
   }
