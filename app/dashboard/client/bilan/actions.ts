@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { insertNotification, getCoachForClient } from "@/utils/insert-notification";
 import { awardPoints, POINTS } from "@/lib/gamification";
+import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
 
@@ -92,6 +93,14 @@ export async function upsertDailyLog(
     if (error) return { error: error.message };
 
     awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
+
+    // Un objectif de road map ("Poids") peut passer "atteint" tout seul dès
+    // que ce bilan contient un poids du matin — fire-and-forget, ne doit
+    // jamais faire échouer la sauvegarde du bilan.
+    const weightLogged = payload.weight_morning as number | null | undefined;
+    if (weightLogged != null) {
+      checkWeightObjectiveAchievements(guard.userId, weightLogged, log_date).catch(() => {});
+    }
 
     // Notify coach — fire-and-forget
     const clientName = profile?.full_name ?? "Un client";

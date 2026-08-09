@@ -3,6 +3,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
+import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -33,6 +34,8 @@ export async function upsertCoachDailyLog(
 
     const supabase = createAdminClient();
 
+    const weightMorning = num(formData.get("weight_morning"));
+
     const { error } = await supabase.from("daily_logs").upsert(
       {
         client_id: guard.userId,
@@ -41,7 +44,7 @@ export async function upsertCoachDailyLog(
         training_rating: num(formData.get("training_rating")),
         cardio: txt(formData.get("cardio")),
         steps: num(formData.get("steps")),
-        weight_morning: num(formData.get("weight_morning")),
+        weight_morning: weightMorning,
         weight_time: txt(formData.get("weight_time")),
         sleep_hours: num(formData.get("sleep_hours")),
         sleep_rating: num(formData.get("sleep_rating")),
@@ -58,6 +61,11 @@ export async function upsertCoachDailyLog(
     );
 
     if (error) return { error: error.message };
+
+    // Voir le même hook côté client dans app/dashboard/client/bilan/actions.ts.
+    if (weightMorning != null) {
+      checkWeightObjectiveAchievements(guard.userId, weightMorning, log_date).catch(() => {});
+    }
 
     revalidatePath("/dashboard/coach/moi/bilan");
     return { success: true };

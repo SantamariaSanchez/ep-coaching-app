@@ -1,4 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { getCoachForClient } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export interface Roadmap {
@@ -138,4 +141,109 @@ export async function applyRoadmapForClient(
   }
 
   return { roadmapId };
+}
+
+// ── Détection automatique des objectifs de poids atteints ──────────────────
+// Avant, un objectif "Poids" ne se cochait "atteint" que si le coach (ou le
+// client en autonomie) pensait à revenir sur la road map pour cocher la
+// case à la main — alors que le poids est déjà loggé chaque matin dans le
+// bilan quotidien. Appelé en fire-and-forget juste après l'enregistrement
+// d'un poids (voir app/dashboard/client/bilan/actions.ts et
+// app/dashboard/coach/moi/bilan/actions.ts), jamais dans le chemin critique
+// de la sauvegarde du bilan lui-même.
+//
+// Portée volontairement limitée aux objectifs de type "weight" : c'est le
+// seul type dont la valeur vit déjà ailleurs dans l'app sous une forme non
+// ambiguë (daily_logs.weight_morning). Un objectif "Mensuration" pointe vers
+// un libellé libre ("Tour de taille") qu'il faudrait faire correspondre à
+// une colonne précise de measurements — trop de place à l'erreur pour un
+// rapprochement automatique, on laisse ça à la coche manuelle.
+export async function checkWeightObjectiveAchievements(
+  clientId: string,
+  latestWeight: number,
+  logDate: string
+): Promise<void> {
+  try {
+    const { roadmap, objectives } = await getClientRoadmap(clientId);
+    if (!roadmap) return;
+
+    const pending = objectives.filter(
+      (o) => o.type === "weight" && !o.is_achieved && o.target_value != null
+    );
+    if (pending.length === 0) return;
+
+    const supabase = createAdminClient();
+
+    // Référence pour déduire le sens de l'objectif (perdre vs prendre) : le
+    // dernier poids connu à ou avant le début de la road map, sinon (aucun
+    // poids loggé avant cette date) le tout premier poids jamais loggé.
+    const { data: beforeStart } = await supabase
+      .from("daily_logs")
+      .select("weight_morning")
+      .eq("client_id", clientId)
+      .lte("log_date", roadmap.start_date)
+      .not("weight_morning", "is", null)
+      .order("log_date", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    let baseline = (beforeStart as { weight_morning: number } | null)?.weight_morning ?? null;
+    if (baseline == null) {
+      const { data: earliest } = await supabase
+        .from("daily_logs")
+        .select("weight_morning")
+        .eq("client_id", clientId)
+        .not("weight_morning", "is", null)
+        .order("log_date", { ascending: true })
+        .limit(1)
+        .maybeSingle();
+      baseline = (earliest as { weight_morning: number } | null)?.weight_morning ?? null;
+    }
+    if (baseline == null) return;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", clientId)
+      .maybeSingle();
+    const ownRoadmapUrl =
+      (profile as { role: string } | null)?.role === "coach" ? "/dashboard/coach/moi/roadmap" : "/dashboard/client/roadmap";
+
+    const coach = await getCoachForClient(clientId);
+
+    for (const obj of pending) {
+      const target = obj.target_value as number;
+      if (target === baseline) continue; // sens indéterminable, on ne devine pas
+
+      const isLossGoal = target < baseline;
+      const achieved = isLossGoal ? latestWeight <= target : latestWeight >= target;
+      if (!achieved) continue;
+
+      const { error: updateError } = await supabase
+        .from("roadmap_objectives")
+        .update({ is_achieved: true, achieved_at: logDate })
+        .eq("id", obj.id);
+      if (updateError) continue;
+
+      const unit = obj.target_unit ?? "kg";
+      await notifyUser(clientId, {
+        type: "roadmap_objective_achieved",
+        title: "🎉 Objectif atteint",
+        body: `Bravo, tu as atteint "${obj.label}" (${target} ${unit}) !`,
+        url: ownRoadmapUrl,
+      });
+
+      if (coach) {
+        await notifyUser(coach.id, {
+          type: "roadmap_objective_achieved",
+          title: "🎉 Objectif de road map atteint",
+          body: `Un client a atteint son objectif "${obj.label}" (${target} ${unit}).`,
+          url: `/dashboard/coach/clients/${clientId}/roadmap`,
+          senderId: clientId,
+        });
+      }
+    }
+  } catch (e) {
+    console.error("checkWeightObjectiveAchievements error:", e);
+  }
 }
