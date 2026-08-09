@@ -125,6 +125,20 @@ export async function suggestSupplement(
     if (error) return { error: "Erreur lors de l'ajout." };
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
+
+    // Coach uniquement — l'usage "moi/nutrition" du coach passe aussi par
+    // cette action pour son propre suivi (guard.userId === clientId dans ce
+    // cas), pas besoin de se notifier soi-même.
+    if (guard.userId !== clientId) {
+      notifyUser(clientId, {
+        type: "supplement_suggested",
+        title: "💊 Nouveau complément suggéré",
+        body: `Ton coach te suggère : ${input.name.trim()}${input.dosage ? ` (${input.dosage.trim()})` : ""}.`,
+        url: "/dashboard/client/nutrition",
+        senderId: guard.userId,
+      }).catch(() => {});
+    }
+
     return {};
   } catch {
     return { error: "Erreur inattendue." };

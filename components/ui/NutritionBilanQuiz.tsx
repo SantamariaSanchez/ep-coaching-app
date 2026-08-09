@@ -14,11 +14,17 @@ interface MealSlotDef {
   emoji: string;
 }
 
+// Doit rester aligné avec MEAL_SLOTS dans ClientNutritionView.tsx et les
+// créneaux proposés côté coach dans DietPlanManager.tsx — "preworkout" y
+// manquait, un client avec un repas pré-entraînement dans son plan n'avait
+// alors aucun moyen de le loguer depuis ce quiz rapide (uniquement depuis
+// la page nutrition complète).
 const ALL_SLOTS: MealSlotDef[] = [
-  { key: "breakfast",   label: "Petit-déjeuner",      emoji: "☀️" },
+  { key: "breakfast",   label: "Petit-déjeuner",       emoji: "☀️" },
   { key: "morning",     label: "Collation matin",      emoji: "🍎" },
   { key: "lunch",       label: "Déjeuner",             emoji: "🍽️" },
   { key: "afternoon",   label: "Collation après-midi", emoji: "🥜" },
+  { key: "preworkout",  label: "Pré-entraînement",     emoji: "🔥" },
   { key: "postworkout", label: "Post-entraînement",    emoji: "💪" },
   { key: "dinner",      label: "Dîner",                emoji: "🌙" },
 ];
@@ -278,32 +284,56 @@ export default function NutritionBilanQuiz({
     setSubmitting(true);
     setError(null);
 
-    const entries: Array<Parameters<typeof addFoodLog>[0]> = [];
+    // slotKey + food.id gardés à côté de chaque entrée : toggleFood empêche
+    // deux fois le même aliment dans un même créneau, donc cette paire
+    // identifie chaque entrée sans ambiguïté.
+    const entries: Array<{ params: Parameters<typeof addFoodLog>[0]; slotKey: string; foodId: string }> = [];
     for (const [slotKey, foods] of Object.entries(mealFoods)) {
       for (const sf of foods) {
         const g = QTY_G[sf.qty] ?? 120;
         const m = calcMacros(sf.food, sf.qty);
         entries.push({
+          params: {
+            foodId: sf.food.id,
+            mealSlot: slotKey,
+            quantityG: g,
+            calories: m.calories,
+            proteins: m.proteins,
+            carbs: m.carbs,
+            fats: m.fats,
+            loggedAt: today,
+          },
+          slotKey,
           foodId: sf.food.id,
-          mealSlot: slotKey,
-          quantityG: g,
-          calories: m.calories,
-          proteins: m.proteins,
-          carbs: m.carbs,
-          fats: m.fats,
-          loggedAt: today,
         });
       }
     }
 
-    // Also add entries for meals with no foods selected (skipped = 0 cal, omit)
-    const results = await Promise.all(entries.map((e) => addFoodLog(e)));
-    const failed = results.find((r) => r.error);
+    // Promise.all envoie tout en parallèle : un échec sur une entrée ne
+    // bloque jamais les autres, qui peuvent très bien avoir déjà été
+    // logguées avec succès pendant qu'une seule échouait.
+    const results = await Promise.all(entries.map((e) => addFoodLog(e.params)));
+    const failedIdx = results.findIndex((r) => r.error);
 
     setSubmitting(false);
 
-    if (failed) {
-      setError(failed.error ?? "Erreur lors du log.");
+    if (failedIdx !== -1) {
+      // Retire du formulaire tout ce qui a réussi, pour qu'un nouvel essai
+      // ne relogue jamais en double ce qui est déjà en base — sans ça, un
+      // retry après une seule entrée en échec doublait tout le reste.
+      const succeeded = new Set(
+        entries.filter((_, i) => !results[i].error).map((e) => `${e.slotKey}:${e.foodId}`)
+      );
+      if (succeeded.size > 0) {
+        setMealFoods((prev) => {
+          const next: Record<string, SelectedFood[]> = {};
+          for (const [slotKey, foods] of Object.entries(prev)) {
+            next[slotKey] = foods.filter((sf) => !succeeded.has(`${slotKey}:${sf.food.id}`));
+          }
+          return next;
+        });
+      }
+      setError(results[failedIdx].error ?? "Erreur lors du log.");
       return;
     }
 
