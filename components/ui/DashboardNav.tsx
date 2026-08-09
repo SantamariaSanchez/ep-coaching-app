@@ -11,7 +11,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield, LayoutTemplate,
+  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -309,6 +309,10 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
 const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   { label: "Finance", icon: TrendingUp, segment: "finance" },
   { label: "Coachs", icon: Shield, segment: "admin" },
+  // Leads captés sur la page publique /ressources (voir lib/lead-magnets.ts)
+  // — donnée plateforme, pas des clients d'un coach en particulier, donc
+  // réservée au propriétaire comme le reste de ce groupe.
+  { label: "Leads", icon: Mail, segment: "admin/leads" },
 ];
 
 // ── Hook ────────────────────────────────────────────────────────────────────
