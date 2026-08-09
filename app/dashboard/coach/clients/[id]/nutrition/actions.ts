@@ -4,6 +4,8 @@ import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { NutritionProfileInput } from "@/utils/nutrition";
+import { notifyUser } from "@/lib/notify";
+import { alreadyNotifiedToday } from "@/utils/insert-notification";
 
 export async function saveNutritionProfile(
   clientId: string,
@@ -74,11 +76,30 @@ export async function saveNutritionProfile(
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
     revalidatePath(`/dashboard/coach/moi/nutrition`);
+
+    // Uniquement quand c'est le coach qui agit, et une seule fois par jour —
+    // un coach qui affine ses réglages en plusieurs sauvegardes successives
+    // ne doit pas déclencher une notification à chaque clic.
+    if (guard.userId !== clientId) {
+      notifyClientTargetsUpdated(clientId, guard.userId).catch(() => {});
+    }
+
     return {};
   } catch (e) {
     console.error("saveNutritionProfile exception:", e);
     return { error: "Erreur inattendue." };
   }
+}
+
+async function notifyClientTargetsUpdated(clientId: string, coachId: string): Promise<void> {
+  if (await alreadyNotifiedToday(clientId, "nutrition_targets_updated", coachId)) return;
+  await notifyUser(clientId, {
+    type: "nutrition_targets_updated",
+    title: "🎯 Objectifs nutrition mis à jour",
+    body: "Ton coach a ajusté tes objectifs caloriques/macros.",
+    url: "/dashboard/client/nutrition",
+    senderId: coachId,
+  });
 }
 
 // ── Compléments alimentaires — suggestion coach ──────────────────────────

@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { requireOwnClientOrSelf } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
+import { notifyUser } from "@/lib/notify";
 
 export interface DietPlanMealInput {
   meal_slot: string;
@@ -94,6 +95,20 @@ export async function createDietPlan(
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
     revalidatePath(`/dashboard/coach/moi/nutrition`);
+
+    // Uniquement quand c'est le coach qui agit — un client en self-serve
+    // (mode gratuit, requireOwnClientOrSelf l'autorise aussi) qui crée son
+    // propre plan n'a pas besoin d'être notifié de sa propre action.
+    if (guard.userId !== clientId) {
+      notifyUser(clientId, {
+        type: "diet_plan_created",
+        title: "🥗 Nouveau plan nutritionnel",
+        body: `Ton coach vient de te préparer un plan : « ${name} ».`,
+        url: "/dashboard/client/nutrition",
+        senderId: guard.userId,
+      }).catch(() => {});
+    }
+
     return { id: plan.id };
   } catch {
     return { error: "Erreur inattendue." };
