@@ -10,6 +10,16 @@ export interface ScheduleBlock {
   color: string;
   icon: string | null;
   notes: string | null;
+  // Ce qu'il y a à faire une fois dans le bloc : tâche vague, prompt Claude à
+  // coller tel quel, objectif du jour ("faire 5 reels"), ou simple suggestion
+  // ("écoute un podcast") — un tableau de texte libre plutôt qu'un type dédié
+  // par catégorie, un seul champ couvre tous les cas.
+  tasks: string[];
+  // Notifie par push quand l'heure du jour atteint le début de ce bloc (voir
+  // app/api/cron/schedule-block-notify). last_notified_at sert uniquement à
+  // ne pas re-notifier plusieurs fois le même jour.
+  notify: boolean;
+  last_notified_at: string | null;
   created_at: string;
 }
 

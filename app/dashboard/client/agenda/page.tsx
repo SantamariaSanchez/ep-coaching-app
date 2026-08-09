@@ -9,7 +9,6 @@ import {
   deleteScheduleBlock,
   duplicateDayBlocks,
   clearDayBlocks,
-  createReminderFromBlock,
 } from "./actions";
 import { CalendarDays } from "lucide-react";
 
@@ -42,7 +41,6 @@ export default async function ClientAgendaPage() {
         deleteScheduleBlock={deleteScheduleBlock}
         duplicateDayBlocks={duplicateDayBlocks}
         clearDayBlocks={clearDayBlocks}
-        createReminderFromBlock={createReminderFromBlock}
       />
     </div>
   );

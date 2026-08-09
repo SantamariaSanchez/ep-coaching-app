@@ -23,6 +23,8 @@ interface BlockData {
   color: string;
   icon: string | null;
   notes: string | null;
+  tasks: string[];
+  notify: boolean;
 }
 
 function revalidateAgendaPaths() {
@@ -76,6 +78,8 @@ export async function addScheduleBlocksBulk(
         color: data.color,
         icon: data.icon,
         notes: data.notes,
+        tasks: data.tasks,
+        notify: data.notify,
       }))
     )
     .select();
@@ -139,7 +143,7 @@ export async function duplicateDayBlocks(
   const supabase = createAdminClient();
   const { data: source, error: fetchError } = await supabase
     .from("schedule_blocks")
-    .select("start_time, end_time, label, color, icon, notes")
+    .select("start_time, end_time, label, color, icon, notes, tasks, notify")
     .eq("owner_id", guard.userId)
     .eq("day_of_week", fromDay);
 

@@ -205,6 +205,15 @@ export default function AujourdhuiView({
                   <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
                     {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
                   </p>
+                  {b.tasks && b.tasks.length > 0 && (
+                    <ul style={{ margin: "4px 0 0", padding: 0, listStyle: "none" }}>
+                      {b.tasks.map((t, i) => (
+                        <li key={i} style={{ display: "flex", gap: 5, fontSize: 11, color: "rgba(245,237,237,0.5)", lineHeight: 1.4 }}>
+                          <span style={{ color: b.color || "#E01E1E", flexShrink: 0 }}>•</span> {t}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
               </div>
               );

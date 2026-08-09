@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  Plus, Trash2, X, Bell, Check, Copy, MoreHorizontal, ChevronLeft, ChevronRight,
+  Plus, Trash2, X, Bell, Copy, MoreHorizontal, ChevronLeft, ChevronRight,
   AlertTriangle,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
@@ -19,9 +19,6 @@ const chipInactive = "border-[#890404]/25 text-[#F5EDED]/40";
 const COLOR_OPTIONS = ["#E01E1E", "#4ade80", "#60a5fa", "#fbbf24", "#a78bfa", "#f472b6"];
 const DAY_LABELS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
 const DAY_LABELS_SHORT = ["", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-// Index 1 (lundi) à 7 (dimanche), pour la table `reminders` qui utilise ces
-// codes courts (voir createReminderFromBlock et RemindersView).
-const DAY_CODES = ["", "lun", "mar", "mer", "jeu", "ven", "sam", "dim"];
 const ALL_DAYS = [1, 2, 3, 4, 5, 6, 7];
 
 const DURATION_PRESETS = [
@@ -126,12 +123,14 @@ interface BlockFormData {
   color: string;
   icon: string | null;
   notes: string | null;
+  tasks: string[];
+  notify: boolean;
 }
 
 function emptyForm(day: number, hour = 9): BlockFormData {
   const start = `${String(hour).padStart(2, "0")}:00`;
   const end = `${String(Math.min(hour + 1, 23)).padStart(2, "0")}:00`;
-  return { day_of_week: day, start_time: start, end_time: end, label: "", color: COLOR_OPTIONS[0], icon: null, notes: null };
+  return { day_of_week: day, start_time: start, end_time: end, label: "", color: COLOR_OPTIONS[0], icon: null, notes: null, tasks: [], notify: false };
 }
 
 // ── Day switcher (vue jour, mobile) ─────────────────────────────────────────
@@ -199,7 +198,6 @@ export default function WeeklyAgenda({
   deleteScheduleBlock,
   duplicateDayBlocks,
   clearDayBlocks,
-  createReminderFromBlock,
 }: {
   blocks: ScheduleBlock[];
   editable: boolean;
@@ -209,20 +207,23 @@ export default function WeeklyAgenda({
   deleteScheduleBlock?: (blockId: string) => Promise<{ error?: string }>;
   duplicateDayBlocks?: (fromDay: number, toDays: number[]) => Promise<{ error?: string; blocks?: ScheduleBlock[] }>;
   clearDayBlocks?: (day: number) => Promise<{ error?: string }>;
-  createReminderFromBlock?: (label: string, time: string, dayCode: string) => Promise<{ error?: string }>;
 }) {
   const [blocks, setBlocks] = useState(initialBlocks);
-  const [isDesktop, setIsDesktop] = useState(false);
+  // Avant, la vue semaine n'existait que sur desktop (un isDesktop détecté
+  // au resize). Maintenant un vrai bouton Jour/Semaine, disponible sur tous
+  // les écrans ; l'effet ci-dessous choisit juste un défaut raisonnable une
+  // fois au montage (semaine sur grand écran, jour sur mobile).
+  const [viewMode, setViewMode] = useState<"day" | "week">("day");
   const [now, setNow] = useState<Date | null>(null);
   const [selectedDay, setSelectedDay] = useState(1);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingBlockId, setEditingBlockId] = useState<string | null>(null);
   const [form, setForm] = useState<BlockFormData>(emptyForm(1));
+  const [newTaskText, setNewTaskText] = useState("");
   const [repeatDays, setRepeatDays] = useState<number[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [reminderStatus, setReminderStatus] = useState<"idle" | "saving" | "done">("idle");
 
   const [viewingBlock, setViewingBlock] = useState<ScheduleBlock | null>(null);
 
@@ -232,12 +233,12 @@ export default function WeeklyAgenda({
   const [dayOptionsBusy, setDayOptionsBusy] = useState(false);
   const [dayOptionsError, setDayOptionsError] = useState<string | null>(null);
 
+  // window.matchMedia n'existe pas côté serveur : ce choix de vue par
+  // défaut ne peut être fait qu'après montage, d'où l'effet (même compromis
+  // déjà accepté ailleurs dans ce fichier pour "now"/"selectedDay" plus bas).
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
-    setIsDesktop(mq.matches);
-    const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
-    mq.addEventListener("change", h);
-    return () => mq.removeEventListener("change", h);
+    setViewMode(mq.matches ? "week" : "day");
   }, []);
 
   // Ligne "maintenant" + jour du jour surligné, recalculés chaque minute.
@@ -263,7 +264,7 @@ export default function WeeklyAgenda({
     setRepeatDays([]);
     setEditingBlockId(null);
     setModalOpen(true);
-    setReminderStatus("idle");
+    setNewTaskText("");
     setError(null);
   }
 
@@ -277,11 +278,13 @@ export default function WeeklyAgenda({
       color: block.color,
       icon: block.icon,
       notes: block.notes,
+      tasks: block.tasks ?? [],
+      notify: block.notify ?? false,
     });
     setRepeatDays([]);
     setEditingBlockId(block.id);
     setModalOpen(true);
-    setReminderStatus("idle");
+    setNewTaskText("");
     setError(null);
   }
 
@@ -296,7 +299,7 @@ export default function WeeklyAgenda({
     setRepeatDays([]);
     setEditingBlockId(null);
     setModalOpen(true);
-    setReminderStatus("idle");
+    setNewTaskText("");
     setError(null);
   }
 
@@ -304,6 +307,18 @@ export default function WeeklyAgenda({
     setModalOpen(false);
     setEditingBlockId(null);
     setRepeatDays([]);
+    setNewTaskText("");
+  }
+
+  function addTaskToForm() {
+    const t = newTaskText.trim();
+    if (!t) return;
+    setForm((f) => ({ ...f, tasks: [...f.tasks, t] }));
+    setNewTaskText("");
+  }
+
+  function removeTaskFromForm(index: number) {
+    setForm((f) => ({ ...f, tasks: f.tasks.filter((_, i) => i !== index) }));
   }
 
   async function handleSave() {
@@ -361,18 +376,6 @@ export default function WeeklyAgenda({
     setBlocks((prev) => prev.filter((b) => b.id !== blockId));
     await deleteScheduleBlock?.(blockId);
     close();
-  }
-
-  async function handleCreateReminder() {
-    if (!editingBlockId || !createReminderFromBlock || !form.label.trim()) return;
-    setReminderStatus("saving");
-    const res = await createReminderFromBlock(form.label.trim(), form.start_time, DAY_CODES[form.day_of_week]);
-    if (res.error) {
-      setReminderStatus("idle");
-      setError(res.error);
-    } else {
-      setReminderStatus("done");
-    }
   }
 
   function openDayOptions(day: number) {
@@ -466,6 +469,9 @@ export default function WeeklyAgenda({
               <p className="flex items-center gap-1 text-[9px] font-bold text-white leading-tight truncate">
                 {showIcon && Icon && <Icon size={9} style={{ flexShrink: 0 }} strokeWidth={2.2} />}
                 <span className="truncate">{block.label}</span>
+                {block.tasks && block.tasks.length > 0 && (
+                  <span style={{ width: 4, height: 4, borderRadius: "50%", background: block.color, flexShrink: 0 }} title="Des tâches sont prévues" />
+                )}
               </p>
               <p className="text-[8px] text-[#F5EDED]/50 leading-tight">
                 {block.start_time.slice(0, 5)} à {block.end_time.slice(0, 5)}
@@ -505,8 +511,47 @@ export default function WeeklyAgenda({
   const overlapBlocks = modalOpen ? findOverlaps(blocks, form.day_of_week, form.start_time, form.end_time, editingBlockId) : [];
   const { totalMinutes, topCategories } = computeStats(blocks);
 
+  // Bloc en cours : celui qu'on est censé être en train de vivre là,
+  // maintenant — pour répondre "je suis dans quel bloc, qu'est-ce que
+  // j'étais censé y faire" sans avoir à chercher dans la grille.
+  const nowMinutesForCurrent = now ? now.getHours() * 60 + now.getMinutes() : null;
+  const currentBlock =
+    todayDow !== null && nowMinutesForCurrent !== null
+      ? blocks.find(
+          (b) =>
+            b.day_of_week === todayDow &&
+            timeToMinutes(b.start_time) <= nowMinutesForCurrent &&
+            timeToMinutes(b.end_time) > nowMinutesForCurrent
+        ) ?? null
+      : null;
+
   return (
     <div className="space-y-3">
+      {/* Bloc en cours, avec ses tâches — le rappel visuel "je fais quoi là" */}
+      {currentBlock && (
+        <div className="ep-card" style={{ padding: "14px 16px", borderLeft: `3px solid ${currentBlock.color}` }}>
+          <div className="flex items-center gap-2 mb-1.5">
+            {currentBlock.icon && AGENDA_ICON_MAP[currentBlock.icon] && (() => {
+              const Icon = AGENDA_ICON_MAP[currentBlock.icon!];
+              return <Icon size={13} style={{ color: currentBlock.color, flexShrink: 0 }} strokeWidth={2.2} />;
+            })()}
+            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
+              En ce moment jusqu&apos;à {currentBlock.end_time.slice(0, 5)}
+            </p>
+          </div>
+          <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>{currentBlock.label}</p>
+          {currentBlock.tasks && currentBlock.tasks.length > 0 && (
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 4 }}>
+              {currentBlock.tasks.map((t, i) => (
+                <li key={i} style={{ display: "flex", gap: 6, fontSize: 12, color: "rgba(245,237,237,0.65)", lineHeight: 1.4 }}>
+                  <span style={{ color: currentBlock.color, flexShrink: 0 }}>•</span> {t}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
       {/* Stats de la semaine */}
       {blocks.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch" }}>
@@ -555,8 +600,25 @@ export default function WeeklyAgenda({
         </div>
       )}
 
-      {/* Vue semaine (desktop) / vue jour (mobile) */}
-      {isDesktop ? (
+      {/* Bascule Semaine / Jour — disponible sur tous les écrans, plus
+          seulement en fonction de la largeur (mobile ne pouvait avant que
+          voir un jour à la fois, jamais toute la semaine d'un coup). */}
+      <div className="flex gap-1.5">
+        <button
+          onClick={() => setViewMode("day")}
+          className={`${chipClass} ${viewMode === "day" ? chipActive : chipInactive}`}
+        >
+          Jour
+        </button>
+        <button
+          onClick={() => setViewMode("week")}
+          className={`${chipClass} ${viewMode === "week" ? chipActive : chipInactive}`}
+        >
+          Semaine
+        </button>
+      </div>
+
+      {viewMode === "week" ? (
         <div className="overflow-x-auto -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="flex" style={{ minWidth: 760 }}>
             <div style={{ width: 40, flexShrink: 0 }}>
@@ -639,6 +701,15 @@ export default function WeeklyAgenda({
             <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)" }}>
               {DAY_LABELS[viewingBlock.day_of_week]} · {viewingBlock.start_time.slice(0, 5)} à {viewingBlock.end_time.slice(0, 5)}
             </p>
+            {viewingBlock.tasks && viewingBlock.tasks.length > 0 && (
+              <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
+                {viewingBlock.tasks.map((t, i) => (
+                  <li key={i} style={{ display: "flex", gap: 6, fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.4 }}>
+                    <span style={{ color: viewingBlock.color, flexShrink: 0 }}>•</span> {t}
+                  </li>
+                ))}
+              </ul>
+            )}
             {viewingBlock.notes && (
               <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 10, padding: 12 }}>
                 <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>
@@ -865,22 +936,70 @@ export default function WeeklyAgenda({
               />
             </div>
 
-            {editingBlockId && createReminderFromBlock && (
-              <button
-                type="button"
-                onClick={handleCreateReminder}
-                disabled={reminderStatus !== "idle"}
-                className="flex items-center justify-center gap-1.5 text-[11px] font-semibold rounded-lg px-3 py-2.5 border transition-colors w-full"
+            <div>
+              <label className={labelClass}>
+                À faire dans ce bloc (optionnel)
+              </label>
+              <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 8px", lineHeight: 1.4 }}>
+                Une tâche, un objectif du jour, ou même un prompt à coller dans Claude — ça s&apos;affiche dès que tu arrives dans ce bloc.
+              </p>
+              {form.tasks.length > 0 && (
+                <div className="space-y-1.5 mb-2">
+                  {form.tasks.map((t, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-[#0D0000] border border-[#890404]/20 rounded-lg px-3 py-2">
+                      <span style={{ fontSize: 12, color: "#F5EDED", flex: 1, wordBreak: "break-word" }}>{t}</span>
+                      <button type="button" onClick={() => removeTaskFromForm(i)} className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
+                        <X size={13} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-1.5">
+                <input
+                  value={newTaskText}
+                  onChange={(e) => setNewTaskText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      addTaskToForm();
+                    }
+                  }}
+                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..."
+                  className={inputClass}
+                />
+                <button type="button" onClick={addTaskToForm} className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
+                  <Plus size={13} />
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setForm((f) => ({ ...f, notify: !f.notify }))}
+              className="flex items-center justify-between w-full rounded-lg px-3 py-2.5 border transition-colors"
+              style={{
+                borderColor: form.notify ? "rgba(74,222,128,0.4)" : "rgba(224,30,30,0.25)",
+                background: form.notify ? "rgba(74,222,128,0.08)" : "transparent",
+              }}
+            >
+              <span className="flex items-center gap-2" style={{ fontSize: 11.5, fontWeight: 600, color: form.notify ? "#4ade80" : "rgba(245,237,237,0.55)" }}>
+                <Bell size={13} /> Me notifier au début de ce bloc
+              </span>
+              <span
                 style={{
-                  borderColor: reminderStatus === "done" ? "rgba(74,222,128,0.4)" : "rgba(224,30,30,0.25)",
-                  color: reminderStatus === "done" ? "#4ade80" : "rgba(245,237,237,0.55)",
-                  background: "transparent",
+                  width: 34, height: 19, borderRadius: 10, flexShrink: 0, position: "relative",
+                  background: form.notify ? "#4ade80" : "rgba(245,237,237,0.15)", transition: "background 0.15s",
                 }}
               >
-                {reminderStatus === "done" ? <Check size={12} /> : <Bell size={12} />}
-                {reminderStatus === "saving" ? "…" : reminderStatus === "done" ? "Rappel créé" : "Créer un rappel push pour ce bloc"}
-              </button>
-            )}
+                <span
+                  style={{
+                    position: "absolute", top: 2, left: form.notify ? 17 : 2, width: 15, height: 15,
+                    borderRadius: "50%", background: "#fff", transition: "left 0.15s",
+                  }}
+                />
+              </span>
+            </button>
 
             {error && <p className="text-xs text-red-400">{error}</p>}
 
