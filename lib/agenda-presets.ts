@@ -1,5 +1,5 @@
 import {
-  Dumbbell, Briefcase, UtensilsCrossed, Moon, Car, Users, BookOpen, Coffee,
+  Dumbbell, Briefcase, UtensilsCrossed, Moon, Car, Users, BookOpen, Coffee, Footprints,
   type LucideIcon,
 } from "lucide-react";
 
@@ -25,6 +25,7 @@ export const AGENDA_PRESETS: AgendaPreset[] = [
   { key: "rendezvous", label: "Rendez-vous", icon: Users,          color: "#f472b6" },
   { key: "etude",      label: "Étude",       icon: BookOpen,       color: "#60a5fa" },
   { key: "pause",      label: "Pause",       icon: Coffee,         color: "#fbbf24" },
+  { key: "pas",        label: "Pas",         icon: Footprints,     color: "#4ade80" },
 ];
 
 export const AGENDA_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(

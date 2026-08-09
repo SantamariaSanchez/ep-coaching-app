@@ -20,7 +20,7 @@ import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type BadgeKey = "pending" | "messages" | "questions";
+type BadgeKey = "pending" | "messages" | "questions" | "clientsGroup";
 
 type TabItem = {
   label: string;
@@ -104,21 +104,17 @@ const COACH_TABS: TabItem[] = [
     exactMatch: true,
   },
   {
-    // La bibliothèque de modèles vit sous l'onglet Clients : on conçoit un
-    // programme ou une diète dans la fiche d'un client, les modèles sont le
-    // point de départ de ce travail, pas une section de contenu à part.
+    // Section Clients regroupée : Clients + Modèles + Messages vivent
+    // ensemble (la bibliothèque de modèles est le point de départ du
+    // travail fait dans la fiche d'un client, et les messages concernent
+    // ces mêmes clients) — un seul onglet en bas plutôt que Clients et
+    // Messages séparés, Messages reste accessible via la bande de
+    // sous-onglets qui s'affiche une fois sur "Clients".
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients", "programmation"],
-    badge: "pending",
-  },
-  {
-    label: "Messages",
-    icon: MessageCircle,
-    href: "/dashboard/coach/messages",
-    matchSegments: ["messages"],
-    badge: "messages",
+    matchSegments: ["clients", "programmation", "messages"],
+    badge: "clientsGroup",
   },
   {
     label: "Live",
@@ -593,9 +589,13 @@ export default function DashboardNav({
   }
 
   function getBadgeCount(badge?: BadgeKey): number {
-    if (badge === "pending")   return pendingCount;
-    if (badge === "messages")  return unreadMessages;
-    if (badge === "questions") return openQuestions;
+    if (badge === "pending")      return pendingCount;
+    if (badge === "messages")     return unreadMessages;
+    if (badge === "questions")    return openQuestions;
+    // Onglet Clients fusionné (Clients + Modèles + Messages) : le badge doit
+    // rester visible pour les deux signaux qu'il remplace, sinon un message
+    // non lu devient invisible tant qu'on n'a pas ouvert l'onglet.
+    if (badge === "clientsGroup") return pendingCount + unreadMessages;
     return 0;
   }
 
