@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search } from "lucide-react";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
@@ -291,6 +292,22 @@ export default function ClientNutritionView({
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
+
+  // Arrivée depuis une notif de rappel de repas (cron meal-reminders) :
+  // ?meal=<slot> — on saute direct au repas concerné dans le plan, en
+  // évidence quelques secondes, plutôt que de laisser chercher dans la
+  // page. Lu une seule fois au montage : la valeur ne doit pas réapparaître
+  // si le client navigue ensuite dans la page (changement d'onglet, etc.).
+  const searchParams = useSearchParams();
+  const [highlightSlot, setHighlightSlot] = useState<string | null>(() => searchParams.get("meal"));
+  useEffect(() => {
+    if (!highlightSlot) return;
+    const el = document.getElementById(`diet-plan-slot-${highlightSlot}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    const t = setTimeout(() => setHighlightSlot(null), 3000);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Liste de courses — coché persiste localement (utile en cours de courses),
   // remis à zéro manuellement plutôt qu'automatiquement pour ne pas perdre
@@ -1058,6 +1075,7 @@ export default function ClientNutritionView({
           todayLogs={todayLogs}
           onToggle={handleTogglePlanItem}
           isOwnPlan={isOwnPlan}
+          highlightSlot={highlightSlot}
         />
       )}
 
@@ -2047,11 +2065,13 @@ function DietPlanCard({
   todayLogs,
   onToggle,
   isOwnPlan = false,
+  highlightSlot = null,
 }: {
   plan: DietPlanWithMeals;
   todayLogs: FoodLogWithFood[];
   onToggle: (meal: DietPlanMeal, matchedLogId: string | undefined) => void;
   isOwnPlan?: boolean;
+  highlightSlot?: string | null;
 }) {
   const [expanded, setExpanded] = useState(true);
   const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
@@ -2154,7 +2174,15 @@ function DietPlanCard({
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
           {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
-            <div key={slot.key}>
+            <div
+              key={slot.key}
+              id={`diet-plan-slot-${slot.key}`}
+              className={
+                highlightSlot === slot.key
+                  ? "-mx-2 px-2 py-1.5 rounded-xl border border-[#E01E1E]/40 animate-pulse-glow"
+                  : undefined
+              }
+            >
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
                 {slot.label}
               </p>
