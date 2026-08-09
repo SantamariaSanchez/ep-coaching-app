@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { notifyUser } from "@/lib/notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
@@ -213,6 +214,18 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
         </div>`,
       });
     } catch (e) { console.error("Coach email error:", e); }
+  }
+
+  // Notif in-app + push au coach assigné — jusqu'ici seul l'email existait,
+  // donc rien n'apparaissait dans sa cloche de notifications à l'inscription
+  // d'un nouveau membre.
+  if (coach) {
+    notifyUser(coach.id, {
+      type: "new_member_signup",
+      title: "👋 Nouveau membre inscrit",
+      body: `${fullName} vient de rejoindre la communauté.`,
+      url: "/dashboard/coach/communaute/membres",
+    }).catch(() => {});
   }
 
   notifyAdmin("Nouvelle inscription membre/client", [

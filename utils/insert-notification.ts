@@ -32,6 +32,34 @@ export async function insertNotification({
 }
 
 /**
+ * True si une notification de ce type, envoyée par ce senderId, a déjà été
+ * créée aujourd'hui pour userId. Utilisé pour les triggers déclenchés par
+ * des actions répétées dans la journée (log nutrition, pas...) — sans ce
+ * garde-fou, chaque appel enverrait une nouvelle notification/push et
+ * noierait vite le coach sous les doublons du même événement.
+ */
+export async function alreadyNotifiedToday(
+  userId: string,
+  type: string,
+  senderId?: string
+): Promise<boolean> {
+  const supabase = createAdminClient();
+  const todayStart = new Date();
+  todayStart.setUTCHours(0, 0, 0, 0);
+
+  let query = supabase
+    .from("notifications")
+    .select("id", { count: "exact", head: true })
+    .eq("user_id", userId)
+    .eq("type", type)
+    .gte("created_at", todayStart.toISOString());
+  if (senderId) query = query.eq("sender_id", senderId);
+
+  const { count } = await query;
+  return (count ?? 0) > 0;
+}
+
+/**
  * Returns the coach ASSIGNED to a given client — jamais "un" coach au
  * hasard : en multi-coach, notifier le mauvais coach serait une vraie
  * fuite (il verrait qu'un client qui n'est pas le sien vient d'agir).

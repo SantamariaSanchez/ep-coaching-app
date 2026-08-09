@@ -1,8 +1,10 @@
 "use server";
 
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import { notifyUsers } from "@/lib/notify";
 
 // Ce fichier dupliquait requireCoach() à la main (getUser + lecture du rôle),
 // et passait donc à côté du contrôle de force de session : un compte coach
@@ -42,6 +44,19 @@ export async function updateFormation(formationId: string, data: {
   await requireCoachForFormations();
   const supabase = await createServerSupabase();
 
+  // Contenu global (Académie EP, pas par coach) : on regarde l'état avant
+  // update pour ne notifier tous les clients que sur le vrai passage
+  // non-publiée → publiée, jamais sur une simple resauvegarde du titre.
+  let wasUnpublished = false;
+  if (data.is_published === true) {
+    const { data: current } = await supabase
+      .from("formations")
+      .select("is_published")
+      .eq("id", formationId)
+      .maybeSingle();
+    wasUnpublished = current?.is_published !== true;
+  }
+
   const { error } = await supabase
     .from("formations")
     .update(data)
@@ -50,7 +65,32 @@ export async function updateFormation(formationId: string, data: {
   if (error) return { error: error.message };
   revalidatePath("/dashboard/client/formations", "layout");
   revalidatePath("/dashboard/coach/formations", "layout");
+
+  if (wasUnpublished) {
+    notifyNewFormationPublished(formationId, data.title).catch(() => {});
+  }
+
   return { success: true };
+}
+
+async function notifyNewFormationPublished(formationId: string, titleOverride?: string): Promise<void> {
+  const admin = createAdminClient();
+  let title = titleOverride;
+  if (!title) {
+    const { data: formation } = await admin.from("formations").select("title").eq("id", formationId).maybeSingle();
+    title = formation?.title ?? "Une nouvelle formation";
+  }
+
+  const { data: clients } = await admin.from("profiles").select("id").eq("role", "client");
+  const clientIds = (clients ?? []).map((c) => c.id as string);
+  if (clientIds.length === 0) return;
+
+  await notifyUsers(clientIds, {
+    type: "new_formation_published",
+    title: "🎓 Nouvelle formation disponible",
+    body: `« ${title} » vient d'être publiée dans l'Académie EP.`,
+    url: `/dashboard/client/formations/${formationId}`,
+  });
 }
 
 export async function updateModuleTitle(moduleId: string, title: string) {

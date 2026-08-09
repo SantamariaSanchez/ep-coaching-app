@@ -4,6 +4,8 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { awardPoints, POINTS } from "@/lib/gamification";
+import { getCoachForClient } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -106,39 +108,59 @@ export async function POST(
 
   awardPoints(guard.userId, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
 
-  // 4. Email notification to coach
+  // 4. Notification au coach ASSIGNÉ (in-app + push + email) — auparavant
+  // l'email partait vers une adresse en dur (peccoux.manu@gmail.com), donc
+  // tous les coachs tiers voyaient leurs séances client atterrir dans la
+  // boîte mail du fondateur au lieu de la leur, et rien n'apparaissait dans
+  // la cloche de notifications côté coach.
   const profile = await getProfile(guard.userId);
   const clientName = profile?.full_name ?? "Un client";
+  const dayLabel = (session as { day_label: string }).day_label;
   const prLine =
     body.prs.length > 0
       ? `<p>🏆 <strong>${body.prs.length} nouveau${body.prs.length > 1 ? "x" : ""} PR</strong> : ${body.prs.map((p) => `${p.exerciseName} ${p.weightKg}kg`).join(", ")}</p>`
       : "";
+  const prSummary = body.prs.length > 0 ? ` 🏆 ${body.prs.length} nouveau${body.prs.length > 1 ? "x" : ""} PR.` : "";
 
-  try {
-    await sendBrevoEmail({
-      to: "peccoux.manu@gmail.com",
-      subject: `Séance terminée : ${clientName}`,
-      htmlContent: `
-        <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-          <h2 style="color:#E01E1E;margin-top:0;">💪 Séance terminée</h2>
-          <p><strong>${clientName}</strong> vient de terminer sa séance <em>${(session as { day_label: string }).day_label}</em>.</p>
-          <ul style="line-height:2;padding-left:16px;">
-            <li>Durée : ${body.duration_minutes} min</li>
-            <li>Énergie : ${body.energy_level}/5</li>
-            <li>Pump : ${body.pump}/5</li>
-            <li>Feeling : ${body.general_feeling}/5</li>
-          </ul>
-          ${prLine}
-          <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
-             style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
-                    text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
-            Voir le logbook
-          </a>
-        </div>
-      `,
-    });
-  } catch {
-    // email failure is non-blocking
+  const coach = await getCoachForClient(guard.userId);
+
+  if (coach) {
+    notifyUser(coach.id, {
+      type: "session_complete",
+      title: "💪 Séance terminée",
+      body: `${clientName} a terminé « ${dayLabel} » (${body.duration_minutes} min).${prSummary}`,
+      url: `/dashboard/coach/clients/${guard.userId}/logbook`,
+      senderId: guard.userId,
+    }).catch(() => {});
+
+    if (coach.email) {
+      try {
+        await sendBrevoEmail({
+          to: coach.email,
+          subject: `Séance terminée : ${clientName}`,
+          htmlContent: `
+            <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
+              <h2 style="color:#E01E1E;margin-top:0;">💪 Séance terminée</h2>
+              <p><strong>${clientName}</strong> vient de terminer sa séance <em>${dayLabel}</em>.</p>
+              <ul style="line-height:2;padding-left:16px;">
+                <li>Durée : ${body.duration_minutes} min</li>
+                <li>Énergie : ${body.energy_level}/5</li>
+                <li>Pump : ${body.pump}/5</li>
+                <li>Feeling : ${body.general_feeling}/5</li>
+              </ul>
+              ${prLine}
+              <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
+                 style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
+                        text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
+                Voir le logbook
+              </a>
+            </div>
+          `,
+        });
+      } catch {
+        // email failure is non-blocking
+      }
+    }
   }
 
   return NextResponse.json({ ok: true });

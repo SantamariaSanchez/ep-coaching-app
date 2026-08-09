@@ -3,6 +3,9 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth-guards";
+import { getProfile, isSubscribed } from "@/utils/auth";
+import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
 
 // Les pas sont suivis côté client (/dashboard/client/steps) comme côté coach
 // pour lui-même (/dashboard/coach/moi/steps), d'où requireAuth() plutôt qu'un
@@ -100,10 +103,52 @@ export async function logSteps(
     if (error) return { error: "Erreur lors de l'enregistrement." };
     revalidatePath("/dashboard/client/steps");
     revalidatePath("/dashboard/coach/moi/steps");
+
+    // Fire-and-forget — un client qui remonte au-dessus de son objectif (ex.
+    // en éditant son chiffre plus tard dans la journée) ne doit pas relancer
+    // une notification, d'où le garde-fou "une fois par jour".
+    notifyCoachIfGoalReached(userId, logDate, stepsActual).catch(() => {});
+
     return {};
   } catch {
     return { error: "Erreur inattendue." };
   }
+}
+
+// Réservé aux clients coachés — voir la même remarque dans
+// app/dashboard/client/nutrition/actions.ts. Un coach qui logue ses propres
+// pas (page Moi > Pas) n'a normalement pas de coach_id, donc getCoachForClient
+// renvoie null et ce garde ne fait rien : pas d'auto-notification.
+async function notifyCoachIfGoalReached(clientId: string, logDate: string, stepsActual: number): Promise<void> {
+  const profile = await getProfile(clientId);
+  if (!isSubscribed(profile)) return;
+
+  const coach = await getCoachForClient(clientId);
+  if (!coach) return;
+
+  if (await alreadyNotifiedToday(coach.id, "steps_goal_reached", clientId)) return;
+
+  const supabase = await createServerSupabase();
+  const { data: settings } = await supabase
+    .from("step_settings")
+    .select("daily_goal")
+    .eq("client_id", clientId)
+    .maybeSingle();
+
+  const goal = (settings as { daily_goal: number | null } | null)?.daily_goal;
+  if (!goal || goal <= 0 || stepsActual < goal) return;
+
+  const clientName = profile?.full_name ?? "Un client";
+  await notifyUser(coach.id, {
+    type: "steps_goal_reached",
+    title: "🚶 Objectif pas atteint",
+    body: `${clientName} a atteint son objectif de pas le ${logDate} (${stepsActual.toLocaleString("fr-FR")} pas).`,
+    // Pas de vue pas-à-pas dédiée côté coach pour l'instant (le suivi des
+    // pas est aujourd'hui self-serve côté client) — on renvoie vers la
+    // fiche client, la destination la plus utile disponible.
+    url: `/dashboard/coach/clients/${clientId}`,
+    senderId: clientId,
+  });
 }
 
 // Transforme une habitude de routine en rappel push quotidien, en un tap —

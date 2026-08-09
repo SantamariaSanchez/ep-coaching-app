@@ -8,6 +8,8 @@ import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
 import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
+import { notifyUser } from "@/lib/notify";
 
 // Self-serve nutrition targets — only available to free-tier community
 // members. They set and adjust their own targets, no coach review.
@@ -77,6 +79,42 @@ export async function saveOwnNutritionProfile(
   return {};
 }
 
+// Réservé aux clients coachés — un membre gratuit sans coach dédié ne
+// notifierait que le fondateur par défaut, pour potentiellement des
+// milliers de comptes.
+async function notifyCoachIfDayWellLogged(clientId: string, logDate: string): Promise<void> {
+  const profile = await getProfile(clientId);
+  if (!isSubscribed(profile)) return;
+
+  const coach = await getCoachForClient(clientId);
+  if (!coach) return;
+
+  if (await alreadyNotifiedToday(coach.id, "nutrition_day_logged", clientId)) return;
+
+  const admin = createAdminClient();
+  const [{ data: logs }, { data: nutritionProfile }] = await Promise.all([
+    admin.from("food_logs").select("calories").eq("client_id", clientId).eq("logged_at", logDate),
+    admin.from("nutrition_profiles").select("calories_target").eq("client_id", clientId).maybeSingle(),
+  ]);
+
+  const target = (nutritionProfile as { calories_target: number | null } | null)?.calories_target;
+  if (!target || target <= 0) return;
+
+  const totalCalories = (logs ?? []).reduce((sum, l) => sum + ((l as { calories: number }).calories ?? 0), 0);
+  // Repas suffisamment remplis pour que ce soit une vraie journée loguée,
+  // pas juste une collation isolée — pas besoin d'atteindre pile l'objectif.
+  if (totalCalories < target * 0.7) return;
+
+  const clientName = profile?.full_name ?? "Un client";
+  await notifyUser(coach.id, {
+    type: "nutrition_day_logged",
+    title: "🥗 Journée nutrition bien loguée",
+    body: `${clientName} a logué ${Math.round(totalCalories)} kcal aujourd'hui, proche de son objectif.`,
+    url: `/dashboard/coach/clients/${clientId}/nutrition`,
+    senderId: clientId,
+  });
+}
+
 export async function addFoodLog(params: {
   foodId: string | null;
   mealSlot: string;
@@ -115,6 +153,12 @@ export async function addFoodLog(params: {
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
 
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
+
+    // Notifie le coach une fois que la journée est bien remplie plutôt qu'à
+    // chaque aliment ajouté (sinon un client qui logue 6 fois par jour
+    // enverrait 6 notifications) — fire-and-forget, ne doit jamais faire
+    // échouer l'ajout.
+    notifyCoachIfDayWellLogged(guard.userId, params.loggedAt).catch(() => {});
 
     return { id: data.id };
   } catch {
