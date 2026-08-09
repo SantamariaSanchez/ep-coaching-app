@@ -111,6 +111,11 @@ function CreateExerciseForm({
   );
 }
 
+interface RecentExercise {
+  name: string;
+  muscleGroup: string;
+}
+
 export default function ExercisePicker({ onAdd }: Props) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -120,13 +125,27 @@ export default function ExercisePicker({ onAdd }: Props) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
 
+  // Récents + plus loggués par ce client — même logique que
+  // recentFoods/mostUsedFoods dans ClientNutritionView.tsx, pour ne pas
+  // avoir à rechercher un nom à chaque fois qu'on ajoute un exercice
+  // hors-programme en séance.
+  const [recentExercises, setRecentExercises] = useState<RecentExercise[]>([]);
+  const [mostUsedExercises, setMostUsedExercises] = useState<RecentExercise[]>([]);
+
   useEffect(() => {
     if (!open || fetched) return;
     setLoading(true);
-    fetch("/api/exercise-library")
-      .then((r) => r.json())
-      .then((data: { exercises?: LibraryExercise[] }) => {
-        setLibrary(data.exercises ?? []);
+    Promise.all([
+      fetch("/api/exercise-library").then((r) => r.json()),
+      fetch("/api/exercise-library/recent").then((r) => r.json()).catch(() => ({})),
+    ])
+      .then(([libData, recentData]: [
+        { exercises?: LibraryExercise[] },
+        { recent?: RecentExercise[]; mostUsed?: RecentExercise[] },
+      ]) => {
+        setLibrary(libData.exercises ?? []);
+        setRecentExercises(recentData.recent ?? []);
+        setMostUsedExercises(recentData.mostUsed ?? []);
         setFetched(true);
       })
       .catch(() => {})
@@ -161,6 +180,11 @@ export default function ExercisePicker({ onAdd }: Props) {
 
   function select(ex: LibraryExercise) {
     onAdd({ name: ex.name, muscleGroup: ex.muscle_group });
+    close();
+  }
+
+  function selectRecent(ex: RecentExercise) {
+    onAdd({ name: ex.name, muscleGroup: ex.muscleGroup });
     close();
   }
 
@@ -250,6 +274,58 @@ export default function ExercisePicker({ onAdd }: Props) {
                 <div className="flex justify-center py-8">
                   <div className="w-5 h-5 border-2 border-[#E01E1E] border-t-transparent rounded-full animate-spin" />
                 </div>
+              )}
+
+              {!loading && !search && !activeGroup && recentExercises.length > 0 && (
+                <>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-0.5">
+                    Récents
+                  </p>
+                  {recentExercises.map((ex) => (
+                    <button
+                      key={`recent-${ex.name}`}
+                      onClick={() => selectRecent(ex)}
+                      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3 py-2.5 text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
+                        <Dumbbell size={14} className="text-[#F5EDED]/30" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-white truncate">{ex.name}</p>
+                        <p className="text-[9px] text-[#F5EDED]/35 truncate">{ex.muscleGroup}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {!loading && !search && !activeGroup && mostUsedExercises.length > 0 && (
+                <>
+                  <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
+                    Plus loggués
+                  </p>
+                  {mostUsedExercises.map((ex) => (
+                    <button
+                      key={`mostused-${ex.name}`}
+                      onClick={() => selectRecent(ex)}
+                      className="w-full flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3 py-2.5 text-left transition-colors"
+                    >
+                      <div className="w-8 h-8 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
+                        <Dumbbell size={14} className="text-[#F5EDED]/30" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-white truncate">{ex.name}</p>
+                        <p className="text-[9px] text-[#F5EDED]/35 truncate">{ex.muscleGroup}</p>
+                      </div>
+                    </button>
+                  ))}
+                </>
+              )}
+
+              {!loading && !search && !activeGroup && (recentExercises.length > 0 || mostUsedExercises.length > 0) && (
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 pt-1.5">
+                  Toute la bibliothèque
+                </p>
               )}
 
               {!loading &&

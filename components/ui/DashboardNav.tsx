@@ -153,7 +153,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [{ label: "Tableau de bord", icon: Home, segment: "" }],
   },
   {
-    group: "Gestion",
+    group: "Clients",
     items: [
       { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
       // Juste sous Clients : la conception d'un programme ou d'une diète se
