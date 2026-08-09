@@ -33,12 +33,14 @@ import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { StepRoutineItem, StepLog } from "@/utils/steps";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
+import type { MindsetProfile, MindsetHabitLog } from "@/utils/mindset";
 import WeeklyAgenda from "./WeeklyAgenda";
 import StepsClient from "@/components/steps/StepsClient";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import ClientProgramView from "./ClientProgramView";
 import ClientBilanView from "./ClientBilanView";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
+import CoachClientMindsetView from "@/components/coach/CoachClientMindsetView";
 import CoachClientPhotosView from "./CoachClientPhotosView";
 import CheckinDaySettings from "./CheckinDaySettings";
 import CheckinCard from "./CheckinCard";
@@ -57,7 +59,7 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass, Moon,
+  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass, Moon, Brain,
 } from "lucide-react";
 import SubscriptionToggle from "./SubscriptionToggle";
 
@@ -78,6 +80,7 @@ const TABS = [
   { key: "agenda",    label: "Agenda",    icon: CalendarDays },
   { key: "pas",       label: "Pas",       icon: Footprints },
   { key: "sommeil",   label: "Sommeil",   icon: Moon },
+  { key: "mindset",   label: "Mindset",   icon: Brain },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -244,6 +247,8 @@ export default function ClientProfileTabs({
   deleteSupplement,
   dietTemplates,
   saveDietAsTemplate,
+  mindsetProfile,
+  mindsetHabitLogs,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -324,6 +329,10 @@ export default function ClientProfileTabs({
     objective?: string,
     notes?: string
   ) => Promise<{ error?: string; id?: string }>;
+  // Mindset : profil de quiz + habitudes, en lecture seule (voir
+  // CoachClientMindsetView). Le journal reste volontairement absent d'ici.
+  mindsetProfile: MindsetProfile | null;
+  mindsetHabitLogs: MindsetHabitLog[];
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -606,6 +615,16 @@ export default function ClientProfileTabs({
             connecte sa bague Oura depuis son espace.
           </p>
           <TrackingClient logs={biometricLogs} insights={biometricInsights} ouraConnected={clientHasOura} readOnly />
+        </div>
+      )}
+
+      {activeTab === "mindset" && (
+        <div>
+          <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
+            Profil mindset et habitudes du client. Lecture seule, c&apos;est lui qui remplit son quiz et
+            coche ses habitudes depuis son espace.
+          </p>
+          <CoachClientMindsetView profile={mindsetProfile} habitLogs={mindsetHabitLogs} />
         </div>
       )}
 

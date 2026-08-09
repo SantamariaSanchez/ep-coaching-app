@@ -40,6 +40,7 @@ import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { getMindsetProfile, getHabitLogs } from "@/utils/mindset";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { saveClientIntake, addPeriodLog, deletePeriodLog, updateClientStepGoal, sendIntakeReminder } from "./intake/actions";
 import { generatePlanSuggestions } from "./autogenerate/actions";
@@ -80,6 +81,9 @@ export default async function ClientDetailPage({
   if (!client) notFound();
 
   const today = new Date().toISOString().split("T")[0];
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];
 
   const [
     points,
@@ -112,6 +116,8 @@ export default async function ClientDetailPage({
     coachingPhase,
     supplements,
     dietTemplates,
+    mindsetProfile,
+    mindsetHabitLogs,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -145,6 +151,8 @@ export default async function ClientDetailPage({
     client.subscription_status === "active" ? getClientCoachingPhase(id) : Promise.resolve(null),
     getClientSupplements(id),
     getCoachDietTemplates(user.id),
+    getMindsetProfile(id),
+    getHabitLogs(id, thirtyDaysAgoStr),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -268,6 +276,8 @@ export default async function ClientDetailPage({
         deleteSupplement={deleteSupplement}
         dietTemplates={dietTemplates}
         saveDietAsTemplate={createDietTemplateAction}
+        mindsetProfile={mindsetProfile}
+        mindsetHabitLogs={mindsetHabitLogs}
       />
     </div>
   );
