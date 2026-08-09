@@ -126,11 +126,15 @@ export async function notifyCoachNewPhotoUpdate(
 ) {
   const guard = await requireAuth();
   if (!guard.ok) return;
+  // Pointait vers la liste générale des clients (fallait retrouver le bon
+  // client puis cliquer sur l'onglet Photos soi-même) — direct vers sa page
+  // photos maintenant, un tap suffit.
+  const photosUrl = `/dashboard/coach/clients/${clientId}/photos`;
   notifyCoach(clientId, {
     type: "coach_photo",
     title: "Nouvelle photo update",
     body: `${clientName} : ${type} (${category})`,
-    url: "/dashboard/coach/clients",
+    url: photosUrl,
   });
   const coach = await getCoachForClient(clientId);
   if (!coach?.email) return;
@@ -143,7 +147,7 @@ export async function notifyCoachNewPhotoUpdate(
         <p>${clientName} vient d'envoyer une mise à jour photos.</p>
         <p><strong>Type :</strong> ${type}</p>
         <p><strong>Catégorie :</strong> ${category}</p>
-        <a href="${APP_URL}/dashboard/coach/clients"
+        <a href="${APP_URL}${photosUrl}"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
           Voir les photos
