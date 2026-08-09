@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import AccountActions from "@/components/profile/AccountActions";
+import PermissionsCard from "@/components/settings/PermissionsCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 
@@ -29,11 +30,9 @@ export default async function ClientParametresPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Paramètres</h1>
       </div>
 
-      <AccountActions
-        email={profile.email}
-        signOutRedirect="/auth/client"
-        pushSubscribed={!!pushSub}
-      />
+      <PermissionsCard pushSubscribed={!!pushSub} stepsHref="/dashboard/client/steps" />
+
+      <AccountActions email={profile.email} signOutRedirect="/auth/client" />
 
       {/* Optionnelle côté membre : personne n'est forcé, mais l'option existe. */}
       <TwoFactorCard enabled={!!profile.mfa_enabled} mandatory={false} />

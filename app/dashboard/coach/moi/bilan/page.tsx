@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getTodayLog, getClientDailyLogs } from "@/utils/daily-logs";
+import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertCoachDailyLog } from "./actions";
@@ -27,9 +28,10 @@ export default async function CoachMonBilanPage() {
   // fusionné ici, voir components/ui/BilanProgressView. L'ancienne route
   // /dashboard/coach/moi/progression redirige maintenant ici.
   const today = new Date().toISOString().split("T")[0];
-  const [todayLog, allLogs] = await Promise.all([
+  const [todayLog, allLogs, autoSteps] = await Promise.all([
     getTodayLog(user.id),
     getClientDailyLogs(user.id, 90),
+    getTodayStepsActual(user.id),
   ]);
 
   return (
@@ -40,7 +42,7 @@ export default async function CoachMonBilanPage() {
       </div>
 
       <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
-        <DailyBilanForm today={today} existing={todayLog} action={upsertCoachDailyLog} />
+        <DailyBilanForm today={today} existing={todayLog} action={upsertCoachDailyLog} autoSteps={autoSteps} />
       </div>
 
       <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />

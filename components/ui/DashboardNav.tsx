@@ -581,6 +581,23 @@ export default function DashboardNav({
     };
   }, []);
 
+  // Badge natif sur l'icône de l'appli (écran d'accueil, dock, barre des
+  // tâches) — le seul "widget" que le web permet vraiment de poser sur
+  // l'écran d'accueil : pas de contenu visuel façon widget iOS/Android (ça,
+  // c'est réservé aux apps natives), mais un chiffre visible sans même
+  // rouvrir l'appli. Supporté sur Android/Chrome et iOS 16.4+ en PWA
+  // installée ; silencieusement ignoré ailleurs (ex. onglet de navigateur
+  // classique, desktop).
+  useEffect(() => {
+    if (typeof navigator === "undefined" || typeof navigator.setAppBadge !== "function") return;
+    const total = pendingCount + unreadMessages + openQuestions;
+    if (total > 0) {
+      navigator.setAppBadge(total).catch(() => {});
+    } else {
+      navigator.clearAppBadge?.().catch(() => {});
+    }
+  }, [pendingCount, unreadMessages, openQuestions]);
+
   async function handleSignOut() {
     const supabase = createClientSupabase();
     await supabase.auth.signOut();

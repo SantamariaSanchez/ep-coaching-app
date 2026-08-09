@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getTodayLog, getClientDailyLogs } from "@/utils/daily-logs";
 import { getTodayLogs } from "@/utils/nutrition";
+import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertDailyLog } from "./actions";
@@ -20,6 +21,14 @@ export default async function ClientBilanPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/client");
 
+  // Un coach n'a pas de bilan "client" séparé du sien : sans cette
+  // redirection, /dashboard/client/bilan chargeait quand même pour lui (les
+  // daily_logs sont indexés par user id, pas par rôle) mais upsertDailyLog
+  // (requireClient()) refusait ensuite l'enregistrement — la page semblait
+  // fonctionner jusqu'au premier "Enregistrer", qui échouait silencieusement.
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/bilan");
+
   // Le bilan quotidien (poids, sommeil, ressenti) est un outil de suivi
   // autonome accessible à tous les clients, gratuits ou coachés — c'est le
   // cœur du suivi de perte de poids en self-service. La progression
@@ -27,10 +36,11 @@ export default async function ClientBilanPage() {
   // écran plutôt que dans un onglet séparé qui montrait les mêmes données
   // autrement — voir components/ui/BilanProgressView.
   const today = new Date().toISOString().split("T")[0];
-  const [todayLog, allLogs, todayFoodLogs] = await Promise.all([
+  const [todayLog, allLogs, todayFoodLogs, autoSteps] = await Promise.all([
     getTodayLog(user.id),
     getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, today),
+    getTodayStepsActual(user.id),
   ]);
 
   // Evite de refaire calculer les macros a la main : si le client a deja
@@ -56,7 +66,7 @@ export default async function ClientBilanPage() {
       </div>
 
       <div className="animate-scale-in" style={{ marginBottom: 32 }}>
-        <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} />
+        <DailyBilanForm today={today} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} />
       </div>
 
       <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />

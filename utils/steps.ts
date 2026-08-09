@@ -49,6 +49,27 @@ export async function getStepRoutineItems(clientId: string): Promise<StepRoutine
   }
 }
 
+// Juste le total du jour — utilisé par le bilan quotidien pour pré-remplir
+// son propre champ "Pas dans la journée" plutôt que de faire retaper à la
+// main un chiffre que le podomètre (ou une saisie déjà faite dans Pas &
+// routine) a déjà. Une requête dédiée à une ligne plutôt que de tirer
+// getStepLogs(clientId, 30) juste pour filtrer sur aujourd'hui.
+export async function getTodayStepsActual(clientId: string): Promise<number | null> {
+  try {
+    const supabase = await createServerSupabase();
+    const today = new Date().toISOString().split("T")[0];
+    const { data } = await supabase
+      .from("step_logs")
+      .select("steps_actual")
+      .eq("client_id", clientId)
+      .eq("log_date", today)
+      .maybeSingle();
+    return (data as { steps_actual: number } | null)?.steps_actual ?? null;
+  } catch {
+    return null;
+  }
+}
+
 export async function getStepLogs(clientId: string, days = 30): Promise<StepLog[]> {
   try {
     const supabase = await createServerSupabase();

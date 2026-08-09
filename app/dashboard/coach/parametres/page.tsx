@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getCoachBillingInfo } from "@/lib/coach-billing";
 import AccountActions from "@/components/profile/AccountActions";
+import PermissionsCard from "@/components/settings/PermissionsCard";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
 import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
@@ -50,11 +51,9 @@ export default async function CoachParametresPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Paramètres</h1>
       </div>
 
-      <AccountActions
-        email={profile.email}
-        signOutRedirect="/auth/coach"
-        pushSubscribed={!!pushSub}
-      />
+      <PermissionsCard pushSubscribed={!!pushSub} stepsHref="/dashboard/coach/moi/steps" />
+
+      <AccountActions email={profile.email} signOutRedirect="/auth/coach" />
 
       {/* Obligatoire pour le fondateur : ce compte voit tous les membres de la
           plateforme (voir proxy.ts, qui bloque le dashboard sans 2FA). */}

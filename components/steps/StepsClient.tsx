@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, RotateCcw } from "lucide-react";
+import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, RotateCcw, Activity, AlertTriangle } from "lucide-react";
 import type { StepSettings, StepRoutineItem, StepLog } from "@/utils/steps";
+import { usePedometer, PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 
 const QUICK_ADD_AMOUNTS = [500, 1000, 2500, 5000];
 const HEATMAP_WEEKS = 4;
@@ -142,7 +143,64 @@ export default function StepsClient({
   const [reminderTime, setReminderTime] = useState("12:00");
   const [reminderStatus, setReminderStatus] = useState<Record<string, "idle" | "saving" | "done">>({});
 
-  const todaySteps = parseInt(stepsInput) || 0;
+  // "completed" et le total du jour changent souvent (à chaque pas détecté) —
+  // on les reflète dans des refs (tenues à jour via un effet, jamais lues ni
+  // écrites pendant le rendu lui-même) pour que le callback de synchro auto
+  // garde une identité stable — sinon le podomètre réattacherait son
+  // listener devicemotion à chaque pas détecté, voir lib/pedometer.ts — tout
+  // en lisant toujours la valeur la plus fraîche au moment où il se
+  // déclenche vraiment.
+  const manualSteps = parseInt(stepsInput) || 0;
+  const completedRef = useRef(completed);
+  const todayStepsRef = useRef(0);
+
+  useEffect(() => {
+    completedRef.current = completed;
+  }, [completed]);
+
+  const handlePedometerSync = useCallback(
+    async (pedometerTotal: number) => {
+      if (!logSteps) return;
+      // Jamais un simple écrasement : si une saisie manuelle plus haute a été
+      // enregistrée entre deux synchros auto (ex. copie du chiffre d'une
+      // montre connectée), le podomètre ne doit jamais la faire reculer.
+      const merged = Math.max(pedometerTotal, todayStepsRef.current);
+      await logSteps(today, merged, [...completedRef.current]);
+    },
+    [logSteps, today]
+  );
+
+  const pedometer = usePedometer(todayLog?.steps_actual ?? 0, handlePedometerSync);
+
+  // Le total affiché/utilisé partout (barre de progression, heatmap, séries)
+  // est le plus grand des deux sources — jamais une simple bascule qui
+  // ferait disparaître l'un des deux apports.
+  const todaySteps = Math.max(manualSteps, pedometer.steps);
+
+  useEffect(() => {
+    todayStepsRef.current = todaySteps;
+  }, [todaySteps]);
+
+  // Reprise silencieuse au montage si le podomètre était actif lors d'une
+  // session précédente — uniquement quand la plateforme ne demande pas de
+  // geste explicite (Android). Sur iOS, DeviceMotionEvent.requestPermission()
+  // hors interaction directe est ignoré par le navigateur (même constat que
+  // Notification.requestPermission(), voir PushPermission.tsx) : il faut un
+  // vrai tap, donc on affiche plutôt un bouton "Reprendre" dans ce cas.
+  useEffect(() => {
+    if (readOnly) return;
+    let enabled = false;
+    try {
+      enabled = localStorage.getItem(PEDOMETER_ENABLED_KEY) === "1";
+    } catch {
+      // ignore
+    }
+    if (enabled && !pedometer.needsGesture) {
+      pedometer.start();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- volontairement au montage uniquement, voir commentaire ci-dessus
+  }, []);
+
   const pct = Math.min(100, Math.round((todaySteps / Math.max(1, goal)) * 100));
 
   const heatmapWeeks = useMemo(
@@ -181,11 +239,22 @@ export default function StepsClient({
   async function handleReset() {
     if (!logSteps) return;
     setStepsInput("0");
+    // Sans ça, le podomètre republierait son propre cumul au prochain envoi
+    // automatique et annulerait silencieusement la remise à zéro.
+    pedometer.resetCount(0);
     setSaving(true);
     await logSteps(today, 0, [...completed]);
     setSaving(false);
     setSavedAt(Date.now());
     setTimeout(() => setSavedAt(null), 2000);
+  }
+
+  async function handlePedometerToggle() {
+    if (pedometer.status === "active") {
+      pedometer.stop();
+    } else {
+      await pedometer.start();
+    }
   }
 
   async function handleSaveGoal() {
@@ -258,6 +327,46 @@ export default function StepsClient({
         )
       )}
 
+      {/* Podomètre automatique — voir lib/pedometer.ts pour la limite honnête :
+          ça ne compte que pendant que cette page est ouverte à l'écran, pas
+          en tâche de fond façon montre connectée (impossible depuis le web). */}
+      {!readOnly && logSteps && pedometer.status !== "unsupported" && (
+        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Activity size={15} className={pedometer.status === "active" ? "text-green-400 flex-shrink-0" : "text-[#E01E1E] flex-shrink-0"} />
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-white">Podomètre automatique</p>
+                <p className="text-[10px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">
+                  {pedometer.status === "active"
+                    ? "Actif. Compte tes pas tant que l'appli reste ouverte à l'écran."
+                    : pedometer.status === "denied"
+                    ? "Mouvement refusé sur cet appareil."
+                    : pedometer.needsGesture
+                    ? "Compte tes pas tout seul, sans rien taper. Un tap pour démarrer (exigé par ton navigateur)."
+                    : "Compte tes pas tout seul, sans rien taper."}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handlePedometerToggle}
+              className={
+                pedometer.status === "active"
+                  ? "text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-red-400 px-2.5 py-2 flex-shrink-0 transition-colors"
+                  : "flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+              }
+            >
+              {pedometer.status === "active" ? "Désactiver" : "Activer"}
+            </button>
+          </div>
+          {pedometer.error && (
+            <p className="flex items-start gap-1.5 text-[10.5px] text-red-400 mt-2.5 leading-relaxed">
+              <AlertTriangle size={11} className="flex-shrink-0 mt-0.5" /> {pedometer.error}
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Goal + today's progress */}
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
@@ -319,6 +428,11 @@ export default function StepsClient({
 
         {!readOnly && logSteps && (
           <>
+            {pedometer.status === "active" && (
+              <p className="text-[10px] text-[#F5EDED]/25 mb-2">
+                Le podomètre compte pour toi, utilise ceci seulement pour corriger un chiffre.
+              </p>
+            )}
             <div className="flex flex-wrap gap-1.5 mb-2.5">
               {QUICK_ADD_AMOUNTS.map((amount) => (
                 <button

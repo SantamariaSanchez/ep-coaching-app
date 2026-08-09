@@ -25,5 +25,31 @@
       "sizes": "180x180",
       "type": "image/png"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bilan du jour",
+      "short_name": "Bilan",
+      "url": "/dashboard/client/bilan",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Nutrition",
+      "short_name": "Nutrition",
+      "url": "/dashboard/client/nutrition",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Pas et routine",
+      "short_name": "Pas",
+      "url": "/dashboard/client/steps",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "Messages",
+      "short_name": "Messages",
+      "url": "/dashboard/client/messages",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+    }
   ]
 }

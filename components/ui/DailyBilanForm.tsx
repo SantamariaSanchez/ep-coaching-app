@@ -193,8 +193,23 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
   );
 }
 
-function LifestyleCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+function LifestyleCard({
+  today,
+  existing,
+  action,
+  autoSteps,
+}: {
+  today: string;
+  existing: DailyLog | null;
+  action: BilanAction;
+  autoSteps?: number | null;
+}) {
   const [state, formAction, pending] = useActionState(action, null);
+  // Si le bilan du jour n'a pas encore son propre chiffre, on préremplit
+  // avec ce que le podomètre (ou une saisie manuelle déjà faite) a déjà
+  // enregistré dans Pas & routine, plutôt que de refaire taper le même
+  // chiffre une deuxième fois — même logique que nutritionTotals plus bas.
+  const prefillSteps = existing?.steps ?? autoSteps ?? null;
 
   return (
     <form action={formAction}>
@@ -203,10 +218,12 @@ function LifestyleCard({ today, existing, action }: { today: string; existing: D
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label className={lbl}>Pas dans la journée</label>
-            <input name="steps" type="number" min="0" max="100000" defaultValue={existing?.steps ?? ""} placeholder="8500" className={inp} />
+            <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" className={inp} />
             <p className={hint}>
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
-              Regarde dans l&apos;app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d&apos;inventer.
+              {existing?.steps == null && autoSteps != null
+                ? "Rempli automatiquement depuis Pas & routine, modifie si besoin."
+                : "Regarde dans l'app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d'inventer."}
             </p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
@@ -298,17 +315,19 @@ export default function DailyBilanForm({
   existing,
   action,
   nutritionTotals,
+  autoSteps,
 }: {
   today: string;
   existing: DailyLog | null;
   action: BilanAction;
   nutritionTotals?: NutritionTotals | null;
+  autoSteps?: number | null;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <WeightCard today={today} existing={existing} action={action} />
       <TrainingCard today={today} existing={existing} action={action} />
-      <LifestyleCard today={today} existing={existing} action={action} />
+      <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
       <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />
     </div>
   );
