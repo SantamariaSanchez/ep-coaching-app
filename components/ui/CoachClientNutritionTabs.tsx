@@ -9,7 +9,7 @@ import SupplementsSection from "@/components/ui/SupplementsSection";
 import type { ClientIntake } from "@/utils/client-intake";
 import type { ClientSupplement } from "@/utils/supplements";
 import type { RoadmapWithData } from "@/utils/roadmap";
-import { PlanBuilder, PlansListView } from "@/components/ui/DietPlanManager";
+import { PlanBuilder, PlansListView, MODE_LABELS } from "@/components/ui/DietPlanManager";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type {
   NutritionProfile,
@@ -288,6 +288,7 @@ interface Props {
   deactivateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   activateDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
   deleteDietPlan: (clientId: string, planId: string) => Promise<{ error?: string }>;
+  updateDietPlanMode?: (clientId: string, planId: string, mode: DietMode) => Promise<{ error?: string }>;
   suggestSupplement: (clientId: string, input: { name: string; dosage?: string; timing?: string; notes?: string }) => Promise<{ error?: string }>;
   setSupplementStatus: (clientId: string, supplementId: string, status: "active" | "stopped") => Promise<{ error?: string }>;
   deleteSupplement: (clientId: string, supplementId: string) => Promise<{ error?: string }>;
@@ -318,12 +319,14 @@ export default function CoachClientNutritionTabs({
   deactivateDietPlan,
   activateDietPlan,
   deleteDietPlan,
+  updateDietPlanMode,
   suggestSupplement,
   setSupplementStatus,
   deleteSupplement,
 }: Props) {
   const [tab, setTab] = useState<Tab>("objectifs");
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
+  const [changingMode, setChangingMode] = useState(false);
 
   const tabs: { key: Tab; label: string }[] = [
     { key: "objectifs", label: "Objectifs TDEE" },
@@ -354,23 +357,48 @@ export default function CoachClientNutritionTabs({
 
       {/* Active plan badge */}
       {activePlan && tab !== "objectifs" && tab !== "plan" && (
-        <div className="flex items-center justify-between bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-4">
+        <div className="flex items-center justify-between flex-wrap gap-2 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={13} className="text-green-400" />
             <p className="text-xs font-bold text-white">
               Plan actif :{" "}
               <span className="text-[#E01E1E]">{activePlan.name}</span>
-              <span className="ml-2 text-[10px] text-[#F5EDED]/30 uppercase font-normal">
-                {activePlan.mode}
-              </span>
             </p>
           </div>
-          <button
-            onClick={() => deactivateDietPlan(clientId, activePlan.id)}
-            className="text-[10px] text-[#F5EDED]/30 hover:text-red-400 transition-colors"
-          >
-            Désactiver
-          </button>
+          <div className="flex items-center gap-3">
+            {updateDietPlanMode ? (
+              <div className="flex items-center gap-1">
+                {(["flexible", "fixed", "fixed_flexible"] as const).map((m) => (
+                  <button
+                    key={m}
+                    disabled={changingMode || activePlan.mode === m}
+                    onClick={async () => {
+                      setChangingMode(true);
+                      await updateDietPlanMode(clientId, activePlan.id, m);
+                      setChangingMode(false);
+                    }}
+                    className={`text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-md border transition-colors disabled:cursor-default ${
+                      activePlan.mode === m
+                        ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]"
+                        : "border-[#890404]/25 text-[#F5EDED]/35 hover:text-[#F5EDED]/70"
+                    }`}
+                  >
+                    {MODE_LABELS[m]}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span className="text-[10px] text-[#F5EDED]/30 uppercase font-normal">
+                {MODE_LABELS[activePlan.mode]}
+              </span>
+            )}
+            <button
+              onClick={() => deactivateDietPlan(clientId, activePlan.id)}
+              className="text-[10px] text-[#F5EDED]/30 hover:text-red-400 transition-colors"
+            >
+              Désactiver
+            </button>
+          </div>
         </div>
       )}
 

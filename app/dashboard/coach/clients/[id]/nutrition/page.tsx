@@ -26,6 +26,7 @@ import {
   deactivateDietPlan,
   activateDietPlan,
   deleteDietPlan,
+  updateDietPlanMode,
 } from "./diet-plan-actions";
 import CoachClientNutritionTabs from "@/components/ui/CoachClientNutritionTabs";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
@@ -115,6 +116,7 @@ export default async function CoachClientNutritionPage({
         deactivateDietPlan={deactivateDietPlan}
         activateDietPlan={activateDietPlan}
         deleteDietPlan={deleteDietPlan}
+        updateDietPlanMode={updateDietPlanMode}
         suggestSupplement={suggestSupplement}
         setSupplementStatus={setSupplementStatus}
         deleteSupplement={deleteSupplement}

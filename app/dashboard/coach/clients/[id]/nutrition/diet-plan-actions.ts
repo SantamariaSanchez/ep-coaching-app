@@ -115,6 +115,36 @@ export async function createDietPlan(
   }
 }
 
+// Changer uniquement le mode (Flexible/Fixe/Fixe Flexible) d'un plan
+// existant, sans toucher aux repas déjà saisis — jusqu'ici, le seul moyen
+// de changer de mode était de reconstruire tout le plan depuis zéro dans
+// "Nouveau plan" (le bâtisseur ne pré-remplit jamais un plan existant).
+export async function updateDietPlanMode(
+  clientId: string,
+  planId: string,
+  mode: DietMode
+): Promise<{ error?: string }> {
+  try {
+    const guard = await requireOwnClientOrSelf(clientId);
+    if (!guard.ok) return { error: guard.error };
+
+    const supabase = createAdminClient();
+    const { error } = await supabase
+      .from("diet_plans")
+      .update({ mode })
+      .eq("id", planId)
+      .eq("client_id", clientId);
+    if (error) return { error: "Erreur lors du changement de mode." };
+
+    revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+    revalidatePath(`/dashboard/client/nutrition`);
+    revalidatePath(`/dashboard/coach/moi/nutrition`);
+    return {};
+  } catch {
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function deactivateDietPlan(
   clientId: string,
   planId: string

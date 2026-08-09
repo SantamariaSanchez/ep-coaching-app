@@ -24,6 +24,7 @@ import {
   deactivateDietPlan,
   activateDietPlan,
   deleteDietPlan,
+  updateDietPlanMode,
 } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 export default async function CoachMonNutritionPage() {
@@ -64,6 +65,11 @@ export default async function CoachMonNutritionPage() {
           initialFoods: foods,
           dietMode: activePlan?.mode ?? "flexible",
           activePlan,
+          // Sans ça, le plan que le coach construit pour lui-même (page Moi)
+          // affichait "Plan de ton coach" au lieu de "Mon plan" — le prop
+          // n'était tout simplement jamais passé ici, il retombait sur son
+          // défaut false.
+          isOwnPlan: true,
           addFoodLog,
           removeFoodLog,
           createCustomFood,
@@ -85,6 +91,7 @@ export default async function CoachMonNutritionPage() {
           deactivateDietPlan,
           activateDietPlan,
           deleteDietPlan,
+          updateDietPlanMode,
           suggestSupplement,
           setSupplementStatus,
           deleteSupplement,
