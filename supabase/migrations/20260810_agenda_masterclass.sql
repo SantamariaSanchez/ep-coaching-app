@@ -106,34 +106,41 @@ insert into public.schedule_blocks (owner_id, day_of_week, start_time, end_time,
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 5, '20:00', '20:30', 'Repas 5 : dîner', '#fbbf24', 'repas', null, '{}', true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 5, '20:45', '21:00', 'Lecture', '#fbbf24', 'pause', null, '{}', true);
 
--- ── Jeudi (4) — repos entraînement, live Closing Mastery, pas de Quintal ──
+-- ── Jeudi (4) — jour de séance : Upper, live Closing Mastery le matin ─────
+-- (correction : seuls lundi et vendredi sont des jours de repos, jeudi et
+-- dimanche s'entraînent aussi — les 5 séances de la rotation tiennent sur
+-- mardi/mercredi/jeudi/samedi/dimanche)
 insert into public.schedule_blocks (owner_id, day_of_week, start_time, end_time, label, color, icon, notes, tasks, notify) values
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '07:15', '07:45', 'Repas 1', '#fbbf24', 'repas', null, '{}', true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '08:00', '09:00', 'Closing Mastery (live)', '#60a5fa', 'etude', 'Formation TheModernPrepDad', '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '09:15', '10:15', 'Création de contenu : script', '#60a5fa', 'travail', null, array['Écrire 3 scripts ou hooks pour la semaine', 'Prompt Claude : Génère-moi 5 idées de hooks pour un coach sportif en ligne sur le thème du jour'], true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '10:45', '11:15', 'Repas 2', '#fbbf24', 'repas', null, array['Regarde une vidéo YouTube'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '11:30', '12:00', 'Pas', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '12:00', '13:00', 'Repas 3 : déjeuner', '#fbbf24', 'repas', 'Jour de repos', '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '13:15', '14:45', 'Création de contenu : tournage', '#60a5fa', 'travail', null, array['Filmer 3 courtes vidéos (reels/TikTok)', 'Prépare cadrage, lumière et micro avant de lancer'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '15:00', '15:30', 'Pas', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '15:45', '16:45', 'Création de contenu : montage', '#60a5fa', 'travail', null, array['Monter les vidéos tournées', 'Ajouter sous-titres et musique', 'Exporter en format vertical 9:16'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '11:30', '12:00', 'Pas (aller chez mamie)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '12:00', '13:00', 'Repas 3 : déjeuner chez mamie', '#fbbf24', 'repas', null, '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '13:10', '13:15', 'Trajet (papi vers Quintal)', '#4ade80', 'trajet', 'En voiture, 5 min', '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '13:25', '14:15', 'Création de contenu : tournage', '#60a5fa', 'travail', 'À Quintal', array['Filmer 3 courtes vidéos (reels/TikTok)', 'Prépare cadrage, lumière et micro avant de lancer'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '14:30', '15:00', 'Création de contenu : montage', '#60a5fa', 'travail', 'À Quintal', array['Monter les vidéos tournées', 'Ajouter sous-titres et musique', 'Exporter en format vertical 9:16'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '15:15', '16:45', 'Pas (retour de Quintal)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '17:00', '17:30', 'Repas 4', '#fbbf24', 'repas', null, array['Regarde une vidéo YouTube'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '17:45', '18:45', 'Création de contenu : prospection', '#60a5fa', 'travail', null, array['Objectif du jour : publier 5 reels', 'Prospecter 10 profils qualifiés sur Instagram/TikTok', 'Relancer les anciens contacts'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '19:00', '19:30', 'Repas 5 : dîner', '#fbbf24', 'repas', 'Jour de repos', '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '19:45', '20:00', 'Lecture', '#fbbf24', 'pause', null, '{}', true);
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '17:45', '18:15', 'Pas (aller à la salle)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '18:15', '19:15', 'Séance : Upper', '#E01E1E', 'salle', 'Rotation 5 jours (Push/Pull/Legs-Épaules/Upper/Legs-Biceps)', array['Vérifie dans Programme si ta rotation a avancé avant de commencer'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '19:30', '20:00', 'Pas (retour de la salle)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '20:15', '21:00', 'Repas 5 : dîner', '#fbbf24', 'repas', null, '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 4, '21:15', '21:30', 'Lecture', '#fbbf24', 'pause', null, '{}', true);
 
--- ── Dimanche (7) — repos entraînement, live à thème en fin de matinée ─────
+-- ── Dimanche (7) — jour de séance : Legs / Biceps, live à thème le matin ──
 insert into public.schedule_blocks (owner_id, day_of_week, start_time, end_time, label, color, icon, notes, tasks, notify) values
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '07:15', '07:45', 'Repas 1', '#fbbf24', 'repas', null, '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '08:00', '09:00', 'Création de contenu : script', '#60a5fa', 'travail', null, array['Écrire 3 scripts ou hooks pour la semaine', 'Prompt Claude : Génère-moi 5 idées de hooks pour un coach sportif en ligne sur le thème du jour'], true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '09:30', '10:30', 'Live à thème (formation)', '#60a5fa', 'etude', 'Formation TheModernPrepDad', '{}', true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '10:45', '11:15', 'Repas 2', '#fbbf24', 'repas', null, array['Regarde une vidéo YouTube'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '11:30', '12:00', 'Pas', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '12:00', '13:00', 'Repas 3 : déjeuner', '#fbbf24', 'repas', 'Jour de repos', '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '13:15', '14:45', 'Création de contenu : tournage', '#60a5fa', 'travail', null, array['Filmer 3 courtes vidéos (reels/TikTok)', 'Prépare cadrage, lumière et micro avant de lancer'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '15:00', '15:30', 'Pas', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '15:45', '16:45', 'Création de contenu : montage', '#60a5fa', 'travail', null, array['Monter les vidéos tournées', 'Ajouter sous-titres et musique', 'Exporter en format vertical 9:16'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '11:30', '12:00', 'Pas (aller chez mamie)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '12:00', '13:00', 'Repas 3 : déjeuner chez mamie', '#fbbf24', 'repas', null, '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '13:10', '13:15', 'Trajet (papi vers Quintal)', '#4ade80', 'trajet', 'En voiture, 5 min', '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '13:25', '14:15', 'Création de contenu : tournage', '#60a5fa', 'travail', 'À Quintal', array['Filmer 3 courtes vidéos (reels/TikTok)', 'Prépare cadrage, lumière et micro avant de lancer'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '14:30', '15:00', 'Création de contenu : montage', '#60a5fa', 'travail', 'À Quintal', array['Monter les vidéos tournées', 'Ajouter sous-titres et musique', 'Exporter en format vertical 9:16'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '15:15', '16:45', 'Pas (retour de Quintal)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
 ('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '17:00', '17:30', 'Repas 4', '#fbbf24', 'repas', null, array['Regarde une vidéo YouTube'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '17:45', '18:45', 'Création de contenu : prospection', '#60a5fa', 'travail', null, array['Objectif du jour : publier 5 reels', 'Prospecter 10 profils qualifiés sur Instagram/TikTok', 'Relancer les anciens contacts'], true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '19:00', '19:30', 'Repas 5 : dîner', '#fbbf24', 'repas', 'Jour de repos', '{}', true),
-('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '19:45', '20:00', 'Lecture', '#fbbf24', 'pause', null, '{}', true);
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '17:45', '18:15', 'Pas (aller à la salle)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '18:15', '19:15', 'Séance : Legs / Biceps', '#E01E1E', 'salle', 'Rotation 5 jours (Push/Pull/Legs-Épaules/Upper/Legs-Biceps)', array['Vérifie dans Programme si ta rotation a avancé avant de commencer'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '19:30', '20:00', 'Pas (retour de la salle)', '#4ade80', 'pas', null, array['Écoute un podcast ou un livre audio'], true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '20:15', '21:00', 'Repas 5 : dîner', '#fbbf24', 'repas', null, '{}', true),
+('845b826a-0e2f-4c44-8130-a8fe1e925351', 7, '21:15', '21:30', 'Lecture', '#fbbf24', 'pause', null, '{}', true);
