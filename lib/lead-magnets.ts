@@ -828,6 +828,782 @@ export const LEAD_MAGNETS: LeadMagnet[] = [
     conclusion:
       "Arrête de juger 12 semaines de travail sur un seul chiffre vu un seul matin. La vraie progression se lit sur plusieurs indicateurs, sur la durée.",
   },
+
+  // ── Entraînement (2) ─────────────────────────────────────────────────
+  {
+    slug: "guide-hypertrophie-force",
+    title: "Hypertrophie ou force : comment vraiment choisir",
+    hook: "Les deux objectifs ne se travaillent pas pareil. Voici comment structurer tes séances selon ce que tu veux vraiment développer.",
+    category: "Entraînement",
+    format: "guide",
+    readTime: "6 min",
+    icon: "Zap",
+    intro:
+      "Prendre du muscle et devenir plus fort ne sont pas le même objectif, même si les deux se travaillent en salle avec les mêmes barres. Confondre les deux mène à des séances bâtardes qui ne progressent nulle part vraiment. Voici comment distinguer les deux logiques et structurer ton entraînement selon ce que tu veux vraiment développer.",
+    sections: [
+      {
+        heading: "Deux adaptations, deux stimulus",
+        paragraphs: [
+          "La force pure vise à améliorer ta capacité nerveuse à recruter du muscle sur un mouvement précis : charges lourdes (souvent 1 à 5 répétitions), repos longs (3 à 5 minutes), peu d'exercices travaillés en profondeur. L'hypertrophie vise à faire grossir le muscle lui même : charges modérées (6 à 15 répétitions), fatigue métabolique recherchée, volume plus élevé.",
+          "Un pratiquant qui ne fait que du 1 à 3 répétitions toute l'année progresse en force sur ces mouvements précis, mais construit relativement peu de masse musculaire. À l'inverse, un pratiquant qui reste toujours entre 12 et 20 répétitions développe du volume musculaire mais plafonne vite en charge maximale, faute d'avoir jamais entraîné le système nerveux à des intensités élevées.",
+        ],
+      },
+      {
+        heading: "Comment structurer un bloc force",
+        paragraphs: [
+          "Un bloc force dure généralement 4 à 6 semaines. Les mouvements polyarticulaires (squat, développé, tirage, soulevé de terre) passent en 3 à 6 répétitions, RIR 1 à 2, avec 3 à 5 minutes de repos entre les séries. Le volume total baisse par rapport à un bloc hypertrophie, mais l'intensité relative monte.",
+          "Garde 1 à 2 exercices d'isolation en fin de séance pour continuer à entretenir un minimum de volume musculaire pendant le bloc, sans quoi tu risques de perdre un peu de masse pendant que tu te concentres sur la force pure.",
+        ],
+      },
+      {
+        heading: "Comment structurer un bloc hypertrophie",
+        paragraphs: [
+          "Le volume prime sur l'intensité relative. Vise 8 à 15 répétitions sur la majorité des exercices, RIR 0 à 2 selon la fraîcheur, 60 à 120 secondes de repos. Le nombre de séries hebdomadaires par groupe musculaire compte plus que la charge absolue soulevée.",
+          "C'est aussi le bloc où varier les angles et les exercices apporte le plus, parce que chaque variante stimule le muscle un peu différemment et permet d'accumuler plus de volume total sans épuiser les mêmes articulations.",
+        ],
+      },
+      {
+        heading: "Alterner plutôt que choisir une fois pour toutes",
+        paragraphs: [
+          "La plupart des pratiquants progressent mieux en alternant des blocs : quelques semaines de force pour faire monter les charges de référence, puis un bloc hypertrophie plus long pour transformer cette force en volume musculaire. Les charges plus lourdes acquises en bloc force permettent ensuite de travailler l'hypertrophie avec des poids relativement plus élevés, ce qui accélère la progression globale.",
+        ],
+      },
+    ],
+    conclusion:
+      "Il n'y a pas un objectif supérieur à l'autre : la force construit la base, l'hypertrophie construit le volume dessus. Alterner les deux sur l'année donne de bien meilleurs résultats que de rester bloqué sur une seule logique toute l'année.",
+  },
+  {
+    slug: "checklist-echauffement",
+    title: "Ton échauffement rate peut être ta séance",
+    hook: "8 points pour un échauffement qui prépare vraiment le corps, sans perdre 20 minutes ni sauter directement aux charges lourdes.",
+    category: "Entraînement",
+    format: "checklist",
+    readTime: "3 min",
+    icon: "Timer",
+    intro:
+      "Un échauffement mal fait laisse le corps froid sur les premières séries lourdes, ou au contraire vide toute l'énergie avant même de commencer. Voici les points qui font qu'un échauffement prépare vraiment la séance.",
+    groups: [
+      {
+        heading: "Avant les barres",
+        items: [
+          "5 à 8 minutes d'activation cardio légère (vélo, rameur, corde à sauter) pour faire monter la température corporelle",
+          "Mobilité articulaire ciblée sur les articulations sollicitées dans la séance du jour, pas une routine générique identique tous les jours",
+          "Activation musculaire légère des groupes principaux de la séance avec des charges très faibles, pour réveiller le pattern moteur",
+        ],
+      },
+      {
+        heading: "Montée en charge sur le premier exercice",
+        items: [
+          "Série d'échauffement à environ 50% de la charge de travail, 8 à 10 répétitions faciles",
+          "Série à environ 70% de la charge de travail, 4 à 5 répétitions",
+          "Série à environ 85 à 90% de la charge de travail, 2 à 3 répétitions",
+          "Une série d'approche supplémentaire si la charge de travail est particulièrement lourde ce jour là",
+        ],
+      },
+      {
+        heading: "Signes que l'échauffement est suffisant",
+        items: [
+          "Légère transpiration, respiration élevée mais pas essoufflée",
+          "Amplitude articulaire complète et confortable sur les mouvements du jour",
+          "Aucune sensation de raideur ou de gêne résiduelle sur les zones travaillées",
+        ],
+      },
+    ],
+    conclusion:
+      "Un bon échauffement dure rarement plus de 10 à 15 minutes. L'objectif n'est pas de fatiguer, c'est de préparer le corps à exprimer sa force en sécurité dès la première vraie série.",
+  },
+  {
+    slug: "quiz-niveau-pratiquant",
+    title: "Débutant, intermédiaire ou avancé : où tu en es vraiment",
+    hook: "Réponds à ces questions pour situer honnêtement ton niveau, et comprendre ce qui va vraiment te faire progresser à partir de maintenant.",
+    category: "Entraînement",
+    format: "quiz",
+    readTime: "3 min",
+    icon: "Gauge",
+    intro:
+      "L'ancienneté en salle ne dit pas grand chose du niveau réel. Ce quiz se base sur des critères concrets de progression pour te situer plus justement.",
+    questions: [
+      {
+        question: "Depuis combien de temps t'entraînes tu avec une vraie régularité (au moins 3 séances par semaine) ?",
+        options: [
+          { label: "Moins de 6 mois", resultKey: "debutant" },
+          { label: "Entre 6 mois et 2 ans", resultKey: "intermediaire" },
+          { label: "Plus de 2 ans", resultKey: "avance" },
+        ],
+      },
+      {
+        question: "Comment évoluent tes charges sur les mouvements de base en ce moment ?",
+        options: [
+          { label: "Ça monte pratiquement à chaque séance", resultKey: "debutant" },
+          { label: "Ça monte, mais plus lentement, sur plusieurs semaines", resultKey: "intermediaire" },
+          { label: "Ça stagne souvent, il faut des cycles précis pour progresser", resultKey: "avance" },
+        ],
+      },
+      {
+        question: "Sais tu ajuster une séance en temps réel selon ta fatigue du jour ?",
+        options: [
+          { label: "Pas vraiment, je suis le programme tel quel", resultKey: "debutant" },
+          { label: "Un peu, j'ajuste parfois la charge", resultKey: "intermediaire" },
+          { label: "Oui, je pilote systématiquement selon mon RIR et ma forme du jour", resultKey: "avance" },
+        ],
+      },
+      {
+        question: "As tu déjà géré toi même un bloc de surcharge progressive complet, du début à la fin ?",
+        options: [
+          { label: "Non, je ne sais pas trop ce que c'est", resultKey: "debutant" },
+          { label: "Une ou deux fois, avec l'aide d'un programme", resultKey: "intermediaire" },
+          { label: "Oui, plusieurs fois, je sais quand arrêter et décharger", resultKey: "avance" },
+        ],
+      },
+    ],
+    outcomes: [
+      {
+        key: "debutant",
+        title: "Débutant : ta priorité, c'est la régularité et la technique",
+        description:
+          "À ce stade, la technique et la régularité comptent plus que n'importe quel détail de programme. Les charges vont monter vite, presque quelle que soit la structure choisie, tant que tu es présent et que tu apprends les mouvements correctement. Ne complique pas encore les choses avec des cycles compliqués.",
+      },
+      {
+        key: "intermediaire",
+        title: "Intermédiaire : ta priorité, c'est la structure",
+        description:
+          "Les progrès faciles sont derrière toi. C'est le moment où la structure du programme, le suivi des charges et la gestion de la fatigue commencent à faire une vraie différence. Un plan qui varie l'intensité sur plusieurs semaines devient nécessaire pour continuer à avancer.",
+      },
+      {
+        key: "avance",
+        title: "Avancé : ta priorité, c'est la précision",
+        description:
+          "À ce niveau, chaque détail compte : gestion du volume, cycles de décharge, précision du RIR, variation des stimulus. Les gains sont plus lents et demandent un pilotage fin plutôt qu'un simple programme générique.",
+      },
+    ],
+  },
+  {
+    slug: "guide-deload",
+    title: "La semaine de décharge : quand et pourquoi la placer",
+    hook: "Baisser l'intensité une semaine n'est pas une perte de temps. C'est ce qui permet d'encaisser le bloc suivant et de continuer à progresser sur la durée.",
+    category: "Entraînement",
+    format: "guide",
+    readTime: "5 min",
+    icon: "Repeat",
+    intro:
+      "Beaucoup de pratiquants évitent la semaine de décharge par peur de perdre leurs acquis. C'est l'inverse qui se produit sur la durée : sans décharge, la fatigue s'accumule jusqu'à forcer un arrêt, souvent via une blessure ou un vrai coup de fatigue générale.",
+    sections: [
+      {
+        heading: "Pourquoi la fatigue s'accumule plus vite que ce qu'on ressent",
+        paragraphs: [
+          "La fatigue nerveuse et articulaire s'accumule plus lentement et de façon moins visible que la fatigue musculaire ressentie séance après séance. Tu peux te sentir bien sur chaque séance individuelle tout en accumulant une dette de fatigue systémique qui finit par se payer d'un coup, souvent 6 à 10 semaines après le début d'un bloc intense.",
+        ],
+      },
+      {
+        heading: "Les signes qu'une décharge devient nécessaire",
+        paragraphs: [
+          "Charges qui stagnent ou reculent sur plusieurs séances d'affilée malgré une bonne récupération apparente, sommeil qui se dégrade sans raison externe, motivation à l'entraînement qui baisse, petites douleurs articulaires qui traînent sans blessure identifiable. Un seul de ces signes isolé n'est pas alarmant, mais leur cumul est un signal clair.",
+        ],
+      },
+      {
+        heading: "Comment structurer une semaine de décharge",
+        paragraphs: [
+          "Deux approches fonctionnent bien : réduire le volume de 40 à 50% en gardant l'intensité proche de la normale, ou réduire l'intensité de 20 à 30% en gardant à peu près le même nombre de séances. Dans les deux cas, l'objectif est de continuer à bouger et à stimuler légèrement le corps, pas de s'arrêter complètement.",
+          "Une semaine complètement off n'est utile qu'en cas de fatigue vraiment sévère ou de petite douleur qui a besoin de repos total. Pour une décharge classique de routine, continuer à s'entraîner léger reste préférable à l'arrêt complet.",
+        ],
+      },
+      {
+        heading: "À quelle fréquence la placer",
+        paragraphs: [
+          "Pour un pratiquant intermédiaire à avancé qui s'entraîne intensément, une décharge toutes les 5 à 8 semaines est un rythme raisonnable. Pour un débutant qui progresse encore rapidement sur des charges modérées, une décharge toutes les 8 à 12 semaines suffit généralement.",
+        ],
+      },
+    ],
+    conclusion:
+      "La décharge n'est pas un aveu de faiblesse, c'est un outil de planification. Les pratiquants qui progressent le plus sur plusieurs années sont ceux qui l'intègrent avant d'y être forcés par la fatigue ou la blessure.",
+  },
+
+  // ── Nutrition (2) ────────────────────────────────────────────────────
+  {
+    slug: "guide-timing-repas",
+    title: "Le timing des repas compte-t-il vraiment ?",
+    hook: "Entre les mythes sur la fenêtre anabolique et le jeûne intermittent, voici ce qui compte réellement dans le moment où tu manges.",
+    category: "Nutrition",
+    format: "guide",
+    readTime: "5 min",
+    icon: "CalendarClock",
+    intro:
+      "Le timing des repas fait couler beaucoup d'encre, souvent plus qu'il ne le mérite comparé au total calorique et à la répartition des macros sur la journée. Voici ce qui a un impact réel, et ce qui relève surtout du confort personnel.",
+    sections: [
+      {
+        heading: "La fenêtre anabolique, un mythe largement exagéré",
+        paragraphs: [
+          "L'idée qu'il faut absolument manger des protéines dans les 30 minutes après l'entraînement pour ne pas perdre le bénéfice de la séance est largement exagérée. La fenêtre réelle de synthèse protéique augmentée dure plusieurs heures après l'effort, pas 30 minutes. Ce qui compte vraiment, c'est l'apport total en protéines sur la journée, réparti en 3 à 5 prises.",
+        ],
+      },
+      {
+        heading: "Ce que le timing change réellement",
+        paragraphs: [
+          "Manger un repas riche en glucides et protéines dans les 2 à 3 heures autour de la séance améliore la disponibilité énergétique pendant l'effort et facilite un peu la récupération. C'est une optimisation utile, pas une obligation absolue si ton total journalier est déjà correct.",
+          "Répartir les protéines en plusieurs prises réparties sur la journée, plutôt que tout concentrer sur un ou deux repas, permet de maintenir la synthèse protéique musculaire stimulée plus régulièrement, ce qui a un impact réel sur la construction musculaire à long terme.",
+        ],
+      },
+      {
+        heading: "Jeûne intermittent : ni magique, ni problématique",
+        paragraphs: [
+          "Le jeûne intermittent ne booste pas la perte de graisse au delà de ce que permet le déficit calorique total. Son seul vrai avantage est parfois pratique : certaines personnes trouvent plus simple de gérer leur appétit sur une fenêtre alimentaire réduite. Si ça ne te convient pas, ou complique ta gestion de l'entraînement, rien ne t'oblige à l'adopter.",
+        ],
+      },
+      {
+        heading: "Ce qu'il faut vraiment prioriser",
+        paragraphs: [
+          "Dans l'ordre d'importance réelle : le total calorique sur la journée, l'apport total en protéines, la répartition des protéines sur 3 à 5 prises, puis seulement ensuite le timing précis autour de l'entraînement. Optimiser le dernier point sans avoir réglé les trois premiers n'apporte quasiment rien.",
+        ],
+      },
+    ],
+    conclusion:
+      "Le timing des repas a un effet réel mais secondaire. Avant de te soucier de la minute exacte où manger, assure toi que ton total calorique et ta répartition protéique sur la journée sont déjà cohérents avec ton objectif.",
+  },
+  {
+    slug: "checklist-repas-exterieur",
+    title: "Manger dehors sans sortir de ton objectif",
+    hook: "7 réflexes simples pour composer un repas au restaurant ou chez des amis sans culpabiliser ni tout faire dérailler.",
+    category: "Nutrition",
+    format: "checklist",
+    readTime: "3 min",
+    icon: "Coffee",
+    intro:
+      "Un repas à l'extérieur ne doit pas être vécu comme un piège ou une exception à cacher. Voici comment le gérer simplement, sans stress ni calcul obsessionnel.",
+    groups: [
+      {
+        heading: "Avant d'arriver",
+        items: [
+          "Si possible, regarde la carte à l'avance pour repérer 1 ou 2 options qui contiennent une source de protéines claire",
+          "Mange normalement dans la journée, ne te prive pas volontairement en prévision du repas, ça mène souvent à trop manger le soir venu",
+          "Si tu connais l'heure du repas à l'avance, ajuste légèrement tes apports du jour plutôt que de tout bloquer sur ce seul repas",
+        ],
+      },
+      {
+        heading: "Au moment de commander",
+        items: [
+          "Priorise une source de protéines identifiable en plat principal (viande, poisson, œufs, légumineuses)",
+          "Demande les sauces et assaisonnements à part si tu veux garder le contrôle sur la quantité",
+          "Un féculent et des légumes en accompagnement plutôt que de la friture systématique si tu as le choix",
+        ],
+      },
+      {
+        heading: "Sur l'état d'esprit",
+        items: [
+          "Un repas ne fait ni gagner ni perdre du poids en une fois, c'est la moyenne sur la semaine qui compte",
+          "Profiter du moment social fait aussi partie d'une hygiène de vie durable, ce n'est pas un échec",
+        ],
+      },
+    ],
+    conclusion:
+      "Un repas géré avec ces quelques réflexes simples s'intègre parfaitement dans une progression normale. C'est l'accumulation de ce genre de repas plusieurs fois par semaine, sans aucun réflexe, qui pose problème sur la durée, pas un repas isolé.",
+  },
+  {
+    slug: "guide-complements-alimentaires",
+    title: "Compléments alimentaires : ce qui marche vraiment",
+    hook: "Entre le marketing et la vraie science, voici les seuls compléments qui ont un intérêt démontré pour la majorité des pratiquants.",
+    category: "Nutrition",
+    format: "guide",
+    readTime: "5 min",
+    icon: "ShieldCheck",
+    intro:
+      "Le marché des compléments alimentaires vend énormément de promesses pour un impact réel souvent minime. Voici ce qui a vraiment un intérêt démontré, et ce qui reste secondaire ou inutile pour la plupart des pratiquants.",
+    sections: [
+      {
+        heading: "Ce qui a un intérêt démontré",
+        paragraphs: [
+          "La whey (ou toute protéine en poudre) sert uniquement à atteindre plus facilement ton total protéique journalier si l'alimentation seule ne suffit pas. Ce n'est ni magique ni indispensable si tu manges assez de protéines par ailleurs.",
+          "La créatine monohydrate est un des compléments les mieux étudiés, avec un effet réel et mesuré sur la force et le volume d'entraînement possible, à raison de 3 à 5 grammes par jour, pris régulièrement.",
+          "La vitamine D est utile en complément pour la majorité des personnes qui manquent d'exposition au soleil, particulièrement en hiver, indépendamment de tout objectif sportif.",
+          "La caféine améliore la performance et la sensation d'énergie à l'entraînement pour la plupart des gens, à condition de ne pas en abuser en fin de journée au risque d'impacter le sommeil.",
+        ],
+      },
+      {
+        heading: "Ce qui reste secondaire",
+        paragraphs: [
+          "Les BCAA n'apportent rien de plus si ton apport total en protéines est déjà suffisant sur la journée. Les brûleurs de graisse n'ont quasiment aucun effet mesurable indépendant d'un déficit calorique réel. Les compléments multi ingrédients aux promesses vagues (boost testostérone, détox, etc.) manquent presque tous de preuves solides.",
+        ],
+      },
+      {
+        heading: "Comment prioriser un budget compléments limité",
+        paragraphs: [
+          "Dans l'ordre : d'abord une alimentation qui couvre les besoins de base, puis la créatine si le budget le permet, puis une protéine en poudre si atteindre le total protéique par l'alimentation seule est compliqué, puis la vitamine D si l'exposition au soleil est faible. Tout le reste est optionnel et n'a un intérêt réel que dans des cas très spécifiques.",
+        ],
+      },
+    ],
+    conclusion:
+      "Les compléments complètent une alimentation déjà correcte, ils ne la remplacent jamais. Avant de dépenser sur un complément quelconque, vérifie que les bases (calories, protéines, sommeil) sont déjà en place.",
+  },
+  {
+    slug: "quiz-besoin-deficit",
+    title: "As tu vraiment besoin d'un déficit calorique ?",
+    hook: "Avant de te lancer dans une phase de sèche, réponds à ces questions pour savoir si c'est vraiment ce dont ton corps et tes objectifs ont besoin maintenant.",
+    category: "Nutrition",
+    format: "quiz",
+    readTime: "3 min",
+    icon: "Scale",
+    intro:
+      "Se mettre en déficit calorique par réflexe, sans se demander si c'est le bon moment, mène souvent à une sèche mal vécue ou inutile. Ce quiz t'aide à clarifier où tu en es vraiment.",
+    questions: [
+      {
+        question: "Comment décrirais tu ton niveau d'énergie et ta motivation à l'entraînement en ce moment ?",
+        options: [
+          { label: "Très bon, je progresse bien", resultKey: "pret" },
+          { label: "Correct mais pas exceptionnel", resultKey: "bientot" },
+          { label: "Fatigué, motivation en baisse", resultKey: "attendre" },
+        ],
+      },
+      {
+        question: "Depuis combien de temps es tu en surplus ou en maintenance ?",
+        options: [
+          { label: "Moins de 3 mois", resultKey: "attendre" },
+          { label: "Entre 3 et 8 mois", resultKey: "bientot" },
+          { label: "Plus de 8 mois", resultKey: "pret" },
+        ],
+      },
+      {
+        question: "Comment est ta relation actuelle avec la nourriture et le comptage des calories ?",
+        options: [
+          { label: "Sereine, je gère facilement", resultKey: "pret" },
+          { label: "Correcte mais je sais que ça demande de la rigueur", resultKey: "bientot" },
+          { label: "Tendue, je redoute de me restreindre", resultKey: "attendre" },
+        ],
+      },
+      {
+        question: "Qu'est ce qui motive l'envie de sèche en ce moment ?",
+        options: [
+          { label: "Un objectif précis et planifié (photo, échéance, phase du plan)", resultKey: "pret" },
+          { label: "L'envie générale de perdre du gras", resultKey: "bientot" },
+          { label: "La comparaison avec d'autres ou une pression extérieure", resultKey: "attendre" },
+        ],
+      },
+    ],
+    outcomes: [
+      {
+        key: "pret",
+        title: "Prêt pour un déficit",
+        description:
+          "Ton énergie, ton ancienneté en surplus ou maintenance et ta relation à la nourriture sont favorables. Un déficit modéré et planifié a de bonnes chances de bien se passer maintenant.",
+      },
+      {
+        key: "bientot",
+        title: "Presque prêt, mais pas encore optimal",
+        description:
+          "Rien n'empêche de commencer, mais quelques semaines de plus en maintenance pourraient stabiliser ta motivation et tes repères alimentaires avant de te mettre en déficit dans de meilleures conditions.",
+      },
+      {
+        key: "attendre",
+        title: "Pas le bon moment pour l'instant",
+        description:
+          "Se mettre en déficit maintenant, avec une énergie basse et une relation tendue à la nourriture, risque surtout de mal se passer. Stabiliser d'abord le sommeil, le stress et la motivation donnera de bien meilleurs résultats une fois le déficit lancé.",
+      },
+    ],
+  },
+  {
+    slug: "checklist-collations-proteinees",
+    title: "10 collations riches en protéines faciles à préparer",
+    hook: "Des idées simples pour combler ton apport en protéines entre les repas, sans y passer des heures en cuisine.",
+    category: "Nutrition",
+    format: "checklist",
+    readTime: "3 min",
+    icon: "Salad",
+    intro:
+      "Atteindre son total protéique journalier est souvent plus facile avec 1 ou 2 collations bien choisies plutôt qu'en essayant de tout caser sur les repas principaux. Voici des options simples et rapides.",
+    groups: [
+      {
+        heading: "Sans préparation",
+        items: [
+          "Skyr ou fromage blanc nature avec un fruit",
+          "Œufs durs préparés à l'avance pour la semaine",
+          "Thon ou saumon en conserve, égoutté",
+          "Une poignée de fromage type comté ou emmental",
+        ],
+      },
+      {
+        heading: "Avec un peu de préparation",
+        items: [
+          "Shake protéiné maison (whey, lait, banane)",
+          "Blancs de poulet cuits en avance en début de semaine, à réchauffer",
+          "Yaourt grec avec des flocons d'avoine et du miel",
+        ],
+      },
+      {
+        heading: "En déplacement",
+        items: [
+          "Barres protéinées avec un profil macro correct (à vérifier au dos, beaucoup sont surtout sucrées)",
+          "Mélange de noix et fruits secs pour un apport mixte protéines et bonnes graisses",
+          "Lait ou boisson protéinée prête à boire",
+        ],
+      },
+    ],
+    conclusion:
+      "Pas besoin de sophistication pour bien manger entre les repas. Le plus important, c'est d'avoir toujours une option simple et accessible sous la main pour éviter de sauter les collations par manque de temps.",
+  },
+
+  // ── Mental (2) ───────────────────────────────────────────────────────
+  {
+    slug: "guide-comparaison-reseaux",
+    title: "Arrêter de se comparer aux physiques sur les réseaux",
+    hook: "La comparaison permanente avec des physiques irréalistes ou trafiqués sabote la motivation plus qu'elle ne la nourrit. Voici comment reprendre le contrôle.",
+    category: "Mental",
+    format: "guide",
+    readTime: "5 min",
+    icon: "Smartphone",
+    intro:
+      "Scroller des photos de physiques impressionnants peut sembler motivant sur le moment, mais finit souvent par nourrir un sentiment de retard permanent, même quand la progression réelle est bonne. Voici pourquoi, et comment changer cette dynamique.",
+    sections: [
+      {
+        heading: "Ce que les réseaux ne montrent jamais",
+        paragraphs: [
+          "La plupart des physiques mis en avant sur les réseaux sociaux sont le résultat d'années d'entraînement, parfois de pratiques non déclarées, souvent d'un éclairage et d'une pompe musculaire optimisés juste pour la photo. Comparer ta progression du quotidien à ce résultat final soigneusement mis en scène biaise complètement la perception.",
+        ],
+      },
+      {
+        heading: "Pourquoi la comparaison sabote la motivation",
+        paragraphs: [
+          "Le cerveau compare naturellement, mais quand la référence est irréaliste ou hors de portée à court terme, cette comparaison génère plus de découragement que d'élan. À force, certains finissent par sous estimer une vraie progression simplement parce qu'elle ne ressemble pas à l'image vue en ligne.",
+        ],
+      },
+      {
+        heading: "Comment changer de référence",
+        paragraphs: [
+          "La seule comparaison vraiment utile est celle avec toi même, quelques semaines ou mois plus tôt : tes charges, tes photos, tes mensurations, ton énergie au quotidien. C'est la seule donnée qui reflète vraiment ton propre travail.",
+          "Réduire volontairement le temps passé à scroller du contenu physique comparatif, ou nettoyer les comptes suivis pour privilégier du contenu éducatif plutôt qu'esthétique, change concrètement le rapport à l'entraînement sur la durée.",
+        ],
+      },
+    ],
+    conclusion:
+      "Ta progression se mesure par rapport à toi même, pas par rapport à un fil d'actualité soigneusement sélectionné. Reprendre le contrôle de ce que tu regardes change directement ta motivation au quotidien.",
+  },
+  {
+    slug: "checklist-accountability",
+    title: "Créer un système qui te tient vraiment engagé",
+    hook: "La motivation seule ne suffit jamais sur la durée. Voici comment construire un système d'engagement qui tient même les jours sans envie.",
+    category: "Mental",
+    format: "checklist",
+    readTime: "4 min",
+    icon: "ThumbsUp",
+    intro:
+      "Compter uniquement sur la motivation pour rester régulier fonctionne les premières semaines, puis s'effondre dès que la vie se complique. Voici les éléments d'un système d'engagement qui tient sur la durée.",
+    groups: [
+      {
+        heading: "Rendre l'engagement visible",
+        items: [
+          "Noter chaque séance réalisée, même brièvement, pour visualiser la régularité réelle sur plusieurs semaines",
+          "Partager ton objectif à au moins une personne de confiance qui peut te demander des nouvelles régulièrement",
+          "Fixer des points d'étape réguliers (toutes les 2 à 4 semaines) plutôt qu'un seul objectif final lointain",
+        ],
+      },
+      {
+        heading: "Réduire la friction",
+        items: [
+          "Préparer les affaires de sport la veille pour supprimer une excuse facile le matin",
+          "Bloquer les créneaux d'entraînement dans l'agenda comme un rendez vous non négociable",
+          "Avoir un plan B court (15 à 20 minutes) pour les jours vraiment chargés plutôt que de sauter complètement la séance",
+        ],
+      },
+      {
+        heading: "S'entourer plutôt que compter seul sur sa volonté",
+        items: [
+          "Un coach ou un partenaire d'entraînement qui attend ta présence change fortement le taux de régularité réel",
+          "Rejoindre une communauté ou un groupe qui partage le même objectif aide à tenir dans les périodes de creux",
+        ],
+      },
+    ],
+    conclusion:
+      "Un bon système rend la régularité presque automatique, sans dépendre de ta motivation du jour. C'est ce qui distingue les progressions qui tiennent sur plusieurs années de celles qui s'arrêtent après quelques mois.",
+  },
+  {
+    slug: "guide-syndrome-imposteur",
+    title: "Le syndrome de l'imposteur du pratiquant : pourquoi tu doutes encore",
+    hook: "Se sentir illégitime malgré de vrais progrès est plus courant qu'il n'y paraît. Voici pourquoi ça arrive, et comment le désamorcer.",
+    category: "Mental",
+    format: "guide",
+    readTime: "5 min",
+    icon: "Sparkles",
+    intro:
+      "Beaucoup de pratiquants qui progressent réellement continuent de se sentir illégitimes, comme s'ils n'avaient pas vraiment leur place en salle ou pas le droit de se considérer comme sérieux. Ce sentiment a des causes précises, et des façons concrètes de le désamorcer.",
+    sections: [
+      {
+        heading: "Pourquoi le sentiment persiste malgré les progrès",
+        paragraphs: [
+          "Le cerveau s'habitue vite à ce qui est devenu normal pour lui. Une charge qui paraissait impressionnante il y a 6 mois devient banale une fois atteinte, ce qui donne l'impression trompeuse de n'avoir jamais vraiment progressé. C'est un biais d'adaptation, pas un reflet de la réalité.",
+        ],
+      },
+      {
+        heading: "La comparaison comme carburant du doute",
+        paragraphs: [
+          "Se situer par rapport aux pratiquants les plus avancés de la salle, plutôt que par rapport à soi même quelques mois plus tôt, entretient artificiellement le sentiment de ne jamais être à la hauteur. Ce sentiment ne disparaît jamais par la seule progression, il faut changer le point de comparaison.",
+        ],
+      },
+      {
+        heading: "Reconstruire une légitimité basée sur des faits",
+        paragraphs: [
+          "Tenir un suivi concret (charges, séances réalisées, photos) donne une preuve tangible de la progression, indépendante du ressenti du jour. Relire ce suivi dans les moments de doute rappelle des faits que la mémoire ou l'humeur du moment déforme facilement.",
+          "La légitimité ne se décrète pas d'un coup, elle se construit avec la régularité. Chaque séance honorée, même moyenne, est une preuve de plus, pas une exception qui ne compterait pas.",
+        ],
+      },
+    ],
+    conclusion:
+      "Le doute sur sa légitimité touche autant les débutants que des pratiquants très avancés. Ce n'est pas un signe que tu n'as pas ta place, c'est un biais courant du cerveau qui se corrige avec des repères concrets, pas avec plus de performance.",
+  },
+
+  // ── Récupération (2) ─────────────────────────────────────────────────
+  {
+    slug: "checklist-mobilite-quotidienne",
+    title: "10 minutes de mobilité à faire chaque jour",
+    hook: "Une routine courte et simple pour garder des articulations qui bougent bien, sans y consacrer une séance entière.",
+    category: "Récupération",
+    format: "checklist",
+    readTime: "3 min",
+    icon: "PersonStanding",
+    intro:
+      "La mobilité n'a pas besoin d'être une séance à part entière pour avoir un vrai impact. Quelques minutes ciblées chaque jour suffisent à entretenir l'amplitude articulaire sur la durée.",
+    groups: [
+      {
+        heading: "Hanches et bas du dos",
+        items: [
+          "Cercles de hanches, 10 répétitions de chaque côté",
+          "Étirement du fléchisseur de hanche en fente, 30 secondes de chaque côté",
+          "Rotation du bassin en position assise ou debout, quelques répétitions lentes",
+        ],
+      },
+      {
+        heading: "Épaules et haut du dos",
+        items: [
+          "Cercles de bras, lents et amples, 10 dans chaque sens",
+          "Étirement des pectoraux dans l'encadrement d'une porte, 30 secondes",
+          "Rotation externe des épaules avec une bande légère si disponible",
+        ],
+      },
+      {
+        heading: "Chevilles et genoux",
+        items: [
+          "Flexion de cheville contre un mur pour évaluer et améliorer l'amplitude",
+          "Squat profond tenu quelques secondes, sans charge, juste pour maintenir l'amplitude",
+        ],
+      },
+    ],
+    conclusion:
+      "10 minutes par jour suffisent largement à entretenir une bonne mobilité générale. La régularité compte bien plus que la durée d'une session isolée.",
+  },
+  {
+    slug: "checklist-gestion-stress",
+    title: "Gérer le stress qui sabote ta récupération",
+    hook: "Le stress chronique impacte directement le sommeil, la récupération et la progression. Voici des leviers concrets pour le faire baisser.",
+    category: "Récupération",
+    format: "checklist",
+    readTime: "4 min",
+    icon: "HeartPulse",
+    intro:
+      "Le stress ne se limite pas à un ressenti désagréable, il a un impact mesurable sur le sommeil, la récupération musculaire et la gestion de l'appétit. Voici des leviers concrets, pas juste l'idée générale de se détendre.",
+    groups: [
+      {
+        heading: "Leviers quotidiens rapides",
+        items: [
+          "5 à 10 minutes de respiration lente et profonde, particulièrement efficace le soir avant de dormir",
+          "Une marche courte, idéalement en extérieur, pour couper avec les écrans et l'activité mentale",
+          "Réduire la caféine en fin de journée, elle amplifie souvent la sensation de tension nerveuse",
+        ],
+      },
+      {
+        heading: "Structurer la journée pour limiter l'accumulation",
+        items: [
+          "Identifier un créneau fixe, même court, entièrement dédié à une activité sans obligation ni écran",
+          "Éviter d'enchaîner les notifications et sollicitations en continu, particulièrement en fin de journée",
+          "Prioriser 3 tâches réellement importantes par jour plutôt qu'une liste interminable qui génère une pression constante",
+        ],
+      },
+      {
+        heading: "Signes que le stress commence à impacter l'entraînement",
+        items: [
+          "Sommeil qui se dégrade sans changement d'horaire particulier",
+          "Motivation à l'entraînement en baisse sans raison physique identifiable",
+          "Tension musculaire diffuse, notamment au niveau des épaules et de la mâchoire",
+        ],
+      },
+    ],
+    conclusion:
+      "Le stress fait partie de la vie, l'objectif n'est pas de l'éliminer complètement mais d'éviter qu'il s'accumule sans limite. Quelques leviers simples, appliqués régulièrement, suffisent à en limiter l'impact sur la récupération.",
+  },
+
+  // ── Général (2) ──────────────────────────────────────────────────────
+  {
+    slug: "guide-red-flags-coach",
+    title: "Les signaux qui doivent t'alerter chez un coach",
+    hook: "Avant de t'engager avec un coach, voici les signaux concrets qui distinguent un accompagnement sérieux d'un accompagnement à éviter.",
+    category: "Général",
+    format: "guide",
+    readTime: "5 min",
+    icon: "MessageCircleWarning",
+    intro:
+      "Le coaching sportif n'est pas un métier réglementé de façon uniforme, ce qui laisse la porte ouverte à des pratiques très inégales. Voici les signaux concrets à surveiller avant de t'engager, et pendant l'accompagnement.",
+    sections: [
+      {
+        heading: "Avant de t'engager",
+        paragraphs: [
+          "Un coach sérieux te pose des questions précises sur ton historique, tes objectifs, tes contraintes et ta santé avant de proposer quoi que ce soit. Une proposition de programme générique envoyée sans aucune vraie prise d'information est un signal clair de manque de sérieux.",
+          "Méfie toi des promesses de résultats chiffrés et rapides garantis (perte de X kilos en X semaines) : la réponse individuelle varie trop pour qu'une telle promesse soit honnête.",
+        ],
+      },
+      {
+        heading: "Pendant l'accompagnement",
+        paragraphs: [
+          "Un suivi sérieux inclut des ajustements réguliers du programme et de la nutrition selon ta progression réelle, pas un plan figé envoyé une fois puis jamais retouché. L'absence totale de retour ou de disponibilité pour répondre à tes questions sur plusieurs semaines est un signal d'alerte.",
+          "Un coach qui pousse systématiquement vers des compléments ou produits qu'il vend lui même, au delà de ce qui est réellement nécessaire, mélange son intérêt commercial avec ton intérêt réel. Ce n'est pas automatiquement malhonnête, mais ça mérite d'être questionné.",
+        ],
+      },
+      {
+        heading: "Sur la posture générale",
+        paragraphs: [
+          "Un coach compétent reconnaît les limites de ce qu'il peut affirmer, notamment sur les sujets médicaux, et t'oriente vers un professionnel de santé quand c'est nécessaire plutôt que de tout vouloir gérer lui même. À l'inverse, quelqu'un qui prétend avoir réponse à tout, y compris sur des sujets médicaux qui dépassent son rôle, est un signal à prendre au sérieux.",
+        ],
+      },
+    ],
+    conclusion:
+      "Un bon accompagnement se reconnaît à la qualité du questionnement initial, à la régularité du suivi et à l'honnêteté sur ce qui est réaliste. Ces critères comptent davantage que les promesses affichées ou le nombre d'abonnés sur les réseaux.",
+  },
+  {
+    slug: "checklist-40-ans",
+    title: "S'entraîner après 40 ans : ce qui change vraiment",
+    hook: "Le corps ne réagit plus tout à fait pareil après 40 ans. Voici les ajustements concrets qui permettent de continuer à progresser sereinement.",
+    category: "Général",
+    format: "checklist",
+    readTime: "4 min",
+    icon: "Activity",
+    intro:
+      "S'entraîner après 40 ans ne veut pas dire ralentir ou abandonner la progression, mais ça demande quelques ajustements concrets pour rester efficace et éviter les blessures évitables.",
+    groups: [
+      {
+        heading: "Sur l'échauffement et la récupération",
+        items: [
+          "Allonger légèrement le temps d'échauffement, les articulations et tendons ont besoin de plus de préparation",
+          "Espacer un peu plus les séances très intenses sur un même groupe musculaire, la récupération est généralement plus lente",
+          "Prioriser le sommeil encore plus qu'avant, c'est le levier de récupération le plus impactant à cet âge",
+        ],
+      },
+      {
+        heading: "Sur la structure d'entraînement",
+        items: [
+          "Garder une part de travail en force, la masse musculaire et la densité osseuse se maintiennent mieux avec du travail sous charge régulier",
+          "Ne pas négliger le travail de mobilité et d'équilibre, souvent plus utile à long terme que l'ajout d'un exercice de plus",
+          "Progresser les charges de façon plus graduelle, sans que ça veuille dire renoncer à progresser sur la durée",
+        ],
+      },
+      {
+        heading: "Sur le suivi médical",
+        items: [
+          "Un bilan de santé général reste une bonne base avant d'intensifier un programme, particulièrement en reprise après une longue pause",
+          "Ne pas ignorer une douleur qui persiste au delà de quelques jours, la marge d'erreur est plus faible qu'à 20 ans",
+        ],
+      },
+    ],
+    conclusion:
+      "Après 40 ans, la progression reste tout à fait possible et réelle. Elle demande simplement un peu plus d'attention à la récupération et à la régularité qu'à l'intensité brute.",
+  },
+  {
+    slug: "guide-30-premiers-jours",
+    title: "Tes 30 premiers jours de coaching : à quoi t'attendre",
+    hook: "Le premier mois d'accompagnement pose les bases de tout ce qui suit. Voici ce qui se joue vraiment pendant cette période, et pourquoi certains résultats ne sont pas encore visibles.",
+    category: "Général",
+    format: "guide",
+    readTime: "5 min",
+    icon: "Home",
+    intro:
+      "Les 30 premiers jours d'un accompagnement génèrent souvent de l'impatience : on veut déjà voir des résultats visibles sur le physique. Voici ce qui se construit réellement pendant cette période, même quand ce n'est pas encore visible dans le miroir.",
+    sections: [
+      {
+        heading: "Ce qui se joue vraiment ce premier mois",
+        paragraphs: [
+          "Le premier mois sert avant tout à installer des habitudes solides : régularité d'entraînement, structuration des repas, sommeil, suivi des données. Ce sont ces habitudes qui déterminent la vitesse de progression des mois suivants, bien plus que l'intensité du premier mois lui même.",
+        ],
+      },
+      {
+        heading: "Pourquoi les résultats visibles prennent du temps",
+        paragraphs: [
+          "Les changements de composition corporelle mesurables prennent généralement 4 à 8 semaines pour devenir clairement visibles, même avec un plan parfaitement suivi. Les premières semaines apportent surtout des changements internes (technique, force, énergie, digestion) qui ne se voient pas encore à l'œil nu.",
+        ],
+      },
+      {
+        heading: "Les signaux positifs à chercher, au delà du miroir",
+        paragraphs: [
+          "Charges qui montent régulièrement sur les mouvements de base, énergie plus stable sur la journée, sommeil qui s'améliore, sensation de contrôle sur l'alimentation qui augmente. Ces signaux précèdent presque toujours les changements visibles sur le physique, et sont plus fiables à court terme.",
+        ],
+      },
+      {
+        heading: "Ce qui peut légitimement ralentir ce premier mois",
+        paragraphs: [
+          "Une phase d'adaptation à un nouveau volume d'entraînement, un ajustement des calories qui prend quelques semaines à se stabiliser, ou simplement le temps d'apprentissage des nouveaux mouvements techniques. Rien d'anormal dans tout ça, c'est le prix normal d'un vrai changement durable plutôt que d'un résultat éphémère.",
+        ],
+      },
+    ],
+    conclusion:
+      "Le premier mois construit les fondations, pas le résultat final. Rester régulier pendant cette période, même sans changement visible immédiat, est ce qui rend les mois suivants réellement efficaces.",
+  },
+  {
+    slug: "quiz-salle-ou-maison",
+    title: "Salle de sport ou entraînement à la maison : quel setup te correspond",
+    hook: "Réponds à ces questions pour savoir quel environnement d'entraînement colle vraiment à ta situation et à ta personnalité, sans céder aux idées reçues.",
+    category: "Général",
+    format: "quiz",
+    readTime: "3 min",
+    icon: "Building2",
+    intro:
+      "Ni la salle ni la maison ne sont supérieures dans l'absolu, tout dépend de ta situation, de ton budget et de ce qui te maintient réellement régulier. Ce quiz t'aide à trancher selon tes propres critères.",
+    questions: [
+      {
+        question: "Qu'est ce qui te motive le plus à rester régulier ?",
+        options: [
+          { label: "Un environnement dédié, où je sors de chez moi", resultKey: "salle" },
+          { label: "Le confort et la flexibilité horaire totale", resultKey: "maison" },
+          { label: "Un mix des deux selon les jours", resultKey: "hybride" },
+        ],
+      },
+      {
+        question: "Quel est ton budget matériel disponible pour t'équiper ?",
+        options: [
+          { label: "Peu ou pas de budget matériel, je préfère payer un abonnement", resultKey: "salle" },
+          { label: "Un budget confortable pour investir progressivement dans du matériel", resultKey: "maison" },
+          { label: "Un budget limité mais je suis prêt à investir un minimum", resultKey: "hybride" },
+        ],
+      },
+      {
+        question: "Quel type d'objectif principal poursuis tu ?",
+        options: [
+          { label: "Progression en force avec des charges lourdes et variées", resultKey: "salle" },
+          { label: "Entretien général, silhouette, mobilité", resultKey: "maison" },
+          { label: "Un peu des deux, ça dépend des périodes", resultKey: "hybride" },
+        ],
+      },
+      {
+        question: "Comment décrirais tu ton rapport à la présence d'autres personnes en t'entraînant ?",
+        options: [
+          { label: "Ça me motive et me pousse à me dépasser", resultKey: "salle" },
+          { label: "Ça me met mal à l'aise ou me distrait", resultKey: "maison" },
+          { label: "Neutre, ça ne change pas grand chose pour moi", resultKey: "hybride" },
+        ],
+      },
+    ],
+    outcomes: [
+      {
+        key: "salle",
+        title: "La salle te correspond mieux",
+        description:
+          "L'accès à du matériel varié et lourd, l'environnement dédié et la stimulation de l'entourage sont des leviers de régularité forts pour toi. Un abonnement salle est probablement le meilleur investissement pour ta progression.",
+      },
+      {
+        key: "maison",
+        title: "L'entraînement à la maison te correspond mieux",
+        description:
+          "La flexibilité horaire et le confort priment pour toi. Un investissement progressif dans quelques équipements clés (bandes, haltères ajustables, banc) suffit largement à construire un programme complet à la maison.",
+      },
+      {
+        key: "hybride",
+        title: "Un format hybride te correspond le mieux",
+        description:
+          "Ni la salle seule ni la maison seule ne couvrent parfaitement tes besoins. Un abonnement flexible combiné à un minimum de matériel à la maison pour les jours contraints est probablement le setup le plus durable pour toi.",
+      },
+    ],
+  },
 ];
 
 export function getLeadMagnet(slug: string): LeadMagnet | undefined {

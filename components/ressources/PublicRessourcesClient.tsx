@@ -1,93 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import {
-  Search, FileText, Download, Heart, Dumbbell, ClipboardCheck, Target, Apple,
-  AlertTriangle, Utensils, Flame, Moon, Brain, BedDouble, Activity, Flag,
-  Users, TrendingUp, ClipboardList, ChevronRight, Clock, ListChecks, HelpCircle,
-  BookOpen, type LucideIcon,
-} from "lucide-react";
+import { Search, FileText, Download, Heart } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
 import type { LeadMagnet } from "@/lib/lead-magnets";
 import SignupGateModal from "@/components/ressources/SignupGateModal";
+import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
 
 const FREE_PREVIEW_SECONDS = 60;
-
-const MAGNET_ICONS: Record<string, LucideIcon> = {
-  Dumbbell, ClipboardCheck, Target, Apple, AlertTriangle, Utensils, Flame,
-  Moon, Brain, BedDouble, Activity, Flag, Users, TrendingUp, ClipboardList,
-};
-
-const FORMAT_LABELS: Record<LeadMagnet["format"], { label: string; icon: LucideIcon }> = {
-  guide: { label: "Guide", icon: BookOpen },
-  checklist: { label: "Checklist", icon: ListChecks },
-  quiz: { label: "Quiz", icon: HelpCircle },
-};
-
-function LeadMagnetsGrid({ magnets }: { magnets: LeadMagnet[] }) {
-  return (
-    <section style={{ marginBottom: 32 }}>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Gratuit, sans compte
-      </p>
-      <h2 style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "0 0 14px" }}>
-        Guides, checklists et quiz
-      </h2>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
-        {magnets.map((m) => {
-          const Icon = MAGNET_ICONS[m.icon] ?? Target;
-          const format = FORMAT_LABELS[m.format];
-          const FormatIcon = format.icon;
-          return (
-            <Link
-              key={m.slug}
-              href={`/ressources/${m.slug}`}
-              className="group"
-              style={{
-                display: "flex", flexDirection: "column", gap: 10, padding: 16, borderRadius: 14,
-                background: "#1f0101", border: "1px solid rgba(137,4,4,0.25)", textDecoration: "none",
-              }}
-            >
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div
-                  style={{
-                    width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                    background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center",
-                  }}
-                >
-                  <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-                </div>
-                <span
-                  style={{
-                    display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 800,
-                    letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)",
-                  }}
-                >
-                  <FormatIcon size={10} /> {format.label}
-                </span>
-              </div>
-              <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", lineHeight: 1.35, margin: "0 0 4px" }}>
-                  {m.title}
-                </p>
-                <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5, margin: 0 }}>{m.hook}</p>
-              </div>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "rgba(245,237,237,0.3)" }}>
-                  <Clock size={10} /> {m.readTime}
-                </span>
-                <ChevronRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors" />
-              </div>
-            </Link>
-          );
-        })}
-      </div>
-    </section>
-  );
-}
 
 export default function PublicRessourcesClient({
   resources,
@@ -182,7 +104,7 @@ export default function PublicRessourcesClient({
           <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
         </div>
 
-        {leadMagnets.length > 0 && <LeadMagnetsGrid magnets={leadMagnets} />}
+        {leadMagnets.length > 0 && <LeadMagnetsGrid magnets={leadMagnets} eyebrow="Gratuit, sans compte" />}
 
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Bibliothèque du coach

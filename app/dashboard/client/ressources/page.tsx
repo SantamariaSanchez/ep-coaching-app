@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
+import { LEAD_MAGNETS } from "@/lib/lead-magnets";
 import ResourcesBrowser from "@/components/resources/ResourcesBrowser";
 import ResourceRequests from "@/components/resources/ResourceRequests";
+import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
 import { createResourceRequest, respondToResourceRequest, deleteResourceRequest } from "./request-actions";
 
 export default async function ClientRessourcesPage() {
@@ -26,6 +28,11 @@ export default async function ClientRessourcesPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
       </div>
+
+      {/* Guides/checklists/quiz déjà accessibles publiquement sur /ressources,
+          mais invisibles ici jusque là — un client connecté ne devrait pas
+          avoir à quitter l'appli pour les trouver. */}
+      <LeadMagnetsGrid magnets={LEAD_MAGNETS} />
 
       <ResourcesBrowser resources={resources} />
 

@@ -2,8 +2,10 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
+import { LEAD_MAGNETS } from "@/lib/lead-magnets";
 import ResourceManager from "@/components/resources/ResourceManager";
 import ResourceRequests from "@/components/resources/ResourceRequests";
+import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
 import {
   createResourceRequest,
   respondToResourceRequest,
@@ -33,6 +35,11 @@ export default async function CoachRessourcesPage() {
           Visibles par tous les clients, gratuits et payants.
         </p>
       </div>
+
+      {/* Les guides/checklists/quiz publics de /ressources, aussi accessibles
+          depuis le dashboard : utile au coach pour se rappeler ce qui existe
+          déjà et le recommander directement à un client. */}
+      <LeadMagnetsGrid magnets={LEAD_MAGNETS} eyebrow="À recommander à tes clients" />
 
       <ResourceManager resources={resources} />
 
