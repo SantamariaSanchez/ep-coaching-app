@@ -1093,7 +1093,7 @@ export default function ClientNutritionView({
       )}
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}

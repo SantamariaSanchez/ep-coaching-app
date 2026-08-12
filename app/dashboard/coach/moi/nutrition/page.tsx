@@ -86,6 +86,11 @@ export default async function CoachMonNutritionPage() {
           today,
           supplements,
           subjectLabel: "moi",
+          // "Suivi du jour" et "Historique alimentaire" existent déjà en
+          // interactif sous l'onglet du dessus (voir CoachMoiNutritionTabs) —
+          // sans ce flag, CoachClientNutritionTabs les réaffichait en double,
+          // en lecture seule.
+          isOwnPlan: true,
           saveNutritionProfile,
           createDietPlan,
           deactivateDietPlan,

@@ -274,6 +274,13 @@ interface Props {
     notes?: string
   ) => Promise<{ error?: string; id?: string }>;
   subjectLabel?: string;
+  // Coach sur sa propre page "Moi" : CoachMoiNutritionTabs affiche déjà un
+  // onglet "Suivi du jour" séparé qui rend ClientNutritionView en entier
+  // (saisie interactive + historique + courses). Sans ce flag, "Suivi du
+  // jour" et "Historique alimentaire" apparaissaient une seconde fois ici,
+  // en lecture seule, avec les mêmes données : de la vraie duplication, pas
+  // juste une impression.
+  isOwnPlan?: boolean;
   saveNutritionProfile: (clientId: string, data: NutritionProfileInput) => Promise<{ error?: string }>;
   createDietPlan: (
     clientId: string,
@@ -314,6 +321,7 @@ export default function CoachClientNutritionTabs({
   dietTemplates = [],
   saveDietAsTemplate,
   subjectLabel = "ce client",
+  isOwnPlan = false,
   saveNutritionProfile,
   createDietPlan,
   deactivateDietPlan,
@@ -328,13 +336,16 @@ export default function CoachClientNutritionTabs({
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
   const [changingMode, setChangingMode] = useState(false);
 
-  const tabs: { key: Tab; label: string }[] = [
+  const allTabs: { key: Tab; label: string }[] = [
     { key: "objectifs", label: "Objectifs TDEE" },
     { key: "plan", label: "Plans" },
     { key: "today", label: "Suivi du jour" },
     { key: "history", label: "Historique alimentaire" },
     { key: "supplements", label: "Compléments" },
   ];
+  // Sur "Moi", ces deux là existent déjà (en interactif, pas en lecture
+  // seule) sous l'onglet "Suivi du jour" du dessus, voir isOwnPlan ci-dessus.
+  const tabs = isOwnPlan ? allTabs.filter((t) => t.key !== "today" && t.key !== "history") : allTabs;
 
   return (
     <div>
