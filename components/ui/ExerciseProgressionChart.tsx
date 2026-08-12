@@ -78,7 +78,13 @@ export default function ExerciseProgressionChart({
     }
   }
 
-  const chartData = Object.values(bySession).slice(-10);
+  // sessions arrive triées du plus récent au plus ancien (voir
+  // getAllClientSessions/getClientSessions) : bySession hérite de cet ordre.
+  // slice(0, 10) prend donc bien les 10 séances les PLUS RÉCENTES (slice(-10)
+  // prenait à tort les 10 plus anciennes dès qu'il y en avait plus de 10),
+  // puis reverse() remet la courbe dans le sens chronologique gauche→droite,
+  // logique pour lire une progression.
+  const chartData = Object.values(bySession).slice(0, 10).reverse();
   const bestRecord = records
     .filter((r) => r.exercise_name === current)
     .sort((a, b) => b.weight_kg - a.weight_kg)[0];
@@ -104,21 +110,46 @@ export default function ExerciseProgressionChart({
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-      {/* Exercise selector */}
-      <div className="flex flex-wrap gap-1.5 mb-5">
-        {allExerciseNames.map((ex) => (
-          <button
-            key={ex}
-            onClick={() => setSelectedExercise(ex)}
-            className={`text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full border transition-colors ${
-              current === ex
-                ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/30"
-                : "text-[#F5EDED]/40 border-[#890404]/20 hover:border-[#890404]/40"
-            }`}
-          >
-            {ex}
-          </button>
-        ))}
+      {/* Sélecteur d'exercice — avant, une simple liste de pastilles qui
+          coupait les noms longs ("BARRE AU FRONT (SKULL CRUSHER)" devenait
+          illisible une fois entourée de dizaines d'autres pastilles). De
+          vrais blocs, en grille, avec le nom complet qui retourne à la ligne
+          plutôt que d'être tronqué. */}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}
+        className="mb-5"
+      >
+        {allExerciseNames.map((ex) => {
+          const isActive = current === ex;
+          return (
+            <button
+              key={ex}
+              onClick={() => setSelectedExercise(ex)}
+              style={{
+                textAlign: "left",
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: isActive ? "rgba(224,30,30,0.12)" : "#150000",
+                border: `1px solid ${isActive ? "rgba(224,30,30,0.4)" : "rgba(137,4,4,0.2)"}`,
+                transition: "background 0.15s, border-color 0.15s",
+              }}
+            >
+              <span
+                style={{
+                  display: "block",
+                  fontSize: 10.5,
+                  fontWeight: 800,
+                  letterSpacing: "0.02em",
+                  textTransform: "uppercase",
+                  lineHeight: 1.35,
+                  color: isActive ? "#E01E1E" : "rgba(245,237,237,0.55)",
+                }}
+              >
+                {ex}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {/* Best record */}
