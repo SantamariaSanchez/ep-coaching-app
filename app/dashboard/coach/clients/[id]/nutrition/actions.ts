@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import type { NutritionProfileInput } from "@/utils/nutrition";
 import { notifyUser } from "@/lib/notify";
 import { alreadyNotifiedToday } from "@/utils/insert-notification";
+import { rescaleActiveDietPlanToTargets } from "./diet-plan-actions";
 
 export async function saveNutritionProfile(
   clientId: string,
@@ -43,9 +44,12 @@ export async function saveNutritionProfile(
     // this doesn't depend on a unique constraint actually existing on
     // client_id in the live DB, which is what let stale duplicate rows
     // pile up and made saves look like they "kept the old data".
+    // On récupère aussi les anciennes cibles ici : c'est ce qui permet de
+    // savoir plus bas si les calories/macros ont réellement bougé, et donc
+    // si le plan de diète actif doit être réajusté.
     const { data: existingRows } = await supabase
       .from("nutrition_profiles")
-      .select("id")
+      .select("id, calories_target, proteins_target, carbs_target, fats_target")
       .eq("client_id", clientId)
       .order("updated_at", { ascending: false });
 
@@ -71,6 +75,33 @@ export async function saveNutritionProfile(
     if (error) {
       console.error("saveNutritionProfile error:", error);
       return { error: "Erreur lors de la sauvegarde." };
+    }
+
+    // Cibles caloriques/macros modifiées (et pas juste poids/pas/activité,
+    // qui repassent aussi par ce même save) : le plan de diète déjà
+    // construit doit suivre automatiquement, sans repasser aliment par
+    // aliment à la main.
+    const previous = existingRows?.[0];
+    const targetsChanged =
+      !previous ||
+      Number(previous.calories_target) !== data.calories_target ||
+      Number(previous.proteins_target) !== data.proteins_target ||
+      Number(previous.carbs_target) !== data.carbs_target ||
+      Number(previous.fats_target) !== data.fats_target;
+    if (targetsChanged) {
+      // Attendu (pas fire-and-forget) : les revalidatePath juste en dessous
+      // doivent voir les grammages déjà réajustés, sinon le premier
+      // rechargement du plan affiche encore les anciennes quantités.
+      try {
+        await rescaleActiveDietPlanToTargets(clientId, {
+          calories: data.calories_target,
+          proteins: data.proteins_target,
+          carbs: data.carbs_target,
+          fats: data.fats_target,
+        });
+      } catch (e) {
+        console.error("rescaleActiveDietPlanToTargets error:", e);
+      }
     }
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);

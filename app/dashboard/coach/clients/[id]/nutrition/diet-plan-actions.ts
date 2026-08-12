@@ -6,6 +6,115 @@ import { revalidatePath } from "next/cache";
 import type { DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
 import { notifyUser } from "@/lib/notify";
 
+export interface MacroTargetsInput {
+  calories: number;
+  proteins: number;
+  carbs: number;
+  fats: number;
+}
+
+// Réajuste automatiquement les grammages du plan actif d'un client quand
+// ses objectifs caloriques/macros changent (appelé depuis saveNutritionProfile,
+// uniquement si les cibles ont réellement bougé) — sans ça, un coach qui
+// ajoute 20g de glucides à l'objectif devait ensuite rouvrir le plan et
+// retoucher chaque aliment glucidique à la main.
+//
+// Heuristique : chaque aliment est rescalé selon SON propre profil macro,
+// pas d'un facteur unique appliqué à tout le plan. Un aliment presque
+// exclusivement protéiné (blanc de poulet) suit le ratio protéines
+// demandé ; un féculent suit le ratio glucides ; un aliment mixte suit une
+// moyenne pondérée par la part de calories que chaque macro représente
+// pour LUI. C'est ce qui fait qu'ajouter des glucides à l'objectif fait
+// grossir le riz du plan sans gonfler le poulet.
+export async function rescaleActiveDietPlanToTargets(
+  clientId: string,
+  targets: MacroTargetsInput
+): Promise<{ rescaled: boolean; planId?: string }> {
+  // Exportée d'un fichier "use server" = appelable directement côté client
+  // avec n'importe quel clientId — même garde que les autres actions de ce
+  // fichier, pas seulement un appel interne de confiance depuis saveNutritionProfile.
+  const guard = await requireOwnClientOrSelf(clientId);
+  if (!guard.ok) return { rescaled: false };
+
+  const supabase = createAdminClient();
+
+  const { data: plan } = await supabase
+    .from("diet_plans")
+    .select("id")
+    .eq("client_id", clientId)
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (!plan) return { rescaled: false };
+
+  const { data: meals } = await supabase
+    .from("diet_plan_meals")
+    .select("id, quantity_g, foods(calories_per_100, proteins_per_100, carbs_per_100, fats_per_100)")
+    .eq("plan_id", plan.id);
+
+  if (!meals || meals.length === 0) return { rescaled: false };
+
+  type MealRow = {
+    id: string;
+    quantity_g: number;
+    foods: { calories_per_100: number | null; proteins_per_100: number | null; carbs_per_100: number | null; fats_per_100: number | null } | null;
+  };
+  const rows = meals as unknown as MealRow[];
+
+  let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
+  for (const row of rows) {
+    if (!row.foods) continue;
+    const r = row.quantity_g / 100;
+    totalCal += (row.foods.calories_per_100 ?? 0) * r;
+    totalP += (row.foods.proteins_per_100 ?? 0) * r;
+    totalC += (row.foods.carbs_per_100 ?? 0) * r;
+    totalF += (row.foods.fats_per_100 ?? 0) * r;
+  }
+
+  // Rien à comparer (plan vide de macros, ex : que de l'eau/épices) — pas
+  // de ratio calculable, on n'invente pas un facteur.
+  if (totalCal <= 0) return { rescaled: false };
+
+  const rCal = targets.calories / totalCal;
+  const rP = totalP > 0 ? targets.proteins / totalP : rCal;
+  const rC = totalC > 0 ? targets.carbs / totalC : rCal;
+  const rF = totalF > 0 ? targets.fats / totalF : rCal;
+
+  const updates: { id: string; quantity_g: number }[] = [];
+  for (const row of rows) {
+    if (!row.foods) continue;
+    const pk = (row.foods.proteins_per_100 ?? 0) * 4;
+    const ck = (row.foods.carbs_per_100 ?? 0) * 4;
+    const fk = (row.foods.fats_per_100 ?? 0) * 9;
+    const totalK = pk + ck + fk;
+    // Aliment sans macro identifiable (arôme, assaisonnement à 0 kcal) :
+    // on le laisse suivre l'évolution calorique globale plutôt que de le
+    // figer arbitrairement.
+    const scale = totalK > 0 ? (pk / totalK) * rP + (ck / totalK) * rC + (fk / totalK) * rF : rCal;
+    // Bornes de sécurité : jamais 0g (un aliment qui "disparaît" tout seul
+    // serait plus déroutant qu'utile) ni un grammage qui explose si une
+    // cible est modifiée dans l'absurde.
+    const nextQuantity = Math.min(2000, Math.max(1, Math.round(row.quantity_g * scale)));
+    if (nextQuantity !== row.quantity_g) {
+      updates.push({ id: row.id, quantity_g: nextQuantity });
+    }
+  }
+
+  if (updates.length === 0) return { rescaled: false, planId: plan.id };
+
+  await Promise.all(
+    updates.map((u) =>
+      supabase.from("diet_plan_meals").update({ quantity_g: u.quantity_g }).eq("id", u.id)
+    )
+  );
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
+  revalidatePath(`/dashboard/client/nutrition`);
+  revalidatePath(`/dashboard/coach/moi/nutrition`);
+
+  return { rescaled: true, planId: plan.id };
+}
+
 export interface DietPlanMealInput {
   meal_slot: string;
   food_id: string;
