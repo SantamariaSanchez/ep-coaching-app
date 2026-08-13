@@ -21,6 +21,9 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
 
 - **2026-08-13** — Mise en place : branche `feature/50-idees` créée, ce fichier créé.
   Démarrage axe 1 (navigation/fluidité), item 1.
+- **2026-08-13** — Items 1 et 4 traités ensemble (même mécanisme technique :
+  cache `unstable_cache` sur les lectures de référence partagées). tsc/eslint/
+  build vérifiés, commit `3ade35e`. En cours : item 2 (requêtes en cascade).
 
 ---
 
@@ -42,7 +45,13 @@ lu et validé explicitement la décision ci-dessous.
 
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
-*(vide pour l'instant)*
+- **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
+  pas modifié) : son propre commentaire dans le code documente que la fonction
+  peut renvoyer les études de TOUS les coachs de la plateforme à n'importe quel
+  client dès qu'un 2e coach existera ("fuite inter-coachs"). Non exploitable
+  avec un seul coach en prod aujourd'hui. Je n'y ai pas touché (ni mis en
+  cache, ni "corrigé en silence") — à vérifier si c'est déjà une des 6 failles
+  de l'audit séparé ou un doublon à traiter avec elles.
 
 ---
 
@@ -50,10 +59,10 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 1 | Auditer les 32 pages force-dynamic, cache ciblé | en cours | — | — | — |
-| 2 | Repérer les requêtes en cascade, paralléliser | todo | — | — | — |
+| 1 | Auditer les 32 pages force-dynamic, cache ciblé | fait | `3ade35e` | 2026-08-13 | force-dynamic est légitime sur les 32 (dashboards perso) ; le vrai coût était les lectures de référence partagées re-requêtées à chaque clic, voir item 4 |
+| 2 | Repérer les requêtes en cascade, paralléliser | en cours | — | — | — |
 | 3 | Squelettes de chargement fidèles à la page réelle | todo | — | — | — |
-| 4 | Cache données figées (exercices/salles/aliments) | todo | — | — | — |
+| 4 | Cache données figées (exercices/salles/aliments) | fait | `3ade35e` | 2026-08-13 | unstable_cache 1h + revalidateTag sur foods/exercise-library/gyms/science-articles |
 | 5 | Palette de commande (Cmd/Ctrl+K) | todo | — | — | — |
 | 6 | Préchargement au survol/focus | todo | — | — | — |
 
