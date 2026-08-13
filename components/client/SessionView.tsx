@@ -64,6 +64,24 @@ interface PrevWeight {
   rir: number | null;
 }
 
+// Item 31 : charge suggérée pour la prochaine série, à partir du RIR réel
+// de la dernière fois comparé au RIR cible du programme — autorégulation
+// simple (±2,5% de charge par point d'écart), la règle qu'un coach
+// appliquerait à l'œil plutôt qu'une "IA". Reste un placeholder éditable
+// dans le champ poids, jamais une valeur imposée.
+function suggestNextWeight(prevWeight: PrevWeight | null, targetRir: number | null): number | null {
+  if (prevWeight?.weight == null) return null;
+  if (prevWeight.rir == null || targetRir == null) return prevWeight.weight;
+
+  const diff = prevWeight.rir - targetRir; // positif = trop facile, négatif = trop dur
+  if (diff === 0) return prevWeight.weight;
+
+  const suggested = prevWeight.weight * (1 + diff * 0.025);
+  // Arrondi au 0,5kg le plus proche : repère indicatif, pas une valeur de
+  // plaque exacte (dépend du matériel réellement disponible).
+  return Math.round(suggested * 2) / 2;
+}
+
 interface LibraryTip {
   instructions: string | null;
   video_url: string | null;
@@ -803,6 +821,10 @@ function SetRow({
     prThreshold != null && weight > prThreshold && weight > 0;
   const [uploadingVideo, setUploadingVideo] = useState(false);
 
+  const suggestedWeight = suggestNextWeight(prevWeight, exercise.rir ?? null);
+  const suggestionDiffersFromLast =
+    suggestedWeight != null && prevWeight?.weight != null && suggestedWeight !== prevWeight.weight;
+
   async function handleVideoSelect(file: File) {
     if (!set.dbId) return;
     setUploadingVideo(true);
@@ -935,14 +957,19 @@ function SetRow({
                 type="number"
                 inputMode="decimal"
                 placeholder={
-                  prevWeight?.weight != null
-                    ? `${prevWeight.weight} kg`
+                  suggestedWeight != null
+                    ? `${suggestedWeight} kg`
                     : "0"
                 }
                 value={set.weightKg}
                 onChange={(e) => onChange({ weightKg: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
               />
+              {suggestionDiffersFromLast && !set.weightKg && (
+                <p className="text-[8.5px] text-[#F5EDED]/30 mt-1 leading-tight">
+                  💡 {suggestedWeight}kg suggéré (RIR {prevWeight!.rir} la dernière fois pour une cible {exercise.rir})
+                </p>
+              )}
             </div>
             <div className="flex-1">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
