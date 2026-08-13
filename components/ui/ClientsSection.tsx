@@ -11,7 +11,16 @@ import type { Profile } from "@/utils/auth";
 import type { CoachingPhaseSummary } from "@/lib/coaching-phase";
 // Module pur (aucun import serveur) : sûr depuis un Client Component.
 import { PHASE_LABELS } from "@/lib/coaching-phase-helpers";
+import type { ClientActivity } from "@/lib/client-activity";
 import { ClientCard } from "./ClientCard";
+
+// Silencieux depuis 5 jours ou plus (ou jamais vu sur la fenêtre regardée) —
+// même seuil pour le filtre "Inactifs" et pour le point de couleur affiché
+// sur chaque carte, voir ClientCard.
+const SILENT_THRESHOLD_DAYS = 5;
+function isSilent(days: number | null | undefined): boolean {
+  return days == null || days >= SILENT_THRESHOLD_DAYS;
+}
 
 // Semaine de coaching en cours, calculée depuis start_date (déjà chargé avec
 // le profil, aucune requête supplémentaire) — même logique que le calcul
@@ -30,12 +39,13 @@ function normalize(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-type FilterKey = "all" | "alerts" | "paused" | "new";
+type FilterKey = "all" | "alerts" | "paused" | "new" | "silent";
 type SortKey = "name" | "recent" | "alerts" | "seniority";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "alerts", label: "À traiter" },
+  { key: "silent", label: "Inactifs" },
   { key: "new", label: "Nouveaux" },
   { key: "paused", label: "En pause" },
 ];
@@ -66,10 +76,12 @@ export default function ClientsSection({
   clients,
   ouraEligibleIds = [],
   phaseOverview = {},
+  activity = {},
 }: {
   clients: Profile[];
   ouraEligibleIds?: string[];
   phaseOverview?: Record<string, CoachingPhaseSummary>;
+  activity?: Record<string, ClientActivity>;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -91,6 +103,7 @@ export default function ClientsSection({
     const filtered = clients.filter((c) => {
       if (q && !normalize(c.full_name ?? "").includes(q)) return false;
       if (filter === "alerts") return alertCount(c.id) > 0;
+      if (filter === "silent") return isSilent(activity[c.id]?.daysSinceActivity);
       if (filter === "paused") return c.status === "paused" || c.status === "ended";
       if (filter === "new") return isNew(c);
       return true;
@@ -117,7 +130,7 @@ export default function ClientsSection({
       return byName(a, b);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clients, phaseOverview, query, filter, sort]);
+  }, [clients, phaseOverview, activity, query, filter, sort]);
 
   const totalAlerts = clients.reduce((sum, c) => sum + alertCount(c.id), 0);
   // La barre d'outils n'a de sens qu'à partir de quelques clients : en
@@ -210,6 +223,7 @@ export default function ClientsSection({
               const count =
                 f.key === "all" ? clients.length
                 : f.key === "alerts" ? clients.filter((c) => alertCount(c.id) > 0).length
+                : f.key === "silent" ? clients.filter((c) => isSilent(activity[c.id]?.daysSinceActivity)).length
                 : f.key === "paused" ? clients.filter((c) => c.status === "paused" || c.status === "ended").length
                 : clients.filter(isNew).length;
               return (
@@ -305,6 +319,9 @@ export default function ClientsSection({
                 // (décrochage, prêt à changer de phase...) — voir
                 // lib/coaching-phase.ts, jamais affiché côté client.
                 alerts={summary?.suggestionCount ?? 0}
+                // Silence depuis combien de temps (entraînement/nutrition/
+                // bilan) — distinct des suggestions de phase ci-dessus.
+                daysSinceActivity={activity[client.id]?.daysSinceActivity ?? null}
               />
             );
           })}

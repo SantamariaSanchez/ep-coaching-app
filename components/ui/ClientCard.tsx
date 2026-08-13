@@ -18,6 +18,8 @@ interface ClientCardProps {
   coachingPhase?: string | null;
   /** Statut du suivi : un client en pause ou terminé doit se repérer d'un coup d'œil. */
   status?: "active" | "paused" | "ended" | null;
+  /** Jours depuis la dernière activité (entraînement/nutrition/bilan), null = aucune vue récemment. */
+  daysSinceActivity?: number | null;
 }
 
 export function ClientCard({
@@ -32,6 +34,7 @@ export function ClientCard({
   ouraEligible = false,
   coachingPhase = null,
   status = null,
+  daysSinceActivity = null,
 }: ClientCardProps) {
   const initials = name
     .split(" ")
@@ -56,6 +59,19 @@ export function ClientCard({
     status === "paused" ? "En pause"
     : status === "ended" ? "Terminé"
     : null;
+
+  // Même logique pour le silence : rien en dessous de 5 jours (normal),
+  // orange entre 5 et 9, rouge à partir de 10 ou si aucune activité vue du
+  // tout sur la fenêtre regardée (voir lib/client-activity.ts). Jamais
+  // affiché pour un client en pause/terminé : l'absence d'activité y est
+  // normale, pas un signal à traiter.
+  const isActiveStatus = status == null || status === "active";
+  const silentLabel =
+    !isActiveStatus ? null
+    : daysSinceActivity == null ? "Inactif"
+    : daysSinceActivity >= 5 ? `${daysSinceActivity}j sans activité`
+    : null;
+  const silentColor = daysSinceActivity != null && daysSinceActivity < 10 ? "#fb923c" : "#E01E1E";
 
   return (
     <div
@@ -219,6 +235,28 @@ export function ClientCard({
                 textTransform: "uppercase",
               }}>
                 {statusLabel}
+              </span>
+            )}
+            {silentLabel && (
+              <span
+                title="Aucune séance, log nutrition ou bilan récent"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: `${silentColor}14`,
+                  border: `1px solid ${silentColor}28`,
+                  borderRadius: 20,
+                  padding: "2px 10px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.07em",
+                  color: silentColor,
+                  textTransform: "uppercase",
+                }}
+              >
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: silentColor, flexShrink: 0 }} />
+                {silentLabel}
               </span>
             )}
           </div>
