@@ -14,11 +14,34 @@ interface ClientResult {
   full_name: string | null;
 }
 
+interface LibraryResult {
+  key: string;
+  label: string;
+  category: "Aliment" | "Exercice" | "Salle" | "Science";
+}
+
 interface Result {
   key: string;
   label: string;
   sub: string;
   href: string;
+}
+
+// Item 38 : où renvoyer chaque type de contenu trouvé par /api/library-search
+// — mêmes chemins que la nav (voir DashboardNav), pas de page dédiée par
+// résultat individuel (les bibliothèques elles-mêmes ont leur propre
+// recherche interne une fois sur place).
+function libraryHref(category: LibraryResult["category"], isCoach: boolean): string {
+  const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
+  switch (category) {
+    case "Exercice":
+    case "Salle":
+      return `${base}/exercises`;
+    case "Aliment":
+      return isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition";
+    case "Science":
+      return `${base}/science/recherche`;
+  }
 }
 
 // Palette de commande (Cmd/Ctrl+K) : sauter directement à un client ou à
@@ -37,6 +60,7 @@ export default function CommandPalette({
   const [query, setQuery] = useState("");
   const [clients, setClients] = useState<ClientResult[] | null>(null);
   const [loadingClients, setLoadingClients] = useState(false);
+  const [libraryResults, setLibraryResults] = useState<LibraryResult[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -74,6 +98,26 @@ export default function CommandPalette({
     return () => cancelAnimationFrame(t);
   }, [open, isCoach, clients, loadingClients]);
 
+  // Item 38 : recherche dans les bibliothèques de contenu (aliments,
+  // exercices, salles, science) — débattue à 250ms pour ne pas taper
+  // l'API à chaque frappe, coupée en dessous de 2 caractères comme côté
+  // serveur (voir /api/library-search).
+  useEffect(() => {
+    if (!open) return;
+    const q = query.trim();
+    // En dessous de 2 caractères, aucun fetch : le rendu ignore de toute
+    // façon libraryResults dans ce cas (voir plus bas), pas besoin de le
+    // vider ici via un setState synchrone dans l'effet.
+    if (q.length < 2) return;
+    const t = setTimeout(() => {
+      fetch(`/api/library-search?q=${encodeURIComponent(q)}`)
+        .then((r) => r.json())
+        .then((d) => setLibraryResults(d.results ?? []))
+        .catch(() => setLibraryResults([]));
+    }, 250);
+    return () => clearTimeout(t);
+  }, [open, query]);
+
   if (!open) return null;
 
   const q = query.trim().toLowerCase();
@@ -82,6 +126,10 @@ export default function CommandPalette({
   const matchedNav = q
     ? navItems.filter((n) => n.label.toLowerCase().includes(q)).slice(0, 6)
     : navItems.slice(0, 8);
+  // En dessous de 2 caractères, on ignore ce qui reste éventuellement de la
+  // dernière recherche (voir l'effet ci-dessus) plutôt que de le vider via
+  // un setState synchrone dans l'effet.
+  const shownLibraryResults = q.length >= 2 ? libraryResults : [];
 
   const results: Result[] = [
     ...matchedClients.map((c) => ({
@@ -89,6 +137,12 @@ export default function CommandPalette({
       label: c.full_name ?? "Sans nom",
       sub: "Client",
       href: `/dashboard/coach/clients/${c.id}`,
+    })),
+    ...shownLibraryResults.map((r) => ({
+      key: r.key,
+      label: r.label,
+      sub: r.category,
+      href: libraryHref(r.category, isCoach),
     })),
     ...matchedNav.map((n) => ({ key: `n-${n.href}`, label: n.label, sub: "Page", href: n.href })),
   ];
@@ -137,7 +191,7 @@ export default function CommandPalette({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={onKeyDownInput}
-            placeholder={isCoach ? "Un client, une page..." : "Chercher une page..."}
+            placeholder={isCoach ? "Un client, une page, un exercice..." : "Une page, un exercice, un aliment..."}
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
           />
           <button
