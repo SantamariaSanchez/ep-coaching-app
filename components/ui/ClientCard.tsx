@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Gift, ArrowRight } from "lucide-react";
+import { Gift, ArrowRight, Bell, Check } from "lucide-react";
 
 interface ClientCardProps {
   name: string;
@@ -20,6 +21,10 @@ interface ClientCardProps {
   status?: "active" | "paused" | "ended" | null;
   /** Jours depuis la dernière activité (entraînement/nutrition/bilan), null = aucune vue récemment. */
   daysSinceActivity?: number | null;
+  /** Fiche client jamais terminée (item 14) — n'affiche le badge/bouton que si true. */
+  intakeIncomplete?: boolean;
+  /** Relance manuelle en un clic ; absent = pas de bouton (ex: page sans l'action câblée). */
+  onRelaunch?: () => Promise<{ error?: string }>;
 }
 
 export function ClientCard({
@@ -35,7 +40,18 @@ export function ClientCard({
   coachingPhase = null,
   status = null,
   daysSinceActivity = null,
+  intakeIncomplete = false,
+  onRelaunch,
 }: ClientCardProps) {
+  const [relaunchState, setRelaunchState] = useState<"idle" | "sending" | "sent">("idle");
+
+  async function handleRelaunch(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!onRelaunch || relaunchState !== "idle") return;
+    setRelaunchState("sending");
+    const res = await onRelaunch();
+    setRelaunchState(res?.error ? "idle" : "sent");
+  }
   const initials = name
     .split(" ")
     .map((n) => n[0])
@@ -259,6 +275,26 @@ export function ClientCard({
                 {silentLabel}
               </span>
             )}
+            {intakeIncomplete && isActiveStatus && (
+              <span
+                title="Le formulaire d'onboarding n'a jamais été terminé"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  background: "rgba(96,165,250,0.1)",
+                  border: "1px solid rgba(96,165,250,0.24)",
+                  borderRadius: 20,
+                  padding: "2px 10px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.07em",
+                  color: "#60A5FA",
+                  textTransform: "uppercase",
+                }}
+              >
+                Fiche à finir
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -308,41 +344,75 @@ export function ClientCard({
           maintenant nommée au lieu d'être devinée. Un Link : Next préchauffe
           la fiche au survol, l'ouverture est quasi instantanée. */}
       {href && (
-        <Link
-          href={href}
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 7,
-            width: "100%",
-            padding: "10px 12px",
-            borderRadius: 10,
-            background: "rgba(224,30,30,0.1)",
-            border: "1px solid rgba(224,30,30,0.22)",
-            color: "#F5EDED",
-            fontSize: 11.5,
-            fontWeight: 800,
-            letterSpacing: "0.08em",
-            textTransform: "uppercase",
-            textDecoration: "none",
-            transition: "background 0.15s ease, border-color 0.15s ease",
-          }}
-          onMouseEnter={(e) => {
-            const el = e.currentTarget as HTMLAnchorElement;
-            el.style.background = "rgba(224,30,30,0.2)";
-            el.style.borderColor = "rgba(224,30,30,0.45)";
-          }}
-          onMouseLeave={(e) => {
-            const el = e.currentTarget as HTMLAnchorElement;
-            el.style.background = "rgba(224,30,30,0.1)";
-            el.style.borderColor = "rgba(224,30,30,0.22)";
-          }}
-        >
-          Voir la fiche
-          <ArrowRight size={13} strokeWidth={2.4} />
-        </Link>
+        <div style={{ display: "flex", gap: 8 }}>
+          <Link
+            href={href}
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 7,
+              flex: 1,
+              padding: "10px 12px",
+              borderRadius: 10,
+              background: "rgba(224,30,30,0.1)",
+              border: "1px solid rgba(224,30,30,0.22)",
+              color: "#F5EDED",
+              fontSize: 11.5,
+              fontWeight: 800,
+              letterSpacing: "0.08em",
+              textTransform: "uppercase",
+              textDecoration: "none",
+              transition: "background 0.15s ease, border-color 0.15s ease",
+            }}
+            onMouseEnter={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.background = "rgba(224,30,30,0.2)";
+              el.style.borderColor = "rgba(224,30,30,0.45)";
+            }}
+            onMouseLeave={(e) => {
+              const el = e.currentTarget as HTMLAnchorElement;
+              el.style.background = "rgba(224,30,30,0.1)";
+              el.style.borderColor = "rgba(224,30,30,0.22)";
+            }}
+          >
+            Voir la fiche
+            <ArrowRight size={13} strokeWidth={2.4} />
+          </Link>
+
+          {/* Relance manuelle (item 14) — uniquement quand il y a quelque
+              chose de concret à relancer (fiche pas finie) et que la page
+              appelante a câblé l'action. */}
+          {intakeIncomplete && onRelaunch && (
+            <button
+              onClick={handleRelaunch}
+              disabled={relaunchState !== "idle"}
+              title="Envoyer une relance pour terminer la fiche"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 6,
+                padding: "10px 12px",
+                borderRadius: 10,
+                background: relaunchState === "sent" ? "rgba(74,222,128,0.1)" : "rgba(96,165,250,0.1)",
+                border: `1px solid ${relaunchState === "sent" ? "rgba(74,222,128,0.3)" : "rgba(96,165,250,0.28)"}`,
+                color: relaunchState === "sent" ? "#4ade80" : "#60A5FA",
+                fontSize: 11.5,
+                fontWeight: 800,
+                letterSpacing: "0.06em",
+                textTransform: "uppercase",
+                cursor: relaunchState === "idle" ? "pointer" : "default",
+                opacity: relaunchState === "sending" ? 0.6 : 1,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {relaunchState === "sent" ? <Check size={13} strokeWidth={2.4} /> : <Bell size={13} strokeWidth={2.4} />}
+              {relaunchState === "sent" ? "Envoyée" : "Relancer"}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

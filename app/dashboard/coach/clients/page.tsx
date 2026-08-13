@@ -4,6 +4,8 @@ import { getPointsMap } from "@/lib/gamification";
 import { isEligibleForLegendReward } from "@/lib/gamification-types";
 import { getCoachingPhaseOverview } from "@/lib/coaching-phase";
 import { getClientsLastActivity } from "@/lib/client-activity";
+import { getClientsIntakeCompletion } from "@/utils/client-intake";
+import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions";
 import ClientsSection from "@/components/ui/ClientsSection";
 
 export default async function ClientsPage() {
@@ -18,7 +20,7 @@ export default async function ClientsPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const clientIds = clients.map((c) => c.id);
-  const [pointsMap, phaseOverview, activity] = await Promise.all([
+  const [pointsMap, phaseOverview, activity, intakeComplete] = await Promise.all([
     getPointsMap(clientIds),
     // Coach exclusivement — repère qui décroche ou est prêt à changer de
     // phase sans avoir à ouvrir chaque fiche (voir ClientCard alerts).
@@ -26,6 +28,8 @@ export default async function ClientsPage() {
     // Silence depuis combien de temps (entraînement/nutrition/bilan) —
     // distinct des suggestions de phase ci-dessus, voir ClientCard.
     getClientsLastActivity(clientIds),
+    // Entonnoir d'onboarding (item 14) : qui n'a jamais fini sa fiche client.
+    getClientsIntakeCompletion(clientIds),
   ]);
   const ouraEligibleIds = clients
     .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
@@ -41,7 +45,14 @@ export default async function ClientsPage() {
         </p>
       </div>
 
-      <ClientsSection clients={clients} ouraEligibleIds={ouraEligibleIds} phaseOverview={phaseOverview} activity={activity} />
+      <ClientsSection
+        clients={clients}
+        ouraEligibleIds={ouraEligibleIds}
+        phaseOverview={phaseOverview}
+        activity={activity}
+        intakeComplete={intakeComplete}
+        relaunchMember={relaunchMember}
+      />
     </div>
   );
 }

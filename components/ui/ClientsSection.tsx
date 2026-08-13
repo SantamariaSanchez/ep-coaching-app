@@ -39,13 +39,14 @@ function normalize(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-type FilterKey = "all" | "alerts" | "paused" | "new" | "silent";
+type FilterKey = "all" | "alerts" | "paused" | "new" | "silent" | "incomplete";
 type SortKey = "name" | "recent" | "alerts" | "seniority";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "alerts", label: "À traiter" },
   { key: "silent", label: "Inactifs" },
+  { key: "incomplete", label: "Fiche à finir" },
   { key: "new", label: "Nouveaux" },
   { key: "paused", label: "En pause" },
 ];
@@ -77,11 +78,17 @@ export default function ClientsSection({
   ouraEligibleIds = [],
   phaseOverview = {},
   activity = {},
+  intakeComplete = {},
+  relaunchMember,
 }: {
   clients: Profile[];
   ouraEligibleIds?: string[];
   phaseOverview?: Record<string, CoachingPhaseSummary>;
   activity?: Record<string, ClientActivity>;
+  /** Item 14 : qui n'a jamais terminé sa fiche client (goal_3_months rempli). */
+  intakeComplete?: Record<string, boolean>;
+  /** Relance manuelle en un clic — même action que la page Communauté > Membres. */
+  relaunchMember?: (memberId: string) => Promise<{ error?: string }>;
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
@@ -104,6 +111,7 @@ export default function ClientsSection({
       if (q && !normalize(c.full_name ?? "").includes(q)) return false;
       if (filter === "alerts") return alertCount(c.id) > 0;
       if (filter === "silent") return isSilent(activity[c.id]?.daysSinceActivity);
+      if (filter === "incomplete") return !intakeComplete[c.id];
       if (filter === "paused") return c.status === "paused" || c.status === "ended";
       if (filter === "new") return isNew(c);
       return true;
@@ -130,7 +138,7 @@ export default function ClientsSection({
       return byName(a, b);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clients, phaseOverview, activity, query, filter, sort]);
+  }, [clients, phaseOverview, activity, intakeComplete, query, filter, sort]);
 
   const totalAlerts = clients.reduce((sum, c) => sum + alertCount(c.id), 0);
   // La barre d'outils n'a de sens qu'à partir de quelques clients : en
@@ -224,6 +232,7 @@ export default function ClientsSection({
                 f.key === "all" ? clients.length
                 : f.key === "alerts" ? clients.filter((c) => alertCount(c.id) > 0).length
                 : f.key === "silent" ? clients.filter((c) => isSilent(activity[c.id]?.daysSinceActivity)).length
+                : f.key === "incomplete" ? clients.filter((c) => !intakeComplete[c.id]).length
                 : f.key === "paused" ? clients.filter((c) => c.status === "paused" || c.status === "ended").length
                 : clients.filter(isNew).length;
               return (
@@ -322,6 +331,10 @@ export default function ClientsSection({
                 // Silence depuis combien de temps (entraînement/nutrition/
                 // bilan) — distinct des suggestions de phase ci-dessus.
                 daysSinceActivity={activity[client.id]?.daysSinceActivity ?? null}
+                // Fiche client jamais terminée (item 14) — relance directe
+                // sans repasser par la page Communauté > Membres.
+                intakeIncomplete={!intakeComplete[client.id]}
+                onRelaunch={relaunchMember ? () => relaunchMember(client.id) : undefined}
               />
             );
           })}
