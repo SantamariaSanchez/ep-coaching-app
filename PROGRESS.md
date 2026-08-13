@@ -97,6 +97,14 @@ explicite plutôt que de les réutiliser.
   masse, Flexible Déficit), 2 roadmaps 12 semaines (Recomposition, Perte de
   gras avec pause diète). Pas de commit git (aucun fichier modifié).
   **Axe 2 : 8/9 items faits. Reste 11 (actions groupées).**
+- **2026-08-13** — Item 11 traité. Constat en cours de route : l'application
+  groupée d'un modèle (programme/diète/roadmap) à plusieurs clients existait
+  déjà entièrement (UI multi-sélection comprise, citée comme le cas d'usage
+  "10 nouveaux clients"). Ajouté le volet manquant : `bulkAdjustCalories()`,
+  décale l'objectif calorique de plusieurs clients d'un coup et réutilise
+  `rescaleActiveDietPlanToTargets` (déjà construit plus tôt) pour recalculer
+  les grammages de chacun automatiquement. tsc/eslint/build vérifiés,
+  commit `f380e3a`. **Axe 2 (Outils coach) terminé : 9/9.**
 
 ---
 
@@ -147,7 +155,7 @@ lu et validé explicitement la décision ci-dessous.
 | 8 | Boîte de réception coach unique | fait | `3e03435` | 2026-08-13 | nouvelle page /dashboard/coach/inbox, filtre coach_id explicite (voir sécurité) |
 | 9 | Alerte "client silencieux" | fait | `163450c` | 2026-08-13 | seuil 5j, 3 sources (entraînement/nutrition/bilan), jamais affiché pour pause/terminé |
 | 10 | Bibliothèque de modèles (programme/diète/roadmap) | fait | (données, pas de commit) | 2026-08-13 | 3 programmes, 2 diètes, 2 roadmaps, insérés directement en base |
-| 11 | Actions groupées multi-clients | todo | — | — | — |
+| 11 | Actions groupées multi-clients | fait | `f380e3a` | 2026-08-13 | modèles déjà groupés avant ce chantier ; ajout de l'ajustement calorique groupé |
 | 12 | Suggestion de décharge entraînement (miroir rescale diète) | fait | `1c28193` | 2026-08-13 | stagnation sur 4 séances, dans ExerciseProgressionChart |
 | 13 | Comparateur avant/après en un clic | fait | `7290573` | 2026-08-13 | mensurations non affichées côté coach avant ce fix ; BeforeAfterComparator dans l'onglet Bilans |
 | 14 | Suivi entonnoir onboarding + relance | fait | `48b7d0f` | 2026-08-13 | badge + relance en un clic sur ClientCard, réutilise relaunchMember existant |
