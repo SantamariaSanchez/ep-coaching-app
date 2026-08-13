@@ -66,6 +66,12 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   Communauté > Membres, pas de nouveau système de notification). Relié
   directement au constat "9 clients sur 12 sans fiche" fait plus tôt.
   tsc/eslint/build vérifiés, commit `48b7d0f`.
+- **2026-08-13** — Item 13 traité. Constat en cours de route : les
+  mensurations n'étaient affichées nulle part côté coach (la route
+  measurements/[id] existait déjà mais ne faisait qu'une redirection).
+  Nouveau `BeforeAfterComparator` (première vs dernière mensuration +
+  photos de check-in), placé en tête de l'onglet Bilans. tsc/eslint/build
+  vérifiés, commit `7290573`.
 
 ---
 
@@ -118,7 +124,7 @@ lu et validé explicitement la décision ci-dessous.
 | 10 | Bibliothèque de modèles (programme/diète/roadmap) | todo | — | — | — |
 | 11 | Actions groupées multi-clients | todo | — | — | — |
 | 12 | Suggestion de décharge entraînement (miroir rescale diète) | todo | — | — | — |
-| 13 | Comparateur avant/après en un clic | todo | — | — | — |
+| 13 | Comparateur avant/après en un clic | fait | `7290573` | 2026-08-13 | mensurations non affichées côté coach avant ce fix ; BeforeAfterComparator dans l'onglet Bilans |
 | 14 | Suivi entonnoir onboarding + relance | fait | `48b7d0f` | 2026-08-13 | badge + relance en un clic sur ClientCard, réutilise relaunchMember existant |
 | 15 | Recherche transversale clients | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier ; étendu avec le filtre "Inactifs" (commit `163450c`) |
 
