@@ -1,11 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Smartphone, X, MoreVertical, Share } from "lucide-react";
+import { Smartphone, X, MoreVertical, Share, Download } from "lucide-react";
 
 const DISMISS_KEY = "ep-install-hint-dismissed";
 
 type Platform = "ios" | "android" | null;
+
+// Chrome/Edge exposent cet évènement pour déclencher le VRAI prompt
+// d'installation natif du navigateur — pas de type officiel dans le DOM lib.
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
 
 function detectPlatform(): Platform {
   if (typeof window === "undefined") return null;
@@ -21,16 +28,26 @@ function detectPlatform(): Platform {
 
 // Mini tuto discret pour installer la PWA — beaucoup de visiteurs n'ont
 // qu'un lien dans le navigateur et ne savent pas qu'ils peuvent l'ajouter
-// à l'écran d'accueil. Provisoire : juste un lien texte qui ouvre 3 étapes,
-// pas de bandeau intrusif.
+// à l'écran d'accueil. Sur Android/Chrome, on déclenche maintenant le vrai
+// prompt natif du navigateur (un tap, pas de manip) via beforeinstallprompt ;
+// iOS Safari n'expose pas cette API (limite de la plateforme, pas de
+// l'appli), donc les 3 étapes manuelles restent le seul chemin possible là-bas.
 export default function InstallAppHint() {
   const [platform, setPlatform] = useState<Platform>(null);
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
 
   useEffect(() => {
     setPlatform(detectPlatform());
     setDismissed(localStorage.getItem(DISMISS_KEY) === "1");
+
+    function onBeforeInstallPrompt(e: Event) {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    }
+    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
+    return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
   }, []);
 
   if (!platform || dismissed) return null;
@@ -40,13 +57,27 @@ export default function InstallAppHint() {
     setDismissed(true);
   }
 
+  async function handleClick() {
+    if (!deferredPrompt) {
+      setOpen((v) => !v);
+      return;
+    }
+    // Prompt natif disponible : un tap suffit, pas besoin des 3 étapes
+    // manuelles. Le navigateur ne réémettra beforeinstallprompt qu'après un
+    // nouveau refus, donc on nettoie l'état dans tous les cas.
+    await deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    if (outcome === "accepted") dismiss();
+  }
+
   return (
     <div className="flex justify-center">
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={handleClick}
         className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors py-2"
       >
-        <Smartphone size={11} strokeWidth={1.8} />
+        {deferredPrompt ? <Download size={11} strokeWidth={1.8} /> : <Smartphone size={11} strokeWidth={1.8} />}
         Installer l&apos;appli sur ton téléphone
       </button>
 
