@@ -14,6 +14,14 @@ audit séparé (communauté, live, profil, dashboard stats, `/api/push/send`,
 de cette liste**, prérequis avant toute commercialisation à d'autres coachs. Si un
 item ci-dessous touche à du code déjà marqué vulnérable dans cet audit, le
 signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
+**Piste trouvée en cours de chantier** : `getPendingReplies` (utils/checkins.ts),
+`getPendingCorrectionsWithClient` (utils/corrections.ts) et
+`getPendingPhotoUpdates` (utils/photos.ts) — utilisées par `dashboard-stats`,
+déjà dans la liste des 6 — n'ont aucun filtre explicite sur coach_id dans
+leur requête, elles comptent uniquement sur la RLS de session. Probablement
+la même famille de faille. Pas touché ces fonctions ; l'item 8 (boîte de
+réception) reconstruit ses propres requêtes avec un filtre coach_id
+explicite plutôt que de les réutiliser.
 
 ---
 
@@ -77,6 +85,13 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   fait plus tôt dans la session) — fenêtre de 4 séances, stagnation réelle
   détectée sur les données déjà loggées. tsc/eslint/build vérifiés, commit
   `1c28193`.
+- **2026-08-13** — Item 8 traité : nouvelle page `/dashboard/coach/inbox`.
+  Piste de sécurité trouvée au passage (voir section sécurité en tête de
+  fichier) — `getCoachInbox()` filtre explicitement par coach_id plutôt que
+  de réutiliser les fonctions existantes qui comptent sur la RLS seule.
+  tsc/eslint/build vérifiés, commit `3e03435`. **Axe 2 : 7/9 items faits
+  (7,8,9,12,13,14,15). Restent 10 (bibliothèque de modèles, du contenu à
+  écrire) et 11 (actions groupées).**
 
 ---
 
@@ -124,7 +139,7 @@ lu et validé explicitement la décision ci-dessous.
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
 | 7 | Tableau de bord santé des clients | fait | `163450c` | 2026-08-13 | point vert/orange/rouge sur ClientCard, basé sur le silence (voir item 9) |
-| 8 | Boîte de réception coach unique | todo | — | — | — |
+| 8 | Boîte de réception coach unique | fait | `3e03435` | 2026-08-13 | nouvelle page /dashboard/coach/inbox, filtre coach_id explicite (voir sécurité) |
 | 9 | Alerte "client silencieux" | fait | `163450c` | 2026-08-13 | seuil 5j, 3 sources (entraînement/nutrition/bilan), jamais affiché pour pause/terminé |
 | 10 | Bibliothèque de modèles (programme/diète/roadmap) | todo | — | — | — |
 | 11 | Actions groupées multi-clients | todo | — | — | — |
