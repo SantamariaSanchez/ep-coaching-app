@@ -261,6 +261,9 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Coach",
     items: [
+      // Item 25 : qui est ton coach, comment le joindre, ce qui est inclus —
+      // freeLocked comme les autres items coach-only de ce groupe.
+      { label: "Mon coach", icon: User, segment: "coach", freeLocked: true },
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
       // locked: sans coach personnel, ces trois pages affichent le message
       // "reserve aux membres coaching" (CoachOnlyGate) plutot que du contenu
