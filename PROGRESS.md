@@ -118,7 +118,7 @@ lu et validé explicitement la décision ci-dessous.
 | # | Décision | Statut |
 |---|----------|--------|
 | 29 | Notes de gêne (session_sets.notes) affichées uniquement sur la page coach déjà scopée à un seul client (`/dashboard/coach/clients/[id]/logbook`, fetch par `getAllClientSessions(id)`/`getClientById(id, user.id)`/`getClientIntake(id)` — jamais de requête cross-clients). Aucune nouvelle table, aucune nouvelle policy RLS. Pas de panneau agrégé "tous mes clients avec une gêne" dans ce lot — ça relèverait de la même famille de risque que l'inbox (item 8) et mérite sa propre revue si demandé plus tard. | fait — voir commit `f505532` |
-| 37 | *(à écrire quand traité)* | todo |
+| 37 | Pas de nouveau champ stocké (risque de désynchronisation avec `subscription_status`, écrit par Stripe/webhooks). `getAccessType()` (utils/auth-client.ts) est une **dérivation pure**, calculée à la volée depuis role/coach_id/subscription_status déjà existants — la même donnée, juste nommée et centralisée. Seul le doublon logique trouvé (RoadmapView.tsx) a été corrigé pour appeler le helper partagé au lieu de recomposer la condition. Pas de sweep mécanique des ~10 autres lectures directes de `subscription_status` (champ unique, pas de logique combinée dupliquée — risque de régression jugé supérieur au bénéfice). | fait — voir commit `a9c2c5a` |
 | 47 | *(à écrire quand traité)* | todo |
 | 49 | *(à écrire quand traité)* | todo |
 
@@ -222,6 +222,34 @@ lu et validé explicitement la décision ci-dessous.
   jours actifs depuis lundi par client, 3e cellule sur ClientCard. Commit
   `aa8bc17`. **Axe 5 (Données sous-exploitées) terminé : 8/8.**
 
+## Session log (suite axe 6)
+
+- **2026-08-14** — Axe 6 démarré. Item 37 (⚠️ sensible, décision écrite
+  ci-dessus) traité : `getAccessType()` centralisé, dérivation pure sans
+  nouveau champ. Audit des ~13 fichiers lisant `subscription_status` —
+  un seul vrai doublon de LOGIQUE (pas juste une lecture de champ) trouvé
+  et corrigé (`RoadmapView.tsx`). Commit `a9c2c5a`.
+- **2026-08-14** — Item 38 traité : `/api/library-search`, branché sur la
+  palette de commande existante (item 5) plutôt qu'une fusion des pages
+  de navigation — même valeur (une seule recherche pour tout), risque
+  bien moindre. Corrigé au passage un `react-hooks/set-state-in-effect`
+  introduit par mon propre code (vidage du résultat en dessous de 2
+  caractères déplacé en dérivation au rendu). Commit `cad9985`.
+- **2026-08-14** — Item 39 investigué en profondeur (templates roadmap +
+  flux d'application groupée + accès coach ET client vérifiés dans le
+  code) : aucune ambiguïté structurelle trouvée, la fonctionnalité est
+  complète et bien intégrée des deux côtés. Verdict : reste telle quelle,
+  aucun changement de code.
+- **2026-08-14** — Item 40 traité : recherche par motif des états vides
+  "Aucun X" sans explication à travers l'appli — la plupart en avaient
+  déjà une (ClientsSection, AvailabilityManager...). 3 corrigés parce que
+  genuinement nus (Membres, Logbook coach, Décisions clé). Commit
+  `fe06513`. **Axe 6 (Cohérence structurelle) terminé : 4/4.**
+  Note système : le premier build de vérification a échoué sur un 404
+  réseau transitoire en récupérant Playfair Display depuis
+  fonts.gstatic.com (rien à voir avec le code) — repassé propre au
+  second essai immédiat.
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -299,10 +327,10 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 37 | ⚠️ Champ "type d'accès" (membre vs client accompagné) | todo | — | — | — |
-| 38 | Bibliothèque unique tout contenu + recherche | todo | — | — | — |
-| 39 | Trancher le sort de la Roadmap | todo | — | — | — |
-| 40 | États vides explicatifs | todo | — | — | — |
+| 37 | ⚠️ Champ "type d'accès" (membre vs client accompagné) | fait | `a9c2c5a` | 2026-08-14 | `getAccessType()` dérivé, pas de nouveau champ ; fix du doublon dans RoadmapView.tsx |
+| 38 | Bibliothèque unique tout contenu + recherche | fait | `cad9985` | 2026-08-14 | `/api/library-search` branché sur la palette de commande (item 5), pas de fusion des pages de navigation |
+| 39 | Trancher le sort de la Roadmap | fait (audit, aucun changement) | — | 2026-08-14 | investigué en profondeur : templates + apply-flow + accès coach ET client déjà complets, aucune ambiguïté structurelle trouvée — verdict : reste tel quel |
+| 40 | États vides explicatifs | fait (partiel) | `fe06513` | 2026-08-14 | 3 états vides nus corrigés (Membres, Logbook coach, Décisions clé) ; la plupart des ~20 autres en avaient déjà une, pas de sweep exhaustif |
 
 ## Axe 7 — Croissance & monétisation (41–45)
 
