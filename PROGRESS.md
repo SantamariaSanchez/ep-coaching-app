@@ -89,9 +89,14 @@ explicite plutôt que de les réutiliser.
   Piste de sécurité trouvée au passage (voir section sécurité en tête de
   fichier) — `getCoachInbox()` filtre explicitement par coach_id plutôt que
   de réutiliser les fonctions existantes qui comptent sur la RLS seule.
-  tsc/eslint/build vérifiés, commit `3e03435`. **Axe 2 : 7/9 items faits
-  (7,8,9,12,13,14,15). Restent 10 (bibliothèque de modèles, du contenu à
-  écrire) et 11 (actions groupées).**
+  tsc/eslint/build vérifiés, commit `3e03435`.
+- **2026-08-13** — Item 10 traité : bibliothèque de modèles remplie
+  directement en base (pas de code à changer, l'UI de gestion des modèles
+  existait déjà). 3 programmes (Full Body Débutant, Upper/Lower
+  Intermédiaire salle, Full Body Maison), 2 diètes (Flexible Prise de
+  masse, Flexible Déficit), 2 roadmaps 12 semaines (Recomposition, Perte de
+  gras avec pause diète). Pas de commit git (aucun fichier modifié).
+  **Axe 2 : 8/9 items faits. Reste 11 (actions groupées).**
 
 ---
 
@@ -141,7 +146,7 @@ lu et validé explicitement la décision ci-dessous.
 | 7 | Tableau de bord santé des clients | fait | `163450c` | 2026-08-13 | point vert/orange/rouge sur ClientCard, basé sur le silence (voir item 9) |
 | 8 | Boîte de réception coach unique | fait | `3e03435` | 2026-08-13 | nouvelle page /dashboard/coach/inbox, filtre coach_id explicite (voir sécurité) |
 | 9 | Alerte "client silencieux" | fait | `163450c` | 2026-08-13 | seuil 5j, 3 sources (entraînement/nutrition/bilan), jamais affiché pour pause/terminé |
-| 10 | Bibliothèque de modèles (programme/diète/roadmap) | todo | — | — | — |
+| 10 | Bibliothèque de modèles (programme/diète/roadmap) | fait | (données, pas de commit) | 2026-08-13 | 3 programmes, 2 diètes, 2 roadmaps, insérés directement en base |
 | 11 | Actions groupées multi-clients | todo | — | — | — |
 | 12 | Suggestion de décharge entraînement (miroir rescale diète) | fait | `1c28193` | 2026-08-13 | stagnation sur 4 séances, dans ExerciseProgressionChart |
 | 13 | Comparateur avant/après en un clic | fait | `7290573` | 2026-08-13 | mensurations non affichées côté coach avant ce fix ; BeforeAfterComparator dans l'onglet Bilans |
