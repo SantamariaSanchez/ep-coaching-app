@@ -5,6 +5,7 @@ import { getThisWeekCheckin, getISOWeek, getWeekStart } from "@/utils/checkins";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getLatestCoachNote } from "@/utils/notes";
 import { getClientIntake } from "@/utils/client-intake";
+import { getPeriodLogs } from "@/utils/period-tracking";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
@@ -17,6 +18,7 @@ import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
   Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
+  Droplet,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -128,6 +130,37 @@ const GUIDE_ITEMS = [
     locked: true,
   },
 ];
+
+// Item 32 : le suivi de cycle existe déjà (onglet Cycle, réservé aux
+// clientes) mais rien ne le signale tant qu'on n'a pas ouvert cet onglet
+// soi-même — la seule relance existante vivait côté coach (fiche client),
+// invisible pour la cliente elle-même. Discret, ne s'affiche que si le
+// genre déclaré est "Femme" et qu'aucun cycle n'a encore été loggé.
+function CycleTrackingNudge() {
+  return (
+    <section className="animate-fade-up stagger-2" style={{ marginBottom: 16 }}>
+      <Link
+        href="/dashboard/client/cycle"
+        style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "14px 18px", borderRadius: 14, textDecoration: "none",
+          background: "rgba(31,1,1,0.7)", border: "1px solid rgba(137,4,4,0.22)",
+        }}
+      >
+        <Droplet size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            Active le suivi de ton cycle
+          </p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
+            Utile pour comprendre tes fluctuations d&apos;énergie, de poids d&apos;eau et de performance.
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+      </Link>
+    </section>
+  );
+}
 
 function NoCoachBanner() {
   return (
@@ -484,7 +517,7 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -505,6 +538,9 @@ export default async function ClientDashboard({
     // système de points qui n'existait qu'au fond du profil.
     getClientActivityStreak(user.id),
     getTotalPoints(user.id),
+    // Item 32 : uniquement pour savoir si la relance ci-dessous doit
+    // s'afficher, évite d'aller chercher les logs pour tout le monde.
+    intake.gender === "Femme" ? getPeriodLogs(user.id).then((l) => l.length) : Promise.resolve(0),
   ]);
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
@@ -561,6 +597,9 @@ export default async function ClientDashboard({
 
       {/* ── Régularité + rang (item 20) ──────────────────────────────────────── */}
       <RegularityCard streakDays={activityStreak} points={totalPoints} />
+
+      {/* ── Relance suivi de cycle (item 32) ─────────────────────────────────── */}
+      {intake.gender === "Femme" && periodLogsCount === 0 && <CycleTrackingNudge />}
 
       {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
       <ClientDashboardStats />
