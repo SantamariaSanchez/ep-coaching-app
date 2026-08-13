@@ -101,3 +101,49 @@ export async function getClientActivityStreak(clientId: string): Promise<number>
     return 0;
   }
 }
+
+// Item 36 : un score unique de constance PAR SEMAINE (repart de zéro chaque
+// lundi), distinct du streak ci-dessus (qui compte des jours consécutifs et
+// peut traverser plusieurs semaines). Utile côté coach pour comparer
+// plusieurs clients d'un coup d'œil sur la liste, sans ouvrir chaque fiche.
+// Même principe de calcul que le streak (jour actif = au moins une des 3
+// sources), ramené en % des jours déjà écoulés cette semaine — un lundi ne
+// pénalise jamais personne pour les jours pas encore vécus.
+export async function getClientsWeeklyConsistency(
+  clientIds: string[]
+): Promise<Record<string, number>> {
+  if (clientIds.length === 0) return {};
+  try {
+    const admin = createAdminClient();
+    const now = new Date();
+    const dow = now.getDay();
+    const daysElapsed = dow === 0 ? 7 : dow; // lundi=1 ... dimanche=7
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - (daysElapsed - 1));
+    weekStart.setHours(0, 0, 0, 0);
+    const sinceIso = weekStart.toISOString();
+
+    const [{ data: workouts }, { data: foods }, { data: daily }] = await Promise.all([
+      admin.from("workout_logs").select("client_id, created_at").in("client_id", clientIds).gte("created_at", sinceIso),
+      admin.from("food_logs").select("client_id, created_at").in("client_id", clientIds).gte("created_at", sinceIso),
+      admin.from("daily_logs").select("client_id, created_at").in("client_id", clientIds).gte("created_at", sinceIso),
+    ]);
+
+    const activeDaysByClient: Record<string, Set<string>> = {};
+    for (const rows of [workouts, foods, daily]) {
+      for (const r of (rows ?? []) as { client_id: string; created_at: string }[]) {
+        if (!activeDaysByClient[r.client_id]) activeDaysByClient[r.client_id] = new Set();
+        activeDaysByClient[r.client_id].add(r.created_at.slice(0, 10));
+      }
+    }
+
+    const result: Record<string, number> = {};
+    for (const id of clientIds) {
+      const activeDays = activeDaysByClient[id]?.size ?? 0;
+      result[id] = Math.round((Math.min(activeDays, daysElapsed) / daysElapsed) * 100);
+    }
+    return result;
+  } catch {
+    return {};
+  }
+}

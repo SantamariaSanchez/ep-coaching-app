@@ -79,6 +79,7 @@ export default function ClientsSection({
   phaseOverview = {},
   activity = {},
   intakeComplete = {},
+  weeklyConsistency = {},
   relaunchMember,
 }: {
   clients: Profile[];
@@ -87,6 +88,8 @@ export default function ClientsSection({
   activity?: Record<string, ClientActivity>;
   /** Item 14 : qui n'a jamais terminé sa fiche client (goal_3_months rempli). */
   intakeComplete?: Record<string, boolean>;
+  /** Item 36 : % de jours actifs cette semaine, par client. */
+  weeklyConsistency?: Record<string, number>;
   /** Relance manuelle en un clic — même action que la page Communauté > Membres. */
   relaunchMember?: (memberId: string) => Promise<{ error?: string }>;
 }) {
@@ -334,6 +337,9 @@ export default function ClientsSection({
                 // Fiche client jamais terminée (item 14) — relance directe
                 // sans repasser par la page Communauté > Membres.
                 intakeIncomplete={!intakeComplete[client.id]}
+                // Item 36 : % de jours actifs cette semaine, comparable d'une
+                // carte à l'autre sans ouvrir chaque fiche.
+                weeklyConsistency={weeklyConsistency[client.id] ?? null}
                 onRelaunch={relaunchMember ? () => relaunchMember(client.id) : undefined}
               />
             );

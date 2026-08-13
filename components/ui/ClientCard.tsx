@@ -23,6 +23,8 @@ interface ClientCardProps {
   daysSinceActivity?: number | null;
   /** Fiche client jamais terminée (item 14) — n'affiche le badge/bouton que si true. */
   intakeIncomplete?: boolean;
+  /** Item 36 : % de jours actifs (entraînement/nutrition/bilan) depuis lundi. Absent = pas encore calculé. */
+  weeklyConsistency?: number | null;
   /** Relance manuelle en un clic ; absent = pas de bouton (ex: page sans l'action câblée). */
   onRelaunch?: () => Promise<{ error?: string }>;
 }
@@ -41,6 +43,7 @@ export function ClientCard({
   status = null,
   daysSinceActivity = null,
   intakeIncomplete = false,
+  weeklyConsistency = null,
   onRelaunch,
 }: ClientCardProps) {
   const [relaunchState, setRelaunchState] = useState<"idle" | "sending" | "sent">("idle");
@@ -88,6 +91,14 @@ export function ClientCard({
     : daysSinceActivity >= 5 ? `${daysSinceActivity}j sans activité`
     : null;
   const silentColor = daysSinceActivity != null && daysSinceActivity < 10 ? "#fb923c" : "#E01E1E";
+
+  // Item 36 : mêmes seuils de couleur que le reste de la carte (vert =
+  // rien à signaler, orange = à surveiller, rouge = à traiter).
+  const consistencyColor =
+    weeklyConsistency == null ? "rgba(245,237,237,0.28)"
+    : weeklyConsistency >= 70 ? "#4ade80"
+    : weeklyConsistency >= 40 ? "#fb923c"
+    : "#E01E1E";
 
   return (
     <div
@@ -302,13 +313,18 @@ export function ClientCard({
       {/* Stats grid */}
       <div style={{
         display: "grid",
-        gridTemplateColumns: "1fr 1fr",
+        gridTemplateColumns: weeklyConsistency != null && isActiveStatus ? "1fr 1fr 1fr" : "1fr 1fr",
         gap: 8,
         marginBottom: href ? 14 : 0,
       }}>
         {[
           { label: "Semaine",       value: weekNum != null ? `S${weekNum}`  : "···" },
           { label: "Poids initial", value: weight  != null ? `${weight} kg` : "···" },
+          // Item 36 : masqué pour un client en pause/terminé, comme le
+          // badge de silence — la constance n'a pas de sens à surveiller là.
+          ...(weeklyConsistency != null && isActiveStatus
+            ? [{ label: "Constance", value: `${weeklyConsistency}%`, color: consistencyColor }]
+            : []),
         ].map((stat) => (
           <div key={stat.label} style={{
             background: "rgba(0,0,0,0.3)",
