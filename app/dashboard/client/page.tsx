@@ -10,6 +10,9 @@ import { derivePersonalization, reorderByPriority } from "@/lib/personalization"
 import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import { PushPermission } from "@/components/messaging/PushPermission";
+import RegularityCard from "@/components/ui/RegularityCard";
+import { getClientActivityStreak } from "@/lib/client-activity";
+import { getTotalPoints } from "@/lib/gamification";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
@@ -481,7 +484,7 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -498,6 +501,10 @@ export default async function ClientDashboard({
         return true; // fail-safe : n'affiche pas la relance en cas d'erreur
       }
     })(),
+    // Item 20 : régularité mise en avant dès l'accueil, au lieu d'un
+    // système de points qui n'existait qu'au fond du profil.
+    getClientActivityStreak(user.id),
+    getTotalPoints(user.id),
   ]);
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
@@ -551,6 +558,9 @@ export default async function ClientDashboard({
           </p>
         )}
       </div>
+
+      {/* ── Régularité + rang (item 20) ──────────────────────────────────────── */}
+      <RegularityCard streakDays={activityStreak} points={totalPoints} />
 
       {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
       <ClientDashboardStats />

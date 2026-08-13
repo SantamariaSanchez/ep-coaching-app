@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { createServerSupabase } from "@/lib/supabase-server";
 
 export interface ClientActivity {
   lastActivityAt: string | null;
@@ -53,5 +54,50 @@ export async function getClientsLastActivity(
     return result;
   } catch {
     return {};
+  }
+}
+
+// Item 20 : régularité mise en avant, calculée à la volée plutôt que
+// stockée — jours consécutifs avec au moins une activité (entraînement,
+// nutrition, bilan) jusqu'à aujourd'hui. Client de session (pas admin) : un
+// client ne calcule jamais que SA propre régularité, RLS suffit ici,
+// contrairement à getClientsLastActivity ci-dessus qui lit pour d'autres
+// utilisateurs (le coach) et doit passer par l'admin.
+//
+// "Aujourd'hui pas encore loggé" ne casse pas le streak (la journée n'est
+// pas finie) : le calcul démarre d'hier dans ce cas, comme les streaks
+// habituels (Duolingo etc).
+export async function getClientActivityStreak(clientId: string): Promise<number> {
+  try {
+    const supabase = await createServerSupabase();
+    const since = new Date();
+    since.setDate(since.getDate() - 60);
+    const sinceIso = since.toISOString();
+
+    const [{ data: workouts }, { data: foods }, { data: daily }] = await Promise.all([
+      supabase.from("workout_logs").select("created_at").eq("client_id", clientId).gte("created_at", sinceIso),
+      supabase.from("food_logs").select("created_at").eq("client_id", clientId).gte("created_at", sinceIso),
+      supabase.from("daily_logs").select("created_at").eq("client_id", clientId).gte("created_at", sinceIso),
+    ]);
+
+    const days = new Set<string>();
+    for (const rows of [workouts, foods, daily]) {
+      for (const r of (rows ?? []) as { created_at: string }[]) {
+        days.add(r.created_at.slice(0, 10));
+      }
+    }
+
+    const cursor = new Date();
+    const todayStr = cursor.toISOString().slice(0, 10);
+    if (!days.has(todayStr)) cursor.setDate(cursor.getDate() - 1);
+
+    let streak = 0;
+    while (days.has(cursor.toISOString().slice(0, 10))) {
+      streak++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  } catch {
+    return 0;
   }
 }
