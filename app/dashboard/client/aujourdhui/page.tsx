@@ -4,6 +4,7 @@ import { getScheduleBlocks } from "@/utils/agenda";
 import { getHabitLogs } from "@/utils/mindset";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import { getTodayLog } from "@/utils/daily-logs";
+import { getClientSupplements } from "@/utils/supplements";
 import { getDailyQuote, getPromptOfDay } from "@/lib/mindset-content";
 import { toggleHabitLog, addJournalEntry } from "@/app/dashboard/client/mindset/actions";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
@@ -26,7 +27,7 @@ export default async function AujourdhuiPage() {
   const todayStr = today.toISOString().split("T")[0];
   const subscribed = isSubscribed(profile);
 
-  const [allBlocks, habitLogs, biometricLogs, insights, todayLog] = await Promise.all([
+  const [allBlocks, habitLogs, biometricLogs, insights, todayLog, allSupplements] = await Promise.all([
     subscribed ? getScheduleBlocks(user.id) : Promise.resolve([]),
     getHabitLogs(user.id, todayStr),
     subscribed ? getBiometricLogs(user.id, 3) : Promise.resolve([]),
@@ -35,7 +36,11 @@ export default async function AujourdhuiPage() {
     // pour un client coaché — pas besoin d'ouvrir le bilan complet juste
     // pour ça (voir WeightQuickCard dans AujourdhuiView).
     getTodayLog(user.id),
+    // Item 34 : accessible aux membres gratuits comme aux clients coachés,
+    // même logique que la section Compléments de la page Nutrition.
+    getClientSupplements(user.id),
   ]);
+  const activeSupplements = allSupplements.filter((s) => s.status === "active");
 
   const todayBlocks = allBlocks
     .filter((b) => b.day_of_week === isoWeekday(today))
@@ -59,6 +64,7 @@ export default async function AujourdhuiPage() {
       addJournalEntry={addJournalEntry}
       todayWeight={todayLog?.weight_morning ?? null}
       logWeight={upsertDailyLog}
+      supplements={activeSupplements}
     />
   );
 }
