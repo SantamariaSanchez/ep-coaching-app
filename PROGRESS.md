@@ -124,6 +124,31 @@ lu et validé explicitement la décision ci-dessous.
 
 ---
 
+## Session log (suite axe 3)
+
+- **2026-08-13** — Axe 3 démarré. Constat immédiat : 3 des 6 items étaient
+  déjà entièrement construits avant ce chantier — item 17 (aliments récents
+  + les plus utilisés, `ClientNutritionView.tsx`), item 19 (minuteur de
+  repos actif, suggéré selon le RIR, `SessionView.tsx`). Marqués faits sans
+  code touché.
+- **2026-08-13** — Item 21 traité : prompt d'installation natif Android/
+  Chrome via `beforeinstallprompt`. Build anormalement lent (37min, système
+  sous charge après une longue session de builds successifs) mais a fini
+  par passer, exit 0. Commit `9059c50`.
+- **2026-08-13** — Item 20 traité : `getClientActivityStreak()` + carte
+  `RegularityCard` sur le dashboard client (streak + rang/points, juste
+  après le header). tsc/eslint/build vérifiés, commit `b3ba92c`.
+- **2026-08-13** — Item 18 traité : page publique `/outils` (calculateur
+  calories/macros + 1RM), sans compte. tsc/eslint/build vérifiés, commit
+  `ba3e07c`.
+- **2026-08-13** — Item 16 traité : scan code-barres via `BarcodeDetector`
+  natif (Chrome/Edge, pas de nouvelle dépendance), lookup OpenFoodFacts,
+  pré-remplit le formulaire de création d'aliment déjà existant. tsc/eslint/
+  build vérifiés, commit `3b8cb18`. **Axe 3 (Outils membre) terminé : 6/6.**
+  Note système : les builds de cette portion ont pris 15 à 40 min chacun au
+  lieu de 1-3 min habituellement — contention machine après une longue
+  série de builds successifs, pas un problème de code (exit 0 à chaque fois).
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -165,12 +190,12 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 16 | Scan photo/code-barres tracker calories | todo | — | — | — |
-| 17 | Aliments récents/favoris en un tap | todo | — | — | — |
-| 18 | Calculateurs autonomes publics (macros, 1RM) | todo | — | — | — |
-| 19 | Minuteur de repos dans le logbook | todo | — | — | — |
-| 20 | Mise en avant points/régularité | todo | — | — | — |
-| 21 | Statut PWA installée, comportement natif | todo | — | — | — |
+| 16 | Scan photo/code-barres tracker calories | fait | `3b8cb18` | 2026-08-13 | BarcodeDetector natif + OpenFoodFacts, pré-remplit le formulaire de création d'aliment existant |
+| 17 | Aliments récents/favoris en un tap | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier |
+| 18 | Calculateurs autonomes publics (macros, 1RM) | fait | `ba3e07c` | 2026-08-13 | page /outils |
+| 19 | Minuteur de repos dans le logbook | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier, suggestion selon RIR en plus |
+| 20 | Mise en avant points/régularité | fait | `b3ba92c` | 2026-08-13 | RegularityCard sur dashboard client |
+| 21 | Statut PWA installée, comportement natif | fait | `9059c50` | 2026-08-13 | prompt natif Android/Chrome |
 
 ## Axe 4 — Expérience client high-ticket (22–28)
 
