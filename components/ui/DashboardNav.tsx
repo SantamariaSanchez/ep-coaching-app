@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
@@ -17,6 +17,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import NotificationBell from "@/components/ui/NotificationBell";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
+import CommandPalette from "@/components/ui/CommandPalette";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -427,6 +428,22 @@ export default function DashboardNav({
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
     useNavState(isFreeTier, showCycleTab, isPlatformOwner);
   const router = useRouter();
+
+  // Aplati tabs + sidebar en une seule liste {label, href} pour la palette
+  // de commande (Cmd/Ctrl+K) — pas de nouvelle source de vérité, juste la
+  // nav déjà calculée ci-dessus, réutilisée telle quelle.
+  const commandPaletteNavItems = useMemo(
+    () => [
+      ...tabs.map((t) => ({ label: t.label, href: t.href })),
+      ...sidebar.flatMap((g) =>
+        g.items.map(({ label, segment, href: hrefOverride }) => ({
+          label,
+          href: hrefOverride ?? (segment ? `${base}/${segment}` : base),
+        }))
+      ),
+    ],
+    [tabs, sidebar, base]
+  );
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -1117,6 +1134,7 @@ export default function DashboardNav({
       </nav>
 
       <ActiveSessionBanner />
+      <CommandPalette navItems={commandPaletteNavItems} isCoach={isCoach} />
     </>
   );
 }
