@@ -24,7 +24,10 @@ export default function LibraryHub({
 
   return (
     <div>
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
+      {/* overflow-x-auto : même pattern que les autres barres d'onglets de
+          l'appli (CoachClientNutritionTabs, ClientNutritionView, etc.) —
+          sans ça, un onglet peut rester inatteignable sur petit écran. */}
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         <button
           onClick={() => setTab("exercises")}
           className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
