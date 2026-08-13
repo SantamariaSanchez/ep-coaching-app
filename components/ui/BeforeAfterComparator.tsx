@@ -1,6 +1,7 @@
 import type { Measurement } from "@/utils/measurements";
 import type { CheckIn } from "@/utils/checkins";
 import { ArrowRight, ArrowDown, ArrowUp } from "lucide-react";
+import PhotoCompareSlider from "./PhotoCompareSlider";
 
 const FIELDS: { key: keyof Measurement; label: string }[] = [
   { key: "weight", label: "Poids" },
@@ -84,11 +85,10 @@ export default function BeforeAfterComparator({
       </div>
 
       {showPhotos && (
-        <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={oldestPhoto} alt="Avant" style={{ flex: 1, aspectRatio: "3/4", objectFit: "cover", borderRadius: 10, border: "1px solid rgba(137,4,4,0.25)" }} />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={newestPhoto} alt="Après" style={{ flex: 1, aspectRatio: "3/4", objectFit: "cover", borderRadius: 10, border: "1px solid rgba(137,4,4,0.25)" }} />
+        <div style={{ marginBottom: 16 }}>
+          {/* Item 35 : curseur glissant plutôt que côte-à-côte statique —
+              lecture bien plus parlante de la différence réelle. */}
+          <PhotoCompareSlider beforeUrl={oldestPhoto} afterUrl={newestPhoto} />
         </div>
       )}
 
