@@ -1,6 +1,7 @@
 ﻿import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getAllClientSessions, getClientPersonalRecords } from "@/utils/sessions";
+import { getClientIntake } from "@/utils/client-intake";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import CoachLogbookClient from "@/components/coach/CoachLogbookClient";
@@ -15,11 +16,12 @@ export default async function CoachClientLogbookPage({
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, client, sessions, records] = await Promise.all([
+  const [profile, client, sessions, records, intake] = await Promise.all([
     getProfile(user.id),
     getClientById(id, user.id),
     getAllClientSessions(id, 10),
     getClientPersonalRecords(id),
+    getClientIntake(id),
   ]);
 
   if (profile?.role === "client") redirect("/dashboard/client");
@@ -56,6 +58,8 @@ export default async function CoachClientLogbookPage({
         clientId={id}
         sessions={sessions}
         records={records}
+        declaredInjuries={intake?.injuries ?? null}
+        declaredHealthIssues={intake?.health_issues ?? null}
       />
     </div>
   );

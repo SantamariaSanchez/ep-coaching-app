@@ -56,7 +56,7 @@ import type { CoachingPhaseState, AdherenceSignal, PhaseSuggestion } from "@/lib
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
 import type { ExerciseCorrectionResolved } from "@/utils/corrections";
-import { generateClientSuggestions } from "@/lib/client-suggestions";
+import { generateClientSuggestions, generateFatigueTrendSuggestion } from "@/lib/client-suggestions";
 import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
@@ -354,10 +354,11 @@ export default function ClientProfileTabs({
 
   const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
 
-  const suggestions = useMemo(
-    () => generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program),
-    [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program]
-  );
+  const suggestions = useMemo(() => {
+    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program);
+    const fatigue = generateFatigueTrendSuggestion(logbookSessions);
+    return fatigue ? [...base, fatigue] : base;
+  }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions]);
 
   // Regroupe les suggestions par onglet concerné — affiché en pastille sur
   // le bouton pour que la fiche client se répercute directement sur la
@@ -723,7 +724,13 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "logbook" && (
-        <CoachLogbookClient clientId={client.id} sessions={logbookSessions} records={personalRecords} />
+        <CoachLogbookClient
+          clientId={client.id}
+          sessions={logbookSessions}
+          records={personalRecords}
+          declaredInjuries={intake?.injuries ?? null}
+          declaredHealthIssues={intake?.health_issues ?? null}
+        />
       )}
 
       {activeTab === "programme" && (

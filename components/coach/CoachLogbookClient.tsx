@@ -16,6 +16,7 @@ import {
   AlertCircle,
   ChevronDown,
   ChevronUp,
+  HeartPulse,
 } from "lucide-react";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
@@ -25,6 +26,24 @@ interface Props {
   clientId: string;
   sessions: SessionWithSets[];
   records: PersonalRecord[];
+  // Item 29 : blessures/problèmes de santé déclarés dans la fiche client,
+  // affichés en contexte pendant que le coach lit les notes de séance —
+  // pas de matching automatique "intelligent", juste les deux infos
+  // rapprochées dans la même vue pour que le coach fasse le lien lui-même.
+  declaredInjuries: string | null;
+  declaredHealthIssues: string | null;
+}
+
+// Repère les notes de set qui mentionnent probablement une gêne physique,
+// pour les distinguer visuellement des notes techniques ("pause en bas",
+// "tempo lent"...) au milieu de toutes les autres. Volontairement une
+// simple liste de mots-clés côté client, pas une analyse "intelligente" —
+// un faux négatif reste visible (la note s'affiche quand même), un faux
+// positif ne fait que la mettre en rouge à tort.
+const PAIN_KEYWORDS = /douleur|douloureux|mal au|mal à|mal aux|gêne|gene|tirai|craqu|brûl|brul|bless|pinc|inconfort/i;
+
+function isPainNote(note: string): boolean {
+  return PAIN_KEYWORDS.test(note);
 }
 
 const TOOLTIP_STYLE = {
@@ -387,43 +406,70 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
           )}
 
           {/* Exercises */}
-          {Object.entries(byExercise).map(([name, sets]) => (
-            <div key={name}>
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                {name}
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {sets.map((s, i) => (
-                  <span
-                    key={i}
-                    className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${
-                      s.is_pr
-                        ? "bg-amber-500/15 text-amber-300 border-amber-500/25"
-                        : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
-                    }`}
-                  >
-                    {s.weight_kg != null ? `${s.weight_kg}kg` : "···"}
-                    {" × "}
-                    {s.reps_actual ?? "···"}
-                    {s.rir_actual != null && ` RIR${s.rir_actual}`}
-                    {s.is_pr && " 🏆"}
-                    {s.video_url && (
-                      <a
-                        href={safeExternalUrl(s.video_url) ?? "#"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="ml-1.5 text-[#E01E1E]"
-                        title="Voir la vidéo du set"
-                      >
-                        🎥
-                      </a>
-                    )}
-                  </span>
-                ))}
+          {Object.entries(byExercise).map(([name, sets]) => {
+            // Item 29 : notes laissées par le client sur un set précis —
+            // invisibles nulle part avant ce chantier (ni ici, ni ailleurs
+            // dans l'app), alors qu'elles peuvent signaler une gêne sur un
+            // exercice précis ("genou qui tire sur le dernier squat").
+            const notedSets = sets.filter((s) => s.notes);
+            return (
+              <div key={name}>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                  {name}
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {sets.map((s, i) => (
+                    <span
+                      key={i}
+                      className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${
+                        s.is_pr
+                          ? "bg-amber-500/15 text-amber-300 border-amber-500/25"
+                          : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
+                      }`}
+                    >
+                      {s.weight_kg != null ? `${s.weight_kg}kg` : "···"}
+                      {" × "}
+                      {s.reps_actual ?? "···"}
+                      {s.rir_actual != null && ` RIR${s.rir_actual}`}
+                      {s.is_pr && " 🏆"}
+                      {s.video_url && (
+                        <a
+                          href={safeExternalUrl(s.video_url) ?? "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="ml-1.5 text-[#E01E1E]"
+                          title="Voir la vidéo du set"
+                        >
+                          🎥
+                        </a>
+                      )}
+                    </span>
+                  ))}
+                </div>
+                {notedSets.length > 0 && (
+                  <div className="mt-1.5 space-y-1">
+                    {notedSets.map((s, i) => {
+                      const pain = isPainNote(s.notes as string);
+                      return (
+                        <p
+                          key={i}
+                          className={`text-[10.5px] leading-relaxed px-2 py-1 rounded-lg ${
+                            pain
+                              ? "bg-red-500/10 text-red-300 border border-red-500/25"
+                              : "text-[#F5EDED]/40 italic"
+                          }`}
+                        >
+                          {pain && <AlertCircle size={10} className="inline mr-1 -mt-0.5" />}
+                          {s.notes}
+                        </p>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
@@ -432,7 +478,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function CoachLogbookClient({ sessions, records }: Props) {
+export default function CoachLogbookClient({ sessions, records, declaredInjuries, declaredHealthIssues }: Props) {
   const [activeTab, setActiveTab] = useState<"semaine" | "progression" | "qualite" | "historique">("semaine");
 
   const tabs = [
@@ -444,6 +490,29 @@ export default function CoachLogbookClient({ sessions, records }: Props) {
 
   return (
     <div>
+      {/* Item 29 : rappel des blessures/problèmes de santé déclarés,
+          visible en permanence pendant que le coach parcourt le logbook —
+          reste discret quand rien n'est déclaré. */}
+      {(declaredInjuries || declaredHealthIssues) && (
+        <div className="flex items-start gap-2.5 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-5">
+          <HeartPulse size={14} className="text-red-300 mt-0.5 flex-shrink-0" />
+          <div className="text-xs text-red-200/90 leading-relaxed">
+            {declaredInjuries && (
+              <p>
+                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">Blessures déclarées : </span>
+                {declaredInjuries}
+              </p>
+            )}
+            {declaredHealthIssues && (
+              <p className={declaredInjuries ? "mt-1" : undefined}>
+                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">Santé déclarée : </span>
+                {declaredHealthIssues}
+              </p>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabs */}
       <div
         className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto"
