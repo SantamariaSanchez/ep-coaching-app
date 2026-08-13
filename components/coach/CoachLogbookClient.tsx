@@ -566,8 +566,14 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
           {sessions.length === 0 ? (
             <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
               <Clock size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[#F5EDED]/40">
+              <p className="text-sm text-[#F5EDED]/40 font-semibold mb-1">
                 Aucune séance enregistrée
+              </p>
+              {/* Item 40 : évite de laisser croire à un problème (logbook
+                  cassé, séance perdue) quand c'est juste que le client n'a
+                  encore rien validé lui-même. */}
+              <p className="text-xs text-[#F5EDED]/25 max-w-xs mx-auto leading-relaxed">
+                Se remplit automatiquement dès que le client valide une séance depuis son programme.
               </p>
             </div>
           ) : (
