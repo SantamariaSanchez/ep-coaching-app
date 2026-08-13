@@ -149,6 +149,42 @@ lu et validé explicitement la décision ci-dessous.
   lieu de 1-3 min habituellement — contention machine après une longue
   série de builds successifs, pas un problème de code (exit 0 à chaque fois).
 
+## Session log (suite axe 4)
+
+- **2026-08-13** — Axe 4 démarré. Item 23 traité : cron hebdo dimanche 18h
+  (`/api/cron/weekly-progress-recap`, même structure que le cron sommeil
+  existant), calcule séances/adhérence nutrition/tendance de poids par
+  client éligible, un seul `notifyUser`. Commit `4594445`.
+- **2026-08-13** — Item 25 traité : page `/dashboard/client/coach`, profil du
+  coach connecté (bio/avatar/instagram via `getProfile`), CTA message, ce
+  qui est inclus, lien vers "Mot du coach". Icône `Instagram` inexistante
+  dans cette version de lucide-react, remplacée par `AtSign`. Commit
+  `74fff1b`.
+- **2026-08-13** — Item 26 traité : `HighlightsStrip`, strip horizontal des
+  12 derniers records personnels, en tête du logbook. Scope volontairement
+  réduit aux records (pas les photos, pour ne pas re-threader des props
+  dans un arbre déjà large). Commit `adfae4c`.
+- **2026-08-13** — Item 28 traité : recherche dans une conversation
+  (`ConversationView.tsx`), filtre les messages affichés, état vide dédié
+  distinct de "pas de messages du tout". Commit `e91352a`.
+- **2026-08-13** — Item 27 vérifié, déjà couvert : `roleBadge()` +
+  `BadgePill` affichent déjà 4 statuts (Fondateur/Coach/Premium/Membre
+  gratuit) sur `ProfileHeader`. Marqué fait sans code touché.
+- **2026-08-13** — Item 24 vérifié, déjà couvert et au-delà de l'ambition de
+  l'item : système de réservation self-service complet déjà existant
+  (`AvailabilityManager` côté coach définit des créneaux récurrents,
+  `SlotPicker` côté client réserve dessus), avec 4 modes de booking
+  (self-service, self-service récurrent sur 8 semaines, programmé par le
+  coach, demande flash), RSVP pour les lives de groupe, fenêtre de jonction
+  vérifiée aussi côté serveur. Marqué fait sans code touché.
+- **2026-08-13** — Item 22 traité : notes horodatées sur la vidéo du client
+  dans une correction technique (`video_annotations` jsonb), éditables tant
+  que la correction est en attente, lecture seule une fois traitée, clic
+  sur un timestamp = seek direct. Au passage, migration de documentation
+  manquante pour le cron de l'item 23 ajoutée (le commit `4594445`
+  l'annonçait mais elle n'existait pas encore). tsc/eslint/build vérifiés,
+  commit `5461b14`. **Axe 4 (Expérience client high-ticket) terminé : 7/7.**
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -201,13 +237,13 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 22 | Analyse vidéo de technique annotée | todo | — | — | — |
-| 23 | Récap hebdo automatique personnalisé | todo | — | — | — |
-| 24 | Prise de rendez-vous intégrée | todo | — | — | — |
-| 25 | Espace "Mon coach" dédié | todo | — | — | — |
-| 26 | Chronologie progression "highlight" | todo | — | — | — |
-| 27 | Signal visuel statut premium | todo | — | — | — |
-| 28 | Historique de discussion mis en valeur | todo | — | — | — |
+| 22 | Analyse vidéo de technique annotée | fait | `5461b14` | 2026-08-13 | notes horodatées sur la vidéo du client, jsonb, éditables tant que pending, seek au clic |
+| 23 | Récap hebdo automatique personnalisé | fait | `4594445` | 2026-08-13 | cron dimanche 18h, séances/adhérence nutrition/tendance poids |
+| 24 | Prise de rendez-vous intégrée | fait (pré-existant) | — | 2026-08-13 | AvailabilityManager + SlotPicker déjà complets, 4 modes de booking, RSVP groupe |
+| 25 | Espace "Mon coach" dédié | fait | `74fff1b` | 2026-08-13 | /dashboard/client/coach : profil, bio, CTA message, lien Mot du coach |
+| 26 | Chronologie progression "highlight" | fait | `adfae4c` | 2026-08-13 | HighlightsStrip, 12 derniers records, scope réduit (pas de photos) |
+| 27 | Signal visuel statut premium | fait (pré-existant) | — | 2026-08-13 | roleBadge()/BadgePill déjà 4 tiers |
+| 28 | Historique de discussion mis en valeur | fait | `e91352a` | 2026-08-13 | recherche dans une conversation, filtre les messages |
 
 ## Axe 5 — Données & process sous-exploités (29–36)
 
