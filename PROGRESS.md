@@ -72,6 +72,11 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   Nouveau `BeforeAfterComparator` (première vs dernière mensuration +
   photos de check-in), placé en tête de l'onglet Bilans. tsc/eslint/build
   vérifiés, commit `7290573`.
+- **2026-08-13** — Item 12 traité : suggestion de décharge dans
+  `ExerciseProgressionChart` (même composant que le fix de tri du logbook
+  fait plus tôt dans la session) — fenêtre de 4 séances, stagnation réelle
+  détectée sur les données déjà loggées. tsc/eslint/build vérifiés, commit
+  `1c28193`.
 
 ---
 
@@ -123,7 +128,7 @@ lu et validé explicitement la décision ci-dessous.
 | 9 | Alerte "client silencieux" | fait | `163450c` | 2026-08-13 | seuil 5j, 3 sources (entraînement/nutrition/bilan), jamais affiché pour pause/terminé |
 | 10 | Bibliothèque de modèles (programme/diète/roadmap) | todo | — | — | — |
 | 11 | Actions groupées multi-clients | todo | — | — | — |
-| 12 | Suggestion de décharge entraînement (miroir rescale diète) | todo | — | — | — |
+| 12 | Suggestion de décharge entraînement (miroir rescale diète) | fait | `1c28193` | 2026-08-13 | stagnation sur 4 séances, dans ExerciseProgressionChart |
 | 13 | Comparateur avant/après en un clic | fait | `7290573` | 2026-08-13 | mensurations non affichées côté coach avant ce fix ; BeforeAfterComparator dans l'onglet Bilans |
 | 14 | Suivi entonnoir onboarding + relance | fait | `48b7d0f` | 2026-08-13 | badge + relance en un clic sur ClientCard, réutilise relaunchMember existant |
 | 15 | Recherche transversale clients | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier ; étendu avec le filtre "Inactifs" (commit `163450c`) |
