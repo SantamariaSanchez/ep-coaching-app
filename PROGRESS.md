@@ -44,6 +44,16 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   n'ont pas été revus un par un — la majorité semble déjà correcte mais pas
   vérifié exhaustivement, à reprendre dans une prochaine session si utile.
   tsc/eslint/build vérifiés, commit `d70bb07`.
+- **2026-08-13** — Item 6 vérifié, déjà couvert : DashboardNav fait déjà un
+  prefetch complet de toute la nav visible au montage (tabs immédiats, puis
+  sidebar étalée toutes les 120ms), plus large qu'un simple hover/focus.
+  Rien ajouté pour éviter du code redondant sans bénéfice mesurable. Marqué
+  fait sans commit dédié (aucun changement de code).
+- **2026-08-13** — Item 5 traité : palette de commande Cmd/Ctrl+K
+  (`components/ui/CommandPalette.tsx`), recherche client (coach) + pages de
+  la nav, navigation clavier. Nouvelle route `/api/coach/clients-search`
+  (coach-only, id+nom seulement). tsc/eslint/build vérifiés, commit
+  `720e8a9`. **Axe 1 (navigation) terminé.**
 
 ---
 
@@ -83,8 +93,8 @@ lu et validé explicitement la décision ci-dessous.
 | 2 | Repérer les requêtes en cascade, paralléliser | fait | `43640df` | 2026-08-13 | 4 pages corrigées (formations, bilan, membres, coachs) ; reste du repo déjà bien parallélisé ; admin/leads volontairement laissé séquentiel (PII) |
 | 3 | Squelettes de chargement fidèles à la page réelle | fait (partiel) | `d70bb07` | 2026-08-13 | TabbedPageSkeleton ajouté + appliqué à 6 pages nutrition/programme ; ~70 loading.tsx restants pas revus un par un |
 | 4 | Cache données figées (exercices/salles/aliments) | fait | `3ade35e`, `4245e8c` | 2026-08-13 | unstable_cache 1h + updateTag (pas revalidateTag, voir décision ci-dessus) sur foods/exercise-library/gyms/science-articles |
-| 5 | Palette de commande (Cmd/Ctrl+K) | todo | — | — | — |
-| 6 | Préchargement au survol/focus | todo | — | — | — |
+| 5 | Palette de commande (Cmd/Ctrl+K) | fait | `720e8a9` | 2026-08-13 | recherche client + pages nav, navigation clavier |
+| 6 | Préchargement au survol/focus | fait | — | 2026-08-13 | déjà couvert par le prefetch complet au montage (plus large qu'un hover) |
 
 ## Axe 2 — Outils coach (07–15)
 
