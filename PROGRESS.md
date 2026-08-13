@@ -23,7 +23,20 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   Démarrage axe 1 (navigation/fluidité), item 1.
 - **2026-08-13** — Items 1 et 4 traités ensemble (même mécanisme technique :
   cache `unstable_cache` sur les lectures de référence partagées). tsc/eslint/
-  build vérifiés, commit `3ade35e`. En cours : item 2 (requêtes en cascade).
+  build vérifiés, commit `3ade35e`.
+- **2026-08-13** — tsc a révélé que `revalidateTag(tag)` à un seul argument
+  est déprécié dans cette version de Next (16, doc embarquée dans
+  `node_modules/next/dist/docs`). Remplacé par `updateTag(tag)`, prévu
+  exactement pour l'invalidation immédiate depuis une Server Action ; ce
+  projet n'active pas `cacheComponents` donc c'est le "Previous Model" qui
+  s'applique. Commit `4245e8c`.
+- **2026-08-13** — Item 2 traité : 4 pages avaient une requête de contenu
+  partagé/indépendant inutilement séquencée après la vérification de rôle
+  (formations, bilan client, membres communauté, liste des coachs).
+  Volontairement pas touché : `admin/leads` (PII sensible, le coût d'un
+  aller-retour de plus est préférable). Le reste du repo est déjà bien
+  parallélisé (ex: fiche client coach = 32 requêtes en un seul Promise.all).
+  tsc/eslint/build vérifiés, commit `43640df`.
 
 ---
 
@@ -59,10 +72,10 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 1 | Auditer les 32 pages force-dynamic, cache ciblé | fait | `3ade35e` | 2026-08-13 | force-dynamic est légitime sur les 32 (dashboards perso) ; le vrai coût était les lectures de référence partagées re-requêtées à chaque clic, voir item 4 |
-| 2 | Repérer les requêtes en cascade, paralléliser | en cours | — | — | — |
+| 1 | Auditer les 32 pages force-dynamic, cache ciblé | fait | `3ade35e`, `4245e8c` | 2026-08-13 | force-dynamic est légitime sur les 32 (dashboards perso) ; le vrai coût était les lectures de référence partagées re-requêtées à chaque clic, voir item 4 |
+| 2 | Repérer les requêtes en cascade, paralléliser | fait | `43640df` | 2026-08-13 | 4 pages corrigées (formations, bilan, membres, coachs) ; reste du repo déjà bien parallélisé ; admin/leads volontairement laissé séquentiel (PII) |
 | 3 | Squelettes de chargement fidèles à la page réelle | todo | — | — | — |
-| 4 | Cache données figées (exercices/salles/aliments) | fait | `3ade35e` | 2026-08-13 | unstable_cache 1h + revalidateTag sur foods/exercise-library/gyms/science-articles |
+| 4 | Cache données figées (exercices/salles/aliments) | fait | `3ade35e`, `4245e8c` | 2026-08-13 | unstable_cache 1h + updateTag (pas revalidateTag, voir décision ci-dessus) sur foods/exercise-library/gyms/science-articles |
 | 5 | Palette de commande (Cmd/Ctrl+K) | todo | — | — | — |
 | 6 | Préchargement au survol/focus | todo | — | — | — |
 
