@@ -11,7 +11,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail,
+  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -153,6 +153,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Clients",
     items: [
       { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
+      // Item 8 du chantier 50 idées : bilans/corrections/photos en attente
+      // de réponse, regroupés en une seule vue triée par ancienneté.
+      { label: "Boîte de réception", icon: Inbox, segment: "inbox" },
       // Juste sous Clients : la conception d'un programme ou d'une diète se
       // fait dans la fiche du client, et cette bibliothèque est le stock de
       // points de départ réutilisables de ce travail. Elle était auparavant
