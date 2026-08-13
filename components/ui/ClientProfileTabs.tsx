@@ -34,7 +34,9 @@ import type { ScheduleBlock } from "@/utils/agenda";
 import type { StepRoutineItem, StepLog } from "@/utils/steps";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { MindsetProfile, MindsetHabitLog } from "@/utils/mindset";
+import type { Measurement } from "@/utils/measurements";
 import WeeklyAgenda from "./WeeklyAgenda";
+import BeforeAfterComparator from "./BeforeAfterComparator";
 import StepsClient from "@/components/steps/StepsClient";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import ClientProgramView from "./ClientProgramView";
@@ -193,6 +195,7 @@ export default function ClientProfileTabs({
   client,
   latestWeight,
   recentDailyLogs,
+  measurements,
   points,
   program,
   workoutLogs,
@@ -253,6 +256,8 @@ export default function ClientProfileTabs({
   client: Profile;
   latestWeight: number | null;
   recentDailyLogs: DailyLog[];
+  /** Item 13 : comparateur avant/après, voir components/ui/BeforeAfterComparator. */
+  measurements: Measurement[];
   points: number;
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
@@ -759,7 +764,13 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "bilans" && (
-        <ClientBilanView weeks={bilanWeeks} clientId={client.id} />
+        <>
+          <BeforeAfterComparator
+            measurements={measurements}
+            checkins={checkinsWithAverages.map(({ checkin }) => checkin)}
+          />
+          <ClientBilanView weeks={bilanWeeks} clientId={client.id} />
+        </>
       )}
 
       {activeTab === "photos" && (

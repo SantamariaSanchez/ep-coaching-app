@@ -36,6 +36,7 @@ import {
   deleteDietPlan,
 } from "./nutrition/diet-plan-actions";
 import { getClientIntake } from "@/utils/client-intake";
+import { getClientMeasurementsAsCoach } from "@/utils/measurements";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
@@ -118,6 +119,7 @@ export default async function ClientDetailPage({
     dietTemplates,
     mindsetProfile,
     mindsetHabitLogs,
+    measurements,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -153,6 +155,8 @@ export default async function ClientDetailPage({
     getCoachDietTemplates(user.id),
     getMindsetProfile(id),
     getHabitLogs(id, thirtyDaysAgoStr),
+    // Item 13 : comparateur avant/après (mensurations + photos de check-in).
+    getClientMeasurementsAsCoach(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -221,6 +225,7 @@ export default async function ClientDetailPage({
       <ClientProfileTabs
         client={client}
         latestWeight={latestWeight}
+        measurements={measurements}
         recentDailyLogs={dailyLogs}
         points={points}
         program={program}
