@@ -54,6 +54,12 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   la nav, navigation clavier. Nouvelle route `/api/coach/clients-search`
   (coach-only, id+nom seulement). tsc/eslint/build vérifiés, commit
   `720e8a9`. **Axe 1 (navigation) terminé.**
+- **2026-08-13** — Axe 2 démarré. Items 7 et 9 traités ensemble (même
+  mécanisme : `lib/client-activity.ts` calcule le silence par client sur 3
+  sources de log). Item 15 découvert déjà entièrement construit avant ce
+  chantier (recherche/tri/filtres sur `ClientsSection.tsx`) — juste étendu
+  avec le nouveau filtre "Inactifs". tsc/eslint/build vérifiés, commit
+  `163450c`.
 
 ---
 
@@ -100,15 +106,15 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 7 | Tableau de bord santé des clients | todo | — | — | — |
+| 7 | Tableau de bord santé des clients | fait | `163450c` | 2026-08-13 | point vert/orange/rouge sur ClientCard, basé sur le silence (voir item 9) |
 | 8 | Boîte de réception coach unique | todo | — | — | — |
-| 9 | Alerte "client silencieux" | todo | — | — | — |
+| 9 | Alerte "client silencieux" | fait | `163450c` | 2026-08-13 | seuil 5j, 3 sources (entraînement/nutrition/bilan), jamais affiché pour pause/terminé |
 | 10 | Bibliothèque de modèles (programme/diète/roadmap) | todo | — | — | — |
 | 11 | Actions groupées multi-clients | todo | — | — | — |
 | 12 | Suggestion de décharge entraînement (miroir rescale diète) | todo | — | — | — |
 | 13 | Comparateur avant/après en un clic | todo | — | — | — |
 | 14 | Suivi entonnoir onboarding + relance | todo | — | — | — |
-| 15 | Recherche transversale clients | todo | — | — | — |
+| 15 | Recherche transversale clients | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier ; étendu avec le filtre "Inactifs" (commit `163450c`) |
 
 ## Axe 3 — Outils membre (16–21)
 
