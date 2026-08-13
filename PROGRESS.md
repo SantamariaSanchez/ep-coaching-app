@@ -117,7 +117,7 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Décision | Statut |
 |---|----------|--------|
-| 29 | *(à écrire quand traité)* | todo |
+| 29 | Notes de gêne (session_sets.notes) affichées uniquement sur la page coach déjà scopée à un seul client (`/dashboard/coach/clients/[id]/logbook`, fetch par `getAllClientSessions(id)`/`getClientById(id, user.id)`/`getClientIntake(id)` — jamais de requête cross-clients). Aucune nouvelle table, aucune nouvelle policy RLS. Pas de panneau agrégé "tous mes clients avec une gêne" dans ce lot — ça relèverait de la même famille de risque que l'inbox (item 8) et mérite sa propre revue si demandé plus tard. | fait — voir commit `f505532` |
 | 37 | *(à écrire quand traité)* | todo |
 | 47 | *(à écrire quand traité)* | todo |
 | 49 | *(à écrire quand traité)* | todo |
@@ -185,6 +185,43 @@ lu et validé explicitement la décision ci-dessous.
   l'annonçait mais elle n'existait pas encore). tsc/eslint/build vérifiés,
   commit `5461b14`. **Axe 4 (Expérience client high-ticket) terminé : 7/7.**
 
+## Session log (suite axe 5)
+
+- **2026-08-14** — Axe 5 démarré. Item 22 (reporté d'axe 4) finalisé au
+  passage : migration de doc manquante pour le cron de l'item 23 ajoutée
+  (`20260813b_weekly_progress_recap_cron.sql`), commit `5461b14`.
+- **2026-08-14** — Item 29 (⚠️ sensible, décision écrite ci-dessus) traité :
+  les notes que le client laisse sur un SET précis (`session_sets.notes`)
+  n'étaient affichées nulle part, ni côté client ni côté coach — vérifié
+  par recherche avant d'écrire une ligne de code. Affichées désormais dans
+  le logbook coach (page déjà scopée à un seul client), repérées par
+  mots-clés de gêne, avec rappel des blessures déclarées en fiche en tête
+  de page.
+- **2026-08-14** — Item 30 traité dans la foulée (même fichier
+  `ClientProfileTabs.tsx`) : `generateFatigueTrendSuggestion`, distinct de
+  l'item 12. Commit combiné `f505532`.
+- **2026-08-14** — Item 31 traité : `suggestNextWeight` dans SessionView,
+  autorégulation simple à partir du RIR réel vs cible. Commit `4167897`.
+- **2026-08-14** — Item 32 traité : le suivi de cycle et sa relance
+  existaient déjà côté coach (fiche client) — invisible pour la cliente
+  elle-même. Bandeau ajouté sur son propre dashboard. Commit `655379a`.
+- **2026-08-14** — Item 33 vérifié, déjà couvert : score de forme
+  (readiness_score Oura) + moteur de règles `lib/biometric-rules.ts` déjà
+  affichés sur la page Aujourd'hui avec suggestion contextuelle. Marqué
+  fait sans code touché.
+- **2026-08-14** — Item 34 traité : compléments en checklist quotidienne,
+  réutilise le mécanisme des habitudes mindset (`mindset_habit_logs`,
+  `habit_key` texte libre) avec une clé synthétique `supplement:<id>` —
+  aucune nouvelle table/RLS. Commit `fb6cd17`.
+- **2026-08-14** — Item 35 traité : `PhotoCompareSlider` (curseur glissant
+  clip-path), remplace le côte-à-côte statique du comparateur coach (item
+  13) et ajouté côté client (n'existait pas du tout). Alignement
+  automatique par reconnaissance de pose explicitement écarté (vision par
+  ordinateur, hors budget raisonnable de ce chantier). Commit `5921425`.
+- **2026-08-14** — Item 36 traité : `getClientsWeeklyConsistency`, % de
+  jours actifs depuis lundi par client, 3e cellule sur ClientCard. Commit
+  `aa8bc17`. **Axe 5 (Données sous-exploitées) terminé : 8/8.**
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -249,14 +286,14 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 29 | ⚠️ Croiser blessures × notes de gêne exercices | todo | — | — | — |
-| 30 | Décharge suggérée depuis données loggées | todo | — | — | — |
-| 31 | Charge suggérée séance suivante (RIR) | todo | — | — | — |
-| 32 | Suivi de cycle menstruel (activer) | todo | — | — | — |
-| 33 | Score de forme du jour (insights biométriques) | todo | — | — | — |
-| 34 | Compléments en checklist quotidienne | todo | — | — | — |
-| 35 | Comparaison photo alignée automatiquement | todo | — | — | — |
-| 36 | Score de constance hebdomadaire unique | todo | — | — | — |
+| 29 | ⚠️ Croiser blessures × notes de gêne exercices | fait | `f505532` | 2026-08-14 | notes par set invisibles nulle part avant ce fix ; affichées + repérées par mots-clés dans le logbook coach, rappel des blessures déclarées en tête |
+| 30 | Décharge suggérée depuis données loggées | fait | `f505532` | 2026-08-14 | distinct de l'item 12 (1 exercice) : fatigue accumulée sur feeling/énergie/RIR, 3 dernières séances vs 3 précédentes |
+| 31 | Charge suggérée séance suivante (RIR) | fait | `4167897` | 2026-08-14 | autorégulation ±2,5%/point de RIR d'écart, remplace le placeholder du champ poids |
+| 32 | Suivi de cycle menstruel (activer) | fait | `655379a` | 2026-08-14 | fonctionnalité déjà complète, relance déjà existante côté coach ; ajout d'une relance visible par la cliente elle-même sur son propre dashboard |
+| 33 | Score de forme du jour (insights biométriques) | fait (pré-existant) | — | 2026-08-14 | readiness_score + moteur de règles (lib/biometric-rules.ts) déjà affichés sur Aujourd'hui, avec suggestion contextuelle |
+| 34 | Compléments en checklist quotidienne | fait | `fb6cd17` | 2026-08-14 | réutilise mindset_habit_logs (clé "supplement:id"), aucune nouvelle table |
+| 35 | Comparaison photo alignée automatiquement | fait | `5921425` | 2026-08-14 | curseur glissant (clip-path) plutôt qu'alignement par vision par ordinateur, coach + client |
+| 36 | Score de constance hebdomadaire unique | fait | `aa8bc17` | 2026-08-14 | % de jours actifs depuis lundi, 3e cellule sur ClientCard, distinct du streak (20) et du silence (7/9) |
 
 ## Axe 6 — Cohérence structurelle (37–40)
 
