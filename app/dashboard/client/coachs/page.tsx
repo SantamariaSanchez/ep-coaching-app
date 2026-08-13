@@ -6,10 +6,10 @@ export default async function ClientCoachsPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const profile = await getProfile(user.id);
+  // coaches est un contenu partagé, indépendant de profile : lancé en
+  // parallèle plutôt qu'après la vérification "a déjà un coach".
+  const [profile, coaches] = await Promise.all([getProfile(user.id), getActiveCoachesForDiscovery()]);
   if (profile?.coach_id) redirect("/dashboard/client");
-
-  const coaches = await getActiveCoachesForDiscovery();
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 480, margin: "0 auto" }}>
