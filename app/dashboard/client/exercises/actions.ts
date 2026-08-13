@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import type { ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
 import { EXERCISE_LIBRARY_SEED } from "@/lib/exercise-library-seed";
 
@@ -69,7 +69,7 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
 
     revalidatePath("/dashboard/client/exercises");
     revalidatePath("/dashboard/coach/exercises");
-    revalidateTag("exercise-library");
+    updateTag("exercise-library");
     return { id: data.id };
   } catch {
     return { error: "Erreur inattendue." };
@@ -112,7 +112,7 @@ export async function updateExercise(
 
     revalidatePath("/dashboard/client/exercises");
     revalidatePath("/dashboard/coach/exercises");
-    revalidateTag("exercise-library");
+    updateTag("exercise-library");
     return {};
   } catch {
     return { error: "Erreur inattendue." };
@@ -156,7 +156,7 @@ export async function seedOfficialExercises(): Promise<{ error?: string; inserte
 
     revalidatePath("/dashboard/client/exercises");
     revalidatePath("/dashboard/coach/exercises");
-    revalidateTag("exercise-library");
+    updateTag("exercise-library");
     return { inserted: missing.length };
   } catch {
     return { error: "Erreur inattendue." };
@@ -174,7 +174,7 @@ export async function deleteExercise(id: string): Promise<{ error?: string }> {
 
     revalidatePath("/dashboard/client/exercises");
     revalidatePath("/dashboard/coach/exercises");
-    revalidateTag("exercise-library");
+    updateTag("exercise-library");
     return {};
   } catch {
     return { error: "Erreur inattendue." };
