@@ -60,6 +60,12 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   chantier (recherche/tri/filtres sur `ClientsSection.tsx`) — juste étendu
   avec le nouveau filtre "Inactifs". tsc/eslint/build vérifiés, commit
   `163450c`.
+- **2026-08-13** — Item 14 traité : `getClientsIntakeCompletion()` repère
+  qui n'a jamais fini sa fiche, badge + bouton "Relancer" sur la carte
+  client (réutilise l'action `relaunchMember` déjà existante côté
+  Communauté > Membres, pas de nouveau système de notification). Relié
+  directement au constat "9 clients sur 12 sans fiche" fait plus tôt.
+  tsc/eslint/build vérifiés, commit `48b7d0f`.
 
 ---
 
@@ -113,7 +119,7 @@ lu et validé explicitement la décision ci-dessous.
 | 11 | Actions groupées multi-clients | todo | — | — | — |
 | 12 | Suggestion de décharge entraînement (miroir rescale diète) | todo | — | — | — |
 | 13 | Comparateur avant/après en un clic | todo | — | — | — |
-| 14 | Suivi entonnoir onboarding + relance | todo | — | — | — |
+| 14 | Suivi entonnoir onboarding + relance | fait | `48b7d0f` | 2026-08-13 | badge + relance en un clic sur ClientCard, réutilise relaunchMember existant |
 | 15 | Recherche transversale clients | fait | (pré-existant) | 2026-08-13 | déjà construit avant ce chantier ; étendu avec le filtre "Inactifs" (commit `163450c`) |
 
 ## Axe 3 — Outils membre (16–21)
