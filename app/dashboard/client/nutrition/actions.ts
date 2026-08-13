@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { getProfile, isSubscribed } from "@/utils/auth";
 import { requireClient, requireCoach } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
@@ -234,6 +234,7 @@ export async function createCustomFood(params: {
       }
       return { error: "Erreur lors de la création." };
     }
+    revalidateTag("foods");
     return { food: data as Food };
   } catch {
     return { error: "Erreur inattendue." };
@@ -258,6 +259,7 @@ export async function updateFoodPrepNotes(
       .update({ prep_notes: prepNotes.trim() || null })
       .eq("id", foodId);
     if (error) return { error: "Erreur lors de l'enregistrement." };
+    revalidateTag("foods");
     return {};
   } catch {
     return { error: "Erreur inattendue." };

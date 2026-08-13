@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { unstable_cache } from "next/cache";
 
 export type ExerciseCategory = "compose" | "isolation";
 export type ExerciseDifficulty = "debutant" | "intermediaire" | "avance";
@@ -32,22 +33,31 @@ export interface LibraryExercise {
   setup_notes: string | null;
 }
 
-export async function getExerciseLibrary(): Promise<LibraryExercise[]> {
-  try {
-    // Shared reference content (not user-scoped) — read via the admin client
-    // so display never depends on RLS being configured a particular way on
-    // this table (it's meant to be world-readable for every signed-in member).
-    const supabase = createAdminClient();
-    const { data } = await supabase
-      .from("exercise_library")
-      .select("*")
-      .order("muscle_group")
-      .order("name");
-    return (data as LibraryExercise[]) ?? [];
-  } catch {
-    return [];
-  }
-}
+// 642 lignes, quasi identiques d'un chargement à l'autre (référence
+// partagée, voir commentaire ci-dessous). Mise en cache 1h ; createExercise/
+// updateExercise/deleteExercise/seedOfficialExercises
+// (app/dashboard/client/exercises/actions.ts) purgent le tag
+// "exercise-library" dès qu'un exercice change.
+export const getExerciseLibrary = unstable_cache(
+  async (): Promise<LibraryExercise[]> => {
+    try {
+      // Shared reference content (not user-scoped) — read via the admin client
+      // so display never depends on RLS being configured a particular way on
+      // this table (it's meant to be world-readable for every signed-in member).
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from("exercise_library")
+        .select("*")
+        .order("muscle_group")
+        .order("name");
+      return (data as LibraryExercise[]) ?? [];
+    } catch {
+      return [];
+    }
+  },
+  ["exercise-library"],
+  { tags: ["exercise-library"], revalidate: 3600 }
+);
 
 export interface MissingVideoExercise {
   name: string;

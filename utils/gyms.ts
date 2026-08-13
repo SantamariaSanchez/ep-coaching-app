@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { unstable_cache } from "next/cache";
 import type { GymType } from "@/lib/gyms-seed";
 import type { EquipmentType } from "@/lib/exercise-library-content";
 
@@ -55,32 +56,40 @@ export async function findGymEquipmentNotes(gymName: string | null): Promise<str
   }
 }
 
-export async function getGymsWithReviews(): Promise<GymWithReviews[]> {
-  try {
-    // Shared reference content (not user-scoped) — read via the admin client
-    // so display never depends on RLS being configured a particular way on
-    // these tables.
-    const supabase = createAdminClient();
-    const [{ data: gyms }, { data: reviews }] = await Promise.all([
-      supabase.from("gyms").select("*").order("created_at", { ascending: false }),
-      supabase.from("gym_reviews").select("*, profiles(full_name)").order("created_at", { ascending: false }),
-    ]);
+// 88 salles + leurs avis, référence partagée (pas scopée utilisateur, voir
+// commentaire ci-dessous). Mise en cache 1h ; createGym/updateGym/deleteGym/
+// seedOfficialGyms/upsertGymReview/deleteGymReview (gyms/actions.ts) purgent
+// le tag "gyms" dès qu'une salle ou un avis change.
+export const getGymsWithReviews = unstable_cache(
+  async (): Promise<GymWithReviews[]> => {
+    try {
+      // Shared reference content (not user-scoped) — read via the admin client
+      // so display never depends on RLS being configured a particular way on
+      // these tables.
+      const supabase = createAdminClient();
+      const [{ data: gyms }, { data: reviews }] = await Promise.all([
+        supabase.from("gyms").select("*").order("created_at", { ascending: false }),
+        supabase.from("gym_reviews").select("*, profiles(full_name)").order("created_at", { ascending: false }),
+      ]);
 
-    const reviewsByGym: Record<string, GymReview[]> = {};
-    for (const r of (reviews as GymReview[] | null) ?? []) {
-      if (!reviewsByGym[r.gym_id]) reviewsByGym[r.gym_id] = [];
-      reviewsByGym[r.gym_id].push(r);
+      const reviewsByGym: Record<string, GymReview[]> = {};
+      for (const r of (reviews as GymReview[] | null) ?? []) {
+        if (!reviewsByGym[r.gym_id]) reviewsByGym[r.gym_id] = [];
+        reviewsByGym[r.gym_id].push(r);
+      }
+
+      return ((gyms as Gym[]) ?? []).map((g) => {
+        const gymReviews = reviewsByGym[g.id] ?? [];
+        const avgRating =
+          gymReviews.length > 0
+            ? Math.round((gymReviews.reduce((s, r) => s + r.rating, 0) / gymReviews.length) * 10) / 10
+            : null;
+        return { ...g, reviews: gymReviews, avgRating };
+      });
+    } catch {
+      return [];
     }
-
-    return ((gyms as Gym[]) ?? []).map((g) => {
-      const gymReviews = reviewsByGym[g.id] ?? [];
-      const avgRating =
-        gymReviews.length > 0
-          ? Math.round((gymReviews.reduce((s, r) => s + r.rating, 0) / gymReviews.length) * 10) / 10
-          : null;
-      return { ...g, reviews: gymReviews, avgRating };
-    });
-  } catch {
-    return [];
-  }
-}
+  },
+  ["gyms-with-reviews"],
+  { tags: ["gyms"], revalidate: 3600 }
+);
