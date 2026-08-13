@@ -3,10 +3,114 @@
 import { useActionState, useRef, useState } from "react";
 import { Video, ExternalLink, CheckCircle2, Clock, Loader2, X } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import type { ExerciseCorrectionResolved } from "@/utils/corrections";
+import type { ExerciseCorrectionResolved, VideoAnnotation } from "@/utils/corrections";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 type ActionState = { error?: string; success?: boolean } | null;
+
+function formatTimestamp(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${m}:${s.toString().padStart(2, "0")}`;
+}
+
+// Item 22 : vidéo du CLIENT (pas la réponse du coach) + ses annotations
+// horodatées. Réutilisé en lecture seule (correction déjà traitée) et en
+// mode édition (dans ReplyForm, tant que la correction est en attente).
+function AnnotatedClientVideo({
+  videoUrl,
+  videoLink,
+  annotations,
+  editable,
+  onAddAnnotation,
+  onRemoveAnnotation,
+}: {
+  videoUrl: string | null;
+  videoLink: string | null;
+  annotations: VideoAnnotation[];
+  editable?: boolean;
+  onAddAnnotation?: (timestampSeconds: number, note: string) => void;
+  onRemoveAnnotation?: (index: number) => void;
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [noteInput, setNoteInput] = useState("");
+
+  function seekTo(t: number) {
+    if (videoRef.current) videoRef.current.currentTime = t;
+  }
+
+  function handleAdd() {
+    if (!videoRef.current || !noteInput.trim()) return;
+    onAddAnnotation?.(Math.floor(videoRef.current.currentTime), noteInput.trim());
+    setNoteInput("");
+  }
+
+  if (!videoUrl && !videoLink) return null;
+
+  return (
+    <div className="space-y-1.5">
+      {videoUrl ? (
+        <video ref={videoRef} src={videoUrl} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
+      ) : videoLink ? (
+        <a
+          href={safeExternalUrl(videoLink) ?? "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium text-xs"
+        >
+          <Video size={11} /> Vidéo <ExternalLink size={10} />
+        </a>
+      ) : null}
+
+      {annotations.length > 0 && (
+        <div className="space-y-1">
+          {annotations.map((a, i) => (
+            <div key={i} className="flex items-center gap-2 text-xs">
+              <button
+                type="button"
+                onClick={() => seekTo(a.timestamp_seconds)}
+                disabled={!videoUrl}
+                className="flex-shrink-0 font-mono text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#890404]/20 text-[#F5EDED]/70 hover:bg-[#890404]/35 disabled:opacity-50 transition-colors"
+              >
+                {formatTimestamp(a.timestamp_seconds)}
+              </button>
+              <span className="text-[#F5EDED]/55 flex-1">{a.note}</span>
+              {editable && (
+                <button
+                  type="button"
+                  onClick={() => onRemoveAnnotation?.(i)}
+                  className="text-[#F5EDED]/25 hover:text-[#F5EDED]/50 flex-shrink-0"
+                >
+                  <X size={11} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {editable && videoUrl && (
+        <div className="flex items-center gap-1.5">
+          <input
+            type="text"
+            value={noteInput}
+            onChange={(e) => setNoteInput(e.target.value)}
+            placeholder="Note à l'instant courant de la vidéo…"
+            className="flex-1 bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors"
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!noteInput.trim()}
+            className="flex-shrink-0 bg-[#150000] border border-[#890404]/30 hover:border-[#E01E1E]/60 disabled:opacity-40 rounded-lg px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/60 transition-colors"
+          >
+            + note
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function ReplyForm({
   correction,
@@ -24,6 +128,15 @@ function ReplyForm({
   const [videoName, setVideoName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState(false);
+  const [annotations, setAnnotations] = useState<VideoAnnotation[]>(correction.video_annotations ?? []);
+
+  function addAnnotation(timestampSeconds: number, note: string) {
+    setAnnotations((prev) => [...prev, { timestamp_seconds: timestampSeconds, note }].sort((a, b) => a.timestamp_seconds - b.timestamp_seconds));
+  }
+
+  function removeAnnotation(index: number) {
+    setAnnotations((prev) => prev.filter((_, i) => i !== index));
+  }
 
   async function handleVideoSelected(file: File) {
     setUploading(true);
@@ -54,6 +167,16 @@ function ReplyForm({
 
   return (
     <form action={formAction} className="space-y-2.5 mt-2">
+      <AnnotatedClientVideo
+        videoUrl={correction.video_url}
+        videoLink={correction.video_link}
+        annotations={annotations}
+        editable
+        onAddAnnotation={addAnnotation}
+        onRemoveAnnotation={removeAnnotation}
+      />
+      <input type="hidden" name="video_annotations" value={JSON.stringify(annotations)} />
+
       <textarea
         name="coach_feedback"
         rows={3}
@@ -166,35 +289,25 @@ export default function ClientCorrectionsReplySection({
                 {c.client_question}
               </p>
             )}
-            {c.video_url ? (
-              <video src={c.video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
-            ) : c.video_link ? (
-              <a
-                href={safeExternalUrl(c.video_link) ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium text-xs"
-              >
-                <Video size={11} /> Vidéo <ExternalLink size={10} />
-              </a>
-            ) : null}
-
             {c.status === "answered" ? (
-              <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
-                <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{c.coach_feedback}</p>
-                {c.coach_video_url ? (
-                  <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
-                ) : c.coach_video_link ? (
-                  <a
-                    href={safeExternalUrl(c.coach_video_link) ?? "#"}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-green-400/70 hover:text-green-400 transition-colors text-xs font-medium"
-                  >
-                    <Video size={11} /> Vidéo coach <ExternalLink size={10} />
-                  </a>
-                ) : null}
-              </div>
+              <>
+                <AnnotatedClientVideo videoUrl={c.video_url} videoLink={c.video_link} annotations={c.video_annotations ?? []} />
+                <div className="pt-2 border-t border-[#890404]/10 space-y-1.5">
+                  <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{c.coach_feedback}</p>
+                  {c.coach_video_url ? (
+                    <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
+                  ) : c.coach_video_link ? (
+                    <a
+                      href={safeExternalUrl(c.coach_video_link) ?? "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-green-400/70 hover:text-green-400 transition-colors text-xs font-medium"
+                    >
+                      <Video size={11} /> Vidéo coach <ExternalLink size={10} />
+                    </a>
+                  ) : null}
+                </div>
+              </>
             ) : (
               <ReplyForm correction={c} clientId={clientId} action={sendCorrectionFeedback} />
             )}

@@ -1,5 +1,10 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 
+export interface VideoAnnotation {
+  timestamp_seconds: number;
+  note: string;
+}
+
 export interface ExerciseCorrection {
   id: string;
   client_id: string;
@@ -13,6 +18,9 @@ export interface ExerciseCorrection {
   coach_feedback: string | null;
   coach_video_link: string | null;
   coach_video_path: string | null;
+  // Item 22 : notes du coach horodatées sur la vidéo du CLIENT (pas sa
+  // propre vidéo de réponse) — "à 0:15, redresse le dos".
+  video_annotations: VideoAnnotation[] | null;
   created_at: string;
   answered_at: string | null;
 }
