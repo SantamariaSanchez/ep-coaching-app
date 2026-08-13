@@ -37,6 +37,13 @@ signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
   aller-retour de plus est préférable). Le reste du repo est déjà bien
   parallélisé (ex: fiche client coach = 32 requêtes en un seul Promise.all).
   tsc/eslint/build vérifiés, commit `43640df`.
+- **2026-08-13** — Item 3 traité partiellement : 4 formes de squelette
+  existaient déjà (Page/List/Grid/Form), il en manquait une pour les pages à
+  onglets. Ajout de `TabbedPageSkeleton`, appliqué aux 6 pages nutrition/
+  programme (client, coach->client, coach moi). Les ~70 autres loading.tsx
+  n'ont pas été revus un par un — la majorité semble déjà correcte mais pas
+  vérifié exhaustivement, à reprendre dans une prochaine session si utile.
+  tsc/eslint/build vérifiés, commit `d70bb07`.
 
 ---
 
@@ -74,7 +81,7 @@ lu et validé explicitement la décision ci-dessous.
 |---|------|--------|-----------|------|--------|
 | 1 | Auditer les 32 pages force-dynamic, cache ciblé | fait | `3ade35e`, `4245e8c` | 2026-08-13 | force-dynamic est légitime sur les 32 (dashboards perso) ; le vrai coût était les lectures de référence partagées re-requêtées à chaque clic, voir item 4 |
 | 2 | Repérer les requêtes en cascade, paralléliser | fait | `43640df` | 2026-08-13 | 4 pages corrigées (formations, bilan, membres, coachs) ; reste du repo déjà bien parallélisé ; admin/leads volontairement laissé séquentiel (PII) |
-| 3 | Squelettes de chargement fidèles à la page réelle | todo | — | — | — |
+| 3 | Squelettes de chargement fidèles à la page réelle | fait (partiel) | `d70bb07` | 2026-08-13 | TabbedPageSkeleton ajouté + appliqué à 6 pages nutrition/programme ; ~70 loading.tsx restants pas revus un par un |
 | 4 | Cache données figées (exercices/salles/aliments) | fait | `3ade35e`, `4245e8c` | 2026-08-13 | unstable_cache 1h + updateTag (pas revalidateTag, voir décision ci-dessus) sur foods/exercise-library/gyms/science-articles |
 | 5 | Palette de commande (Cmd/Ctrl+K) | todo | — | — | — |
 | 6 | Préchargement au survol/focus | todo | — | — | — |
