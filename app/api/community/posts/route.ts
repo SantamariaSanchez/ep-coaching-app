@@ -52,6 +52,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
   const content = parsed.value;
+  // Item 44 : opt-in explicite, jamais vrai pour une question — la case ne
+  // s'affiche même pas côté formulaire pour ce type.
+  const is_public = type === "victory" && formData.get("is_public") === "1";
 
   const supabase = await createServerSupabase();
   let image_url: string | null = null;
@@ -90,6 +93,7 @@ export async function POST(request: Request) {
       type,
       content,
       image_url,
+      is_public,
     })
     .select("id")
     .single();

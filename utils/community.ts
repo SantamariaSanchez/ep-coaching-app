@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 import { getPointsMap } from "@/lib/gamification";
 import { resolveAvatarUrl } from "@/utils/avatar";
 
@@ -220,5 +221,51 @@ export async function getCommunityPostCount(authorId: string): Promise<number> {
     return count ?? 0;
   } catch {
     return 0;
+  }
+}
+
+export interface PublicVictory {
+  id: string;
+  author_first_name: string;
+  content: string;
+  image_url: string | null;
+  created_at: string;
+}
+
+// Item 44 : mur de réussites publiques (page /reussites, sans compte).
+// Client admin obligatoire — page publique, aucune session utilisateur.
+// Ne remonte QUE le prénom (jamais le nom de famille) même si le membre a
+// coché "public" — l'opt-in porte sur la victoire, pas sur son identité
+// complète.
+export async function getPublicVictories(limit = 30): Promise<PublicVictory[]> {
+  try {
+    const admin = createAdminClient();
+    const { data: posts } = await admin
+      .from("community_posts")
+      .select("id, author_id, content, image_url, created_at")
+      .eq("type", "victory")
+      .eq("is_public", true)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    if (!posts || posts.length === 0) return [];
+
+    const authorIds = [...new Set(posts.map((p) => p.author_id as string))];
+    const { data: authors } = await admin.from("profiles").select("id, full_name").in("id", authorIds);
+    const nameById: Record<string, string> = {};
+    for (const a of (authors ?? []) as { id: string; full_name: string | null }[]) {
+      nameById[a.id] = a.full_name?.split(" ")[0] ?? "Un membre";
+    }
+
+    return (posts as { id: string; author_id: string; content: string; image_url: string | null; created_at: string }[]).map(
+      (p) => ({
+        id: p.id,
+        author_first_name: nameById[p.author_id] ?? "Un membre",
+        content: p.content,
+        image_url: p.image_url,
+        created_at: p.created_at,
+      })
+    );
+  } catch {
+    return [];
   }
 }
