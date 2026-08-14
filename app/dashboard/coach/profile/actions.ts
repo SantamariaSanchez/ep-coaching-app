@@ -3,6 +3,7 @@
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { COACH_SPECIALIZATIONS } from "@/lib/coach-specializations";
 
 function generateInviteCode(): string {
   return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 5);
@@ -117,6 +118,30 @@ export async function toggleAcceptingNewClients(accepting: boolean): Promise<{ e
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/profile");
+  return { success: true };
+}
+
+// Axe 5 (VISION.md) : étiquettes de spécialisation affichées dans
+// l'annuaire public /coachs. On revalide aussi /coachs pour que le
+// changement soit visible immédiatement (page dynamique, pas d'ISR ici).
+export async function updateSpecializations(specializations: string[]): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const cleaned = [...new Set(specializations)].filter((s) =>
+    (COACH_SPECIALIZATIONS as readonly string[]).includes(s)
+  );
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ specializations: cleaned })
+    .eq("id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/profile");
+  revalidatePath("/dashboard/coach/parametres");
+  revalidatePath("/coachs");
   return { success: true };
 }
 

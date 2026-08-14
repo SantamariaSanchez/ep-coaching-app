@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, FileText, Download, Heart, Calculator, ChevronRight, Trophy } from "lucide-react";
+import { Search, FileText, Download, Heart, Calculator, ChevronRight, Trophy, Users } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
@@ -121,6 +121,23 @@ export default function PublicRessourcesClient({
           <div className="flex-1 min-w-0">
             <p className="text-sm font-bold text-white">Calculateurs gratuits</p>
             <p className="text-[10px] text-[#F5EDED]/35">Calories, macros, charge maximale (1RM)</p>
+          </div>
+          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+        </Link>
+
+        {/* Axe 5 (VISION.md) : annuaire public des coachs, même logique de
+            découverte que les calculateurs ci-dessus — utile surtout à un
+            visiteur pas encore décidé sur QUI le suivre. */}
+        <Link
+          href="/coachs"
+          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+            <Users size={15} className="text-[#890404]" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white">Trouve ton coach</p>
+            <p className="text-[10px] text-[#F5EDED]/35">Annuaire des coachs, par spécialisation</p>
           </div>
           <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
         </Link>

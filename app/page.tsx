@@ -216,6 +216,26 @@ export default function HomePage() {
           }}>
             Accès gratuit · Sans engagement
           </p>
+
+          {/* Axe 5 (VISION.md) : plusieurs coachs sur la plateforme
+              maintenant, pas seulement celui par défaut — un visiteur
+              indécis doit pouvoir choisir avant de s'inscrire. */}
+          <Link
+            href="/coachs"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+              marginTop: 10,
+              fontSize: 11.5,
+              fontWeight: 700,
+              color: "rgba(245,237,237,0.4)",
+              textDecoration: "none",
+            }}
+          >
+            <Users size={12} /> Plusieurs coachs disponibles — trouve le tien
+          </Link>
         </div>
 
         {/* ── Coach link ── */}

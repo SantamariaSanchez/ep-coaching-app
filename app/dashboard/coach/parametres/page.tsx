@@ -6,6 +6,7 @@ import { getCoachBillingInfo } from "@/lib/coach-billing";
 import { getCoachWaitlist } from "@/utils/waitlist";
 import AccountActions from "@/components/profile/AccountActions";
 import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
+import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
@@ -48,10 +49,16 @@ export default async function CoachParametresPage() {
   // referral_code/trial_ends_at côté client — évite d'alourdir getProfile()
   // utilisé partout avec des colonnes que seule cette page consulte.
   const [acceptingRow, waitlist] = await Promise.all([
-    createAdminClient().from("profiles").select("accepting_new_clients").eq("id", user.id).maybeSingle(),
+    createAdminClient()
+      .from("profiles")
+      .select("accepting_new_clients, specializations")
+      .eq("id", user.id)
+      .maybeSingle(),
     getCoachWaitlist(user.id),
   ]);
-  const accepting = (acceptingRow.data as { accepting_new_clients: boolean } | null)?.accepting_new_clients ?? true;
+  const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null } | null;
+  const accepting = acceptingData?.accepting_new_clients ?? true;
+  const specializations = acceptingData?.specializations ?? [];
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -79,6 +86,8 @@ export default async function CoachParametresPage() {
       />
 
       <AcceptingClientsCard initialAccepting={accepting} waitlist={waitlist} />
+
+      <CoachSpecializationsCard initialSpecializations={specializations} />
 
       {!profile.is_platform_owner && (
         <div className="mt-4">

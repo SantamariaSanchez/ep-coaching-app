@@ -125,16 +125,41 @@ existant, export comptable ?) avant de commencer.
 
 ## Axe 5 — Annuaire de coachs et spécialisation
 
-**Statut : pas commencé.**
+**Statut : la brique annuaire livrée (2026-08-14). Reste : le flux de
+redirection actif entre coachs (voir plus bas).**
 
-Idée : étiquettes "spécialisé" / "généraliste" (et plus finement : blessure,
-TCA, prise de masse, force, etc.) sur le profil coach, avec une recherche
-publique pour qu'un visiteur trouve le bon coach pour SON profil — y
-compris rediriger vers un autre coach de la plateforme si le premier
-contacté n'est pas le bon interlocuteur (ex. blessure, TCA nécessitant une
-expertise que le coach initial n'a pas). Nécessite : un système de tags
-coach, une page annuaire publique, et un vrai flux de redirection/mise en
-relation entre coachs de la plateforme.
+- `lib/coach-specializations.ts` : taxonomie fixe (13 étiquettes —
+  généraliste, prise de masse, perte de gras, force, bodybuilding
+  compétition, blessures/rééducation, TCA, féminin, grossesse/post-partum,
+  débutants, ados/jeunes athlètes, seniors, nutrition seule), même
+  convention que `lib/resource-categories.ts`.
+- `profiles.specializations` (`text[]`, index GIN) — migration
+  `20260814j_coach_specializations.sql`. Vide = affiché comme généraliste
+  par défaut côté annuaire (pas d'obligation de remplissage pour apparaître).
+- Édition côté coach : `CoachSpecializationsCard` dans `/dashboard/coach/
+  parametres` — chips à bascule, sauvegarde immédiate (même convention que
+  `AcceptingClientsCard`), pas de bouton "Enregistrer" séparé.
+- Annuaire public `/coachs` (`lib/coach-directory.ts` +
+  `CoachDirectoryExplorer`) : liste les coachs actifs (même filtre
+  d'éligibilité que `resolveCoachId()`, cf. app/auth/client/actions.ts),
+  filtre par étiquette, coachs à capacité affichés en dernier avec un badge
+  "Complet" et sans lien d'inscription direct (pour ne pas contourner
+  `accepting_new_clients` — celui déjà en place depuis l'item 45). Chaque
+  carte accepteuse pointe vers `/auth/client?coach=<invite_code>`,
+  réutilisant `resolveCoachId()` tel quel, sans y toucher. Découvrable
+  depuis `/ressources` (carte au même endroit que Outils/Réussites) et
+  depuis la page d'accueil (lien discret sous le CTA principal).
+
+### Reste à faire sur cet axe
+
+- Un vrai flux de **redirection active** entre coachs de la plateforme
+  (ex. un client contacte un coach non spécialisé TCA, qui souhaite le
+  réorienter vers un collègue qui l'est) — nécessite une action côté coach
+  ("réorienter ce prospect/client vers...") et une notification au coach
+  cible, pas juste l'annuaire passif livré aujourd'hui. Actuellement zéro
+  coach externe sur la plateforme (un seul compte coach, le fondateur) donc
+  pas urgent tant qu'il n'y a personne vers qui rediriger — à reprendre
+  quand un deuxième coach rejoint.
 
 ## Axe 6 — Formation de coachs (accompagnement business/coaching-des-coachs)
 
@@ -159,10 +184,10 @@ devient aussi un espace coach-vers-coach et un annuaire public).
 
 1. ~~Axe 1 (escalade, compensation calorique, auto-solve des grammages)~~
    **fait, 2026-08-14**.
-2. **→ prochain** : Axe 5 (annuaire + tags de spécialisation) — précède
-   logiquement l'Axe 2 (CRM) puisqu'il touche à comment un client arrive
-   chez le bon coach.
-3. Axe 2 (poste de travail coach) — le plus gros morceau, à découper en
+2. ~~Axe 5 (annuaire + tags de spécialisation)~~ **fait, 2026-08-14**
+   (reste seulement la redirection active entre coachs, non urgente à un
+   seul coach sur la plateforme).
+3. **→ prochain** : Axe 2 (poste de travail coach) — le plus gros morceau, à découper en
    sous-livrables (CRM d'abord, contenu ensuite, mailing en dernier car
    nécessite une vraie décision d'architecture Brevo multi-coach).
 4. Axe 3 (dashboard consolidé "qui a besoin de moi").
