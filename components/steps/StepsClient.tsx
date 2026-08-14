@@ -136,6 +136,23 @@ export default function StepsClient({
 
   const [stepsInput, setStepsInput] = useState(String(todayLog?.steps_actual ?? ""));
   const [completed, setCompleted] = useState<Set<string>>(new Set(todayLog?.completed_items ?? []));
+
+  // MASTERCLASS.md Axe E (même piège que todayLogs dans ClientNutritionView) :
+  // goal/items/stepsInput/completed venaient tous de props serveur mais ne se
+  // resynchronisaient jamais sur un nouveau prop après le premier rendu — un
+  // objectif changé, un item de routine ajouté/supprimé ailleurs, ou un pas
+  // loggé puis la page rechargée pouvaient rester affichés à l'ancienne valeur.
+  useEffect(() => {
+    setGoal(settings.daily_goal);
+  }, [settings.daily_goal]);
+  useEffect(() => {
+    setItems(routineItems);
+  }, [routineItems]);
+  useEffect(() => {
+    setStepsInput(String(todayLog?.steps_actual ?? ""));
+    setCompleted(new Set(todayLog?.completed_items ?? []));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- todayLog est recalculé chaque rendu depuis logs/today, la vraie dépendance stable est logs
+  }, [logs]);
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
   // MASTERCLASS.md Axe B : ces handlers affichaient "Enregistré ✓" même
@@ -299,13 +316,22 @@ export default function StepsClient({
     if (!res.error) setItems((prev) => prev.filter((i) => i.id !== id));
   }
 
-  function toggleCompleted(id: string) {
-    setCompleted((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  // Sauvegarde immédiate au clic, comme la checklist du plan de diète —
+  // avant, cocher un item de routine ne persistait qu'en cliquant ensuite
+  // sur "Enregistrer" (le même bouton que la saisie manuelle de pas) : trop
+  // facile de cocher, quitter la page sans avoir remarqué qu'il fallait
+  // encore valider, et retrouver la case décochée au retour.
+  async function toggleCompleted(id: string) {
+    const next = new Set(completed);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setCompleted(next);
+    if (!logSteps) return;
+    const res = await logSteps(today, todaySteps, [...next]);
+    if (res.error) {
+      setCompleted(completed);
+      setSaveError(res.error);
+    }
   }
 
   async function handleSaveToday() {
@@ -413,6 +439,7 @@ export default function StepsClient({
                     type="number"
                     value={goal}
                     onChange={(e) => setGoal(parseInt(e.target.value) || 0)}
+                    aria-label="Objectif de pas"
                     className="w-20 bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-1 text-xs text-white focus:outline-none"
                   />
                   <button onClick={handleSaveGoal} className="text-[10px] font-bold text-[#E01E1E]">OK</button>
@@ -548,6 +575,7 @@ export default function StepsClient({
                         type="time"
                         value={reminderTime}
                         onChange={(e) => setReminderTime(e.target.value)}
+                        aria-label="Heure du rappel"
                         className="bg-[#0D0000] border border-[#890404]/25 rounded-md px-2 py-1 text-xs text-white focus:outline-none"
                       />
                       <button

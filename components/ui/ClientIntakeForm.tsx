@@ -235,7 +235,7 @@ export default function ClientIntakeForm({
             </p>
           </div>
           <p className="text-[11px] text-[#F5EDED]/40 mb-3 leading-relaxed">
-            Ce chiffre est celui affiché dans l&apos;app du client, dans &quot;Pas &amp; routine&quot;. Le client ne peut
+            Ce chiffre est celui affiché dans l&apos;app du client, dans &quot;Steps&quot;. Le client ne peut
             plus le modifier lui-même. C&apos;est toi, le coach, qui le règles ici.
           </p>
           <div className="flex items-center gap-2">

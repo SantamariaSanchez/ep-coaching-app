@@ -17,7 +17,7 @@ const HOURS = Array.from({ length: 24 }, (_, h) => h);
 // téléphone/navigateur — avant, seules les notifications push avaient un
 // vrai écran ; le reste (mouvement pour le podomètre, installation sur
 // l'écran d'accueil) était éparpillé ou absent. Le statut du podomètre est
-// géré et démarré depuis Pas & routine (composants/steps/StepsClient) — pas
+// géré et démarré depuis Steps (composants/steps/StepsClient) — pas
 // dupliqué ici, on se contente de l'état lu en localStorage + un lien.
 export default function PermissionsCard({
   pushSubscribed,
@@ -187,7 +187,7 @@ export default function PermissionsCard({
           <div>
             <p className="text-sm font-semibold text-white">Mouvement (podomètre)</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
-              {pedometerEnabled ? "Activé, réglages dans Pas & routine" : "Non activé"}
+              {pedometerEnabled ? "Activé, réglages dans Steps" : "Non activé"}
             </p>
           </div>
         </div>

@@ -44,7 +44,7 @@ const SLIDES: Slide[] = [
     eyebrow: "Suivi",
     title: "Vois ta progression",
     desc: "Bilan quotidien (poids, sommeil, ressenti), photos de transformation et posing, pas & routine, mindset : tout ce qu'il faut pour suivre ton évolution semaine après semaine.",
-    bullets: ["Bilan quotidien", "Photos & posing", "Pas & routine", "Mindset"],
+    bullets: ["Bilan quotidien", "Photos & posing", "Steps", "Mindset"],
   },
   {
     icon: FlaskConical,

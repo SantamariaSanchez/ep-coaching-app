@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
 import { Check, Scale, Dumbbell, Moon, Apple, Footprints } from "lucide-react";
@@ -132,6 +132,13 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
   const [state, formAction, pending] = useActionState(action, null);
   const [isRestDay, setIsRestDay] = useState(existing?.training_name === "Repos");
 
+  // MASTERCLASS.md Axe E : même piège que todayLogs dans ClientNutritionView
+  // — sans ça, revenir sur cette page après un bilan enregistré ailleurs
+  // (coach, autre onglet) pouvait laisser affiché le mauvais bouton actif.
+  useEffect(() => {
+    setIsRestDay(existing?.training_name === "Repos");
+  }, [existing]);
+
   return (
     <form action={formAction}>
       <input type="hidden" name="log_date" value={today} />
@@ -207,7 +214,7 @@ function LifestyleCard({
   const [state, formAction, pending] = useActionState(action, null);
   // Si le bilan du jour n'a pas encore son propre chiffre, on préremplit
   // avec ce que le podomètre (ou une saisie manuelle déjà faite) a déjà
-  // enregistré dans Pas & routine, plutôt que de refaire taper le même
+  // enregistré dans Steps, plutôt que de refaire taper le même
   // chiffre une deuxième fois — même logique que nutritionTotals plus bas.
   const prefillSteps = existing?.steps ?? autoSteps ?? null;
 
@@ -222,7 +229,7 @@ function LifestyleCard({
             <p className={hint}>
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
               {existing?.steps == null && autoSteps != null
-                ? "Rempli automatiquement depuis Pas & routine, modifie si besoin."
+                ? "Rempli automatiquement depuis Steps, modifie si besoin."
                 : "Regarde dans l'app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d'inventer."}
             </p>
           </div>

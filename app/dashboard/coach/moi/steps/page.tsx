@@ -29,7 +29,7 @@ export default async function CoachMoiStepsPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon suivi
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Pas & routine</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Steps</h1>
       </div>
 
       <StepsClient

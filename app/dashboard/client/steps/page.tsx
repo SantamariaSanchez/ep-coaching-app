@@ -26,7 +26,7 @@ export default async function ClientStepsPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Suivi
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Pas & routine</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Steps</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Ton objectif est fixé par ton coach. Planifie des créneaux de marche dans ta journée et suis ta
           progression.

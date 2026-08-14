@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceArea, ReferenceLine,
 } from "recharts";
@@ -105,6 +105,7 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          aria-label={label}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2 py-2 text-sm text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
         />
         <button
@@ -224,6 +225,20 @@ export default function TrackingClient({
   const [readiness, setReadiness] = useState(todayLog?.readiness_score?.toString() ?? "");
   const [hrv, setHrv] = useState(todayLog?.hrv_ms?.toString() ?? "");
   const [restingHr, setRestingHr] = useState(todayLog?.resting_hr?.toString() ?? "");
+
+  // MASTERCLASS.md Axe E (même piège que todayLogs dans ClientNutritionView) :
+  // ces 4 champs venaient de todayLog (dérivé du prop logs) mais ne se
+  // resynchronisaient jamais sur un nouveau logs après le premier rendu —
+  // une valeur saisie manuellement, ou synchronisée depuis Oura côté
+  // serveur, pouvait rester affichée à l'ancienne après un rechargement.
+  useEffect(() => {
+    setSleepHours(todayLog?.sleep_hours?.toString() ?? "");
+    setReadiness(todayLog?.readiness_score?.toString() ?? "");
+    setHrv(todayLog?.hrv_ms?.toString() ?? "");
+    setRestingHr(todayLog?.resting_hr?.toString() ?? "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- todayLog est recalculé chaque rendu depuis logs/today, la vraie dépendance stable est logs
+  }, [logs]);
+
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
