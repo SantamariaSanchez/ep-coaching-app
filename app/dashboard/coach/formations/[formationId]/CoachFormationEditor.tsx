@@ -347,6 +347,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             <button
               onClick={handleDeleteFormation}
               title="Supprimer la formation"
+              aria-label="Supprimer la formation"
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.2)",
@@ -751,6 +752,7 @@ function LessonEditor({
               onClick={() => onMove("up")}
               disabled={!canMoveUp}
               title="Monter"
+              aria-label="Monter"
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveUp ? "pointer" : "default", padding: 2, opacity: canMoveUp ? 1 : 0.2 }}
             >
               <ChevronUp size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -759,6 +761,7 @@ function LessonEditor({
               onClick={() => onMove("down")}
               disabled={!canMoveDown}
               title="Descendre"
+              aria-label="Descendre"
               style={{ display: "flex", background: "none", border: "none", cursor: canMoveDown ? "pointer" : "default", padding: 2, opacity: canMoveDown ? 1 : 0.2 }}
             >
               <ChevronDown size={14} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -767,6 +770,7 @@ function LessonEditor({
             <button
               onClick={onDelete}
               title="Supprimer la vidéo"
+              aria-label="Supprimer la vidéo"
               style={{
                 background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 8,
                 padding: "7px 9px", cursor: "pointer", display: "flex", alignItems: "center",

@@ -121,6 +121,7 @@ function PhaseCard({
           onClick={onDelete}
           style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: 4 }}
           title="Supprimer la phase"
+          aria-label="Supprimer la phase"
         >
           <Trash2 size={14} />
         </button>
@@ -234,6 +235,7 @@ function ObjectiveCard({
         ))}
         <button
           onClick={onDelete}
+          aria-label="Supprimer l'objectif"
           style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(224,30,30,0.4)", padding: "0 4px" }}
         >
           <Trash2 size={13} />

@@ -93,7 +93,7 @@ export default function BarcodeScannerModal({
           <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
             <ScanBarcode size={14} className="text-[#E01E1E]" /> Scanner un code-barres
           </p>
-          <button onClick={onClose} className="text-[#F5EDED]/40 hover:text-white">
+          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
             <X size={16} />
           </button>
         </div>

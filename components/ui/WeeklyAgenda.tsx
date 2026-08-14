@@ -739,7 +739,7 @@ export default function WeeklyAgenda({
             <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-black uppercase tracking-widest text-white">{DAY_LABELS[day]}</p>
-                <button onClick={closeDayOptions} className="text-[#F5EDED]/40 hover:text-white">
+                <button onClick={closeDayOptions} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
                   <X size={18} />
                 </button>
               </div>
@@ -808,7 +808,7 @@ export default function WeeklyAgenda({
               <p className="text-sm font-black uppercase tracking-widest text-white">
                 {editingBlockId ? "Modifier le bloc" : `Nouveau bloc : ${DAY_LABELS[form.day_of_week]}`}
               </p>
-              <button onClick={close} className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={close} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
                 <X size={18} />
               </button>
             </div>
@@ -975,7 +975,7 @@ export default function WeeklyAgenda({
                   placeholder="Ex. Tourner 3 reels, ou un objectif du jour..."
                   className={inputClass}
                 />
-                <button type="button" onClick={addTaskToForm} className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
+                <button type="button" onClick={addTaskToForm} aria-label="Ajouter la tâche" className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
                   <Plus size={13} />
                 </button>
               </div>

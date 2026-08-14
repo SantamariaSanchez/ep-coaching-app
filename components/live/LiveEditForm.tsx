@@ -65,7 +65,7 @@ export default function LiveEditForm({
     <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-4 space-y-3 mt-3">
       <div className="flex items-center justify-between">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">Modifier ce live</p>
-        <button onClick={onClose} className="text-[#F5EDED]/30 hover:text-white transition-colors">
+        <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/30 hover:text-white transition-colors">
           <X size={14} />
         </button>
       </div>

@@ -582,6 +582,8 @@ function DecisionCard({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setExpanded((e) => !e)}
+            aria-label={expanded ? "Réduire" : "Développer"}
+            aria-expanded={expanded}
             className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
           >
             {expanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
@@ -589,6 +591,7 @@ function DecisionCard({
           <button
             onClick={handleDelete}
             disabled={deleting}
+            aria-label="Supprimer"
             className="text-[#F5EDED]/20 hover:text-red-500 transition-colors disabled:opacity-40"
           >
             <Trash2 size={12} />

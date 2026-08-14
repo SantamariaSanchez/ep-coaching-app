@@ -201,6 +201,7 @@ function PhotoSlot({
           <button
             type="button"
             onClick={onClear}
+            aria-label="Retirer la photo"
             style={{
               position: "absolute", top: 6, right: 6, width: 24, height: 24, borderRadius: "50%",
               background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", display: "flex",

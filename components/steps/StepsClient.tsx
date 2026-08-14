@@ -436,7 +436,7 @@ export default function StepsClient({
             <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
           </div>
           {!readOnly && logSteps && todaySteps > 0 && (
-            <button onClick={handleReset} title="Réinitialiser" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors mb-1">
+            <button onClick={handleReset} title="Réinitialiser" aria-label="Réinitialiser" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors mb-1">
               <RotateCcw size={14} />
             </button>
           )}

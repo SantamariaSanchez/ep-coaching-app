@@ -110,6 +110,7 @@ function VoicePlayer({
     <div className="flex items-center gap-2.5 min-w-[160px]">
       <button
         onClick={handleToggle}
+        aria-label={playing ? "Mettre en pause" : "Lire"}
         className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors"
       >
         {playing ? (
@@ -742,6 +743,7 @@ export default function ConversationView({
         <button
           onClick={sendText}
           disabled={!text.trim() || sending}
+          aria-label="Envoyer"
           className="w-10 h-10 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:bg-[#890404]/30 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
         >
           {sending ? (

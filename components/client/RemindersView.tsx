@@ -221,6 +221,7 @@ function ReminderForm({
           <button
             type="button"
             onClick={onCancel}
+            aria-label="Annuler"
             className="ep-btn-secondary"
             style={{ height: 42, padding: "0 16px" }}
           >
@@ -321,6 +322,7 @@ function ReminderCard({
           <button
             onClick={onToggle}
             title={reminder.is_active ? "Désactiver" : "Activer"}
+            aria-label={reminder.is_active ? "Désactiver" : "Activer"}
             className="ep-press"
             style={{
               width: 36, height: 36, borderRadius: 8,

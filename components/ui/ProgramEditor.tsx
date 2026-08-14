@@ -713,7 +713,7 @@ function AssignmentOnlyPanel({
               Hors bibliothèque — ajoute-le à la bibliothèque pour avoir sa fiche de classification.
             </p>
           </div>
-          <button onClick={onClose} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
             <X size={18} />
           </button>
         </div>

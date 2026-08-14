@@ -91,7 +91,7 @@ function ArticleEditForm({
         >
           {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
-        <button onClick={onCancel} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label="Annuler" className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>

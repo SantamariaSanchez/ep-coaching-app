@@ -344,6 +344,7 @@ function CommentsThread({
         <button
           onClick={handleSend}
           disabled={!content.trim() || sending}
+          aria-label="Envoyer"
           className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
         >
           <Send size={15} strokeWidth={2} />

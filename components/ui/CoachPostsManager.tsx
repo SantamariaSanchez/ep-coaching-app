@@ -67,6 +67,7 @@ function PostEditor({
         </button>
         <button
           onClick={onCancel}
+          aria-label="Annuler"
           className="px-4 py-2.5 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors"
         >
           <X size={14} />

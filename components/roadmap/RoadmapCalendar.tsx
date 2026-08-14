@@ -216,6 +216,7 @@ function WeekDetailModal({
           </div>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)", cursor: "pointer", padding: 4 }}
           >
             <X size={18} />

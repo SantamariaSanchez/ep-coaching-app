@@ -570,6 +570,7 @@ function WarmupStep({
         <button
           onClick={addCustomExercise}
           disabled={!customName.trim()}
+          aria-label="Ajouter l'exercice"
           className="px-4 rounded-lg bg-[#890404]/30 hover:bg-[#890404]/50 disabled:opacity-30 text-[#F5EDED]/70 transition-colors"
         >
           <Plus size={16} />
@@ -876,6 +877,7 @@ function SetRow({
             onClick={onUnvalidate}
             className="ml-auto flex items-center gap-1 p-1 rounded-md text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
             title="Modifier ce set"
+            aria-label="Modifier ce set"
           >
             <Pencil size={11} />
           </button>
@@ -884,6 +886,7 @@ function SetRow({
             onClick={onRemove}
             className="ml-auto p-1 rounded-md text-[#F5EDED]/25 hover:text-red-400 transition-colors"
             title="Retirer ce set"
+            aria-label="Retirer ce set"
           >
             <X size={12} />
           </button>
@@ -1113,6 +1116,7 @@ function ExerciseCard({
                 disabled={!onMoveUp}
                 className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors"
                 title="Monter l'exercice"
+                aria-label="Monter l'exercice"
               >
                 <ChevronUp size={12} />
               </button>
@@ -1121,6 +1125,7 @@ function ExerciseCard({
                 disabled={!onMoveDown}
                 className="p-0.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 disabled:hover:text-[#F5EDED]/30 transition-colors border-t border-[#890404]/20"
                 title="Descendre l'exercice"
+                aria-label="Descendre l'exercice"
               >
                 <ChevronDown size={12} />
               </button>

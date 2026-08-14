@@ -122,9 +122,10 @@ grep -rn "export async function \(toggle\|mark\|check\|complete\|log\)" app/ --i
 Idées à développer au fil des passes plutôt que planifiées d'avance en
 détail (l'esprit de la demande est "petit à petit", pas un plan figé).
 Axes A (cache après mutation), B (échecs silencieux côté UI), C
-(accessibilité clavier), D (catch muets côté serveur) et E (`useState`
-jamais resynchronisé sur un nouveau prop serveur) sont clos — détail de
-chacun plus bas. Idée pas encore commencée :
+(accessibilité clavier), D (catch muets côté serveur), E (`useState`
+jamais resynchronisé sur un nouveau prop serveur) et F (boutons icône
+seule sans nom accessible) sont clos — détail de chacun plus bas. Idée pas
+encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -483,3 +484,98 @@ volontairement exclus de cette passe malgré le nom de variable similaire.
   petits lots plutôt que d'un coup, en appliquant la même grille (état
   liste/collection alimenté par un prop serveur = candidat, champ de
   formulaire = à exclure).
+
+## Axe F — Boutons icône seule sans nom accessible (`aria-label`)
+
+**Statut : première passe faite (2026-08-14), 33 boutons corrigés sur 25
+fichiers.**
+
+Suite logique de l'axe C (accessibilité) avec une grille différente : un
+`<button>` qui ne contient qu'une icône (`<X>`, `<Trash2>`, `<Plus>`...) et
+aucun texte visible n'a, pour un lecteur d'écran, aucun nom — juste
+"bouton". Contrairement à l'axe C, l'élément EST déjà un vrai `<button>`
+(pas de piège clavier), mais reste inutilisable à la navigation non
+visuelle : impossible de savoir si "bouton" ferme une modale, supprime un
+élément ou en ajoute un.
+
+**Méthode utilisée** (relançable, deux scripts complémentaires gardés
+dans le scratchpad de session) :
+```js
+// find-icon-buttons2.mjs : repère les <button>...</button> sans
+// aria-label dont le contenu, une fois les icônes (composants commençant
+// par une majuscule, ex. <X size={14} />) et les commentaires JSX
+// retirés, ne laisse plus aucun texte visible. Limite connue : les
+// boutons dont le contenu est un ternaire (ex. spinner de chargement vs
+// icône + texte) donnent des faux positifs si UNE des deux branches a du
+// texte — la regex simple ne distingue pas les branches, à trier à la
+// main (9 faux positifs sur cette passe, tous vérifiés : au moins une
+// branche affiche déjà un texte visible).
+
+// find-title-no-aria.mjs : filet complémentaire plus fiable — tout
+// <button title="..."> sans aria-label associé (un title existant est un
+// signal fort qu'un nom est nécessaire mais manquant côté lecteurs
+// d'écran, qui ne lisent pas systématiquement l'attribut title). A
+// rattrapé plusieurs cas que le premier script avait manqués (boutons
+// Monter/Descendre en ternaire d'icônes, `CoachFormationEditor.tsx`,
+// `ClientCard.tsx`) — les deux scripts sont complémentaires, pas
+// redondants.
+```
+45 candidats repérés par le premier script, triés à la main un par un
+(lecture du contexte pour choisir le bon libellé en français, ex. "Fermer"
+pour une modale vs "Annuler" pour un formulaire vs "Supprimer"/"Retirer"
+selon l'action réelle) — 9 étaient des faux positifs (texte déjà visible
+dans au moins une branche d'un rendu conditionnel). Le second script a
+ensuite confirmé zéro `title` restant sans `aria-label` sur tout le
+projet.
+
+**Corrigé** (33 boutons, 25 fichiers) : `ExercisePicker.tsx`,
+`RemindersView.tsx` (×2 — annuler + toggle actif/inactif),
+`SessionView.tsx` (×4 — ajouter un exercice, modifier/retirer un set,
+monter/descendre un exercice), `CoachVideoRecorder.tsx`,
+`CommunityFeed.tsx`, `LiveEditForm.tsx`, `ConversationView.tsx` (×2 —
+lecture/pause d'un vocal, envoyer), `ClientOnboardingIntake.tsx`,
+`RoadmapCalendar.tsx`, `RoadmapEditor.tsx` (×2 — supprimer une phase,
+supprimer un objectif), `ArticleCard.tsx`, `SearchView.tsx`,
+`StudiesView.tsx`, `ExerciseLibraryView.tsx`, `GymsDirectoryView.tsx`,
+`CoachPostsManager.tsx` (les 5 derniers : même bouton "Annuler" X-only
+d'un formulaire de contenu, déjà croisé à l'axe B), `StepsClient.tsx`,
+`ApplyTemplateModal.tsx`, `BarcodeScannerModal.tsx`,
+`BulkCalorieAdjustModal.tsx`, `ClientNutritionView.tsx`,
+`CoachNotesView.tsx` (×2 — réduire/développer une note avec
+`aria-expanded`, supprimer), `ExerciseDetailPanel.tsx`,
+`ProgramEditor.tsx`, `WeeklyAgenda.tsx` (×3 — fermer×2, ajouter une
+tâche), `CoachFormationEditor.tsx` (×3 — supprimer la formation,
+monter/descendre une vidéo, supprimer la vidéo), `ClientCard.tsx`
+(relance manuelle).
+
+Quand un `title` existait déjà, le texte a été repris tel quel pour
+l'`aria-label` (garde le `title` pour l'infobulle visuelle au survol —
+les deux ne sont pas redondants, `title` n'est pas fiable pour les
+lecteurs d'écran ni sur tactile).
+
+**Vérifié SAIN** : les 9 faux positifs du premier script (boutons dont au
+moins une branche du rendu conditionnel affiche déjà un texte visible à
+côté de l'icône — `SessionView.tsx` "Valider et sauvegarder la séance",
+`LiveScheduler.tsx` "Programmer", `OnboardingTour.tsx`/
+`PersonalizationQuiz.tsx` "Passer, accéder à l'appli", `BackButton.tsx`
+(a déjà `{label}`), `NoteTemplates.tsx` "Copier"/"Copié",
+`NutritionBilanQuiz.tsx` (×2 — "Logger ma journée", "Repas suivant"/"Voir
+le récap"), `CoachFormationEditor.tsx` "Masquer"/"Publier" — celui-là
+distinct des 3 boutons corrigés plus haut dans le même fichier). Vérifié
+aussi que `next build`/tsc/eslint ne montrent aucune nouvelle erreur
+propre à cette passe (comparaison `git stash` avant/après : mêmes 20
+problèmes de lint préexistants, tous déjà documentés aux axes précédents).
+
+### Reste à faire sur cet axe
+
+- Les 9 faux positifs identifiés ci-dessus ne sont *pas* forcément 100%
+  sains à long terme : si un jour le texte visible de leur branche
+  "succès" est retiré (ex. simplifié en icône seule), il faudrait
+  repasser un `aria-label`. Pas un risque actif aujourd'hui.
+- Passe volontairement limitée aux `<button>` — les icônes cliquables
+  portées par un `<Link>`/`<a>` icône seule n'ont pas été auditées avec la
+  même grille (probablement rares vu que la nav principale de l'appli est
+  textuelle, mais pas vérifié).
+- Champs de formulaire sans `<label>` associé (juste un `placeholder`) —
+  classe d'accessibilité voisine, pas encore auditée, pourrait faire
+  l'objet d'un axe G séparé.

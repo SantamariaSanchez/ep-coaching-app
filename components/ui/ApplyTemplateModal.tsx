@@ -70,7 +70,7 @@ export default function ApplyTemplateModal({
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">Appliquer le modèle</p>
             <p className="text-sm font-bold text-white truncate">{templateName}</p>
           </div>
-          <button onClick={onClose} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+          <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
             <X size={16} />
           </button>
         </div>

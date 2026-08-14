@@ -405,6 +405,7 @@ export function ClientCard({
               onClick={handleRelaunch}
               disabled={relaunchState !== "idle"}
               title="Envoyer une relance pour terminer la fiche"
+              aria-label="Envoyer une relance pour terminer la fiche"
               style={{
                 display: "flex",
                 alignItems: "center",

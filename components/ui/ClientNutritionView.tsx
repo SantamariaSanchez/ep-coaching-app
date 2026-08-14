@@ -1668,6 +1668,7 @@ export default function ClientNutritionView({
               </p>
               <button
                 onClick={closeModal}
+                aria-label="Fermer"
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />

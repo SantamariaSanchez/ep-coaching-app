@@ -216,7 +216,7 @@ export default function ExercisePicker({ onAdd }: Props) {
           <p className="text-sm font-black uppercase tracking-widest text-white">
             Ajouter un exercice
           </p>
-          <button onClick={close} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
+          <button onClick={close} aria-label="Fermer" className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
