@@ -7,6 +7,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 import { safeExternalUrl } from "@/lib/sanitize";
+import PhotoCompareSlider from "./PhotoCompareSlider";
 
 const MAX_PHOTOS = 4;
 
@@ -612,6 +613,14 @@ export default function ClientPhotosView({
   // évoque un coach qui répond n'a pas sa place dans ce contexte.
   const isSelfTracking = profile.role === "coach";
 
+  // Item 35 : mêmes deux extrémités que le comparateur côté coach
+  // (BeforeAfterComparator), mais ici pour le client lui-même — historique
+  // déjà trié du plus récent au plus ancien (getClientPhotoUpdates).
+  const withPhotos = photoHistory.filter((p) => p.photo_urls.length > 0);
+  const newestPhoto = withPhotos[0]?.photo_urls[0] ?? null;
+  const oldestPhoto = withPhotos[withPhotos.length - 1]?.photo_urls[0] ?? null;
+  const showCompare = !!oldestPhoto && !!newestPhoto && oldestPhoto !== newestPhoto;
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       {/* Header */}
@@ -683,6 +692,21 @@ export default function ClientPhotosView({
           />
         )}
       </div>
+
+      {/* Comparaison avant/après (item 35) */}
+      {showCompare && (
+        <section className="mb-8">
+          <div className="mb-4">
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+              Progression
+            </p>
+            <h2 className="text-xl font-black uppercase tracking-tight">
+              Avant / Après
+            </h2>
+          </div>
+          <PhotoCompareSlider beforeUrl={oldestPhoto as string} afterUrl={newestPhoto as string} />
+        </section>
+      )}
 
       {/* History */}
       {(photoHistory ?? []).length > 0 && (

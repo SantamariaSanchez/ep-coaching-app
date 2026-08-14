@@ -8,7 +8,7 @@ import { getCoachRoadmapTemplates } from "@/utils/roadmap-templates";
 import { getAllFoods } from "@/utils/nutrition";
 import ProgrammationHub from "@/components/ui/ProgrammationHub";
 import { deleteProgramTemplate, applyProgramTemplate } from "./programmes/actions";
-import { createDietTemplateAction, deleteDietTemplate, applyDietTemplate } from "./diet/actions";
+import { createDietTemplateAction, deleteDietTemplate, applyDietTemplate, bulkAdjustCalories } from "./diet/actions";
 import { deleteRoadmapTemplate, applyRoadmapTemplate } from "./roadmap/actions";
 
 export default async function ProgrammationPage() {
@@ -60,6 +60,7 @@ export default async function ProgrammationPage() {
         applyDietTemplate={applyDietTemplate}
         deleteRoadmapTemplate={deleteRoadmapTemplate}
         applyRoadmapTemplate={applyRoadmapTemplate}
+        bulkAdjustCalories={bulkAdjustCalories}
       />
     </div>
   );

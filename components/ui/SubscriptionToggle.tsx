@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Crown, CheckCircle2, ChevronDown, ChevronUp, History } from "lucide-react";
-import { setClientSubscriptionStatus, getSubscriptionHistory } from "@/app/dashboard/coach/clients/actions";
+import { setClientSubscriptionStatus, getSubscriptionHistory, startCoachingTrial } from "@/app/dashboard/coach/clients/actions";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 
 interface HistoryEntry {
@@ -47,8 +47,28 @@ export default function SubscriptionToggle({
   const [status, setStatus] = useState(currentStatus);
   const [displayPlan, setDisplayPlan] = useState(currentPlan ?? null);
   const [displayBillingDate, setDisplayBillingDate] = useState(currentNextBillingDate ?? null);
+  // Item 43 : essai coaching limité dans le temps, en plus de l'activation
+  // classique ci-dessous.
+  const [trialPending, setTrialPending] = useState(false);
+  const [trialStarted, setTrialStarted] = useState(false);
 
   const isActive = status === "active";
+
+  function startTrial(days: number) {
+    setError(null);
+    setTrialPending(true);
+    startTransition(async () => {
+      const result = await startCoachingTrial(clientId, days);
+      setTrialPending(false);
+      if (result.error) {
+        setError(result.error);
+        return;
+      }
+      setStatus("active");
+      setTrialStarted(true);
+      setHistory(null);
+    });
+  }
 
   useEffect(() => {
     if (expanded && history === null) {
@@ -161,6 +181,27 @@ export default function SubscriptionToggle({
           >
             {isPending ? "..." : isActive ? "Repasser gratuit" : "Activer le coaching"}
           </button>
+
+          {/* Item 43 : alternative à l'activation définitive ci-dessus —
+              accès complet, mais qui repasse en gratuit tout seul à
+              l'échéance (cron expire-trials). */}
+          {!isActive && !trialStarted && (
+            <div className="flex gap-2">
+              {[7, 14].map((days) => (
+                <button
+                  key={days}
+                  onClick={() => startTrial(days)}
+                  disabled={trialPending || isPending}
+                  className="flex-1 border border-[#890404]/40 text-[#F5EDED]/60 hover:text-white text-[10.5px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  {trialPending ? "..." : `Essai ${days}j`}
+                </button>
+              ))}
+            </div>
+          )}
+          {trialStarted && (
+            <p className="text-[10.5px] text-green-400 font-semibold text-center">✓ Essai gratuit démarré</p>
+          )}
 
           {history && history.length > 0 && (
             <div>

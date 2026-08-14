@@ -3,7 +3,9 @@ import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getCoachBillingInfo } from "@/lib/coach-billing";
+import { getCoachWaitlist } from "@/utils/waitlist";
 import AccountActions from "@/components/profile/AccountActions";
+import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
@@ -23,7 +25,7 @@ export default async function CoachParametresPage() {
   const supabase = await createServerSupabase();
   const { data: pushSub } = await supabase
     .from("push_subscriptions")
-    .select("id")
+    .select("id, quiet_hours_start, quiet_hours_end")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -42,6 +44,15 @@ export default async function CoachParametresPage() {
     ? await getCoachBillingInfo(profile.platform_stripe_customer_id, profile.platform_stripe_subscription_id)
     : null;
 
+  // Item 45 : lecture ciblée (pas dans PROFILE_FIELDS), même convention que
+  // referral_code/trial_ends_at côté client — évite d'alourdir getProfile()
+  // utilisé partout avec des colonnes que seule cette page consulte.
+  const [acceptingRow, waitlist] = await Promise.all([
+    createAdminClient().from("profiles").select("accepting_new_clients").eq("id", user.id).maybeSingle(),
+    getCoachWaitlist(user.id),
+  ]);
+  const accepting = (acceptingRow.data as { accepting_new_clients: boolean } | null)?.accepting_new_clients ?? true;
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
@@ -51,7 +62,12 @@ export default async function CoachParametresPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Paramètres</h1>
       </div>
 
-      <PermissionsCard pushSubscribed={!!pushSub} stepsHref="/dashboard/coach/moi/steps" />
+      <PermissionsCard
+        pushSubscribed={!!pushSub}
+        stepsHref="/dashboard/coach/moi/steps"
+        quietHoursStart={pushSub?.quiet_hours_start ?? null}
+        quietHoursEnd={pushSub?.quiet_hours_end ?? null}
+      />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/coach" />
 
@@ -61,6 +77,8 @@ export default async function CoachParametresPage() {
         enabled={!!profile.mfa_enabled}
         mandatory={!!profile.is_platform_owner}
       />
+
+      <AcceptingClientsCard initialAccepting={accepting} waitlist={waitlist} />
 
       {!profile.is_platform_owner && (
         <div className="mt-4">

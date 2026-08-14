@@ -22,15 +22,16 @@ export default async function CoachClientBilanPage({
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const admin = createAdminClient();
-  const { data: clientProfile } = await admin
-    .from("profiles")
-    .select("full_name")
-    .eq("id", id)
-    .single();
+  // logs ne dépend pas de clientProfile (juste de id, déjà connu) : lancé en
+  // parallèle plutôt qu'après, quitte à jeter le résultat dans le cas rare
+  // où le client n'existe pas.
+  const [{ data: clientProfile }, logs] = await Promise.all([
+    admin.from("profiles").select("full_name").eq("id", id).single(),
+    getClientDailyLogs(id, 56),
+  ]);
 
   if (!clientProfile) redirect("/dashboard/coach/clients");
 
-  const logs = await getClientDailyLogs(id, 56);
   const weeks = groupLogsByWeek(logs);
 
   return (

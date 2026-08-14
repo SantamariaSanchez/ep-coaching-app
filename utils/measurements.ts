@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export interface Measurement {
   id: string;
@@ -25,6 +26,28 @@ export async function getClientMeasurements(
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase
+      .from("measurements")
+      .select("*")
+      .eq("client_id", clientId)
+      .order("measured_at", { ascending: false });
+    return (data as Measurement[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
+// Variante admin pour le coach qui consulte un AUTRE client — getClientMeasurements
+// ci-dessus passe par le client de session, dont la RLS ne garantit pas que le
+// coach voit les mensurations d'un client qui n'est pas lui-même (même
+// précédent que partout ailleurs dans ce fichier de constats : "shared
+// reference content" n'est pas le cas ici, mais "lu par le bon coach"
+// dépend de policies RLS pas forcément posées sur cette table).
+export async function getClientMeasurementsAsCoach(
+  clientId: string
+): Promise<Measurement[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
       .from("measurements")
       .select("*")
       .eq("client_id", clientId)

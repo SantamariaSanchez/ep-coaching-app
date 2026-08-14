@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode } from "lucide-react";
+import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
@@ -380,6 +381,51 @@ export default function ClientNutritionView({
   // log de ce créneau avec l'aliment sélectionné, au lieu de refermer tout
   // et d'obliger à rouvrir la recherche et retaper le nom.
   const [createReturnSlot, setCreateReturnSlot] = useState<string | null>(null);
+  // Item 16 (scan code-barres) : le scanner ne fait que renvoyer un code,
+  // toute la suite (recherche produit, pré-remplissage, confirmation)
+  // réutilise le formulaire de création d'aliment existant ci-dessus —
+  // aucune nouvelle logique de sauvegarde, juste une façon différente de le
+  // remplir.
+  const [showScannerModal, setShowScannerModal] = useState(false);
+  const [scanningProduct, setScanningProduct] = useState(false);
+  const [scanError, setScanError] = useState<string | null>(null);
+
+  async function handleBarcodeScanned(barcode: string) {
+    setShowScannerModal(false);
+    setScanningProduct(true);
+    setScanError(null);
+    try {
+      const res = await fetch(`https://world.openfoodfacts.org/api/v2/product/${barcode}.json`);
+      const data = await res.json();
+      const product = data?.product;
+      const kcal = product?.nutriments?.["energy-kcal_100g"];
+      if (!product || data.status !== 1 || kcal == null) {
+        setScanError("Produit introuvable dans la base OpenFoodFacts. Ajoute-le manuellement.");
+        setScanningProduct(false);
+        return;
+      }
+      setCreateForm({
+        name: (product.product_name || product.generic_name || "Produit scanné").trim(),
+        category: "Divers",
+        calories_per_100: String(Math.round(kcal)),
+        proteins_per_100: String(Math.round((product.nutriments.proteins_100g ?? 0) * 10) / 10),
+        carbs_per_100: String(Math.round((product.nutriments.carbohydrates_100g ?? 0) * 10) / 10),
+        fats_per_100: String(Math.round((product.nutriments.fat_100g ?? 0) * 10) / 10),
+        fibers_per_100: String(Math.round((product.nutriments.fiber_100g ?? 0) * 10) / 10),
+      });
+      setCreateError(null);
+      // addingToSlot est déjà le créneau ouvert au moment du scan (bouton
+      // accessible seulement depuis la modale de recherche d'un créneau) :
+      // même mécanique que openCreateFood pour enchaîner sur la quantité une
+      // fois l'aliment confirmé/créé.
+      setCreateReturnSlot(addingToSlot);
+      setShowCreateModal(true);
+    } catch {
+      setScanError("Impossible de vérifier ce produit (connexion). Ajoute-le manuellement.");
+    } finally {
+      setScanningProduct(false);
+    }
+  }
 
   // Quick add (calories-only, for restaurants / unknown foods)
   const [showQuickAddModal, setShowQuickAddModal] = useState(false);
@@ -1526,7 +1572,7 @@ export default function ClientNutritionView({
               // ── Search / Recipe view ──
               <>
                 {searchTab === "aliments" && (
-                  <div className="px-5 py-3 flex-shrink-0">
+                  <div className="px-5 py-3 flex-shrink-0 flex items-center gap-2">
                     <input
                       autoFocus
                       value={searchQuery}
@@ -1534,7 +1580,24 @@ export default function ClientNutritionView({
                       placeholder="Rechercher un aliment…"
                       className={inputCls}
                     />
+                    {/* Item 16 : scan code-barres — pré-remplit le formulaire
+                        de création d'aliment existant plutôt qu'une
+                        sauvegarde séparée, voir handleBarcodeScanned. */}
+                    <button
+                      onClick={() => setShowScannerModal(true)}
+                      disabled={scanningProduct}
+                      title="Scanner un code-barres"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 transition-colors disabled:opacity-40"
+                    >
+                      <ScanBarcode size={16} />
+                    </button>
                   </div>
+                )}
+                {scanningProduct && (
+                  <p className="px-5 pb-2 text-[11px] text-[#F5EDED]/40 flex-shrink-0">Recherche du produit…</p>
+                )}
+                {scanError && (
+                  <p className="px-5 pb-2 text-[11px] text-amber-400 flex-shrink-0">{scanError}</p>
                 )}
 
                 {searchTab === "aliments" && (
@@ -1873,6 +1936,14 @@ export default function ClientNutritionView({
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── BARCODE SCANNER MODAL (item 16) ─────────────────────────────────── */}
+      {showScannerModal && (
+        <BarcodeScannerModal
+          onScan={handleBarcodeScanned}
+          onClose={() => setShowScannerModal(false)}
+        />
       )}
 
       {/* ── CREATE FOOD MODAL ─────────────────────────────────────────────── */}

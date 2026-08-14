@@ -5,15 +5,22 @@ import { getThisWeekCheckin, getISOWeek, getWeekStart } from "@/utils/checkins";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getLatestCoachNote } from "@/utils/notes";
 import { getClientIntake } from "@/utils/client-intake";
+import { getPeriodLogs } from "@/utils/period-tracking";
+import { getTrialDaysLeft } from "@/utils/coaching-trial";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import ClientDashboardStats from "@/components/client/DashboardStats";
 import { PushPermission } from "@/components/messaging/PushPermission";
+import RegularityCard from "@/components/ui/RegularityCard";
+import { getClientActivityStreak } from "@/lib/client-activity";
+import { getTotalPoints } from "@/lib/gamification";
 import {
   TrendingDown, TrendingUp, Minus, Star, MessageCircle, ChevronRight,
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
   Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
+  Droplet,
+  Gift,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -125,6 +132,37 @@ const GUIDE_ITEMS = [
     locked: true,
   },
 ];
+
+// Item 32 : le suivi de cycle existe déjà (onglet Cycle, réservé aux
+// clientes) mais rien ne le signale tant qu'on n'a pas ouvert cet onglet
+// soi-même — la seule relance existante vivait côté coach (fiche client),
+// invisible pour la cliente elle-même. Discret, ne s'affiche que si le
+// genre déclaré est "Femme" et qu'aucun cycle n'a encore été loggé.
+function CycleTrackingNudge() {
+  return (
+    <section className="animate-fade-up stagger-2" style={{ marginBottom: 16 }}>
+      <Link
+        href="/dashboard/client/cycle"
+        style={{
+          display: "flex", alignItems: "center", gap: 12,
+          padding: "14px 18px", borderRadius: 14, textDecoration: "none",
+          background: "rgba(31,1,1,0.7)", border: "1px solid rgba(137,4,4,0.22)",
+        }}
+      >
+        <Droplet size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+            Active le suivi de ton cycle
+          </p>
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
+            Utile pour comprendre tes fluctuations d&apos;énergie, de poids d&apos;eau et de performance.
+          </p>
+        </div>
+        <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+      </Link>
+    </section>
+  );
+}
 
 function NoCoachBanner() {
   return (
@@ -256,6 +294,33 @@ function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
   );
 }
 
+// Item 42 : le CTA premium était un texte générique identique pour tout le
+// monde, tout le temps. Ici la relance s'appuie sur un signal comportemental
+// concret plutôt qu'un calendrier — priorité à ce qui est le plus parlant
+// pour CE membre à CET instant.
+function upsellPitch(
+  checklist: OnboardingChecklistItem[],
+  streakDays: number
+): { title: string; subtitle: string } {
+  const allDone = checklist.length > 0 && checklist.every((i) => i.done);
+  if (allDone) {
+    return {
+      title: "Tu as fait le tour de l'appli gratuite",
+      subtitle: "Un coach peut aller plus loin avec toi : programme et suivi sur mesure, pas juste des outils en libre-service.",
+    };
+  }
+  if (streakDays >= 7) {
+    return {
+      title: `${streakDays} jours d'affilée, une vraie régularité`,
+      subtitle: "Un coach peut transformer cette constance en résultats concrets, avec un vrai suivi derrière.",
+    };
+  }
+  return {
+    title: "Envie d'un vrai coach, en plus ? (optionnel)",
+    subtitle: "Un appel de 30 min, sans engagement, pour voir si ça peut t'aider.",
+  };
+}
+
 function WelcomeGuide({
   firstName,
   goal,
@@ -263,6 +328,7 @@ function WelcomeGuide({
   hasCoach,
   personalization,
   checklist,
+  activityStreak,
 }: {
   firstName: string;
   goal: string | null;
@@ -270,8 +336,10 @@ function WelcomeGuide({
   hasCoach: boolean;
   personalization: ReturnType<typeof derivePersonalization>;
   checklist: OnboardingChecklistItem[];
+  activityStreak: number;
 }) {
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
+  const pitch = upsellPitch(checklist, activityStreak);
   return (
     <div
       className="page-transition ep-page-medium"
@@ -400,10 +468,10 @@ function WelcomeGuide({
         <Crown size={22} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            Envie d&apos;un vrai coach, en plus ? (optionnel)
+            {pitch.title}
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-            Un appel de 30 min, sans engagement, pour voir si ça peut t&apos;aider.
+            {pitch.subtitle}
           </p>
         </div>
         <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
@@ -456,9 +524,12 @@ export default async function ClientDashboard({
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
-    const [preferences, checklist] = await Promise.all([
+    const [preferences, checklist, activityStreak] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
+      // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
+      // ici pour rendre la relance premium contextuelle plutôt que générique.
+      getClientActivityStreak(user.id),
     ]);
     return (
       <>
@@ -470,6 +541,7 @@ export default async function ClientDashboard({
           hasCoach={!!profile?.coach_id}
           personalization={derivePersonalization(preferences)}
           checklist={checklist}
+          activityStreak={activityStreak}
         />
       </>
     );
@@ -481,7 +553,7 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -498,6 +570,16 @@ export default async function ClientDashboard({
         return true; // fail-safe : n'affiche pas la relance en cas d'erreur
       }
     })(),
+    // Item 20 : régularité mise en avant dès l'accueil, au lieu d'un
+    // système de points qui n'existait qu'au fond du profil.
+    getClientActivityStreak(user.id),
+    getTotalPoints(user.id),
+    // Item 32 : uniquement pour savoir si la relance ci-dessous doit
+    // s'afficher, évite d'aller chercher les logs pour tout le monde.
+    intake.gender === "Femme" ? getPeriodLogs(user.id).then((l) => l.length) : Promise.resolve(0),
+    // Item 43 : null pour la quasi-totalité des clients (coaching payant
+    // classique, pas d'essai en cours) — juste une lecture ciblée en plus.
+    getTrialDaysLeft(user.id),
   ]);
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
@@ -534,6 +616,25 @@ export default async function ClientDashboard({
       }}
     >
       <PushPermission userId={user.id} />
+
+      {/* ── Essai coaching en cours (item 43) ─────────────────────────────────── */}
+      {trialDaysLeft != null && (
+        <div
+          className="animate-fade-up"
+          style={{
+            display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
+            padding: "14px 18px", borderRadius: 14,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
+            border: "1px solid rgba(224,30,30,0.3)",
+          }}
+        >
+          <Gift size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>
+            Essai coaching gratuit — se termine dans {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
+
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
@@ -551,6 +652,12 @@ export default async function ClientDashboard({
           </p>
         )}
       </div>
+
+      {/* ── Régularité + rang (item 20) ──────────────────────────────────────── */}
+      <RegularityCard streakDays={activityStreak} points={totalPoints} />
+
+      {/* ── Relance suivi de cycle (item 32) ─────────────────────────────────── */}
+      {intake.gender === "Femme" && periodLogsCount === 0 && <CycleTrackingNudge />}
 
       {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
       <ClientDashboardStats />

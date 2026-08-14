@@ -34,7 +34,9 @@ import type { ScheduleBlock } from "@/utils/agenda";
 import type { StepRoutineItem, StepLog } from "@/utils/steps";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { MindsetProfile, MindsetHabitLog } from "@/utils/mindset";
+import type { Measurement } from "@/utils/measurements";
 import WeeklyAgenda from "./WeeklyAgenda";
+import BeforeAfterComparator from "./BeforeAfterComparator";
 import StepsClient from "@/components/steps/StepsClient";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import ClientProgramView from "./ClientProgramView";
@@ -54,7 +56,7 @@ import type { CoachingPhaseState, AdherenceSignal, PhaseSuggestion } from "@/lib
 import AutoGeneratePlanButton from "./AutoGeneratePlanButton";
 import ClientCorrectionsReplySection from "./ClientCorrectionsReplySection";
 import type { ExerciseCorrectionResolved } from "@/utils/corrections";
-import { generateClientSuggestions } from "@/lib/client-suggestions";
+import { generateClientSuggestions, generateFatigueTrendSuggestion } from "@/lib/client-suggestions";
 import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogenerate/actions";
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
@@ -193,6 +195,7 @@ export default function ClientProfileTabs({
   client,
   latestWeight,
   recentDailyLogs,
+  measurements,
   points,
   program,
   workoutLogs,
@@ -253,6 +256,8 @@ export default function ClientProfileTabs({
   client: Profile;
   latestWeight: number | null;
   recentDailyLogs: DailyLog[];
+  /** Item 13 : comparateur avant/après, voir components/ui/BeforeAfterComparator. */
+  measurements: Measurement[];
   points: number;
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
@@ -349,10 +354,11 @@ export default function ClientProfileTabs({
 
   const pendingCheckins = checkinsWithAverages.filter(({ checkin }) => !checkin.coach_replied_at).length;
 
-  const suggestions = useMemo(
-    () => generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program),
-    [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program]
-  );
+  const suggestions = useMemo(() => {
+    const base = generateClientSuggestions(intake, nutritionProfile, recentDailyLogs, periodLogs.length, program);
+    const fatigue = generateFatigueTrendSuggestion(logbookSessions);
+    return fatigue ? [...base, fatigue] : base;
+  }, [intake, nutritionProfile, recentDailyLogs, periodLogs.length, program, logbookSessions]);
 
   // Regroupe les suggestions par onglet concerné — affiché en pastille sur
   // le bouton pour que la fiche client se répercute directement sur la
@@ -718,7 +724,13 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "logbook" && (
-        <CoachLogbookClient clientId={client.id} sessions={logbookSessions} records={personalRecords} />
+        <CoachLogbookClient
+          clientId={client.id}
+          sessions={logbookSessions}
+          records={personalRecords}
+          declaredInjuries={intake?.injuries ?? null}
+          declaredHealthIssues={intake?.health_issues ?? null}
+        />
       )}
 
       {activeTab === "programme" && (
@@ -759,7 +771,13 @@ export default function ClientProfileTabs({
       )}
 
       {activeTab === "bilans" && (
-        <ClientBilanView weeks={bilanWeeks} clientId={client.id} />
+        <>
+          <BeforeAfterComparator
+            measurements={measurements}
+            checkins={checkinsWithAverages.map(({ checkin }) => checkin)}
+          />
+          <ClientBilanView weeks={bilanWeeks} clientId={client.id} />
+        </>
       )}
 
       {activeTab === "photos" && (

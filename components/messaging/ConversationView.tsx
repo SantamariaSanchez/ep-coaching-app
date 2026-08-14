@@ -7,7 +7,7 @@ import {
   useCallback,
 } from "react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X } from "lucide-react";
+import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X, Search } from "lucide-react";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 import { safeExternalUrl } from "@/lib/sanitize";
 
@@ -327,6 +327,17 @@ export default function ConversationView({
   const imageInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClientSupabase();
 
+  // Item 28 : historique facile à retrouver — filtre côté client sur les
+  // messages déjà chargés (pas de nouvelle requête réseau à chaque frappe).
+  // Ne s'applique qu'aux messages texte : chercher un mot dans une note
+  // vocale ou une image n'aurait pas de sens.
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const searchTerm = searchQuery.trim().toLowerCase();
+  const visibleMessages = searchTerm
+    ? messages.filter((m) => m.content?.toLowerCase().includes(searchTerm))
+    : messages;
+
   // Load messages and mark as read
   useEffect(() => {
     let cancelled = false;
@@ -598,6 +609,43 @@ export default function ConversationView({
 
   return (
     <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100dvh-0px)] max-h-[800px]">
+      {/* Barre de recherche — repliée par défaut pour ne rien changer à
+          l'usage courant, juste un bouton discret pour l'ouvrir. */}
+      {messages.length > 0 && (
+        <div className="flex-shrink-0 border-b border-[#890404]/15">
+          {searchOpen ? (
+            <div className="flex items-center gap-2 px-3 py-2">
+              <Search size={14} className="text-[#F5EDED]/30 flex-shrink-0" />
+              <input
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Chercher dans la conversation…"
+                className="flex-1 bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 outline-none"
+              />
+              {searchTerm && (
+                <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">
+                  {visibleMessages.length} résultat{visibleMessages.length !== 1 ? "s" : ""}
+                </span>
+              )}
+              <button
+                onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                className="text-[#F5EDED]/40 hover:text-white flex-shrink-0"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
+            >
+              <Search size={11} /> Chercher dans la conversation
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
         {messages.length === 0 && (
@@ -609,7 +657,12 @@ export default function ConversationView({
             </p>
           </div>
         )}
-        {messages.map((msg) => (
+        {messages.length > 0 && visibleMessages.length === 0 && (
+          <p className="text-xs text-[#F5EDED]/25 text-center py-8">
+            Aucun message ne correspond à ta recherche.
+          </p>
+        )}
+        {visibleMessages.map((msg) => (
           <MessageBubble
             key={msg.id}
             msg={msg}

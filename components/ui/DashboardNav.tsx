@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
@@ -11,12 +11,13 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail,
+  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
 import NotificationBell from "@/components/ui/NotificationBell";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
+import CommandPalette from "@/components/ui/CommandPalette";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -152,6 +153,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Clients",
     items: [
       { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
+      // Item 8 du chantier 50 idées : bilans/corrections/photos en attente
+      // de réponse, regroupés en une seule vue triée par ancienneté.
+      { label: "Boîte de réception", icon: Inbox, segment: "inbox" },
       // Juste sous Clients : la conception d'un programme ou d'une diète se
       // fait dans la fiche du client, et cette bibliothèque est le stock de
       // points de départ réutilisables de ce travail. Elle était auparavant
@@ -257,6 +261,9 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Coach",
     items: [
+      // Item 25 : qui est ton coach, comment le joindre, ce qui est inclus —
+      // freeLocked comme les autres items coach-only de ce groupe.
+      { label: "Mon coach", icon: User, segment: "coach", freeLocked: true },
       { label: "Messages", icon: MessageCircle, segment: "messages", badge: "messages" },
       // locked: sans coach personnel, ces trois pages affichent le message
       // "reserve aux membres coaching" (CoachOnlyGate) plutot que du contenu
@@ -427,6 +434,22 @@ export default function DashboardNav({
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
     useNavState(isFreeTier, showCycleTab, isPlatformOwner);
   const router = useRouter();
+
+  // Aplati tabs + sidebar en une seule liste {label, href} pour la palette
+  // de commande (Cmd/Ctrl+K) — pas de nouvelle source de vérité, juste la
+  // nav déjà calculée ci-dessus, réutilisée telle quelle.
+  const commandPaletteNavItems = useMemo(
+    () => [
+      ...tabs.map((t) => ({ label: t.label, href: t.href })),
+      ...sidebar.flatMap((g) =>
+        g.items.map(({ label, segment, href: hrefOverride }) => ({
+          label,
+          href: hrefOverride ?? (segment ? `${base}/${segment}` : base),
+        }))
+      ),
+    ],
+    [tabs, sidebar, base]
+  );
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
 
@@ -1117,6 +1140,7 @@ export default function DashboardNav({
       </nav>
 
       <ActiveSessionBanner />
+      <CommandPalette navItems={commandPaletteNavItems} isCoach={isCoach} />
     </>
   );
 }

@@ -2,6 +2,7 @@ import type { ClientIntake } from "@/utils/client-intake";
 import type { NutritionProfile } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
 import type { ProgramWithDays } from "@/utils/programs";
+import type { SessionWithSets } from "@/utils/sessions";
 
 // Onglet de ClientProfileTabs le plus concerné par la suggestion — permet
 // d'afficher un petit indicateur directement sur l'onglet (voir badge dans
@@ -409,4 +410,44 @@ export function generateClientSuggestions(
   }
 
   return s;
+}
+
+// Item 30 : décharge suggérée à partir des données déjà loguées en séance
+// (feeling/énergie déclarés + RIR réel), distinct de l'item 12 qui repère
+// la stagnation de charge sur UN exercice précis (ExerciseProgressionChart)
+// — ici c'est un signal de fatigue accumulée sur l'ensemble du bloc, tous
+// exercices confondus, avant même que la charge ne stagne quelque part.
+export function generateFatigueTrendSuggestion(
+  sessions: SessionWithSets[] // le plus récent en premier, cf. getAllClientSessions
+): ClientSuggestion | null {
+  const rated = sessions.filter((s) => s.general_feeling != null && s.energy_level != null);
+  if (rated.length < 6) return null;
+
+  const recent = rated.slice(0, 3);
+  const previous = rated.slice(3, 6);
+  const combinedScore = (arr: SessionWithSets[]) =>
+    arr.reduce((sum, s) => sum + (s.general_feeling ?? 0) + (s.energy_level ?? 0), 0) / arr.length;
+
+  const recentScore = combinedScore(recent);
+  const previousScore = combinedScore(previous);
+
+  // Baisse d'au moins 2 points cumulés (feeling + énergie, sur 10 au total)
+  // entre les 3 dernières séances et les 3 précédentes : pas un mauvais jour
+  // isolé, une vraie tendance sur 6 séances.
+  if (previousScore - recentScore < 2) return null;
+
+  const recentRir = recent.flatMap((s) => s.sets.map((set) => set.rir_actual).filter((r): r is number => r != null));
+  const previousRir = previous.flatMap((s) => s.sets.map((set) => set.rir_actual).filter((r): r is number => r != null));
+  const avg = (arr: number[]) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const rirNote =
+    recentRir.length > 0 && previousRir.length > 0 && avg(recentRir) < avg(previousRir) - 0.5
+      ? " Le RIR réel baisse aussi (séries poussées plus près de l'échec), signe supplémentaire de fatigue accumulée."
+      : "";
+
+  return {
+    id: "fatigue-trend",
+    severity: "warning",
+    text: `Feeling et énergie en baisse sur les 3 dernières séances par rapport aux 3 précédentes.${rirNote} Une semaine de décharge (volume ou intensité réduits) est probablement à envisager avant la prochaine progression de charge.`,
+    tab: "programme",
+  };
 }

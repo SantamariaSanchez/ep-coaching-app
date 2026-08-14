@@ -114,12 +114,31 @@ export async function sendCorrectionFeedback(
 
   if (!coach_feedback) return { error: "Le retour écrit est obligatoire." };
 
+  // Item 22 : notes horodatées posées sur la vidéo du CLIENT, sérialisées en
+  // JSON par le formulaire. On ignore silencieusement toute entrée mal
+  // formée plutôt que de faire échouer l'envoi du retour pour ça.
+  let video_annotations: { timestamp_seconds: number; note: string }[] = [];
+  try {
+    const parsed = JSON.parse((formData.get("video_annotations") as string) || "[]");
+    if (Array.isArray(parsed)) {
+      video_annotations = parsed
+        .filter(
+          (a): a is { timestamp_seconds: number; note: string } =>
+            !!a && typeof a.note === "string" && a.note.trim().length > 0 && Number.isFinite(a.timestamp_seconds)
+        )
+        .map((a) => ({ timestamp_seconds: Math.max(0, Math.floor(a.timestamp_seconds)), note: a.note.trim().slice(0, 300) }));
+    }
+  } catch {
+    video_annotations = [];
+  }
+
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("exercise_corrections")
     .update({
       coach_feedback,
       coach_video_path,
+      video_annotations: video_annotations.length > 0 ? video_annotations : null,
       status: "answered",
       answered_at: new Date().toISOString(),
     })

@@ -99,6 +99,10 @@ function Composer({
 }) {
   const [content, setContent] = useState(initialContent ?? "");
   const [image, setImage] = useState<File | null>(null);
+  // Item 44 : opt-in explicite, jamais coché par défaut — une victoire
+  // reste privée à la communauté tant que l'auteur ne choisit pas
+  // activement de la rendre publique.
+  const [makePublic, setMakePublic] = useState(false);
   const [posting, setPosting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justPosted, setJustPosted] = useState(false);
@@ -120,11 +124,13 @@ function Composer({
       formData.append("type", type);
       formData.append("content", content.trim());
       if (image) formData.append("image", image);
+      if (type === "victory" && makePublic) formData.append("is_public", "1");
 
       const res = await fetch("/api/community/posts", { method: "POST", body: formData });
       if (res.ok) {
         setContent("");
         setImage(null);
+        setMakePublic(false);
         setJustPosted(true);
         setTimeout(() => setJustPosted(false), 4000);
         onPosted();
@@ -150,6 +156,19 @@ function Composer({
       />
       {image && (
         <p className="text-[10px] text-[#F5EDED]/40 mb-2 truncate">📎 {image.name}</p>
+      )}
+      {type === "victory" && (
+        <label className="flex items-center gap-2 mb-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={makePublic}
+            onChange={(e) => setMakePublic(e.target.checked)}
+            className="accent-[#E01E1E]"
+          />
+          <span className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed">
+            Autoriser à afficher sur le mur public du site (prénom uniquement, sans nom de famille)
+          </span>
+        </label>
       )}
       {type === "question" && !isCoach && (
         <p className="text-[10px] text-[#F5EDED]/30 mb-2 leading-relaxed">

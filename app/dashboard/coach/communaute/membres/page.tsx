@@ -8,10 +8,13 @@ export default async function CoachMembresPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const profile = await getProfile(user.id);
+  // members ne dépend que de user.id (déjà connu), pas du contenu de
+  // profile : lancé en parallèle plutôt qu'après la vérification de rôle.
+  const [profile, members] = await Promise.all([
+    getProfile(user.id),
+    getCommunityMembersWithActivity(user.id),
+  ]);
   if (profile?.role === "client") redirect("/dashboard/client/communaute/victoires");
-
-  const members = await getCommunityMembersWithActivity(user.id);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">

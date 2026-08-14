@@ -1,5 +1,6 @@
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { isWithinQuietHours } from "@/lib/quiet-hours";
 
 function initVapid() {
   if (
@@ -36,12 +37,22 @@ export async function sendPushToUser(
     // vérification (même sendBrevoEmail) arrivent bien à tout le monde.
     const { data } = await supabase
       .from("push_subscriptions")
-      .select("subscription")
+      .select("subscription, quiet_hours_start, quiet_hours_end")
       .eq("user_id", userId)
       .maybeSingle();
 
     if (!data?.subscription) {
       return { ok: false, reason: "no subscription" };
+    }
+
+    // Item 50 : coupe uniquement le push (qui sonne/vibre) — la notif
+    // in-app (cloche) est enregistrée séparément par notifyUser() et n'est
+    // jamais affectée, elle attendra que l'utilisateur rouvre l'appli.
+    // Reason distincte de "no subscription" : les appelants qui font un
+    // repli email sur cette chaîne précise (ex. weekly-reengagement) ne
+    // doivent pas changer de comportement ici.
+    if (isWithinQuietHours(data.quiet_hours_start, data.quiet_hours_end)) {
+      return { ok: false, reason: "quiet hours" };
     }
 
     await webpush.sendNotification(

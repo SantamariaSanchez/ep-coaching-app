@@ -103,6 +103,39 @@ export async function updateExternalPaymentLink(
   return { success: true };
 }
 
+// Item 45 : quand le coach est à capacité, désactive le CTA de réservation
+// classique côté membres non-clients au profit d'une liste d'attente.
+export async function toggleAcceptingNewClients(accepting: boolean): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ accepting_new_clients: accepting })
+    .eq("id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/profile");
+  return { success: true };
+}
+
+export async function markWaitlistContacted(entryId: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("coaching_waitlist")
+    .update({ contacted_at: new Date().toISOString() })
+    .eq("id", entryId)
+    .eq("coach_id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/communaute/membres");
+  return { success: true };
+}
+
 export async function leavePersonalCoach(): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };

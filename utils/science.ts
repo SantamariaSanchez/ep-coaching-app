@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { unstable_cache } from "next/cache";
 import type { ScienceArticle, ScienceStudy } from "@/utils/science-types";
 
 export type { ScienceArticleType, ScienceArticle, ScienceStudy } from "@/utils/science-types";
@@ -7,28 +8,38 @@ export { SCIENCE_TOPICS, ARTICLE_TYPE_LABELS, STUDY_STATUS_LABELS } from "@/util
 // Contenu de référence partagé (pas scopé à l'utilisateur) — lu via le
 // client admin pour que l'affichage ne dépende jamais de la config RLS sur
 // ces tables (même fix que exercise_library/gyms/foods, voir 28c1d21).
-export async function getScienceArticles(opts: { actualiteOnly?: boolean } = {}): Promise<ScienceArticle[]> {
-  try {
-    const supabase = createAdminClient();
-    let query = supabase.from("science_articles").select("*");
-    if (opts.actualiteOnly) {
-      // "Actualité" = ce qui vient d'être découvert, pas la date d'édition
-      // formelle du journal : PubMed assigne parfois une date de couverture
-      // future aux articles publiés en avance en ligne (epub ahead of
-      // print), ce qui faisait remonter des articles "de décembre 2026" en
-      // tête d'un flux censé montrer les nouveautés (vérifié en base le
-      // 2026-08-08 : jusqu'à 5 mois dans le futur). created_at (le moment où
-      // l'app l'a trouvé) reflète mieux "quoi de neuf" que pub_date ici.
-      query = query.eq("is_actualite", true).order("created_at", { ascending: false });
-    } else {
-      query = query.order("pub_date", { ascending: false, nullsFirst: false });
+// 241 articles, référence partagée (contrairement à getScienceStudies
+// ci-dessous, volontairement PAS mis en cache : voir son commentaire sur le
+// cloisonnement multi-coach, une donnée déjà scopée par coach ne doit pas
+// être mise en cache globalement sans revoir cette isolation). Le cron
+// PubMed (app/api/cron/sync-pubmed/route.ts) tourne à intervalle espacé,
+// donc le revalidate 1h suffit largement sans invalidation explicite.
+export const getScienceArticles = unstable_cache(
+  async (opts: { actualiteOnly?: boolean } = {}): Promise<ScienceArticle[]> => {
+    try {
+      const supabase = createAdminClient();
+      let query = supabase.from("science_articles").select("*");
+      if (opts.actualiteOnly) {
+        // "Actualité" = ce qui vient d'être découvert, pas la date d'édition
+        // formelle du journal : PubMed assigne parfois une date de couverture
+        // future aux articles publiés en avance en ligne (epub ahead of
+        // print), ce qui faisait remonter des articles "de décembre 2026" en
+        // tête d'un flux censé montrer les nouveautés (vérifié en base le
+        // 2026-08-08 : jusqu'à 5 mois dans le futur). created_at (le moment où
+        // l'app l'a trouvé) reflète mieux "quoi de neuf" que pub_date ici.
+        query = query.eq("is_actualite", true).order("created_at", { ascending: false });
+      } else {
+        query = query.order("pub_date", { ascending: false, nullsFirst: false });
+      }
+      const { data } = await query;
+      return (data as ScienceArticle[]) ?? [];
+    } catch {
+      return [];
     }
-    const { data } = await query;
-    return (data as ScienceArticle[]) ?? [];
-  } catch {
-    return [];
-  }
-}
+  },
+  ["science-articles"],
+  { tags: ["science-articles"], revalidate: 3600 }
+);
 
 // "Nos études" (contrairement à science_articles) ce sont les protocoles de
 // recherche interne du coach avec SES clients — pas de la littérature

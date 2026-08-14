@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { unstable_cache } from "next/cache";
 import type { MicroKey } from "@/lib/micro-references";
 export { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
 
@@ -280,18 +281,29 @@ export async function getLast7DaysLogs(
   }
 }
 
-export async function getAllFoods(): Promise<Food[]> {
-  try {
-    // Shared reference content (not user-scoped) — read via the admin
-    // client so display never depends on RLS being configured a particular
-    // way on this table.
-    const supabase = createAdminClient();
-    const { data } = await supabase.from("foods").select("*").order("name");
-    return (data as Food[]) ?? [];
-  } catch {
-    return [];
-  }
-}
+// Table foods : 800+ lignes, quasi identiques d'un chargement à l'autre
+// (référence partagée, pas scopée utilisateur — voir commentaire ci-dessus).
+// Sans cache, chaque page nutrition/diète la re-requêtait en entier à
+// chaque clic. unstable_cache la garde 1h, et createCustomFood/
+// updateFoodPrepNotes (app/dashboard/client/nutrition/actions.ts) purgent
+// le tag "foods" dès qu'un aliment change, pour ne jamais servir de stale
+// plus d'1h dans le pire cas.
+export const getAllFoods = unstable_cache(
+  async (): Promise<Food[]> => {
+    try {
+      // Shared reference content (not user-scoped) — read via the admin
+      // client so display never depends on RLS being configured a particular
+      // way on this table.
+      const supabase = createAdminClient();
+      const { data } = await supabase.from("foods").select("*").order("name");
+      return (data as Food[]) ?? [];
+    } catch {
+      return [];
+    }
+  },
+  ["all-foods"],
+  { tags: ["foods"], revalidate: 3600 }
+);
 
 // Aliments les plus loggués tous utilisateurs confondus — "utilisé par les
 // autres", en plus de l'historique personnel (recentFoods côté client).

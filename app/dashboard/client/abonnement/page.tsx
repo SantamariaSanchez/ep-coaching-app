@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
+import { isCoachAcceptingNewClients, isOnWaitlist } from "@/utils/waitlist";
+import WaitlistJoinButton from "@/components/client/WaitlistJoinButton";
 import {
   PhoneCall,
   Dumbbell,
@@ -52,7 +54,14 @@ export default async function AbonnementPage() {
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
   const alreadySubscribed = isSubscribed(profile);
-  const points = await getTotalPoints(user.id);
+  const [points, coachAccepting, onWaitlist] = await Promise.all([
+    getTotalPoints(user.id),
+    // Item 45 : le coach du membre est-il à capacité ? Non pertinent si
+    // déjà client (alreadySubscribed) ou pas encore de coach assigné.
+    !alreadySubscribed && profile?.coach_id ? isCoachAcceptingNewClients(profile.coach_id) : Promise.resolve(true),
+    !alreadySubscribed && profile?.coach_id ? isOnWaitlist(profile.coach_id, user.id) : Promise.resolve(false),
+  ]);
+  const showWaitlist = !alreadySubscribed && !coachAccepting;
 
   // Avant de prendre rendez-vous, le prospect passe par un questionnaire de
   // préqualification — plus de lien Calendly direct.
@@ -100,6 +109,21 @@ export default async function AbonnementPage() {
         >
           Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l&apos;app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.
         </p>
+        {/* Item 46 : distinct de "jamais été client" — quelqu'un qui vient de
+            perdre l'accès mérite un message qui reconnaît ce qui s'est
+            passé plutôt que le pitch marketing générique ci-dessous. */}
+        {profile?.subscription_status === "canceled" && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)",
+            borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 14,
+          }}>
+            <p style={{ margin: 0, fontSize: 12.5, color: "#fbbf24", fontWeight: 600, lineHeight: 1.5 }}>
+              Ton coaching payant s&apos;est arrêté. Tu gardes l&apos;accès à tous les outils gratuits — pour
+              réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.
+            </p>
+          </div>
+        )}
         {!alreadySubscribed && (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
@@ -180,45 +204,67 @@ export default async function AbonnementPage() {
           >
             Prochaine étape
           </p>
-          <h2
-            className="ep-h2"
-            style={{ marginBottom: 12 }}
-          >
-            Un appel de 30 min pour voir si le coaching te correspond
-          </h2>
-          <p
-            style={{
-              fontSize: 13,
-              color: "rgba(245,237,237,0.45)",
-              lineHeight: 1.65,
-              margin: "0 0 24px",
-            }}
-          >
-            Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l&apos;accompagnement est fait pour toi.
-          </p>
-          <a
-            href={prequalificationUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              background: "#E01E1E",
-              color: "#fff",
-              padding: "14px 28px",
-              borderRadius: "var(--radius-lg)",
-              fontWeight: 800,
-              fontSize: 14,
-              letterSpacing: "0.02em",
-              textDecoration: "none",
-              boxShadow: "0 4px 24px rgba(224,30,30,0.35)",
-            }}
-          >
-            <PhoneCall size={16} />
-            Réserve ton appel découverte
-            <ArrowRight size={15} />
-          </a>
+          {showWaitlist ? (
+            <>
+              <h2 className="ep-h2" style={{ marginBottom: 12 }}>
+                Coaching complet pour le moment
+              </h2>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(245,237,237,0.45)",
+                  lineHeight: 1.65,
+                  margin: "0 0 24px",
+                }}
+              >
+                Ton coach n&apos;ouvre pas de nouvelle place tout de suite. Rejoins la liste d&apos;attente,
+                il te contactera dès qu&apos;une place se libère.
+              </p>
+              <WaitlistJoinButton alreadyOnWaitlist={onWaitlist} />
+            </>
+          ) : (
+            <>
+              <h2
+                className="ep-h2"
+                style={{ marginBottom: 12 }}
+              >
+                Un appel de 30 min pour voir si le coaching te correspond
+              </h2>
+              <p
+                style={{
+                  fontSize: 13,
+                  color: "rgba(245,237,237,0.45)",
+                  lineHeight: 1.65,
+                  margin: "0 0 24px",
+                }}
+              >
+                Pas de pression. On fait le point sur tes objectifs, tes blocages, et on voit ensemble si l&apos;accompagnement est fait pour toi.
+              </p>
+              <a
+                href={prequalificationUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  background: "#E01E1E",
+                  color: "#fff",
+                  padding: "14px 28px",
+                  borderRadius: "var(--radius-lg)",
+                  fontWeight: 800,
+                  fontSize: 14,
+                  letterSpacing: "0.02em",
+                  textDecoration: "none",
+                  boxShadow: "0 4px 24px rgba(224,30,30,0.35)",
+                }}
+              >
+                <PhoneCall size={16} />
+                Réserve ton appel découverte
+                <ArrowRight size={15} />
+              </a>
+            </>
+          )}
         </div>
       )}
 
@@ -333,8 +379,8 @@ export default async function AbonnementPage() {
         </div>
       </section>
 
-      {/* Second CTA for non-subscribed */}
-      {!alreadySubscribed && (
+      {/* Second CTA for non-subscribed (masqué si liste d'attente, déjà proposée ci-dessus) */}
+      {!alreadySubscribed && !showWaitlist && (
         <section style={{ marginBottom: 28 }}>
           <div
             style={{

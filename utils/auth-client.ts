@@ -70,6 +70,34 @@ export function isClientCapable(
   return profile.role === "coach" && !!profile.coach_id;
 }
 
+// Item 37 (chantier 50 idées) : nomme explicitement le concept qui existait
+// déjà implicitement, mais éparpillé, dans tout le code (role + coach_id +
+// subscription_status recombinés à la main selon les endroits — voir
+// RoadmapView.tsx avant ce fix, qui recomposait sa propre version de
+// isSubscribed()). "membre" = accès gratuit aux outils sans coach,
+// "client accompagné" = abonnement actif suivi par un coach.
+//
+// Volontairement PAS un nouveau champ stocké en base : subscription_status
+// reste l'unique source de vérité écrite par Stripe/les webhooks. Un second
+// champ stocké (dupliqué) risquerait de désynchroniser silencieusement s'il
+// n'est pas mis à jour au même moment — cette fonction est une DÉRIVATION
+// pure, calculée à la volée, jamais une valeur qu'on écrit.
+export type AccessType = "coach" | "client_accompagne" | "membre_gratuit";
+
+export function getAccessType(
+  profile: Pick<Profile, "role" | "subscription_status"> | null | undefined
+): AccessType {
+  if (!profile) return "membre_gratuit";
+  if (profile.role === "coach") return "coach";
+  return profile.subscription_status === "active" ? "client_accompagne" : "membre_gratuit";
+}
+
+export const ACCESS_TYPE_LABELS: Record<AccessType, string> = {
+  coach: "Coach",
+  client_accompagne: "Client accompagné",
+  membre_gratuit: "Membre gratuit",
+};
+
 export type RoleBadge = "Fondateur" | "Coach" | "Premium" | "Membre gratuit";
 
 // Single source of truth for how a member's status is displayed app-wide:

@@ -1,4 +1,4 @@
-import { PageSkeleton } from "@/components/ui/Skeleton";
+import { TabbedPageSkeleton } from "@/components/ui/Skeleton";
 export default function Loading() {
-  return <PageSkeleton />;
+  return <TabbedPageSkeleton />;
 }

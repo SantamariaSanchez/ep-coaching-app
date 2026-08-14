@@ -6,6 +6,8 @@ import { sendBrevoEmail } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
+import { awardPoints } from "@/lib/gamification";
+import { POINTS } from "@/lib/gamification-types";
 import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
@@ -39,6 +41,25 @@ export interface SelfSignupInput {
   // (partagé par le coach, ex. lien /auth/client?coach=CODE). Absent ou
   // invalide → rattachement au propriétaire de la plateforme (EP Coaching).
   inviteCode?: string;
+  // Item 41 : code de PARRAINAGE d'un membre/client (distinct du code
+  // coach ci-dessus), ex. /auth/client?ref=CODE — ne change jamais le
+  // coach attribué, sert uniquement à créditer le parrain.
+  refCode?: string;
+}
+
+// Résout un éventuel parrain — n'importe quel profil (coach ou pas), pas
+// filtré par role contrairement à resolveCoachId ci-dessous.
+async function resolveReferrer(
+  admin: ReturnType<typeof createAdminClient>,
+  refCode: string | undefined
+): Promise<{ id: string; full_name: string | null } | null> {
+  if (!refCode) return null;
+  const { data } = await admin
+    .from("profiles")
+    .select("id, full_name")
+    .eq("referral_code", refCode)
+    .maybeSingle();
+  return data ?? null;
 }
 
 export type SelfSignupResult = { error: string } | { success: true; userId: string };
@@ -135,6 +156,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   const admin = createAdminClient();
 
   const coach = await resolveCoachId(admin, input.inviteCode);
+  const referrer = await resolveReferrer(admin, input.refCode);
 
   // email_confirm reste à true : le compte est utilisable immédiatement, la
   // personne n'attend pas un email pour entrer. La vérification réelle est
@@ -181,6 +203,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     status: "active",
     start_date: new Date().toISOString().split("T")[0],
     coach_id: coach?.id ?? null,
+    referred_by: referrer?.id ?? null,
     email_verified_at: null,
   });
 
@@ -232,6 +255,18 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Rattaché à : ${escapeHtml(coach?.full_name ?? "aucun coach")}`,
   ]).catch(() => {});
+
+  // Item 41 : récompense le parrain une fois l'inscription bien passée,
+  // jamais avant (pas de points sur un compte qui échoue à se créer).
+  if (referrer) {
+    awardPoints(referrer.id, POINTS.referral, `Parrainage de ${fullName}`, "referral", authData.user.id).catch(() => {});
+    notifyUser(referrer.id, {
+      type: "referral_signup",
+      title: "🎉 Ton parrainage a fonctionné",
+      body: `${fullName} vient de rejoindre grâce à toi, +${POINTS.referral} points.`,
+      url: "/dashboard/client/profile",
+    }).catch(() => {});
+  }
 
   return { success: true, userId: authData.user.id };
 }

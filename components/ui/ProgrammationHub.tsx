@@ -14,6 +14,7 @@ import {
   CalendarDays,
   Map,
   Target,
+  SlidersHorizontal,
 } from "lucide-react";
 import type { ProgramTemplateWithDays } from "@/utils/program-templates";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
@@ -22,6 +23,7 @@ import type { Food, DietMode, DietStructure } from "@/utils/nutrition";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import { PlanBuilder, MODE_LABELS } from "@/components/ui/DietPlanManager";
 import ApplyTemplateModal, { type ApplyTemplateClient } from "@/components/ui/ApplyTemplateModal";
+import BulkCalorieAdjustModal from "@/components/ui/BulkCalorieAdjustModal";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
 
 function todayISO(): string {
@@ -60,6 +62,11 @@ interface Props {
     clientIds: string[],
     startDate: string
   ) => Promise<{ error?: string; appliedCount?: number }>;
+  /** Item 11 (actions groupées) : décale l'objectif calorique de plusieurs clients à la fois. */
+  bulkAdjustCalories: (
+    clientIds: string[],
+    deltaKcal: number
+  ) => Promise<{ error?: string; appliedCount?: number }>;
 }
 
 type Tab = "programmes" | "diet" | "roadmap";
@@ -77,8 +84,10 @@ export default function ProgrammationHub({
   applyDietTemplate,
   deleteRoadmapTemplate,
   applyRoadmapTemplate,
+  bulkAdjustCalories,
 }: Props) {
   const [tab, setTab] = useState<Tab>("programmes");
+  const [showBulkCalorie, setShowBulkCalorie] = useState(false);
   // startDate n'existe que pour une application de road map : les décalages
   // en semaines du modèle se convertissent en dates réelles à partir de
   // cette date (aujourd'hui par défaut, modifiable avant d'appliquer).
@@ -184,13 +193,26 @@ export default function ProgrammationHub({
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
               {dietTemplates.length} modèle{dietTemplates.length !== 1 ? "s" : ""} de diète
             </p>
-            <button
-              onClick={() => setShowDietBuilder((v) => !v)}
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
-            >
-              <Plus size={12} />
-              {showDietBuilder ? "Fermer" : "Nouveau modèle"}
-            </button>
+            <div className="flex items-center gap-4">
+              {/* Item 11 : ajuster l'objectif calorique de plusieurs clients
+                  d'un coup, sans passer par un modèle — cas différent de
+                  "appliquer un modèle", donc bouton séparé plutôt que
+                  mélangé à la liste des modèles ci-dessous. */}
+              <button
+                onClick={() => setShowBulkCalorie(true)}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED] transition-colors"
+              >
+                <SlidersHorizontal size={12} />
+                Ajuster les calories
+              </button>
+              <button
+                onClick={() => setShowDietBuilder((v) => !v)}
+                className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+              >
+                <Plus size={12} />
+                {showDietBuilder ? "Fermer" : "Nouveau modèle"}
+              </button>
+            </div>
           </div>
 
           {showDietBuilder && (
@@ -277,6 +299,14 @@ export default function ProgrammationHub({
             }
           }}
           onClose={() => setApplyTarget(null)}
+        />
+      )}
+
+      {showBulkCalorie && (
+        <BulkCalorieAdjustModal
+          clients={clients}
+          onApply={bulkAdjustCalories}
+          onClose={() => setShowBulkCalorie(false)}
         />
       )}
     </div>

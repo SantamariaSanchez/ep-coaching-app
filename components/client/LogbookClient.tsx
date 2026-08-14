@@ -19,6 +19,7 @@ import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions"
 import type { CheckIn } from "@/utils/checkins";
 import { Play } from "lucide-react";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
+import HighlightsStrip from "@/components/ui/HighlightsStrip";
 import ClientProgressCharts from "@/components/ui/ClientProgressCharts";
 
 interface Props {
@@ -366,6 +367,8 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
           Entraînement
         </h1>
       </div>
+
+      <HighlightsStrip records={records} />
 
       <ImportLogbookButton />
 

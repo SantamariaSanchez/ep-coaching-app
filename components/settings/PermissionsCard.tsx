@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Footprints, ChevronRight, AlertTriangle } from "lucide-react";
+import { Bell, Footprints, ChevronRight, AlertTriangle, Moon } from "lucide-react";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
+import { setQuietHours } from "@/app/actions/quiet-hours";
+
+// Item 50 : même défaut que lib/quiet-hours.ts côté serveur — affiché tel
+// quel tant que l'utilisateur n'a rien choisi explicitement.
+const DEFAULT_QUIET_START = 22;
+const DEFAULT_QUIET_END = 7;
+const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 // Hub unique pour tout ce que l'appli demande comme autorisations au
 // téléphone/navigateur — avant, seules les notifications push avaient un
@@ -15,14 +22,35 @@ import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 export default function PermissionsCard({
   pushSubscribed,
   stepsHref,
+  quietHoursStart = null,
+  quietHoursEnd = null,
 }: {
   pushSubscribed: boolean;
   stepsHref: string;
+  quietHoursStart?: number | null;
+  quietHoursEnd?: number | null;
 }) {
   const [push, setPush] = useState(pushSubscribed);
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
   const [pedometerEnabled, setPedometerEnabled] = useState(false);
+  const [quietStart, setQuietStart] = useState(quietHoursStart ?? DEFAULT_QUIET_START);
+  const [quietEnd, setQuietEnd] = useState(quietHoursEnd ?? DEFAULT_QUIET_END);
+  const [quietSaving, setQuietSaving] = useState(false);
+  const [quietSaved, setQuietSaved] = useState(false);
+
+  async function saveQuietHours(start: number, end: number) {
+    setQuietStart(start);
+    setQuietEnd(end);
+    setQuietSaving(true);
+    setQuietSaved(false);
+    const res = await setQuietHours(start, end);
+    setQuietSaving(false);
+    if (!res.error) {
+      setQuietSaved(true);
+      setTimeout(() => setQuietSaved(false), 2000);
+    }
+  }
 
   // localStorage n'existe pas côté serveur : lire cette valeur pendant le
   // rendu (même via un initialiseur "lazy") produirait un mismatch
@@ -114,6 +142,37 @@ export default function PermissionsCard({
           <p className="flex items-start gap-1.5 text-[11px] text-red-400 mt-2.5 leading-relaxed">
             <AlertTriangle size={12} className="flex-shrink-0 mt-0.5" /> {pushError}
           </p>
+        )}
+
+        {/* Item 50 : n'a de sens que si le push est activé — coupe
+            uniquement le son/la vibration la nuit, jamais la notif in-app. */}
+        {push && (
+          <div className="flex items-center gap-2.5 mt-3.5 pt-3.5 border-t border-[#890404]/10">
+            <Moon size={13} className="text-[#F5EDED]/30 flex-shrink-0" />
+            <span className="text-[11px] text-[#F5EDED]/45 flex-shrink-0">Silence de</span>
+            <select
+              value={quietStart}
+              onChange={(e) => saveQuietHours(Number(e.target.value), quietEnd)}
+              disabled={quietSaving}
+              className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
+            >
+              {HOURS.map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, "0")}h</option>
+              ))}
+            </select>
+            <span className="text-[11px] text-[#F5EDED]/45">à</span>
+            <select
+              value={quietEnd}
+              onChange={(e) => saveQuietHours(quietStart, Number(e.target.value))}
+              disabled={quietSaving}
+              className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
+            >
+              {HOURS.map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, "0")}h</option>
+              ))}
+            </select>
+            {quietSaved && <span className="text-[10px] text-green-400 font-semibold">✓</span>}
+          </div>
         )}
       </div>
 

@@ -173,8 +173,14 @@ export default function MembresView({
 
   if (members.length === 0) {
     return (
-      <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
-        <p className="text-sm text-[#F5EDED]/35">Aucun membre pour l&apos;instant.</p>
+      <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 px-6 text-center">
+        <p className="text-sm text-[#F5EDED]/45 font-semibold mb-1.5">Aucun membre pour l&apos;instant</p>
+        {/* Item 40 : la précédente version s'arrêtait à "Aucun membre pour
+            l'instant", sans dire d'où ils viennent ni ce que ça implique. */}
+        <p className="text-xs text-[#F5EDED]/25 max-w-sm mx-auto leading-relaxed">
+          Les membres s&apos;inscrivent eux-mêmes depuis l&apos;appli (accès gratuit aux outils, sans coaching).
+          Ils apparaîtront ici dès leur inscription.
+        </p>
       </div>
     );
   }

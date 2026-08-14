@@ -11,7 +11,7 @@ import {
   getDietPlanTemplateById,
   dietTemplateToMealInputs,
 } from "@/utils/diet-templates";
-import { createDietPlan } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
+import { createDietPlan, rescaleActiveDietPlanToTargets } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 
 export async function createDietTemplateAction(
   name: string,
@@ -78,5 +78,72 @@ export async function applyDietTemplate(
   }
 
   if (applied === 0) return { error: "Erreur lors de l'application du modèle." };
+  return { appliedCount: applied };
+}
+
+// Item 11 (actions groupées) : décale l'objectif calorique de plusieurs
+// clients à la fois d'un même écart, plutôt que de rouvrir chaque fiche une
+// par une. Les glucides absorbent l'écart (protéines/lipides inchangés,
+// même logique que l'ajustement de phase déficit/surplus dans le calcul
+// TDEE individuel — 1g de glucides = 4 kcal), puis rescaleActiveDietPlanToTargets
+// (déjà utilisé pour le rescale auto d'un client seul) réajuste les
+// grammages du plan actif de chacun pour suivre le nouvel objectif.
+export async function bulkAdjustCalories(
+  clientIds: string[],
+  deltaKcal: number
+): Promise<{ error?: string; appliedCount?: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+  if (clientIds.length === 0) return { error: "Sélectionne au moins un client." };
+  if (!Number.isFinite(deltaKcal) || deltaKcal === 0) return { error: "Indique un écart de calories non nul." };
+
+  const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
+
+  const { data: clientRows } = await supabase
+    .from("profiles")
+    .select("id, coach_id")
+    .in("id", clientIds);
+  const validClientIds = ((clientRows ?? []) as { id: string; coach_id: string | null }[])
+    .filter((c) => c.coach_id === guard.userId)
+    .map((c) => c.id);
+  if (validClientIds.length === 0) return { error: "Aucun client valide sélectionné." };
+
+  const { data: profiles } = await supabase
+    .from("nutrition_profiles")
+    .select("client_id, calories_target, proteins_target, carbs_target, fats_target")
+    .in("client_id", validClientIds);
+
+  type NutritionRow = {
+    client_id: string;
+    calories_target: number | null;
+    proteins_target: number | null;
+    carbs_target: number | null;
+    fats_target: number | null;
+  };
+
+  let applied = 0;
+  for (const row of (profiles ?? []) as NutritionRow[]) {
+    if (row.calories_target == null) continue;
+    const newCalories = Math.max(0, row.calories_target + deltaKcal);
+    const newCarbs = Math.max(0, (row.carbs_target ?? 0) + deltaKcal / 4);
+
+    const { error } = await supabase
+      .from("nutrition_profiles")
+      .update({ calories_target: newCalories, carbs_target: newCarbs, updated_at: new Date().toISOString() })
+      .eq("client_id", row.client_id);
+    if (error) continue;
+
+    await rescaleActiveDietPlanToTargets(row.client_id, {
+      calories: newCalories,
+      proteins: row.proteins_target ?? 0,
+      carbs: newCarbs,
+      fats: row.fats_target ?? 0,
+    });
+    applied++;
+  }
+
+  if (applied === 0) return { error: "Aucun profil nutrition trouvé pour ces clients." };
+
+  revalidatePath("/dashboard/coach/clients");
   return { appliedCount: applied };
 }

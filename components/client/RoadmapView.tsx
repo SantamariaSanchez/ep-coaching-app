@@ -11,6 +11,7 @@ import {
   OBJECTIVE_TERM_COLORS,
 } from "@/lib/roadmap-colors";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+import { getAccessType, type Profile } from "@/utils/auth-client";
 import { Target, MapPin } from "lucide-react";
 
 // Pure ISO week helper (no server imports)
@@ -167,8 +168,11 @@ export default function RoadmapView() {
         .select("subscription_status, role")
         .eq("id", user.id)
         .single();
-      const p = profile as { subscription_status: string; role: string } | null;
-      setIsFree(p?.role !== "coach" && p?.subscription_status !== "active");
+      // Item 37 : dérivation centralisée (utils/auth-client.ts) plutôt que
+      // de recomposer la condition ici — évite qu'elle diverge de la même
+      // logique utilisée partout ailleurs (isSubscribed, roleBadge...).
+      const p = profile as Pick<Profile, "subscription_status" | "role"> | null;
+      setIsFree(getAccessType(p) === "membre_gratuit");
 
       const res = await fetch(`/api/roadmap/${user.id}`);
       const json = await res.json();

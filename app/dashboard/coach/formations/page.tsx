@@ -10,10 +10,11 @@ export const dynamic = "force-dynamic";
 export default async function CoachFormationsPage() {
   const user = await getUser();
   if (!user) redirect("/");
-  const profile = await getProfile(user.id);
+  // getFormations() ne dépend pas de profile (contenu partagé, pas
+  // sensible à pré-charger) : lancée en parallèle plutôt qu'après la
+  // vérification de rôle, ça évite une requête en cascade pour rien.
+  const [profile, formations] = await Promise.all([getProfile(user.id), getFormations()]);
   if (profile?.role !== "coach") redirect("/dashboard/client");
-
-  const formations = await getFormations();
 
   const formationData = await Promise.all(
     formations.map(async (f) => {

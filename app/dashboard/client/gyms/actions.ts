@@ -2,7 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth, requireCoach, requireOwnClientOrSelf } from "@/lib/auth-guards";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { GYMS_SEED, type GymType } from "@/lib/gyms-seed";
 import type { EquipmentType } from "@/lib/exercise-library-content";
 
@@ -11,6 +11,10 @@ function refresh() {
   revalidatePath("/dashboard/coach/gyms");
   revalidatePath("/dashboard/client/exercises");
   revalidatePath("/dashboard/coach/exercises");
+  // getGymsWithReviews (utils/gyms.ts) est mis en cache 1h — sans ça, une
+  // salle ou un avis modifié restait invisible jusqu'à expiration du cache
+  // au lieu d'apparaître immédiatement.
+  updateTag("gyms");
 }
 
 export interface CreateGymInput {

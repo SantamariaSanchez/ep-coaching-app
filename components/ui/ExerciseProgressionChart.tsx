@@ -11,7 +11,7 @@ import {
   CartesianGrid,
   ReferenceLine,
 } from "recharts";
-import { Trophy, TrendingUp } from "lucide-react";
+import { Trophy, TrendingUp, AlertTriangle } from "lucide-react";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 
 const TOOLTIP_STYLE = {
@@ -85,6 +85,17 @@ export default function ExerciseProgressionChart({
   // puis reverse() remet la courbe dans le sens chronologique gauche→droite,
   // logique pour lire une progression.
   const chartData = Object.values(bySession).slice(0, 10).reverse();
+
+  // Item 12 : décharge suggérée depuis les vraies données loggées, en miroir
+  // du rescale automatique déjà fait côté diète. Sur les 4 dernières séances
+  // de CET exercice, si la charge max n'a jamais dépassé son propre point de
+  // départ, c'est un vrai signal de stagnation — pas juste une séance moins
+  // bonne isolée, qui se serait rattrapée dans la fenêtre.
+  const recentWindow = chartData.slice(-4);
+  const isStagnant =
+    recentWindow.length === 4 &&
+    Math.max(...recentWindow.map((d) => d.maxWeight)) <= recentWindow[0].maxWeight;
+
   const bestRecord = records
     .filter((r) => r.exercise_name === current)
     .sort((a, b) => b.weight_kg - a.weight_kg)[0];
@@ -171,6 +182,18 @@ export default function ExerciseProgressionChart({
             {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
               new Date(bestRecord.achieved_at + "T12:00:00")
             )}
+          </p>
+        </div>
+      )}
+
+      {/* Suggestion de décharge — voir isStagnant plus haut. */}
+      {isStagnant && (
+        <div className="flex items-start gap-3 mb-4 p-3 bg-amber-500/5 border border-amber-500/15 rounded-xl">
+          <AlertTriangle size={14} className="text-amber-400 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-[#F5EDED]/60 leading-relaxed">
+            <span className="font-bold text-amber-400">Charge stable depuis 4 séances</span> sur cet
+            exercice ({recentWindow[0].maxWeight} kg). Une décharge (volume ou intensité réduits une
+            semaine) peut aider à relancer la progression.
           </p>
         </div>
       )}

@@ -6,12 +6,22 @@ import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
   ClipboardList, Wind, GlassWater, Activity, Backpack, Flag, Check,
   BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight, Scale,
+  Pill,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
+import type { ClientSupplement } from "@/utils/supplements";
+
+// Item 34 : réutilise le même mécanisme que les habitudes mindset
+// (mindset_habit_logs, habit_key en texte libre) plutôt qu'une nouvelle
+// table + RLS — la clé "supplement:<id>" ne rentre jamais en collision
+// avec les clés fixes de HABITS, et la série/streak marche déjà pareil.
+function supplementHabitKey(supplementId: string): string {
+  return `supplement:${supplementId}`;
+}
 
 const ICONS: Record<string, React.ElementType> = {
   Moon, Smartphone, Target, Utensils, Sparkles, EyeOff, ClipboardList, Wind,
@@ -46,6 +56,7 @@ export default function AujourdhuiView({
   addJournalEntry,
   todayWeight,
   logWeight,
+  supplements,
 }: {
   firstName: string;
   todayBlocks: ScheduleBlock[];
@@ -60,6 +71,7 @@ export default function AujourdhuiView({
   addJournalEntry: (params: { promptKey: string | null; content: string; mood: number | null }) => Promise<{ error?: string; id?: string }>;
   todayWeight: number | null;
   logWeight: (prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean }>;
+  supplements: ClientSupplement[];
 }) {
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
   const [isPending, startTransition] = useTransition();
@@ -317,6 +329,52 @@ export default function AujourdhuiView({
           })}
         </div>
       </section>
+
+      {/* Compléments du jour (item 34) — uniquement s'il y a une liste
+          active, pour ne pas afficher une section vide à tout le monde */}
+      {supplements.length > 0 && (
+        <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
+          <SectionLabel icon={Pill}>Compléments du jour</SectionLabel>
+          <div className="ep-card" style={{ padding: "8px 16px" }}>
+            {supplements.map((s, i) => {
+              const key = supplementHabitKey(s.id);
+              const checked = loggedKeys.has(key);
+              return (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleToggleHabit(key)}
+                  disabled={isPending}
+                  style={{
+                    width: "100%", display: "flex", alignItems: "center", gap: 10,
+                    padding: "10px 0", background: "none", border: "none", cursor: "pointer",
+                    borderTop: i > 0 ? "1px solid rgba(224,30,30,0.08)" : "none", textAlign: "left",
+                  }}
+                >
+                  <div style={{
+                    width: 22, height: 22, borderRadius: 6, flexShrink: 0,
+                    border: `1px solid ${checked ? "#4ade80" : "rgba(224,30,30,0.25)"}`,
+                    background: checked ? "rgba(74,222,128,0.15)" : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    {checked && <Check size={13} style={{ color: "#4ade80" }} strokeWidth={3} />}
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: 12.5, fontWeight: 600, color: checked ? "rgba(245,237,237,0.4)" : "#F5EDED", textDecoration: checked ? "line-through" : "none" }}>
+                      {s.name}
+                    </span>
+                    {(s.dosage || s.timing) && (
+                      <span style={{ display: "block", fontSize: 10.5, color: "rgba(245,237,237,0.3)" }}>
+                        {[s.dosage, s.timing].filter(Boolean).join(" · ")}
+                      </span>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Mindset / journal */}
       <section className="animate-fade-up stagger-4">

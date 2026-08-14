@@ -49,6 +49,29 @@ export function GridPageSkeleton() {
   );
 }
 
+// Pages à onglets (nutrition, programme...) — jusqu'ici forcées dans
+// PageSkeleton (4 cartes stats + 2 blocs), qui ne ressemble pas du tout à
+// une vraie barre d'onglets suivie d'un panneau de contenu. La barre
+// d'onglets reprend la largeur variable des vrais libellés plutôt que des
+// blocs identiques, pour que le premier flash ressemble vraiment à la page.
+export function TabbedPageSkeleton() {
+  return (
+    <div style={{ padding: "32px 40px", maxWidth: 900, margin: "0 auto" }}>
+      <div style={{ marginBottom: 28 }}>
+        <Skeleton className="h-3 w-24 mb-2" />
+        <Skeleton className="h-9 w-56" />
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 24, borderBottom: "1px solid rgba(137,4,4,0.15)", paddingBottom: 12 }}>
+        {["w-20", "w-16", "w-24", "w-28", "w-20"].map((w, i) => (
+          <Skeleton key={i} className={`h-7 ${w}`} />
+        ))}
+      </div>
+      <Skeleton className="h-40 mb-4" />
+      <Skeleton className="h-64" />
+    </div>
+  );
+}
+
 export function FormPageSkeleton() {
   return (
     <div style={{ padding: "32px 40px", maxWidth: 600, margin: "0 auto" }}>

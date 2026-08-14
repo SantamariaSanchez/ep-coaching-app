@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 import { notifyAdmin } from "@/lib/admin-notify";
+import { notifyUser } from "@/lib/notify";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -91,6 +92,26 @@ export async function POST(request: Request) {
         notifyAdmin("Client : résiliation de l'abonnement coaching", [
           `<strong>${clientRow.full_name ?? "Client"}</strong> (${clientRow.email ?? clientRow.id})`,
         ]).catch(() => {});
+
+        // Item 46 : avant ce fix, seul le fondateur était prévenu (ligne
+        // ci-dessus) — ni le client (accès premium perdu sans explication)
+        // ni son coach (aucune relance possible) ne le voyaient nulle part.
+        notifyUser(clientRow.id, {
+          type: "subscription_canceled",
+          title: "Ton coaching payant s'est arrêté",
+          body: "Tu gardes l'accès aux outils gratuits. Contacte ton coach si c'est une erreur, ou réactive quand tu veux.",
+          url: "/dashboard/client/abonnement",
+        }).catch(() => {});
+
+        if (clientRow.coach_id) {
+          notifyUser(clientRow.coach_id, {
+            type: "client_subscription_canceled",
+            title: "⚠️ Abonnement client résilié",
+            body: `${clientRow.full_name ?? "Un client"} n'est plus abonné au coaching payant.`,
+            url: `/dashboard/coach/clients/${clientRow.id}`,
+            senderId: clientRow.id,
+          }).catch(() => {});
+        }
       }
 
       const { data: coachRow } = await admin

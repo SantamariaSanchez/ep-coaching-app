@@ -710,9 +710,16 @@ export default function CoachNotesView({
           />
 
           {decisions.length === 0 ? (
-            <div className="flex items-center justify-center py-12 bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl">
+            <div className="flex flex-col items-center justify-center gap-1.5 py-12 px-6 bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl text-center">
               <p className="text-xs text-[#F5EDED]/30 uppercase tracking-widest font-semibold">
                 Aucune décision enregistrée
+              </p>
+              {/* Item 40 : le formulaire juste au-dessus suffit à comprendre
+                  quoi faire, mais un mot sur l'utilité évite de se demander
+                  si "décision" a un sens précis ici. */}
+              <p className="text-[11px] text-[#F5EDED]/22 max-w-xs leading-relaxed">
+                Sert à garder une trace des choix structurants pour ce client (changement de phase, ajustement
+                majeur...), pas un journal de suivi au quotidien.
               </p>
             </div>
           ) : (

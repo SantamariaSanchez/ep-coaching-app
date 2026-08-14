@@ -39,6 +39,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   const router = useRouter();
   const searchParams = useSearchParams();
   const inviteCode = searchParams.get("coach") ?? undefined;
+  // Item 41 : lien de parrainage /auth/client?ref=CODE, indépendant du code
+  // coach ci-dessus — ne change jamais l'attribution, sert juste à créditer
+  // qui a invité.
+  const refCode = searchParams.get("ref") ?? undefined;
   const [step, setStep] = useState<Step>("info");
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -57,7 +61,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
     }
     setCreatingAccount(true);
     try {
-      const result = await selfSignup({ fullName, email, phone, password, inviteCode });
+      const result = await selfSignup({ fullName, email, phone, password, inviteCode, refCode });
       if ("error" in result) {
         setError(result.error);
         setCreatingAccount(false);

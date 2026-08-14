@@ -86,3 +86,31 @@ export async function getClientIntake(clientId: string): Promise<ClientIntake | 
     return null;
   }
 }
+
+// Pour la liste des clients (item 14 du chantier 50 idées) : repérer d'un
+// coup d'œil qui n'a jamais terminé sa fiche. "Complète" ne veut pas dire
+// "toutes les colonnes remplies" — goal_3_months est rempli tard dans le
+// formulaire d'onboarding, donc sa présence suffit à distinguer une fiche
+// vraiment terminée d'une ligne vide créée puis abandonnée en route (vu en
+// base : un profil avec seulement `gender` renseigné).
+export async function getClientsIntakeCompletion(clientIds: string[]): Promise<Record<string, boolean>> {
+  if (clientIds.length === 0) return {};
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("client_intake")
+      .select("client_id, goal_3_months")
+      .in("client_id", clientIds);
+
+    const complete = new Set(
+      ((data as { client_id: string; goal_3_months: string | null }[] | null) ?? [])
+        .filter((r) => r.goal_3_months != null && r.goal_3_months.trim() !== "")
+        .map((r) => r.client_id)
+    );
+    const result: Record<string, boolean> = {};
+    for (const id of clientIds) result[id] = complete.has(id);
+    return result;
+  } catch {
+    return {};
+  }
+}
