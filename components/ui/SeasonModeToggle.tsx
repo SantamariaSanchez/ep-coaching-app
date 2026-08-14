@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SeasonModeToggle({
   currentMode,
@@ -11,6 +11,12 @@ export default function SeasonModeToggle({
 }) {
   const [mode, setMode] = useState(currentMode);
   const [saving, setSaving] = useState(false);
+
+  // MASTERCLASS.md Axe E : sans ça, un changement fait ailleurs (coach,
+  // autre onglet) restait invisible tant que le composant ne remontait pas.
+  useEffect(() => {
+    setMode(currentMode);
+  }, [currentMode]);
 
   async function handleChange(next: "off_season" | "prep") {
     if (next === mode || saving) return;

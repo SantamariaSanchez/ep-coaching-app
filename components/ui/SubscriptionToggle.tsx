@@ -47,6 +47,17 @@ export default function SubscriptionToggle({
   const [status, setStatus] = useState(currentStatus);
   const [displayPlan, setDisplayPlan] = useState(currentPlan ?? null);
   const [displayBillingDate, setDisplayBillingDate] = useState(currentNextBillingDate ?? null);
+  // MASTERCLASS.md Axe E : le commentaire ci-dessus explique pourquoi ce
+  // composant n'attend pas de refresh après SA PROPRE bascule (évite de
+  // relancer les ~20 sources de la page parente) — mais si un refresh a
+  // quand même lieu pour une autre raison (une autre section de la page),
+  // ces 3 valeurs doivent rester justes plutôt que rester figées sur le
+  // premier rendu.
+  useEffect(() => {
+    setStatus(currentStatus);
+    setDisplayPlan(currentPlan ?? null);
+    setDisplayBillingDate(currentNextBillingDate ?? null);
+  }, [currentStatus, currentPlan, currentNextBillingDate]);
   // Item 43 : essai coaching limité dans le temps, en plus de l'activation
   // classique ci-dessous.
   const [trialPending, setTrialPending] = useState(false);

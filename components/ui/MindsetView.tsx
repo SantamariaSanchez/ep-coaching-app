@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Brain,
   ListChecks,
@@ -255,6 +255,12 @@ function HabitsTab({
   onToggle: (habitKey: string, checked: boolean) => Promise<{ error?: string }>;
 }) {
   const [optimisticLogs, setOptimisticLogs] = useState(habitLogs);
+  // MASTERCLASS.md Axe E (même piège que todayLogs dans ClientNutritionView) :
+  // sans ça, revenir sur cette page sans remontage complet du composant
+  // pouvait laisser un habitLogs plus frais du serveur ignoré.
+  useEffect(() => {
+    setOptimisticLogs(habitLogs);
+  }, [habitLogs]);
   const [error, setError] = useState<string | null>(null);
 
   const loggedToday = useMemo(
@@ -482,6 +488,10 @@ function JournalTab({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [localEntries, setLocalEntries] = useState(entries);
+  // MASTERCLASS.md Axe E : même piège que todayLogs dans ClientNutritionView.
+  useEffect(() => {
+    setLocalEntries(entries);
+  }, [entries]);
 
   const activePrompt = JOURNAL_PROMPTS.find((p) => p.key === selectedPrompt) ?? null;
 

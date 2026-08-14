@@ -39,17 +39,35 @@ export default function PermissionsCard({
   const [quietSaving, setQuietSaving] = useState(false);
   const [quietSaved, setQuietSaved] = useState(false);
 
+  // MASTERCLASS.md Axe E : sans ça, un état changé ailleurs (autre appareil,
+  // autre onglet) restait invisible tant que le composant ne remontait pas.
+  useEffect(() => {
+    setPush(pushSubscribed);
+  }, [pushSubscribed]);
+  useEffect(() => {
+    setQuietStart(quietHoursStart ?? DEFAULT_QUIET_START);
+    setQuietEnd(quietHoursEnd ?? DEFAULT_QUIET_END);
+  }, [quietHoursStart, quietHoursEnd]);
+
   async function saveQuietHours(start: number, end: number) {
+    const previousStart = quietStart;
+    const previousEnd = quietEnd;
     setQuietStart(start);
     setQuietEnd(end);
     setQuietSaving(true);
     setQuietSaved(false);
     const res = await setQuietHours(start, end);
     setQuietSaving(false);
-    if (!res.error) {
-      setQuietSaved(true);
-      setTimeout(() => setQuietSaved(false), 2000);
+    if (res.error) {
+      // MASTERCLASS.md Axe B : sans ça, un échec serveur laissait affichées
+      // les heures qui viennent d'être choisies alors qu'elles n'ont pas
+      // été enregistrées.
+      setQuietStart(previousStart);
+      setQuietEnd(previousEnd);
+      return;
     }
+    setQuietSaved(true);
+    setTimeout(() => setQuietSaved(false), 2000);
   }
 
   // localStorage n'existe pas côté serveur : lire cette valeur pendant le

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { setCoachPlatformStatus } from "@/app/dashboard/coach/admin/actions";
 
 export default function CoachStatusToggle({
@@ -13,6 +13,13 @@ export default function CoachStatusToggle({
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(status);
   const [confirming, setConfirming] = useState(false);
+
+  // MASTERCLASS.md Axe E : rendu dans une liste de coachs — sans ça, une
+  // ligne resterait affichée au statut périmé si la liste se rafraîchit
+  // pour une autre raison (un autre coach modifié, etc.).
+  useEffect(() => {
+    setCurrent(status);
+  }, [status]);
 
   function apply(next: "inactive" | "active" | "canceled") {
     startTransition(async () => {

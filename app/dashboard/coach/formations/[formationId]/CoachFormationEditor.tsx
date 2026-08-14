@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
@@ -93,6 +93,11 @@ function EditableTitle({
     <span
       onClick={(e) => {
         e.stopPropagation();
+        // MASTERCLASS.md Axe E : text n'était initialisé qu'au tout premier
+        // rendu du composant — si le titre avait changé ailleurs (rename
+        // groupé, etc.) avant le premier clic sur "modifier", l'input se
+        // serait ouvert sur l'ancien texte au lieu du titre actuel.
+        setText(value);
         setEditing(true);
       }}
       title="Cliquer pour modifier le titre"
@@ -632,6 +637,15 @@ function LessonEditor({
 }) {
   const [url, setUrl] = useState(lesson.youtube_id ?? "");
   const [published, setPublished] = useState(lesson.is_published);
+  // MASTERCLASS.md Axe E : "Publier toutes les vidéos du module" (bouton
+  // groupé plus haut) republie chaque leçon côté serveur sans passer par ce
+  // composant — sans resync, une leçon publiée en masse restait affichée
+  // comme non publiée dans sa propre ligne tant qu'elle ne remontait pas.
+  // url/description/durationMin restent volontairement non resynchronisés
+  // (saisie libre en cours, jamais modifiée par l'action groupée).
+  useEffect(() => {
+    setPublished(lesson.is_published);
+  }, [lesson.is_published]);
   const [showDetails, setShowDetails] = useState(false);
   const [description, setDescription] = useState(lesson.description ?? "");
   const [durationMin, setDurationMin] = useState(String(lesson.duration_min));

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { UserPlus, UserX, Check, Clock } from "lucide-react";
 import { toggleAcceptingNewClients, markWaitlistContacted } from "@/app/dashboard/coach/profile/actions";
 import type { WaitlistEntry } from "@/utils/waitlist";
@@ -20,18 +20,38 @@ export default function AcceptingClientsCard({
     new Set(waitlist.filter((w) => w.contacted_at).map((w) => w.id))
   );
 
+  // MASTERCLASS.md Axe E : sans ça, un changement fait ailleurs (autre
+  // onglet) restait invisible tant que le composant ne remontait pas.
+  useEffect(() => {
+    setAccepting(initialAccepting);
+  }, [initialAccepting]);
+  useEffect(() => {
+    setContactedIds(new Set(waitlist.filter((w) => w.contacted_at).map((w) => w.id)));
+  }, [waitlist]);
+
   function toggle() {
     const next = !accepting;
+    const previous = accepting;
     setAccepting(next);
-    startTransition(() => {
-      toggleAcceptingNewClients(next);
+    startTransition(async () => {
+      // MASTERCLASS.md Axe B : le résultat n'était jamais vérifié, un échec
+      // serveur laissait la bascule affichée sur le mauvais état.
+      const result = await toggleAcceptingNewClients(next);
+      if (result.error) setAccepting(previous);
     });
   }
 
   function markContacted(id: string) {
     setContactedIds((prev) => new Set(prev).add(id));
-    startTransition(() => {
-      markWaitlistContacted(id);
+    startTransition(async () => {
+      const result = await markWaitlistContacted(id);
+      if (result.error) {
+        setContactedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      }
     });
   }
 

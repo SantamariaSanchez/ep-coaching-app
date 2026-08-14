@@ -487,6 +487,108 @@ volontairement exclus de cette passe malgré le nom de variable similaire.
   liste/collection alimenté par un prop serveur = candidat, champ de
   formulaire = à exclure).
 
+**Suite (2026-08-15)** : l'utilisateur a signalé le même bug ("ça coche
+puis ça décoche au retour") sur Steps, Sommeil et le Bilan quotidien —
+trois composants que la première passe de cet axe n'avait **pas** repérés,
+la faute à un grep trop étroit (`useState(initial...)` seulement, alors
+que `StepsClient.tsx`/`TrackingClient.tsx` utilisent des noms de prop
+sans préfixe `initial`, ex. `useState(settings.daily_goal)`). Corrigés
+séparément (voir le commit `fix(bilan-steps-sommeil)`), avec en prime la
+checklist de routine de Steps qui ne se sauvegardait qu'en cliquant sur
+"Enregistrer" — corrigée pour sauvegarder immédiatement au clic, comme
+la checklist du plan de diète.
+
+Ce signalement a motivé un nouveau scanner plus large
+(`find-stale-state-v2.mjs`, scratchpad) : au lieu de chercher seulement
+`useState(initial...)`, il repère TOUT `useState(prop)` où `prop` est un
+paramètre déstructuré du composant (pas juste ceux nommés `initial*`),
+puis vérifie si un `useEffect` resynchronise déjà ce setter quelque part
+dans le fichier. 26 candidats trouvés, triés un par un :
+
+**Corrigé** (9 fichiers) :
+- `MindsetView.tsx` (`HabitsTab`/`optimisticLogs`, `JournalTab`/
+  `localEntries`) — même famille que la nutrition, une checklist
+  d'habitudes et un journal qui pouvaient rester périmés.
+- `SeasonModeToggle.tsx`, `SubscriptionToggle.tsx`,
+  `CoachStatusToggle.tsx` — bascules (off-season/prep, statut
+  abonnement, statut coach côté admin) qui ne reflétaient pas un
+  changement fait ailleurs (coach, autre onglet, autre appareil).
+  `SubscriptionToggle.tsx` a un commentaire existant expliquant
+  pourquoi il évite un `router.refresh()` après SA PROPRE bascule
+  (performance, ~20 sources chargées par la page parente) — le resync
+  ajouté ne contredit pas ce choix, il couvre seulement le cas d'un
+  refresh déclenché pour une AUTRE raison.
+- `AcceptingClientsCard.tsx` — bascule "j'accepte de nouveaux clients" +
+  liste d'attente, plus un vrai bug Axe B au passage (résultat des deux
+  actions jamais vérifié, aucun rollback en cas d'échec serveur).
+- `WaitlistJoinButton.tsx` — inscription à la liste d'attente.
+- `PermissionsCard.tsx` — statut push et heures de silence, plus un
+  Axe B au passage (`saveQuietHours` gardait les heures fraîchement
+  choisies affichées même quand l'enregistrement échouait).
+- `CoachFormationEditor.tsx` : deux bugs distincts —
+  1. `lesson.is_published` (ligne d'une leçon) ne se resynchronisait pas
+     quand le bouton groupé "Publier toutes les vidéos du module" (plus
+     haut dans le même fichier) republiait des leçons sans passer par
+     cette ligne précise.
+  2. `EditableTitle` (titre modifiable en ligne, partagé par formation/
+     module/section/leçon) : le texte d'édition n'était capturé qu'au
+     tout premier rendu du composant — si le titre changeait ailleurs
+     avant le premier clic sur "modifier", l'input s'ouvrait sur l'ancien
+     texte. Corrigé en réinitialisant le texte depuis la prop fraîche
+     au moment précis du clic, pas seulement au montage.
+
+**Vérifié SAIN / exclusions légitimes** (14 candidats restants) :
+- `ReferralCard.tsx`, `InviteLinkCard.tsx` — un code généré une fois
+  reste stable ; le seul cas non couvert (généré dans un autre onglet)
+  est un scénario rare pour une carte peu consultée.
+- `ExercisePicker.tsx`, `LiveEditForm.tsx`, `ProfileEditor.tsx`,
+  `ArticleCard.tsx` (×2), `PublicRessourcesClient.tsx` — champs de
+  formulaire en édition libre, resync serait une régression (écraserait
+  la saisie en cours), même exclusion que la première passe.
+- `ClientNutritionView.tsx` (`foods`), `NutritionBilanQuiz.tsx`
+  (`allFoods`) — listes d'aliments consultées, pas des données
+  spécifiques à l'utilisateur qui pourraient se décocher.
+- `LibraryHub.tsx` (`initialTab`) — état de navigation locale (onglet
+  actif), pas une donnée serveur à refléter.
+- `app/auth/client/page.tsx`, `app/auth/coach/page.tsx`
+  (`initialEmail`) — préremplissage d'un formulaire, l'utilisateur doit
+  pouvoir le modifier avant de soumettre sans se le faire écraser.
+- `ExerciseDetailPanel.tsx` — vérifié que le composant démonte/remonte
+  réellement à chaque changement d'exercice sélectionné (rendu
+  conditionnel via `{detailFor && <ExerciseDetailPanel .../>}`, jamais
+  deux exercices différents sans repasser par `null` entre les deux) —
+  `useState(exercise)` se réinitialise donc correctement à chaque
+  ouverture, pas besoin de resync explicite.
+- `CommunityFeed.tsx` (`posts`/`nextCursor`) — **cas particulier
+  important** : liste paginée qui s'accumule via "charger plus", pas un
+  simple miroir d'un seul état serveur. Un resync naïf sur `initialPosts`
+  aurait effacé les pages déjà chargées par l'utilisateur à chaque
+  re-rendu du parent — clairement une régression, pas un correctif.
+  Volontairement laissé tel quel.
+
+tsc/eslint/build vérifiés propres (comparaison `git stash` : 1 problème
+préexistant, 11 nouveaux attendus = les 11 effets de resynchronisation
+ajoutés).
+
+**Méthode utilisée** (relançable, plus large que la première passe) :
+```js
+// find-stale-state-v2.mjs (scratchpad) : repère useState(prop) où prop
+// est un paramètre déstructuré du composant (pas seulement les noms
+// préfixés "initial"), puis vérifie si un useEffect resynchronise déjà
+// ce setter ailleurs dans le fichier. Exclut par défaut les noms d'état
+// commençant par is/show/open/active/expanded/editing/selected (état UI
+// local, pas un miroir de donnée serveur).
+```
+
+### Reste à faire sur cet axe (suite)
+
+- Le scanner v2 est volontairement conservateur (ne regarde que les
+  paramètres directement déstructurés du composant, pas les valeurs
+  dérivées passées en profondeur) — une repasse avec une détection plus
+  fine pourrait trouver d'autres cas, mais rendement décroissant probable
+  vu que les deux passes cumulées couvrent déjà la quasi-totalité des
+  composants avec état de type checklist/bascule.
+
 ## Axe F — Boutons icône seule sans nom accessible (`aria-label`)
 
 **Statut : première passe faite (2026-08-14), 33 boutons corrigés sur 25

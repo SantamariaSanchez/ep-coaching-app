@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Clock3, CheckCircle2 } from "lucide-react";
 import { joinWaitlist } from "@/app/dashboard/client/abonnement/actions";
 
@@ -8,6 +8,11 @@ import { joinWaitlist } from "@/app/dashboard/client/abonnement/actions";
 // une inscription à sa liste d'attente.
 export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWaitlist: boolean }) {
   const [joined, setJoined] = useState(alreadyOnWaitlist);
+  // MASTERCLASS.md Axe E : sans ça, une inscription faite dans un autre
+  // onglet restait invisible tant que le composant ne remontait pas.
+  useEffect(() => {
+    setJoined(alreadyOnWaitlist);
+  }, [alreadyOnWaitlist]);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
