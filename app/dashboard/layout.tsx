@@ -6,6 +6,7 @@ import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
+import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { isEmailVerified } from "@/lib/email-verification";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -93,6 +94,9 @@ export default async function DashboardLayout({ children }: { children: React.Re
           du bandeau. Ici, il hérite du décalage du contenu. */}
       <DashboardNav initialIsFreeTier={initialIsFreeTier}>
         {showEmailBanner && <EmailVerificationBanner email={profile.email} />}
+        {/* Item 47 : pousse sans forcer, voir requireStrongSessionIfNeeded
+            ci-dessus pour pourquoi le blocage dur reste désactivé. */}
+        {!!profile?.is_platform_owner && !profile.mfa_enabled && <TwoFactorNudgeBanner />}
         {children}
       </DashboardNav>
     </div>
