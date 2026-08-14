@@ -277,8 +277,19 @@ function ReminderCard({
           }
         </div>
 
-        {/* Content */}
-        <div style={{ flex: 1, minWidth: 0, cursor: "pointer" }} onClick={onEdit}>
+        {/* Content — un vrai <button> plutôt qu'un <div onClick> :
+            MASTERCLASS.md Axe C, c'était la seule façon d'ouvrir l'édition
+            au clavier/lecteur d'écran (le toggle et la suppression à côté
+            sont déjà de vrais boutons, celui-ci ne l'était pas). */}
+        <button
+          type="button"
+          onClick={onEdit}
+          style={{
+            flex: 1, minWidth: 0, cursor: "pointer",
+            background: "none", border: "none", padding: 0, margin: 0,
+            textAlign: "left", font: "inherit", color: "inherit",
+          }}
+        >
           <p style={{ fontWeight: 700, fontSize: 15, color: "#F5EDED", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
             {reminder.label}
           </p>
@@ -302,7 +313,7 @@ function ReminderCard({
               })}
             </div>
           </div>
-        </div>
+        </button>
 
         {/* Actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>

@@ -271,3 +271,46 @@ plutôt que de re-trier la même liste.
 
 - Relancer la commande de la passe 1 après du nouveau code pour capter ce
   qui aurait été ajouté depuis — sinon, cet axe est clos pour l'instant.
+
+## Axe C — Accessibilité clavier : `<div onClick>` sans vrai bouton
+
+**Statut : première passe faite (2026-08-14), un cas corrigé, faible
+densité de bugs sur cet axe (bonne nouvelle).**
+
+Méthode : grep ciblé sur le vrai anti-pattern (un `<div>` avec `onClick`
+sur la même ligne, capture la forme la plus courante d'oubli) :
+```bash
+grep -rnE '<div[^>]*\bonClick=' --include="*.tsx" components/ app/
+```
+12 résultats. **11 étaient des faux positifs** : des backdrops de modale
+(`ep-modal-overlay`, cliquer en dehors pour fermer) — un pattern standard
+et correct, pas un piège accessibilité. Un clavier/lecteur d'écran ferme
+une modale via le vrai bouton `×` (déjà un `<button>` focusable dans
+chaque cas vérifié) ou via Échap si implémenté, jamais en "tabbant" sur le
+fond — rendre le backdrop lui-même focusable serait pire, pas mieux.
+
+**Corrigé** : `RemindersView.tsx` — la zone principale d'une carte rappel
+(libellé, heure, jours) n'était cliquable que par un `<div onClick={onEdit}>`,
+alors que le toggle actif/inactif et la suppression juste à côté étaient
+déjà de vrais `<button>`. Un utilisateur clavier n'avait tout simplement
+aucun moyen d'ouvrir l'édition d'un rappel. Converti en `<button
+type="button">` (styles réinitialisés en ligne) plutôt qu'un
+`role="button"` + `tabIndex` + `onKeyDown` manuel — plus simple, et
+Entrée/Espace marchent nativement.
+
+**Constat en creux** : cette base de code utilise déjà systématiquement de
+vrais `<button>` pour ses éléments cliquables (confirmé par les 123
+fichiers qui utilisent `onClick=` — l'écrasante majorité sur des boutons
+réels) — `RemindersView.tsx` semble être l'exception plutôt que la règle.
+
+### Reste à faire sur cet axe
+
+- Passe volontairement étroite (grep même-ligne uniquement) — un `<div`
+  suivi d'un `onClick` sur une ligne différente ne serait pas détecté.
+  Signal faible sur les 12 résultats trouvés (1 vrai bug) suggère que le
+  rendement d'une passe plus large serait sans doute tout aussi faible,
+  mais pas vérifié.
+- Nice-to-have repéré en vérifiant les backdrops de modale : aucun ne gère
+  la touche Échap (seulement le clic sur le fond ou le bouton `×`) — pas
+  un blocage (le bouton `×` reste accessible au clavier), mais un vrai
+  gain d'ergonomie clavier si repris un jour.
