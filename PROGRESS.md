@@ -110,17 +110,20 @@ explicite plutôt que de les réutiliser.
 
 ## Sécurité / cloisonnement — décision écrite obligatoire avant merge prod
 
-Concerne #29, #37, #47, #49 (voir master prompt §1). Rien ne sera mergé sur
-`main` par moi de toute façon (branche + review Emmanuel), mais ces 4 items
-en particulier ne doivent pas être considérés "prêts" sans qu'Emmanuel ait
-lu et validé explicitement la décision ci-dessous.
+Concerne #29, #37, #47, #49 (voir master prompt §1), plus #46 (marqué ⚠️
+dans le tableau de l'axe 8 lui-même — touche la logique de facturation/accès,
+même précaution appliquée). Rien ne sera mergé sur `main` par moi de toute
+façon (branche + review Emmanuel), mais ces items ne doivent pas être
+considérés "prêts" sans qu'Emmanuel ait lu et validé explicitement la
+décision ci-dessous.
 
 | # | Décision | Statut |
 |---|----------|--------|
 | 29 | Notes de gêne (session_sets.notes) affichées uniquement sur la page coach déjà scopée à un seul client (`/dashboard/coach/clients/[id]/logbook`, fetch par `getAllClientSessions(id)`/`getClientById(id, user.id)`/`getClientIntake(id)` — jamais de requête cross-clients). Aucune nouvelle table, aucune nouvelle policy RLS. Pas de panneau agrégé "tous mes clients avec une gêne" dans ce lot — ça relèverait de la même famille de risque que l'inbox (item 8) et mérite sa propre revue si demandé plus tard. | fait — voir commit `f505532` |
 | 37 | Pas de nouveau champ stocké (risque de désynchronisation avec `subscription_status`, écrit par Stripe/webhooks). `getAccessType()` (utils/auth-client.ts) est une **dérivation pure**, calculée à la volée depuis role/coach_id/subscription_status déjà existants — la même donnée, juste nommée et centralisée. Seul le doublon logique trouvé (RoadmapView.tsx) a été corrigé pour appeler le helper partagé au lieu de recomposer la condition. Pas de sweep mécanique des ~10 autres lectures directes de `subscription_status` (champ unique, pas de logique combinée dupliquée — risque de régression jugé supérieur au bénéfice). | fait — voir commit `a9c2c5a` |
-| 47 | *(à écrire quand traité)* | todo |
-| 49 | *(à écrire quand traité)* | todo |
+| 46 | Purement additif, aucune logique d'accès touchée : `isSubscribed()` traitait déjà (et traite toujours) `"canceled"` exactement comme `"free"` partout où l'accès est vérifié — ce fix ajoute seulement deux `notifyUser()` (client + coach assigné) en plus du `notifyAdmin()` déjà existant sur la transition Stripe `→ canceled`, et un bandeau d'affichage distinct côté client. Rien dans le webhook qui décide QUI a accès à quoi n'a changé. | fait — voir commit `1dc3f40` |
+| 47 | Vérifié en base au moment du chantier : `mfa_enabled = false` sur le compte fondateur — le risque documenté dans `requireStrongSessionIfNeeded` (app/dashboard/layout.tsx) est donc réel aujourd'hui, pas hypothétique. Le blocage dur d'enrôlement obligatoire pour le fondateur **reste désactivé** : décision déjà actée dans le code avant ce chantier (incident du 2026-08-05, correctifs vérifiés en production mais jamais rejoués dans un vrai navigateur — je n'ai moi-même aucun moyen de le faire dans cet environnement). Je n'ai pas rouvert ce blocage. Seul ajout : `TwoFactorNudgeBanner`, un rappel non bloquant, visible à chaque session tant que la 2FA n'est pas activée — aucun nouveau risque de verrouillage. | fait — voir commit `01587e5` |
+| 49 | Audité en lecture seule (`pg_policies` sur les tables `public`), **aucun changement de schéma ajouté**. Le socle multi-coach (`profiles.coach_id`, fonctions `is_own_coach()`/`is_platform_owner()`/`my_coach_scope()`, RLS scopée dessus) existe déjà et couvre la grande majorité des tables sensibles — migration `20260729b_multi_coach_foundation.sql`, antérieure à ce chantier. Construire un second niveau de cloisonnement sans un 2e coach réel pour le valider recréerait soit une redondance, soit un risque de toucher des policies qui chevauchent l'audit de sécurité séparé déjà réservé (les 6 failles). Un candidat de fuite cross-coach supplémentaire trouvé pendant l'audit, hors de la liste des 6 déjà connues : voir Signalements ci-dessous (`resource_requests`), documenté et non corrigé. | fait (audit, aucun changement de schéma) |
 
 ---
 
@@ -282,6 +285,47 @@ lu et validé explicitement la décision ci-dessous.
   réservation externe côté client quand le coach assigné est à capacité.
   Commit `bef4433`. **Axe 7 (Croissance & monétisation) terminé : 5/5.**
 
+## Session log (suite axe 8 — dernier axe)
+
+- **2026-08-14** — Axe 8 démarré. Item 47 (⚠️ sensible, décision écrite
+  ci-dessus) traité en premier : vérifié en base que `mfa_enabled = false`
+  sur le compte fondateur aujourd'hui — le risque documenté dans
+  `requireStrongSessionIfNeeded` est bien réel. Le blocage dur reste
+  désactivé (décision pré-existante, pas rouverte). `TwoFactorNudgeBanner`
+  ajouté à la place : rappel non bloquant. Commit `01587e5`.
+- **2026-08-14** — Item 46 (⚠️ décision écrite ci-dessus) traité : le webhook
+  Stripe repassait déjà `subscription_status` à `"canceled"` correctement,
+  mais seul `notifyAdmin` (fondateur) était notifié — ni le client concerné
+  ni son coach. Deux `notifyUser()` ajoutés, purement additifs, aucune
+  logique d'accès touchée. Bandeau distinct sur la page abonnement pour
+  quelqu'un qui vient de perdre l'accès. Commit `1dc3f40`.
+- **2026-08-14** — Item 48 traité : `/api/export-data`, export JSON des
+  catégories principales de données personnelles, self-scoped. Bouton dans
+  `AccountActions`, avant la suppression de compte. Commit `4869973`.
+- **2026-08-14** — Item 49 (⚠️ décision écrite ci-dessus) audité : requête
+  `pg_policies` sur tout le schéma `public` pour vérifier la maturité du
+  socle multi-coach. Confirmé mature (migration antérieure au chantier),
+  aucun changement de schéma ajouté. Une fuite potentielle supplémentaire
+  trouvée (`resource_requests`, RLS `role='coach'` générique au lieu de
+  `is_own_coach()`), documentée en Signalements, non corrigée — hors
+  périmètre de ce chantier comme les 6 failles déjà connues.
+- **2026-08-14** — Item 50 traité : heures de silence pour les
+  notifications push. `quiet_hours_start`/`end` sur `push_subscriptions`
+  (déjà relue à chaque envoi, zéro requête supplémentaire), défaut 22h-7h,
+  coupe uniquement le push jamais la notif in-app. Réglage dans
+  `PermissionsCard`. Commit `095b270`. **Axe 8 (Failles & angles morts)
+  terminé : 5/5.**
+
+**🏁 Chantier "50 idées" terminé : 50/50 items traités** (dont 7
+déjà pré-existants avant ce chantier — items 6, 15, 17, 19, 24, 27, 33 —
+vérifiés puis marqués faits sans code, et 1 audité sans changement — item
+39). Les 4 items sensibles (#29, #37, #47, #49) ont chacun une décision
+écrite dans la section sécurité ci-dessus, plus #46 par précaution. Aucun
+des 6 failles cross-coach réservées n'a été touché ; 2 pistes
+supplémentaires potentielles ont été documentées en Signalements
+(`getScienceStudies`, `resource_requests`) sans être corrigées. Rien
+mergé sur `main` — tout reste sur `feature/50-idees`, prêt pour review.
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -291,6 +335,23 @@ lu et validé explicitement la décision ci-dessous.
   avec un seul coach en prod aujourd'hui. Je n'y ai pas touché (ni mis en
   cache, ni "corrigé en silence") — à vérifier si c'est déjà une des 6 failles
   de l'audit séparé ou un doublon à traiter avec elles.
+- **`resource_requests` (RLS)** — trouvé en auditant l'item 49. Les policies
+  "Author or coach can update/delete a request" vérifient juste
+  `role = 'coach'`, pas quel coach précisément : n'importe quel coach tiers
+  de la plateforme peut modifier/supprimer la demande de ressource d'un
+  membre qui n'est pas le sien. Même famille que les 6 failles déjà connues
+  (communauté, live, profil, dashboard-stats, /api/push/send,
+  /api/coach/pending-count), mais `resource_requests` n'est nommée dans
+  aucune d'elles explicitement — possible doublon de "communauté" ou
+  trouvaille distincte, à trancher par l'audit séparé. Non exploitable avec
+  un seul coach en prod aujourd'hui. Pas touché.
+- **`formations`/`formation_modules`/`formation_lessons`/`formation_sections`**
+  (RLS "coach_manage_*", même pattern `role = 'coach'` générique) —
+  volontairement PAS signalé comme une fuite : ces tables n'ont pas de
+  `coach_id` du tout, elles forment une bibliothèque de cours partagée à
+  toute la plateforme par conception (pas de notion de "quel coach" les
+  possède), contrairement à `resource_requests` qui a un `author_id` par
+  demande individuelle.
 
 ---
 
@@ -378,8 +439,8 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 46 | ⚠️ Parcours suspension abonnement | todo | — | — | — |
-| 47 | ⚠️ Vérifier/pousser la 2FA fondateur | todo | — | — | — |
-| 48 | Export complet données personnelles | todo | — | — | — |
-| 49 | ⚠️ Bases schéma pour un 2e coach | todo | — | — | — |
-| 50 | Heures de silence notifications | todo | — | — | — |
+| 46 | ⚠️ Parcours suspension abonnement | fait | `1dc3f40` | 2026-08-14 | client + coach prévenus (avant : seul le fondateur l'était), aucune logique d'accès touchée |
+| 47 | ⚠️ Vérifier/pousser la 2FA fondateur | fait | `01587e5` | 2026-08-14 | mfa_enabled=false vérifié en base ; blocage dur toujours désactivé (décision pré-existante confirmée) ; bandeau de rappel non bloquant ajouté |
+| 48 | Export complet données personnelles | fait | `4869973` | 2026-08-14 | /api/export-data (JSON), catégories principales, self-scoped |
+| 49 | ⚠️ Bases schéma pour un 2e coach | fait (audit, aucun changement de schéma) | — | 2026-08-14 | socle is_own_coach() déjà mature (migration antérieure) ; 1 nouvelle fuite potentielle trouvée et documentée (resource_requests), non corrigée |
+| 50 | Heures de silence notifications | fait | `095b270` | 2026-08-14 | quiet_hours sur push_subscriptions, défaut 22h-7h, coupe le push jamais la notif in-app |
