@@ -156,8 +156,9 @@ Axes A (cache après mutation), B (échecs silencieux côté UI), C
 jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
 sans nom accessible), G (champs de formulaire sans nom accessible), H
 (pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
-et index), J (images de contenu sans texte alternatif) et K (`href` sur
-URL stockée sans `safeExternalUrl`) sont clos — détail de chacun plus
+et index), J (images de contenu sans texte alternatif), K (`href` sur URL
+stockée sans `safeExternalUrl`) et L ("aujourd'hui" calculé en UTC côté
+serveur au lieu de l'heure de Paris) sont clos — détail de chacun plus
 bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
@@ -1203,3 +1204,83 @@ grep -rn "href=\{[^}]*[Uu]rl[^}]*\}" --include="*.tsx" app/ components/
   précis — une variable stockant une URL sans "url" dans son nom
   échapperait à cette recherche. Signal faible attendu si relancé (un
   seul vrai cas trouvé sur 8 candidats), mais pas garanti exhaustif.
+
+## Axe L — "Aujourd'hui" calculé en UTC côté serveur au lieu de l'heure de Paris
+
+**Statut : clos** (2026-08-15, corrigé en urgence suite à un blocage
+signalé en direct sur le bilan client).
+
+**Le problème** : cette appli est 100% francophone (voir `AGENTS.md`) et
+Vercel exécute son code en UTC. `new Date().toISOString().split("T")[0]`
+côté serveur donne la date UTC, pas celle de l'utilisateur. Entre minuit
+et 1h/2h du matin heure de Paris (1h en hiver, 2h en été à cause du
+changement d'heure), le serveur croit encore être la veille. Pendant
+cette fenêtre, tout ce qui dépend d'un "aujourd'hui" calculé côté serveur
+(bilan, nutrition, pas, séances, photos, mindset) pointait sur la
+mauvaise date pour l'utilisateur — pages affichant/enregistrant sur le
+mauvais jour, sans que rien ne le signale.
+
+**Déclencheur concret** : signalé en direct un soir d'été à 1h32 heure de
+Paris (23h32 UTC), pile dans la fenêtre à risque — le client ne pouvait
+plus enregistrer son bilan du jour ("tu ne peux modifier que le bilan du
+jour").
+
+**Corrigé** :
+- Nouveau helper partagé `lib/dates.ts` → `todayInParis()`, basé sur
+  `Intl.DateTimeFormat` avec `timeZone: "Europe/Paris"` et
+  `formatToParts()`, qui gère automatiquement le passage heure d'été/hiver
+  (contrairement à un simple décalage fixe +1h/+2h qui serait faux la
+  moitié de l'année).
+- Remplacement de `new Date().toISOString().split("T")[0]` par
+  `todayInParis()` dans tous les endroits côté serveur qui calculent
+  "aujourd'hui" (pas les décalages relatifs du type "il y a N jours", qui
+  restent en UTC — l'écart d'un jour à la frontière est un signal
+  beaucoup plus faible là où l'exactitude au jour près n'est pas
+  déterminante) : routes API, server actions, Server Components, fonctions
+  `utils/*.ts`. Détail dans le commit `d2b0e0f`.
+- **La cause précise du blocage en direct** : `app/dashboard/client/bilan/
+  page.tsx` avait déjà été corrigé (`todayInParis()`) dans cette même
+  passe, mais `app/dashboard/client/bilan/actions.ts` validait encore le
+  `log_date` soumis contre un `today`/`yesterday` calculés séparément en
+  UTC (`const now = new Date(); now.toISOString().split("T")[0]` — une
+  variante en deux lignes, pas le littéral exact `new
+  Date().toISOString().split("T")[0]` cherché par le script de la
+  première passe, d'où son absence de la liste initiale). Résultat : la
+  page affichait le bon "aujourd'hui" (Paris) mais l'action refusait de
+  l'enregistrer parce que son "aujourd'hui" à elle (UTC) ne correspondait
+  plus. Recalculé en heure de Paris avec la même tolérance "hier"
+  (nécessaire car le formulaire peut rester ouvert pendant le changement
+  de jour).
+
+**Vérifié SAIN — ne pas toucher** : tous les composants `"use client"`
+(`lib/pedometer.ts`, `StepsClient`, `TrackingClient`, `MindsetView`,
+`RoadmapView`, `CoachFinanceTracker`, `RecipesClient`, `RoadmapEditor`,
+`BilanProgressView`, `CoachNotesView`, `RoadmapContextPanel`, etc.) — leur
+`new Date()` tourne dans le navigateur de l'utilisateur, déjà en heure
+locale correcte. Les faire basculer vers `todayInParis()` serait une
+régression inutile (et dans certains cas franchement faux si
+l'utilisateur n'est pas en France).
+
+tsc/eslint (fichiers touchés)/build vérifiés propres avant push.
+
+**Méthode utilisée** (relançable) :
+```bash
+grep -rn 'toISOString\(\)\.split\("T"\)\[0\]' --include="*.ts" --include="*.tsx" .
+# Pour chaque résultat : le fichier a-t-il "use client" en tête (-> sain,
+# ignorer) ? Sinon, l'appel calcule-t-il vraiment "aujourd'hui" (new
+# Date() sans argument, ou une variable "now"/"today" assignée juste
+# avant) plutôt qu'un décalage relatif ("il y a N jours", une date
+# stockée reformulée) ? Si oui -> remplacer par todayInParis().
+```
+
+### Reste à faire sur cet axe
+
+- Les décalages relatifs ("il y a N jours", débuts de semaine, curseurs
+  de plage) n'ont volontairement pas été touchés — risque réel mais bien
+  plus faible (erreur d'un jour à la frontière d'une fenêtre de N jours,
+  pas un blocage total). À revisiter si un symptôme concret apparaît.
+- `app/dashboard/coach/moi/bilan/actions.ts` utilise `todayInParis()`
+  sans la tolérance "hier" que `client/bilan/actions.ts` a maintenant —
+  cohérent avec la page (même today des deux côtés) donc pas de bug actif,
+  mais une fenêtre de course plus étroite existe encore si le coach
+  charge la page juste avant minuit et soumet juste après. Pas prioritaire.
