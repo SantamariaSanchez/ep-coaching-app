@@ -109,6 +109,21 @@ export default async function AbonnementPage() {
         >
           Cette page ne concerne que ça : avoir un vrai coach humain, en plus. Tout ce que tu utilises déjà dans l&apos;app (programme, logbook, nutrition, bilan, communauté...) reste gratuit, à vie, que tu réserves un appel ou non.
         </p>
+        {/* Item 46 : distinct de "jamais été client" — quelqu'un qui vient de
+            perdre l'accès mérite un message qui reconnaît ce qui s'est
+            passé plutôt que le pitch marketing générique ci-dessous. */}
+        {profile?.subscription_status === "canceled" && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 10,
+            background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)",
+            borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 14,
+          }}>
+            <p style={{ margin: 0, fontSize: 12.5, color: "#fbbf24", fontWeight: 600, lineHeight: 1.5 }}>
+              Ton coaching payant s&apos;est arrêté. Tu gardes l&apos;accès à tous les outils gratuits — pour
+              réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.
+            </p>
+          </div>
+        )}
         {!alreadySubscribed && (
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 6,
