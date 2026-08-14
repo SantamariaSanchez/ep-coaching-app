@@ -84,6 +84,48 @@ export async function setClientSubscriptionStatus(
   return { success: true };
 }
 
+// Item 43 : essai coaching limité dans le temps — mêmes accès qu'un
+// coaching payant (réutilise setClientSubscriptionStatus tel quel, donc
+// calibrage/notif d'onboarding déjà gérés), avec juste une date de fin en
+// plus. Le cron expire-trials repasse le client en gratuit à l'échéance.
+export async function startCoachingTrial(
+  clientId: string,
+  days: number
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireOwnClient(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  if (!Number.isFinite(days) || days < 1 || days > 60) {
+    return { error: "Durée d'essai invalide (1 à 60 jours)." };
+  }
+
+  const activation = await setClientSubscriptionStatus(clientId, "active", {
+    note: `Essai gratuit ${days} jours`,
+  });
+  if (activation.error) return activation;
+
+  const trialEndsAt = new Date();
+  trialEndsAt.setDate(trialEndsAt.getDate() + days);
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ trial_ends_at: trialEndsAt.toISOString() })
+    .eq("id", clientId);
+  if (error) return { error: error.message };
+
+  notifyUser(clientId, {
+    type: "trial_started",
+    title: "🎁 Essai coaching activé",
+    body: `Tu as accès à tout le coaching pendant ${days} jours, sans engagement.`,
+    url: "/dashboard/client",
+    senderId: guard.userId,
+  }).catch(() => {});
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}`);
+  return { success: true };
+}
+
 export async function getSubscriptionHistory(clientId: string): Promise<
   { id: string; status: string; plan: string | null; next_billing_date: string | null; note: string | null; created_at: string }[]
 > {

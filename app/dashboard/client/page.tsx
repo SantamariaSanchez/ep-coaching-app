@@ -6,6 +6,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getLatestCoachNote } from "@/utils/notes";
 import { getClientIntake } from "@/utils/client-intake";
 import { getPeriodLogs } from "@/utils/period-tracking";
+import { getTrialDaysLeft } from "@/utils/coaching-trial";
 import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
@@ -19,6 +20,7 @@ import {
   Dumbbell, Apple, Trophy, HelpCircle, BookOpen, Crown, ArrowRight, GraduationCap, Lock,
   Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
   Droplet,
+  Gift,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
@@ -551,7 +553,7 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -575,6 +577,9 @@ export default async function ClientDashboard({
     // Item 32 : uniquement pour savoir si la relance ci-dessous doit
     // s'afficher, évite d'aller chercher les logs pour tout le monde.
     intake.gender === "Femme" ? getPeriodLogs(user.id).then((l) => l.length) : Promise.resolve(0),
+    // Item 43 : null pour la quasi-totalité des clients (coaching payant
+    // classique, pas d'essai en cours) — juste une lecture ciblée en plus.
+    getTrialDaysLeft(user.id),
   ]);
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
@@ -611,6 +616,25 @@ export default async function ClientDashboard({
       }}
     >
       <PushPermission userId={user.id} />
+
+      {/* ── Essai coaching en cours (item 43) ─────────────────────────────────── */}
+      {trialDaysLeft != null && (
+        <div
+          className="animate-fade-up"
+          style={{
+            display: "flex", alignItems: "center", gap: 12, marginBottom: 20,
+            padding: "14px 18px", borderRadius: 14,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.14) 0%, rgba(137,4,4,0.08) 100%)",
+            border: "1px solid rgba(224,30,30,0.3)",
+          }}
+        >
+          <Gift size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>
+            Essai coaching gratuit — se termine dans {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""}
+          </p>
+        </div>
+      )}
+
       {/* ── Header ──────────────────────────────────────────────────────────── */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
