@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare } from "lucide-react";
+import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
 import {
   updateLessonYoutube,
@@ -111,6 +111,19 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   const [openSections, setOpenSections] = useState<Set<string>>(
     new Set(formation.modules.flatMap(m => m.sections.map(s => s.id)))
   );
+  // MASTERCLASS.md Axe B : la quasi-totalité des actions de cet éditeur
+  // (renommer, ajouter, supprimer, réordonner...) ignoraient un `.error`
+  // éventuel — en cas d'échec (permission, contrainte, réseau), le coach
+  // n'avait aucun retour, juste un router.refresh() qui ne montre rien de
+  // changé. runAction() centralise la vérification pour ne plus avoir à y
+  // penser à chaque nouvel handler.
+  const [actionError, setActionError] = useState<string | null>(null);
+
+  async function runAction<T extends { error?: string }>(fn: () => Promise<T>): Promise<T> {
+    const res = await fn();
+    setActionError(res.error ?? null);
+    return res;
+  }
 
   function toggleModule(id: string) {
     setOpenModules(prev => {
@@ -130,7 +143,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function saveYoutube(lessonId: string, url: string, published: boolean) {
     setSaving(lessonId);
-    const res = await updateLessonYoutube(lessonId, url, published);
+    const res = await runAction(() => updateLessonYoutube(lessonId, url, published));
     setSaving(null);
     if (!res.error) {
       setSaved(lessonId);
@@ -140,7 +153,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function saveLessonDetails(lessonId: string, data: { description?: string; duration_min?: number }) {
     setSaving(`details-${lessonId}`);
-    const res = await updateLessonDetails(lessonId, data);
+    const res = await runAction(() => updateLessonDetails(lessonId, data));
     setSaving(null);
     if (!res.error) {
       setSaved(lessonId);
@@ -151,111 +164,130 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
   async function togglePublish() {
     setSaving("formation");
-    await updateFormation(formation.id, { is_published: !formation.is_published });
+    await runAction(() => updateFormation(formation.id, { is_published: !formation.is_published }));
     setSaving(null);
   }
 
   async function renameFormation(title: string) {
-    await updateFormation(formation.id, { title });
-    router.refresh();
+    const res = await runAction(() => updateFormation(formation.id, { title }));
+    if (!res.error) router.refresh();
   }
 
   async function renameModule(moduleId: string, title: string) {
-    await updateModuleTitle(moduleId, title);
-    router.refresh();
+    const res = await runAction(() => updateModuleTitle(moduleId, title));
+    if (!res.error) router.refresh();
   }
 
   async function renameSection(sectionId: string, title: string) {
-    await updateSectionTitle(sectionId, title);
-    router.refresh();
+    const res = await runAction(() => updateSectionTitle(sectionId, title));
+    if (!res.error) router.refresh();
   }
 
   async function renameLessonTitle(lessonId: string, title: string) {
-    await updateLessonTitle(lessonId, title);
-    router.refresh();
+    const res = await runAction(() => updateLessonTitle(lessonId, title));
+    if (!res.error) router.refresh();
   }
 
   async function handleAddModule() {
     const title = prompt("Titre de la section :");
     if (!title?.trim()) return;
-    await addModule(formation.id, title.trim(), formation.modules.length);
-    router.refresh();
+    const res = await runAction(() => addModule(formation.id, title.trim(), formation.modules.length));
+    if (!res.error) router.refresh();
   }
 
   async function handleAddSection(moduleId: string, currentCount: number) {
     const title = prompt("Titre du module :");
     if (!title?.trim()) return;
-    await addSection(moduleId, title.trim(), currentCount);
-    router.refresh();
+    const res = await runAction(() => addSection(moduleId, title.trim(), currentCount));
+    if (!res.error) router.refresh();
   }
 
   async function handleAddLesson(sectionId: string, currentCount: number) {
     const title = prompt("Titre de la vidéo :");
     if (!title?.trim()) return;
-    await addLesson(sectionId, title.trim(), currentCount);
-    router.refresh();
+    const res = await runAction(() => addLesson(sectionId, title.trim(), currentCount));
+    if (!res.error) router.refresh();
   }
 
   async function handleDeleteModule(moduleId: string, title: string) {
     if (!confirm(`Supprimer la section "${title}" et tout son contenu (modules, vidéos) ?`)) return;
-    await deleteModule(moduleId);
-    router.refresh();
+    const res = await runAction(() => deleteModule(moduleId));
+    if (!res.error) router.refresh();
   }
 
   async function handleDeleteSection(sectionId: string, title: string) {
     if (!confirm(`Supprimer le module "${title}" et ses vidéos ?`)) return;
-    await deleteSection(sectionId);
-    router.refresh();
+    const res = await runAction(() => deleteSection(sectionId));
+    if (!res.error) router.refresh();
   }
 
   async function handleDeleteLesson(lessonId: string, title: string) {
     if (!confirm(`Supprimer la vidéo "${title}" ?`)) return;
-    await deleteLesson(lessonId);
-    router.refresh();
+    const res = await runAction(() => deleteLesson(lessonId));
+    if (!res.error) router.refresh();
   }
 
   async function handleDeleteFormation() {
     if (!confirm(`Supprimer définitivement la formation "${formation.title}" et tout son contenu ? Cette action est irréversible.`)) return;
-    const res = await deleteFormation(formation.id);
+    const res = await runAction(() => deleteFormation(formation.id));
     if (!res.error) router.push("/dashboard/coach/formations");
   }
 
   async function saveMetaField(field: "subtitle" | "description" | "emoji", value: string) {
-    await updateFormation(formation.id, { [field]: value });
-    router.refresh();
+    const res = await runAction(() => updateFormation(formation.id, { [field]: value }));
+    if (!res.error) router.refresh();
   }
 
   async function handleMoveModule(moduleId: string, direction: "up" | "down") {
-    await moveModule(formation.id, moduleId, direction);
-    router.refresh();
+    const res = await runAction(() => moveModule(formation.id, moduleId, direction));
+    if (!res.error) router.refresh();
   }
 
   async function handleMoveSection(moduleId: string, sectionId: string, direction: "up" | "down") {
-    await moveSection(moduleId, sectionId, direction);
-    router.refresh();
+    const res = await runAction(() => moveSection(moduleId, sectionId, direction));
+    if (!res.error) router.refresh();
   }
 
   async function handleMoveLesson(sectionId: string, lessonId: string, direction: "up" | "down") {
-    await moveLesson(sectionId, lessonId, direction);
-    router.refresh();
+    const res = await runAction(() => moveLesson(sectionId, lessonId, direction));
+    if (!res.error) router.refresh();
   }
 
   async function handleDuplicateModule(moduleId: string) {
     setSaving(`dup-${moduleId}`);
-    await duplicateModule(moduleId);
+    const res = await runAction(() => duplicateModule(moduleId));
     setSaving(null);
-    router.refresh();
+    if (!res.error) router.refresh();
   }
 
   async function handlePublishSection(sectionId: string, publish: boolean) {
     setSaving(`pub-${sectionId}`);
-    await publishSectionLessons(sectionId, publish);
+    const res = await runAction(() => publishSectionLessons(sectionId, publish));
     setSaving(null);
-    router.refresh();
+    if (!res.error) router.refresh();
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {actionError && (
+        <div
+          role="alert"
+          style={{
+            display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 10,
+            background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.3)",
+          }}
+        >
+          <AlertTriangle size={14} style={{ color: "#f87171", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 12, color: "#f87171", flex: 1 }}>{actionError}</p>
+          <button
+            type="button"
+            onClick={() => setActionError(null)}
+            style={{ background: "none", border: "none", color: "#f87171", cursor: "pointer", fontSize: 12, fontWeight: 700, padding: 4 }}
+          >
+            OK
+          </button>
+        </div>
+      )}
       {/* Formation meta */}
       <div className="ep-card" style={{ padding: "16px 18px" }}>
         <div style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid rgba(224,30,30,0.08)" }}>

@@ -124,10 +124,50 @@ détail (l'esprit de la demande est "petit à petit", pas un plan figé) :
 - Cohérence de la gestion d'erreur dans les server actions (certaines
   retournent `{ error }`, d'autres lèvent, certaines avalent l'erreur
   silencieusement en `catch {}` sans log).
-- États de chargement/optimistes manquants sur d'autres actions cliquables
-  (au-delà de nutrition/formations, désormais couvertes).
 - Accessibilité clavier sur les éléments cliquables construits en `<div
   onClick>` plutôt qu'un vrai `<button>` (repéré ponctuellement dans ce
   chantier, jamais audité systématiquement).
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs.
+
+## Axe B — Échecs silencieux : résultat d'action jamais vérifié côté UI
+
+**Statut : première passe faite (2026-08-14), un cas net corrigé.**
+
+Repéré en poursuivant l'Axe A avec une grille de lecture différente : un
+composant qui `await` une server action sans jamais regarder si elle a
+renvoyé `{ error }` produit exactement le symptôme que l'utilisateur venait
+de signaler ("je fais X et rien ne se passe") — mais par une cause
+différente (pas un problème de cache, un problème d'UI qui ignore l'échec).
+
+**Corrigé** : `CoachFormationEditor.tsx` — 15 des ~17 handlers (renommer,
+ajouter, supprimer, réordonner, dupliquer, publier une section...)
+appelaient leur action puis faisaient un `router.refresh()` inconditionnel
+sans jamais lire `.error`. En cas d'échec (permission, contrainte réseau),
+le coach n'avait aucun signal — juste un refresh qui ne change rien à
+l'écran. Ajouté un helper `runAction()` qui centralise la vérification +
+un état d'erreur partagé affiché en bandeau (`role="alert"`) en haut de
+l'éditeur, pour ne plus avoir à y penser à chaque nouvel handler.
+
+**Méthode utilisée** (relançable, à affiner — beaucoup de faux positifs
+légitimes à trier à la main) :
+```bash
+# Appels await en tête de ligne (résultat jeté), hors fetch()/notify*/
+# awardPoints déjà volontairement fire-and-forget :
+grep -rnE '^\s*await [a-zA-Z]+\(' --include="*.tsx" components/ app/ \
+  | grep -viE "\.(catch|then)\(|awardPoints|notifyUser|notifyAdmin|notifyCoach|sendPush|checkHabitStreak"
+```
+73 résultats à l'exécution du 2026-08-14 — la plupart sont soit des
+callbacks `onSave`/`onDelete` qui délèguent à un parent (pas forcément un
+bug, à vérifier au cas par cas dans le composant appelant), soit du
+fire-and-forget légitime. `CoachFormationEditor.tsx` avait la plus forte
+concentration (14 occurrences) et le vrai motif "aucun retour visible en
+cas d'échec" — traité en priorité pour cette raison.
+
+### Reste à faire sur cet axe
+
+- Les ~59 autres résultats du grep n'ont pas été triés un par un — la
+  prochaine passe sur cet axe devrait reprendre la liste complète (gardée
+  dans l'historique git de ce fichier / relançable via la commande
+  ci-dessus) et vérifier chaque site d'appel, pas seulement celui qui avait
+  la plus forte concentration.
