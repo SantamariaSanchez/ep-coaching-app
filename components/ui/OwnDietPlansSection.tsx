@@ -50,8 +50,9 @@ export default function OwnDietPlansSection({
           <PlanBuilder
             foods={foods}
             onCreate={async (name, mode, meals, structure) => {
-              await createOwnDietPlan(name, mode, meals, structure);
-              setShowBuilder(false);
+              const result = await createOwnDietPlan(name, mode, meals, structure);
+              if (!result.error) setShowBuilder(false);
+              return result;
             }}
           />
         </div>

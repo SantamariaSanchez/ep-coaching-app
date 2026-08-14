@@ -132,7 +132,8 @@ détail (l'esprit de la demande est "petit à petit", pas un plan figé) :
 
 ## Axe B — Échecs silencieux : résultat d'action jamais vérifié côté UI
 
-**Statut : première passe faite (2026-08-14), un cas net corrigé.**
+**Statut : deux passes faites (2026-08-14), 5 cas corrigés dont un risque
+réel de perte de données.**
 
 Repéré en poursuivant l'Axe A avec une grille de lecture différente : un
 composant qui `await` une server action sans jamais regarder si elle a
@@ -164,9 +165,35 @@ fire-and-forget légitime. `CoachFormationEditor.tsx` avait la plus forte
 concentration (14 occurrences) et le vrai motif "aucun retour visible en
 cas d'échec" — traité en priorité pour cette raison.
 
+**Deuxième passe — le plus grave trouvé cette session** : en triant
+d'autres candidats de la même liste, `PlanBuilder` (`DietPlanManager.tsx`,
+utilisé pour construire un plan de diète client OU un modèle) avait un
+contrat `onCreate: Promise<void>` — littéralement impossible pour le
+composant de savoir si la sauvegarde avait réussi. `handleSave` affichait
+"Enregistré" et **effaçait tout le formulaire** (jusqu'à des dizaines de
+repas saisis à la main) même quand la création échouait côté serveur —
+un vrai risque de perte de travail pour un coach, pas juste une coche mal
+affichée. Corrigé en changeant le contrat en `Promise<{ error?: string }>`
+et en ne vidant le formulaire que si la sauvegarde a vraiment réussi (sur
+échec : le formulaire reste intact, l'erreur déjà affichée via l'état
+`error` existant du composant). Trois appelants mis à jour pour propager
+le résultat au lieu de l'avaler (`CoachClientNutritionTabs.tsx`,
+`OwnDietPlansSection.tsx`, `ProgrammationHub.tsx`).
+
+Deux autres cas corrigés dans la foulée, même famille (résultat jamais
+vérifié) :
+- `ClientNutritionView.tsx` (`handleDeleteSavedMeal`,
+  `handleTogglePlanItem` côté suppression) : suppression optimiste jamais
+  annulée en cas d'échec serveur — repris le filet de sécurité déjà
+  utilisé par `handleDelete` juste à côté dans le même fichier (motif déjà
+  correct localement, juste pas partout).
+- `StepsClient.tsx` / `TrackingClient.tsx` : affichaient "Enregistré ✓"
+  inconditionnellement après `logSteps`/`updateStepGoal`/`logBiometrics`,
+  qu'il y ait eu une erreur ou non — un faux positif, pire qu'un silence.
+
 ### Reste à faire sur cet axe
 
-- Les ~59 autres résultats du grep n'ont pas été triés un par un — la
+- Les ~54 résultats restants du grep n'ont pas été triés un par un — la
   prochaine passe sur cet axe devrait reprendre la liste complète (gardée
   dans l'historique git de ce fichier / relançable via la commande
   ci-dessus) et vérifier chaque site d'appel, pas seulement celui qui avait

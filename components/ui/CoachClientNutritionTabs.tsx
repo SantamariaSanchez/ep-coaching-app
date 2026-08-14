@@ -465,8 +465,9 @@ export default function CoachClientNutritionTabs({
                 }
                 saveAsTemplate={saveDietAsTemplate}
                 onCreate={async (name, mode, meals, structure, objective, dayNotes, socialNotes) => {
-                  await createDietPlan(clientId, name, mode, meals, structure, objective, dayNotes, socialNotes);
-                  setShowBuilder(false);
+                  const result = await createDietPlan(clientId, name, mode, meals, structure, objective, dayNotes, socialNotes);
+                  if (!result.error) setShowBuilder(false);
+                  return result;
                 }}
               />
             </div>

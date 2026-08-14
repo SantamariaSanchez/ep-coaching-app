@@ -138,6 +138,10 @@ export default function StepsClient({
   const [completed, setCompleted] = useState<Set<string>>(new Set(todayLog?.completed_items ?? []));
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState<number | null>(null);
+  // MASTERCLASS.md Axe B : ces handlers affichaient "Enregistré ✓" même
+  // quand logSteps/updateStepGoal échouait côté serveur — pire qu'un échec
+  // silencieux, un faux positif qui affirme que ça a marché.
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const [reminderOpenFor, setReminderOpenFor] = useState<string | null>(null);
   const [reminderTime, setReminderTime] = useState("12:00");
@@ -230,8 +234,13 @@ export default function StepsClient({
     const next = Math.max(0, todaySteps + amount);
     setStepsInput(String(next));
     setSaving(true);
-    await logSteps(today, next, [...completed]);
+    const res = await logSteps(today, next, [...completed]);
     setSaving(false);
+    if (res.error) {
+      setSaveError(res.error);
+      return;
+    }
+    setSaveError(null);
     setSavedAt(Date.now());
     setTimeout(() => setSavedAt(null), 2000);
   }
@@ -243,8 +252,13 @@ export default function StepsClient({
     // automatique et annulerait silencieusement la remise à zéro.
     pedometer.resetCount(0);
     setSaving(true);
-    await logSteps(today, 0, [...completed]);
+    const res = await logSteps(today, 0, [...completed]);
     setSaving(false);
+    if (res.error) {
+      setSaveError(res.error);
+      return;
+    }
+    setSaveError(null);
     setSavedAt(Date.now());
     setTimeout(() => setSavedAt(null), 2000);
   }
@@ -259,7 +273,12 @@ export default function StepsClient({
 
   async function handleSaveGoal() {
     if (!updateStepGoal) return;
-    await updateStepGoal(goal);
+    const res = await updateStepGoal(goal);
+    if (res.error) {
+      setSaveError(res.error);
+      return;
+    }
+    setSaveError(null);
     setEditingGoal(false);
   }
 
@@ -292,8 +311,13 @@ export default function StepsClient({
   async function handleSaveToday() {
     if (!logSteps) return;
     setSaving(true);
-    await logSteps(today, todaySteps, [...completed]);
+    const res = await logSteps(today, todaySteps, [...completed]);
     setSaving(false);
+    if (res.error) {
+      setSaveError(res.error);
+      return;
+    }
+    setSaveError(null);
     setSavedAt(Date.now());
     setTimeout(() => setSavedAt(null), 2000);
   }
@@ -461,6 +485,11 @@ export default function StepsClient({
                 {saving ? "…" : savedAt ? <><Check size={13} /> Ok</> : "Enregistrer"}
               </button>
             </div>
+            {saveError && (
+              <p className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
+                <AlertTriangle size={12} /> {saveError}
+              </p>
+            )}
           </>
         )}
       </div>

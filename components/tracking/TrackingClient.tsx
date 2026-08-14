@@ -228,6 +228,9 @@ export default function TrackingClient({
   const [saved, setSaved] = useState(false);
   const [disconnecting, setDisconnecting] = useState(false);
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
+  // MASTERCLASS.md Axe B : handleSave affichait "Enregistré" même quand
+  // logBiometrics échouait côté serveur.
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   async function handleDisconnect() {
     if (!disconnectOura) return;
@@ -239,7 +242,7 @@ export default function TrackingClient({
   async function handleSave() {
     if (!logBiometrics) return;
     setSaving(true);
-    await logBiometrics({
+    const res = await logBiometrics({
       logDate: today,
       sleepHours: sleepHours ? parseFloat(sleepHours) : null,
       readinessScore: readiness ? parseInt(readiness) : null,
@@ -247,6 +250,11 @@ export default function TrackingClient({
       restingHr: restingHr ? parseInt(restingHr) : null,
     });
     setSaving(false);
+    if (res.error) {
+      setSaveError(res.error);
+      return;
+    }
+    setSaveError(null);
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }
@@ -382,6 +390,11 @@ export default function TrackingClient({
           >
             {saving ? "Analyse…" : saved ? <><CheckCircle2 size={13} /> Enregistré</> : "Enregistrer & analyser"}
           </button>
+          {saveError && (
+            <p className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
+              <AlertTriangle size={12} /> {saveError}
+            </p>
+          )}
         </div>
       )}
 

@@ -220,8 +220,9 @@ export default function ProgrammationHub({
               <PlanBuilder
                 foods={foods}
                 onCreate={async (name, mode, meals, structure, objective) => {
-                  await createDietTemplate(name, mode, meals, structure, objective);
-                  setShowDietBuilder(false);
+                  const result = await createDietTemplate(name, mode, meals, structure, objective);
+                  if (!result.error) setShowDietBuilder(false);
+                  return result;
                 }}
               />
             </div>

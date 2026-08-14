@@ -789,14 +789,40 @@ export default function ClientNutritionView({
 
   async function handleDeleteSavedMeal(mealId: string) {
     if (!deleteSavedMeal) return;
+    // MASTERCLASS.md Axe B : résultat jamais vérifié — en cas d'échec
+    // serveur, le repas supprimé optimistiquement ne revenait qu'au
+    // prochain chargement complet de la page, un état trompeur entre
+    // temps. Même filet de sécurité que handleDelete ci-dessous.
+    const idx = savedMeals.findIndex((m) => m.id === mealId);
+    const backup = savedMeals[idx];
     setSavedMeals((prev) => prev.filter((m) => m.id !== mealId));
-    await deleteSavedMeal(mealId);
+    const result = await deleteSavedMeal(mealId);
+    if (result?.error && backup) {
+      setSavedMeals((prev) => {
+        const next = [...prev];
+        next.splice(Math.min(idx, next.length), 0, backup);
+        return next;
+      });
+    }
   }
 
   async function handleTogglePlanItem(meal: DietPlanMeal, matchedLogId: string | undefined) {
     if (matchedLogId) {
+      // Même filet de sécurité que handleDelete : sans vérifier le
+      // résultat, une coche décochée optimistiquement restait décochée en
+      // apparence même si la suppression serveur échouait, jusqu'au
+      // prochain chargement complet.
+      const idx = todayLogs.findIndex((l) => l.id === matchedLogId);
+      const backup = todayLogs[idx];
       setTodayLogs((prev) => prev.filter((l) => l.id !== matchedLogId));
-      await removeFoodLog(matchedLogId);
+      const result = await removeFoodLog(matchedLogId);
+      if (result.error && backup) {
+        setTodayLogs((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+      }
       return;
     }
     if (!meal.foods) return;

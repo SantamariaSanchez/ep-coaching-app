@@ -351,6 +351,11 @@ export function PlanBuilder({
   roadmapHref,
 }: {
   foods: Food[];
+  // MASTERCLASS.md Axe B : ce contrat était Promise<void> — impossible pour
+  // handleSave ci-dessous de savoir si la création a réussi. En pratique le
+  // formulaire (parfois des dizaines de repas saisis à la main) était
+  // effacé et "Enregistré" affiché même quand la sauvegarde échouait
+  // côté serveur, un vrai risque de perte de travail pour le coach.
   onCreate: (
     name: string,
     mode: DietMode,
@@ -359,7 +364,7 @@ export function PlanBuilder({
     objective?: string,
     dayNotes?: Record<string, string>,
     socialNotes?: string
-  ) => Promise<void>;
+  ) => Promise<{ error?: string }>;
   intake?: ClientIntake | null;
   /**
    * Modèles de diète du coach, proposés en point de départ : on charge la
@@ -625,7 +630,7 @@ export function PlanBuilder({
     const cleanDayNotes = Object.fromEntries(
       Object.entries(dayNotes).filter(([, v]) => (v ?? "").trim() !== "")
     ) as Record<string, string>;
-    await onCreate(
+    const result = await onCreate(
       planName.trim(),
       mode,
       buildMealInputs(),
@@ -635,6 +640,13 @@ export function PlanBuilder({
       socialNotes.trim() || undefined
     );
     setSaving(false);
+    // Échec : on garde tout le formulaire tel quel (rien de pire que de
+    // perdre un plan saisi à la main parce que le serveur a renvoyé une
+    // erreur) et on l'affiche clairement au lieu d'un faux "Enregistré".
+    if (result.error) {
+      setError(result.error);
+      return;
+    }
     setSuccess(true);
     setPlanName("");
     setObjective("");
