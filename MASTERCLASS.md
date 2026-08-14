@@ -33,7 +33,8 @@ Par passe, un axe précis (pas "améliore tout au hasard") :
 
 ## Axe A — Cohérence de l'invalidation de cache après mutation
 
-**Statut : première passe faite (2026-08-14).**
+**Statut : clos (première passe le 2026-08-14, vérification fonction par
+fonction le 2026-08-15).**
 
 Origine : bug remonté par l'utilisateur — cocher un aliment en nutrition
 fonctionnait (l'insert réussissait) mais réapparaissait décoché après avoir
@@ -103,19 +104,48 @@ done
 grep -rn "export async function \(toggle\|mark\|check\|complete\|log\)" app/ --include="*.ts" -i
 ```
 
+**Passe fonction par fonction (2026-08-15, clôture de l'axe)** : le point
+resté ouvert ci-dessous ("une fonction isolée oubliée dans un fichier qui
+a par ailleurs des revalidations correctes") enfin traité correctement,
+avec un vrai script plutôt qu'un grep global. `find-unrevalidated-
+functions.mjs` (scratchpad) : pour chaque fichier `"use server"` sous
+`app/`, isole le corps de CHAQUE fonction exportée (via un compteur
+d'accolades, pas une regex naïve) et vérifie individuellement si CETTE
+fonction contient à la fois une mutation (`.insert/.update/.upsert/
+.delete`) et un appel `revalidatePath`/`revalidateTag`/`redirect` — plus
+le piège du grep par fichier qui avait laissé passer nutrition/formations
+inaperçus au départ.
+
+**Résultat : seulement 4 candidats sur ~60 fichiers d'actions passés en
+revue, et les 4 sont des faux positifs / non-problèmes vérifiés un par
+un** :
+- `markLessonComplete`/`unmarkLessonComplete`
+  (`formations/actions.ts`) — déjà corrigés depuis le tout début de cette
+  session (voir plus haut), juste invisibles au script car la
+  revalidation passe par un helper nommé `revalidateFormations()`, pas un
+  appel `revalidatePath` littéral dans le corps de la fonction.
+- `selfSignup`/`signupCoach` (`app/auth/{client,coach}/actions.ts`) —
+  créent un compte flambant neuf : la personne n'a aucune session ni page
+  déjà en cache à invalider (elle n'a jamais eu de vue de ces données
+  avant), et `revalidatePath` n'aurait de toute façon aucun effet sur
+  l'onglet déjà ouvert d'un tiers (un coach dont un nouveau client vient
+  de s'inscrire) — ce n'est pas comme ça que fonctionne la revalidation
+  Next.js. Motif déjà identifié et documenté plus haut pour
+  `onboarding/actions.ts`, confirmé ici aussi.
+
+**Conclusion de l'axe** : la discipline de revalidation de ce projet est
+réellement complète sur les ~60 fichiers d'actions — l'inquiétude
+initiale ("un passage fonction par fonction serait un gros chantier")
+s'avère non fondée une fois vérifiée avec le bon outil. Axe A
+définitivement clos, aucune passe supplémentaire nécessaire sauf
+apparition de nouveau code.
+
 ### Reste à faire sur cet axe
 
 - `progression` et `roadmap` (coach/moi) pas encore vérifiés en détail
   (composants dédiés `CoachMoiRoadmapView` etc., pas encore ouverts) — état
   plutôt en lecture/édition ponctuelle côté coach, risque a priori plus bas
   que les checklists quotidiennes déjà couvertes, mais pas confirmé.
-- La passe 1 (grossière, par fichier) ne détecte pas une fonction isolée
-  oubliée dans un fichier qui a par ailleurs des revalidations correctes
-  ailleurs — c'est exactement comme ça que nutrition/formations sont
-  passés sous le radar une fois qu'on ne regarde plus que les fichiers à
-  zéro revalidation. Une vraie couverture demanderait un passage fonction
-  par fonction sur les ~60 fichiers d'actions, pas juste un grep global —
-  gros chantier, à faire par petits lots plutôt que d'un coup.
 
 ## Prochains axes (pas commencés)
 
