@@ -36,7 +36,7 @@ function Q({
       <label className={lbl}>
         {question} {required && <span className="text-[#E01E1E]">*</span>}
       </label>
-      <textarea name={name} rows={rows} placeholder={placeholder} className={inp} required={required} />
+      <textarea aria-label={question} name={name} rows={rows} placeholder={placeholder} className={inp} required={required} />
     </div>
   );
 }

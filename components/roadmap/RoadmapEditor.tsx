@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, isValidElement, cloneElement } from "react";
 import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange } from "lucide-react";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import RoadmapCalendar from "@/components/roadmap/RoadmapCalendar";
@@ -68,11 +68,20 @@ const labelStyle: React.CSSProperties = {
   display: "block",
 };
 
+// Le <span> visuel n'a aucun lien programmatique avec son champ (pas de
+// <label>/htmlFor) — un lecteur d'écran n'annonce que "champ de texte",
+// sans dire lequel. On clone le champ pour lui injecter le texte du label
+// en aria-label plutôt que de restructurer le DOM (risque zéro sur la
+// mise en page existante, contrairement à englober le champ dans le span).
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const field =
+    isValidElement(children) && !(children.props as { "aria-label"?: string })["aria-label"]
+      ? cloneElement(children as React.ReactElement<{ "aria-label"?: string }>, { "aria-label": label })
+      : children;
   return (
     <div>
       <span style={labelStyle}>{label}</span>
-      {children}
+      {field}
     </div>
   );
 }
@@ -284,13 +293,15 @@ function ObjectiveCard({
                 type="number"
                 value={obj.target_value ?? ""}
                 onChange={(e) => onChange({ target_value: parseFloat(e.target.value) || null })}
-                placeholder="0" aria-label="0"
+                placeholder="0"
+                aria-label={`Valeur cible (${typeConfig.unit})`}
                 style={{ ...inputStyle, flex: 1 }}
               />
               <input
                 type="text"
                 value={obj.target_unit ?? typeConfig.unit}
                 onChange={(e) => onChange({ target_unit: e.target.value })}
+                aria-label="Unité"
                 style={{ ...inputStyle, width: 60 }}
               />
             </div>
@@ -325,6 +336,7 @@ function ObjectiveCard({
               type="date"
               value={obj.achieved_at ?? ""}
               onChange={(e) => onChange({ achieved_at: e.target.value })}
+              aria-label="Date d'atteinte de l'objectif"
               style={{ ...inputStyle, marginTop: 6 }}
             />
           )}

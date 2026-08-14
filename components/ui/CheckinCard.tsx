@@ -157,7 +157,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
           <label style={{ display: "block", fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 6 }}>
             Note (/10)
           </label>
-          <select
+          <select aria-label="Note (/10)"
             name="coach_rating"
             defaultValue={checkin.coach_rating ? String(checkin.coach_rating) : ""}
             style={{

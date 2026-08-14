@@ -795,7 +795,7 @@ function LessonEditor({
               />
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <label style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>Durée (min)</label>
-                <input
+                <input aria-label="Durée (min)"
                   type="number"
                   min={1}
                   value={durationMin}

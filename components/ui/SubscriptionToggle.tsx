@@ -132,7 +132,7 @@ export default function SubscriptionToggle({
               <label className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                 Plan
               </label>
-              <select
+              <select aria-label="Plan"
                 value={plan}
                 onChange={(e) => setPlan(e.target.value)}
                 className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-[#E01E1E]/50"
@@ -149,7 +149,7 @@ export default function SubscriptionToggle({
               <label className="text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                 Prochaine échéance
               </label>
-              <input
+              <input aria-label="Prochaine échéance"
                 type="date"
                 value={nextBillingDate}
                 onChange={(e) => setNextBillingDate(e.target.value)}

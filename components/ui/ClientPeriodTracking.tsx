@@ -130,11 +130,11 @@ export default function ClientPeriodTracking({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Date de début</label>
-              <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
+              <input aria-label="Date de début" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>Date de fin (optionnel)</label>
-              <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
+              <input aria-label="Date de fin (optionnel)" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputClass} />
             </div>
           </div>
           <div>
@@ -171,7 +171,7 @@ export default function ClientPeriodTracking({
           </div>
           <div>
             <label className={labelClass}>Notes</label>
-            <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputClass} resize-none`} />
+            <textarea aria-label="Notes" rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} className={`${inputClass} resize-none`} />
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
           <div className="flex gap-2">

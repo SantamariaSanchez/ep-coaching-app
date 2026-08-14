@@ -139,7 +139,7 @@ function CaloriesCalculator() {
 
       <div>
         <label className={labelCls}>Niveau d&apos;activité</label>
-        <select value={activity} onChange={(e) => setActivity(e.target.value)} className={inputCls}>
+        <select aria-label="Niveau d&apos;activité" value={activity} onChange={(e) => setActivity(e.target.value)} className={inputCls}>
           {ACTIVITY_MULTIPLIERS.map((m) => (
             <option key={m.key} value={m.key}>{m.label}</option>
           ))}

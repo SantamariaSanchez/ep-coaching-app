@@ -1412,7 +1412,7 @@ export default function ProgramEditor({
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
               Split
             </label>
-            <select
+            <select aria-label="Split"
               value={state.type}
               onChange={(e) => updateMeta("type", e.target.value)}
               className={inputCls}
@@ -1738,7 +1738,7 @@ export default function ProgramEditor({
                               <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
                                 {label}
                               </label>
-                              <input
+                              <input aria-label={label}
                                 type={type}
                                 min={type === "number" ? "0" : undefined}
                                 value={ex[field]}
@@ -1778,7 +1778,7 @@ export default function ProgramEditor({
                             <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
                               Groupe musculaire
                             </label>
-                            <select
+                            <select aria-label="Groupe musculaire"
                               value={ex.muscle_group}
                               onChange={(e) =>
                                 updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)
@@ -1824,7 +1824,7 @@ export default function ProgramEditor({
                               <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
                                 Sous-groupe
                               </label>
-                              <select
+                              <select aria-label="Sous-groupe"
                                 value={ex.muscle_subgroup}
                                 onChange={(e) =>
                                   updateExercise(
@@ -1895,7 +1895,7 @@ export default function ProgramEditor({
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                   Nom du modèle
                 </label>
-                <input
+                <input aria-label="Nom du modèle"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={state.name || "Ex. PPL Hypertrophie 5x/semaine"}

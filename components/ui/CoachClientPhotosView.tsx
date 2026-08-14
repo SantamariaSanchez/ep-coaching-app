@@ -41,7 +41,7 @@ function CompetitionSettings({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className={labelCls}>Catégorie compétition</label>
-          <select
+          <select aria-label="Catégorie compétition"
             name="competition_category"
             defaultValue={client.competition_category ?? ""}
             className={inputCls}
@@ -65,7 +65,7 @@ function CompetitionSettings({
         </div>
         <div>
           <label className={labelCls}>Date de compétition</label>
-          <input
+          <input aria-label="Date de compétition"
             name="competition_date"
             type="date"
             defaultValue={client.competition_date ?? ""}

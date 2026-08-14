@@ -648,17 +648,69 @@ concernés : `AddRecipeForm.tsx` (13), `RoadmapEditor.tsx` (14),
 Vérifié qu'aucun champ déjà couvert par un vrai `<label>` (implicite ou
 via `htmlFor`) n'a été touché par erreur.
 
+**Deuxième passe (suite directe, même jour)** : sur les 201 restants,
+beaucoup suivaient un motif repéré très fréquent — un `<label>` visuel
+juste avant le champ (sibling, pas parent), sans `htmlFor`, donc sans
+lien programmatique malgré la présence d'un vrai `<label>`. Nouveau
+script (`label-sibling-aria.mjs`) qui repère ce motif exact et copie le
+texte du `<label>` en `aria-label` sur le champ voisin, **sans toucher au
+DOM ni à la mise en page** (contrairement à une première tentative
+envisagée — englober le champ dans le `<label>` — voir l'erreur évitée
+ci-dessous). 69 champs corrigés sur 22 fichiers.
+
+**Erreur évitée avant commit** : la première version de ce correctif
+englobait le champ directement DANS le `<label>` (label implicite) au
+lieu de lui ajouter un `aria-label`. Repéré en relisant le diff : la
+plupart de ces labels utilisent une classe/style avec `mb-1.5` /
+`marginBottom: 6` pour créer un espace visuel entre le texte du label et
+le champ — un espace qui n'existe QUE parce que ce sont deux éléments
+frères. En englobant le champ dans le label, ce dernier devient un
+enfant, et la marge du label s'applique alors après le bloc entier
+(texte + champ réunis) au lieu d'entre les deux — l'espacement visuel
+label/champ aurait disparu sur les ~120 champs concernés. Tout annulé
+(`git checkout` fichier par fichier) avant tout commit, refait avec
+`aria-label` en attribut plutôt qu'en restructuration du DOM — zéro
+risque visuel, même résultat d'accessibilité.
+
+**Deux composants `Field` partagés corrigés à la source** (au lieu d'un
+correctif champ par champ) : `ClientIntakeForm.tsx` (44 champs — toute la
+fiche de renseignements client passe par un seul composant `Field`) et
+`RoadmapEditor.tsx` (12 champs, même motif avec un `<span>` au lieu d'un
+`<label>` — encore pire, un span n'a aucune sémantique de label du tout).
+Dans les deux cas, le composant `Field` clone son enfant
+(`cloneElement`) pour lui injecter `aria-label={label}` — répare tous les
+usages du composant d'un coup, sans script à relancer à chaque nouveau
+champ ajouté au formulaire à l'avenir. Complété par 4 `aria-label` manuels
+sur les champs qui échappent à ce mécanisme (un `<div>` regroupant deux
+`<input>` dans un seul `Field`, où le clone ne peut atteindre que le
+`<div>` parent, pas les inputs à l'intérieur).
+
+**Bug de script trouvé par tsc avant tout commit** : la détection "est-ce
+une unique expression JS `{...}`" du script ne vérifiait que les premier/
+dernier caractères, pas l'équilibrage réel des accolades — un label
+`{question} {required && <span>*</span>}` (deux expressions distinctes
+séparées par un espace, pas une seule) a été mal détecté comme une seule
+expression réutilisable, produisant un JSX invalide
+(`aria-label={question} {required && ...}`) dans `CheckinForm.tsx`.
+`tsc --noEmit` a immédiatement signalé l'erreur de syntaxe avant tout
+commit — corrigé à la main (une seule occurrence sur tout le projet,
+vérifié par grep). Rappel utile : même un script "mécanique" appliqué à
+grande échelle doit être suivi de la même discipline tsc/eslint/build
+que n'importe quel code écrit à la main, pas traité comme automatiquement
+sûr parce qu'il est généré.
+
 ### Reste à faire sur cet axe
 
-- Les 201 champs sans `placeholder` exploitable (repérés mais pas
-  corrigés) restent à trier par petits lots, avec lecture du contexte
-  pour chacun (ex. un `type="number"` de poids a probablement un `<span>`
-  ou un label visuel juste à côté qu'il suffit de lier ou de reprendre en
-  `aria-label`, mais ça demande de vérifier au cas par cas plutôt que de
-  deviner).
-- Les `aria-label` ajoutés reprennent parfois un texte d'exemple plutôt
-  qu'une vraie description du champ (ex. `placeholder="Ex. 12"` sur un
-  champ "durée en semaines" donne `aria-label="Ex. 12"`, pas
-  "Durée en semaines") — mieux que rien pour un lecteur d'écran (au moins
-  un nom), mais pas idéal ; une passe de relecture ciblée sur les
-  placeholders de type "Ex. ..." pourrait affiner ces libellés un jour.
+- ~77 champs restent sans nom accessible après ces deux passes (aucun
+  `placeholder`, pas de `<label>`/`<span>` sibling au motif reconnu par
+  les scripts) — nécessitent une lecture individuelle du contexte,
+  remis à une passe future plutôt que de deviner un texte au hasard.
+- Les `aria-label` ajoutés depuis un `placeholder` reprennent parfois un
+  texte d'exemple plutôt qu'une vraie description du champ (ex.
+  `placeholder="Ex. 12"` donne `aria-label="Ex. 12"`, pas
+  "Durée en semaines") — mieux que rien, mais pas idéal ; une relecture
+  ciblée des placeholders de type "Ex. ..." pourrait affiner ça un jour.
+- Le détecteur d'"expression JS unique" (bug `CheckinForm.tsx` ci-dessus)
+  a été corrigé à la main pour ce cas précis, pas réécrit avec une vraie
+  vérification d'équilibrage dans le script gardé au scratchpad — à
+  refaire proprement si ce script est relancé un jour sur du nouveau code.

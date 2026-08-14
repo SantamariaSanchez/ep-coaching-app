@@ -2112,7 +2112,7 @@ export default function ClientNutritionView({
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                   Catégorie
                 </label>
-                <select
+                <select aria-label="Catégorie"
                   value={createForm.category}
                   onChange={(e) =>
                     setCreateForm((p) => ({ ...p, category: e.target.value }))

@@ -457,7 +457,7 @@ function SubmissionForm({
         <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
           Notes / Ressenti (facultatif)
         </label>
-        <textarea
+        <textarea aria-label="Notes / Ressenti (facultatif)"
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}

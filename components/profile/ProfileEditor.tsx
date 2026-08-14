@@ -88,7 +88,7 @@ export default function ProfileEditor({
           <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
             Prénom et nom
           </label>
-          <input
+          <input aria-label="Prénom et nom"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white focus:outline-none transition-colors"

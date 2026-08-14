@@ -199,7 +199,7 @@ function WeeklyNoteForm({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div>
           <label className={labelCls}>Phase</label>
-          <select
+          <select aria-label="Phase"
             value={form.phase}
             onChange={(e) => set("phase", e.target.value)}
             className={inputCls}
@@ -224,7 +224,7 @@ function WeeklyNoteForm({
         </div>
         <div>
           <label className={labelCls}>Variation vs S-1</label>
-          <input
+          <input aria-label="Variation vs S-1"
             type="number"
             step="0.1"
             value={form.weight_variation}
@@ -435,7 +435,7 @@ function KeyDecisionForm({
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Date</label>
-              <input
+              <input aria-label="Date"
                 type="date"
                 value={form.decision_date}
                 onChange={(e) => set("decision_date", e.target.value)}
@@ -444,7 +444,7 @@ function KeyDecisionForm({
             </div>
             <div>
               <label className={labelCls}>Type</label>
-              <select
+              <select aria-label="Type"
                 value={form.type}
                 onChange={(e) => set("type", e.target.value)}
                 className={inputCls}

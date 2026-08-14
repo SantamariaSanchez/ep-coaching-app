@@ -195,7 +195,7 @@ function ExerciseForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelCls}>Groupe musculaire</label>
-          <select
+          <select aria-label="Groupe musculaire"
             value={muscleGroup}
             onChange={(e) => { setMuscleGroup(e.target.value); setMuscleSubgroup(""); }}
             className={inputCls}
@@ -207,7 +207,7 @@ function ExerciseForm({
         </div>
         <div>
           <label className={labelCls}>Sous-groupe (optionnel)</label>
-          <select value={muscleSubgroup} onChange={(e) => setMuscleSubgroup(e.target.value)} className={inputCls} disabled={subgroups.length === 0}>
+          <select aria-label="Sous-groupe (optionnel)" value={muscleSubgroup} onChange={(e) => setMuscleSubgroup(e.target.value)} className={inputCls} disabled={subgroups.length === 0}>
             <option value="">-</option>
             {subgroups.map((s) => (
               <option key={s} value={s}>{s}</option>
@@ -219,7 +219,7 @@ function ExerciseForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <label className={labelCls}>Matériel</label>
-          <select value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
+          <select aria-label="Matériel" value={equipment} onChange={(e) => setEquipment(e.target.value)} className={inputCls}>
             <option value="">-</option>
             {EQUIPMENT_OPTIONS.map((e) => (
               <option key={e} value={e}>{e}</option>
@@ -228,7 +228,7 @@ function ExerciseForm({
         </div>
         <div>
           <label className={labelCls}>Marque de machine (optionnel)</label>
-          <select value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
+          <select aria-label="Marque de machine (optionnel)" value={brand} onChange={(e) => setBrand(e.target.value)} className={inputCls}>
             <option value="">-</option>
             {MACHINE_BRANDS.map((b) => (
               <option key={b} value={b}>{b}</option>
@@ -237,7 +237,7 @@ function ExerciseForm({
         </div>
         <div>
           <label className={labelCls}>Type</label>
-          <select value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)} className={inputCls}>
+          <select aria-label="Type" value={category} onChange={(e) => setCategory(e.target.value as ExerciseCategory)} className={inputCls}>
             <option value="">-</option>
             {Object.entries(CATEGORY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -246,7 +246,7 @@ function ExerciseForm({
         </div>
         <div>
           <label className={labelCls}>Difficulté</label>
-          <select value={difficulty} onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)} className={inputCls}>
+          <select aria-label="Difficulté" value={difficulty} onChange={(e) => setDifficulty(e.target.value as ExerciseDifficulty)} className={inputCls}>
             <option value="">-</option>
             {Object.entries(DIFFICULTY_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
@@ -274,7 +274,7 @@ function ExerciseForm({
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div>
               <label className={labelCls}>Position</label>
-              <select value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
+              <select aria-label="Position" value={position} onChange={(e) => setPosition(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {POSITION_OPTIONS.map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -283,7 +283,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Liberté mvt</label>
-              <select value={freedomOfMovement} onChange={(e) => setFreedomOfMovement(e.target.value)} className={inputCls}>
+              <select aria-label="Liberté mvt" value={freedomOfMovement} onChange={(e) => setFreedomOfMovement(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -292,7 +292,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Uni / Bi</label>
-              <select value={isUnilateral} onChange={(e) => setIsUnilateral(e.target.value as typeof isUnilateral)} className={inputCls}>
+              <select aria-label="Uni / Bi" value={isUnilateral} onChange={(e) => setIsUnilateral(e.target.value as typeof isUnilateral)} className={inputCls}>
                 <option value="">-</option>
                 <option value="uni">Uni</option>
                 <option value="bi">Bi</option>
@@ -300,7 +300,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Microchargeable</label>
-              <select value={microloadable} onChange={(e) => setMicroloadable(e.target.value as typeof microloadable)} className={inputCls}>
+              <select aria-label="Microchargeable" value={microloadable} onChange={(e) => setMicroloadable(e.target.value as typeof microloadable)} className={inputCls}>
                 <option value="">-</option>
                 <option value="oui">Oui</option>
                 <option value="non">Non</option>
@@ -308,7 +308,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Facile à répliquer</label>
-              <select value={easyToReplicate} onChange={(e) => setEasyToReplicate(e.target.value)} className={inputCls}>
+              <select aria-label="Facile à répliquer" value={easyToReplicate} onChange={(e) => setEasyToReplicate(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -317,7 +317,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Difficulté d&apos;apprentissage</label>
-              <select value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
+              <select aria-label="Difficulté d&apos;apprentissage" value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -326,7 +326,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Stabilité</label>
-              <select value={stabilityDemand} onChange={(e) => setStabilityDemand(e.target.value)} className={inputCls}>
+              <select aria-label="Stabilité" value={stabilityDemand} onChange={(e) => setStabilityDemand(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>
@@ -335,7 +335,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>Accessibilité</label>
-              <select value={accessibility} onChange={(e) => setAccessibility(e.target.value)} className={inputCls}>
+              <select aria-label="Accessibilité" value={accessibility} onChange={(e) => setAccessibility(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>

@@ -415,7 +415,7 @@ export default function NutritionForm({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className={labelCls}>Type d&apos;entraînement</label>
-            <select
+            <select aria-label="Type d&apos;entraînement"
               value={form.trainingType}
               onChange={(e) => set("trainingType", e.target.value)}
               className={inputCls}
@@ -470,7 +470,7 @@ export default function NutritionForm({
           </div>
           <div>
             <label className={labelCls}>Activité professionnelle</label>
-            <select
+            <select aria-label="Activité professionnelle"
               value={form.activityLevel}
               onChange={(e) => set("activityLevel", e.target.value)}
               className={inputCls}
@@ -508,7 +508,7 @@ export default function NutritionForm({
         </div>
         <div>
           <label className={labelCls}>Ajustement calorique</label>
-          <select
+          <select aria-label="Ajustement calorique"
             value={form.adjustment}
             onChange={(e) => set("adjustment", e.target.value)}
             disabled={form.phase === "maintenance"}

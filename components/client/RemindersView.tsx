@@ -188,7 +188,7 @@ function ReminderForm({
           <label style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.7)", display: "block", marginBottom: 8 }}>
             Heure
           </label>
-          <input
+          <input aria-label="Heure"
             type="time"
             value={time}
             onChange={(e) => setTime(e.target.value)}

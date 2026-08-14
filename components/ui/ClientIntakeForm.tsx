@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, isValidElement, cloneElement } from "react";
 import { Save, Check, Target } from "lucide-react";
 import type { ClientIntake, ClientIntakeInput } from "@/utils/client-intake";
 import { ALLERGEN_LABELS, DIET_LABELS, type Allergen, type Diet } from "@/lib/recipes-data";
@@ -17,11 +17,22 @@ function Section({ title }: { title: string }) {
   );
 }
 
+// Le <label> est un frère du champ, pas son parent (pas de htmlFor) — sans
+// lien programmatique, un lecteur d'écran n'annonce que "champ de texte"
+// sur les ~44 champs de cette fiche. On clone le champ pour lui injecter
+// le texte du label en aria-label plutôt que de l'englober dans le
+// <label> (englober aurait cassé le mb-1.5 qui espace visuellement le
+// label du champ, puisque cette marge ne s'appliquerait plus qu'après le
+// bloc label+champ réuni, pas entre les deux).
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  const field =
+    isValidElement(children) && !(children.props as { "aria-label"?: string })["aria-label"]
+      ? cloneElement(children as React.ReactElement<{ "aria-label"?: string }>, { "aria-label": label })
+      : children;
   return (
     <div>
       <label className={labelClass}>{label}</label>
-      {children}
+      {field}
     </div>
   );
 }

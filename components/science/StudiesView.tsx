@@ -70,16 +70,16 @@ function StudyForm({ initial, onSave, onCancel }: {
       </div>
       <div>
         <label className={labelCls}>Hypothèse</label>
-        <textarea value={hypothesis} onChange={(e) => setHypothesis(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
+        <textarea aria-label="Hypothèse" value={hypothesis} onChange={(e) => setHypothesis(e.target.value)} rows={2} className={`${inputCls} resize-none`} />
       </div>
       <div>
         <label className={labelCls}>Protocole / méthodologie</label>
-        <textarea value={protocol} onChange={(e) => setProtocol(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
+        <textarea aria-label="Protocole / méthodologie" value={protocol} onChange={(e) => setProtocol(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div>
           <label className={labelCls}>Statut</label>
-          <select value={status} onChange={(e) => setStatus(e.target.value as ScienceStudy["status"])} className={inputCls}>
+          <select aria-label="Statut" value={status} onChange={(e) => setStatus(e.target.value as ScienceStudy["status"])} className={inputCls}>
             {Object.entries(STUDY_STATUS_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
@@ -87,20 +87,20 @@ function StudyForm({ initial, onSave, onCancel }: {
         </div>
         <div>
           <label className={labelCls}>Participants</label>
-          <input type="number" min="0" value={participantCount} onChange={(e) => setParticipantCount(e.target.value)} className={inputCls} />
+          <input aria-label="Participants" type="number" min="0" value={participantCount} onChange={(e) => setParticipantCount(e.target.value)} className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Date de début</label>
-          <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} />
+          <input aria-label="Date de début" type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Date de fin</label>
-          <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} />
+          <input aria-label="Date de fin" type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className={inputCls} />
         </div>
       </div>
       <div>
         <label className={labelCls}>Résultats (optionnel)</label>
-        <textarea value={results} onChange={(e) => setResults(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
+        <textarea aria-label="Résultats (optionnel)" value={results} onChange={(e) => setResults(e.target.value)} rows={3} className={`${inputCls} resize-none`} />
       </div>
 
       {error && <p className="text-xs text-red-400">{error}</p>}

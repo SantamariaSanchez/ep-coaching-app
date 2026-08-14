@@ -901,11 +901,11 @@ export default function WeeklyAgenda({
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className={labelClass}>Début</label>
-                  <input type="time" value={form.start_time} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className={inputClass} />
+                  <input aria-label="Début" type="time" value={form.start_time} onChange={(e) => setForm((f) => ({ ...f, start_time: e.target.value }))} className={inputClass} />
                 </div>
                 <div>
                   <label className={labelClass}>Fin</label>
-                  <input type="time" value={form.end_time} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className={inputClass} />
+                  <input aria-label="Fin" type="time" value={form.end_time} onChange={(e) => setForm((f) => ({ ...f, end_time: e.target.value }))} className={inputClass} />
                 </div>
               </div>
             </div>
@@ -935,7 +935,7 @@ export default function WeeklyAgenda({
 
             <div>
               <label className={labelClass}>Notes (optionnel)</label>
-              <textarea
+              <textarea aria-label="Notes (optionnel)"
                 rows={2}
                 value={form.notes ?? ""}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value || null }))}

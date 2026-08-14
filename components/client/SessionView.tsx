@@ -956,7 +956,7 @@ function SetRow({
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Poids (kg)
               </label>
-              <input
+              <input aria-label="Poids (kg)"
                 type="number"
                 inputMode="decimal"
                 placeholder={
@@ -978,7 +978,7 @@ function SetRow({
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Reps
               </label>
-              <input
+              <input aria-label="Reps"
                 type="number"
                 inputMode="numeric"
                 placeholder={
@@ -998,7 +998,7 @@ function SetRow({
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 RIR réel
               </label>
-              <select
+              <select aria-label="RIR réel"
                 value={set.rirActual}
                 onChange={(e) => onChange({ rirActual: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
@@ -1016,7 +1016,7 @@ function SetRow({
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Exécution
               </label>
-              <select
+              <select aria-label="Exécution"
                 value={set.standardizationScore}
                 onChange={(e) =>
                   onChange({ standardizationScore: e.target.value })

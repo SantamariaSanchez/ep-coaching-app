@@ -297,7 +297,7 @@ export default function ProgramTemplateEditor({
             <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
               Split
             </label>
-            <select value={state.type} onChange={(e) => updateMeta("type", e.target.value)} className={inputCls}>
+            <select aria-label="Split" value={state.type} onChange={(e) => updateMeta("type", e.target.value)} className={inputCls}>
               {SPLIT_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
               ))}
@@ -473,7 +473,7 @@ export default function ProgramTemplateEditor({
                                 <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-0.5">
                                   {label}
                                 </label>
-                                <input
+                                <input aria-label={label}
                                   type={type}
                                   min={type === "number" ? "0" : undefined}
                                   value={ex[field]}
@@ -497,7 +497,7 @@ export default function ProgramTemplateEditor({
                               <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
                                 Groupe musculaire
                               </label>
-                              <select
+                              <select aria-label="Groupe musculaire"
                                 value={ex.muscle_group}
                                 onChange={(e) => updateExerciseMuscleGroup(day.localId, ex.localId, e.target.value)}
                                 className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"
@@ -537,7 +537,7 @@ export default function ProgramTemplateEditor({
                               <label className="text-[7px] font-bold uppercase tracking-widest text-[#F5EDED]/25 block mb-0.5">
                                 Sous-groupe
                               </label>
-                              <select
+                              <select aria-label="Sous-groupe"
                                 value={ex.muscle_subgroup}
                                 onChange={(e) => updateExercise(day.localId, ex.localId, "muscle_subgroup", e.target.value)}
                                 className="w-full bg-[#1f0101]/80 border border-[#890404]/20 rounded px-2 py-1 text-[10px] text-white focus:outline-none focus:border-[#890404]/50 transition-colors"

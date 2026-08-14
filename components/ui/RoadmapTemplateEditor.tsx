@@ -379,7 +379,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Type
                       </label>
-                      <select
+                      <select aria-label="Type"
                         value={phase.type}
                         onChange={(e) => {
                           const newType = e.target.value;
@@ -400,7 +400,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Label
                       </label>
-                      <input
+                      <input aria-label="Label"
                         value={phase.label}
                         onChange={(e) => updatePhase(phase.localId, { label: e.target.value })}
                         placeholder={colors.label}
@@ -411,7 +411,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Semaine de début
                       </label>
-                      <input
+                      <input aria-label="Semaine de début"
                         type="number"
                         min="0"
                         value={phase.start_week_offset}
@@ -423,7 +423,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Semaine de fin
                       </label>
-                      <input
+                      <input aria-label="Semaine de fin"
                         type="number"
                         min="0"
                         value={phase.end_week_offset}
@@ -501,7 +501,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Type
                       </label>
-                      <select
+                      <select aria-label="Type"
                         value={m.type}
                         onChange={(e) => {
                           const t = MILESTONE_TYPES.find((x) => x.value === e.target.value);
@@ -518,7 +518,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Semaine cible
                       </label>
-                      <input
+                      <input aria-label="Semaine cible"
                         type="number"
                         min="0"
                         value={m.week_offset}
@@ -530,7 +530,7 @@ export default function RoadmapTemplateEditor({
                       <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
                         Label
                       </label>
-                      <input
+                      <input aria-label="Label"
                         value={m.label}
                         onChange={(e) => updateMilestone(m.localId, { label: e.target.value })}
                         placeholder={typeConfig?.label ?? "Jalon"}

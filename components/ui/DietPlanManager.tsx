@@ -1156,7 +1156,7 @@ export function PlanBuilder({
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                   Nom du modèle
                 </label>
-                <input
+                <input aria-label="Nom du modèle"
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
                   placeholder={planName || "Ex. Sèche 2000 kcal, 4 repas"}
@@ -1294,7 +1294,7 @@ export function PlanBuilder({
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                     Quantité (g)
                   </label>
-                  <input
+                  <input aria-label="Quantité (g)"
                     autoFocus
                     type="number"
                     min="1"
