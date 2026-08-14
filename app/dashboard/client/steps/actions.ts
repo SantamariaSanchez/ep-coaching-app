@@ -26,7 +26,8 @@ export async function updateStepGoal(dailyGoal: number): Promise<{ error?: strin
     revalidatePath("/dashboard/client/steps");
     revalidatePath("/dashboard/coach/moi/steps");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateStepGoal error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -57,7 +58,8 @@ export async function addRoutineItem(
     revalidatePath("/dashboard/client/steps");
     revalidatePath("/dashboard/coach/moi/steps");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("addRoutineItem error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -78,7 +80,8 @@ export async function deleteRoutineItem(id: string): Promise<{ error?: string }>
     revalidatePath("/dashboard/client/steps");
     revalidatePath("/dashboard/coach/moi/steps");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteRoutineItem error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -110,7 +113,8 @@ export async function logSteps(
     notifyCoachIfGoalReached(userId, logDate, stepsActual).catch(() => {});
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("logSteps error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -171,7 +175,8 @@ export async function createReminderFromRoutine(label: string, time: string): Pr
     if (error) return { error: "Erreur lors de la création du rappel." };
     revalidatePath("/dashboard/client/reminders");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("createReminderFromRoutine error:", e);
     return { error: "Erreur inattendue." };
   }
 }

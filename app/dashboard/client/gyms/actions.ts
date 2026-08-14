@@ -53,7 +53,8 @@ export async function createGym(input: CreateGymInput): Promise<{ error?: string
     if (error || !data) return { error: "Erreur lors de la création." };
     refresh();
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createGym error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -80,7 +81,8 @@ export async function updateGym(id: string, input: CreateGymInput): Promise<{ er
     if (error) return { error: "Erreur lors de la mise à jour." };
     refresh();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateGym error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -134,7 +136,8 @@ export async function seedOfficialGyms(): Promise<{ error?: string; inserted?: n
 
     refresh();
     return { inserted: missing.length, updated: toSync.length };
-  } catch {
+  } catch (e) {
+    console.error("seedOfficialGyms error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -149,7 +152,8 @@ export async function deleteGym(id: string): Promise<{ error?: string }> {
     if (error) return { error: "Erreur lors de la suppression." };
     refresh();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteGym error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -176,7 +180,8 @@ export async function upsertGymReview(
     if (error) return { error: "Erreur lors de l'enregistrement de l'avis." };
     refresh();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("upsertGymReview error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -190,7 +195,8 @@ export async function deleteGymReview(reviewId: string): Promise<{ error?: strin
     await supabase.from("gym_reviews").delete().eq("id", reviewId).eq("author_id", guard.userId);
     refresh();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteGymReview error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -221,7 +227,8 @@ export async function setMyGym(
     refresh();
     revalidatePath(`/dashboard/coach/clients/${clientId}`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("setMyGym error:", e);
     return { error: "Erreur inattendue." };
   }
 }

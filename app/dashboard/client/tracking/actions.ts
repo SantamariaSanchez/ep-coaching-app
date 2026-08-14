@@ -22,7 +22,8 @@ export async function disconnectOura(): Promise<{ error?: string }> {
     revalidatePath("/dashboard/client/tracking");
     revalidatePath("/dashboard/coach/moi/tracking");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("disconnectOura error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -97,7 +98,8 @@ export async function logBiometrics(input: LogBiometricsInput): Promise<{ error?
     revalidatePath("/dashboard/client/tracking");
     revalidatePath("/dashboard/coach/moi/tracking");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("logBiometrics error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -123,7 +125,8 @@ export async function acknowledgeBiometricInsight(insightId: string): Promise<{ 
     revalidatePath("/dashboard/client/tracking");
     revalidatePath("/dashboard/coach/moi/tracking");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("acknowledgeBiometricInsight error:", e);
     return { error: "Erreur inattendue." };
   }
 }

@@ -171,7 +171,8 @@ export async function suggestSupplement(
     }
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("suggestSupplement error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -194,7 +195,8 @@ export async function setSupplementStatus(
     if (error) return { error: "Erreur lors de la mise à jour." };
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("setSupplementStatus error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -216,7 +218,8 @@ export async function deleteSupplement(
     if (error) return { error: "Erreur lors de la suppression." };
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteSupplement error:", e);
     return { error: "Erreur inattendue." };
   }
 }

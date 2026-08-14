@@ -174,7 +174,11 @@ export async function addFoodLog(params: {
     revalidatePath("/dashboard/coach/moi/nutrition");
 
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    // MASTERCLASS.md Axe D : ce catch avalait toute exception inattendue
+    // sans laisser de trace — un "ça ne marche pas" remonté par un client
+    // n'aurait laissé aucune piste dans les logs serveur pour diagnostiquer.
+    console.error("addFoodLog error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -198,7 +202,8 @@ export async function removeFoodLog(
     revalidatePath("/dashboard/coach/moi/nutrition");
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("removeFoodLog error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -253,7 +258,8 @@ export async function createCustomFood(params: {
     }
     updateTag("foods");
     return { food: data as Food };
-  } catch {
+  } catch (e) {
+    console.error("createCustomFood error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -278,7 +284,8 @@ export async function updateFoodPrepNotes(
     if (error) return { error: "Erreur lors de l'enregistrement." };
     updateTag("foods");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateFoodPrepNotes error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -337,7 +344,8 @@ export async function createOwnDietPlan(
 
     revalidatePath("/dashboard/client/nutrition");
     return { id: plan.id };
-  } catch {
+  } catch (e) {
+    console.error("createOwnDietPlan error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -361,7 +369,8 @@ export async function activateOwnDietPlan(planId: string): Promise<{ error?: str
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("activateOwnDietPlan error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -380,7 +389,8 @@ export async function deactivateOwnDietPlan(planId: string): Promise<{ error?: s
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deactivateOwnDietPlan error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -399,7 +409,8 @@ export async function setOwnSeasonMode(mode: "off_season" | "prep"): Promise<{ e
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("setOwnSeasonMode error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -419,7 +430,8 @@ export async function deleteOwnDietPlan(planId: string): Promise<{ error?: strin
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteOwnDietPlan error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -451,7 +463,8 @@ export async function createSavedMeal(
 
     revalidatePath("/dashboard/client/nutrition");
     return { id: meal.id };
-  } catch {
+  } catch (e) {
+    console.error("createSavedMeal error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -465,7 +478,8 @@ export async function deleteSavedMeal(mealId: string): Promise<{ error?: string 
     await supabase.from("saved_meals").delete().eq("id", mealId).eq("owner_id", guard.userId);
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteSavedMeal error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -522,7 +536,8 @@ export async function logMealItems(
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
     revalidatePath("/dashboard/client/nutrition");
     return { count: rows.length };
-  } catch {
+  } catch (e) {
+    console.error("logMealItems error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -551,7 +566,8 @@ export async function addOwnSupplement(input: {
     if (error) return { error: "Erreur lors de l'ajout." };
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("addOwnSupplement error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -573,7 +589,8 @@ export async function setOwnSupplementStatus(
     if (error) return { error: "Erreur lors de la mise à jour." };
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("setOwnSupplementStatus error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -592,7 +609,8 @@ export async function deleteOwnSupplement(supplementId: string): Promise<{ error
     if (error) return { error: "Erreur lors de la suppression." };
     revalidatePath("/dashboard/client/nutrition");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteOwnSupplement error:", e);
     return { error: "Erreur inattendue." };
   }
 }

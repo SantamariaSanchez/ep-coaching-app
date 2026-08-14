@@ -53,7 +53,11 @@ export async function seedScienceLibrary(): Promise<{ error?: string; inserted?:
 
     revalidateScience();
     return { inserted: missing.length };
-  } catch {
+  } catch (e) {
+    // MASTERCLASS.md Axe D : catch muet sans aucun log — une exception ici
+    // ne laissait aucune trace côté serveur pour diagnostiquer un "ça ne
+    // marche pas" remonté par un coach.
+    console.error("seedScienceLibrary error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -108,7 +112,8 @@ export async function importArticle(input: ImportArticleInput): Promise<{ error?
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("importArticle error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -146,7 +151,8 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateArticle error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -162,7 +168,8 @@ export async function deleteArticle(id: string): Promise<{ error?: string }> {
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteArticle error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -196,7 +203,8 @@ export async function createStudy(input: StudyInput): Promise<{ error?: string; 
 
     revalidateScience();
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createStudy error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -222,7 +230,8 @@ export async function updateStudy(id: string, input: Partial<StudyInput>): Promi
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateStudy error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -241,7 +250,8 @@ export async function deleteStudy(id: string): Promise<{ error?: string }> {
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteStudy error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -269,7 +279,8 @@ export async function joinStudy(studyId: string): Promise<{ error?: string }> {
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("joinStudy error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -288,7 +299,8 @@ export async function leaveStudy(studyId: string): Promise<{ error?: string }> {
 
     revalidateScience();
     return {};
-  } catch {
+  } catch (e) {
+    console.error("leaveStudy error:", e);
     return { error: "Erreur inattendue." };
   }
 }

@@ -110,7 +110,8 @@ export async function createLiveEvent(
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createLiveEvent error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -199,7 +200,8 @@ export async function updateLiveEvent(
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateLiveEvent error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -245,7 +247,8 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("cancelLiveEvent error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -271,7 +274,8 @@ export async function endLiveEvent(id: string): Promise<{ error?: string }> {
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("endLiveEvent error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -293,7 +297,8 @@ export async function deleteLiveEvent(id: string): Promise<{ error?: string }> {
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteLiveEvent error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -317,7 +322,8 @@ export async function updateLiveRecap(id: string, recap: string): Promise<{ erro
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateLiveRecap error:", e);
     return { error: "Erreur inattendue." };
   }
 }

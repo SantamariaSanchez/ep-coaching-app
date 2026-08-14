@@ -314,3 +314,71 @@ réels) — `RemindersView.tsx` semble être l'exception plutôt que la règle.
   la touche Échap (seulement le clic sur le fond ou le bouton `×`) — pas
   un blocage (le bouton `×` reste accessible au clavier), mais un vrai
   gain d'ergonomie clavier si repris un jour.
+
+## Axe D — `catch` muets sans log dans les server actions
+
+**Statut : première passe faite (2026-08-14), 52 corrections sur 16
+fichiers, dont `lib/auth-guards.ts`.**
+
+Origine : en poursuivant Axe B, remarqué que la quasi-totalité des
+`catch` génériques de ce projet suivent le même moule —
+`} catch { return { error: "Erreur inattendue." }; }` — sans jamais lier
+l'exception à une variable, donc sans aucun moyen de la logger. Le message
+générique montré à l'utilisateur est correct (pas de détail interne à
+exposer), mais côté serveur, une exception inattendue ne laisse **aucune
+trace** — ni dans les logs Vercel, ni nulle part. Concrètement : si un
+"ça ne marche pas" est remonté (exactement le point de départ de tout ce
+chantier masterclass), il n'y aurait rien à inspecter pour comprendre ce
+qui a réellement cassé.
+
+**Corrigé, par un script mécanique plutôt qu'à la main** (le motif est
+strictement identique des dizaines de fois, une transformation manuelle
+fichier par fichier n'aurait rien apporté de plus qu'un script vérifié
+ensuite par tsc/eslint/build comme d'habitude) :
+```js
+// Repère `} catch {` immédiatement suivi d'un `return { error: "..." };`
+// littéral (pas de variable dynamique, pas de log déjà présent), et
+// transforme en `catch (e) { console.error("<nomDeLaFonction> error:", e); ... }`
+// — le nom de fonction est retrouvé en remontant au dernier
+// `export async function X` rencontré avant le catch.
+```
+Script gardé dans le scratchpad de session (`fix-silent-catches.mjs`),
+relançable sur de nouveaux fichiers.
+
+**Fichiers corrigés** (52 catches sur 16 fichiers) : `lib/auth-guards.ts`
+(6 — `requireCoach`, `requireOwnClient`, `requireOwnClientOrSelf`,
+`requireClient`, `requirePlatformOwner`, `requireAuth` ; le seul catch du
+fichier qui reste muet, `hasRequiredSessionStrength`, ne correspond pas au
+motif car il retourne `false` et pas `{error}` — fail-closed volontaire,
+laissé tel quel), `app/dashboard/client/nutrition/actions.ts` (15),
+`app/dashboard/client/science/actions.ts` (9), `app/dashboard/client/
+gyms/actions.ts` (7), `app/dashboard/coach/live/actions.ts` (6),
+`app/dashboard/client/steps/actions.ts` (5), `app/dashboard/client/
+mindset/actions.ts` (4), `app/dashboard/client/exercises/actions.ts` (4),
+et 9 fichiers supplémentaires à 1-3 catches chacun (voir git log du
+commit pour la liste complète).
+
+**Vérifié SAIN** (le script a correctement laissé de côté, sans qu'aucune
+intervention manuelle ne soit nécessaire) : `app/dashboard/coach/mailing/
+actions.ts` (déjà `catch (e)` avec `e.message` renvoyé + une trace
+persistée dans `coach_mailings`, écrit plus tôt dans cette même session),
+`app/dashboard/coach/communaute/membres/actions.ts` (catch explicitement
+commenté "best-effort", notification secondaire dont l'échec ne doit pas
+remonter), `app/auth/coach/actions.ts` (extraction d'IP, non critique),
+et 4 fichiers qui avaient déjà `catch (e) { console.error(...) }` —
+confirmant que cette discipline existe déjà ailleurs dans le code, juste
+pas partout.
+
+### Reste à faire sur cet axe
+
+- Cette première passe couvrait les fichiers déjà repérés via le comptage
+  `catches vs logs` d'Axe B — les fichiers à exactement 1 `catch` déjà
+  loggé n'ont pas tous été vérifiés un par un pour d'éventuels DEUXIÈME
+  catch dans le même fichier avec un message d'erreur légèrement différent
+  du motif exact (le script ne matche que `error: "..."` avec des
+  guillemets doubles simples, pas les cas avec apostrophe échappée ou
+  template literal).
+- `app/dashboard/coach/clients/[id]/nutrition/actions.ts` avait 5 catches,
+  seulement 3 corrigés par le script — les 2 restants ont probablement un
+  message d'erreur qui ne matche pas exactement le motif, pas vérifiés un
+  par un.

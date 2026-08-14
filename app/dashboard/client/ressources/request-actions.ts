@@ -37,7 +37,8 @@ export async function createResourceRequest(
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createResourceRequest error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -101,7 +102,8 @@ export async function respondToResourceRequest(
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("respondToResourceRequest error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -145,7 +147,8 @@ export async function deleteResourceRequest(id: string): Promise<{ error?: strin
     revalidatePath("/dashboard/client/ressources");
     revalidatePath("/dashboard/coach/ressources");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteResourceRequest error:", e);
     return { error: "Erreur inattendue." };
   }
 }

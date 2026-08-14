@@ -53,7 +53,8 @@ export async function uploadPersonalPhoto(
 
     revalidatePath("/dashboard/client/photos");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("uploadPersonalPhoto error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -77,7 +78,8 @@ export async function deletePersonalPhoto(
 
     revalidatePath("/dashboard/client/photos");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deletePersonalPhoto error:", e);
     return { error: "Erreur inattendue." };
   }
 }

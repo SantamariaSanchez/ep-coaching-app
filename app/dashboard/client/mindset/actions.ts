@@ -73,7 +73,8 @@ export async function saveMindsetQuiz(result: QuizResult): Promise<{ error?: str
     })().catch(() => {});
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("saveMindsetQuiz error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -109,7 +110,8 @@ export async function toggleHabitLog(
     revalidatePath("/dashboard/client/mindset");
     revalidatePath("/dashboard/coach/moi/mindset");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("toggleHabitLog error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -180,7 +182,8 @@ export async function addJournalEntry(params: {
     revalidatePath("/dashboard/client/mindset");
     revalidatePath("/dashboard/coach/moi/mindset");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("addJournalEntry error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -200,7 +203,8 @@ export async function deleteJournalEntry(entryId: string): Promise<{ error?: str
     revalidatePath("/dashboard/client/mindset");
     revalidatePath("/dashboard/coach/moi/mindset");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteJournalEntry error:", e);
     return { error: "Erreur inattendue." };
   }
 }

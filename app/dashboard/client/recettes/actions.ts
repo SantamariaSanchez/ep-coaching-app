@@ -85,7 +85,8 @@ export async function createCommunityRecipe(
     revalidatePath("/dashboard/client/recettes");
     revalidatePath("/dashboard/coach/recettes");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createCommunityRecipe error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -115,7 +116,8 @@ export async function deleteCommunityRecipe(id: string): Promise<{ error?: strin
     revalidatePath("/dashboard/client/recettes");
     revalidatePath("/dashboard/coach/recettes");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteCommunityRecipe error:", e);
     return { error: "Erreur inattendue." };
   }
 }

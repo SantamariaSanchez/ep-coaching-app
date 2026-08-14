@@ -65,7 +65,8 @@ export async function requireCoach(): Promise<GuardResult> {
       return { ok: false, error: MFA_REQUIRED_ERROR };
     }
     return { ok: true, userId: user.id, role: "coach" };
-  } catch {
+  } catch (e) {
+    console.error("requireCoach error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }
@@ -92,7 +93,8 @@ export async function requireOwnClient(clientId: string): Promise<GuardResult> {
       return { ok: false, error: "Accès non autorisé à ce client." };
     }
     return guard;
-  } catch {
+  } catch (e) {
+    console.error("requireOwnClient error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }
@@ -120,7 +122,8 @@ export async function requireOwnClientOrSelf(clientId: string): Promise<GuardRes
       return { ok: false, error: "Accès non autorisé à ce client." };
     }
     return guard;
-  } catch {
+  } catch (e) {
+    console.error("requireOwnClientOrSelf error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }
@@ -152,7 +155,8 @@ export async function requireClient(): Promise<GuardResult> {
       return { ok: false, error: MFA_REQUIRED_ERROR };
     }
     return { ok: true, userId: user.id, role: profile!.role as "coach" | "client" };
-  } catch {
+  } catch (e) {
+    console.error("requireClient error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }
@@ -184,7 +188,8 @@ export async function requirePlatformOwner(): Promise<GuardResult> {
     }
 
     return guard;
-  } catch {
+  } catch (e) {
+    console.error("requirePlatformOwner error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }
@@ -210,7 +215,8 @@ export async function requireAuth(): Promise<GuardResult> {
       return { ok: false, error: MFA_REQUIRED_ERROR };
     }
     return { ok: true, userId: user.id, role };
-  } catch {
+  } catch (e) {
+    console.error("requireAuth error:", e);
     return { ok: false, error: "Erreur d'authentification." };
   }
 }

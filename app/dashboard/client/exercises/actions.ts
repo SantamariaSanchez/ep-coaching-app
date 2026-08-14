@@ -71,7 +71,8 @@ export async function createExercise(input: CreateExerciseInput): Promise<{ erro
     revalidatePath("/dashboard/coach/exercises");
     updateTag("exercise-library");
     return { id: data.id };
-  } catch {
+  } catch (e) {
+    console.error("createExercise error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -114,7 +115,8 @@ export async function updateExercise(
     revalidatePath("/dashboard/coach/exercises");
     updateTag("exercise-library");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateExercise error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -158,7 +160,8 @@ export async function seedOfficialExercises(): Promise<{ error?: string; inserte
     revalidatePath("/dashboard/coach/exercises");
     updateTag("exercise-library");
     return { inserted: missing.length };
-  } catch {
+  } catch (e) {
+    console.error("seedOfficialExercises error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -176,7 +179,8 @@ export async function deleteExercise(id: string): Promise<{ error?: string }> {
     revalidatePath("/dashboard/coach/exercises");
     updateTag("exercise-library");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteExercise error:", e);
     return { error: "Erreur inattendue." };
   }
 }

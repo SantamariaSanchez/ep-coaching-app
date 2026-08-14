@@ -33,7 +33,8 @@ export async function deleteOwnAccount(): Promise<{ error?: string }> {
       `Rôle : ${profile?.role ?? "inconnu"}`,
     ]).catch(() => {});
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteOwnAccount error:", e);
     return { error: "Erreur inattendue lors de la suppression." };
   }
 }

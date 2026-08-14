@@ -51,7 +51,8 @@ export async function saveMemberPreferences(
     }
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("saveMemberPreferences error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -69,7 +70,8 @@ export async function completeOnboarding(): Promise<{ error?: string }> {
 
     if (error) return { error: "Erreur lors de la sauvegarde." };
     return {};
-  } catch {
+  } catch (e) {
+    console.error("completeOnboarding error:", e);
     return { error: "Erreur inattendue." };
   }
 }

@@ -72,7 +72,8 @@ export async function submitLead(
     }
 
     return {};
-  } catch {
+  } catch (e) {
+    console.error("submitLead error:", e);
     return { error: "Erreur inattendue, réessaie." };
   }
 }

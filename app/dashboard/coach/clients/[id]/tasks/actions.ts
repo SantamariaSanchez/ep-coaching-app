@@ -36,7 +36,8 @@ export async function createClientTask(
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/tasks`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("createClientTask error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -53,7 +54,8 @@ export async function deleteClientTask(
     await supabase.from("client_tasks").delete().eq("id", taskId).eq("client_id", clientId);
     revalidatePath(`/dashboard/coach/clients/${clientId}/tasks`);
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteClientTask error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -74,7 +76,8 @@ export async function sendMotivationMessage(
     );
     if (!result.ok) return { error: "Le client n'a pas activé les notifications." };
     return {};
-  } catch {
+  } catch (e) {
+    console.error("sendMotivationMessage error:", e);
     return { error: "Erreur inattendue." };
   }
 }

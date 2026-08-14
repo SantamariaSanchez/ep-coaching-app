@@ -42,7 +42,8 @@ export async function createCoachPost(
     revalidatePath("/dashboard/coach/communaute/coach");
     revalidatePath("/dashboard/client/communaute/coach");
     return { id: data.id, notifiedCount: members.length };
-  } catch {
+  } catch (e) {
+    console.error("createCoachPost error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -69,7 +70,8 @@ export async function updateCoachPost(
     revalidatePath("/dashboard/coach/communaute/coach");
     revalidatePath("/dashboard/client/communaute/coach");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateCoachPost error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -91,7 +93,8 @@ export async function deleteCoachPost(postId: string): Promise<{ error?: string 
     revalidatePath("/dashboard/coach/communaute/coach");
     revalidatePath("/dashboard/client/communaute/coach");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("deleteCoachPost error:", e);
     return { error: "Erreur inattendue." };
   }
 }

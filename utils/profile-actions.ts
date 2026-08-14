@@ -39,7 +39,8 @@ export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error
     revalidatePath("/dashboard/client/profile");
     revalidatePath("/dashboard/coach/profile");
     return {};
-  } catch {
+  } catch (e) {
+    console.error("updateMyProfile error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -93,7 +94,8 @@ export async function uploadAvatar(formData: FormData): Promise<{ url?: string; 
     revalidatePath("/dashboard/client/profile");
     revalidatePath("/dashboard/coach/profile");
     return { url: signed?.signedUrl ?? path };
-  } catch {
+  } catch (e) {
+    console.error("uploadAvatar error:", e);
     return { error: "Erreur inattendue." };
   }
 }

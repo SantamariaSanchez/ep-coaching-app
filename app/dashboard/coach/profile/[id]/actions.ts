@@ -29,7 +29,8 @@ export async function disconnectUser(
     });
     if (error) return { error: "Erreur lors de la déconnexion." };
     return { success: true };
-  } catch {
+  } catch (e) {
+    console.error("disconnectUser error:", e);
     return { error: "Erreur inattendue." };
   }
 }
@@ -65,7 +66,8 @@ export async function deleteUserAccountAdmin(
       `Rôle : ${target?.role ?? "inconnu"}`,
     ]).catch(() => {});
     return { success: true };
-  } catch {
+  } catch (e) {
+    console.error("deleteUserAccountAdmin error:", e);
     return { error: "Erreur inattendue." };
   }
 }
