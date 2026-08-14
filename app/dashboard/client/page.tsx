@@ -292,6 +292,33 @@ function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
   );
 }
 
+// Item 42 : le CTA premium était un texte générique identique pour tout le
+// monde, tout le temps. Ici la relance s'appuie sur un signal comportemental
+// concret plutôt qu'un calendrier — priorité à ce qui est le plus parlant
+// pour CE membre à CET instant.
+function upsellPitch(
+  checklist: OnboardingChecklistItem[],
+  streakDays: number
+): { title: string; subtitle: string } {
+  const allDone = checklist.length > 0 && checklist.every((i) => i.done);
+  if (allDone) {
+    return {
+      title: "Tu as fait le tour de l'appli gratuite",
+      subtitle: "Un coach peut aller plus loin avec toi : programme et suivi sur mesure, pas juste des outils en libre-service.",
+    };
+  }
+  if (streakDays >= 7) {
+    return {
+      title: `${streakDays} jours d'affilée, une vraie régularité`,
+      subtitle: "Un coach peut transformer cette constance en résultats concrets, avec un vrai suivi derrière.",
+    };
+  }
+  return {
+    title: "Envie d'un vrai coach, en plus ? (optionnel)",
+    subtitle: "Un appel de 30 min, sans engagement, pour voir si ça peut t'aider.",
+  };
+}
+
 function WelcomeGuide({
   firstName,
   goal,
@@ -299,6 +326,7 @@ function WelcomeGuide({
   hasCoach,
   personalization,
   checklist,
+  activityStreak,
 }: {
   firstName: string;
   goal: string | null;
@@ -306,8 +334,10 @@ function WelcomeGuide({
   hasCoach: boolean;
   personalization: ReturnType<typeof derivePersonalization>;
   checklist: OnboardingChecklistItem[];
+  activityStreak: number;
 }) {
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
+  const pitch = upsellPitch(checklist, activityStreak);
   return (
     <div
       className="page-transition ep-page-medium"
@@ -436,10 +466,10 @@ function WelcomeGuide({
         <Crown size={22} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            Envie d&apos;un vrai coach, en plus ? (optionnel)
+            {pitch.title}
           </p>
           <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-            Un appel de 30 min, sans engagement, pour voir si ça peut t&apos;aider.
+            {pitch.subtitle}
           </p>
         </div>
         <ArrowRight size={16} style={{ color: "#E01E1E", flexShrink: 0 }} />
@@ -492,9 +522,12 @@ export default async function ClientDashboard({
   // Free community members get a welcome guide instead of the coached
   // dashboard (weight tracking, coach notes...) which doesn't apply to them.
   if (!isSubscribed(profile)) {
-    const [preferences, checklist] = await Promise.all([
+    const [preferences, checklist, activityStreak] = await Promise.all([
       getMemberPreferences(user.id),
       getOnboardingChecklist(user.id),
+      // Item 42 : signal de constance déjà calculé pour item 20, réutilisé
+      // ici pour rendre la relance premium contextuelle plutôt que générique.
+      getClientActivityStreak(user.id),
     ]);
     return (
       <>
@@ -506,6 +539,7 @@ export default async function ClientDashboard({
           hasCoach={!!profile?.coach_id}
           personalization={derivePersonalization(preferences)}
           checklist={checklist}
+          activityStreak={activityStreak}
         />
       </>
     );
