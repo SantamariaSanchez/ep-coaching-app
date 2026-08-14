@@ -148,7 +148,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
             </button>
           </div>
 
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={inputStyle}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Catégorie" style={inputStyle}>
             {categoriesFor(kind).map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -173,6 +173,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
               type="date"
               value={entryDate}
               onChange={(e) => setEntryDate(e.target.value)}
+              aria-label="Date"
               style={inputStyle}
             />
           </div>

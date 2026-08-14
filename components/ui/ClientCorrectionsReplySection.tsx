@@ -190,6 +190,7 @@ function ReplyForm({
         ref={videoInputRef}
         type="file"
         accept="video/*"
+        aria-label="Vidéo de réponse"
         className="hidden"
         onChange={(e) => {
           const file = e.target.files?.[0];

@@ -386,6 +386,7 @@ export default function ProgramTemplateEditor({
                       <input
                         value={day.day_label}
                         onChange={(e) => updateDayLabel(day.localId, e.target.value)}
+                        aria-label="Nom du jour"
                         className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
                       />
                       <button

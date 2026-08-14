@@ -645,6 +645,7 @@ export default function NutritionForm({
                   type="number"
                   value={effectiveTargets[key]}
                   onChange={(e) => setTarget(key, e.target.value)}
+                  aria-label={label}
                   className={`w-full bg-transparent text-2xl font-black ${color} focus:outline-none`}
                 />
                 <span className="text-[10px] text-[#F5EDED]/40 font-normal">{unit}</span>

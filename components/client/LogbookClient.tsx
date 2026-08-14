@@ -286,6 +286,7 @@ function ImportLogbookButton() {
         ref={inputRef}
         type="file"
         accept=".csv"
+        aria-label="Importer un fichier CSV"
         className="hidden"
         onChange={handleFile}
       />

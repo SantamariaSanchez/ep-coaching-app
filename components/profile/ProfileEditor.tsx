@@ -73,7 +73,7 @@ export default function ProfileEditor({
         Modifier mon profil
       </p>
 
-      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+      <input ref={fileRef} type="file" accept="image/*" aria-label="Photo de profil" className="hidden" onChange={handleAvatarChange} />
       <button
         onClick={() => fileRef.current?.click()}
         disabled={uploading}

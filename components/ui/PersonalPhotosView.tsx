@@ -117,6 +117,7 @@ export default function PersonalPhotosView({
           ref={inputRef}
           type="file"
           accept="image/*"
+          aria-label="Prendre ou choisir une photo"
           className="hidden"
           disabled={uploading}
           onChange={(e) => {

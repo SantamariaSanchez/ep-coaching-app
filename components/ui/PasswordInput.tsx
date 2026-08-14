@@ -19,6 +19,7 @@ export default function PasswordInput({
   return (
     <div style={{ position: "relative", ...wrapperStyle }}>
       <input
+        aria-label="Mot de passe"
         {...props}
         type={visible ? "text" : "password"}
         className={className}

@@ -206,7 +206,7 @@ export default function MembresView({
             className={`${inputCls} pl-9`}
           />
         </div>
-        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={`${inputCls} sm:w-48`}>
+        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Trier par" className={`${inputCls} sm:w-48`}>
           <option value="recent">Plus récents</option>
           <option value="active">Plus actifs</option>
         </select>

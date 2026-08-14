@@ -553,6 +553,7 @@ export default function RoadmapTemplateEditor({
                           <input
                             value={m.target_unit || typeConfig.unit}
                             onChange={(e) => updateMilestone(m.localId, { target_unit: e.target.value })}
+                            aria-label="Unité"
                             className={`${inputCls} w-16 flex-shrink-0`}
                           />
                         </div>

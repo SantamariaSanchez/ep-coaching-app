@@ -87,7 +87,7 @@ export default function ProfileSetupStep({
             100% facultatif, tu pourras toujours le faire plus tard.
           </p>
 
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+          <input ref={fileRef} type="file" accept="image/*" aria-label="Photo de profil" className="hidden" onChange={handleAvatarChange} />
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
             <button
               type="button"

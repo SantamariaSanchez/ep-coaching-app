@@ -107,6 +107,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
+          aria-label="Catégorie"
           className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/40"
         >
           <option value="">Catégorie : Autres</option>
@@ -119,6 +120,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
             ref={fileRef}
             type="file"
             accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.mp4,.webm,.mov,.mp3,.wav,.zip,application/pdf,image/png,image/jpeg,image/gif,image/webp,video/mp4,video/webm,video/quicktime,audio/mpeg,audio/wav,application/zip"
+            aria-label="Choisir un fichier"
             className="hidden"
             onChange={(e) => setFile(e.target.files?.[0] ?? null)}
           />
@@ -194,6 +196,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
                   value={r.category ?? ""}
                   onChange={(e) => handleCategoryChange(r.id, e.target.value)}
                   disabled={updatingId === r.id}
+                  aria-label="Catégorie"
                   className={`bg-[#150000] border rounded-lg px-2 py-1.5 text-[10px] focus:outline-none disabled:opacity-40 flex-shrink-0 ${
                     isUncategorized ? "border-amber-500/40 text-amber-300" : "border-[#890404]/20 text-[#F5EDED]/60 focus:border-[#E01E1E]/40"
                   }`}

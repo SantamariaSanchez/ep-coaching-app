@@ -192,6 +192,7 @@ export default function CoachVideoRecorder({
               ref={fileInputRef}
               type="file"
               accept="video/*"
+              aria-label="Importer une vidéo"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];

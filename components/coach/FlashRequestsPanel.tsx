@@ -54,8 +54,8 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
             {schedulingId === r.id ? (
               <div className="mt-2.5 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="ep-input" style={{ fontSize: 12 }} />
-                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="ep-input" style={{ fontSize: 12 }} />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className="ep-input" style={{ fontSize: 12 }} />
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className="ep-input" style={{ fontSize: 12 }} />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => handleSchedule(r.id)} disabled={isPending} className="text-[11px] font-bold text-[#E01E1E]">

@@ -98,6 +98,7 @@ export default function ApplyTemplateModal({
                 value={nameOverride}
                 onChange={(e) => setNameOverride(e.target.value)}
                 placeholder={templateName}
+                aria-label="Nom une fois appliqué"
                 className={inputCls}
               />
             </div>

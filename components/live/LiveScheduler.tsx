@@ -241,7 +241,7 @@ export default function LiveScheduler({
                   Aucun client actif pour l&apos;instant.
                 </p>
               ) : (
-                <select value={clientId} onChange={(e) => setClientId(e.target.value)} className={inputCls}>
+                <select value={clientId} onChange={(e) => setClientId(e.target.value)} aria-label="Client" className={inputCls}>
                   <option value="">Choisir un client</option>
                   {clients.map((c) => (
                     <option key={c.id} value={c.id}>{c.full_name ?? "Client"}</option>
@@ -314,9 +314,9 @@ export default function LiveScheduler({
           <div>
             <p className="ep-label" style={{ marginBottom: 6 }}>Date, heure et durée</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputCls} />
-              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} className={inputCls} />
-              <select value={duration} onChange={(e) => setDuration(e.target.value)} className={inputCls}>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className={inputCls} />
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className={inputCls} />
+              <select value={duration} onChange={(e) => setDuration(e.target.value)} aria-label="Durée" className={inputCls}>
                 <option value="15">15 min</option>
                 <option value="30">30 min</option>
                 <option value="45">45 min</option>

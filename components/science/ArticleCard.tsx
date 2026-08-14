@@ -48,12 +48,12 @@ function ArticleEditForm({
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        <select value={topic} onChange={(e) => setTopic(e.target.value)} className={inputCls}>
+        <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label="Thématique" className={inputCls}>
           {SCIENCE_TOPICS.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} className={inputCls}>
+        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} aria-label="Type d'article" className={inputCls}>
           {Object.entries(ARTICLE_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}

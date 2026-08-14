@@ -88,6 +88,7 @@ function SelfCategoryPicker({
       <select
         name="competition_category"
         defaultValue=""
+        aria-label="Catégorie de compétition"
         className="flex-1 bg-[#150000] border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/60"
       >
         <option value="">Choisis ta catégorie</option>
@@ -385,6 +386,7 @@ function SubmissionForm({
             type="file"
             accept="image/*"
             multiple
+            aria-label="Ajouter des photos"
             className="hidden"
             onChange={(e) => {
               if (e.target.files && e.target.files.length > 0) handlePhotosSelected(e.target.files);
@@ -422,6 +424,7 @@ function SubmissionForm({
             ref={videoInputRef}
             type="file"
             accept="video/*"
+            aria-label="Vidéo"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];

@@ -154,6 +154,7 @@ export default function PermissionsCard({
               value={quietStart}
               onChange={(e) => saveQuietHours(Number(e.target.value), quietEnd)}
               disabled={quietSaving}
+              aria-label="Heure de début du silence"
               className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
             >
               {HOURS.map((h) => (
@@ -165,6 +166,7 @@ export default function PermissionsCard({
               value={quietEnd}
               onChange={(e) => saveQuietHours(quietStart, Number(e.target.value))}
               disabled={quietSaving}
+              aria-label="Heure de fin du silence"
               className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
             >
               {HOURS.map((h) => (

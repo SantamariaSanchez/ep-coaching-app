@@ -106,6 +106,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
         <select
           value={activeType}
           onChange={(e) => setActiveType(e.target.value as ScienceArticleType | "")}
+          aria-label="Type d'article"
           className={`${inputCls} sm:w-56`}
         >
           <option value="">Tous les types</option>

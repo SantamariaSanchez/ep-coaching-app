@@ -123,6 +123,7 @@ export default function WeeklyStructurePlanner({
                 <select
                   value=""
                   onChange={(e) => e.target.value && onSetWeekday(d.localId, parseInt(e.target.value, 10))}
+                  aria-label={`Placer ${d.day_label || "la séance"}`}
                   className="bg-[#1f0101] border border-[#890404]/30 rounded px-1 py-0.5 text-[9px] text-[#F5EDED]/70 focus:outline-none"
                 >
                   <option value="">Placer…</option>

@@ -63,6 +63,7 @@ function EditableTitle({
         autoFocus
         value={text}
         disabled={saving}
+        aria-label="Modifier le titre"
         onClick={(e) => e.stopPropagation()}
         onChange={(e) => setText(e.target.value)}
         onBlur={commit}

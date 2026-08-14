@@ -153,6 +153,7 @@ function Composer({
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder={placeholder}
+        aria-label={placeholder}
         rows={3}
         className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none"
       />
@@ -189,6 +190,7 @@ function Composer({
               ref={fileRef}
               type="file"
               accept="image/*"
+              aria-label="Ajouter une image"
               className="hidden"
               onChange={(e) => setImage(e.target.files?.[0] ?? null)}
             />

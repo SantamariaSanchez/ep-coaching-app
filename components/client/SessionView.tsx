@@ -1346,6 +1346,7 @@ function SliderInput({
         max={5}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-label={label}
         className="w-full accent-[#E01E1E]"
       />
       <div className="flex justify-between text-[8px] text-[#F5EDED]/25">

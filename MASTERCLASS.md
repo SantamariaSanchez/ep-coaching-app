@@ -701,18 +701,39 @@ grande échelle doit être suivi de la même discipline tsc/eslint/build
 que n'importe quel code écrit à la main, pas traité comme automatiquement
 sûr parce qu'il est généré.
 
+**Troisième passe (même jour, clôture de l'axe)** : les ~77 champs
+restants triés un par un, fichier par fichier, en lisant le contexte
+réel de chacun (texte visible à proximité, nom de variable, prop `label`
+d'un composant partagé) plutôt qu'en devinant. **76 champs corrigés sur
+39 fichiers** — quasiment tout ce qui restait après les deux premières
+passes. Deux composants partagés corrigés à la source plutôt que
+champ par champ (même logique que `Field` dans l'axe précédent) :
+`NumberField` (`TrackingClient.tsx`) et `PasswordInput.tsx` — ce dernier
+avait 6 points d'usage (les 3 flux d'authentification client/coach) qui
+héritent tous du correctif via un `aria-label` par défaut ajouté avant
+`{...props}` (un appelant qui fournirait son propre `aria-label` resterait
+prioritaire, l'ordre du spread le garantit).
+
+Rescan final : **zéro champ restant** (hors les 46 usages de
+`ClientIntakeForm.tsx`/`RoadmapEditor.tsx` déjà couverts par `cloneElement`
+dans l'axe précédent, invisibles au scanner statique par construction,
+et 2 faux positifs de commentaires de code contenant littéralement
+`<input>`/`<select>` dans leur texte). tsc/eslint/build vérifiés propres
+(comparaison `git stash`, mêmes 17 problèmes préexistants, zéro nouveau).
+
+**Axe G intégralement clos** : les 3 passes cumulées ont corrigé
+191 + 69 + 76 = 336 champs directement, plus 44 + 12 via les 2 composants
+`Field` sources = 392 champs au total — soit l'intégralité des candidats
+repérés par le premier scan du jour.
+
 ### Reste à faire sur cet axe
 
-- ~77 champs restent sans nom accessible après ces deux passes (aucun
-  `placeholder`, pas de `<label>`/`<span>` sibling au motif reconnu par
-  les scripts) — nécessitent une lecture individuelle du contexte,
-  remis à une passe future plutôt que de deviner un texte au hasard.
 - Les `aria-label` ajoutés depuis un `placeholder` reprennent parfois un
   texte d'exemple plutôt qu'une vraie description du champ (ex.
   `placeholder="Ex. 12"` donne `aria-label="Ex. 12"`, pas
   "Durée en semaines") — mieux que rien, mais pas idéal ; une relecture
   ciblée des placeholders de type "Ex. ..." pourrait affiner ça un jour.
-- Le détecteur d'"expression JS unique" (bug `CheckinForm.tsx` ci-dessus)
+- Le détecteur d'"expression JS unique" (bug `CheckinForm.tsx` plus haut)
   a été corrigé à la main pour ce cas précis, pas réécrit avec une vraie
   vérification d'équilibrage dans le script gardé au scratchpad — à
   refaire proprement si ce script est relancé un jour sur du nouveau code.
@@ -900,3 +921,20 @@ après est la preuve la plus directe que le fix a eu l'effet voulu).
   mineur).
 - `unused_index` (36) jamais réexaminé — attendre d'avoir un vrai volume
   de trafic en production avant de juger un index réellement inutile.
+
+**Vérification complémentaire (même jour, suite directe)** : en repensant
+aux tables `auth_login_attempts`/`rate_limit_counters` vérifiées saines
+ci-dessus, contrôlé que l'infrastructure applicative qui les utilise est
+vraiment câblée, pas juste présente en base sans être appelée. Vérifié :
+`getLoginLock`/`registerFailedLogin`/`clearLoginAttempts`
+(`lib/login-throttle.ts`) sont bien appelés dans les 3 flux de connexion
+(`app/auth/actions.ts`, `app/auth/client/actions.ts`,
+`app/auth/coach/actions.ts`) — chaque fichier a bien 2 appels à
+`signInWithPassword` mais un seul est le vrai formulaire de connexion
+(protégé) ; l'autre est la connexion automatique juste après une
+inscription réussie (mot de passe que l'utilisateur vient de choisir lui-
+même, aucun risque de brute-force à protéger). Vérifié aussi que
+`checkRateLimit`/`PRESETS.signup` protège bien les deux formulaires
+d'inscription par IP. Rien à corriger — l'infrastructure de défense
+construite avant cette session est réellement utilisée, pas juste
+déclarée.

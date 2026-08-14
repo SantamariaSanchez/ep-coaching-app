@@ -270,6 +270,7 @@ export default function CheckinForm({
           type="file"
           accept="image/*"
           multiple
+          aria-label="Ajouter des photos"
           className="hidden"
           onChange={(e) => {
             if (e.target.files && e.target.files.length > 0) handlePhotosSelected(e.target.files);
@@ -298,6 +299,7 @@ export default function CheckinForm({
               max={10}
               value={attitudeRating === "" ? 5 : attitudeRating}
               onChange={(e) => setAttitudeRating(Number(e.target.value))}
+              aria-label="Ton attitude sur la semaine"
               className="w-full accent-[#E01E1E]"
             />
             <div style={{ display: "flex", justifyContent: "space-between", fontSize: 8, color: "rgba(245,237,237,0.25)" }}>
@@ -319,6 +321,7 @@ export default function CheckinForm({
                   placeholder={isLowAttitude
                     ? "Qu'est-ce qui a pesé sur ton attitude cette semaine ?"
                     : "Qu'est-ce qui t'a mis dans cet état d'esprit ?"}
+                  aria-label="Explique-nous pourquoi"
                   className={inp}
                 />
               </div>
@@ -435,6 +438,7 @@ export default function CheckinForm({
           ref={videoInputRef}
           type="file"
           accept="video/*"
+          aria-label="Filmer un exercice à corriger"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];

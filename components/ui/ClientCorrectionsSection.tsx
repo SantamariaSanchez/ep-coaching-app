@@ -211,6 +211,7 @@ export default function ClientCorrectionsSection({
               ref={videoInputRef}
               type="file"
               accept="video/*"
+              aria-label="Vidéo de l'exercice"
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];

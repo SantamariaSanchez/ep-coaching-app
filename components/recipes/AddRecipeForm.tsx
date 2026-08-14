@@ -140,7 +140,7 @@ export default function AddRecipeForm({
 
       <div>
         <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Type de repas</p>
-        <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} className={inputCls}>
+        <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} aria-label="Type de repas" className={inputCls}>
           {Object.entries(MEAL_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
           ))}
@@ -168,12 +168,12 @@ export default function AddRecipeForm({
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <select value={temp} onChange={(e) => setTemp(e.target.value as Temp)} className={inputCls}>
+        <select value={temp} onChange={(e) => setTemp(e.target.value as Temp)} aria-label="Température" className={inputCls}>
           {Object.entries(TEMP_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
           ))}
         </select>
-        <select value={price} onChange={(e) => setPrice(Number(e.target.value) as 1 | 2 | 3)} className={inputCls}>
+        <select value={price} onChange={(e) => setPrice(Number(e.target.value) as 1 | 2 | 3)} aria-label="Budget" className={inputCls}>
           <option value={1}>€</option>
           <option value={2}>€€</option>
           <option value={3}>€€€</option>
@@ -208,6 +208,7 @@ export default function AddRecipeForm({
                 value={ing}
                 onChange={(e) => updateLine(ingredients, setIngredients, i, e.target.value)}
                 placeholder={`Ingrédient ${i + 1}`}
+                aria-label={`Ingrédient ${i + 1}`}
                 className={inputCls}
               />
               {ingredients.length > 1 && (
@@ -236,6 +237,7 @@ export default function AddRecipeForm({
                 value={s}
                 onChange={(e) => updateLine(steps, setSteps, i, e.target.value)}
                 placeholder={`Étape ${i + 1}`}
+                aria-label={`Étape ${i + 1}`}
                 className={inputCls}
               />
               {steps.length > 1 && (

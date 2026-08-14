@@ -38,6 +38,7 @@ export default function CheckinDaySettings({
           name="checkin_day"
           defaultValue={currentDay}
           disabled={isPending}
+          aria-label="Jour de check-in fixe"
           style={{
             background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)",
             borderRadius: 8, padding: "6px 10px", fontSize: 12, color: "#F5EDED", outline: "none",

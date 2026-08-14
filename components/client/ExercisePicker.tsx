@@ -70,6 +70,7 @@ function CreateExerciseForm({
         <select
           value={muscleGroup}
           onChange={(e) => setMuscleGroup(e.target.value)}
+          aria-label="Groupe musculaire"
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
         >
           {LIBRARY_MUSCLE_GROUPS.map((g) => (
@@ -81,6 +82,7 @@ function CreateExerciseForm({
         <select
           value={equipment}
           onChange={(e) => setEquipment(e.target.value)}
+          aria-label="Matériel"
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
         >
           <option value="">Matériel (optionnel)</option>

@@ -342,7 +342,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
                 {label}
               </p>
-              <select value={id} onChange={(e) => setId(e.target.value)} className={inputCls}>
+              <select value={id} onChange={(e) => setId(e.target.value)} aria-label={label} className={inputCls}>
                 {photos.map((p) => (
                   <option key={p.id} value={p.id}>
                     {formatDate(p.submitted_at)} : {TYPE_LABELS[p.type] ?? p.type}

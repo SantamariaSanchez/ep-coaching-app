@@ -220,6 +220,7 @@ function VolumeBudgetPanel({
                   value={targets[group] ?? ""}
                   onChange={(e) => onSetTarget(group, e.target.value)}
                   placeholder={landmark ? String(landmark.mav) : "0"}
+                  aria-label={`${group}, séries par semaine visées`}
                   className="w-16 bg-[#1f0101] border border-[#890404]/30 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
                 />
                 <span className="text-[9.5px] text-[#F5EDED]/25">séries/semaine visées</span>
@@ -591,6 +592,7 @@ export function ExerciseNameField({
           <select
             value={filterGroup}
             onChange={(e) => setFilterGroup(e.target.value)}
+            aria-label="Filtrer par groupe musculaire"
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
           >
             <option value="">Tout muscle</option>
@@ -601,6 +603,7 @@ export function ExerciseNameField({
           <select
             value={filterEquipment}
             onChange={(e) => setFilterEquipment(e.target.value as EquipmentType | "")}
+            aria-label="Filtrer par matériel"
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/30 rounded px-1.5 py-1 text-[10px] text-white focus:outline-none"
           >
             <option value="">Tout matériel</option>
@@ -742,6 +745,7 @@ function AssignmentOnlyPanel({
                     onChange={(e) => onChange(field, e.target.value)}
                     rows={2}
                     placeholder={placeholder}
+                    aria-label={label}
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -1595,6 +1599,7 @@ export default function ProgramEditor({
                       onChange={(e) =>
                         updateDayLabel(day.localId, e.target.value)
                       }
+                      aria-label="Nom du jour"
                       className="flex-1 bg-transparent text-xs font-bold uppercase tracking-widest text-[#E01E1E] focus:outline-none border-b border-transparent focus:border-[#E01E1E]/40 pb-0.5 min-w-0"
                     />
                     <button

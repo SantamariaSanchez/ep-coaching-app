@@ -158,6 +158,7 @@ export default function CoachClientTasksView({
           <input
             value={icon}
             onChange={(e) => setIcon(e.target.value)}
+            aria-label="Icône"
             className={inputCls + " w-14 text-center"}
             maxLength={2}
           />
@@ -177,6 +178,7 @@ export default function CoachClientTasksView({
             <select
               value={nagMinutes}
               onChange={(e) => setNagMinutes(parseInt(e.target.value))}
+              aria-label="Relance toutes les"
               className={inputCls + " w-auto py-1.5"}
             >
               {NAG_OPTIONS.map((m) => (

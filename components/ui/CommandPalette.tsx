@@ -192,6 +192,7 @@ export default function CommandPalette({
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={onKeyDownInput}
             placeholder={isCoach ? "Un client, une page, un exercice..." : "Une page, un exercice, un aliment..."}
+            aria-label="Rechercher"
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
           />
           <button

@@ -710,6 +710,7 @@ export default function ConversationView({
           ref={imageInputRef}
           type="file"
           accept="image/*"
+          aria-label="Envoyer une photo"
           className="hidden"
           onChange={(e) => {
             const file = e.target.files?.[0];
@@ -737,6 +738,7 @@ export default function ConversationView({
             }
           }}
           placeholder={`Message à ${peerName.split(" ")[0]}…`}
+          aria-label={`Message à ${peerName.split(" ")[0]}`}
           className="flex-1 min-w-0 bg-[#1f0101] border border-[#890404]/30 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#890404]/60"
         />
 

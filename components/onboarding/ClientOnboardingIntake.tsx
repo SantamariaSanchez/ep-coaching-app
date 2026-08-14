@@ -78,6 +78,7 @@ function FieldControl({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={field.placeholder ?? "Écris ta réponse ici..."}
+        aria-label={field.label}
         rows={4}
         className={inputCls}
         style={{ resize: "vertical", lineHeight: 1.5 }}
@@ -153,6 +154,7 @@ function FieldControl({
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={field.placeholder}
+      aria-label={field.label}
       className={inputCls}
     />
   );
@@ -187,6 +189,7 @@ function PhotoSlot({
         ref={ref}
         type="file"
         accept="image/*"
+        aria-label={label}
         style={{ display: "none" }}
         onChange={async (e) => {
           const f = e.target.files?.[0];
@@ -440,6 +443,7 @@ export default function ClientOnboardingIntake() {
               type="file"
               accept="image/*"
               multiple
+              aria-label="Photos de la salle de sport"
               style={{ display: "none" }}
               onChange={async (e) => {
                 const files = Array.from(e.target.files ?? []);
