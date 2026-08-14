@@ -28,7 +28,9 @@ const STATUS_COLORS: Record<ScienceStudy["status"], string> = {
 
 function StudyForm({ initial, onSave, onCancel }: {
   initial?: ScienceStudy;
-  onSave: (input: StudyInput) => Promise<void>;
+  // MASTERCLASS.md Axe B : Promise<void> empêchait d'afficher une erreur
+  // serveur ici malgré l'état `error` déjà présent dans ce formulaire.
+  onSave: (input: StudyInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -46,7 +48,7 @@ function StudyForm({ initial, onSave, onCancel }: {
     if (!title.trim()) { setError("Le titre est requis."); return; }
     setSaving(true);
     setError(null);
-    await onSave({
+    const result = await onSave({
       title: title.trim(),
       hypothesis: hypothesis.trim() || null,
       protocol: protocol.trim() || null,
@@ -57,6 +59,7 @@ function StudyForm({ initial, onSave, onCancel }: {
       results: results.trim() || null,
     });
     setSaving(false);
+    if (result.error) setError(result.error);
   }
 
   return (
@@ -122,7 +125,7 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
   study: ScienceStudy;
   isCoach: boolean;
   participationUnlocked: boolean;
-  onUpdate: (input: StudyInput) => Promise<void>;
+  onUpdate: (input: StudyInput) => Promise<{ error?: string }>;
   onDelete: () => Promise<void>;
   onJoin: () => Promise<void>;
   onLeave: () => Promise<void>;
@@ -133,7 +136,17 @@ function StudyCard({ study, isCoach, participationUnlocked, onUpdate, onDelete, 
   const [joining, setJoining] = useState(false);
 
   if (editing) {
-    return <StudyForm initial={study} onSave={async (input) => { await onUpdate(input); setEditing(false); }} onCancel={() => setEditing(false)} />;
+    return (
+      <StudyForm
+        initial={study}
+        onSave={async (input) => {
+          const result = await onUpdate(input);
+          if (!result.error) setEditing(false);
+          return result;
+        }}
+        onCancel={() => setEditing(false)}
+      />
+    );
   }
 
   return (
@@ -278,6 +291,7 @@ export default function StudiesView({
               ]);
               setShowCreate(false);
             }
+            return result;
           }}
           onCancel={() => setShowCreate(false)}
         />
@@ -291,8 +305,11 @@ export default function StudiesView({
             isCoach={isCoach}
             participationUnlocked={participationUnlocked}
             onUpdate={async (input) => {
-              await updateStudy(s.id, input);
-              setStudies((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...input } : x)));
+              const result = await updateStudy(s.id, input);
+              if (!result.error) {
+                setStudies((prev) => prev.map((x) => (x.id === s.id ? { ...x, ...input } : x)));
+              }
+              return result;
             }}
             onDelete={async () => {
               await deleteStudy(s.id);

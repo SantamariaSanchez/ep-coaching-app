@@ -55,7 +55,9 @@ function GymForm({
   onCancel,
 }: {
   initial?: GymWithReviews;
-  onSave: (input: CreateGymInput) => Promise<void>;
+  // MASTERCLASS.md Axe B : Promise<void> empêchait d'afficher une erreur
+  // serveur ici malgré l'état `error` déjà présent dans ce formulaire.
+  onSave: (input: CreateGymInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
@@ -76,7 +78,7 @@ function GymForm({
     if (!name.trim()) { setError("Le nom est requis."); return; }
     setSaving(true);
     setError(null);
-    await onSave({
+    const result = await onSave({
       name,
       city: city || null,
       address: address || null,
@@ -86,6 +88,7 @@ function GymForm({
       equipment_types: equipmentTypes,
     });
     setSaving(false);
+    if (result.error) setError(result.error);
   }
 
   return (
@@ -233,7 +236,7 @@ function GymCard({
   matchingExerciseCount: number | null;
   isMyGym: boolean;
   onSetAsMyGym?: () => Promise<void>;
-  onUpdate: (input: CreateGymInput) => Promise<void>;
+  onUpdate: (input: CreateGymInput) => Promise<{ error?: string }>;
   onDelete: () => Promise<void>;
   onReview: (rating: number, comment: string) => Promise<void>;
   onDeleteReview: (reviewId: string) => Promise<void>;
@@ -247,7 +250,17 @@ function GymCard({
   const myReview = gym.reviews.find((r) => r.author_id === currentUserId);
 
   if (editing) {
-    return <GymForm initial={gym} onSave={async (input) => { await onUpdate(input); setEditing(false); }} onCancel={() => setEditing(false)} />;
+    return (
+      <GymForm
+        initial={gym}
+        onSave={async (input) => {
+          const result = await onUpdate(input);
+          if (!result.error) setEditing(false);
+          return result;
+        }}
+        onCancel={() => setEditing(false)}
+      />
+    );
   }
 
   return (
@@ -522,8 +535,9 @@ export default function GymsDirectoryView({
       {showCreate && (
         <GymForm
           onSave={async (input) => {
-            await createGym(input);
-            setShowCreate(false);
+            const result = await createGym(input);
+            if (!result.error) setShowCreate(false);
+            return result;
           }}
           onCancel={() => setShowCreate(false)}
         />
@@ -539,7 +553,7 @@ export default function GymsDirectoryView({
             matchingExerciseCount={matchingExerciseCount(gym)}
             isMyGym={!!myGymName && gym.name.trim().toLowerCase() === myGymName.trim().toLowerCase()}
             onSetAsMyGym={onSetMyGym ? async () => { await onSetMyGym(gym.name, gym.website); } : undefined}
-            onUpdate={async (input) => { await updateGym(gym.id, input); }}
+            onUpdate={async (input) => updateGym(gym.id, input)}
             onDelete={async () => { await deleteGym(gym.id); }}
             onReview={async (rating, comment) => { await upsertGymReview(gym.id, rating, comment); }}
             onDeleteReview={async (reviewId) => { await deleteGymReview(reviewId); }}

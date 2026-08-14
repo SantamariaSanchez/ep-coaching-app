@@ -19,7 +19,9 @@ function PostEditor({
   onCancel,
 }: {
   initial?: CoachPost;
-  onSave: (title: string, content: string) => Promise<void>;
+  // MASTERCLASS.md Axe B : Promise<void> empêchait d'afficher une erreur
+  // serveur ici malgré l'état `error` déjà présent dans cet éditeur.
+  onSave: (title: string, content: string) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const [title, setTitle] = useState(initial?.title ?? "");
@@ -34,8 +36,9 @@ function PostEditor({
     }
     setSaving(true);
     setError(null);
-    await onSave(title.trim(), content.trim());
+    const result = await onSave(title.trim(), content.trim());
     setSaving(false);
+    if (result.error) setError(result.error);
   }
 
   return (
@@ -120,8 +123,11 @@ export default function CoachPostsManager({
         <PostEditor
           onSave={async (title, content) => {
             const res = await createCoachPost(title, content);
-            setShowNew(false);
-            setJustPublished(res.notifiedCount ?? 0);
+            if (!res.error) {
+              setShowNew(false);
+              setJustPublished(res.notifiedCount ?? 0);
+            }
+            return res;
           }}
           onCancel={() => setShowNew(false)}
         />
@@ -140,8 +146,9 @@ export default function CoachPostsManager({
               key={post.id}
               initial={post}
               onSave={async (title, content) => {
-                await updateCoachPost(post.id, title, content);
-                setEditingId(null);
+                const result = await updateCoachPost(post.id, title, content);
+                if (!result.error) setEditingId(null);
+                return result;
               }}
               onCancel={() => setEditingId(null)}
             />

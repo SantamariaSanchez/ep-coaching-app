@@ -109,7 +109,10 @@ function ExerciseForm({
 }: {
   initial?: LibraryExercise;
   showVideoField?: boolean;
-  onSave: (input: CreateExerciseInput & { video_url?: string }) => Promise<void>;
+  // MASTERCLASS.md Axe B : Promise<void> rendait impossible d'afficher une
+  // erreur serveur ici (le formulaire d'exercice a pourtant déjà un état
+  // `error`, jamais alimenté faute de retour).
+  onSave: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
@@ -155,7 +158,7 @@ function ExerciseForm({
     if (!name.trim()) { setError("Le nom est requis."); return; }
     setSaving(true);
     setError(null);
-    await onSave({
+    const result = await onSave({
       name: name.trim(),
       muscle_group: muscleGroup,
       muscle_subgroup: muscleSubgroup || null,
@@ -179,6 +182,7 @@ function ExerciseForm({
         : {}),
     });
     setSaving(false);
+    if (result.error) setError(result.error);
   }
 
   return (
@@ -406,7 +410,7 @@ function ExerciseCard({
   exercise: LibraryExercise;
   isCoach: boolean;
   videosUnlocked: boolean;
-  onUpdate: (input: CreateExerciseInput & { video_url?: string }) => Promise<void>;
+  onUpdate: (input: CreateExerciseInput & { video_url?: string }) => Promise<{ error?: string }>;
   onDelete: () => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -418,7 +422,11 @@ function ExerciseCard({
       <ExerciseForm
         initial={exercise}
         showVideoField
-        onSave={async (input) => { await onUpdate(input); setEditing(false); }}
+        onSave={async (input) => {
+          const result = await onUpdate(input);
+          if (!result.error) setEditing(false);
+          return result;
+        }}
         onCancel={() => setEditing(false)}
       />
     );
@@ -712,6 +720,7 @@ export default function ExerciseLibraryView({
               ]);
               setShowCreate(false);
             }
+            return result;
           }}
           onCancel={() => setShowCreate(false)}
         />
@@ -805,8 +814,11 @@ export default function ExerciseLibraryView({
                   isCoach={isCoach}
                   videosUnlocked={videosUnlocked}
                   onUpdate={async (input) => {
-                    await updateExercise(ex.id, input);
-                    setExercises((prev) => prev.map((e) => (e.id === ex.id ? { ...e, ...input, muscle_subgroup: input.muscle_subgroup ?? null, video_url: input.video_url ?? e.video_url } : e)));
+                    const result = await updateExercise(ex.id, input);
+                    if (!result.error) {
+                      setExercises((prev) => prev.map((e) => (e.id === ex.id ? { ...e, ...input, muscle_subgroup: input.muscle_subgroup ?? null, video_url: input.video_url ?? e.video_url } : e)));
+                    }
+                    return result;
                   }}
                   onDelete={async () => {
                     await deleteExercise(ex.id);

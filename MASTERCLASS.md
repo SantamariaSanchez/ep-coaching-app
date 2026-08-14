@@ -191,6 +191,26 @@ vérifié) :
   inconditionnellement après `logSteps`/`updateStepGoal`/`logBiometrics`,
   qu'il y ait eu une erreur ou non — un faux positif, pire qu'un silence.
 
+**Troisième passe — même contrat `Promise<void>` retrouvé sur 4 autres
+formulaires de contenu**, tous avec le même symptôme (formulaire fermé/vidé
+même en cas d'échec serveur, malgré un état `error` déjà présent et prêt à
+s'en servir) : `ExerciseLibraryView.tsx` (`ExerciseForm`, fiche exercice
+bibliothèque — instructions, position, difficulté...), `GymsDirectoryView.tsx`
+(`GymForm`, fiche salle), `CoachPostsManager.tsx` (`PostEditor`, "Mot du
+coach" — un vrai post éditorial), `StudiesView.tsx` (`StudyForm`, protocole
+d'étude communauté — titre, hypothèse, protocole, résultats). Même
+correctif partout : le type `onSave`/`onUpdate` passe de `Promise<void>` à
+`Promise<{ error?: string }>`, chaque appelant renvoie désormais le
+résultat au lieu de l'avaler, et ne referme/optimise l'état local que si
+`!result.error`.
+
+**Volontairement pas encore touché** : les chemins `onDelete` (void partout
+dans ces mêmes fichiers) — risque plus faible (rien de saisi à perdre, déjà
+protégé par une confirmation), traité en dernier par rapport aux
+formulaires de création/édition qui peuvent perdre du contenu tapé à la
+main. `ArticleCard.tsx` (science, `onSave`) repéré mais pas encore corrigé,
+même famille exacte.
+
 ### Reste à faire sur cet axe
 
 - Les ~54 résultats restants du grep n'ont pas été triés un par un — la
