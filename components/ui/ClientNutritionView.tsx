@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
@@ -290,9 +290,42 @@ export default function ClientNutritionView({
   logMealItems,
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
+
+  // Bug remonté deux fois : cocher un aliment fonctionne, mais revient
+  // décoché après être revenu sur la page (navigation, changement d'appli
+  // puis retour, etc.). Le premier correctif (revalidatePath dans
+  // addFoodLog/removeFoodLog) ne suffisait pas : useState(initialTodayLogs)
+  // ne fixe l'état interne qu'au tout premier rendu — un nouveau
+  // initialTodayLogs envoyé par le serveur après une revalidation n'est
+  // JAMAIS repris automatiquement par ce useState (piège React classique
+  // "prop → state" sur re-render sans remontage complet du composant).
+  // Concrètement : la coche pouvait fonctionner en base (le insert
+  // réussissait bien, vérifié en direct en base) tout en réaffichant un
+  // état client périmé. Ce useEffect resynchronise explicitement dès que
+  // le serveur envoie des logs différents (dépendance volontairement
+  // limitée à initialTodayLogs, pas todayLogs, sinon boucle avec les
+  // mises à jour optimistes locales) — même tradeoff déjà accepté ailleurs
+  // dans ce fichier (voir plus bas, liste de courses) pour synchroniser un
+  // state depuis une source externe.
+  useEffect(() => {
+    setTodayLogs(initialTodayLogs);
+  }, [initialTodayLogs]);
+
+  // Deuxième filet : forcer un vrai aller-retour serveur (pas juste une
+  // resynchronisation du state existant) quand l'onglet/l'appli redevient
+  // visible — couvre le cas d'une appli PWA reprise en arrière-plan sans
+  // rechargement complet, où sinon rien ne redéclenche le rendu serveur.
+  useEffect(() => {
+    function handleVisibility() {
+      if (document.visibilityState === "visible") router.refresh();
+    }
+    document.addEventListener("visibilitychange", handleVisibility);
+    return () => document.removeEventListener("visibilitychange", handleVisibility);
+  }, [router]);
 
   // Arrivée depuis une notif de rappel de repas (cron meal-reminders) :
   // ?meal=<slot> — on saute direct au repas concerné dans le plan, en
@@ -1150,6 +1183,12 @@ export default function ClientNutritionView({
   // ── Render ─────────────────────────────────────────────────────────────────
 
   const noTargets = !nutritionProfile;
+  // Demande explicite : en diète fixe ou fixe-flexible, cocher le plan
+  // suffit — ce n'est pas du tracking libre, même quand un aliment peut
+  // être swappé (fixe-flexible). Le journal détaillé par repas (ajout
+  // manuel, bilan rapide, copier hier) reste réservé à la diète flexible,
+  // où il n'y a justement pas de plan à cocher.
+  const isFreeTracking = dietMode === "flexible";
 
   return (
     <div className="px-6 py-8 ep-page-medium">
@@ -1292,53 +1331,65 @@ export default function ClientNutritionView({
             </div>
           )}
 
-          {/* Bilan rapide — alternative rapide à la saisie manuelle, toujours
-              accessible (avant, elle disparaissait dès le premier aliment
-              loggé dans la journée — hors c'est le seul lien vers cette
-              page, la perdre revenait à la rendre injoignable). */}
-          <a
-            href="/dashboard/client/nutrition/bilan-rapide"
-            className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
-          >
-            <span className="flex items-center gap-2.5 text-left">
-              <span className="text-xl">⚡</span>
-              <span>
-                <span className="block text-xs font-bold text-white">
-                  {todayLogs.length === 0 ? "Bilan rapide" : "Compléter ma journée"}
+          {/* Diète fixe/fixe-flexible : cocher le plan (DietPlanCard
+              ci-dessus) suffit, ce n'est pas du tracking libre — le
+              journal détaillé par repas (ajout manuel, bilan rapide,
+              copier hier) n'a de sens qu'en diète flexible, où il n'y a
+              justement pas de plan à cocher. Éviter de l'afficher quand
+              même en fixe/fixe-flexible pour ne pas donner deux façons
+              différentes (et déconnectées l'une de l'autre) de dire "j'ai
+              mangé ça". */}
+          {isFreeTracking && (
+            <>
+              {/* Bilan rapide — alternative rapide à la saisie manuelle, toujours
+                  accessible (avant, elle disparaissait dès le premier aliment
+                  loggé dans la journée — hors c'est le seul lien vers cette
+                  page, la perdre revenait à la rendre injoignable). */}
+              <a
+                href="/dashboard/client/nutrition/bilan-rapide"
+                className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
+              >
+                <span className="flex items-center gap-2.5 text-left">
+                  <span className="text-xl">⚡</span>
+                  <span>
+                    <span className="block text-xs font-bold text-white">
+                      {todayLogs.length === 0 ? "Bilan rapide" : "Compléter ma journée"}
+                    </span>
+                    <span className="block text-[10px] text-[#F5EDED]/40">
+                      Je choisis mes repas et mes aliments habituels, l&apos;appli calcule tout
+                    </span>
+                  </span>
                 </span>
-                <span className="block text-[10px] text-[#F5EDED]/40">
-                  Je choisis mes repas et mes aliments habituels, l&apos;appli calcule tout
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+                  Commencer →
                 </span>
-              </span>
-            </span>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-              Commencer →
-            </span>
-          </a>
+              </a>
 
-          {/* Copy yesterday — the single biggest friction-killer for an empty day */}
-          {todayLogs.length === 0 && yesterdayLogs.length > 0 && (
-            <button
-              onClick={handleCopyYesterday}
-              disabled={copyingYesterday}
-              className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 rounded-xl px-4 py-3.5 transition-colors disabled:opacity-50"
-            >
-              <span className="flex items-center gap-2.5 text-left">
-                <Copy size={14} className="text-[#E01E1E] flex-shrink-0" />
-                <span>
-                  <span className="block text-xs font-bold text-white">
-                    Copier la journée d&apos;hier
+              {/* Copy yesterday — the single biggest friction-killer for an empty day */}
+              {todayLogs.length === 0 && yesterdayLogs.length > 0 && (
+                <button
+                  onClick={handleCopyYesterday}
+                  disabled={copyingYesterday}
+                  className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 rounded-xl px-4 py-3.5 transition-colors disabled:opacity-50"
+                >
+                  <span className="flex items-center gap-2.5 text-left">
+                    <Copy size={14} className="text-[#E01E1E] flex-shrink-0" />
+                    <span>
+                      <span className="block text-xs font-bold text-white">
+                        Copier la journée d&apos;hier
+                      </span>
+                      <span className="block text-[10px] text-[#F5EDED]/40">
+                        {yesterdayLogs.length} aliment{yesterdayLogs.length > 1 ? "s" : ""} ·{" "}
+                        {fmt(yesterdayCals)} kcal
+                      </span>
+                    </span>
                   </span>
-                  <span className="block text-[10px] text-[#F5EDED]/40">
-                    {yesterdayLogs.length} aliment{yesterdayLogs.length > 1 ? "s" : ""} ·{" "}
-                    {fmt(yesterdayCals)} kcal
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
+                    {copyingYesterday ? "…" : "Copier"}
                   </span>
-                </span>
-              </span>
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-                {copyingYesterday ? "…" : "Copier"}
-              </span>
-            </button>
+                </button>
+              )}
+            </>
           )}
 
           {/* Error banner — shown when optimistic add fails after modal closes */}
@@ -1354,8 +1405,8 @@ export default function ClientNutritionView({
             </div>
           )}
 
-          {/* Meal slots */}
-          {MEAL_SLOTS.map((slot) => {
+          {/* Meal slots — journal détaillé, uniquement en diète flexible (voir plus haut) */}
+          {isFreeTracking && MEAL_SLOTS.map((slot) => {
             const slotLogs = todayLogs.filter((l) => l.meal_slot === slot.key);
             const slotCals = slotLogs.reduce(
               (s, l) => s + (l.calories ?? 0),
