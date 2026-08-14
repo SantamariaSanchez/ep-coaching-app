@@ -228,15 +228,36 @@ main.
   laissé de côté pour privilégier les cas qui mentent activement à
   l'utilisateur plutôt que ceux qui restent simplement silencieux.
 
+**Cinquième passe** :
+- `AvailabilityManager.tsx` : `handleDelete` (créneau de disponibilité live)
+  n'affichait jamais l'erreur pourtant déjà retournée par
+  `deleteAvailabilityRule` — le composant a un état `error` déjà utilisé
+  par `handleAdd` juste au-dessus, juste pas branché ici. Corrigé.
+- `MembresView.tsx` : "Relancer" un membre jamais revenu marquait le
+  bouton "Relancé" (désactivé définitivement) même si la relance échouait
+  côté serveur — même famille que `SeasonModeToggle`. Corrigé avec reset
+  du bouton sur échec (pas de nouvel espace UI pour un message, la carte
+  membre est déjà compacte).
+- `CoachClientTasksView.tsx` : `handleDelete` (tâche client) supprimait
+  optimiquement sans jamais annuler en cas d'échec — repris le même filet
+  de sécurité que `handleCreate` déjà correct juste au-dessus dans le
+  même fichier.
+- `RecipesClient.tsx` : `handleLogRecipeToday` logue TOUS les aliments
+  d'une recette en parallèle (`Promise.all`) mais ne vérifiait aucun des
+  résultats — si un seul aliment échouait, "Ajouté au journal ✓"
+  s'affichait quand même alors que la journée nutritionnelle était
+  incomplète. Corrigé : le premier résultat en erreur remonte jusqu'au
+  bouton, qui affiche l'erreur au lieu du faux succès.
+- Vérifié SAIN / laissé de côté (silencieux mais pas trompeur, pas de
+  state optimiste corrompu) : `SupplementsSection.tsx` (liste dérivée
+  d'un prop, pas de state dupliqué à corrompre), `ResourceManager.tsx`
+  (`fetch` + `router.refresh()`, un échec ne fait que re-servir les mêmes
+  données, pas de mensonge), `NotificationBell.tsx` (badge remis à zéro
+  optimiquement mais auto-corrigé au prochain chargement, pas de perte).
+
 ### Reste à faire sur cet axe
 
-- Les ~54 résultats restants du grep original n'ont pas tous été triés —
-  candidats visibles restants : `components/coach/AvailabilityManager.tsx`,
-  `components/community/MembresView.tsx`, `components/messaging/*`,
-  `components/resources/ResourceManager.tsx`, `components/ui/
-  CoachClientTasksView.tsx`, `components/ui/SupplementsSection.tsx`,
-  `components/ui/NotificationBell.tsx`, `components/recipes/RecipesClient.tsx`.
-  Prochaine passe : reprendre cette liste dans l'ordre, même méthode
-  (vérifier si un state local optimiste existe sans rollback, ou si un
-  contrat `Promise<void>` masque une erreur qu'un état `error` local
-  pourrait déjà afficher).
+- `components/messaging/*` (ConversationView, PushPermission) pas encore
+  vérifiés.
+- Relancer la commande de la passe 1 après du nouveau code pour capter ce
+  qui aurait été ajouté depuis.

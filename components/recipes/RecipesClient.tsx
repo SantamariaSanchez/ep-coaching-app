@@ -183,16 +183,22 @@ function RecipeCard({
   locked: boolean;
   recommended: boolean;
   /** Fourni + recipe.foodsUsed non vide = bouton "Loguer aujourd'hui" affiché. */
-  onLogToday?: () => Promise<void>;
+  onLogToday?: () => Promise<{ error?: string }>;
 }) {
   const [logging, setLogging] = useState(false);
   const [logged, setLogged] = useState(false);
+  const [logError, setLogError] = useState<string | null>(null);
 
   async function handleLogToday() {
     if (!onLogToday || logging) return;
     setLogging(true);
-    await onLogToday();
+    setLogError(null);
+    const result = await onLogToday();
     setLogging(false);
+    if (result.error) {
+      setLogError(result.error);
+      return;
+    }
     setLogged(true);
     setTimeout(() => setLogged(false), 3000);
   }
@@ -356,6 +362,7 @@ function RecipeCard({
                 {logged ? "Ajouté au journal" : logging ? "Ajout…" : "Loguer aujourd'hui"}
               </button>
             )}
+            {logError && <p className="text-[10px] text-red-400">{logError}</p>}
             {canDelete && (
               <button
                 onClick={(e) => {
@@ -519,14 +526,14 @@ export default function RecipesClient({
   // au journal alimentaire d'aujourd'hui — en parallèle, un seul log par
   // ingrédient plutôt qu'une entrée "recette" agrégée : cohérent avec le
   // reste du suivi, qui logue toujours au niveau aliment.
-  async function handleLogRecipeToday(recipe: DisplayRecipe) {
-    if (!addFoodLog || !recipe.foodsUsed || recipe.foodsUsed.length === 0) return;
+  async function handleLogRecipeToday(recipe: DisplayRecipe): Promise<{ error?: string }> {
+    if (!addFoodLog || !recipe.foodsUsed || recipe.foodsUsed.length === 0) return {};
     const today = new Date().toISOString().split("T")[0];
     const slot = MEAL_TO_SLOT[recipe.meal];
-    await Promise.all(
-      recipe.foodsUsed.map(({ food_id, grams }) => {
+    const results = await Promise.all(
+      recipe.foodsUsed.map(({ food_id, grams }): Promise<{ id?: string; error?: string }> => {
         const food = foods.find((f) => f.id === food_id);
-        if (!food) return Promise.resolve();
+        if (!food) return Promise.resolve({});
         const n = calculateNutrients(food, grams);
         return addFoodLog({
           foodId: food.id,
@@ -540,6 +547,11 @@ export default function RecipesClient({
         });
       })
     );
+    // MASTERCLASS.md Axe B : un repas loggue plusieurs aliments d'un coup —
+    // si l'un d'eux échoue, ce n'était pas remonté et "Loggué ✓" s'affichait
+    // quand même, alors que la journée était incomplète.
+    const failed = results.find((r) => r.error);
+    return failed ? { error: failed.error } : {};
   }
 
   return (

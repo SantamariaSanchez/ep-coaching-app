@@ -95,8 +95,20 @@ export default function CoachClientTasksView({
   }
 
   async function handleDelete(taskId: string) {
+    const idx = tasks.findIndex((t) => t.id === taskId);
+    const backup = tasks[idx];
     setTasks((prev) => prev.filter((t) => t.id !== taskId));
-    await deleteClientTask(clientId, taskId);
+    const result = await deleteClientTask(clientId, taskId);
+    // MASTERCLASS.md Axe B : suppression optimiste jamais annulée en cas
+    // d'échec serveur — la tâche restait invisible jusqu'au prochain
+    // chargement complet même si elle n'avait pas vraiment été supprimée.
+    if (result.error && backup) {
+      setTasks((prev) => {
+        const next = [...prev];
+        next.splice(Math.min(idx, next.length), 0, backup);
+        return next;
+      });
+    }
   }
 
   async function handleSendMotivation(text: string) {

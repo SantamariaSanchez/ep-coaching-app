@@ -79,9 +79,11 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
   }
 
   function handleDelete(id: string) {
+    setError("");
     startTransition(async () => {
-      await deleteAvailabilityRule(id);
-      router.refresh();
+      const result = await deleteAvailabilityRule(id);
+      if (result.error) setError(result.error);
+      else router.refresh();
     });
   }
 

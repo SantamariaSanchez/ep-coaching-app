@@ -36,7 +36,7 @@ function MemberRow({
   onRelaunch,
 }: {
   member: CommunityMemberWithActivity;
-  onRelaunch: (id: string) => Promise<void>;
+  onRelaunch: (id: string) => Promise<{ error?: string }>;
 }) {
   const [relaunching, setRelaunching] = useState(false);
   const [relaunched, setRelaunched] = useState(false);
@@ -103,9 +103,12 @@ function MemberRow({
           <button
             onClick={async () => {
               setRelaunching(true);
-              await onRelaunch(member.id);
+              // MASTERCLASS.md Axe B : marquait "Relancé" (bouton désactivé
+              // définitivement) même si la relance échouait côté serveur —
+              // sur échec, le bouton redevient cliquable pour réessayer.
+              const result = await onRelaunch(member.id);
               setRelaunching(false);
-              setRelaunched(true);
+              if (!result.error) setRelaunched(true);
             }}
             disabled={relaunching || relaunched}
             className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 disabled:opacity-50 transition-colors"
@@ -168,7 +171,7 @@ export default function MembresView({
   }, [members, search, filter, sort]);
 
   async function handleRelaunch(id: string) {
-    await relaunchMember(id);
+    return relaunchMember(id);
   }
 
   if (members.length === 0) {
