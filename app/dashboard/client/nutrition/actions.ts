@@ -160,6 +160,19 @@ export async function addFoodLog(params: {
     // échouer l'ajout.
     notifyCoachIfDayWellLogged(guard.userId, params.loggedAt).catch(() => {});
 
+    // Bug remonté : cocher un aliment fonctionnait (l'insert réussissait)
+    // mais revenait "décoché" après avoir navigué ailleurs puis être
+    // revenu. Cause : contrairement à presque toutes les autres mutations
+    // de ce fichier, addFoodLog/removeFoodLog ne revalidaient jamais la
+    // page — la mise à jour optimiste côté client masquait le problème sur
+    // la vue courante, mais le cache client de Next (réutilisé lors d'une
+    // navigation arrière/avant, voir doc client cache) resservait le
+    // rendu serveur d'avant l'ajout. Cette action est partagée par deux
+    // routes (client ET "Moi" coach, même composant ClientNutritionView),
+    // donc les deux doivent être invalidées.
+    revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
+
     return { id: data.id };
   } catch {
     return { error: "Erreur inattendue." };
@@ -179,6 +192,10 @@ export async function removeFoodLog(
       .delete()
       .eq("id", logId)
       .eq("client_id", guard.userId);
+
+    // Même correctif que addFoodLog ci-dessus.
+    revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
 
     return {};
   } catch {
