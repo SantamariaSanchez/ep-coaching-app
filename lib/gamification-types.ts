@@ -99,6 +99,10 @@ export const POINTS = {
   community_question: 5,
   community_victory: 10,
   weekly_checkin: 25,
+  // Item 41 : récompense au parrain quand la personne invitée termine son
+  // inscription — équivalent à 2 bilans hebdo, geste concret sans
+  // déséquilibrer le reste du barème.
+  referral: 50,
 } as const;
 
 export const LEGEND_RANK_KEY = "legende";
