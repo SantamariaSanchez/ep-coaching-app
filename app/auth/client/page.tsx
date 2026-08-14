@@ -66,7 +66,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
-            placeholder="ton@email.com"
+            placeholder="ton@email.com" aria-label="ton@email.com"
             style={{ ...inputStyle, marginBottom: 10 }}
           />
           <div style={{ display: "flex", gap: 10 }}>
@@ -113,7 +113,7 @@ function ConnexionForm({ onSignupClick }: { onSignupClick: () => void }) {
             name="email"
             type="email"
             required
-            placeholder="ton@email.com"
+            placeholder="ton@email.com" aria-label="ton@email.com"
             style={inputStyle}
             value={email}
             onChange={(e) => setEmail(e.target.value)}

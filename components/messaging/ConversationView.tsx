@@ -216,7 +216,7 @@ function VoiceRecorderButton({
           ? "bg-red-500 scale-110 shadow-lg shadow-red-500/30"
           : "bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60"
       }`}
-      title={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"}
+      title={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"} aria-label={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"}
     >
       {recording ? (
         <div className="flex items-center gap-1">
@@ -621,7 +621,7 @@ export default function ConversationView({
                 autoFocus
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Chercher dans la conversation…"
+                placeholder="Chercher dans la conversation…" aria-label="Chercher dans la conversation…"
                 className="flex-1 bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 outline-none"
               />
               {searchTerm && (
@@ -702,7 +702,7 @@ export default function ConversationView({
           onClick={() => imageInputRef.current?.click()}
           disabled={sending}
           className="w-10 h-10 rounded-xl bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60 flex items-center justify-center flex-shrink-0 transition-[background-color,transform] duration-150 active:scale-90"
-          title="Envoyer une photo"
+          title="Envoyer une photo" aria-label="Envoyer une photo"
         >
           <ImageIcon size={16} />
         </button>

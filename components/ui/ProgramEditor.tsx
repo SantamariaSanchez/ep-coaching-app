@@ -541,13 +541,13 @@ export function ExerciseNameField({
             if (e.key === "Enter") { setOpen(false); onEnter?.(); }
             if (e.key === "Escape") setOpen(false);
           }}
-          placeholder="Exercice (recherche...)"
+          placeholder="Exercice (recherche...)" aria-label="Exercice (recherche...)"
           className="w-full bg-transparent text-sm font-semibold text-white placeholder:text-[#F5EDED]/25 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/20 pb-0.5 min-w-0"
         />
         <button
           type="button"
           onClick={() => { setOpen(true); setShowFilters((v) => !v); }}
-          title="Filtrer par muscle / matériel"
+          title="Filtrer par muscle / matériel" aria-label="Filtrer par muscle / matériel"
           className={`flex-shrink-0 p-1 rounded transition-colors ${
             hasActiveFilters ? "text-[#E01E1E]" : "text-[#F5EDED]/20 hover:text-[#F5EDED]/50"
           }`}
@@ -663,7 +663,7 @@ export function ExerciseNameField({
                 <button
                   type="button"
                   onClick={() => setDetailFor(lib)}
-                  title="Fiche exercice détaillée"
+                  title="Fiche exercice détaillée" aria-label="Fiche exercice détaillée"
                   className="flex-shrink-0 px-2 flex items-center justify-center text-[#F5EDED]/25 hover:text-[#E01E1E] hover:bg-[#890404]/20 transition-colors"
                 >
                   <Info size={13} />
@@ -1404,7 +1404,7 @@ export default function ProgramEditor({
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. PPL : Hypertrophie"
+              placeholder="Ex. PPL : Hypertrophie" aria-label="Ex. PPL : Hypertrophie"
               className={inputCls}
             />
           </div>
@@ -1432,7 +1432,7 @@ export default function ProgramEditor({
               max="7"
               value={state.frequency}
               onChange={(e) => updateMeta("frequency", e.target.value)}
-              placeholder="Ex. 4"
+              placeholder="Ex. 4" aria-label="Ex. 4"
               className={inputCls}
             />
           </div>
@@ -1445,7 +1445,7 @@ export default function ProgramEditor({
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa"
+            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa" aria-label="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa"
             className={inputCls}
           />
         </div>
@@ -1459,7 +1459,7 @@ export default function ProgramEditor({
             value={state.coach_notes}
             onChange={(e) => updateMeta("coach_notes", e.target.value)}
             rows={2}
-            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…"
+            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…" aria-label="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…"
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -1527,7 +1527,7 @@ export default function ProgramEditor({
           value={customConstraints}
           onChange={(e) => setCustomConstraints(e.target.value)}
           rows={2}
-          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…"
+          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…" aria-label="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…"
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
@@ -1600,7 +1600,7 @@ export default function ProgramEditor({
                     <button
                       onClick={() => moveDay(day.localId, -1)}
                       disabled={dayIdx === 0}
-                      title="Déplacer à gauche"
+                      title="Déplacer à gauche" aria-label="Déplacer à gauche"
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronLeft size={14} />
@@ -1608,21 +1608,21 @@ export default function ProgramEditor({
                     <button
                       onClick={() => moveDay(day.localId, 1)}
                       disabled={dayIdx === state.days.length - 1}
-                      title="Déplacer à droite"
+                      title="Déplacer à droite" aria-label="Déplacer à droite"
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 disabled:opacity-20 transition-colors flex-shrink-0"
                     >
                       <ChevronRight size={14} />
                     </button>
                     <button
                       onClick={() => duplicateDay(day.localId)}
-                      title="Dupliquer cette séance"
+                      title="Dupliquer cette séance" aria-label="Dupliquer cette séance"
                       className="text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
                     >
                       <Copy size={12} />
                     </button>
                     <button
                       onClick={() => removeDay(day.localId)}
-                      title="Supprimer la séance"
+                      title="Supprimer la séance" aria-label="Supprimer la séance"
                       className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
                     >
                       <Trash2 size={13} />
@@ -1655,7 +1655,7 @@ export default function ProgramEditor({
                                 moveExercise(day.localId, ex.localId, -1)
                               }
                               disabled={exIdx === 0}
-                              title="Monter"
+                              title="Monter" aria-label="Monter"
                               className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
@@ -1672,7 +1672,7 @@ export default function ProgramEditor({
                                 moveExercise(day.localId, ex.localId, 1)
                               }
                               disabled={exIdx === day.exercises.length - 1}
-                              title="Descendre"
+                              title="Descendre" aria-label="Descendre"
                               className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 disabled:opacity-10 transition-colors p-0.5"
                             >
                               <svg
@@ -1687,7 +1687,7 @@ export default function ProgramEditor({
                             {canSwap(ex.name) && (
                               <button
                                 onClick={() => swapExercise(day.localId, ex.localId)}
-                                title="Remplacer par un autre exercice du même groupe/catégorie"
+                                title="Remplacer par un autre exercice du même groupe/catégorie" aria-label="Remplacer par un autre exercice du même groupe/catégorie"
                                 className="text-[#F5EDED]/25 hover:text-green-400 transition-colors p-0.5 ml-0.5"
                               >
                                 <RefreshCw size={11} />
@@ -1697,7 +1697,7 @@ export default function ProgramEditor({
                               onClick={() =>
                                 removeExercise(day.localId, ex.localId)
                               }
-                              title="Supprimer"
+                              title="Supprimer" aria-label="Supprimer"
                               className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-0.5 ml-0.5"
                             >
                               <Trash2 size={11} />
@@ -1768,7 +1768,7 @@ export default function ProgramEditor({
                               e.target.value
                             )
                           }
-                          placeholder="Notes (optionnel)"
+                          placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
                           className="w-full bg-transparent text-[10px] text-[#F5EDED]/40 placeholder:text-[#F5EDED]/20 focus:outline-none border-b border-transparent focus:border-[#F5EDED]/10 pb-0.5 transition-colors"
                         />
 

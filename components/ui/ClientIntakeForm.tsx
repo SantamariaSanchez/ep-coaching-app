@@ -296,8 +296,8 @@ export default function ClientIntakeForm({
         </Field>
         <Field label="Gluc./Lip. (g)">
           <div className="flex gap-1.5">
-            <input type="number" placeholder="G" value={num("known_carbs")} onChange={(e) => set("known_carbs", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
-            <input type="number" placeholder="L" value={num("known_fat")} onChange={(e) => set("known_fat", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
+            <input type="number" placeholder="G" aria-label="G" value={num("known_carbs")} onChange={(e) => set("known_carbs", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
+            <input type="number" placeholder="L" aria-label="L" value={num("known_fat")} onChange={(e) => set("known_fat", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
           </div>
         </Field>
       </div>

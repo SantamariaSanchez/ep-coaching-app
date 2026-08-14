@@ -123,9 +123,9 @@ Idées à développer au fil des passes plutôt que planifiées d'avance en
 détail (l'esprit de la demande est "petit à petit", pas un plan figé).
 Axes A (cache après mutation), B (échecs silencieux côté UI), C
 (accessibilité clavier), D (catch muets côté serveur), E (`useState`
-jamais resynchronisé sur un nouveau prop serveur) et F (boutons icône
-seule sans nom accessible) sont clos — détail de chacun plus bas. Idée pas
-encore commencée :
+jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
+sans nom accessible) et G (champs de formulaire sans nom accessible) sont
+clos — détail de chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -566,6 +566,29 @@ aussi que `next build`/tsc/eslint ne montrent aucune nouvelle erreur
 propre à cette passe (comparaison `git stash` avant/après : mêmes 20
 problèmes de lint préexistants, tous déjà documentés aux axes précédents).
 
+**Correction (même jour, suite directe)** : le script de repérage initial
+cherchait la fin d'un tag via le premier `>` rencontré — cassé dès qu'un
+attribut contenait une expression avec `=>` (une fonction fléchée dans
+`onClick={() => ...}`, extrêmement courant), qui tronque le tag bien avant
+d'atteindre `title=`/`aria-label=`. Résultat : la première passe a raté
+tout bouton dont un attribut *avant* `title` contenait une fonction
+fléchée. Réécrit avec un scanner conscient de la profondeur des `{}` et
+des chaînes (`findTagEnd`, gardé dans le scratchpad) — relancé sur tout le
+projet, **51 boutons supplémentaires** trouvés avec un `title` mais sans
+`aria-label` (dont `PersonalPhotosView.tsx` "Supprimer" repéré en
+vérifiant le diff de l'axe G juste après). Script d'application
+(`apply-title-aria-labels.mjs`) qui extrait la valeur exacte de `title`
+(chaîne simple OU expression `{...}` dynamique, ex. ternaire) et
+réutilise EXACTEMENT la même valeur pour `aria-label` — donc un titre
+conditionnel (`title={recording ? "Relâcher pour envoyer" : "Maintenir
+pour enregistrer"}`) obtient le même `aria-label` conditionnel, pas une
+approximation statique. Fichiers les plus touchés : `ProgramEditor.tsx`
+et `CoachFormationEditor.tsx` (10 chacun — beaucoup de boutons
+monter/descendre/dupliquer/supprimer dans des listes réordonnables),
+`ProgramTemplateEditor.tsx` (7). tsc/eslint/build revérifiés propres
+après coup (mêmes erreurs préexistantes qu'avant, confirmé par
+`git stash`).
+
 ### Reste à faire sur cet axe
 
 - Les 9 faux positifs identifiés ci-dessus ne sont *pas* forcément 100%
@@ -577,5 +600,65 @@ problèmes de lint préexistants, tous déjà documentés aux axes précédents)
   même grille (probablement rares vu que la nav principale de l'appli est
   textuelle, mais pas vérifié).
 - Champs de formulaire sans `<label>` associé (juste un `placeholder`) —
-  classe d'accessibilité voisine, pas encore auditée, pourrait faire
-  l'objet d'un axe G séparé.
+  traité séparément, voir axe G ci-dessous.
+
+## Axe G — Champs de formulaire sans nom accessible (juste un `placeholder`)
+
+**Statut : première passe faite (2026-08-14), 191 champs corrigés sur 70
+fichiers (sous-ensemble mécanisable d'un total de 392 repérés).**
+
+Même famille que l'axe F, appliquée aux `<input>`/`<textarea>`/`<select>` :
+un placeholder disparaît dès que l'utilisateur tape, n'est pas
+systématiquement exposé par les lecteurs d'écran, et n'est de toute façon
+pas un nom accessible au sens strict (WCAG 4.1.2) — seul un `<label>`
+associé, un `aria-label` ou un `aria-labelledby` en fait office.
+
+**Méthode utilisée** (relançable, scanner corrigé — voir la mésaventure
+`=>` de l'axe F ci-dessus, le même bug existait initialement ici et a été
+corrigé dès la première version de ce script) :
+```js
+// find-unlabeled-inputs.mjs : pour chaque <input>/<textarea>/<select>,
+// vérifie (a) l'absence d'aria-label/aria-labelledby, (b) l'absence d'un
+// <label htmlFor="son-id">, (c) l'absence d'un <label>...</label>
+// englobant (label implicite). Si les 3 sont absents, c'est un candidat.
+// 392 candidats sur 86 fichiers à l'exécution du 2026-08-14.
+```
+Sur ces 392, **191 avaient déjà un `placeholder` non vide** — un texte
+d'exemple/instruction écrit par un humain, donc directement réutilisable
+comme `aria-label` sans perte de sens (contrairement aux boutons icône de
+l'axe F, où il fallait choisir le bon verbe selon le contexte, ici le
+texte existe déjà). Les 201 restants n'ont aucun texte source évident
+(champs `type="number"`/`type="date"`, ou un `<span>` voisin non lié
+programmatiquement) — corrigeables mais demandent de lire le contexte de
+chaque cas un par un, remis à une passe future plutôt que de deviner.
+
+**Corrigé** : `apply-input-aria-labels.mjs` (scratchpad) — script
+d'application qui repère la position exacte de l'attribut `placeholder=`
+dans le texte source et insère `aria-label="<même texte>"` juste après,
+un par un (positions calculées puis appliquées en ordre inverse dans
+chaque fichier pour ne jamais invalider les indices suivants). 191
+insertions sur 70 fichiers, aucune collision, aucun `aria-label` en
+double (vérifié par grep après coup). Fichiers avec le plus de champs
+concernés : `AddRecipeForm.tsx` (13), `RoadmapEditor.tsx` (14),
+`StudiesView.tsx`/`LiveScheduler.tsx` (8 chacun), `DailyBilanForm.tsx`
+(12), `ClientNutritionView.tsx`/`NutritionForm.tsx` (8 chacun).
+
+**Vérifié SAIN** : tsc propre, build propre, eslint identique avant/après
+(comparaison `git stash`, mêmes 36 problèmes préexistants, aucun nouveau).
+Vérifié qu'aucun champ déjà couvert par un vrai `<label>` (implicite ou
+via `htmlFor`) n'a été touché par erreur.
+
+### Reste à faire sur cet axe
+
+- Les 201 champs sans `placeholder` exploitable (repérés mais pas
+  corrigés) restent à trier par petits lots, avec lecture du contexte
+  pour chacun (ex. un `type="number"` de poids a probablement un `<span>`
+  ou un label visuel juste à côté qu'il suffit de lier ou de reprendre en
+  `aria-label`, mais ça demande de vérifier au cas par cas plutôt que de
+  deviner).
+- Les `aria-label` ajoutés reprennent parfois un texte d'exemple plutôt
+  qu'une vraie description du champ (ex. `placeholder="Ex. 12"` sur un
+  champ "durée en semaines" donne `aria-label="Ex. 12"`, pas
+  "Durée en semaines") — mieux que rien pour un lecteur d'écran (au moins
+  un nom), mais pas idéal ; une passe de relecture ciblée sur les
+  placeholders de type "Ex. ..." pourrait affiner ces libellés un jour.

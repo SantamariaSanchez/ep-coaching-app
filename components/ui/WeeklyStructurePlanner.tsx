@@ -88,7 +88,7 @@ export default function WeeklyStructurePlanner({
                       <button
                         type="button"
                         onClick={() => onSetWeekday(d.localId, null)}
-                        title="Détacher de ce jour"
+                        title="Détacher de ce jour" aria-label="Détacher de ce jour"
                         className="text-[#F5EDED]/30 hover:text-red-400 flex-shrink-0"
                       >
                         <X size={10} />
@@ -133,7 +133,7 @@ export default function WeeklyStructurePlanner({
                 <button
                   type="button"
                   onClick={() => onRemoveDay(d.localId)}
-                  title="Supprimer cette séance"
+                  title="Supprimer cette séance" aria-label="Supprimer cette séance"
                   className="text-[#F5EDED]/25 hover:text-red-400"
                 >
                   <X size={11} />

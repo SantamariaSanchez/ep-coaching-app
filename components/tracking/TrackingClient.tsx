@@ -448,7 +448,7 @@ export default function TrackingClient({
                     {!readOnly && acknowledgeBiometricInsight && (
                       <button
                         onClick={() => handleAcknowledge(insight.id)}
-                        title="Marquer comme vu"
+                        title="Marquer comme vu" aria-label="Marquer comme vu"
                         className="flex-shrink-0 text-[#F5EDED]/25 hover:text-white transition-colors"
                       >
                         <Check size={14} />

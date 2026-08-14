@@ -343,7 +343,7 @@ function DeleteButton({ onDelete }: { onDelete: () => Promise<{ error?: string }
         setBusy(false);
       }}
       className="p-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
-      title="Supprimer"
+      title="Supprimer" aria-label="Supprimer"
     >
       <Trash2 size={13} />
     </button>

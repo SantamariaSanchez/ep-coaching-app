@@ -100,15 +100,15 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
           </div>
           <div>
             <label style={labelStyle}>Prénom et nom</label>
-            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Ton prénom et nom" style={inputStyle} />
+            <input value={fullName} onChange={(e) => setFullName(e.target.value)} type="text" placeholder="Ton prénom et nom" aria-label="Ton prénom et nom" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Email</label>
-            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="ton@email.com" style={inputStyle} />
+            <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="ton@email.com" aria-label="ton@email.com" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Téléphone</label>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="06 12 34 56 78" style={inputStyle} />
+            <input value={phone} onChange={(e) => setPhone(e.target.value)} type="tel" placeholder="06 12 34 56 78" aria-label="06 12 34 56 78" style={inputStyle} />
           </div>
           <div>
             <label style={labelStyle}>Mot de passe</label>

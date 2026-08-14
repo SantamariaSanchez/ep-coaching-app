@@ -474,7 +474,7 @@ export default function StepsClient({
                 type="number"
                 value={stepsInput}
                 onChange={(e) => setStepsInput(e.target.value)}
-                placeholder="Saisie précise"
+                placeholder="Saisie précise" aria-label="Saisie précise"
                 className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
               />
               <button
@@ -530,7 +530,7 @@ export default function StepsClient({
                     {!readOnly && createReminderFromRoutine && (
                       <button
                         onClick={() => { setReminderOpenFor(reminderOpenFor === item.id ? null : item.id); setReminderTime("12:00"); }}
-                        title="Créer un rappel push"
+                        title="Créer un rappel push" aria-label="Créer un rappel push"
                         className={rStatus === "done" ? "text-green-400" : "text-[#F5EDED]/20 hover:text-[#E01E1E] transition-colors"}
                       >
                         {rStatus === "done" ? <Check size={13} /> : <Bell size={13} />}
@@ -574,13 +574,13 @@ export default function StepsClient({
               <input
                 value={newTime}
                 onChange={(e) => setNewTime(e.target.value)}
-                placeholder="Heure"
+                placeholder="Heure" aria-label="Heure"
                 className="w-20 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                placeholder="Ex. Marche après le déjeuner"
+                placeholder="Ex. Marche après le déjeuner" aria-label="Ex. Marche après le déjeuner"
                 className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
               <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">OK</button>

@@ -157,7 +157,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Libellé (ex : Abonnement Canva)"
+            placeholder="Libellé (ex : Abonnement Canva)" aria-label="Libellé (ex : Abonnement Canva)"
             style={{ ...inputStyle, marginTop: 8 }}
           />
 
@@ -165,7 +165,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Montant en €"
+              placeholder="Montant en €" aria-label="Montant en €"
               inputMode="decimal"
               style={inputStyle}
             />

@@ -204,7 +204,7 @@ export default function TwoFactorSetup({
         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
         inputMode="numeric"
         autoComplete="one-time-code"
-        placeholder="123456"
+        placeholder="123456" aria-label="123456"
         className="w-full bg-black/40 border border-[#890404]/35 rounded-lg px-4 py-3 text-center text-lg tracking-[0.4em] text-[#F5EDED] outline-none focus:border-[#E01E1E]/60 mb-3"
       />
 

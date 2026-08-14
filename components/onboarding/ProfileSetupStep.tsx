@@ -127,7 +127,7 @@ export default function ProfileSetupStep({
               <textarea
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
-                placeholder="Parle un peu de toi, tes objectifs, ton parcours..."
+                placeholder="Parle un peu de toi, tes objectifs, ton parcours..." aria-label="Parle un peu de toi, tes objectifs, ton parcours..."
                 rows={3}
                 maxLength={280}
                 style={{
@@ -147,7 +147,7 @@ export default function ProfileSetupStep({
               <input
                 value={instagram}
                 onChange={(e) => setInstagram(e.target.value)}
-                placeholder="tonpseudo"
+                placeholder="tonpseudo" aria-label="tonpseudo"
                 style={{
                   width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.15)",
                   borderRadius: 8, color: "#F5EDED", padding: "11px 14px", fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",

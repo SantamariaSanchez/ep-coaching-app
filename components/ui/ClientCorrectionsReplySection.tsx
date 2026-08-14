@@ -95,7 +95,7 @@ function AnnotatedClientVideo({
             type="text"
             value={noteInput}
             onChange={(e) => setNoteInput(e.target.value)}
-            placeholder="Note à l'instant courant de la vidéo…"
+            placeholder="Note à l'instant courant de la vidéo…" aria-label="Note à l'instant courant de la vidéo…"
             className="flex-1 bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors"
           />
           <button
@@ -181,7 +181,7 @@ function ReplyForm({
         name="coach_feedback"
         rows={3}
         required
-        placeholder="Observations sur la technique, corrections à apporter..."
+        placeholder="Observations sur la technique, corrections à apporter..." aria-label="Observations sur la technique, corrections à apporter..."
         className="w-full bg-[#150000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
       />
 

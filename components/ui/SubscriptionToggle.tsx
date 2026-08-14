@@ -165,7 +165,7 @@ export default function SubscriptionToggle({
             <input
               value={note}
               onChange={(e) => setNote(e.target.value)}
-              placeholder="Ex: paiement reçu par virement le..."
+              placeholder="Ex: paiement reçu par virement le..." aria-label="Ex: paiement reçu par virement le..."
               className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
             />
           </div>

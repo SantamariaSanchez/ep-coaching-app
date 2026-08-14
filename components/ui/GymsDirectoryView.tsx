@@ -95,16 +95,16 @@ function GymForm({
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Nom de la salle</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Basic-Fit Lille Centre" className={inputCls} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Basic-Fit Lille Centre" aria-label="Ex. Basic-Fit Lille Centre" className={inputCls} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className={labelCls}>Ville</label>
-          <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Lille" className={inputCls} />
+          <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Lille" aria-label="Lille" className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Adresse (optionnel)</label>
-          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue…" className={inputCls} />
+          <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="12 rue…" aria-label="12 rue…" className={inputCls} />
         </div>
       </div>
       <div>
@@ -152,13 +152,13 @@ function GymForm({
           value={equipmentNotes}
           onChange={(e) => setEquipmentNotes(e.target.value)}
           rows={2}
-          placeholder="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…"
+          placeholder="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…" aria-label="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…"
           className={`${inputCls} resize-none`}
         />
       </div>
       <div>
         <label className={labelCls}>Site web (optionnel)</label>
-        <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" className={inputCls} />
+        <input value={website} onChange={(e) => setWebsite(e.target.value)} placeholder="https://…" aria-label="https://…" className={inputCls} />
       </div>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex gap-2">
@@ -197,7 +197,7 @@ function ReviewForm({
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         rows={2}
-        placeholder="Ton avis (optionnel)…"
+        placeholder="Ton avis (optionnel)…" aria-label="Ton avis (optionnel)…"
         className={`${inputCls} resize-none`}
       />
       <div className="flex gap-2">
@@ -472,7 +472,7 @@ export default function GymsDirectoryView({
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/25" />
-          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher une salle ou une ville…" className={`${inputCls} pl-9`} />
+          <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Rechercher une salle ou une ville…" aria-label="Rechercher une salle ou une ville…" className={`${inputCls} pl-9`} />
         </div>
         <button
           onClick={() => setShowCreate((v) => !v)}

@@ -109,7 +109,7 @@ export default function CoachSignupFlow() {
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           type="text"
-          placeholder="Ton nom"
+          placeholder="Ton nom" aria-label="Ton nom"
           style={inputStyle}
         />
       </div>
@@ -120,7 +120,7 @@ export default function CoachSignupFlow() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           type="email"
-          placeholder="ton@email.com"
+          placeholder="ton@email.com" aria-label="ton@email.com"
           style={inputStyle}
         />
       </div>

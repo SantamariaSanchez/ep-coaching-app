@@ -399,7 +399,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "up"); }}
                   disabled={mi === 0}
-                  title="Monter"
+                  title="Monter" aria-label="Monter"
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === 0 ? "default" : "pointer", padding: 2, opacity: mi === 0 ? 0.2 : 1 }}
                 >
                   <ArrowUp size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
@@ -407,7 +407,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 <button
                   onClick={(e) => { e.stopPropagation(); handleMoveModule(mod.id, "down"); }}
                   disabled={mi === formation.modules.length - 1}
-                  title="Descendre"
+                  title="Descendre" aria-label="Descendre"
                   style={{ display: "flex", background: "none", border: "none", cursor: mi === formation.modules.length - 1 ? "default" : "pointer", padding: 2, opacity: mi === formation.modules.length - 1 ? 0.2 : 1 }}
                 >
                   <ArrowDown size={13} style={{ color: "rgba(245,237,237,0.4)" }} />
@@ -415,14 +415,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDuplicateModule(mod.id); }}
                   disabled={saving === `dup-${mod.id}`}
-                  title="Dupliquer cette section (structure, sans les vidéos)"
+                  title="Dupliquer cette section (structure, sans les vidéos)" aria-label="Dupliquer cette section (structure, sans les vidéos)"
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
                   <Copy size={13} style={{ color: "rgba(245,237,237,0.3)" }} />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); handleDeleteModule(mod.id, mod.title); }}
-                  title="Supprimer la section"
+                  title="Supprimer la section" aria-label="Supprimer la section"
                   style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                 >
                   <Trash2 size={13} style={{ color: "rgba(224,30,30,0.4)" }} />
@@ -478,7 +478,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                               handlePublishSection(sec.id, !sec.lessons.every((l) => l.is_published));
                             }}
                             disabled={saving === `pub-${sec.id}`}
-                            title={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"}
+                            title={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"} aria-label={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"}
                             style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 2 }}
                           >
                             <CheckSquare size={12} style={{ color: sec.lessons.every((l) => l.is_published) ? "#4ade80" : "rgba(245,237,237,0.3)" }} />
@@ -487,7 +487,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "up"); }}
                           disabled={si === 0}
-                          title="Monter"
+                          title="Monter" aria-label="Monter"
                           style={{ display: "flex", background: "none", border: "none", cursor: si === 0 ? "default" : "pointer", padding: 2, opacity: si === 0 ? 0.2 : 1 }}
                         >
                           <ArrowUp size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
@@ -495,14 +495,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         <button
                           onClick={(e) => { e.stopPropagation(); handleMoveSection(mod.id, sec.id, "down"); }}
                           disabled={si === mod.sections.length - 1}
-                          title="Descendre"
+                          title="Descendre" aria-label="Descendre"
                           style={{ display: "flex", background: "none", border: "none", cursor: si === mod.sections.length - 1 ? "default" : "pointer", padding: 2, opacity: si === mod.sections.length - 1 ? 0.2 : 1 }}
                         >
                           <ArrowDown size={12} style={{ color: "rgba(245,237,237,0.3)" }} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteSection(sec.id, sec.title); }}
-                          title="Supprimer le module"
+                          title="Supprimer le module" aria-label="Supprimer le module"
                           style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
                         >
                           <Trash2 size={12} style={{ color: "rgba(224,30,30,0.35)" }} />
@@ -671,7 +671,7 @@ function LessonEditor({
             />
             <button
               onClick={() => setShowDetails((v) => !v)}
-              title="Description et durée"
+              title="Description et durée" aria-label="Description et durée"
               style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}
             >
               {showDetails
@@ -693,7 +693,7 @@ function LessonEditor({
               <input
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="URL ou ID YouTube"
+                placeholder="URL ou ID YouTube" aria-label="URL ou ID YouTube"
                 style={{
                   width: "100%",
                   background: "rgba(0,0,0,0.4)",
@@ -710,7 +710,7 @@ function LessonEditor({
 
             <button
               onClick={() => setPublished(!published)}
-              title={published ? "Masquer" : "Publier"}
+              title={published ? "Masquer" : "Publier"} aria-label={published ? "Masquer" : "Publier"}
               style={{
                 background: published ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)",
                 border: `1px solid ${published ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.08)"}`,
@@ -785,7 +785,7 @@ function LessonEditor({
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description affichée au client sous la vidéo…"
+                placeholder="Description affichée au client sous la vidéo…" aria-label="Description affichée au client sous la vidéo…"
                 rows={2}
                 style={{
                   width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(255,255,255,0.07)",

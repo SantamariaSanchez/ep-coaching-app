@@ -61,7 +61,7 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
         inputMode="numeric"
         autoComplete="one-time-code"
         autoFocus
-        placeholder="123456"
+        placeholder="123456" aria-label="123456"
         className="w-full bg-black/40 border border-[#890404]/35 rounded-lg px-4 py-3.5 text-center text-xl tracking-[0.4em] text-[#F5EDED] outline-none focus:border-[#E01E1E]/60"
       />
 

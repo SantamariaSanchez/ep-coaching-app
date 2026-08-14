@@ -111,11 +111,11 @@ function WeightCard({ today, existing, action }: { today: string; existing: Dail
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
           <div>
             <label className={lbl}>Poids à jeun (kg)</label>
-            <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" className={inp} autoFocus />
+            <input name="weight_morning" type="number" step="0.1" min="30" max="300" defaultValue={existing?.weight_morning ?? ""} placeholder="82.5" aria-label="82.5" className={inp} autoFocus />
           </div>
           <div>
             <label className={lbl}>Heure de pesée</label>
-            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" className={inp} />
+            <input name="weight_time" defaultValue={existing?.weight_time ?? nowHour} placeholder="07:00" aria-label="07:00" className={inp} />
           </div>
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
@@ -173,11 +173,11 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
             <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 10 }}>
               <div>
                 <label className={lbl}>Séance</label>
-                <input name="training_name" defaultValue={existing?.training_name === "Repos" ? "" : (existing?.training_name ?? "")} placeholder="Pull, Push, Legs…" className={inp} />
+                <input name="training_name" defaultValue={existing?.training_name === "Repos" ? "" : (existing?.training_name ?? "")} placeholder="Pull, Push, Legs…" aria-label="Pull, Push, Legs…" className={inp} />
               </div>
               <div style={{ width: 80 }}>
                 <label className={lbl}>Cardio</label>
-                <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" className={inp} />
+                <input name="cardio" defaultValue={existing?.cardio ?? ""} placeholder="10'" aria-label="10'" className={inp} />
               </div>
             </div>
             <p className={hint}>
@@ -218,7 +218,7 @@ function LifestyleCard({
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div>
             <label className={lbl}>Pas dans la journée</label>
-            <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" className={inp} />
+            <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" aria-label="8500" className={inp} />
             <p className={hint}>
               <Footprints size={10} style={{ display: "inline", marginRight: 3, verticalAlign: -1 }} />
               {existing?.steps == null && autoSteps != null
@@ -229,11 +229,11 @@ function LifestyleCard({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label className={lbl}>Sommeil (heures)</label>
-              <input name="sleep_hours" type="number" step="0.1" min="0" max="24" defaultValue={existing?.sleep_hours ?? ""} placeholder="7.5" className={inp} />
+              <input name="sleep_hours" type="number" step="0.1" min="0" max="24" defaultValue={existing?.sleep_hours ?? ""} placeholder="7.5" aria-label="7.5" className={inp} />
             </div>
             <div>
               <label className={lbl}>Qualité sommeil (%)</label>
-              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" className={inp} />
+              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
@@ -241,7 +241,7 @@ function LifestyleCard({
           </p>
           <div>
             <label className={lbl}>Digestion</label>
-            <input name="digestion" defaultValue={existing?.digestion ?? ""} placeholder="OK, Ballonné, Lourd…" className={inp} />
+            <input name="digestion" defaultValue={existing?.digestion ?? ""} placeholder="OK, Ballonné, Lourd…" aria-label="OK, Ballonné, Lourd…" className={inp} />
           </div>
           <div>
             <label className={lbl}>Stress</label>
@@ -283,19 +283,19 @@ function NutritionCard({
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
               <label className={lbl}>Protéines (g)</label>
-              <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? (nutritionTotals ? Math.round(nutritionTotals.proteins) : "")} placeholder="200" className={inp} />
+              <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? (nutritionTotals ? Math.round(nutritionTotals.proteins) : "")} placeholder="200" aria-label="200" className={inp} />
             </div>
             <div>
               <label className={lbl}>Glucides (g)</label>
-              <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? (nutritionTotals ? Math.round(nutritionTotals.carbs) : "")} placeholder="250" className={inp} />
+              <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? (nutritionTotals ? Math.round(nutritionTotals.carbs) : "")} placeholder="250" aria-label="250" className={inp} />
             </div>
             <div>
               <label className={lbl}>Lipides (g)</label>
-              <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? (nutritionTotals ? Math.round(nutritionTotals.fats) : "")} placeholder="80" className={inp} />
+              <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? (nutritionTotals ? Math.round(nutritionTotals.fats) : "")} placeholder="80" aria-label="80" className={inp} />
             </div>
             <div>
               <label className={lbl}>Total (kcal)</label>
-              <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? (nutritionTotals ? Math.round(nutritionTotals.calories) : "")} placeholder="2400" className={inp} />
+              <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? (nutritionTotals ? Math.round(nutritionTotals.calories) : "")} placeholder="2400" aria-label="2400" className={inp} />
             </div>
           </div>
           <div>

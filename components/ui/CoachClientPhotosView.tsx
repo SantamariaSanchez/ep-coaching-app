@@ -166,7 +166,7 @@ function PhotoFeedbackForm({
         name="coach_feedback"
         rows={3}
         required
-        placeholder="Points positifs, axes d'amélioration, corrections à apporter…"
+        placeholder="Points positifs, axes d'amélioration, corrections à apporter…" aria-label="Points positifs, axes d'amélioration, corrections à apporter…"
         className={`${inputCls} resize-none`}
       />
       {state?.error && <p className="text-xs text-red-400">{state.error}</p>}
@@ -314,7 +314,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
           {drawMode && (
             <button
               onClick={() => setClearKey((k) => k + 1)}
-              title="Effacer les traits"
+              title="Effacer les traits" aria-label="Effacer les traits"
               className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
             >
               <Eraser size={12} />

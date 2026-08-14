@@ -67,7 +67,7 @@ export default function ResourcesBrowser({ resources }: { resources: ResourceIte
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Rechercher une ressource…"
+          placeholder="Rechercher une ressource…" aria-label="Rechercher une ressource…"
           className="w-full bg-[#150000] border border-[#890404]/25 rounded-xl pl-10 pr-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 transition-colors"
         />
       </div>

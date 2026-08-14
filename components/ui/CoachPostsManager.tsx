@@ -46,14 +46,14 @@ function PostEditor({
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Titre, ex. Pourquoi la constance bat l'intensité"
+        placeholder="Titre, ex. Pourquoi la constance bat l'intensité" aria-label="Titre, ex. Pourquoi la constance bat l'intensité"
         className={`${inputCls} font-bold`}
       />
       <textarea
         value={content}
         onChange={(e) => setContent(e.target.value)}
         rows={8}
-        placeholder="Ta réflexion, ton conseil, ton retour d'expérience…"
+        placeholder="Ta réflexion, ton conseil, ton retour d'expérience…" aria-label="Ta réflexion, ton conseil, ton retour d'expérience…"
         className={`${inputCls} resize-none`}
       />
       {error && <p className="text-xs text-red-400">{error}</p>}

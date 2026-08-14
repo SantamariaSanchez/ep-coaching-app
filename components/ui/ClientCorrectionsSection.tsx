@@ -184,7 +184,7 @@ export default function ClientCorrectionsSection({
                 name="exercise_name"
                 type="text"
                 required
-                placeholder="Ex : Squat barre"
+                placeholder="Ex : Squat barre" aria-label="Ex : Squat barre"
                 className={inputClass}
               />
             </div>
@@ -196,7 +196,7 @@ export default function ClientCorrectionsSection({
                 name="objective"
                 type="text"
                 required
-                placeholder="Ex : améliorer la profondeur"
+                placeholder="Ex : améliorer la profondeur" aria-label="Ex : améliorer la profondeur"
                 className={inputClass}
               />
             </div>
@@ -257,7 +257,7 @@ export default function ClientCorrectionsSection({
             <textarea
               name="client_question"
               rows={3}
-              placeholder="Ex : Je sens que mes genoux rentrent vers l'intérieur..."
+              placeholder="Ex : Je sens que mes genoux rentrent vers l'intérieur..." aria-label="Ex : Je sens que mes genoux rentrent vers l'intérieur..."
               className={`${inputClass} resize-none`}
             />
           </div>

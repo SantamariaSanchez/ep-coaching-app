@@ -164,7 +164,7 @@ export default function CoachClientTasksView({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Ex. Prends ta créatine"
+            placeholder="Ex. Prends ta créatine" aria-label="Ex. Prends ta créatine"
             className={inputCls}
           />
         </div>
@@ -279,7 +279,7 @@ export default function CoachClientTasksView({
           <input
             value={motivationText}
             onChange={(e) => setMotivationText(e.target.value)}
-            placeholder="Écris ton propre message…"
+            placeholder="Écris ton propre message…" aria-label="Écris ton propre message…"
             className={inputCls}
           />
           <button

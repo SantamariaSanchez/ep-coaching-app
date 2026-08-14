@@ -79,13 +79,13 @@ export default function CoachMailingComposer({ initialHistory }: { initialHistor
         <input
           value={subject}
           onChange={(e) => { setSubject(e.target.value); setTestSent(false); }}
-          placeholder="Sujet"
+          placeholder="Sujet" aria-label="Sujet"
           style={inputStyle}
         />
         <textarea
           value={body}
           onChange={(e) => { setBody(e.target.value); setTestSent(false); }}
-          placeholder="Ton message (HTML simple accepté : <b>, <a href>, <br>...)"
+          placeholder="Ton message (HTML simple accepté : <b>, <a href>, <br>...)" aria-label="Ton message (HTML simple accepté : <b>, <a href>, <br>...)"
           rows={8}
           style={{ ...inputStyle, marginTop: 8, resize: "vertical", fontFamily: "inherit" }}
         />

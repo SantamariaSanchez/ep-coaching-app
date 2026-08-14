@@ -332,7 +332,7 @@ function SubmissionForm({
           <input
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
-            placeholder="Ex. 48 secondes"
+            placeholder="Ex. 48 secondes" aria-label="Ex. 48 secondes"
             className={inputCls}
           />
         </div>

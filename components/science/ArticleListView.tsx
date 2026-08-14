@@ -99,7 +99,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher dans la bibliothèque…"
+            placeholder="Rechercher dans la bibliothèque…" aria-label="Rechercher dans la bibliothèque…"
             className={`${inputCls} pl-9`}
           />
         </div>

@@ -156,7 +156,7 @@ export default function LiveEventCard({
                     value={recapDraft}
                     onChange={(e) => setRecapDraft(e.target.value)}
                     rows={3}
-                    placeholder="Résumé, points clés, ressources partagées..."
+                    placeholder="Résumé, points clés, ressources partagées..." aria-label="Résumé, points clés, ressources partagées..."
                     className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
                   />
                   <div className="flex gap-2">

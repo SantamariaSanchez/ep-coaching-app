@@ -192,7 +192,7 @@ function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
             value={dayLabel}
             onChange={(e) => setDayLabel(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handleStart(); } }}
-            placeholder="Ex. Dos triceps quad"
+            placeholder="Ex. Dos triceps quad" aria-label="Ex. Dos triceps quad"
             className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
           />
           <button

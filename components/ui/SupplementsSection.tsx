@@ -104,20 +104,20 @@ export default function SupplementsSection({
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Nom (ex. Créatine monohydrate)"
+            placeholder="Nom (ex. Créatine monohydrate)" aria-label="Nom (ex. Créatine monohydrate)"
             className={inputCls}
           />
           <div className="grid grid-cols-2 gap-3">
             <input
               value={dosage}
               onChange={(e) => setDosage(e.target.value)}
-              placeholder="Dosage (ex. 5g)"
+              placeholder="Dosage (ex. 5g)" aria-label="Dosage (ex. 5g)"
               className={inputCls}
             />
             <input
               value={timing}
               onChange={(e) => setTiming(e.target.value)}
-              placeholder="Moment de prise"
+              placeholder="Moment de prise" aria-label="Moment de prise"
               list="supplement-timing-options"
               className={inputCls}
             />
@@ -130,7 +130,7 @@ export default function SupplementsSection({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes (optionnel)"
+            placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
             rows={2}
             className={inputCls + " resize-none"}
           />
@@ -181,7 +181,7 @@ export default function SupplementsSection({
                 <button
                   onClick={() => handleToggle(s)}
                   disabled={busyId === s.id}
-                  title={s.status === "active" ? "Arrêter" : "Reprendre"}
+                  title={s.status === "active" ? "Arrêter" : "Reprendre"} aria-label={s.status === "active" ? "Arrêter" : "Reprendre"}
                   className={`text-[9px] font-bold uppercase tracking-widest transition-colors disabled:opacity-30 ${
                     s.status === "active"
                       ? "text-[#F5EDED]/30 hover:text-amber-400"

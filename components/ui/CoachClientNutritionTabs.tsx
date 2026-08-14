@@ -197,7 +197,7 @@ function HistoryView({
               <button
                 key={date}
                 onClick={() => setSelectedDate(isSelected ? null : date)}
-                title={`${date} : ${Math.round(cals)} kcal`}
+                title={`${date} : ${Math.round(cals)} kcal`} aria-label={`${date} : ${Math.round(cals)} kcal`}
                 className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(cals, targets.calories)} ${isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""}`}
               >
                 <span className="text-white/70">{new Date(date + "T12:00:00").getDate()}</span>

@@ -178,7 +178,7 @@ function ReminderForm({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Logger ma nutrition, Me peser…"
+            placeholder="Logger ma nutrition, Me peser…" aria-label="Logger ma nutrition, Me peser…"
             style={inputStyle}
           />
         </div>

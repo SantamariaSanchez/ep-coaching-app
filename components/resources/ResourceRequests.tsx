@@ -108,13 +108,13 @@ export default function ResourceRequests({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Sujet du guide souhaité (ex. Comment gérer une stagnation)"
+            placeholder="Sujet du guide souhaité (ex. Comment gérer une stagnation)" aria-label="Sujet du guide souhaité (ex. Comment gérer une stagnation)"
             className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2"
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Détaille ta demande..."
+            placeholder="Détaille ta demande..." aria-label="Détaille ta demande..."
             rows={2}
             className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none mb-2"
           />
@@ -180,7 +180,7 @@ export default function ResourceRequests({
                       <textarea
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
-                        placeholder="Ta réponse..."
+                        placeholder="Ta réponse..." aria-label="Ta réponse..."
                         rows={2}
                         className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2 resize-none"
                       />

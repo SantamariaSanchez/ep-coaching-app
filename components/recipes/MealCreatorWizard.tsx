@@ -153,7 +153,7 @@ function FoodGroupPicker({
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setShowCreate(false); }}
-          placeholder="Rechercher un aliment..."
+          placeholder="Rechercher un aliment..." aria-label="Rechercher un aliment..."
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#890404]/60"
         />
         {search && (
@@ -213,7 +213,7 @@ function FoodGroupPicker({
                   inputMode="decimal"
                   value={macros[key]}
                   onChange={(e) => setMacros((m) => ({ ...m, [key]: e.target.value }))}
-                  placeholder="0"
+                  placeholder="0" aria-label="0"
                   className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg px-2 py-1.5 text-xs text-white text-center placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
                 />
                 <p className="text-[8px] text-[#F5EDED]/25 text-center mt-0.5">{l}</p>

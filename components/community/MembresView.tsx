@@ -202,7 +202,7 @@ export default function MembresView({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un membre…"
+            placeholder="Rechercher un membre…" aria-label="Rechercher un membre…"
             className={`${inputCls} pl-9`}
           />
         </div>

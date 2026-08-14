@@ -79,11 +79,11 @@ export default function LiveEditForm({
         </select>
       )}
 
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre / sujet" className={inputCls} />
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Titre / sujet" aria-label="Titre / sujet" className={inputCls} />
       <textarea
         value={description}
         onChange={(e) => setDescription(e.target.value)}
-        placeholder="But / description (optionnel)"
+        placeholder="But / description (optionnel)" aria-label="But / description (optionnel)"
         rows={2}
         className={`${inputCls} resize-none`}
       />

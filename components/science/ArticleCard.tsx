@@ -62,14 +62,14 @@ function ArticleEditForm({
       <input
         value={titleFr}
         onChange={(e) => setTitleFr(e.target.value)}
-        placeholder="Titre en français"
+        placeholder="Titre en français" aria-label="Titre en français"
         className={inputCls}
       />
       <textarea
         value={summaryFr}
         onChange={(e) => setSummaryFr(e.target.value)}
         rows={3}
-        placeholder="Résumé en langage simple, à quoi ça sert concrètement…"
+        placeholder="Résumé en langage simple, à quoi ça sert concrètement…" aria-label="Résumé en langage simple, à quoi ça sert concrètement…"
         className={`${inputCls} resize-none`}
       />
       <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">

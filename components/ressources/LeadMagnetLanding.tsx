@@ -125,7 +125,7 @@ function CaptureForm({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Ton email"
+          placeholder="Ton email" aria-label="Ton email"
           className="ep-input"
           style={{ paddingLeft: 38 }}
         />
@@ -136,7 +136,7 @@ function CaptureForm({
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          placeholder="Ou ton numéro (optionnel si email rempli)"
+          placeholder="Ou ton numéro (optionnel si email rempli)" aria-label="Ou ton numéro (optionnel si email rempli)"
           className="ep-input"
           style={{ paddingLeft: 38 }}
         />

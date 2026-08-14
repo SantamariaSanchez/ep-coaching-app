@@ -218,7 +218,7 @@ function WeeklyNoteForm({
             step="0.1"
             value={form.weight}
             onChange={(e) => set("weight", e.target.value)}
-            placeholder="80.0"
+            placeholder="80.0" aria-label="80.0"
             className={inputCls}
           />
         </div>
@@ -268,7 +268,7 @@ function WeeklyNoteForm({
             rows={3}
             value={form[key]}
             onChange={(e) => set(key, e.target.value)}
-            placeholder="…"
+            placeholder="…" aria-label="…"
             className={textareaCls}
           />
         </div>
@@ -463,7 +463,7 @@ function KeyDecisionForm({
               rows={2}
               value={form.decision}
               onChange={(e) => set("decision", e.target.value)}
-              placeholder="Ex. Passer de 2000 à 1800 kcal/j suite à plateau"
+              placeholder="Ex. Passer de 2000 à 1800 kcal/j suite à plateau" aria-label="Ex. Passer de 2000 à 1800 kcal/j suite à plateau"
               className={textareaCls}
             />
           </div>
@@ -473,7 +473,7 @@ function KeyDecisionForm({
               rows={2}
               value={form.reason}
               onChange={(e) => set("reason", e.target.value)}
-              placeholder="Pourquoi cette décision ?"
+              placeholder="Pourquoi cette décision ?" aria-label="Pourquoi cette décision ?"
               className={textareaCls}
             />
           </div>
@@ -483,7 +483,7 @@ function KeyDecisionForm({
               rows={2}
               value={form.result}
               onChange={(e) => set("result", e.target.value)}
-              placeholder="Résultat après mise en place…"
+              placeholder="Résultat après mise en place…" aria-label="Résultat après mise en place…"
               className={textareaCls}
             />
           </div>

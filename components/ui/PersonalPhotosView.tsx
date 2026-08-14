@@ -93,7 +93,7 @@ export default function PersonalPhotosView({
         <textarea
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Note (facultatif) : poids du jour, ressenti..."
+          placeholder="Note (facultatif) : poids du jour, ressenti..." aria-label="Note (facultatif) : poids du jour, ressenti..."
           rows={2}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
         />
@@ -159,7 +159,7 @@ export default function PersonalPhotosView({
                   onClick={() => handleDelete(photo)}
                   disabled={deletingId === photo.id}
                   className="absolute top-1.5 right-1.5 p-1.5 rounded-lg bg-black/60 text-white/70 hover:text-red-400 transition-colors"
-                  title="Supprimer"
+                  title="Supprimer" aria-label="Supprimer"
                 >
                   <Trash2 size={12} />
                 </button>

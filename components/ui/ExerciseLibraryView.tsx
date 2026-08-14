@@ -189,7 +189,7 @@ function ExerciseForm({
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Nom de l&apos;exercice</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" className={inputCls} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" aria-label="Ex. Développé incliné haltères" className={inputCls} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -261,7 +261,7 @@ function ExerciseForm({
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           rows={3}
-          placeholder="Points clés de la technique…"
+          placeholder="Points clés de la technique…" aria-label="Points clés de la technique…"
           className={`${inputCls} resize-none`}
         />
       </div>
@@ -374,7 +374,7 @@ function ExerciseForm({
           <input
             value={videoUrl}
             onChange={(e) => setVideoUrl(e.target.value)}
-            placeholder="…ou colle un lien YouTube / Vimeo / direct"
+            placeholder="…ou colle un lien YouTube / Vimeo / direct" aria-label="…ou colle un lien YouTube / Vimeo / direct"
             className={inputCls}
           />
         </div>
@@ -699,7 +699,7 @@ export default function ExerciseLibraryView({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un exercice…"
+            placeholder="Rechercher un exercice…" aria-label="Rechercher un exercice…"
             className={`${inputCls} pl-9`}
           />
         </div>

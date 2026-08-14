@@ -180,7 +180,7 @@ function PhaseCard({
         <textarea
           value={phase.notes ?? ""}
           onChange={(e) => onChange({ notes: e.target.value })}
-          placeholder="Objectifs spécifiques à cette phase…"
+          placeholder="Objectifs spécifiques à cette phase…" aria-label="Objectifs spécifiques à cette phase…"
           rows={2}
           style={{ ...inputStyle, resize: "none" }}
         />
@@ -284,7 +284,7 @@ function ObjectiveCard({
                 type="number"
                 value={obj.target_value ?? ""}
                 onChange={(e) => onChange({ target_value: parseFloat(e.target.value) || null })}
-                placeholder="0"
+                placeholder="0" aria-label="0"
                 style={{ ...inputStyle, flex: 1 }}
               />
               <input

@@ -93,7 +93,7 @@ export default function BulkCalorieAdjustModal({
                 type="number"
                 value={delta}
                 onChange={(e) => setDelta(e.target.value)}
-                placeholder="ex : +200 ou -150"
+                placeholder="ex : +200 ou -150" aria-label="ex : +200 ou -150"
                 className={inputCls}
               />
               <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">

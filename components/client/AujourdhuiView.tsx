@@ -164,7 +164,7 @@ export default function AujourdhuiView({
                 max="300"
                 value={weightValue}
                 onChange={(e) => setWeightValue(e.target.value)}
-                placeholder="82.5 kg"
+                placeholder="82.5 kg" aria-label="82.5 kg"
                 className="ep-input"
                 style={{ flex: 1 }}
                 autoFocus={todayWeight == null}
@@ -391,7 +391,7 @@ export default function AujourdhuiView({
                 value={journalText}
                 onChange={(e) => setJournalText(e.target.value)}
                 rows={3}
-                placeholder="Écris librement…"
+                placeholder="Écris librement…" aria-label="Écris librement…"
                 className="ep-input"
                 style={{ resize: "none", marginBottom: 10 }}
               />

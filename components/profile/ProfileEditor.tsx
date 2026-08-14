@@ -101,7 +101,7 @@ export default function ProfileEditor({
           <textarea
             value={bioVal}
             onChange={(e) => setBioVal(e.target.value)}
-            placeholder="Parle un peu de toi, tes objectifs, ton parcours..."
+            placeholder="Parle un peu de toi, tes objectifs, ton parcours..." aria-label="Parle un peu de toi, tes objectifs, ton parcours..."
             rows={3}
             maxLength={280}
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors resize-none"
@@ -116,7 +116,7 @@ export default function ProfileEditor({
             type="tel"
             value={phoneVal}
             onChange={(e) => setPhoneVal(e.target.value)}
-            placeholder="06 12 34 56 78"
+            placeholder="06 12 34 56 78" aria-label="06 12 34 56 78"
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
           />
         </div>
@@ -127,7 +127,7 @@ export default function ProfileEditor({
           <input
             value={instagramVal}
             onChange={(e) => setInstagramVal(e.target.value)}
-            placeholder="tonpseudo"
+            placeholder="tonpseudo" aria-label="tonpseudo"
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
           />
         </div>

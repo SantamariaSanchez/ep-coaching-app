@@ -176,7 +176,7 @@ export default function CheckinForm({
               step="0.1"
               min="30"
               max="300"
-              placeholder="82.5"
+              placeholder="82.5" aria-label="82.5"
               style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
             />
           </div>
@@ -194,7 +194,7 @@ export default function CheckinForm({
               min="30"
               max="300"
               defaultValue={weightAvgFromLogs ?? ""}
-              placeholder="83.0"
+              placeholder="83.0" aria-label="83.0"
               style={{ width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8, padding: "10px 14px", fontSize: 14, color: "#F5EDED", outline: "none" }}
             />
           </div>
@@ -329,9 +329,9 @@ export default function CheckinForm({
           <div>
             <label className={lbl}>2. Tes 3 plus grosses victoires de la semaine</label>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <input name="biggest_win" placeholder="Victoire n°1" className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_2" placeholder="Victoire n°2" className={inp} style={{ resize: "none" }} />
-              <input name="biggest_win_3" placeholder="Victoire n°3" className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win" placeholder="Victoire n°1" aria-label="Victoire n°1" className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win_2" placeholder="Victoire n°2" aria-label="Victoire n°2" className={inp} style={{ resize: "none" }} />
+              <input name="biggest_win_3" placeholder="Victoire n°3" aria-label="Victoire n°3" className={inp} style={{ resize: "none" }} />
             </div>
           </div>
 

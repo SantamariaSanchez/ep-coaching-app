@@ -134,7 +134,7 @@ export default function AddRecipeForm({
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de la recette"
+        placeholder="Nom de la recette" aria-label="Nom de la recette"
         className={inputCls}
       />
 
@@ -182,20 +182,20 @@ export default function AddRecipeForm({
           type="number"
           value={prepMinutes}
           onChange={(e) => setPrepMinutes(e.target.value)}
-          placeholder="Minutes"
+          placeholder="Minutes" aria-label="Minutes"
           className={inputCls}
         />
       </div>
 
-      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="Région / localité" className={inputCls} />
+      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="Région / localité" aria-label="Région / localité" className={inputCls} />
 
       <div>
         <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Valeurs nutritionnelles (optionnel)</p>
         <div className="grid grid-cols-4 gap-2">
-          <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="kcal" className={inputCls} />
-          <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Prot. (g)" className={inputCls} />
-          <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Gluc. (g)" className={inputCls} />
-          <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Lip. (g)" className={inputCls} />
+          <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="kcal" aria-label="kcal" className={inputCls} />
+          <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Prot. (g)" aria-label="Prot. (g)" className={inputCls} />
+          <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Gluc. (g)" aria-label="Gluc. (g)" className={inputCls} />
+          <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Lip. (g)" aria-label="Lip. (g)" className={inputCls} />
         </div>
       </div>
 
@@ -258,7 +258,7 @@ export default function AddRecipeForm({
       <textarea
         value={tip}
         onChange={(e) => setTip(e.target.value)}
-        placeholder="Astuce (optionnel)"
+        placeholder="Astuce (optionnel)" aria-label="Astuce (optionnel)"
         rows={2}
         className={`${inputCls} resize-none`}
       />

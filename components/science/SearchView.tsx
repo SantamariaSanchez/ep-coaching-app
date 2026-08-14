@@ -63,14 +63,14 @@ function ImportForm({ result, onImport, onCancel }: {
       <input
         value={titleFr}
         onChange={(e) => setTitleFr(e.target.value)}
-        placeholder="Titre en français (obligatoire, c'est ce que le client verra en premier)"
+        placeholder="Titre en français (obligatoire, c'est ce que le client verra en premier)" aria-label="Titre en français (obligatoire, c'est ce que le client verra en premier)"
         className={inputCls}
       />
       <textarea
         value={summaryFr}
         onChange={(e) => setSummaryFr(e.target.value)}
         rows={2}
-        placeholder="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…"
+        placeholder="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…" aria-label="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…"
         className={`${inputCls} resize-none`}
       />
       <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
@@ -99,7 +99,7 @@ function ImportForm({ result, onImport, onCancel }: {
             setSaving(false);
           }}
           disabled={saving || !canImport}
-          title={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"}
+          title={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"} aria-label={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
           {saving ? "Ajout…" : "Confirmer l'ajout"}
@@ -204,7 +204,7 @@ export default function SearchView({ isCoach, importArticle }: {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Ex. creatine supplementation muscle hypertrophy…"
+            placeholder="Ex. creatine supplementation muscle hypertrophy…" aria-label="Ex. creatine supplementation muscle hypertrophy…"
             className={`${inputCls} pl-9`}
           />
         </div>

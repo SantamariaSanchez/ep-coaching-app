@@ -95,13 +95,13 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Titre du guide (ex. Guide nutrition débutant)"
+          placeholder="Titre du guide (ex. Guide nutrition débutant)" aria-label="Titre du guide (ex. Guide nutrition débutant)"
           className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         <input
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description (optionnel)"
+          placeholder="Description (optionnel)" aria-label="Description (optionnel)"
           className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         <select
@@ -216,7 +216,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
                   onClick={() => handleDelete(r.id)}
                   disabled={deletingId === r.id}
                   className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
-                  title="Supprimer"
+                  title="Supprimer" aria-label="Supprimer"
                 >
                   <Trash2 size={15} strokeWidth={1.8} />
                 </button>

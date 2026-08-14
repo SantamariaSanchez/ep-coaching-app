@@ -1486,7 +1486,7 @@ export default function ClientNutritionView({
                         isSelected ? null : date
                       )
                     }
-                    title={`${date} : ${Math.round(cals)} kcal`}
+                    title={`${date} : ${Math.round(cals)} kcal`} aria-label={`${date} : ${Math.round(cals)} kcal`}
                     className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(
                       cals,
                       targets.calories
@@ -1705,7 +1705,7 @@ export default function ClientNutritionView({
                       autoFocus
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder="Rechercher un aliment…"
+                      placeholder="Rechercher un aliment…" aria-label="Rechercher un aliment…"
                       className={inputCls}
                     />
                     {/* Item 16 : scan code-barres — pré-remplit le formulaire
@@ -1714,7 +1714,7 @@ export default function ClientNutritionView({
                     <button
                       onClick={() => setShowScannerModal(true)}
                       disabled={scanningProduct}
-                      title="Scanner un code-barres"
+                      title="Scanner un code-barres" aria-label="Scanner un code-barres"
                       className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 transition-colors disabled:opacity-40"
                     >
                       <ScanBarcode size={16} />
@@ -1922,7 +1922,7 @@ export default function ClientNutritionView({
                     step="0.5"
                     value={recipeServings}
                     onChange={(e) => setRecipeServings(e.target.value)}
-                    placeholder="1"
+                    placeholder="1" aria-label="1"
                     className={inputCls}
                   />
                 </div>
@@ -1969,7 +1969,7 @@ export default function ClientNutritionView({
                     min="1"
                     value={quantityInput}
                     onChange={(e) => setQuantityInput(e.target.value)}
-                    placeholder="100"
+                    placeholder="100" aria-label="100"
                     className={inputCls}
                   />
                 </div>
@@ -2052,7 +2052,7 @@ export default function ClientNutritionView({
               autoFocus
               value={savingMealName}
               onChange={(e) => setSavingMealName(e.target.value)}
-              placeholder="Ex : Mon petit-déj habituel"
+              placeholder="Ex : Mon petit-déj habituel" aria-label="Ex : Mon petit-déj habituel"
               className={inputCls}
             />
             <button
@@ -2104,7 +2104,7 @@ export default function ClientNutritionView({
                   onChange={(e) =>
                     setCreateForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Riz basmati précuit"
+                  placeholder="Ex. Riz basmati précuit" aria-label="Ex. Riz basmati précuit"
                   className={inputCls}
                 />
               </div>
@@ -2148,7 +2148,7 @@ export default function ClientNutritionView({
                           [key]: e.target.value,
                         }))
                       }
-                      placeholder="0"
+                      placeholder="0" aria-label="0"
                       className={inputCls}
                     />
                   </div>
@@ -2214,7 +2214,7 @@ export default function ClientNutritionView({
                   onChange={(e) =>
                     setQuickAddForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Repas au restaurant"
+                  placeholder="Ex. Repas au restaurant" aria-label="Ex. Repas au restaurant"
                   className={inputCls}
                 />
               </div>
@@ -2236,7 +2236,7 @@ export default function ClientNutritionView({
                       onChange={(e) =>
                         setQuickAddForm((p) => ({ ...p, [key]: e.target.value }))
                       }
-                      placeholder="0"
+                      placeholder="0" aria-label="0"
                       className={inputCls}
                     />
                   </div>
@@ -2526,7 +2526,7 @@ function MealSlotCard({
                 onSaveAsMeal();
               }}
               className="inline-flex items-center justify-center w-7 h-7 rounded-lg text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
-              title="Enregistrer ce repas pour le réutiliser en un tap"
+              title="Enregistrer ce repas pour le réutiliser en un tap" aria-label="Enregistrer ce repas pour le réutiliser en un tap"
             >
               <Bookmark size={13} />
             </button>

@@ -49,7 +49,7 @@ export default function FlashRequestButton() {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={2}
-            placeholder="Ex: je dois choisir entre deux offres avant demain..."
+            placeholder="Ex: je dois choisir entre deux offres avant demain..." aria-label="Ex: je dois choisir entre deux offres avant demain..."
             className="ep-input"
             style={{ resize: "none", marginBottom: 10 }}
           />

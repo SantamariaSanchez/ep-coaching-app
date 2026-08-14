@@ -135,7 +135,7 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
           rows={4}
           required
           defaultValue={checkin.coach_notes ?? ""}
-          placeholder="Analyse, conseils, encouragements…"
+          placeholder="Analyse, conseils, encouragements…" aria-label="Analyse, conseils, encouragements…"
           style={{
             width: "100%", background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
             borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#F5EDED",

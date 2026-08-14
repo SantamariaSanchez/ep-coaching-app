@@ -257,7 +257,7 @@ export default function LiveScheduler({
               <input
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Nom de l'intervenant"
+                placeholder="Nom de l'intervenant" aria-label="Nom de l'intervenant"
                 className={inputCls}
               />
             </div>
@@ -268,7 +268,7 @@ export default function LiveScheduler({
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex : point sur la phase de sèche"
+              placeholder="Ex : point sur la phase de sèche" aria-label="Ex : point sur la phase de sèche"
               className={inputCls}
             />
           </div>
@@ -278,7 +278,7 @@ export default function LiveScheduler({
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ce que tu veux couvrir pendant ce live"
+              placeholder="Ce que tu veux couvrir pendant ce live" aria-label="Ce que tu veux couvrir pendant ce live"
               rows={2}
               className={`${inputCls} resize-none`}
             />

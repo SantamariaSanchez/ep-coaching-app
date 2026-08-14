@@ -146,7 +146,7 @@ export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentI
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Le titre / l'accroche de l'idée"
+            placeholder="Le titre / l'accroche de l'idée" aria-label="Le titre / l'accroche de l'idée"
             style={inputStyle}
             autoFocus
           />
@@ -160,7 +160,7 @@ export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentI
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes, script, angle... (facultatif)"
+            placeholder="Notes, script, angle... (facultatif)" aria-label="Notes, script, angle... (facultatif)"
             rows={3}
             style={{ ...inputStyle, marginTop: 10, resize: "vertical", fontFamily: "inherit" }}
           />

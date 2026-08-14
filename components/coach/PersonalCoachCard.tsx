@@ -78,7 +78,7 @@ export default function PersonalCoachCard({
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Code d'invitation"
+              placeholder="Code d'invitation" aria-label="Code d'invitation"
               className="ep-input"
               style={{ flex: 1 }}
             />

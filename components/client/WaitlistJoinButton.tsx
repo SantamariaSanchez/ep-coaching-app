@@ -40,7 +40,7 @@ export default function WaitlistJoinButton({ alreadyOnWaitlist }: { alreadyOnWai
       <input
         value={note}
         onChange={(e) => setNote(e.target.value)}
-        placeholder="Un mot sur ta situation (facultatif)"
+        placeholder="Un mot sur ta situation (facultatif)" aria-label="Un mot sur ta situation (facultatif)"
         style={{
           width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.2)",
           borderRadius: "var(--radius-lg)", color: "#F5EDED", padding: "12px 16px", fontSize: 13,

@@ -125,15 +125,15 @@ function CaloriesCalculator() {
       <div className="grid grid-cols-3 gap-3">
         <div>
           <label className={labelCls}>Poids (kg)</label>
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" className={inputCls} />
+          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" aria-label="70" className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Taille (cm)</label>
-          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" className={inputCls} />
+          <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" aria-label="175" className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Âge</label>
-          <input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="28" className={inputCls} />
+          <input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="28" aria-label="28" className={inputCls} />
         </div>
       </div>
 
@@ -203,11 +203,11 @@ function OneRepMaxCalculator() {
       <div className="grid grid-cols-2 gap-3">
         <div>
           <label className={labelCls}>Charge soulevée (kg)</label>
-          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" className={inputCls} />
+          <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" aria-label="80" className={inputCls} />
         </div>
         <div>
           <label className={labelCls}>Répétitions faites</label>
-          <input type="number" value={reps} onChange={(e) => setReps(e.target.value)} placeholder="5" className={inputCls} />
+          <input type="number" value={reps} onChange={(e) => setReps(e.target.value)} placeholder="5" aria-label="5" className={inputCls} />
         </div>
       </div>
 

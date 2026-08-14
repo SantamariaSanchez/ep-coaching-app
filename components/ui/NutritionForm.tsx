@@ -373,7 +373,7 @@ export default function NutritionForm({
               type="number"
               value={form.weight}
               onChange={(e) => set("weight", e.target.value)}
-              placeholder="80"
+              placeholder="80" aria-label="80"
               className={inputCls}
             />
             {clientWeight != null && String(clientWeight) !== form.weight && (
@@ -392,7 +392,7 @@ export default function NutritionForm({
               type="number"
               value={form.height}
               onChange={(e) => set("height", e.target.value)}
-              placeholder="175"
+              placeholder="175" aria-label="175"
               className={inputCls}
             />
           </div>
@@ -402,7 +402,7 @@ export default function NutritionForm({
               type="number"
               value={form.age}
               onChange={(e) => set("age", e.target.value)}
-              placeholder="30"
+              placeholder="30" aria-label="30"
               className={inputCls}
             />
           </div>
@@ -435,7 +435,7 @@ export default function NutritionForm({
               max="14"
               value={form.sessionsPerWeek}
               onChange={(e) => set("sessionsPerWeek", e.target.value)}
-              placeholder="4"
+              placeholder="4" aria-label="4"
               className={inputCls}
             />
           </div>
@@ -446,7 +446,7 @@ export default function NutritionForm({
               min="0"
               value={form.sessionDuration}
               onChange={(e) => set("sessionDuration", e.target.value)}
-              placeholder="60"
+              placeholder="60" aria-label="60"
               className={inputCls}
             />
           </div>
@@ -464,7 +464,7 @@ export default function NutritionForm({
               min="0"
               value={form.stepsPerDay}
               onChange={(e) => set("stepsPerDay", e.target.value)}
-              placeholder="8000"
+              placeholder="8000" aria-label="8000"
               className={inputCls}
             />
           </div>
@@ -540,7 +540,7 @@ export default function NutritionForm({
               type="number"
               value={form.offsetRest}
               onChange={(e) => set("offsetRest", e.target.value)}
-              placeholder="Ex. -200"
+              placeholder="Ex. -200" aria-label="Ex. -200"
               className={inputCls}
             />
           </div>
@@ -550,7 +550,7 @@ export default function NutritionForm({
               type="number"
               value={form.offsetHigh}
               onChange={(e) => set("offsetHigh", e.target.value)}
-              placeholder="Ex. +400"
+              placeholder="Ex. +400" aria-label="Ex. +400"
               className={inputCls}
             />
           </div>

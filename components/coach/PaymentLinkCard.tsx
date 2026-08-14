@@ -42,7 +42,7 @@ export default function PaymentLinkCard({ initialLink }: { initialLink: string |
         <input
           value={url}
           onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://buy.stripe.com/..."
+          placeholder="https://buy.stripe.com/..." aria-label="https://buy.stripe.com/..."
           className="ep-input"
           style={{ flex: 1 }}
         />

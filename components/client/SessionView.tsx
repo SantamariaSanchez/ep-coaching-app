@@ -564,7 +564,7 @@ function WarmupStep({
           value={customName}
           onChange={(e) => setCustomName(e.target.value)}
           onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomExercise(); } }}
-          placeholder="Ajouter ton propre exercice…"
+          placeholder="Ajouter ton propre exercice…" aria-label="Ajouter ton propre exercice…"
           className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
         />
         <button
@@ -1138,7 +1138,7 @@ function ExerciseCard({
                 ? "bg-[#E01E1E]/15 text-[#E01E1E] border-[#E01E1E]/25"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Tips d'exécution"
+            title="Tips d'exécution" aria-label="Tips d'exécution"
           >
             💡
           </button>
@@ -1149,7 +1149,7 @@ function ExerciseCard({
                 ? "bg-blue-500/15 text-blue-400 border-blue-500/25"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Historique"
+            title="Historique" aria-label="Historique"
           >
             <BarChart2 size={12} />
           </button>
@@ -1162,7 +1162,7 @@ function ExerciseCard({
                 ? "text-amber-400/70 border-amber-500/20"
                 : "text-[#F5EDED]/30 border-[#890404]/20 hover:border-[#890404]/40"
             }`}
-            title="Notes"
+            title="Notes" aria-label="Notes"
           >
             <StickyNote size={12} />
           </button>
@@ -1173,7 +1173,7 @@ function ExerciseCard({
               }
             }}
             className="p-1.5 rounded-lg text-[9px] font-bold border text-[#F5EDED]/30 border-[#890404]/20 hover:text-red-400 hover:border-red-500/30 transition-colors"
-            title="Retirer cet exercice"
+            title="Retirer cet exercice" aria-label="Retirer cet exercice"
           >
             <X size={12} />
           </button>
@@ -1189,7 +1189,7 @@ function ExerciseCard({
           <textarea
             value={exState.clientNotes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..."
+            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..." aria-label="Ex. variante testée, gêne à l'épaule, ressenti..."
             rows={2}
             className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
           />
@@ -2052,7 +2052,7 @@ export default function SessionView({
                 <textarea
                   value={sessionNotes}
                   onChange={(e) => setSessionNotes(e.target.value)}
-                  placeholder="Observations, fatigue particulière, douleurs..."
+                  placeholder="Observations, fatigue particulière, douleurs..." aria-label="Observations, fatigue particulière, douleurs..."
                   rows={3}
                   className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
                 />

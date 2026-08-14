@@ -63,7 +63,7 @@ function CreateExerciseForm({
         autoFocus
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de l'exercice"
+        placeholder="Nom de l'exercice" aria-label="Nom de l'exercice"
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
       />
       <div className="grid grid-cols-2 gap-2">
@@ -238,7 +238,7 @@ export default function ExercisePicker({ onAdd }: Props) {
                 autoFocus
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Rechercher un exercice…"
+                placeholder="Rechercher un exercice…" aria-label="Rechercher un exercice…"
                 className="w-full bg-[#1f0101] border border-[#890404]/30 rounded-lg pl-9 pr-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
               />
             </div>

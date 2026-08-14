@@ -552,7 +552,7 @@ function JournalTab({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           rows={4}
-          placeholder="Écris librement…"
+          placeholder="Écris librement…" aria-label="Écris librement…"
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors resize-none"
         />
 

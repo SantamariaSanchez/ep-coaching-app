@@ -40,7 +40,7 @@ function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
-            placeholder="ton@email.com"
+            placeholder="ton@email.com" aria-label="ton@email.com"
             className="ep-input"
             style={{ marginBottom: 10 }}
           />
@@ -186,7 +186,7 @@ export default function CoachLoginPage() {
                 type="email"
                 required
                 autoComplete="email"
-                placeholder="ton@email.com"
+                placeholder="ton@email.com" aria-label="ton@email.com"
                 className="ep-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}

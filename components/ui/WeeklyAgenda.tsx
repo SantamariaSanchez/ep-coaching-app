@@ -640,10 +640,10 @@ export default function WeeklyAgenda({
                   </p>
                   {editable && (
                     <>
-                      <button onClick={() => openAddAt(day, 9)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Ajouter le ${DAY_LABELS[day]}`}>
+                      <button onClick={() => openAddAt(day, 9)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Ajouter le ${DAY_LABELS[day]}`} aria-label={`Ajouter le ${DAY_LABELS[day]}`}>
                         <Plus size={10} />
                       </button>
-                      <button onClick={() => openDayOptions(day)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Options du ${DAY_LABELS[day]}`}>
+                      <button onClick={() => openDayOptions(day)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Options du ${DAY_LABELS[day]}`} aria-label={`Options du ${DAY_LABELS[day]}`}>
                         <MoreHorizontal size={10} />
                       </button>
                     </>
@@ -668,10 +668,10 @@ export default function WeeklyAgenda({
             <div className="flex items-center gap-2">
               {editable && (
                 <>
-                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Ajouter">
+                  <button onClick={() => openAddAt(selectedDay, 9)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Ajouter" aria-label="Ajouter">
                     <Plus size={15} />
                   </button>
-                  <button onClick={() => openDayOptions(selectedDay)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Options du jour">
+                  <button onClick={() => openDayOptions(selectedDay)} className="text-[#F5EDED]/25 hover:text-[#E01E1E] p-1" title="Options du jour" aria-label="Options du jour">
                     <MoreHorizontal size={15} />
                   </button>
                 </>
@@ -879,7 +879,7 @@ export default function WeeklyAgenda({
               <input
                 value={form.label}
                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-                placeholder="Ex. Salle, Travail, Repas..."
+                placeholder="Ex. Salle, Travail, Repas..." aria-label="Ex. Salle, Travail, Repas..."
                 className={inputClass}
               />
             </div>
@@ -972,7 +972,7 @@ export default function WeeklyAgenda({
                       addTaskToForm();
                     }
                   }}
-                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..."
+                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..." aria-label="Ex. Tourner 3 reels, ou un objectif du jour..."
                   className={inputClass}
                 />
                 <button type="button" onClick={addTaskToForm} aria-label="Ajouter la tâche" className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>
