@@ -126,8 +126,9 @@ Axes A (cache après mutation), B (échecs silencieux côté UI), C
 jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
 sans nom accessible), G (champs de formulaire sans nom accessible), H
 (pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
-et index) et J (images de contenu sans texte alternatif) sont clos —
-détail de chacun plus bas. Idée pas encore commencée :
+et index), J (images de contenu sans texte alternatif) et K (`href` sur
+URL stockée sans `safeExternalUrl`) sont clos — détail de chacun plus
+bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -1097,3 +1098,49 @@ grep -rn 'alt=""' --include="*.tsx" components/ app/   # pour la vérification f
   même grille : contenu réel (photo envoyée, publiée, soumise) = `alt`
   descriptif ; décoration redondante avec un texte déjà visible = `alt=""`
   correct, pas un oubli.
+
+## Axe K — `href` sur une URL stockée sans passer par `safeExternalUrl`
+
+**Statut : fermé (2026-08-15).**
+
+`lib/sanitize.ts` fournit `safeExternalUrl()` — filtre les schémas d'URL
+dangereux (ex. `javascript:`) avant de rendre une URL stockée comme
+`href`, protection contre une URL malveillante qui finirait en base d'une
+façon ou d'une autre. Déjà appliqué systématiquement dans
+`CheckinCard.tsx`/`ClientPhotosView.tsx`/`CoachClientPhotosView.tsx` pour
+les photos/vidéos de suivi — mais **`app/dashboard/client/checkin/
+page.tsx` faisait exception**, avec le même type de donnée
+(`checkin.photo_urls`/`checkin.video_url`) rendu en `href={url}` brut,
+sans le filtre, à 4 endroits (vue du jour + vue historique).
+
+**Corrigé** : les 4 `href` de `checkin/page.tsx` enveloppés dans
+`safeExternalUrl(...) ?? "#"`, même motif que partout ailleurs dans
+l'appli pour ce type de donnée.
+
+**Vérifié SAIN** : les 3 autres `href` sur une variable nommée `*Url`
+repérés par le grep ne sont pas concernés — `stripeCustomerUrl`
+(`lib/coach-billing.ts`) est construit côté serveur à partir de l'ID
+Stripe du client (`cus_...`, format garanti sûr, jamais de texte libre
+utilisateur), `prequalificationUrl` est une constante en dur dans le
+fichier (pas une donnée stockée du tout). Zéro `dangerouslySetInnerHTML`
+dans tout le projet — vérifié en passant, aucune autre surface XSS de ce
+type à traiter. Zéro secret en dur dans le code applicatif (grep sur les
+motifs de clé Stripe/JWT) et `.env*` correctement ignoré par git.
+
+tsc/eslint/build vérifiés propres.
+
+**Méthode utilisée** (relançable) :
+```bash
+grep -rn "href=\{[^}]*[Uu]rl[^}]*\}" --include="*.tsx" app/ components/
+# Puis vérifier au cas par cas : la valeur vient-elle d'une donnée stockée
+# potentiellement issue d'un utilisateur (-> doit passer par
+# safeExternalUrl), ou d'une constante/valeur construite côté serveur à
+# partir d'un identifiant de format garanti (-> sans risque) ?
+```
+
+### Reste à faire sur cet axe
+
+- Passe volontairement limitée aux `href={...Url}` trouvés par ce grep
+  précis — une variable stockant une URL sans "url" dans son nom
+  échapperait à cette recherche. Signal faible attendu si relancé (un
+  seul vrai cas trouvé sur 8 candidats), mais pas garanti exhaustif.

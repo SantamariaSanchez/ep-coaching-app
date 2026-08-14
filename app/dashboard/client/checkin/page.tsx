@@ -10,6 +10,7 @@ import {
   type CheckIn,
 } from "@/utils/checkins";
 import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
+import { safeExternalUrl } from "@/lib/sanitize";
 import CheckinForm from "@/components/ui/CheckinForm";
 import CoachOnlyGate from "@/components/ui/CoachOnlyGate";
 import { CheckCircle2, Clock, Star, ExternalLink, CalendarDays } from "lucide-react";
@@ -132,13 +133,13 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
       {(checkin.photo_urls.length > 0 || checkin.video_url) && (
         <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
           {checkin.photo_urls.map((url, i) => (
-            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+            <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(137,4,4,0.3)" }} />
             </a>
           ))}
           {checkin.video_url && (
-            <a href={checkin.video_url} target="_blank" rel="noopener noreferrer"
+            <a href={safeExternalUrl(checkin.video_url) ?? "#"} target="_blank" rel="noopener noreferrer"
               style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
               <ExternalLink size={11} /> Vidéo
             </a>
@@ -289,13 +290,13 @@ export default async function CheckinPage() {
             {(existing.photo_urls.length > 0 || existing.video_url) && (
               <div style={{ display: "flex", gap: 6, marginTop: 8, flexWrap: "wrap" }}>
                 {existing.photo_urls.map((url, i) => (
-                  <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                  <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }} />
                   </a>
                 ))}
                 {existing.video_url && (
-                  <a href={existing.video_url} target="_blank" rel="noopener noreferrer"
+                  <a href={safeExternalUrl(existing.video_url) ?? "#"} target="_blank" rel="noopener noreferrer"
                     style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>
                     <ExternalLink size={11} /> Vidéo
                   </a>
