@@ -71,6 +71,21 @@ inaperçu.
   `revalidatePath` (flux à usage unique avec redirection, ou état géré
   entièrement côté client localStorage) — pas des oublis, vérifiés au cas
   par cas.
+- `coach/moi/{bilan,photos,programme}/actions.ts` — chacun sa propre
+  action dédiée (pas de partage avec une route client), chacune revalide
+  correctement sa propre page.
+- `clients/[id]/photos/actions.ts` (`saveCompetitionSettings`, appelée
+  aussi depuis `coach/moi/photos`) — revalide bien les deux côtés
+  (`/dashboard/coach/moi/photos` explicitement listé).
+- Logbook (`LogbookClient`/`SessionView`, partagé entre 4 routes client +
+  coach) — classe de bug différente, pas de correctif nécessaire : le
+  logging de séries pendant une séance active est un flux linéaire
+  (démarrer → logger → terminer → quitter), pas un état "coché" qu'on
+  attend retrouver identique après être revenu en arrière, contrairement à
+  une checklist nutrition/formation. Géré via des routes API
+  (`/api/client/sessions/...`) + état client actif pendant la séance, pas
+  via des props serveur qu'une navigation arrière resservirait périmées de
+  la même façon.
 
 **Méthode utilisée** (relançable) :
 ```bash
@@ -90,13 +105,10 @@ grep -rn "export async function \(toggle\|mark\|check\|complete\|log\)" app/ --i
 
 ### Reste à faire sur cet axe
 
-- Les fichiers `/dashboard/coach/moi/{bilan,logbook,photos,programme,
-  progression,roadmap}/page.tsx` n'importent PAS d'actions client
-  partagées (contrairement à nutrition/mindset/agenda/steps/tracking) —
-  vérifié qu'ils ont chacun leurs propres actions dédiées, mais pas encore
-  audité individuellement pour la même classe de bug en interne (mutation
-  sans revalidation, même sans le facteur "deux routes partagées"). À
-  reprendre.
+- `progression` et `roadmap` (coach/moi) pas encore vérifiés en détail
+  (composants dédiés `CoachMoiRoadmapView` etc., pas encore ouverts) — état
+  plutôt en lecture/édition ponctuelle côté coach, risque a priori plus bas
+  que les checklists quotidiennes déjà couvertes, mais pas confirmé.
 - La passe 1 (grossière, par fichier) ne détecte pas une fonction isolée
   oubliée dans un fichier qui a par ailleurs des revalidations correctes
   ailleurs — c'est exactement comme ça que nutrition/formations sont
