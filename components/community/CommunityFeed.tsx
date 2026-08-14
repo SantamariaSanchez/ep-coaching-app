@@ -11,10 +11,12 @@ import {
   Trophy,
   HelpCircle,
   Trash2,
+  Sparkles,
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
 import RankBadge from "@/components/ui/RankBadge";
 import { POINTS } from "@/lib/gamification-types";
+import { createIdeaFromQuestion } from "@/app/dashboard/coach/studio/actions";
 
 function badgeLabel(role: "coach" | "client", subscriptionStatus: string): string {
   if (role === "coach") return "Coach";
@@ -385,6 +387,8 @@ function PostCard({
 }) {
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [ideaSaved, setIdeaSaved] = useState(false);
+  const [savingIdea, setSavingIdea] = useState(false);
 
   // Modération (suppression) réservée au fondateur, même dans le mur
   // partagé — un coach tiers peut toujours supprimer SES PROPRES posts.
@@ -413,6 +417,19 @@ function PostCard({
       if (res.ok) onStatusChanged(nextStatus);
     } finally {
       setUpdatingStatus(false);
+    }
+  }
+
+  // Axe 2 (VISION.md) : une question de membre est souvent une bonne idée
+  // de contenu toute faite — un tap l'envoie dans le Studio créatif du
+  // coach sans ressaisie.
+  async function saveAsIdea() {
+    setSavingIdea(true);
+    try {
+      const result = await createIdeaFromQuestion(post.id, post.content);
+      if (!result.error) setIdeaSaved(true);
+    } finally {
+      setSavingIdea(false);
     }
   }
 
@@ -467,6 +484,16 @@ function PostCard({
                   className="ml-2 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
                 >
                   Marquer {post.status === "answered" ? "non répondu" : "répondu"}
+                </button>
+              )}
+              {isCoach && (
+                <button
+                  onClick={saveAsIdea}
+                  disabled={savingIdea || ideaSaved}
+                  className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors disabled:opacity-60"
+                >
+                  <Sparkles size={10} />
+                  {ideaSaved ? "Envoyé au studio" : "→ Idée de contenu"}
                 </button>
               )}
             </div>

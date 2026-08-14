@@ -11,7 +11,7 @@ import {
   ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
-  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox,
+  ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -133,7 +133,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio"],
   },
   {
     label: "Communauté",
@@ -170,6 +170,15 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
       { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
+    ],
+  },
+  {
+    // Axe 2 (VISION.md) : espace personnel du coach pour poser des idées de
+    // contenu (Insta/YouTube/LinkedIn) — distinct du groupe "Contenu"
+    // ci-dessus qui est la bibliothèque destinée aux clients.
+    group: "Studio créatif",
+    items: [
+      { label: "Idées & brouillons", icon: Sparkles, segment: "studio" },
     ],
   },
   {

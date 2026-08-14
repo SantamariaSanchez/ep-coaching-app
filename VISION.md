@@ -84,26 +84,45 @@ terminé.**
 ## Axe 2 — Poste de travail complet pour les coachs (CRM, mailing Brevo,
 espace de création de contenu, productivité)
 
-**Statut : pas commencé, vision à préciser avant de coder.**
+**Statut : espace de création de contenu livré (2026-08-14). CRM et mailing
+Brevo restent bloqués sur des décisions d'architecture (détail plus bas).**
 
 Citation du besoin : "pas juste coacher leur client mais aussi vraiment
 travailler en tant que coach, avoir tout au même endroit". Sous-parties
 identifiées dans le message :
-- CRM coach : vue d'ensemble de tous les prospects/leads (existe déjà en
-  partie : table `leads`, page `/dashboard/coach/admin/leads`, mais
-  actuellement réservée au fondateur — à ouvrir/adapter par coach avec
-  cloisonnement correct, cf. la discipline sécurité multi-coach déjà en
-  place tout ce chantier).
-- Mailing connecté à Brevo pour CHAQUE coach (aujourd'hui `sendBrevoEmail`
-  utilise un compte Brevo unique, celui de la plateforme — un vrai mailing
-  par coach demanderait soit des sous-comptes Brevo, soit une segmentation
-  par tag/liste Brevo par coach, à trancher).
-- Espace de création de contenu (Insta/YouTube/LinkedIn) : zone de travail
-  avec prompts, idéation, sujets du moment, alimentée en partie par les
-  questions des clients dans l'onglet Questions (matière première déjà en
-  base). Nouveau : probablement un nouvel onglet dashboard coach avec un
-  espace "brouillons"/"idées" et un historique.
-- Espace documents/data personnels du coach, productivité générale.
+
+- **Espace de création de contenu — fait.** `/dashboard/coach/studio`
+  (groupe "Studio créatif" dans la sidebar) : idées/brouillons par
+  plateforme (Instagram/YouTube/LinkedIn/Général), statut (idée → brouillon
+  → prêt → publié), table `content_ideas` scopée par `coach_id` (RLS
+  `coach_id = auth.uid()`, migration `20260814k_coach_content_ideas.sql`).
+  Alimenté par les questions des clients : un bouton "→ Idée de contenu"
+  sur chaque question dans l'onglet Communauté (`CommunityFeed.tsx`)
+  envoie directement la question dans le studio du coach concerné, sans
+  ressaisie (`createIdeaFromQuestion`). Volontairement pas de
+  drag-and-drop (complexité/risque inutiles) — changement de statut par
+  tap, plus rapide entre deux clients.
+- **CRM coach — bloqué, à cadrer.** La table `leads` (captures des lead
+  magnets publics) n'a **aucune colonne d'attribution à un coach** : un
+  visiteur qui télécharge un lead magnet ne passe par le contexte d'aucun
+  coach en particulier (contenu de marque plateforme, pas par-coach). Un
+  vrai CRM par coach demande d'abord une vraie décision produit : soit (a)
+  ajouter un `coach_id` capté au moment du téléchargement (par exemple si
+  le lead magnet a été vu via le lien d'un coach précis), soit (b) rester
+  sur `coaching_waitlist` (déjà par-coach, item 45) comme le vrai
+  équivalent CRM d'un coach non-fondateur. Ouvrir `/dashboard/coach/admin/
+  leads` tel quel à un futur 2e coach afficherait TOUS les leads de la
+  plateforme, pas les siens — un vrai risque de fuite de données entre
+  coachs concurrents. Un seul coach existe aujourd'hui sur la plateforme
+  (le fondateur), donc rien à cloisonner dans l'immédiat ; à trancher
+  avant l'arrivée d'un second coach, pas avant.
+- **Mailing Brevo par coach — bloqué, à cadrer.** `sendBrevoEmail` utilise
+  un compte Brevo unique, celui de la plateforme — un vrai mailing par
+  coach demande une décision d'architecture (sous-comptes Brevo vs.
+  segmentation par tag/liste sous le même compte), pas tranchable sans en
+  discuter.
+- Espace documents/data personnels du coach, productivité générale : pas
+  commencé, périmètre encore vague dans le message d'origine.
 
 ## Axe 3 — Suivi client sans faille même si le coach ne fait rien
 
