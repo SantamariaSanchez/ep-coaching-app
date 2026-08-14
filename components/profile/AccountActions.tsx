@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle } from "lucide-react";
+import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { deleteOwnAccount } from "@/app/actions/account";
 
@@ -73,6 +73,19 @@ export default function AccountActions({
         </div>
         <ChevronRight size={13} className="text-[#F5EDED]/20" />
       </button>
+
+      {/* Item 48 : téléchargement direct — pas de Server Action, la route
+          répond avec Content-Disposition: attachment. */}
+      <a
+        href="/api/export-data"
+        className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+      >
+        <div className="flex items-center gap-2.5">
+          <Download size={14} className="text-[#F5EDED]/40" />
+          <span className="text-sm text-white font-medium">Exporter mes données</span>
+        </div>
+        <ChevronRight size={13} className="text-[#F5EDED]/20" />
+      </a>
 
       <button
         onClick={signOut}
