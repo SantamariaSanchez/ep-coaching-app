@@ -124,9 +124,10 @@ détail (l'esprit de la demande est "petit à petit", pas un plan figé).
 Axes A (cache après mutation), B (échecs silencieux côté UI), C
 (accessibilité clavier), D (catch muets côté serveur), E (`useState`
 jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
-sans nom accessible), G (champs de formulaire sans nom accessible) et H
-(pas d'`error.tsx`/`not-found.tsx`) sont clos — détail de chacun plus bas.
-Idée pas encore commencée :
+sans nom accessible), G (champs de formulaire sans nom accessible), H
+(pas d'`error.tsx`/`not-found.tsx`) et I (advisors Supabase : policies RLS
+et index) sont clos — détail de chacun plus bas. Idée pas encore
+commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -776,3 +777,126 @@ find app -iname "loading.tsx" | wc -l                # référence : 81
   juste l'accueil générique), pas fait ici pour rester simple ; pourrait
   valoir le coup pour `/dashboard/client` et `/dashboard/coach`
   spécifiquement si un jour on veut affiner.
+
+## Axe I — Advisors Supabase (sécurité + performance de la base)
+
+**Statut : fermé (2026-08-14).**
+
+Premier axe de cette session qui sort du code applicatif — les outils
+`get_advisors` (linter intégré Supabase) n'avaient jamais été passés
+depuis le début du masterclass. Deux catégories interrogées séparément
+(`security`, `performance`).
+
+**Sécurité — triée entièrement** :
+- **Corrigé** : `set_lead_magnets_updated_at` (trigger) n'avait pas de
+  `search_path` fixe, contrairement à toutes ses fonctions soeurs
+  (`is_coach`, `is_own_coach`...) qui l'ont déjà — `ALTER FUNCTION ...
+  SET search_path = public`, durcissement pur sans changement de
+  comportement.
+- **Vérifié SAIN** : les 3 tables "RLS activé sans policy"
+  (`auth_login_attempts`, `oura_connections`, `rate_limit_counters`) sont
+  **volontairement** verrouillées ainsi — vérifié dans le code applicatif
+  (`grep` sur tout `app/`/`lib/`/`utils/`) qu'elles ne sont accédées que
+  via `createAdminClient()`/service role, jamais côté client. Les
+  migrations d'origine (`20260805f`/`20260805j`, antérieures à cette
+  session) documentent déjà explicitement ce choix ("Aucune policy
+  volontairement... sinon un attaquant pourrait simplement remettre son
+  compteur à zéro") — RLS deny-all + `REVOKE ALL FROM anon,
+  authenticated` en ceinture et bretelles. L'advisor le signale en INFO
+  précisément parce que ça RESSEMBLE à un oubli ; ce n'en est pas un ici.
+- **Vérifié SAIN** : les ~10 fonctions `SECURITY DEFINER` signalées comme
+  "appelables via RPC public" (`is_coach`, `is_own_coach`,
+  `can_message_recipient`...) sont le motif idiomatique standard de
+  Supabase pour des helpers de policy RLS (contournent la récursion RLS).
+  Chacune ne renvoie qu'un booléen/uuid scopé à `auth.uid()` du CALLEUR —
+  aucune fuite de données tierces possible même appelée directement.
+  `set_coach_post_scope` fait partie du lot signalé mais est en réalité
+  une fonction TRIGGER (`RETURNS trigger`) : non invocable de façon
+  significative via RPC (pas de contexte `NEW`/`OLD` disponible hors
+  trigger), le signalement est un faux positif de nature.
+- **Laissé de côté (risque/bénéfice défavorable)** : `pg_net` installée
+  dans le schéma `public` plutôt que `extensions` — cosmétique pour le
+  linter, mais `pg_net` est réputée délicate à déplacer proprement
+  (worker interne, risque de casser des appels HTTP sortants existants)
+  sans environnement de test dédié pour vérifier. Pas touché.
+- **Laissé de côté (réglage dashboard, pas du code)** :
+  `auth_leaked_password_protection` désactivé (vérification
+  HaveIBeenPwned) — se règle dans Supabase Auth → Policies, pas via
+  migration SQL. À activer manuellement si souhaité :
+  https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection
+
+**Performance — le plus gros chantier mécanique de la session** :
+- **Corrigé, le plus impactant** : **124 policies RLS** appelaient
+  `auth.uid()`/`auth.jwt()`/`auth.role()` directement dans leur
+  `USING`/`WITH CHECK`, forçant Postgres à réévaluer la fonction PAR LIGNE
+  au lieu d'une seule fois par requête (`auth_rls_initplan`, le fix le
+  plus documenté par Supabase). Réécrites pour envelopper chaque appel
+  dans un sous-select scalaire `(select auth.uid())` — transformation
+  purement syntaxique, aucun changement de résultat. Généré
+  automatiquement depuis `pg_policies` (pas tapé à la main), revu
+  statement par statement avant application (zéro double-wrap détecté),
+  et vérifié après coup par un test avant/après en simulant une vraie
+  session utilisateur (`set local "request.jwt.claims"`) sur `food_logs` —
+  exactement les mêmes lignes visibles avant et après (20 pour le
+  propriétaire, 0 pour un client tiers). Confirmé par l'advisor :
+  `auth_rls_initplan` passe de **124 à 0**.
+- **Corrigé, nettoyage en prime** : `food_logs` avait deux policies `ALL`
+  redondantes — "Clients manage their food logs" (`auth.uid() =
+  client_id`) était un sous-ensemble strict de "Users manage own food
+  logs" (même condition + accès coach), un reliquat d'itération jamais
+  nettoyé. Supprimée : `multiple_permissive_policies` baisse de 20 sur
+  l'ensemble du projet en conséquence.
+- **Corrigé** : 3 clés étrangères sans index couvrant
+  (`coaching_waitlist.member_id`, `content_ideas.source_question_id`,
+  `formation_lesson_views.lesson_id`) — 3 `CREATE INDEX IF NOT EXISTS`,
+  ajout pur.
+- **Vérifié SAIN, motif répété volontaire** : le reste de
+  `multiple_permissive_policies` (154 restants) suit un motif cohérent et
+  intentionnel répété sur des dizaines de tables — une policy `ALL` pour
+  le propriétaire + une policy `SELECT` (ou une autre par commande)
+  séparée qui ajoute l'accès du coach. Techniquement "plusieurs policies
+  permissives" au sens du linter, mais PAS un doublon : consolider en une
+  seule policy par commande demanderait de fusionner les conditions dans
+  4 policies distinctes (SELECT/INSERT/UPDATE/DELETE) par table, plus
+  invasif et plus risqué à vérifier qu'un léger coût d'évaluation
+  supplémentaire par ligne. Laissé tel quel.
+- **Vérifié SAIN / laissé de côté** : `unused_index` (36, informationnel —
+  normal pour une appli avec encore peu de trafic réel, rien à corriger
+  tant que l'usage ne confirme pas qu'un index est vraiment inutile).
+
+**Méthode utilisée** (relançable) :
+```
+# Via le MCP Supabase :
+get_advisors(project_id, type="security")
+get_advisors(project_id, type="performance")
+
+# Pour régénérer le fix auth_rls_initplan sur de nouvelles policies :
+select tablename, policyname, cmd, roles, qual, with_check
+from pg_policies where schemaname = 'public';
+# -> script gen-rls-fix.mjs (scratchpad) : enveloppe tout auth.uid()/
+# auth.jwt()/auth.role() nu dans "(select ...)", génère les ALTER POLICY.
+```
+
+**Discipline de vérification adaptée à cet axe** (base de données, pas de
+code Next.js touché cette fois — tsc/eslint/build non pertinents ici) :
+revue manuelle statement par statement du SQL généré avant application,
+test fonctionnel avant/après par simulation de session (`set local
+"request.jwt.claims"`) plutôt que par une simple relecture, et
+confirmation finale via l'advisor lui-même (le compte d'issues avant/
+après est la preuve la plus directe que le fix a eu l'effet voulu).
+
+### Reste à faire sur cet axe
+
+- `pg_net` toujours dans `public` — pas touché, risque jugé disproportionné
+  par rapport au gain (cosmétique pour le linter).
+- `auth_leaked_password_protection` toujours désactivé — réglage
+  dashboard Supabase Auth, pas un fix de code, à faire manuellement si
+  souhaité (lien ci-dessus).
+- Les 154 `multiple_permissive_policies` restants sont volontairement
+  laissés (motif intentionnel expliqué plus haut) — si un jour la charge
+  de la base devient un vrai sujet, revisiter au cas par cas serait
+  l'étape suivante logique, mais pas avant d'en avoir la preuve par la
+  mesure réelle (pas d'optimisation prématurée sur un signal aussi
+  mineur).
+- `unused_index` (36) jamais réexaminé — attendre d'avoir un vrai volume
+  de trafic en production avant de juger un index réellement inutile.
