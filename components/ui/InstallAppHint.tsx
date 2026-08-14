@@ -50,6 +50,17 @@ export default function InstallAppHint() {
     return () => window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
   }, []);
 
+  // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
+  // au clavier avant ça.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   if (!platform || dismissed) return null;
 
   function dismiss() {

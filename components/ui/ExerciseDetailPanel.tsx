@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Video, ExternalLink, ClipboardCheck } from "lucide-react";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import {
@@ -148,6 +148,16 @@ export default function ExerciseDetailPanel({
   const [notes, setNotes] = useState(exercise.setup_notes ?? "");
   const [savingNotes, setSavingNotes] = useState(false);
   const [pending, setPending] = useState<string | null>(null);
+
+  // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
+  // au clavier avant ça.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   async function setField(field: keyof CreateExerciseInput, value: unknown) {
     if (!onUpdate) return;

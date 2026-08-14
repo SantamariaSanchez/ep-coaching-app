@@ -480,6 +480,22 @@ export default function ClientNutritionView({
   const [quickAdding, setQuickAdding] = useState(false);
   const [quickAddError, setQuickAddError] = useState<string | null>(null);
 
+  // MASTERCLASS.md Axe C (suite) : les 4 modales de cette vue se fermaient
+  // déjà au clic sur le fond, rien au clavier avant ça — un seul effet
+  // couvre les 4, chacune ferme la sienne si elle est ouverte.
+  useEffect(() => {
+    if (!addingToSlot && !savingMealSlot && !showCreateModal && !showQuickAddModal) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      if (addingToSlot) closeModal();
+      else if (savingMealSlot) setSavingMealSlot(null);
+      else if (showCreateModal) setShowCreateModal(false);
+      else if (showQuickAddModal) setShowQuickAddModal(false);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [addingToSlot, savingMealSlot, showCreateModal, showQuickAddModal]);
+
   // Copy yesterday
   const [copyingYesterday, setCopyingYesterday] = useState(false);
 

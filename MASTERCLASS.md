@@ -315,10 +315,39 @@ réels) — `RemindersView.tsx` semble être l'exception plutôt que la règle.
   Signal faible sur les 12 résultats trouvés (1 vrai bug) suggère que le
   rendement d'une passe plus large serait sans doute tout aussi faible,
   mais pas vérifié.
-- Nice-to-have repéré en vérifiant les backdrops de modale : aucun ne gère
-  la touche Échap (seulement le clic sur le fond ou le bouton `×`) — pas
-  un blocage (le bouton `×` reste accessible au clavier), mais un vrai
-  gain d'ergonomie clavier si repris un jour.
+
+**Suite (2026-08-15)** : le nice-to-have "Échap" ci-dessus repris.
+`grep -rl "ep-modal-overlay"` → 12 fichiers. Sur ces 12 :
+- **Corrigé** (10 fichiers, 13 modales) : `ExercisePicker.tsx`,
+  `CoachVideoRecorder.tsx` (respecte le même garde que le clic — jamais
+  fermer pendant un envoi en cours), `ApplyTemplateModal.tsx`,
+  `BulkCalorieAdjustModal.tsx`, `ExerciseDetailPanel.tsx`,
+  `InstallAppHint.tsx`, `ProgramEditor.tsx` (`AssignmentOnlyPanel`),
+  `DietPlanManager.tsx` (`PlanBuilder`), `ClientNutritionView.tsx` (4
+  modales, un seul effet combiné qui ferme celle qui est ouverte),
+  `WeeklyAgenda.tsx` (3 modales, même principe). Chaque effet est scopé à
+  l'état d'ouverture (`if (!open) return;` en tête), donc pas de listener
+  actif quand rien n'est affiché.
+- **Vérifié SAIN / volontairement exclu** : `SessionView.tsx` (le fond
+  ne ferme pas une modale classique, il fait avancer une étape d'un
+  minuteur de repos guidé — pas de vrai "annuler" à brancher sur Échap
+  sans risquer de sauter une étape) ; `SignupGateModal.tsx` (aucun
+  `onClick` sur le fond du tout — un mur d'inscription volontairement
+  non fermable, brancher Échap irait à l'encontre du choix produit).
+
+**Erreur évitée avant commit** : un `eslint-disable-next-line
+react-hooks/exhaustive-deps` ajouté par réflexe sur le premier fichier
+s'est révélé inutile (le lint ne se plaignait pas) — repéré par le
+`✖ 12 problems` d'eslint après coup (`Unused eslint-disable directive`),
+retiré. Exactement l'erreur déjà documentée plus tôt dans cette session
+(axe E) : ne jamais ajouter un disable "au cas où" sans vérifier qu'il
+corrige un vrai problème signalé.
+
+tsc/eslint/build vérifiés propres (comparaison `git stash` : 11 problèmes
+préexistants, 12 après cette passe puis 11 de nouveau une fois le
+disable inutile retiré — aucun de mes nouveaux effets ne déclenche
+`set-state-in-effect`, puisque le `setState` est appelé depuis le
+callback du listener clavier, pas synchronement dans le corps de l'effet).
 
 ## Axe D — `catch` muets sans log dans les server actions
 

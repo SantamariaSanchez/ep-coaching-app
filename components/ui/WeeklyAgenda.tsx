@@ -240,6 +240,20 @@ export default function WeeklyAgenda({
   const [dayOptionsBusy, setDayOptionsBusy] = useState(false);
   const [dayOptionsError, setDayOptionsError] = useState<string | null>(null);
 
+  // MASTERCLASS.md Axe C (suite) : les 3 modales de cette vue se
+  // fermaient déjà au clic sur le fond, rien au clavier avant ça.
+  useEffect(() => {
+    if (!modalOpen && !viewingBlock && dayOptionsFor === null) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "Escape") return;
+      if (modalOpen) close();
+      else if (viewingBlock) setViewingBlock(null);
+      else if (dayOptionsFor !== null) closeDayOptions();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [modalOpen, viewingBlock, dayOptionsFor]);
+
   // window.matchMedia n'existe pas côté serveur : ce choix de vue par
   // défaut ne peut être fait qu'après montage, d'où l'effet (même compromis
   // déjà accepté ailleurs dans ce fichier pour "now"/"selectedDay" plus bas).

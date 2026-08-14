@@ -62,6 +62,18 @@ export default function CoachVideoRecorder({
     setOpen(false);
   }
 
+  // MASTERCLASS.md Axe C (suite) : même garde que le clic sur le fond
+  // (jamais fermer pendant un envoi en cours).
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape" && !sending) close();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, sending]);
+
   async function pickSource(source: Source) {
     setError(null);
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import {
   Plus,
@@ -395,6 +395,18 @@ export function PlanBuilder({
   const [activeDay, setActiveDay] = useState<DayOfWeek>("lun");
   const [meals, setMeals] = useState<PlanMealRow[]>([]);
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
+
+  // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
+  // au clavier avant ça.
+  useEffect(() => {
+    if (!addingToSlot) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setAddingToSlot(null);
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [addingToSlot]);
+
   const [search, setSearch] = useState("");
   const [qty, setQty] = useState("100");
   const [mealNotes, setMealNotes] = useState("");

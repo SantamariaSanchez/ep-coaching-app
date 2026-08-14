@@ -705,6 +705,16 @@ function AssignmentOnlyPanel({
   onChange: (field: keyof AssignmentDecisions, value: string) => void;
   onClose: () => void;
 }) {
+  // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
+  // au clavier avant ça.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   return (
     <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4">
       <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />

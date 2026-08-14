@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Check, Users, AlertCircle } from "lucide-react";
 import type { ApplyTemplateClient } from "./ApplyTemplateModal";
 
@@ -25,6 +25,16 @@ export default function BulkCalorieAdjustModal({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<number | null>(null);
+
+  // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
+  // au clavier avant ça.
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClose]);
 
   function toggle(id: string) {
     setSelected((prev) => {

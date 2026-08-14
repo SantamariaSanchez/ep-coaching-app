@@ -180,6 +180,18 @@ export default function ExercisePicker({ onAdd }: Props) {
     setCreating(false);
   }
 
+  // MASTERCLASS.md Axe C (suite) : le fond de la modale se fermait déjà au
+  // clic, mais rien au clavier — Échap est le raccourci attendu pour
+  // fermer une modale, le bouton × restait le seul moyen clavier avant ça.
+  useEffect(() => {
+    if (!open) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") close();
+    }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
+
   function select(ex: LibraryExercise) {
     onAdd({ name: ex.name, muscleGroup: ex.muscle_group });
     close();
