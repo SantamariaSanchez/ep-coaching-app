@@ -25,7 +25,7 @@ export default async function CoachParametresPage() {
   const supabase = await createServerSupabase();
   const { data: pushSub } = await supabase
     .from("push_subscriptions")
-    .select("id")
+    .select("id, quiet_hours_start, quiet_hours_end")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -62,7 +62,12 @@ export default async function CoachParametresPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Paramètres</h1>
       </div>
 
-      <PermissionsCard pushSubscribed={!!pushSub} stepsHref="/dashboard/coach/moi/steps" />
+      <PermissionsCard
+        pushSubscribed={!!pushSub}
+        stepsHref="/dashboard/coach/moi/steps"
+        quietHoursStart={pushSub?.quiet_hours_start ?? null}
+        quietHoursEnd={pushSub?.quiet_hours_end ?? null}
+      />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/coach" />
 
