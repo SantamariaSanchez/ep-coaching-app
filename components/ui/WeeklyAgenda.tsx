@@ -209,6 +209,13 @@ export default function WeeklyAgenda({
   clearDayBlocks?: (day: number) => Promise<{ error?: string }>;
 }) {
   const [blocks, setBlocks] = useState(initialBlocks);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialBlocks change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setBlocks(initialBlocks);
+  }, [initialBlocks]);
   // Avant, la vue semaine n'existait que sur desktop (un isDesktop détecté
   // au resize). Maintenant un vrai bouton Jour/Semaine, disponible sur tous
   // les écrans ; l'effet ci-dessous choisit juste un défaut raisonnable une

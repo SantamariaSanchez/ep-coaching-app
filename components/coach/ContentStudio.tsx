@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, useEffect } from "react";
 import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion } from "lucide-react";
 import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/dashboard/coach/studio/actions";
 import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-ideas";
@@ -28,6 +28,13 @@ const STATUS_META: Record<ContentStatus, { label: string; color: string }> = {
 // simple à utiliser vite entre deux clients qu'un board à glisser-déposer.
 export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentIdea[] }) {
   const [ideas, setIdeas] = useState(initialIdeas);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialIdeas change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setIdeas(initialIdeas);
+  }, [initialIdeas]);
   const [platformFilter, setPlatformFilter] = useState<ContentPlatform | "all">("all");
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");

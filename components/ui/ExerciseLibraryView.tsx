@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -589,6 +589,13 @@ export default function ExerciseLibraryView({
 }: Props) {
   const videosUnlocked = hasUnlocked("exercise_videos", points, isSubscribed);
   const [exercises, setExercises] = useState(initialExercises);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialExercises change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setExercises(initialExercises);
+  }, [initialExercises]);
   const [search, setSearch] = useState("");
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
   const [activeBrand, setActiveBrand] = useState<string | null>(null);

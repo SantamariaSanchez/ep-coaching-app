@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Search, AlertTriangle } from "lucide-react";
 import ArticleCard from "./ArticleCard";
 import SeedLibraryButton from "@/components/ui/SeedLibraryButton";
@@ -22,6 +22,13 @@ interface Props {
 
 export default function ArticleListView({ articles: initial, isCoach, emptyLabel, showSeedButton, seedAction, updateArticle, deleteArticle }: Props) {
   const [articles, setArticles] = useState(initial);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initial change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setArticles(initial);
+  }, [initial]);
   const [search, setSearch] = useState("");
   const [activeTopic, setActiveTopic] = useState<string | null>(null);
   const [activeType, setActiveType] = useState<ScienceArticleType | "">("");

@@ -122,8 +122,9 @@ grep -rn "export async function \(toggle\|mark\|check\|complete\|log\)" app/ --i
 Idées à développer au fil des passes plutôt que planifiées d'avance en
 détail (l'esprit de la demande est "petit à petit", pas un plan figé).
 Axes A (cache après mutation), B (échecs silencieux côté UI), C
-(accessibilité clavier) et D (catch muets côté serveur) sont clos —
-détail de chacun plus bas. Idée pas encore commencée :
+(accessibilité clavier), D (catch muets côté serveur) et E (`useState`
+jamais resynchronisé sur un nouveau prop serveur) sont clos — détail de
+chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -385,3 +386,100 @@ cas manqué une fois vérifié — l'estimation initiale était trop prudente.
   log apparaissent avec du nouveau code, relancer le script
   (`fix-silent-catches.mjs`, gardé dans le scratchpad de session) plutôt
   que de re-vérifier tout le projet à la main.
+
+## Axe E — `useState(initialX)` jamais resynchronisé sur un nouveau prop serveur
+
+**Statut : première passe faite (2026-08-14), 13 fichiers corrigés.**
+
+Origine : le bug nutrition remonté une TROISIÈME fois par l'utilisateur
+("je coche et j'actualise et ça se décoche"), après que l'Axe A
+(`revalidatePath` manquant) avait déjà été corrigé et poussé. Vérification
+empirique directe en base (types réels renvoyés par le client Supabase,
+policies RLS, doublons dans `diet_plan_meals`) écartant une à une les
+autres hypothèses avant de trouver la vraie cause : `useState(initialX)`
+dans un composant client ne lit son argument qu'au tout premier rendu.
+Quand le Server Component parent se re-rend avec un nouveau prop
+`initialX` (après le `revalidatePath` de l'Axe A, justement), React ne
+resynchronise jamais automatiquement l'état interne du composant enfant
+sur cette nouvelle valeur — un piège classique "prop → state" qui explique
+pourquoi le premier correctif (correct mais incomplet) n'avait réglé que
+la moitié du problème : les données serveur étaient toujours bonnes
+(vérifié), seul l'état affiché côté client restait périmé.
+
+**Correctif type** : ajouter juste après le `useState(initialX)`
+concerné :
+```ts
+useEffect(() => {
+  setX(initialX);
+}, [initialX]);
+```
+Réservé aux states qui **miroitent une liste/collection venant du
+serveur** (nourriture loguée, repas enregistrés, tâches, séances,
+articles...). Explicitement PAS appliqué aux champs de formulaire
+texte (titre/contenu/nom dans les formulaires d'édition) — un resync
+automatique y écraserait la saisie en cours de l'utilisateur, ce serait
+une régression, pas un correctif.
+
+Sur `ClientNutritionView.tsx` spécifiquement, un deuxième filet a aussi
+été ajouté : un `visibilitychange` qui force un `router.refresh()` quand
+l'onglet/la PWA redevient visible — couvre le cas où l'app est reprise
+depuis l'arrière-plan sans navigation complète, donc sans qu'aucun
+`useEffect` de dépendance sur un prop ne se déclenche.
+
+**Corrigé** (13 fichiers, un `useState` par fichier sauf mention) :
+`components/ui/ClientNutritionView.tsx` (`savedMeals` — `todayLogs` déjà
+traité lors du correctif d'urgence précédent, même passe), `components/ui/
+CoachClientTasksView.tsx` (`tasks`), `components/ui/WeeklyAgenda.tsx`
+(`blocks`), `components/ui/ClientPeriodTracking.tsx` (`logs`),
+`components/ui/ExerciseLibraryView.tsx` (`exercises`), `components/ui/
+PersonalPhotosView.tsx` (`photos`), `components/science/ArticleListView.tsx`
+(`articles`), `components/science/StudiesView.tsx` (`studies`),
+`components/coach/CoachFinanceTracker.tsx` (`entries`), `components/coach/
+ContentStudio.tsx` (`ideas`), `components/coach/CoachMailingComposer.tsx`
+(`history`), `components/resources/ResourceRequests.tsx` (`requests`),
+`components/live/LiveEventsList.tsx` (`events`).
+
+**Sur le lint `react-hooks/set-state-in-effect`** : chacun de ces 13
+ajouts déclenche cette règle (appel de `setState` synchrone dans un
+effet). Convention déjà en place dans ce projet avant cette session (ex.
+le sync `checkedItems`/localStorage déjà présent dans
+`ClientNutritionView.tsx`, et le resync photo déjà présent dans
+`PersonalPhotosView.tsx` avant cette passe) : documenter le motif par un
+commentaire clair plutôt que `eslint-disable`, et l'assumer comme un
+compromis volontaire — vérifié que `next build` ne bloque pas dessus
+(exit 0 avant et après cette passe).
+
+**Méthode utilisée** (relançable) :
+```bash
+# Repère les useState dont l'argument commence par "initial" — signal
+# fort d'un state qui miroite un prop serveur plutôt qu'un état purement
+# local (recherche manuelle ensuite pour trier formulaire vs collection) :
+grep -rn 'useState(initial\|useState<[^>]*>(initial' --include="*.tsx" components/
+```
+65 occurrences à l'exécution du 2026-08-14, triées à la main (jugement
+nécessaire — impossible de distinguer mécaniquement "collection à
+resynchroniser" de "valeur par défaut d'un champ de formulaire" par
+simple pattern-matching). 13 retenues comme genuinement à risque
+(présentes dans une route qui subit des `revalidatePath` fréquents et
+affichant un état "coché/liste" que l'utilisateur attend à jour après
+retour). Script de correction mécanique gardé dans le scratchpad de
+session (`fix-stale-state.mjs`), incluant le patch d'import `useEffect`
+manquant quand nécessaire.
+
+**Vérifié SAIN** : `DietPlanManager.tsx`/`PlanBuilder` et les autres
+formulaires de création corrigés à l'Axe B (`ExerciseForm`, `GymForm`,
+`PostEditor`, `StudyForm`, `ArticleEditForm`) — leurs `useState(initial…)`
+sont des valeurs par défaut de champs texte, pas des collections ; un
+resync y serait une régression (écraserait la saisie en cours), donc
+volontairement exclus de cette passe malgré le nom de variable similaire.
+
+### Reste à faire sur cet axe
+
+- Sur les 65 occurrences repérées par le grep, 13 ont été triées et
+  corrigées cette passe ; le reste (~52) n'a pas été examiné candidat par
+  candidat un par un — probablement en écrasante majorité des états de
+  formulaire légitimes (comme les exclusions ci-dessus), mais pas
+  confirmé exhaustivement. Prochaine passe possible : trier le reste par
+  petits lots plutôt que d'un coup, en appliquant la même grille (état
+  liste/collection alimenté par un prop serveur = candidat, champ de
+  formulaire = à exclure).

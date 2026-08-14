@@ -27,8 +27,11 @@ export default function PersonalPhotosView({
   const router = useRouter();
   const [photos, setPhotos] = useState(initialPhotos);
   const [notes, setNotes] = useState("");
-  // Resynchronise après un router.refresh() (ex. après l'upload d'une photo,
-  // qui a besoin de repasser par le serveur pour obtenir l'URL signée).
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand initialPhotos
+  // change (même piège que todayLogs dans ClientNutritionView — useState ne
+  // reprend jamais un nouveau prop après le premier rendu). Déjà en place
+  // avant cet axe pour couvrir le router.refresh() après upload ; gardé tel
+  // quel, un seul effet suffit.
   useEffect(() => setPhotos(initialPhotos), [initialPhotos]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);

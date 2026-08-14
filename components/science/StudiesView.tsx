@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FlaskConical, Plus, X, Pencil, Trash2, Lock, Users, LogOut, Lightbulb } from "lucide-react";
 import { STUDY_STATUS_LABELS, type ScienceStudy } from "@/utils/science-types";
 import { FEATURE_UNLOCK_POINTS } from "@/lib/gamification-types";
@@ -253,6 +253,13 @@ export default function StudiesView({
   leaveStudy?: (studyId: string) => Promise<{ error?: string }>;
 }) {
   const [studies, setStudies] = useState(initial);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initial change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setStudies(initial);
+  }, [initial]);
   const [showCreate, setShowCreate] = useState(false);
 
   return (

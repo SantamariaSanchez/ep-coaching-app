@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarX2 } from "lucide-react";
 import LiveEventCard from "@/components/live/LiveEventCard";
 
@@ -35,6 +35,13 @@ export default function LiveEventsList({
   onSaveRecap?: (id: string, recap: string) => Promise<{ error?: string }>;
 }) {
   const [events, setEvents] = useState(initialEvents);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialEvents change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setEvents(initialEvents);
+  }, [initialEvents]);
 
   async function handleCancel(id: string) {
     if (!onCancel) return;

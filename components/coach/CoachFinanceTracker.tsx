@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition, useEffect } from "react";
 import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download } from "lucide-react";
 import { createFinanceEntry, deleteFinanceEntry } from "@/app/dashboard/coach/compta/actions";
 import { categoriesFor } from "@/lib/coach-finance-categories";
@@ -25,6 +25,13 @@ function csvEscape(value: string): string {
 // à Stripe ni à un mouvement d'argent réel : uniquement déclaratif.
 export default function CoachFinanceTracker({ initialEntries }: { initialEntries: FinanceEntry[] }) {
   const [entries, setEntries] = useState(initialEntries);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialEntries change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setEntries(initialEntries);
+  }, [initialEntries]);
   const [showForm, setShowForm] = useState(false);
   const [kind, setKind] = useState<"revenu" | "depense">("revenu");
   const [category, setCategory] = useState<string>(categoriesFor("revenu")[0]);

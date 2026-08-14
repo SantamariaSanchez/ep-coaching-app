@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Bell, CheckCircle2, Clock, Plus, Send, Trash2 } from "lucide-react";
 import type { ClientTask } from "@/utils/tasks";
 
@@ -54,6 +54,13 @@ export default function CoachClientTasksView({
   sendMotivationMessage: (clientId: string, message: string) => Promise<{ error?: string }>;
 }) {
   const [tasks, setTasks] = useState(initialTasks);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialTasks change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
   const [label, setLabel] = useState("");
   const [icon, setIcon] = useState("✅");
   const [nagMinutes, setNagMinutes] = useState(30);

@@ -12,6 +12,13 @@ import type { CoachMailing } from "@/lib/coach-mailings";
 // possible.
 export default function CoachMailingComposer({ initialHistory }: { initialHistory: CoachMailing[] }) {
   const [history, setHistory] = useState(initialHistory);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialHistory change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setHistory(initialHistory);
+  }, [initialHistory]);
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
   const [recipientCount, setRecipientCount] = useState<number | null>(null);

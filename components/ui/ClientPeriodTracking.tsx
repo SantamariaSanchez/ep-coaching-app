@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Trash2, Droplet } from "lucide-react";
 import type { PeriodLog, CycleStats } from "@/utils/period-tracking";
 
@@ -37,6 +37,13 @@ export default function ClientPeriodTracking({
   deletePeriodLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
   const [logs, setLogs] = useState(initialLogs);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialLogs change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setLogs(initialLogs);
+  }, [initialLogs]);
   const [showForm, setShowForm] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");

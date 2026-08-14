@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Send, MessageCircle, CheckCircle2, Lightbulb, Trash2 } from "lucide-react";
 import type { ResourceRequest } from "@/utils/resource-requests";
 
@@ -30,6 +30,13 @@ export default function ResourceRequests({
   deleteRequest: (id: string) => Promise<{ error?: string }>;
 }) {
   const [requests, setRequests] = useState(initialRequests);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialRequests change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setRequests(initialRequests);
+  }, [initialRequests]);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [posting, setPosting] = useState(false);

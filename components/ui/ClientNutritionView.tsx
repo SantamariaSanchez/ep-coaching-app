@@ -379,6 +379,13 @@ export default function ClientNutritionView({
   // Repas enregistrés — état local pour refléter création/suppression sans
   // recharger la page (même pattern que `foods`).
   const [savedMeals, setSavedMeals] = useState<SavedMeal[]>(initialSavedMeals);
+
+  // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
+  // initialSavedMeals change (même piège que todayLogs dans ClientNutritionView —
+  // useState ne reprend jamais un nouveau prop après le premier rendu).
+  useEffect(() => {
+    setSavedMeals(initialSavedMeals);
+  }, [initialSavedMeals]);
   const [savingMealSlot, setSavingMealSlot] = useState<string | null>(null);
   const [savingMealName, setSavingMealName] = useState("");
   const [savingMealBusy, setSavingMealBusy] = useState(false);
