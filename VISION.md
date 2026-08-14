@@ -126,13 +126,37 @@ identifiées dans le message :
 
 ## Axe 3 — Suivi client sans faille même si le coach ne fait rien
 
-**Statut : la brique agenda auto-mis-à-jour existe déjà (voir Axe 1).**
+**Statut : tableau de bord consolidé livré (2026-08-14). L'agenda
+auto-mis-à-jour existait déjà (voir Axe 1).**
 
-Reste : proposer proactivement des audits/appels aux clients même hors
-signal de stagnation explicite (cadence régulière, pas seulement réactif),
-et un vrai tableau de bord coach "qui a besoin de moi cette semaine"
-consolidant tous les signaux (Axe 1) en une seule vue priorisée plutôt que
-dispersés en notifications.
+- Découverte en cours de route : `lib/coach-analytics.ts` avait déjà un
+  système d'alertes par client bien plus riche que les 4 signaux de mon
+  cron Axe 1 (check-in manquant, poids stagné 3 semaines, nutrition non
+  loggée, calories trop basses, séances insuffisantes, technique faible,
+  récupération insuffisante, aucun bilan envoyé) — `getTopUrgentAlerts`,
+  déjà affiché sur l'accueil coach (`UrgentAlertsSection`) mais plafonné à
+  3 résultats, et son lien "Voir tout" pointait vers la liste de clients
+  brute, pas une vue priorisée.
+- Nouveau : `getPrioritizedCoachView()` — même moteur d'alertes, mais sans
+  plafond, PLUS une seconde catégorie "silencieux" : clients sans aucune
+  alerte mais sans appel live (passé ou déjà programmé) depuis 30 jours ou
+  plus. C'est la vraie réponse à "même si je fais rien, ne jamais laisser
+  un client filer" pour ceux qui ne déclenchent aucun signal négatif.
+- Page dédiée `/dashboard/coach/prioritaires` (nouvel item "Priorités"
+  dans la sidebar, groupe Clients) : les deux catégories triées, "Voir
+  tout" d'`UrgentAlertsSection` y pointe désormais.
+
+### Reste à faire sur cet axe
+
+- La proposition proactive d'audit/appel pour un client "silencieux" reste
+  une action manuelle du coach depuis cette page (pas une notification
+  automatique au client) — délibéré : le message d'origine demande de
+  "lutter contre la stagnation" sans "spam", et il existe déjà l'escalade
+  Axe 1 pour les signaux négatifs explicites. Ajouter une relance
+  automatique aussi pour les clients "juste silencieux" (zéro signal
+  négatif) mériterait d'abord un retour d'usage sur cette page avant
+  d'automatiser — sinon risque réel de sur-solliciter des clients qui vont
+  très bien mais n'ont simplement pas eu de call récemment.
 
 ## Axe 4 — Comptabilité et gestion financière pour les coachs
 

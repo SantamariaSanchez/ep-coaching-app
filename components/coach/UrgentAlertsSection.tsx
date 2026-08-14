@@ -48,8 +48,10 @@ export default function UrgentAlertsSection() {
             {alerts.length}
           </span>
         </div>
+        {/* Axe 3 (VISION.md) : vue complète (pas de limite à 3), avec en
+            plus les clients sans signal mais silencieux depuis 30j+. */}
         <Link
-          href="/dashboard/coach/clients"
+          href="/dashboard/coach/prioritaires"
           className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
           Voir tout

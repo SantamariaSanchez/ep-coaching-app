@@ -641,3 +641,95 @@ export async function getTopUrgentAlerts(coachId: string, limit = 3): Promise<To
 
   return allAlerts.slice(0, limit);
 }
+
+// ── Vue consolidée "qui a besoin de moi" (Axe 3, VISION.md) ──────────────────
+//
+// UrgentAlertsSection (homepage) ne montre que le top 3, pour rester léger.
+// Cette vue-ci est la liste complète, pour une vraie page dédiée : tous les
+// clients avec au moins une alerte, triés par sévérité, PLUS les clients
+// SANS aucune alerte mais sans contact live depuis 30+ jours ("silencieux
+// par habitude", pas par signal explicite) — pour ne jamais laisser un
+// client sans suivi juste parce qu'il ne déclenche aucun signal négatif.
+
+export interface PrioritizedClient {
+  clientId: string;
+  clientName: string | null;
+  alerts: ClientAlert[];
+}
+
+export interface QuietClient {
+  clientId: string;
+  clientName: string | null;
+  lastContactDays: number | null; // null = jamais eu de call avec ce coach
+}
+
+export async function getPrioritizedCoachView(
+  coachId: string
+): Promise<{ flagged: PrioritizedClient[]; quiet: QuietClient[] }> {
+  const supabase = createAdminClient();
+  const { data: clients } = await supabase
+    .from("profiles")
+    .select("id, full_name, checkin_day")
+    .eq("role", "client")
+    .eq("status", "active")
+    .eq("subscription_status", "active")
+    .eq("coach_id", coachId);
+
+  if (!clients || clients.length === 0) return { flagged: [], quiet: [] };
+
+  const rows = clients as { id: string; full_name: string | null; checkin_day: number | null }[];
+
+  const [perClientAlerts, liveEventsRes] = await Promise.all([
+    Promise.all(rows.map(async (c) => ({ client: c, alerts: await getClientAlerts(c.id, c.checkin_day) }))),
+    supabase
+      .from("live_events")
+      .select("invited_client_id, starts_at, status")
+      .eq("host_id", coachId)
+      .not("invited_client_id", "is", null)
+      .neq("status", "cancelled"),
+  ]);
+
+  const now = Date.now();
+  // Par client : dernier appel PASSÉ (pour "depuis combien de jours") et si
+  // un appel FUTUR est déjà programmé (dans ce cas, pas "silencieux" du
+  // tout — un suivi est déjà en cours, même si rien ne s'est encore tenu).
+  const lastPastCall = new Map<string, number>();
+  const hasUpcoming = new Set<string>();
+  for (const row of (liveEventsRes.data as { invited_client_id: string; starts_at: string; status: string }[] | null) ?? []) {
+    const t = new Date(row.starts_at).getTime();
+    if (t > now) {
+      hasUpcoming.add(row.invited_client_id);
+    } else {
+      const prev = lastPastCall.get(row.invited_client_id);
+      if (!prev || t > prev) lastPastCall.set(row.invited_client_id, t);
+    }
+  }
+
+  const order: AlertSeverity[] = ["high", "medium", "low"];
+  const flagged: PrioritizedClient[] = [];
+  const quiet: QuietClient[] = [];
+  const QUIET_THRESHOLD_DAYS = 30;
+
+  for (const { client, alerts } of perClientAlerts) {
+    if (alerts.length > 0) {
+      flagged.push({
+        clientId: client.id,
+        clientName: client.full_name,
+        alerts: [...alerts].sort((a, b) => order.indexOf(a.severity) - order.indexOf(b.severity)),
+      });
+      continue;
+    }
+    if (hasUpcoming.has(client.id)) continue; // déjà un suivi programmé, rien à signaler
+
+    const last = lastPastCall.get(client.id);
+    const lastContactDays = last != null ? Math.floor((now - last) / 86400000) : null;
+    if (lastContactDays === null || lastContactDays >= QUIET_THRESHOLD_DAYS) {
+      quiet.push({ clientId: client.id, clientName: client.full_name, lastContactDays });
+    }
+  }
+
+  flagged.sort((a, b) => order.indexOf(a.alerts[0].severity) - order.indexOf(b.alerts[0].severity));
+  quiet.sort((a, b) => (b.lastContactDays ?? Infinity) - (a.lastContactDays ?? Infinity));
+
+  return { flagged, quiet };
+}
