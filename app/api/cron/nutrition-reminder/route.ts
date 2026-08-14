@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { todayInParis } from "@/lib/dates";
 
 // Déclenché par Supabase pg_cron chaque jour à 20h00 (Europe/Paris).
 // Envoie une notif "Bilan rapide" aux clients qui ont un objectif nutritionnel
@@ -14,7 +15,7 @@ export async function GET(req: Request) {
   }
 
   const supabase = createAdminClient();
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   // Clients avec un objectif calorique défini
   const { data: profiles } = await supabase

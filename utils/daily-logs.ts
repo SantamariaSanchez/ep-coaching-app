@@ -1,5 +1,6 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { DailyLog } from "@/lib/daily-logs-helpers";
+import { todayInParis } from "@/lib/dates";
 
 export type { DailyLog, WeeklyAverages } from "@/lib/daily-logs-helpers";
 export { computeWeeklyAverages, groupLogsByWeek } from "@/lib/daily-logs-helpers";
@@ -7,7 +8,7 @@ export { computeWeeklyAverages, groupLogsByWeek } from "@/lib/daily-logs-helpers
 export async function getTodayLog(clientId: string): Promise<DailyLog | null> {
   try {
     const supabase = await createServerSupabase();
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     const { data } = await supabase
       .from("daily_logs")
       .select("*")

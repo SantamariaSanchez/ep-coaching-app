@@ -2,6 +2,7 @@ import { Brain, Flame } from "lucide-react";
 import Card from "@/components/ui/Card";
 import { PROFILE_TYPES, ENVIRONMENTS, OBSTACLES, HABITS } from "@/lib/mindset-content";
 import type { MindsetProfile, MindsetHabitLog } from "@/utils/mindset";
+import { todayInParis } from "@/lib/dates";
 
 // Vue coach en lecture seule du mindset d'un client — avant, rien de tout
 // ça (profil, obstacle principal, habitudes) n'était visible côté coach,
@@ -26,7 +27,7 @@ function ScoreBar({ label, value, color }: { label: string; value: number; color
 }
 
 function todayStr(): string {
-  return new Date().toISOString().split("T")[0];
+  return todayInParis();
 }
 
 // Même algorithme que HabitsTab côté client (components/ui/MindsetView.tsx) —

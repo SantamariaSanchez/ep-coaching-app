@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { unstable_cache } from "next/cache";
@@ -227,7 +228,7 @@ export async function getTodayLogs(
 ): Promise<FoodLogWithFood[]> {
   try {
     const supabase = await createServerSupabase();
-    const day = date ?? new Date().toISOString().split("T")[0];
+    const day = date ?? todayInParis();
     const { data } = await supabase
       .from("food_logs")
       .select("*, foods(*)")

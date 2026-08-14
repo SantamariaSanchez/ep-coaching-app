@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { NextResponse } from "next/server";
 import { getClientById } from "@/utils/auth";
 import { requireCoach } from "@/lib/auth-guards";
@@ -90,7 +91,7 @@ export async function GET(request: Request) {
 
   const csv = header + rows.join("\n");
   const clientName = client.full_name?.replace(/[^a-zA-Z0-9]/g, "_") ?? "client";
-  const filename = `logbook_${clientName}_${new Date().toISOString().split("T")[0]}.csv`;
+  const filename = `logbook_${clientName}_${todayInParis()}.csv`;
 
   return new NextResponse(csv, {
     status: 200,

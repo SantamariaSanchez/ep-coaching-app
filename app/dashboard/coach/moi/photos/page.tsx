@@ -6,6 +6,7 @@ import { getClientPhotoUpdates, getThisWeekPhotoUpdate } from "@/utils/photos";
 import ClientPhotosView from "@/components/ui/ClientPhotosView";
 import { submitPhotoUpdate } from "./actions";
 import { saveCompetitionSettings } from "@/app/dashboard/coach/clients/[id]/photos/actions";
+import { todayInParis } from "@/lib/dates";
 
 export default async function CoachMonPhotosPage() {
   const user = await getUser();
@@ -14,7 +15,7 @@ export default async function CoachMonPhotosPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   let photoHistory: Awaited<ReturnType<typeof getClientPhotoUpdates>> = [];
   let weekUpdate = null;

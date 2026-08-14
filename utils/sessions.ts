@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { todayInParis } from "@/lib/dates";
 
 export interface Session {
   id: string;
@@ -58,7 +59,7 @@ export interface SessionWithSets extends Session {
 export async function getActiveSession(clientId: string): Promise<Session | null> {
   try {
     const supabase = await createServerSupabase();
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     const { data } = await supabase
       .from("sessions")
       .select("*")

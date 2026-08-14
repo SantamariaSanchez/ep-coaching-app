@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SubmissionType } from "@/lib/posing-data";
 
@@ -105,7 +106,7 @@ export async function getTodayPhotoUpdate(
 ): Promise<PhotoUpdate | null> {
   try {
     const supabase = await createServerSupabase();
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     const { data } = await supabase
       .from("photo_updates")
       .select("*")

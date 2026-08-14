@@ -3,6 +3,8 @@
 // This parses either format into a common shape so it can be replayed into
 // our sessions/session_sets tables without losing the client's history.
 
+import { todayInParis } from "@/lib/dates";
+
 export interface ParsedSet {
   exerciseName: string;
   weightKg: number | null;
@@ -143,7 +145,7 @@ function mapHevy(rows: Record<string, string>[]): ParsedSession[] {
     if (!sessions.has(key)) {
       sessions.set(key, {
         dayLabel: row.title || "Séance importée",
-        date: parseDateFlexible(row.start_time) ?? new Date().toISOString().split("T")[0],
+        date: parseDateFlexible(row.start_time) ?? todayInParis(),
         durationMinutes: minutesBetween(row.start_time, row.end_time),
         sets: [],
       });
@@ -172,7 +174,7 @@ function mapStrong(rows: Record<string, string>[]): ParsedSession[] {
     if (!sessions.has(key)) {
       sessions.set(key, {
         dayLabel: row.workout_name || "Séance importée",
-        date: parseDateFlexible(row.date) ?? new Date().toISOString().split("T")[0],
+        date: parseDateFlexible(row.date) ?? todayInParis(),
         durationMinutes: (() => {
           const secs = toInt(row.duration ?? row.workout_duration);
           return secs ? Math.round(secs / 60) : null;

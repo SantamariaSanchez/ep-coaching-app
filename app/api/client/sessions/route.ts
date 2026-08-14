@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -23,7 +24,7 @@ export async function POST(request: Request) {
     };
 
     const supabase = await createServerSupabase();
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
 
     // Resume an already-started session instead of creating a new one —
     // closing the app / locking the phone mid-séance must never abandon

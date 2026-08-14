@@ -1,5 +1,6 @@
 ﻿import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
+import { todayInParis } from "@/lib/dates";
 import {
   getClientPhotoUpdates,
   getThisWeekPhotoUpdate,
@@ -33,7 +34,7 @@ export default async function ClientPhotosPage() {
   }
 
   const frequency = profile?.photo_frequency ?? "weekly";
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   // Wrap in try/catch — table might not exist yet in Supabase
   let photoHistory: Awaited<ReturnType<typeof getClientPhotoUpdates>> = [];

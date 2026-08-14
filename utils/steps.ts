@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { todayInParis } from "@/lib/dates";
 
 export interface StepSettings {
   client_id: string;
@@ -57,7 +58,7 @@ export async function getStepRoutineItems(clientId: string): Promise<StepRoutine
 export async function getTodayStepsActual(clientId: string): Promise<number | null> {
   try {
     const supabase = await createServerSupabase();
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     const { data } = await supabase
       .from("step_logs")
       .select("steps_actual")

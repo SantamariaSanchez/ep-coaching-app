@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import {
@@ -44,7 +45,7 @@ export default async function ClientNutritionPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   // Espace gratuit — calculateur TDEE + journal alimentaire (aujourd'hui /
   // historique) et plans perso, comme les clients coachés : seule la

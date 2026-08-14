@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { NextResponse } from "next/server";
 import { getProfile } from "@/utils/auth";
 import { requireAuth } from "@/lib/auth-guards";
@@ -78,7 +79,7 @@ export async function POST(
         weight_kg: pr.weightKg,
         reps: pr.reps,
         session_id: sessionId,
-        achieved_at: new Date().toISOString().split("T")[0],
+        achieved_at: todayInParis(),
       }))
     );
   }

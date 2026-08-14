@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
@@ -17,7 +18,7 @@ export default async function BilanRapidePage() {
   // /dashboard/coach, donc les liens de retour doivent pointer ailleurs pour eux.
   const backHref = profile?.role === "coach" ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition";
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   const [nutritionProfile, historyLogs, allFoods] = await Promise.all([
     getNutritionProfile(user.id),

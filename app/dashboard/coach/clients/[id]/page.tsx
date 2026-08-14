@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -81,7 +82,7 @@ export default async function ClientDetailPage({
   const client = await getClientById(id, user.id);
   if (!client) notFound();
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
   const thirtyDaysAgoStr = thirtyDaysAgo.toISOString().split("T")[0];

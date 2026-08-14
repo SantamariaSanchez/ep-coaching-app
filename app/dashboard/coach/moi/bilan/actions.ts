@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
+import { todayInParis } from "@/lib/dates";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -29,7 +30,7 @@ export async function upsertCoachDailyLog(
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     if (log_date !== today) return { error: "Tu ne peux modifier que le bilan du jour." };
 
     const supabase = createAdminClient();

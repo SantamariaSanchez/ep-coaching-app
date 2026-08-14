@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { todayInParis } from "@/lib/dates";
 import {
   getNutritionProfile,
   getTodayLogs,
@@ -35,7 +36,7 @@ export default async function CoachMonNutritionPage() {
   const { data: profile } = await supabase.from("profiles").select("role, weight_start").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, supplements] = await Promise.all([
     getNutritionProfile(user.id),

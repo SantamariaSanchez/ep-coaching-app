@@ -1,6 +1,7 @@
 ﻿import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
+import { todayInParis } from "@/lib/dates";
 import {
   getNutritionProfile,
   getTodayLogs,
@@ -50,7 +51,7 @@ export default async function CoachClientNutritionPage({
   if (profile?.role === "client") redirect("/dashboard/client");
   if (!client) notFound();
 
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
 
   const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, latestWeight, recentDailyLogs, supplements, dietTemplates, intake, roadmap] =
     await Promise.all([

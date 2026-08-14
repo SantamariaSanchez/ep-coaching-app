@@ -3,6 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
+import { todayInParis } from "@/lib/dates";
 
 // Suivi photo perso (membres gratuits) : upload direct, aucune notification
 // coach, aucun lien Drive à gérer soi-même — juste une photo pour se
@@ -42,7 +43,7 @@ export async function uploadPersonalPhoto(
       .upload(path, file, { contentType: file.type });
     if (uploadError) return { error: "Échec de l'envoi de la photo." };
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = todayInParis();
     const { error } = await supabase.from("personal_photos").insert({
       client_id: guard.userId,
       taken_at: today,

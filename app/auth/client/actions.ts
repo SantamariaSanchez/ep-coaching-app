@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
@@ -201,7 +202,7 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     email,
     phone,
     status: "active",
-    start_date: new Date().toISOString().split("T")[0],
+    start_date: todayInParis(),
     coach_id: coach?.id ?? null,
     referred_by: referrer?.id ?? null,
     email_verified_at: null,

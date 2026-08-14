@@ -1,5 +1,7 @@
 "use server";
 
+import { todayInParis } from "@/lib/dates";
+
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { redirect } from "next/navigation";
@@ -112,7 +114,7 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
       full_name: fullName,
       email,
       status: "active",
-      start_date: new Date().toISOString().split("T")[0],
+      start_date: todayInParis(),
       is_platform_owner: false,
       platform_subscription_status: "inactive",
       invite_code: generateInviteCode(),

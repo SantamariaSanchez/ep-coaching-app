@@ -6,6 +6,7 @@ import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertDailyLog } from "./actions";
+import { todayInParis } from "@/lib/dates";
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -35,7 +36,7 @@ export default async function ClientBilanPage() {
   // (tendances, moyennes globales, export) vit maintenant dans le même
   // écran plutôt que dans un onglet séparé qui montrait les mêmes données
   // autrement — voir components/ui/BilanProgressView.
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
   const [todayLog, allLogs, todayFoodLogs, autoSteps] = await Promise.all([
     getTodayLog(user.id),
     getClientDailyLogs(user.id, 90),

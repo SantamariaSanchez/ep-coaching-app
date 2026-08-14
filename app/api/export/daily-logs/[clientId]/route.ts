@@ -1,3 +1,4 @@
+import { todayInParis } from "@/lib/dates";
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireAuth } from "@/lib/auth-guards";
@@ -101,7 +102,7 @@ export async function GET(
 
   const clientName = (clientProfile as { full_name: string | null }).full_name
     ?.replace(/[^a-zA-Z0-9]/g, "_") ?? "client";
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
   const filename = `bilans_quotidiens_${clientName}_${today}.csv`;
 
   return new NextResponse(csv, {

@@ -7,6 +7,7 @@ import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import BilanProgressView from "@/components/ui/BilanProgressView";
 import { upsertCoachDailyLog } from "./actions";
+import { todayInParis } from "@/lib/dates";
 
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -27,7 +28,7 @@ export default async function CoachMonBilanPage() {
   // dans un onglet séparé qui recalculait les mêmes daily_logs autrement —
   // fusionné ici, voir components/ui/BilanProgressView. L'ancienne route
   // /dashboard/coach/moi/progression redirige maintenant ici.
-  const today = new Date().toISOString().split("T")[0];
+  const today = todayInParis();
   const [todayLog, allLogs, autoSteps] = await Promise.all([
     getTodayLog(user.id),
     getClientDailyLogs(user.id, 90),
