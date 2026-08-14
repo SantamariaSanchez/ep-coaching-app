@@ -89,6 +89,105 @@ function MacroCoverage({
   );
 }
 
+// ── Auto-ajustement des grammages sur une cible macro ───────────────────
+// Plutôt que de faire varier chaque aliment à la main jusqu'à tomber juste
+// (essai-erreur), on répartit les aliments du jour en 3 groupes selon leur
+// macro dominante (protéine/glucide/lipide, celle qui pèse le plus lourd en
+// kcal dans l'aliment), puis on résout un système 3x3 : un facteur d'échelle
+// par groupe, tel que la somme des 3 groupes tombe exactement sur la cible
+// protéines/glucides/lipides (les calories en découlent, 4/4/9 kcal par g).
+// Le detail item par item DANS un groupe garde ses proportions relatives
+// (un groupe scale d'un seul facteur, pas item par item), ce qui préserve
+// l'équilibre du repas tel que le coach l'a construit plutôt que de
+// réinventer la diète.
+type MacroGroup = "proteins" | "carbs" | "fats";
+
+function dominantMacroGroup(food: Food): MacroGroup {
+  const pKcal = (food.proteins_per_100 ?? 0) * 4;
+  const cKcal = (food.carbs_per_100 ?? 0) * 4;
+  const fKcal = (food.fats_per_100 ?? 0) * 9;
+  if (pKcal >= cKcal && pKcal >= fKcal) return "proteins";
+  if (cKcal >= fKcal) return "carbs";
+  return "fats";
+}
+
+// Résolution d'un système linéaire 3x3 par la règle de Cramer — overkill
+// pour un solveur générique, largement suffisant ici (3 inconnues fixes).
+function solve3x3(A: number[][], b: number[]): number[] | null {
+  const det = (m: number[][]) =>
+    m[0][0] * (m[1][1] * m[2][2] - m[1][2] * m[2][1]) -
+    m[0][1] * (m[1][0] * m[2][2] - m[1][2] * m[2][0]) +
+    m[0][2] * (m[1][0] * m[2][1] - m[1][1] * m[2][0]);
+  const d = det(A);
+  if (Math.abs(d) < 1e-9) return null;
+  const withCol = (col: number) => A.map((row, i) => row.map((v, j) => (j === col ? b[i] : v)));
+  return [det(withCol(0)) / d, det(withCol(1)) / d, det(withCol(2)) / d];
+}
+
+const AUTO_ADJUST_MIN_SCALE = 0.2; // jamais moins d'1/5 de la quantité d'origine
+const AUTO_ADJUST_MAX_SCALE = 4; // jamais plus de x4 — au delà, il manque un aliment dans le repas, pas un facteur d'échelle
+
+/**
+ * Renvoie les nouvelles quantités (localId -> grammes, arrondi à 5g près)
+ * pour que les repas du jour visé collent à `targets`. `null` si le système
+ * n'est pas résoluble (ex. un seul groupe macro présent) — dans ce cas
+ * mieux vaut ne rien changer que produire un résultat aberrant.
+ */
+function autoAdjustQuantities(
+  dayMeals: PlanMealRow[],
+  foods: Food[],
+  targets: MacroTargets
+): Record<string, number> | null {
+  const groups: Record<MacroGroup, { rows: PlanMealRow[]; p: number; c: number; f: number }> = {
+    proteins: { rows: [], p: 0, c: 0, f: 0 },
+    carbs: { rows: [], p: 0, c: 0, f: 0 },
+    fats: { rows: [], p: 0, c: 0, f: 0 },
+  };
+
+  for (const m of dayMeals) {
+    const food = foods.find((f) => f.id === m.foodId);
+    if (!food) continue;
+    const group = groups[dominantMacroGroup(food)];
+    const n = calculateNutrients(food, m.quantityG);
+    group.rows.push(m);
+    group.p += n.proteins;
+    group.c += n.carbs;
+    group.f += n.fats;
+  }
+
+  const order: MacroGroup[] = ["proteins", "carbs", "fats"];
+  // Ligne = équation macro (protéines puis glucides puis lipides), colonne
+  // = groupe (protéines puis glucides puis lipides).
+  const A: number[][] = [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ];
+  (["p", "c", "f"] as const).forEach((macroKey, i) => {
+    order.forEach((group, j) => {
+      A[i][j] = groups[group][macroKey];
+    });
+  });
+  const b = [targets.proteins, targets.carbs, targets.fats];
+
+  const solved = solve3x3(A, b);
+  if (!solved) return null;
+
+  const result: Record<string, number> = {};
+  order.forEach((group, i) => {
+    const rawScale = solved[i];
+    if (groups[group].rows.length === 0) return; // rien à mettre à l'échelle dans ce groupe
+    const scale = Number.isFinite(rawScale)
+      ? Math.max(AUTO_ADJUST_MIN_SCALE, Math.min(AUTO_ADJUST_MAX_SCALE, rawScale))
+      : 1;
+    for (const row of groups[group].rows) {
+      result[row.localId] = Math.max(5, Math.round((row.quantityG * scale) / 5) * 5);
+    }
+  });
+
+  return result;
+}
+
 // ── Contexte nutritionnel ────────────────────────────────────────────────
 // Avant de raisonner en macros : pourquoi CE total calorique pour CE client
 // précis ? Un chiffre sorti d'une formule (Mifflin-St Jeor + activité) ne
@@ -347,6 +446,27 @@ export function PlanBuilder({
       { calories: 0, proteins: 0, carbs: 0, fats: 0 }
     );
   }, [dayMeals, foods]);
+
+  const [autoAdjustError, setAutoAdjustError] = useState<string | null>(null);
+  const [autoAdjustDone, setAutoAdjustDone] = useState(false);
+
+  function handleAutoAdjust() {
+    if (!targets) return;
+    setAutoAdjustError(null);
+    setAutoAdjustDone(false);
+    const newQuantities = autoAdjustQuantities(dayMeals, foods, targets);
+    if (!newQuantities) {
+      setAutoAdjustError(
+        "Pas assez de variété dans ce repas pour ajuster automatiquement (il faut au moins un aliment par macro dominante : protéine, glucide, lipide)."
+      );
+      return;
+    }
+    setMeals((prev) =>
+      prev.map((m) => (m.localId in newQuantities ? { ...m, quantityG: newQuantities[m.localId] } : m))
+    );
+    setAutoAdjustDone(true);
+    setTimeout(() => setAutoAdjustDone(false), 2500);
+  }
 
   // Micronutriments projetés du plan en cours de construction — réutilise
   // exactement la même logique que le suivi réel (getMicroDeficiencyOrder),
@@ -792,6 +912,27 @@ export function PlanBuilder({
             <MacroCoverage label="Glucides" current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="#fbbf24" />
             <MacroCoverage label="Lipides" current={planTotals.fats} target={targets?.fats ?? 0} unit="g" color="#fb7185" />
           </div>
+
+          {targets && dayMeals.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-[#890404]/15">
+              <button
+                type="button"
+                onClick={handleAutoAdjust}
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80 transition-colors"
+              >
+                <RefreshCw size={11} /> Ajuster automatiquement les grammages sur la cible
+              </button>
+              <p className="text-[9px] text-[#F5EDED]/25 mt-1">
+                Garde les aliments choisis, réajuste seulement les quantités par macro dominante (protéine/glucide/lipide) pour coller à l&apos;objectif.
+              </p>
+              {autoAdjustDone && (
+                <p className="text-[10px] text-green-400 font-semibold mt-1.5">✓ Grammages ajustés</p>
+              )}
+              {autoAdjustError && (
+                <p className="text-[10px] text-red-400 mt-1.5">{autoAdjustError}</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 

@@ -25,7 +25,9 @@ routine cloud non supervisée comme pour les lead magnets.
 ## Axe 1 — Lutte contre la stagnation (priorité posée explicitement : "le
 gros pour pas que quelqu'un stagne c'est les notifs et les rappels")
 
-**Statut : premher étage livré aujourd'hui (2026-08-14).**
+**Statut : les 3 briques livrées (2026-08-14) — escalade anti-stagnation,
+compensation calorique hebdomadaire, auto-ajustement des grammages. Axe
+terminé.**
 
 - Nouveau : `app/api/cron/stagnation-escalation` (cron quotidien 19h
   Paris, job pg_cron `stagnation-escalation`). Détecte, par client actif :
@@ -64,17 +66,20 @@ gros pour pas que quelqu'un stagne c'est les notifs et les rappels")
   quand actif (jamais un ajustement silencieux). Protéines/lipides restent
   stables, l'écart s'absorbe en glucides, même convention que le carb
   cycling déjà en place.
-- Système d'auto-ajustement des grammages d'un plan alimentaire :
-  (a) changer un objectif macro doit recalculer automatiquement les
-  grammages des aliments du plan pour coller à la nouvelle cible ;
-  (b) changer un grammage doit recalculer le total calorique/macro affiché
-  en direct. (b) est probablement déjà partiellement le cas dans
-  `DietPlanManager.tsx` (à vérifier précisément) — (a) est un vrai
-  problème de résolution (système sous-déterminé à N aliments pour 3
-  cibles macro indépendantes + calories qui en découlent). Piste de design
-  déjà réfléchie : grouper les aliments d'un repas par macro dominante
-  (protéine/glucide/lipide) et résoudre un système 3x3 (facteur d'échelle
-  par groupe) plutôt que de tout faire varier item par item. À prototyper.
+- ~~Système d'auto-ajustement des grammages~~ **fait (2026-08-14)**.
+  (b) était déjà le cas : `planTotals` dans `DietPlanManager.tsx` est un
+  `useMemo` réactif, le total affiché (barres `MacroCoverage`) recalcule
+  déjà en direct à chaque grammage changé, rien à faire. (a) nouveau :
+  bouton "Ajuster automatiquement les grammages sur la cible" — regroupe
+  les aliments du jour par macro dominante (protéine/glucide/lipide, celle
+  qui pèse le plus en kcal dans l'aliment), résout un système linéaire 3x3
+  (un facteur d'échelle par groupe, règle de Cramer) pour que la somme
+  tombe sur la cible protéines/glucides/lipides, garde les proportions
+  relatives à l'intérieur d'un groupe. Facteurs plafonnés (x0.2 à x4) pour
+  ne jamais proposer une quantité aberrante ; si un groupe macro est
+  totalement absent du repas (système singulier, matrice à colonne nulle),
+  message explicite plutôt qu'un résultat inventé — mieux vaut dire au
+  coach qu'il manque un aliment que de deviner à sa place.
 
 ## Axe 2 — Poste de travail complet pour les coachs (CRM, mailing Brevo,
 espace de création de contenu, productivité)
@@ -152,18 +157,18 @@ devient aussi un espace coach-vers-coach et un annuaire public).
 
 ## Ordre de travail proposé
 
-1. ~~Axe 1, premier étage (escalade + notif coach)~~ fait.
-2. Axe 1, reste (compensation calorique glissante, auto-solve des
-   grammages) — le plus directement lié au coaching quotidien réel.
-3. Axe 5 (annuaire + tags de spécialisation) — précède logiquement l'Axe 2
-   (CRM) puisqu'il touche à comment un client arrive chez le bon coach.
-4. Axe 2 (poste de travail coach) — le plus gros morceau, à découper en
+1. ~~Axe 1 (escalade, compensation calorique, auto-solve des grammages)~~
+   **fait, 2026-08-14**.
+2. **→ prochain** : Axe 5 (annuaire + tags de spécialisation) — précède
+   logiquement l'Axe 2 (CRM) puisqu'il touche à comment un client arrive
+   chez le bon coach.
+3. Axe 2 (poste de travail coach) — le plus gros morceau, à découper en
    sous-livrables (CRM d'abord, contenu ensuite, mailing en dernier car
    nécessite une vraie décision d'architecture Brevo multi-coach).
-5. Axe 3 (dashboard consolidé "qui a besoin de moi").
-6. Axe 6 (formation de coachs) et Axe 4 (comptabilité) — les deux verticales
+4. Axe 3 (dashboard consolidé "qui a besoin de moi").
+5. Axe 6 (formation de coachs) et Axe 4 (comptabilité) — les deux verticales
    les plus neuves, à cadrer avec toi avant de coder quoi que ce soit
    (périmètre pas assez précisé dans le message d'origine pour se lancer
    sans clarifier).
-7. Axe 7 (accueil) — en dernier, une fois que la vision élargie a
+6. Axe 7 (accueil) — en dernier, une fois que la vision élargie a
    suffisamment pris forme pour savoir quoi y refléter.
