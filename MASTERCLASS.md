@@ -124,8 +124,9 @@ détail (l'esprit de la demande est "petit à petit", pas un plan figé).
 Axes A (cache après mutation), B (échecs silencieux côté UI), C
 (accessibilité clavier), D (catch muets côté serveur), E (`useState`
 jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
-sans nom accessible) et G (champs de formulaire sans nom accessible) sont
-clos — détail de chacun plus bas. Idée pas encore commencée :
+sans nom accessible), G (champs de formulaire sans nom accessible) et H
+(pas d'`error.tsx`/`not-found.tsx`) sont clos — détail de chacun plus bas.
+Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -714,3 +715,64 @@ sûr parce qu'il est généré.
   a été corrigé à la main pour ce cas précis, pas réécrit avec une vraie
   vérification d'équilibrage dans le script gardé au scratchpad — à
   refaire proprement si ce script est relancé un jour sur du nouveau code.
+
+## Axe H — Aucun `error.tsx`/`global-error.tsx`/`not-found.tsx`
+
+**Statut : fermé (2026-08-14), 3 fichiers créés.**
+
+Constat en cherchant le prochain axe : `app/` contient 81 fichiers
+`loading.tsx` (bon réflexe déjà en place partout) mais **zéro**
+`error.tsx`, `global-error.tsx` ou `not-found.tsx`, où que ce soit dans le
+projet. Concrètement : une exception non interceptée dans n'importe quel
+composant client de l'appli (partout — c'est la majorité du code) tombait
+sur l'écran d'erreur générique de Next.js — blanc, sans le moindre lien
+avec l'identité visuelle "brume rouge", sans reformulation rassurante, et
+sans bouton pour réessayer sans recharger la page à la main. Pareil pour
+une URL inexistante (lien cassé, ancienne ressource supprimée) : la 404
+générique de Next.js plutôt qu'un écran cohérent avec le reste de
+l'appli.
+
+**Corrigé** :
+- `app/error.tsx` — filet de sécurité principal (attrape toute exception
+  dans un segment de route ou en dessous, donc la quasi-totalité de
+  l'appli). `"use client"`, reçoit `{ error, reset }` de Next.js ; logue
+  l'exception via `console.error` (même discipline que l'axe D — jamais
+  d'échec sans trace) puis affiche une carte `.ep-card` cohérente avec le
+  reste de l'appli : message rassurant ("rien n'a été perdu"), bouton
+  Réessayer (`reset()`) et un lien de secours vers l'accueil.
+- `app/not-found.tsx` — même traitement visuel pour une route
+  inexistante, message adapté ("cette page n'existe pas" plutôt qu'"un
+  imprévu"), un seul bouton (retour à l'accueil, pas de `reset()` qui
+  n'aurait aucun sens ici).
+- `app/global-error.tsx` — filet de tout dernier recours, seulement si la
+  mise en page racine elle-même (`app/layout.tsx`) plante (cas très rare).
+  Doit fournir son propre `<html>/<body>` (remplace toute la mise en page
+  racine, `globals.css` non garanti chargé) — volontairement écrit en
+  styles inline plutôt qu'en classes `.ep-card`/`.ep-btn-primary`, pour
+  dépendre du minimum possible si quelque chose est vraiment cassé
+  ailleurs dans l'appli.
+
+**Vérifié SAIN** : tsc propre, eslint propre (zéro problème sur les 3
+nouveaux fichiers, pas seulement "pas de nouveau problème" comme les axes
+précédents), build propre.
+
+**Méthode utilisée** (relançable) :
+```bash
+find app -iname "*error*" -o -iname "*not-found*"   # doit lister les 3
+find app -iname "loading.tsx" | wc -l                # référence : 81
+```
+
+### Reste à faire sur cet axe
+
+- Pas de service de monitoring externe (Sentry ou équivalent) branché sur
+  `error.tsx`/`global-error.tsx` — le `console.error` finit dans les logs
+  de fonction Vercel (consultables), mais rien de proactif (pas d'alerte).
+  Suffisant pour l'instant vu la taille de l'appli, à reconsidérer si le
+  volume de trafic augmente.
+- Un seul `error.tsx` au niveau racine plutôt que des `error.tsx` par
+  segment (`/dashboard/client`, `/dashboard/coach`...) — Next.js permet
+  d'avoir un `error.tsx` plus spécifique par segment pour un message plus
+  ciblé (ex. proposer un lien "retour au tableau de bord coach" plutôt que
+  juste l'accueil générique), pas fait ici pour rester simple ; pourrait
+  valoir le coup pour `/dashboard/client` et `/dashboard/coach`
+  spécifiquement si un jour on veut affiner.
