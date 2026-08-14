@@ -250,6 +250,38 @@ lu et validé explicitement la décision ci-dessous.
   fonts.gstatic.com (rien à voir avec le code) — repassé propre au
   second essai immédiat.
 
+## Session log (suite axe 7)
+
+- **2026-08-14** — Axe 7 démarré. Item 41 traité : parrainage avec
+  récompense. Colonnes dédiées `referral_code`/`referred_by` plutôt que de
+  réutiliser `invite_code` (déjà un concept distinct, filtré par
+  `role='coach'` partout où il est lu) — deux flux séparés, plus faciles à
+  auditer. `/auth/client?ref=CODE` crédite +50 points au parrain sans jamais
+  toucher à l'attribution du coach. Commit `4b36ea7`.
+- **2026-08-14** — Item 42 traité : le CTA premium du dashboard membre
+  gratuit était un texte statique identique pour tout le monde. `upsellPitch()`
+  choisit le message selon un signal réel (checklist finie, ou streak ≥7j déjà
+  calculé pour l'item 20), fallback identique au texte d'origine sinon.
+  Commit `ee447d4`.
+- **2026-08-14** — Item 43 traité : essai coaching limité dans le temps.
+  `startCoachingTrial()` réutilise `setClientSubscriptionStatus()` tel quel
+  (donc calibrage + notif onboarding déjà gérés) et ajoute juste
+  `trial_ends_at`. Cron quotidien `expire-trials` (9h, jobid 29 en prod)
+  repasse automatiquement en gratuit à l'échéance et notifie le client avec
+  un lien vers l'activation payante. Commit `5426fc3`.
+- **2026-08-14** — Item 44 traité : mur de réussites publiques. Opt-in
+  explicite au moment de la publication (case décochée par défaut, jamais
+  rétroactif sur une victoire déjà postée) — décision volontaire pour ne
+  jamais exposer publiquement un contenu privé sans consentement direct.
+  Page `/reussites` (prénom uniquement, jamais le nom de famille). Commit
+  `ac6c095`.
+- **2026-08-14** — Item 45 traité : liste d'attente coaching.
+  `accepting_new_clients` (défaut true, rétro-compatible) + table
+  `coaching_waitlist` avec RLS. `AcceptingClientsCard` côté coach
+  (bascule + suivi des demandes), `WaitlistJoinButton` remplace le CTA de
+  réservation externe côté client quand le coach assigné est à capacité.
+  Commit `bef4433`. **Axe 7 (Croissance & monétisation) terminé : 5/5.**
+
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
 - **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
@@ -336,11 +368,11 @@ lu et validé explicitement la décision ci-dessous.
 
 | # | Item | Statut | Commit(s) | Date | Résumé |
 |---|------|--------|-----------|------|--------|
-| 41 | Parrainage avec récompense | todo | — | — | — |
-| 42 | Relance d'upsell contextuelle | todo | — | — | — |
-| 43 | Essai coaching limité dans le temps | todo | — | — | — |
-| 44 | Mur de réussites publiques | todo | — | — | — |
-| 45 | Liste d'attente coaching | todo | — | — | — |
+| 41 | Parrainage avec récompense | fait | `4b36ea7` | 2026-08-14 | referral_code/referred_by dédiés (pas invite_code) ; +50 points au parrain, aucun effet sur l'attribution de coach |
+| 42 | Relance d'upsell contextuelle | fait | `ee447d4` | 2026-08-14 | upsellPitch() : checklist finie ou streak ≥7j plutôt qu'un texte statique |
+| 43 | Essai coaching limité dans le temps | fait | `5426fc3` | 2026-08-14 | réutilise setClientSubscriptionStatus tel quel + trial_ends_at ; cron quotidien expire-trials (jobid 29) |
+| 44 | Mur de réussites publiques | fait | `ac6c095` | 2026-08-14 | opt-in explicite au moment de la publication (défaut décoché), page /reussites, prénom uniquement |
+| 45 | Liste d'attente coaching | fait | `bef4433` | 2026-08-14 | accepting_new_clients + coaching_waitlist (RLS), AcceptingClientsCard côté coach, WaitlistJoinButton côté client |
 
 ## Axe 8 — Failles & angles morts (46–50)
 
