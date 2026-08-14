@@ -52,12 +52,14 @@ function MagnetCard({
   FormatIcon,
   formatLabel,
   spotlight = false,
+  showKeyword = false,
 }: {
   magnet: LeadMagnet;
   Icon: LucideIcon;
   FormatIcon: LucideIcon;
   formatLabel: string;
   spotlight?: boolean;
+  showKeyword?: boolean;
 }) {
   return (
     <Link
@@ -81,15 +83,20 @@ function MagnetCard({
           <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span
-            style={{
-              display: "flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 800,
-              letterSpacing: "0.04em", color: "rgba(245,237,237,0.3)", fontVariantNumeric: "tabular-nums",
-            }}
-            title="Code à utiliser dans un reel pour renvoyer directement ici"
-          >
-            <Hash size={9} />{magnet.keyword}
-          </span>
+          {/* Réservé aux coachs : c'est un outil d'organisation interne
+              (référencer un lead magnet précis dans un reel), pas une
+              information utile pour un client ou un lead. */}
+          {showKeyword && (
+            <span
+              style={{
+                display: "flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 800,
+                letterSpacing: "0.04em", color: "rgba(245,237,237,0.3)", fontVariantNumeric: "tabular-nums",
+              }}
+              title="Code à utiliser dans un reel pour renvoyer directement ici"
+            >
+              <Hash size={9} />{magnet.keyword}
+            </span>
+          )}
           <span
             style={{
               display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 800,
@@ -125,7 +132,21 @@ function MagnetCard({
 // déjà chargé) : à l'échelle visée (jusqu'à ~1000 lead magnets), filtrer un
 // tableau en mémoire reste de l'ordre de la milliseconde, pas besoin d'un
 // aller retour serveur par frappe.
-export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[] }) {
+export default function LeadMagnetsExplorer({
+  magnets,
+  isCoach = false,
+}: {
+  magnets: LeadMagnet[];
+  // Le code à 3 chiffres (voir LEADMAGNETS.md) est un outil d'organisation
+  // pour les coachs (n'importe lequel, pas seulement le fondateur de la
+  // plateforme) : ils s'en servent pour retrouver quel lead magnet
+  // référencer dans un reel. Un client ou un lead qui découvre l'appli n'a
+  // aucune raison de voir ces codes, ni la recherche dédiée : sans ce
+  // drapeau, une saisie numérique se comporte comme une recherche texte
+  // normale (donc sans résultat), pas comme un raccourci vers une entrée
+  // précise.
+  isCoach?: boolean;
+}) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<ResourceCategory | null>(null);
   const [subcategory, setSubcategory] = useState<string | null>(null);
@@ -180,10 +201,11 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
   // (l'utilisateur qui tape un code connaît déjà exactement ce qu'il
   // cherche, les filtres n'ont plus lieu d'être à ce moment précis).
   const keywordMatch = useMemo(() => {
+    if (!isCoach) return null;
     const kw = normalizeKeyword(search);
     if (!kw) return null;
     return magnets.find((m) => m.keyword === kw) ?? null;
-  }, [magnets, search]);
+  }, [magnets, search, isCoach]);
 
   const filtered = useMemo(() => {
     if (keywordMatch) return [keywordMatch];
@@ -231,7 +253,7 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
         <input
           value={search}
           onChange={(e) => runSearch(e.target.value)}
-          placeholder="Rechercher, ou taper un code (076)..."
+          placeholder={isCoach ? "Rechercher, ou taper un code (076)..." : "Rechercher un guide, une checklist, un quiz..."}
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         {search && (
@@ -373,7 +395,7 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-14 text-center">
           <LayoutGrid size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-sm text-[#F5EDED]/35">
-            {normalizeKeyword(search)
+            {isCoach && normalizeKeyword(search)
               ? `Aucun lead magnet avec le code ${normalizeKeyword(search)}.`
               : "Aucune ressource ne correspond à ces critères."}
           </p>
@@ -396,6 +418,7 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
                   FormatIcon={fmt.icon}
                   formatLabel={fmt.label}
                   spotlight={!!keywordMatch}
+                  showKeyword={isCoach}
                 />
               );
             })}

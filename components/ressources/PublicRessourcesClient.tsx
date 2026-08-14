@@ -16,10 +16,12 @@ export default function PublicRessourcesClient({
   resources,
   leadMagnets,
   initialQuery,
+  isCoach = false,
 }: {
   resources: ResourceItem[];
   leadMagnets: LeadMagnet[];
   initialQuery: string;
+  isCoach?: boolean;
 }) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(FREE_PREVIEW_SECONDS);
@@ -105,7 +107,7 @@ export default function PublicRessourcesClient({
           <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
         </div>
 
-        {leadMagnets.length > 0 && <LeadMagnetsExplorer magnets={leadMagnets} />}
+        {leadMagnets.length > 0 && <LeadMagnetsExplorer magnets={leadMagnets} isCoach={isCoach} />}
 
         {/* Item 18 : calculateurs publics, sans compte — même logique que les
             lead magnets ci-dessus, découvrables sans avoir à chercher. */}

@@ -5,7 +5,7 @@ import { getResourceRequests } from "@/utils/resource-requests";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import ResourcesBrowser from "@/components/resources/ResourcesBrowser";
 import ResourceRequests from "@/components/resources/ResourceRequests";
-import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
+import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 import { createResourceRequest, respondToResourceRequest, deleteResourceRequest } from "./request-actions";
 
 export default async function ClientRessourcesPage() {
@@ -32,8 +32,10 @@ export default async function ClientRessourcesPage() {
 
       {/* Guides/checklists/quiz déjà accessibles publiquement sur /ressources,
           mais invisibles ici jusque là — un client connecté ne devrait pas
-          avoir à quitter l'appli pour les trouver. */}
-      <LeadMagnetsGrid magnets={leadMagnets} />
+          avoir à quitter l'appli pour les trouver. isCoach volontairement
+          absent (donc false) : les codes CTA reels sont un outil coach, pas
+          une information utile pour un client. */}
+      <LeadMagnetsExplorer magnets={leadMagnets} />
 
       <ResourcesBrowser resources={resources} />
 

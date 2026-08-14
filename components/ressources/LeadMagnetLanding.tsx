@@ -6,6 +6,7 @@ import {
   Check, Mail, Phone, ChevronRight, Sparkles, ArrowRight, Clock,
   type LucideIcon,
 } from "lucide-react";
+import { createClientSupabase } from "@/lib/supabase-client";
 import type { LeadMagnet, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
@@ -30,7 +31,10 @@ function markUnlocked(slug: string) {
 
 // ── CTA final, identique sur les 3 formats une fois le contenu débloqué ──
 
-function AppCta() {
+// Un membre déjà inscrit (client, coach, peu importe) n'a aucune raison de
+// se voir proposer de créer un compte qu'il a déjà — le CTA s'adapte plutôt
+// que de traiter tout le monde comme un lead qui découvre l'appli.
+function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean }) {
   return (
     <div
       style={{
@@ -43,20 +47,40 @@ function AppCta() {
       }}
     >
       <Sparkles size={20} style={{ color: "#E01E1E", marginBottom: 10 }} />
-      <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
-        Prêt(e) à passer à la vitesse supérieure ?
-      </p>
-      <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
-        L&apos;appli EP Coaching va plus loin : suivi nutrition, programme adapté, road map de progression
-        et vrai accompagnement, gratuit pour commencer.
-      </p>
-      <Link
-        href="/auth/client"
-        className="ep-btn-primary"
-        style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", fontSize: 13 }}
-      >
-        Créer mon compte gratuit <ArrowRight size={15} />
-      </Link>
+      {isLoggedIn ? (
+        <>
+          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
+            Retrouve tout ça directement dans l&apos;appli
+          </p>
+          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
+            Suivi nutrition, programme, road map de progression : tout est déjà là pour toi.
+          </p>
+          <Link
+            href={isCoach ? "/dashboard/coach" : "/dashboard/client"}
+            className="ep-btn-primary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", fontSize: 13 }}
+          >
+            Retour à l&apos;appli <ArrowRight size={15} />
+          </Link>
+        </>
+      ) : (
+        <>
+          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
+            Prêt(e) à passer à la vitesse supérieure ?
+          </p>
+          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
+            L&apos;appli EP Coaching va plus loin : suivi nutrition, programme adapté, road map de progression
+            et vrai accompagnement, gratuit pour commencer.
+          </p>
+          <Link
+            href="/auth/client"
+            className="ep-btn-primary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", fontSize: 13 }}
+          >
+            Créer mon compte gratuit <ArrowRight size={15} />
+          </Link>
+        </>
+      )}
     </div>
   );
 }
@@ -135,7 +159,7 @@ function CaptureForm({
 
 // ── En tête commun ─────────────────────────────────────────────────────
 
-function Header({ magnet, Icon }: { magnet: LeadMagnet; Icon: LucideIcon }) {
+function Header({ magnet, Icon, showKeyword }: { magnet: LeadMagnet; Icon: LucideIcon; showKeyword: boolean }) {
   return (
     <div style={{ marginBottom: 28 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
@@ -156,10 +180,11 @@ function Header({ magnet, Icon }: { magnet: LeadMagnet; Icon: LucideIcon }) {
             <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
               <Clock size={10} /> {magnet.readTime}
             </span>
-            {/* Code CTA reels (voir LeadMagnetsExplorer) — visible ici pour
-                que le coach puisse vérifier/recopier le bon numéro depuis la
-                page elle même, pas seulement depuis la grille. */}
-            <span style={{ fontVariantNumeric: "tabular-nums" }}>#{magnet.keyword}</span>
+            {/* Code CTA reels (voir LeadMagnetsExplorer) — réservé aux
+                coachs (déterminé côté client, cette page est mise en cache
+                ISR et partagée entre visiteurs, un rôle ne peut pas être
+                figé dans le HTML pré-rendu). */}
+            {showKeyword && <span style={{ fontVariantNumeric: "tabular-nums" }}>#{magnet.keyword}</span>}
           </p>
         </div>
       </div>
@@ -282,18 +307,26 @@ function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
 function QuizFlow({
   magnet,
   submitLead,
+  skipCapture,
+  isCoach,
 }: {
   magnet: QuizMagnet;
   submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
+  // true dès qu'un compte est détecté (voir le composant principal) : un
+  // membre de l'appli n'a jamais besoin de laisser email/téléphone, seul un
+  // lead qui ne l'est pas encore doit passer par ce formulaire.
+  skipCapture: boolean;
+  isCoach: boolean;
 }) {
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<string[]>([]);
-  const [unlocked, setUnlocked] = useState(false);
+  const [storedUnlock, setStoredUnlock] = useState(false);
+  const unlocked = skipCapture || storedUnlock;
 
   // localStorage n'existe pas côté serveur : lire un déblocage déjà acquis
   // pendant le rendu produirait un mismatch d'hydratation (même compromis
   // assumé ailleurs dans l'appli pour ce genre de lecture, ex. DashboardNav).
-  useEffect(() => setUnlocked(readUnlocked(magnet.slug)), [magnet.slug]);
+  useEffect(() => setStoredUnlock(readUnlocked(magnet.slug)), [magnet.slug]);
+  const [answers, setAnswers] = useState<string[]>([]);
 
   const finished = step >= magnet.questions.length;
 
@@ -368,7 +401,7 @@ function QuizFlow({
             Laisse ton email ou ton numéro pour le débloquer.
           </p>
         </div>
-        <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setUnlocked(true)} ctaLabel="Voir mon résultat" />
+        <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Voir mon résultat" />
       </div>
     );
   }
@@ -388,7 +421,7 @@ function QuizFlow({
         <p style={{ fontSize: 19, fontWeight: 900, color: "#F5EDED", margin: "6px 0 10px" }}>{result.title}</p>
         <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.7, margin: 0 }}>{result.description}</p>
       </div>
-      <AppCta />
+      <AppCta isLoggedIn={skipCapture} isCoach={isCoach} />
     </div>
   );
 }
@@ -403,26 +436,60 @@ export default function LeadMagnetLanding({
   submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
 }) {
   const Icon = getMagnetIcon(magnet.icon);
-  const [unlocked, setUnlocked] = useState(false);
-  useEffect(() => setUnlocked(readUnlocked(magnet.slug)), [magnet.slug]);
+  const [storedUnlock, setStoredUnlock] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isCoach, setIsCoach] = useState(false);
+
+  // Cette page est mise en cache (ISR, voir app/ressources/[slug]/page.tsx)
+  // et donc partagée entre visiteurs : le statut de connexion ne peut pas
+  // être décidé côté serveur sous peine de figer le compte du premier
+  // visiteur dans le HTML pré-rendu pour tout le monde. On le détermine ici,
+  // côté client, une fois la page hydratée (même compromis que pour la
+  // lecture localStorage juste en dessous : léger flash possible, jamais de
+  // contenu erroné affiché à un mauvais visiteur).
+  // Un membre déjà inscrit (client comme coach) n'a jamais besoin de
+  // laisser email/téléphone pour débloquer un contenu : ce formulaire n'a
+  // de sens que pour un lead qui ne l'est pas encore. Voir aussi le rôle
+  // pour le code CTA reels (Header) et le libellé du CTA final (AppCta),
+  // tous deux réservés/adaptés aux membres.
+  useEffect(() => {
+    let cancelled = false;
+    const sb = createClientSupabase();
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (cancelled) return;
+      if (!user) {
+        setStoredUnlock(readUnlocked(magnet.slug));
+        return;
+      }
+      setIsLoggedIn(true);
+      sb.from("profiles").select("role").eq("id", user.id).single().then(({ data }) => {
+        if (!cancelled) setIsCoach((data as { role?: string } | null)?.role === "coach");
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [magnet.slug]);
+
+  const unlocked = isLoggedIn || storedUnlock;
 
   if (magnet.format === "quiz") {
     return (
       <div className="page-transition" style={{ padding: "32px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
-        <Header magnet={magnet} Icon={Icon} />
-        <QuizFlow magnet={magnet} submitLead={submitLead} />
+        <Header magnet={magnet} Icon={Icon} showKeyword={isCoach} />
+        <QuizFlow magnet={magnet} submitLead={submitLead} skipCapture={isLoggedIn} isCoach={isCoach} />
       </div>
     );
   }
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
-      <Header magnet={magnet} Icon={Icon} />
+      <Header magnet={magnet} Icon={Icon} showKeyword={isCoach} />
 
       {unlocked ? (
         <>
           {magnet.format === "guide" ? <GuideContent magnet={magnet} /> : <ChecklistContent magnet={magnet} />}
-          <AppCta />
+          <AppCta isLoggedIn={isLoggedIn} isCoach={isCoach} />
         </>
       ) : (
         <div>
@@ -449,7 +516,7 @@ export default function LeadMagnetLanding({
               </p>
             )}
           </div>
-          <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setUnlocked(true)} ctaLabel="Débloquer gratuitement" />
+          <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Débloquer gratuitement" />
         </div>
       )}
     </div>

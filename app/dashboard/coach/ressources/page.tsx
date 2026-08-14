@@ -5,7 +5,7 @@ import { getResourceRequests } from "@/utils/resource-requests";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import ResourceManager from "@/components/resources/ResourceManager";
 import ResourceRequests from "@/components/resources/ResourceRequests";
-import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
+import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 import {
   createResourceRequest,
   respondToResourceRequest,
@@ -39,8 +39,9 @@ export default async function CoachRessourcesPage() {
 
       {/* Les guides/checklists/quiz publics de /ressources, aussi accessibles
           depuis le dashboard : utile au coach pour se rappeler ce qui existe
-          déjà et le recommander directement à un client. */}
-      <LeadMagnetsGrid magnets={leadMagnets} eyebrow="À recommander à tes clients" />
+          déjà, le recommander à un client, et retrouver le code CTA reels
+          d'un lead magnet précis (isCoach=true, voir LeadMagnetsExplorer). */}
+      <LeadMagnetsExplorer magnets={leadMagnets} isCoach />
 
       <ResourceManager resources={resources} />
 

@@ -29,24 +29,59 @@ mesuré et ne jamais inventer de statistique non vérifiée.
 - `lib/resource-categories.ts` : taxonomie (`RESOURCE_CATEGORIES`) et
   sous-catégories (`RESOURCE_SUBCATEGORIES`) utilisées pour le filtre.
 - `components/ressources/lead-magnet-icons.tsx` : registre unique des
-  icônes lucide (avant, dupliqué entre `LeadMagnetsGrid.tsx` et
-  `LeadMagnetLanding.tsx`, source d'un vrai risque de dérive, un icône
-  ajouté d'un côté sans l'autre retombait sur `Target` en silence).
-- `components/ressources/LeadMagnetsExplorer.tsx` : la nouvelle UX de
-  recherche/filtre de `/ressources` (recherche texte, catégories,
-  sous-catégories, filtre format, recherches récentes et dernière catégorie
-  visitée en localStorage, pagination "voir plus" côté client). Le simple
-  `LeadMagnetsGrid.tsx` reste utilisé tel quel pour les listes courtes et
-  déjà filtrées des dashboards coach/client.
+  icônes lucide (avant, dupliqué entre deux composants, source d'un vrai
+  risque de dérive, un icône ajouté d'un côté sans l'autre retombait sur
+  `Target` en silence).
+- `components/ressources/LeadMagnetsExplorer.tsx` : LA grille/recherche
+  utilisée partout (page publique `/ressources`, dashboard coach, dashboard
+  client) — recherche texte, catégories, sous-catégories, filtre format,
+  recherches récentes et dernière catégorie visitée en localStorage,
+  pagination "voir plus" côté client. `LeadMagnetsGrid.tsx` a existé un
+  temps comme grille plus simple sans recherche puis a été supprimé une
+  fois l'Explorer généralisé partout — ne pas le recréer si jamais retrouvé
+  dans un vieux commit, ce n'était pas voulu.
+
+## Visibilité par rôle (important, corrigé le 2026-08-14)
+
+Le code CTA reels et le formulaire de capture email/téléphone ne
+s'adressent **pas** aux mêmes publics :
+
+- **Un lead qui ne fait pas encore partie de l'appli** : voit la page
+  individuelle d'un lead magnet normalement, avec le formulaire de capture
+  email + téléphone (facultatif) avant de débloquer le contenu. Ne voit
+  **jamais** de code (`#076`) nulle part.
+- **Un membre déjà connecté (client OU coach)** : ne voit **jamais** le
+  formulaire de capture, le contenu est débloqué immédiatement — inutile de
+  redemander un email qu'on a déjà. Le CTA final s'adapte aussi ("retour à
+  l'appli" plutôt que "créer mon compte").
+- **Un coach spécifiquement (n'importe lequel de la plateforme, pas
+  seulement le fondateur)** : voit en plus le code à 3 chiffres sur chaque
+  carte et sur la page individuelle, et peut taper ce code dans la
+  recherche pour retrouver directement un lead magnet précis. C'est un
+  outil d'organisation interne (savoir quoi référencer dans un reel), pas
+  une information utile à un client.
+
+Piège technique important : `app/ressources/[slug]/page.tsx` est en ISR
+(`generateStaticParams` + `revalidate = 3600`), donc son HTML est **mis en
+cache et partagé entre visiteurs**. Le rôle/statut de connexion ne peut
+donc pas être déterminé côté serveur sur cette page précise (ça figerait le
+compte du premier visiteur dans le cache pour tout le monde) : c'est fait
+côté client dans `LeadMagnetLanding.tsx` (`createClientSupabase().auth.
+getUser()` puis lecture de `profiles.role`), avec un flash minime le temps
+que ça résolve. La page liste `/ressources`, elle, n'est pas en ISR
+(`ƒ`, rendu à chaque requête) : `isCoach` y est déterminé côté serveur sans
+problème dans `app/ressources/page.tsx`.
 
 ## Code CTA reels (`keyword`)
 
 Chaque lead magnet a un code à 3 chiffres (`keyword`, ex `"076"`), affiché
-sur sa carte (grille et explorer) et sur sa page individuelle. Pensé pour
-que le coach le cite dans un reel Instagram ("tape 076 dans l'appli") : taper
-ce code dans la recherche de `/ressources` fait remonter directement ce
-lead magnet précis (voir `keywordMatch` dans `LeadMagnetsExplorer.tsx`,
-`normalizeKeyword`/`getLeadMagnetByKeyword` dans `lib/lead-magnets.ts`).
+uniquement aux coachs (voir section ci-dessus) sur sa carte et sur sa page
+individuelle. Pensé pour que le coach le cite dans un reel Instagram (via
+un commentaire ou un DM, PAS pour que le lead le tape lui même dans
+l'appli) : le coach tape le code dans la recherche pour retrouver
+rapidement le bon lien à partager (voir `keywordMatch` dans
+`LeadMagnetsExplorer.tsx`, `normalizeKeyword`/`getLeadMagnetByKeyword`
+dans `lib/lead-magnets.ts`).
 
 Migration `supabase/migrations/20260814h_lead_magnets_keyword.sql` :
 - Séquence Postgres `lead_magnets_keyword_seq`, colonne `keyword` avec
