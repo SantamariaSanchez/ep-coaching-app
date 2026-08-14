@@ -469,10 +469,40 @@ export default function ClientNutritionView({
     : dayType === "high" ? nutritionProfile?.calories_offset_high ?? 0
     : 0;
 
+  // Rattrapage hebdomadaire — si les jours précédents de la semaine (lundi à
+  // hier) sont en dessous du cumul visé, l'objectif du jour remonte pour
+  // compenser (et inversement) ; l'idée est de toujours viser la moyenne
+  // hebdo plutôt que de traiter chaque jour isolément. Plafonné à ±400 kcal
+  // pour qu'une très mauvaise semaine ne se traduise pas par un objectif du
+  // jour absurde — au delà, mieux vaut une vraie conversation avec le coach
+  // (voir le cron stagnation-escalation) qu'un chiffre qui décourage.
+  // Repose sur historyLogs (déjà chargé, 30 jours), pas de fetch en plus.
+  // Le calcul reste volontairement indépendant du dayType (repos/high) :
+  // ce sont deux ajustements orthogonaux qui s'additionnent, l'un anticipe
+  // la journée à venir, l'autre rattrape les jours passés.
+  const BANK_CAP_KCAL = 400;
+  const weeklyBank = useMemo(() => {
+    const dailyTarget = nutritionProfile?.calories_target;
+    if (!dailyTarget) return 0;
+    const todayDate = new Date(today + "T00:00:00");
+    const dow = todayDate.getDay();
+    const mondayDiff = dow === 0 ? -6 : 1 - dow;
+    const weekStart = new Date(todayDate);
+    weekStart.setDate(todayDate.getDate() + mondayDiff);
+    const daysElapsed = Math.round((todayDate.getTime() - weekStart.getTime()) / 86400000);
+    if (daysElapsed <= 0) return 0; // lundi : rien à rattraper encore cette semaine
+    const weekStartStr = weekStart.toISOString().split("T")[0];
+    const actualSoFar = historyLogs
+      .filter((l) => l.logged_at >= weekStartStr && l.logged_at < today)
+      .reduce((s, l) => s + (l.calories ?? 0), 0);
+    const targetSoFar = dailyTarget * daysElapsed;
+    return Math.max(-BANK_CAP_KCAL, Math.min(BANK_CAP_KCAL, Math.round(targetSoFar - actualSoFar)));
+  }, [historyLogs, today, nutritionProfile?.calories_target]);
+
   const targets = {
-    calories: (nutritionProfile?.calories_target ?? 0) + dayOffset,
+    calories: (nutritionProfile?.calories_target ?? 0) + dayOffset + weeklyBank,
     proteins: nutritionProfile?.proteins_target ?? 0,
-    carbs: Math.max(0, (nutritionProfile?.carbs_target ?? 0) + Math.round(dayOffset / 4)),
+    carbs: Math.max(0, (nutritionProfile?.carbs_target ?? 0) + Math.round((dayOffset + weeklyBank) / 4)),
     fats: nutritionProfile?.fats_target ?? 0,
   };
 
@@ -1179,6 +1209,19 @@ export default function ClientNutritionView({
                   {label}
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Rattrapage hebdo — toujours visible quand actif, pour que
+              l'objectif du jour ne bouge jamais sans explication. */}
+          {!noTargets && weeklyBank !== 0 && (
+            <div className="flex items-center gap-2 bg-[#1f0101] border border-[#890404]/25 rounded-lg px-3 py-2.5">
+              <Flame size={13} className={weeklyBank > 0 ? "text-[#4ade80] flex-shrink-0" : "text-[#fbbf24] flex-shrink-0"} />
+              <p className="text-[11px] text-[#F5EDED]/55 leading-snug">
+                {weeklyBank > 0
+                  ? `Objectif ajusté : +${weeklyBank} kcal aujourd'hui pour compenser le début de semaine.`
+                  : `Objectif ajusté : ${weeklyBank} kcal aujourd'hui pour rester sur la moyenne de la semaine.`}
+              </p>
             </div>
           )}
 

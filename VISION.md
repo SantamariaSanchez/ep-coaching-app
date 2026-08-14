@@ -54,16 +54,16 @@ gros pour pas que quelqu'un stagne c'est les notifs et les rappels")
   **au coach**, pas seulement au client.
 
 ### Reste à faire sur cet axe
-- Système de compensation calorique glissante ("si un jour -200kcal par
-  rapport à l'objectif, le lendemain +200 pour compenser, moyenne hebdo
-  toujours respectée") : nécessite de calculer l'écart quotidien réel
-  (food_logs vs nutrition_profiles.calories_target ajusté du dayType),
-  cumuler un solde glissant sur 7 jours, et ajuster l'affichage du target
-  du jour en conséquence dans `ClientNutritionView.tsx`. Non trivial :
-  il faut lisser (pas de swing brutal un jour où le solde est énorme) et
-  bien articuler avec le système de carb cycling existant
-  (`calories_offset_rest`/`calories_offset_high`, voir dayType dans
-  `ClientNutritionView.tsx`). À concevoir proprement avant de coder.
+
+- ~~Système de compensation calorique glissante~~ **fait (2026-08-14)**.
+  `ClientNutritionView.tsx` calcule `weeklyBank` à partir de `historyLogs`
+  (déjà chargé, pas de fetch en plus) : cumul cible vs cumul réel du lundi
+  à hier, plafonné à ±400 kcal, appliqué à `targets.calories`/`targets.
+  carbs` en plus du `dayOffset` existant (orthogonal : l'un anticipe la
+  journée, l'autre rattrape les jours passés). Toujours visible à l'écran
+  quand actif (jamais un ajustement silencieux). Protéines/lipides restent
+  stables, l'écart s'absorbe en glucides, même convention que le carb
+  cycling déjà en place.
 - Système d'auto-ajustement des grammages d'un plan alimentaire :
   (a) changer un objectif macro doit recalculer automatiquement les
   grammages des aliments du plan pour coller à la nouvelle cible ;
