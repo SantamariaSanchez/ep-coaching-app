@@ -156,6 +156,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
                         )
                       );
                     }
+                    return res;
                   }
                 : undefined
             }

@@ -30,7 +30,9 @@ function ArticleEditForm({
   onCancel,
 }: {
   article: ScienceArticle;
-  onSave: (input: UpdateArticleInput) => Promise<void>;
+  // MASTERCLASS.md Axe B : Promise<void> empêchait d'afficher une erreur
+  // serveur et de garder le formulaire ouvert en cas d'échec.
+  onSave: (input: UpdateArticleInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
   const [titleFr, setTitleFr] = useState(article.title_fr ?? "");
@@ -41,6 +43,7 @@ function ArticleEditForm({
   const [topic, setTopic] = useState(article.topic);
   const [asActualite, setAsActualite] = useState(article.is_actualite);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
@@ -73,12 +76,15 @@ function ArticleEditForm({
         <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
         Afficher aussi dans Actualité
       </label>
+      {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex gap-2">
         <button
           onClick={async () => {
             setSaving(true);
-            await onSave({ titleFr, summaryFr, articleType, topic, asActualite });
+            setError(null);
+            const result = await onSave({ titleFr, summaryFr, articleType, topic, asActualite });
             setSaving(false);
+            if (result.error) setError(result.error);
           }}
           disabled={saving}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
@@ -101,7 +107,7 @@ export default function ArticleCard({
 }: {
   article: ScienceArticle;
   isCoach: boolean;
-  onUpdate?: (input: UpdateArticleInput) => Promise<void>;
+  onUpdate?: (input: UpdateArticleInput) => Promise<{ error?: string }>;
   onDelete?: () => Promise<void>;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -149,7 +155,11 @@ export default function ArticleCard({
         <div className="px-4 pb-4 border-t border-[#890404]/15 pt-3">
           <ArticleEditForm
             article={article}
-            onSave={async (input) => { await onUpdate(input); setEditing(false); }}
+            onSave={async (input) => {
+              const result = await onUpdate(input);
+              if (!result.error) setEditing(false);
+              return result;
+            }}
             onCancel={() => setEditing(false)}
           />
         </div>

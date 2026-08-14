@@ -208,13 +208,35 @@ résultat au lieu de l'avaler, et ne referme/optimise l'état local que si
 dans ces mêmes fichiers) — risque plus faible (rien de saisi à perdre, déjà
 protégé par une confirmation), traité en dernier par rapport aux
 formulaires de création/édition qui peuvent perdre du contenu tapé à la
-main. `ArticleCard.tsx` (science, `onSave`) repéré mais pas encore corrigé,
-même famille exacte.
+main.
+
+**Quatrième passe** :
+- `ArticleCard.tsx` (science, `ArticleEditForm`) — même famille exacte que
+  la passe précédente, corrigé pareil. Particularité : `ArticleListView.tsx`
+  (l'appelant) évitait déjà la mauvaise mise à jour optimiste sur échec,
+  mais ne remontait toujours rien à `ArticleCard` faute de `return` — la
+  vérification était déjà là un cran plus haut, juste pas transmise.
+- `SeasonModeToggle.tsx` : la coche off-season/prep se mettait à jour
+  optimiquement (highlight du bouton) sans jamais revenir en arrière en cas
+  d'échec serveur — la même classe de bug que le signalement initial de
+  l'utilisateur (nutrition), ici sur un toggle différent. Corrigé avec un
+  rollback simple (`setMode(previous)` sur `result.error`).
+- Vérifié SAIN : `CoachClientNutritionTabs.tsx` (`updateDietPlanMode`) —
+  pas de state local optimiste à corrompre (le highlight vient du prop
+  `activePlan.mode`, pas d'un state dupliqué), donc pas la même classe de
+  bug ; juste aucun message d'erreur affiché si ça échoue, plus bénin,
+  laissé de côté pour privilégier les cas qui mentent activement à
+  l'utilisateur plutôt que ceux qui restent simplement silencieux.
 
 ### Reste à faire sur cet axe
 
-- Les ~54 résultats restants du grep n'ont pas été triés un par un — la
-  prochaine passe sur cet axe devrait reprendre la liste complète (gardée
-  dans l'historique git de ce fichier / relançable via la commande
-  ci-dessus) et vérifier chaque site d'appel, pas seulement celui qui avait
-  la plus forte concentration.
+- Les ~54 résultats restants du grep original n'ont pas tous été triés —
+  candidats visibles restants : `components/coach/AvailabilityManager.tsx`,
+  `components/community/MembresView.tsx`, `components/messaging/*`,
+  `components/resources/ResourceManager.tsx`, `components/ui/
+  CoachClientTasksView.tsx`, `components/ui/SupplementsSection.tsx`,
+  `components/ui/NotificationBell.tsx`, `components/recipes/RecipesClient.tsx`.
+  Prochaine passe : reprendre cette liste dans l'ordre, même méthode
+  (vérifier si un state local optimiste existe sans rollback, ou si un
+  contrat `Promise<void>` masque une erreur qu'un état `error` local
+  pourrait déjà afficher).

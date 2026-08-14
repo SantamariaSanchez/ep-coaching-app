@@ -14,10 +14,14 @@ export default function SeasonModeToggle({
 
   async function handleChange(next: "off_season" | "prep") {
     if (next === mode || saving) return;
+    const previous = mode;
     setMode(next);
     setSaving(true);
-    await setSeasonMode(next);
+    const result = await setSeasonMode(next);
     setSaving(false);
+    // MASTERCLASS.md Axe B : sans ça, un échec serveur laissait le mauvais
+    // mode affiché comme sélectionné jusqu'au prochain rechargement complet.
+    if (result.error) setMode(previous);
   }
 
   return (
