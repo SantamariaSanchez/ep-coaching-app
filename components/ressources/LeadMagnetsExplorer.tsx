@@ -2,8 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal } from "lucide-react";
-import type { LeadMagnet, LeadMagnetFormat } from "@/lib/lead-magnets";
+import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal, Hash, type LucideIcon } from "lucide-react";
+import { normalizeKeyword, type LeadMagnet, type LeadMagnetFormat } from "@/lib/lead-magnets";
 import { RESOURCE_CATEGORIES, RESOURCE_SUBCATEGORIES, type ResourceCategory } from "@/lib/resource-categories";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
@@ -38,6 +38,82 @@ function saveRecentSearch(term: string) {
   } catch {
     // stockage indisponible, tant pis
   }
+}
+
+// Carte partagée entre la grille normale et le résultat direct par code
+// (voir keywordMatch plus bas) — même rendu, un seul endroit à maintenir.
+// Icon/FormatIcon résolus par l'appelant (pas ici) : sélectionner un
+// composant à l'intérieur du corps d'un composant nommé fait perdre son
+// état à chaque rendu (react-hooks/static-components) — même contournement
+// déjà en place pour Header dans LeadMagnetLanding.tsx.
+function MagnetCard({
+  magnet,
+  Icon,
+  FormatIcon,
+  formatLabel,
+  spotlight = false,
+}: {
+  magnet: LeadMagnet;
+  Icon: LucideIcon;
+  FormatIcon: LucideIcon;
+  formatLabel: string;
+  spotlight?: boolean;
+}) {
+  return (
+    <Link
+      href={`/ressources/${magnet.slug}`}
+      className="group"
+      style={{
+        display: "flex", flexDirection: "column", gap: 10, padding: 16, borderRadius: 14,
+        background: "#1f0101",
+        border: `1px solid ${spotlight ? "rgba(224,30,30,0.5)" : "rgba(137,4,4,0.25)"}`,
+        boxShadow: spotlight ? "0 0 0 1px rgba(224,30,30,0.15), 0 8px 24px rgba(224,30,30,0.12)" : undefined,
+        textDecoration: "none",
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div
+          style={{
+            width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+            background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span
+            style={{
+              display: "flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 800,
+              letterSpacing: "0.04em", color: "rgba(245,237,237,0.3)", fontVariantNumeric: "tabular-nums",
+            }}
+            title="Code à utiliser dans un reel pour renvoyer directement ici"
+          >
+            <Hash size={9} />{magnet.keyword}
+          </span>
+          <span
+            style={{
+              display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 800,
+              letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)",
+            }}
+          >
+            <FormatIcon size={10} /> {formatLabel}
+          </span>
+        </div>
+      </div>
+      <div style={{ flex: 1 }}>
+        <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", lineHeight: 1.35, margin: "0 0 4px" }}>
+          {magnet.title}
+        </p>
+        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5, margin: 0 }}>{magnet.hook}</p>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "rgba(245,237,237,0.3)" }}>
+          <Clock size={10} /> {magnet.readTime}
+        </span>
+        <ChevronRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors" />
+      </div>
+    </Link>
+  );
 }
 
 // Recherche/filtre par catégorie, sous-catégorie et format, pensée pour
@@ -98,7 +174,19 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
     return RESOURCE_SUBCATEGORIES[category].filter((sc) => present.has(sc));
   }, [magnets, category]);
 
+  // Un CTA de reel dit "tape 076 dans la recherche" : une saisie purement
+  // numérique doit renvoyer directement CE lead magnet, sans être affectée
+  // par les filtres catégorie/sous-catégorie/format actifs par ailleurs
+  // (l'utilisateur qui tape un code connaît déjà exactement ce qu'il
+  // cherche, les filtres n'ont plus lieu d'être à ce moment précis).
+  const keywordMatch = useMemo(() => {
+    const kw = normalizeKeyword(search);
+    if (!kw) return null;
+    return magnets.find((m) => m.keyword === kw) ?? null;
+  }, [magnets, search]);
+
   const filtered = useMemo(() => {
+    if (keywordMatch) return [keywordMatch];
     const q = search.trim().toLowerCase();
     return magnets.filter((m) => {
       if (category && m.category !== category) return false;
@@ -107,7 +195,7 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
       if (q && !(m.title.toLowerCase().includes(q) || m.hook.toLowerCase().includes(q))) return false;
       return true;
     });
-  }, [magnets, search, category, subcategory, format]);
+  }, [magnets, search, category, subcategory, format, keywordMatch]);
 
   function runSearch(term: string) {
     setSearch(term);
@@ -143,7 +231,7 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
         <input
           value={search}
           onChange={(e) => runSearch(e.target.value)}
-          placeholder="Rechercher un guide, une checklist, un quiz..."
+          placeholder="Rechercher, ou taper un code (076)..."
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         {search && (
@@ -284,56 +372,31 @@ export default function LeadMagnetsExplorer({ magnets }: { magnets: LeadMagnet[]
       {filtered.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-14 text-center">
           <LayoutGrid size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucune ressource ne correspond à ces critères.</p>
+          <p className="text-sm text-[#F5EDED]/35">
+            {normalizeKeyword(search)
+              ? `Aucun lead magnet avec le code ${normalizeKeyword(search)}.`
+              : "Aucune ressource ne correspond à ces critères."}
+          </p>
         </div>
       ) : (
         <>
+          {keywordMatch && (
+            <p className="text-[11px] text-[#F5EDED]/40 mb-2">
+              Résultat direct pour le code <span className="text-[#E01E1E] font-bold">{keywordMatch.keyword}</span>
+            </p>
+          )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
             {visible.map((m) => {
-              const Icon = getMagnetIcon(m.icon);
               const fmt = FORMAT_LABELS[m.format];
-              const FormatIcon = fmt.icon;
               return (
-                <Link
+                <MagnetCard
                   key={m.slug}
-                  href={`/ressources/${m.slug}`}
-                  className="group"
-                  style={{
-                    display: "flex", flexDirection: "column", gap: 10, padding: 16, borderRadius: 14,
-                    background: "#1f0101", border: "1px solid rgba(137,4,4,0.25)", textDecoration: "none",
-                  }}
-                >
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <div
-                      style={{
-                        width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                        background: "rgba(224,30,30,0.12)", display: "flex", alignItems: "center", justifyContent: "center",
-                      }}
-                    >
-                      <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-                    </div>
-                    <span
-                      style={{
-                        display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 800,
-                        letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)",
-                      }}
-                    >
-                      <FormatIcon size={10} /> {fmt.label}
-                    </span>
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", lineHeight: 1.35, margin: "0 0 4px" }}>
-                      {m.title}
-                    </p>
-                    <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", lineHeight: 1.5, margin: 0 }}>{m.hook}</p>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, color: "rgba(245,237,237,0.3)" }}>
-                      <Clock size={10} /> {m.readTime}
-                    </span>
-                    <ChevronRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors" />
-                  </div>
-                </Link>
+                  magnet={m}
+                  Icon={getMagnetIcon(m.icon)}
+                  FormatIcon={fmt.icon}
+                  formatLabel={fmt.label}
+                  spotlight={!!keywordMatch}
+                />
               );
             })}
           </div>

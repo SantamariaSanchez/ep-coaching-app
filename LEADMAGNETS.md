@@ -39,6 +39,27 @@ mesuré et ne jamais inventer de statistique non vérifiée.
   `LeadMagnetsGrid.tsx` reste utilisé tel quel pour les listes courtes et
   déjà filtrées des dashboards coach/client.
 
+## Code CTA reels (`keyword`)
+
+Chaque lead magnet a un code à 3 chiffres (`keyword`, ex `"076"`), affiché
+sur sa carte (grille et explorer) et sur sa page individuelle. Pensé pour
+que le coach le cite dans un reel Instagram ("tape 076 dans l'appli") : taper
+ce code dans la recherche de `/ressources` fait remonter directement ce
+lead magnet précis (voir `keywordMatch` dans `LeadMagnetsExplorer.tsx`,
+`normalizeKeyword`/`getLeadMagnetByKeyword` dans `lib/lead-magnets.ts`).
+
+Migration `supabase/migrations/20260814h_lead_magnets_keyword.sql` :
+- Séquence Postgres `lead_magnets_keyword_seq`, colonne `keyword` avec
+  `default lpad(nextval(...)::text, 3, '0')`.
+- **Attribué une seule fois, jamais réattribué**, même si la ligne est
+  supprimée plus tard : un code déjà publié dans un reel doit rester valable
+  indéfiniment, quoi qu'il arrive au reste de la table.
+- Auto-assigné à chaque nouvel insert (y compris depuis la routine cloud,
+  qui ne connaît pas cette colonne mais n'a rien à faire : le `default` de
+  la colonne s'en charge tout seul dès qu'un `insert` ne la mentionne pas).
+- Au delà de 999 lignes, `lpad` ne tronque pas : le code passe naturellement
+  à 4 chiffres ("1000", "1001", ...) plutôt que de casser le format.
+
 ## Schéma d'une entrée (table `lead_magnets`)
 
 ```

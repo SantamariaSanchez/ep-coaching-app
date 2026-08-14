@@ -28,6 +28,11 @@ interface LeadMagnetBase {
   format: LeadMagnetFormat;
   readTime: string;
   icon: string;
+  // Code à 3 chiffres (voir supabase/migrations/20260814h_lead_magnets_
+  // keyword.sql), attribué une fois pour toutes et jamais réattribué : le
+  // coach le met dans le CTA de ses reels ("tape 076 dans la recherche"),
+  // donc une fois publié il doit rester valable indéfiniment.
+  keyword: string;
 }
 
 export interface GuideSection {
@@ -96,6 +101,7 @@ interface LeadMagnetRow {
   format: LeadMagnetFormat;
   read_time: string;
   icon: string;
+  keyword: string;
   content: Record<string, unknown>;
   sources: LeadMagnetSource[] | null;
   created_at: string;
@@ -111,6 +117,7 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
     format: row.format,
     readTime: row.read_time,
     icon: row.icon,
+    keyword: row.keyword,
   };
   // content contient exactement les champs spécifiques au format (mêmes
   // noms que l'ancien littéral TS : intro/sections/conclusion pour guide,
@@ -120,7 +127,7 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
 }
 
 const SELECT_FIELDS =
-  "slug, title, hook, category, subcategory, format, read_time, icon, content, sources, created_at";
+  "slug, title, hook, category, subcategory, format, read_time, icon, keyword, content, sources, created_at";
 
 // Contenu marketing public, pas scopé par coach ni par utilisateur — lu via
 // le client admin comme les autres références partagées (gyms, exercices).
@@ -153,6 +160,24 @@ export async function getAllLeadMagnets(): Promise<LeadMagnet[]> {
 export async function getLeadMagnet(slug: string): Promise<LeadMagnet | undefined> {
   const all = await getAllLeadMagnetsCached();
   return all.find((m) => m.slug === slug);
+}
+
+// Normalise une saisie utilisateur ("76", "076", " 076 ") vers le format
+// stocké en base (3 chiffres minimum, zéro-paddé). Un keyword réel peut
+// dépasser 3 chiffres une fois la table au delà de 999 lignes (lpad ne
+// tronque jamais côté DB), donc on ne pad ici qu'à 3 chiffres minimum et on
+// laisse une saisie plus longue passer telle quelle.
+export function normalizeKeyword(raw: string): string | null {
+  const digits = raw.trim();
+  if (!/^\d+$/.test(digits)) return null;
+  return digits.padStart(3, "0");
+}
+
+export async function getLeadMagnetByKeyword(raw: string): Promise<LeadMagnet | undefined> {
+  const keyword = normalizeKeyword(raw);
+  if (!keyword) return undefined;
+  const all = await getAllLeadMagnetsCached();
+  return all.find((m) => m.keyword === keyword);
 }
 
 export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategory, LeadMagnet[]>> {

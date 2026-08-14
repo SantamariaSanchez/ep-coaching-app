@@ -152,8 +152,14 @@ function Header({ magnet, Icon }: { magnet: LeadMagnet; Icon: LucideIcon }) {
           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
             {magnet.category}
           </span>
-          <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "2px 0 0" }}>
-            <Clock size={10} /> {magnet.readTime}
+          <p style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "2px 0 0" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <Clock size={10} /> {magnet.readTime}
+            </span>
+            {/* Code CTA reels (voir LeadMagnetsExplorer) — visible ici pour
+                que le coach puisse vérifier/recopier le bon numéro depuis la
+                page elle même, pas seulement depuis la grille. */}
+            <span style={{ fontVariantNumeric: "tabular-nums" }}>#{magnet.keyword}</span>
           </p>
         </div>
       </div>
