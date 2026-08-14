@@ -120,15 +120,15 @@ grep -rn "export async function \(toggle\|mark\|check\|complete\|log\)" app/ --i
 ## Prochains axes (pas commencés)
 
 Idées à développer au fil des passes plutôt que planifiées d'avance en
-détail (l'esprit de la demande est "petit à petit", pas un plan figé) :
-- Cohérence de la gestion d'erreur dans les server actions (certaines
-  retournent `{ error }`, d'autres lèvent, certaines avalent l'erreur
-  silencieusement en `catch {}` sans log).
-- Accessibilité clavier sur les éléments cliquables construits en `<div
-  onClick>` plutôt qu'un vrai `<button>` (repéré ponctuellement dans ce
-  chantier, jamais audité systématiquement).
+détail (l'esprit de la demande est "petit à petit", pas un plan figé).
+Axes A (cache après mutation), B (échecs silencieux côté UI), C
+(accessibilité clavier) et D (catch muets côté serveur) sont clos —
+détail de chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
-  précis) et de la discipline "jamais de tiret" déjà en place ailleurs.
+  précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
+  plus une question de polish/cohérence de ton que de vrai bug, à cadrer
+  différemment des axes précédents (pas un grep mécanique évident, demande
+  de relire beaucoup de messages un par un pour juger de leur clarté).
 
 ## Axe B — Échecs silencieux : résultat d'action jamais vérifié côté UI
 
@@ -369,16 +369,19 @@ et 4 fichiers qui avaient déjà `catch (e) { console.error(...) }` —
 confirmant que cette discipline existe déjà ailleurs dans le code, juste
 pas partout.
 
+**Vérifié après coup (2026-08-14, même jour)** : re-comptage `catches vs
+logs` sur tout le projet après cette passe — les seuls fichiers où
+`catches > logs` sont désormais `auth/coach/actions.ts`,
+`communaute/membres/actions.ts` et `coach/mailing/actions.ts` (les 3 déjà
+vérifiés sains ci-dessus) plus `lib/auth-guards.ts` à 7 catches/6 logs
+(le seul écart est `hasRequiredSessionStrength`, volontairement muet,
+déjà expliqué). **Concrètement, cet axe est clos** : ce qui restait
+initialement estimé à "~15 catches non couverts" s'avère être zéro vrai
+cas manqué une fois vérifié — l'estimation initiale était trop prudente.
+
 ### Reste à faire sur cet axe
 
-- Cette première passe couvrait les fichiers déjà repérés via le comptage
-  `catches vs logs` d'Axe B — les fichiers à exactement 1 `catch` déjà
-  loggé n'ont pas tous été vérifiés un par un pour d'éventuels DEUXIÈME
-  catch dans le même fichier avec un message d'erreur légèrement différent
-  du motif exact (le script ne matche que `error: "..."` avec des
-  guillemets doubles simples, pas les cas avec apostrophe échappée ou
-  template literal).
-- `app/dashboard/coach/clients/[id]/nutrition/actions.ts` avait 5 catches,
-  seulement 3 corrigés par le script — les 2 restants ont probablement un
-  message d'erreur qui ne matche pas exactement le motif, pas vérifiés un
-  par un.
+- Rien d'identifié pour l'instant. Si de nouveaux `catch` génériques sans
+  log apparaissent avec du nouveau code, relancer le script
+  (`fix-silent-catches.mjs`, gardé dans le scratchpad de session) plutôt
+  que de re-vérifier tout le projet à la main.
