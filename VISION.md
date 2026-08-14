@@ -84,8 +84,8 @@ terminé.**
 ## Axe 2 — Poste de travail complet pour les coachs (CRM, mailing Brevo,
 espace de création de contenu, productivité)
 
-**Statut : espace de création de contenu livré (2026-08-14). CRM et mailing
-Brevo restent bloqués sur des décisions d'architecture (détail plus bas).**
+**Statut : espace de création de contenu + mailing livrés (2026-08-14).
+CRM volontairement laissé de côté (décision explicite, détail plus bas).**
 
 Citation du besoin : "pas juste coacher leur client mais aussi vraiment
 travailler en tant que coach, avoir tout au même endroit". Sous-parties
@@ -102,25 +102,29 @@ identifiées dans le message :
   ressaisie (`createIdeaFromQuestion`). Volontairement pas de
   drag-and-drop (complexité/risque inutiles) — changement de statut par
   tap, plus rapide entre deux clients.
-- **CRM coach — bloqué, à cadrer.** La table `leads` (captures des lead
-  magnets publics) n'a **aucune colonne d'attribution à un coach** : un
-  visiteur qui télécharge un lead magnet ne passe par le contexte d'aucun
-  coach en particulier (contenu de marque plateforme, pas par-coach). Un
-  vrai CRM par coach demande d'abord une vraie décision produit : soit (a)
-  ajouter un `coach_id` capté au moment du téléchargement (par exemple si
-  le lead magnet a été vu via le lien d'un coach précis), soit (b) rester
-  sur `coaching_waitlist` (déjà par-coach, item 45) comme le vrai
-  équivalent CRM d'un coach non-fondateur. Ouvrir `/dashboard/coach/admin/
-  leads` tel quel à un futur 2e coach afficherait TOUS les leads de la
-  plateforme, pas les siens — un vrai risque de fuite de données entre
-  coachs concurrents. Un seul coach existe aujourd'hui sur la plateforme
-  (le fondateur), donc rien à cloisonner dans l'immédiat ; à trancher
-  avant l'arrivée d'un second coach, pas avant.
-- **Mailing Brevo par coach — bloqué, à cadrer.** `sendBrevoEmail` utilise
-  un compte Brevo unique, celui de la plateforme — un vrai mailing par
-  coach demande une décision d'architecture (sous-comptes Brevo vs.
-  segmentation par tag/liste sous le même compte), pas tranchable sans en
-  discuter.
+- **CRM coach — décision prise avec l'utilisateur (2026-08-14) : attendre
+  un vrai 2e coach.** La table `leads` (captures des lead magnets publics)
+  n'a aucune colonne d'attribution à un coach — construire la plomberie
+  (liens personnalisés, `coach_id`) maintenant serait du travail spéculatif
+  et invérifiable en pratique tant qu'un seul coach existe sur la
+  plateforme (le fondateur). Reste `coaching_waitlist` (item 45) comme
+  équivalent CRM minimal déjà fonctionnel et déjà par-coach. À reprendre
+  quand un second coach rejoint réellement la plateforme.
+- **Mailing Brevo par coach — fait.** Décision prise avec l'utilisateur
+  (2026-08-14) : segmentation par tag/liste sous le compte Brevo unique
+  existant, pas de sous-comptes séparés. `/dashboard/coach/mailing` : le
+  coach compose un message, l'envoie d'abord en test à lui-même (email
+  transactionnel déjà éprouvé), puis à tous ses clients actifs d'un coup
+  (`lib/brevo-mailing.ts` — liste Brevo créée à la volée par coach,
+  contacts synchronisés, campagne créée puis envoyée via l'API Brevo).
+  Historique dans `coach_mailings` (RLS `coach_id = auth.uid()`).
+  **Découverte importante en vérifiant le compte Brevo réel avant de
+  construire** : plan gratuit, 300 envois/jour, PARTAGÉS avec les emails
+  transactionnels critiques de l'appli (vérification de compte,
+  notifications admin, relances). Un envoi groupé mal dimensionné pourrait
+  vider le quota du jour et casser ces flux. Plafond défensif ajouté :
+  `MAX_RECIPIENTS_PER_SEND = 200`, bloque l'envoi et l'explique dans
+  l'interface plutôt que d'échouer silencieusement ou de risquer le quota.
 - Espace documents/data personnels du coach, productivité générale : pas
   commencé, périmètre encore vague dans le message d'origine.
 
@@ -230,7 +234,8 @@ redirection actif entre coachs (voir plus bas).**
 
 ## Axe 6 — Formation de coachs (accompagnement business/coaching-des-coachs)
 
-**Statut : pas commencé.**
+**Statut : confirmé "à terme" avec l'utilisateur (2026-08-14), pas un
+chantier actif. Retiré du travail en cours, gardé ici pour plus tard.**
 
 Vision à terme : au delà d'accompagner des clients, accompagner des COACHS
 (business, coaching live, audits) — connaissances déjà couvertes par tes

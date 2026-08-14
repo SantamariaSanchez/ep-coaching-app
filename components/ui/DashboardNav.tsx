@@ -115,7 +115,7 @@ const COACH_TABS: TabItem[] = [
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients", "programmation", "messages", "prioritaires"],
+    matchSegments: ["clients", "programmation", "messages", "prioritaires", "mailing"],
     badge: "clientsGroup",
   },
   {
@@ -166,6 +166,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // dans un groupe "Espace coach" isolé, sans lien avec les clients.
       { label: "Modèles",  icon: LayoutTemplate, segment: "programmation" },
       { label: "Messages", icon: MessageCircle,  segment: "messages",  badge: "messages" },
+      // Axe 2 (VISION.md) : mailing groupé à tous ses clients actifs
+      // (segmentation par tag Brevo, pas de sous-compte par coach).
+      { label: "Mailing", icon: Mail, segment: "mailing" },
     ],
   },
   {
