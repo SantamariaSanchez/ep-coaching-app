@@ -30,8 +30,17 @@ export async function upsertCoachDailyLog(
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
+    // MASTERCLASS.md Axe L : tolérance "hier" en plus d'"aujourd'hui" (heure
+    // de Paris) — la page rend son log_date au chargement, et le formulaire
+    // peut rester ouvert pendant que la date change (ex. juste après minuit
+    // heure de Paris), ce qui rejetterait sinon une soumission légitime.
+    // Même correctif que app/dashboard/client/bilan/actions.ts.
     const today = todayInParis();
-    if (log_date !== today) return { error: "Tu ne peux modifier que le bilan du jour." };
+    const [y, m, d] = today.split("-").map(Number);
+    const yesterday = new Date(Date.UTC(y, m - 1, d - 1)).toISOString().split("T")[0];
+    if (log_date !== today && log_date !== yesterday) {
+      return { error: "Tu ne peux modifier que le bilan du jour." };
+    }
 
     const supabase = createAdminClient();
 
