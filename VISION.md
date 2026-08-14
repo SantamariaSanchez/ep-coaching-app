@@ -160,11 +160,35 @@ auto-mis-à-jour existait déjà (voir Axe 1).**
 
 ## Axe 4 — Comptabilité et gestion financière pour les coachs
 
-**Statut : pas commencé.** Budget, dépenses, suivi de revenus par coach.
-Distinct de `lib/coach-billing.ts` (abonnement du coach À la plateforme) :
-ici il s'agit de la compta DU coach pour SON activité. Chantier
-entièrement nouveau, à cadrer (quel niveau de détail, lien avec Stripe
-existant, export comptable ?) avant de commencer.
+**Statut : v1 livrée (2026-08-14) — un journal, pas un logiciel de compta.**
+
+Distinct de `lib/coach-billing.ts` (abonnement du coach À la plateforme) et
+de `/dashboard/coach/finance` (MRR plateforme, fondateur uniquement) : ici
+il s'agit de la compta DU coach pour SON activité.
+
+- `/dashboard/coach/compta` (groupe "Comptabilité" dans la sidebar) :
+  journal manuel revenus/dépenses (`coach_finance_entries`, RLS `coach_id =
+  auth.uid()`, migration `20260814l_coach_finance_entries.sql`).
+  Catégories fixes (`lib/coach-finance-categories.ts`) : côté revenus
+  abonnements clients / coaching individuel / vente de formation / autre ;
+  côté dépenses logiciels & outils / marketing / formation continue /
+  matériel / déplacements / autre. Résumé du mois (revenus, dépenses,
+  solde) + export CSV.
+- **Pourquoi une v1 volontairement simple plutôt qu'attendre un cadrage** :
+  contrairement au CRM (bloqué par une vraie question de modèle de
+  données) et au mailing Brevo (bloqué par une vraie décision de compte
+  externe), un journal déclaratif ne préjuge d'aucune architecture future
+  — pas connecté à Stripe, pas de mouvement d'argent réel, juste des
+  lignes qu'un coach saisit lui-même. Risque de devoir le refaire plus
+  tard s'il faut du "hyper complet" (le mot du message d'origine) : faible,
+  cette table s'étend sans casser l'existant.
+
+### Reste à faire sur cet axe
+
+- Lien avec Stripe (revenus automatiquement importés plutôt que ressaisis)
+  et export au format attendu par un vrai logiciel de compta français : à
+  cadrer si l'usage de la v1 montre que la saisie manuelle est le vrai
+  point de friction.
 
 ## Axe 5 — Annuaire de coachs et spécialisation
 

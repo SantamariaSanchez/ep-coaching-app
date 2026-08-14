@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle,
+  AlertTriangle, Wallet,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -134,7 +134,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta"],
   },
   {
     label: "Communauté",
@@ -183,6 +183,15 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Studio créatif",
     items: [
       { label: "Idées & brouillons", icon: Sparkles, segment: "studio" },
+    ],
+  },
+  {
+    // Axe 4 (VISION.md) : journal revenus/dépenses du coach pour SON
+    // activité — distinct de "Mon abonnement plateforme" (Compte) et du
+    // MRR plateforme (Administration, réservé au fondateur).
+    group: "Comptabilité",
+    items: [
+      { label: "Revenus & dépenses", icon: Wallet, segment: "compta" },
     ],
   },
   {
