@@ -12,7 +12,7 @@ const sections: LegalSection[] = [
     body: (
       <P>
         Pour toute question sur votre compte, votre abonnement ou un problème technique, contactez
-        directement <Strong>Emmanuel Peccoux</Strong> à l&apos;adresse{" "}
+        directement <Strong>Santamaria Sánchez</Strong> à l&apos;adresse{" "}
         <Strong>peccoux.manu@gmail.com</Strong>. Nous nous efforçons de répondre sous 48 heures
         ouvrées.
       </P>
