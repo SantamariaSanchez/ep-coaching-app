@@ -255,9 +255,19 @@ main.
   données, pas de mensonge), `NotificationBell.tsx` (badge remis à zéro
   optimiquement mais auto-corrigé au prochain chargement, pas de perte).
 
+Vérifié SAIN : `components/messaging/ConversationView.tsx`
+(`sendPushNotification`, déjà explicitement commenté "non-blocking" —
+l'envoi du message lui-même est un insert Supabase séparé, correctement
+vérifié via `error`/`setSendError`) et `PushPermission.tsx` (resync
+d'abonnement déjà accordé, sans UI, fire-and-forget assumé et documenté).
+
+**La liste initiale de 73 candidats (grep du 2026-08-14) est maintenant
+entièrement triée** : 17 corrigés, le reste vérifié sain ou explicitement
+fire-and-forget par conception. Prochaine passe sur cet axe : relancer la
+commande après du nouveau code pour capter ce qui aura été ajouté depuis,
+plutôt que de re-trier la même liste.
+
 ### Reste à faire sur cet axe
 
-- `components/messaging/*` (ConversationView, PushPermission) pas encore
-  vérifiés.
 - Relancer la commande de la passe 1 après du nouveau code pour capter ce
-  qui aurait été ajouté depuis.
+  qui aurait été ajouté depuis — sinon, cet axe est clos pour l'instant.
