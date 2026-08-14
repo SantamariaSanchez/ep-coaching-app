@@ -52,7 +52,7 @@ export default async function ReussitesPage() {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={v.image_url}
-                  alt=""
+                  alt={`Photo de la réussite de ${v.author_first_name}`}
                   style={{ width: "100%", maxWidth: 320, borderRadius: 10, border: "1px solid rgba(137,4,4,0.25)" }}
                 />
               )}

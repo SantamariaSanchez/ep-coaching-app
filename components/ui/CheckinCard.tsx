@@ -390,7 +390,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={url}
-                    alt=""
+                    alt={`Photo du bilan ${i + 1}`}
                     style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }}
                   />
                 </a>

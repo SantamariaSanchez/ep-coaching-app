@@ -281,7 +281,7 @@ function MessageBubble({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={msg.image_url}
-              alt=""
+              alt={isOwn ? "Photo envoyée" : "Photo reçue"}
               className="rounded-lg max-w-[220px] max-h-[280px] object-cover"
             />
           </a>

@@ -465,7 +465,7 @@ function PostCard({
 
           {post.image_url && (
             <div className="relative w-full mt-3 rounded-lg overflow-hidden border border-[#890404]/15" style={{ aspectRatio: "4/3" }}>
-              <Image src={post.image_url} alt="" fill className="object-cover" unoptimized />
+              <Image src={post.image_url} alt={`Photo partagée par ${post.author_name}`} fill className="object-cover" unoptimized />
             </div>
           )}
 

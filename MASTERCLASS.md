@@ -125,9 +125,9 @@ Axes A (cache après mutation), B (échecs silencieux côté UI), C
 (accessibilité clavier), D (catch muets côté serveur), E (`useState`
 jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
 sans nom accessible), G (champs de formulaire sans nom accessible), H
-(pas d'`error.tsx`/`not-found.tsx`) et I (advisors Supabase : policies RLS
-et index) sont clos — détail de chacun plus bas. Idée pas encore
-commencée :
+(pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
+et index) et J (images de contenu sans texte alternatif) sont clos —
+détail de chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -1040,3 +1040,60 @@ même, aucun risque de brute-force à protéger). Vérifié aussi que
 d'inscription par IP. Rien à corriger — l'infrastructure de défense
 construite avant cette session est réellement utilisée, pas juste
 déclarée.
+
+## Axe J — Images de contenu sans texte alternatif
+
+**Statut : fermé (2026-08-15).**
+
+Constat : seulement 21 `<img>` bruts (+ 2 `<Image>` Next.js) dans toute
+l'appli — déjà un bon signe, et les 21 avaient TOUS un attribut `alt`
+(contrairement à l'idée reçue qu'une appli de cette taille en oublierait
+forcément). Le vrai problème n'était pas l'absence d'`alt`, mais
+`alt=""` utilisé sur des images qui sont du **contenu réel** (une photo
+envoyée en message, une photo de bilan, une photo de réussite publique)
+plutôt que de la pure décoration — `alt=""` dit explicitement à un
+lecteur d'écran "ignore cette image", ce qui est correct pour un avatar
+à côté d'un nom déjà affiché, mais faux pour une photo qui EST le
+contenu du message/de la publication.
+
+**Corrigé** (7 fichiers) : `ConversationView.tsx` (photo envoyée dans un
+message, `alt` dynamique "Photo envoyée"/"Photo reçue" selon l'auteur),
+`CheckinCard.tsx` et `app/dashboard/client/checkin/page.tsx` (×2, vue
+client + vue historique) — photos d'un bilan déjà soumis, `alt="Photo du
+bilan N"`, `ClientPhotosView.tsx`/`CoachClientPhotosView.tsx` (galerie de
+photos de suivi déjà envoyées, `alt="Photo N"`), `CommunityFeed.tsx`
+(photo jointe à une publication communauté, `alt` avec le nom de
+l'auteur), `app/reussites/page.tsx` (mur public de réussites, `alt` avec
+le prénom de l'auteur).
+
+**Vérifié SAIN** : les 7 `alt=""` restants sont légitimement décoratifs —
+avatars affichés à côté d'un nom déjà visible en texte
+(`CoachDirectoryExplorer.tsx`, `MembresView.tsx`, `ProfileHeader.tsx`,
+`CommunityFeed.tsx`/`AuthorAvatarLink`), miniature YouTube à côté du
+titre de la leçon (`CoachFormationEditor.tsx`), et aperçus de photos que
+l'utilisateur vient tout juste de sélectionner pour son propre envoi
+(`CheckinForm.tsx`, `ClientPhotosView.tsx` côté formulaire) — redondants
+avec le compteur "Photos (X/Y)" déjà affiché juste au-dessus, corrects
+tels quels.
+
+tsc/eslint/build vérifiés propres (la seule erreur eslint restante,
+`ConversationView.tsx` `Date.now()` impur, est préexistante et sans
+rapport avec ce changement).
+
+**Méthode utilisée** (relançable) :
+```bash
+grep -rn "<img\b" --include="*.tsx" components/ app/
+grep -rln "<Image\b" --include="*.tsx" components/ app/
+# Puis lecture manuelle de chaque occurrence multi-lignes pour distinguer
+# contenu réel (alt descriptif nécessaire) de décoration (alt="" correct).
+grep -rn 'alt=""' --include="*.tsx" components/ app/   # pour la vérification finale
+```
+
+### Reste à faire sur cet axe
+
+- Rien d'identifié — les 21 `<img>`/2 `<Image>` de l'appli sont
+  maintenant tous corrects (contenu décrit, décoration explicitement
+  vide). Si de nouvelles images de contenu sont ajoutées, appliquer la
+  même grille : contenu réel (photo envoyée, publiée, soumise) = `alt`
+  descriptif ; décoration redondante avec un texte déjà visible = `alt=""`
+  correct, pas un oubli.

@@ -134,7 +134,7 @@ function PastCheckinCard({ checkin }: { checkin: CheckIn }) {
           {checkin.photo_urls.map((url, i) => (
             <a key={i} href={url} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(137,4,4,0.3)" }} />
+              <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 48, height: 48, objectFit: "cover", borderRadius: 6, border: "1px solid rgba(137,4,4,0.3)" }} />
             </a>
           ))}
           {checkin.video_url && (
@@ -291,7 +291,7 @@ export default async function CheckinPage() {
                 {existing.photo_urls.map((url, i) => (
                   <a key={i} href={url} target="_blank" rel="noopener noreferrer">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={url} alt="" style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }} />
+                    <img src={url} alt={`Photo du bilan ${i + 1}`} style={{ width: 56, height: 56, objectFit: "cover", borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)" }} />
                   </a>
                 ))}
                 {existing.video_url && (

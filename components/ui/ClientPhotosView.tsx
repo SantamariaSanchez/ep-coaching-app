@@ -524,7 +524,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           {photo.photo_urls.map((url, i) => (
             <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-12 h-12 object-cover rounded-lg border border-[#890404]/30" />
+              <img src={url} alt={`Photo ${i + 1}`} className="w-12 h-12 object-cover rounded-lg border border-[#890404]/30" />
             </a>
           ))}
           {photo.video_url && (

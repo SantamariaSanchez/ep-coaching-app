@@ -225,7 +225,7 @@ function PhotoCard({
           {photo.photo_urls.map((url, i) => (
             <a key={i} href={safeExternalUrl(url) ?? "#"} target="_blank" rel="noopener noreferrer">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={url} alt="" className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
+              <img src={url} alt={`Photo ${i + 1}`} className="w-14 h-14 object-cover rounded-lg border border-[#890404]/30" />
             </a>
           ))}
           {photo.video_url && (
