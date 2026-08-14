@@ -247,25 +247,47 @@ distinct du rôle coach actuel.
 
 ## Axe 7 — Page d'accueil et cohérence globale
 
-**Statut : pas commencé.** Le message mentionne explicitement repenser la
-toute première page d'accueil à la lumière de cette vision élargie
-(aujourd'hui centrée coaching client, à faire évoluer si la plateforme
-devient aussi un espace coach-vers-coach et un annuaire public).
+**Statut : évaluée (2026-08-14), pas de refonte nécessaire pour l'instant.**
 
-## Ordre de travail proposé
+Les deux conditions posées par le message d'origine pour justifier de
+repenser la page d'accueil ("si la plateforme devient aussi un espace
+coach-vers-coach et un annuaire public") : l'annuaire public existe
+désormais (Axe 5) — reflété par un lien discret ajouté sous le CTA
+principal ("Plusieurs coachs disponibles — trouve le tien") et une carte
+de découverte sur `/ressources`, sans toucher au reste de la page. L'espace
+coach-vers-coach (Axe 6) reste confirmé "à terme", donc n'a rien à changer
+à ce qu'un visiteur voit en arrivant.
 
-1. ~~Axe 1 (escalade, compensation calorique, auto-solve des grammages)~~
-   **fait, 2026-08-14**.
-2. ~~Axe 5 (annuaire + tags de spécialisation)~~ **fait, 2026-08-14**
-   (reste seulement la redirection active entre coachs, non urgente à un
-   seul coach sur la plateforme).
-3. **→ prochain** : Axe 2 (poste de travail coach) — le plus gros morceau, à découper en
-   sous-livrables (CRM d'abord, contenu ensuite, mailing en dernier car
-   nécessite une vraie décision d'architecture Brevo multi-coach).
-4. Axe 3 (dashboard consolidé "qui a besoin de moi").
-5. Axe 6 (formation de coachs) et Axe 4 (comptabilité) — les deux verticales
-   les plus neuves, à cadrer avec toi avant de coder quoi que ce soit
-   (périmètre pas assez précisé dans le message d'origine pour se lancer
-   sans clarifier).
-6. Axe 7 (accueil) — en dernier, une fois que la vision élargie a
-   suffisamment pris forme pour savoir quoi y refléter.
+`app/page.tsx` est une page d'entrée compacte et déjà bien construite
+(mobile-first, un seul écran, animations d'entrée soignées), pas un site
+vitrine à rallonge — une refonte plus large forcerait du contenu qui n'a
+pas encore de vraie justification produit tant qu'Axe 6 dort et que le CRM
+reste à l'arrêt. Reprendre cet axe si l'un des deux redémarre.
+
+## Ordre de travail proposé — chantier clos le 2026-08-14
+
+Les 7 axes ont chacun un statut résolu, 7 jours avant l'échéance du
+2026-08-21 :
+
+1. ~~Axe 1~~ (escalade, compensation calorique, auto-solve des grammages)
+   **fait**.
+2. ~~Axe 5~~ (annuaire + tags de spécialisation) **fait** (reste seulement
+   la redirection active entre coachs, non urgente à un seul coach).
+3. ~~Axe 2~~ (poste de travail coach) **fait** : contenu (studio créatif)
+   et mailing (segmentation Brevo, décidé avec toi) livrés ; CRM
+   volontairement laissé de côté jusqu'à un vrai 2e coach (décidé avec
+   toi — travail spéculatif sinon).
+4. ~~Axe 3~~ (dashboard consolidé "qui a besoin de moi") **fait**.
+5. ~~Axe 4~~ (comptabilité coach) **fait** : v1 volontairement simple
+   (journal déclaratif, pas connecté à Stripe).
+6. ~~Axe 6~~ (formation de coachs) **confirmé "à terme" avec toi**, retiré
+   du travail actif, gardé documenté pour plus tard.
+7. ~~Axe 7~~ (accueil) **évalué, pas de refonte justifiée pour l'instant**
+   — les deux conditions qui l'auraient déclenchée (annuaire public,
+   espace coach-vers-coach) sont soit déjà reflétées (annuaire), soit
+   toujours dormantes (Axe 6).
+
+Ce fichier reste vivant : si un des axes mis en pause redémarre (2e coach,
+Axe 6, ou tout nouveau signal remonté par l'usage réel de l'appli),
+reprendre directement la section correspondante ci-dessus plutôt que de
+repartir de zéro.
