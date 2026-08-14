@@ -1,21 +1,9 @@
 import Link from "next/link";
 import {
-  Dumbbell, ClipboardCheck, Target, Apple, AlertTriangle, Utensils, Flame,
-  Moon, Brain, BedDouble, Activity, Flag, Users, TrendingUp, ClipboardList,
-  Zap, Timer, Gauge, Repeat, CalendarClock, Coffee, ShieldCheck, Scale,
-  Salad, Smartphone, ThumbsUp, Sparkles, PersonStanding, HeartPulse,
-  MessageCircleWarning, Building2,
   ChevronRight, Clock, ListChecks, HelpCircle, BookOpen, type LucideIcon,
 } from "lucide-react";
 import type { LeadMagnet } from "@/lib/lead-magnets";
-
-const MAGNET_ICONS: Record<string, LucideIcon> = {
-  Dumbbell, ClipboardCheck, Target, Apple, AlertTriangle, Utensils, Flame,
-  Moon, Brain, BedDouble, Activity, Flag, Users, TrendingUp, ClipboardList,
-  Zap, Timer, Gauge, Repeat, CalendarClock, Coffee, ShieldCheck, Scale,
-  Salad, Smartphone, ThumbsUp, Sparkles, PersonStanding, HeartPulse,
-  MessageCircleWarning, Building2,
-};
+import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
 const FORMAT_LABELS: Record<LeadMagnet["format"], { label: string; icon: LucideIcon }> = {
   guide: { label: "Guide", icon: BookOpen },
@@ -44,7 +32,7 @@ export default function LeadMagnetsGrid({
       <h2 style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "0 0 14px" }}>{title}</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
         {magnets.map((m) => {
-          const Icon = MAGNET_ICONS[m.icon] ?? Target;
+          const Icon = getMagnetIcon(m.icon);
           const format = FORMAT_LABELS[m.format];
           const FormatIcon = format.icon;
           return (

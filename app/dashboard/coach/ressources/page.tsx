@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
-import { LEAD_MAGNETS } from "@/lib/lead-magnets";
+import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import ResourceManager from "@/components/resources/ResourceManager";
 import ResourceRequests from "@/components/resources/ResourceRequests";
 import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
@@ -19,9 +19,10 @@ export default async function CoachRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/ressources");
 
-  const [resources, requests] = await Promise.all([
+  const [resources, requests, leadMagnets] = await Promise.all([
     getResources(user.id),
     getResourceRequests(user.id),
+    getAllLeadMagnets(),
   ]);
 
   return (
@@ -39,7 +40,7 @@ export default async function CoachRessourcesPage() {
       {/* Les guides/checklists/quiz publics de /ressources, aussi accessibles
           depuis le dashboard : utile au coach pour se rappeler ce qui existe
           déjà et le recommander directement à un client. */}
-      <LeadMagnetsGrid magnets={LEAD_MAGNETS} eyebrow="À recommander à tes clients" />
+      <LeadMagnetsGrid magnets={leadMagnets} eyebrow="À recommander à tes clients" />
 
       <ResourceManager resources={resources} />
 

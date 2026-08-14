@@ -1,0 +1,178 @@
+# Lead magnets : chantier "1000 en 1 mois"
+
+Contexte : demande du 2026-08-14, verbatim résumé : supprimer les ressources
+manuelles de bas de page sur `/ressources`, les recréer au format lead
+magnet, puis produire un très gros volume de nouveaux lead magnets (objectif
+1000 sous 1 mois, donc d'ici le **2026-09-13**) sur nutrition, training,
+récup, steps, psychologie, entrepreneuriat, sans bâcler, avec vérification
+PubMed systématique de toute affirmation physiologique.
+
+**Règle absolue, héritée de la routine de suivi des clients (même exigence
+posée par le coach)** : jamais de décision "coach" (nutrition, entraînement,
+psychologie appliquée) sans vérification préalable sur PubMed, citation
+explicite (auteur, année, DOI) dans le champ `sources` de l'entrée. Pour
+l'entrepreneuriat, où la littérature clinique ne couvre pas tout, rester
+mesuré et ne jamais inventer de statistique non vérifiée.
+
+## Où vit le contenu
+
+- Table Supabase `lead_magnets` (migration
+  `supabase/migrations/20260814g_lead_magnets_table.sql`), pas un fichier
+  TS codé en dur : au delà de quelques dizaines d'entrées un array TS
+  alourdit le bundle et interdit la recherche/filtre côté serveur, et une
+  routine cloud de production n'a accès qu'à Supabase + PubMed en MCP (pas
+  au dépôt git), donc ne peut structurellement écrire que dans une table.
+- `lib/lead-magnets.ts` : lecteur async, `unstable_cache` (revalidate 1h,
+  la routine cloud ne peut pas appeler `revalidateTag`), garde les mêmes
+  types exportés qu'avant (`LeadMagnet`, `GuideMagnet`, `ChecklistMagnet`,
+  `QuizMagnet`).
+- `lib/resource-categories.ts` : taxonomie (`RESOURCE_CATEGORIES`) et
+  sous-catégories (`RESOURCE_SUBCATEGORIES`) utilisées pour le filtre.
+- `components/ressources/lead-magnet-icons.tsx` : registre unique des
+  icônes lucide (avant, dupliqué entre `LeadMagnetsGrid.tsx` et
+  `LeadMagnetLanding.tsx`, source d'un vrai risque de dérive, un icône
+  ajouté d'un côté sans l'autre retombait sur `Target` en silence).
+- `components/ressources/LeadMagnetsExplorer.tsx` : la nouvelle UX de
+  recherche/filtre de `/ressources` (recherche texte, catégories,
+  sous-catégories, filtre format, recherches récentes et dernière catégorie
+  visitée en localStorage, pagination "voir plus" côté client). Le simple
+  `LeadMagnetsGrid.tsx` reste utilisé tel quel pour les listes courtes et
+  déjà filtrées des dashboards coach/client.
+
+## Schéma d'une entrée (table `lead_magnets`)
+
+```
+slug, title, hook, category, subcategory (nullable), format (guide|checklist|quiz),
+read_time, icon, content (jsonb : intro/sections/conclusion pour guide,
+intro/groups/conclusion pour checklist, intro/questions/outcomes pour quiz),
+sources (jsonb : [{label, doi, url}]), published, created_at
+```
+
+## Avancement
+
+| Date | Vague | Items | Détail |
+| --- | --- | --- | --- |
+| 2026-08-14 | Migration | 33 | Contenu déjà existant (array `LEAD_MAGNETS`), migré tel quel vers la table. Catégorie "Mental" renommée "Psychologie" pour matcher la nouvelle taxonomie. |
+| 2026-08-14 | Vague A | 22 | Recréation à l'identique (même sujet, nouveau format) des 22 ressources manuelles uniques envoyées à la main sur `/ressources` (table `resources`, fichiers HTML/PDF). Les 29 lignes originales (22 sujets uniques + doublons de renvoi) supprimées de `resources` une fois les remplacements en ligne. |
+| 2026-08-14 | Vague B | 20 | Premiers contenus vraiment nouveaux : 5 Steps & activité quotidienne, 5 Psychologie, 6 Entrepreneuriat (vertical entièrement nouvelle), 4 sujets plus précis (mollets, DOMS, cycle menstruel, répartition glucides). |
+| **Total au 2026-08-14** | | **75** | Sur 1000 visés, échéance 2026-09-13. |
+
+## Répartition actuelle par catégorie
+
+Nutrition 18, Entraînement 17, Psychologie 12, Général 10, Récupération 7,
+Entrepreneuriat 6, Steps & activité quotidienne 5.
+
+Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
+chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
+reste également en retrait relatif.
+
+## Sujets couverts (pour éviter les doublons lors des prochaines vagues)
+
+**Entraînement** : RIR/intensité, séance efficace, profil pratiquant,
+hypertrophie vs force, échauffement, niveau (débutant/intermédiaire/avancé),
+deload, progression d'intensité par cycle, fréquence d'entraînement, cause
+de stagnation, diagnostic programme, tension vs pump, supersets
+antagonistes, temps de repos, sortir d'un plateau, hypertrophie mollets,
+cycle menstruel et entraînement.
+
+**Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
+fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
+besoin en déficit, collations protéinées, diagnostic nutrition, fenêtre
+anabolique, rythme de sèche, protéines en sèche, cardio à jeun, sommeil et
+sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
+des glucides autour de l'entraînement.
+
+**Psychologie** : motivation, routine du soir, obstacle mental,
+comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
+gestion du stress, red flags d'un coach, musculation au féminin
+(appréhension des débuts), peur de reprendre le poids perdu, relation
+saine à la nourriture, body checking, type de motivation
+(intrinsèque/extrinsèque), charge mentale et vie sportive.
+
+**Récupération** : sommeil et prise de muscle, surentraînement, mobilité
+quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
+indicateur d'efficacité.
+
+**Général** : 7 erreurs de transformation, prêt pour le coaching, phase
+actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
+30 premiers jours, salle ou maison, structure de la semaine, réponse
+individuelle à l'entraînement.
+
+**Steps & activité quotidienne** : combien de pas viser, NEAT, augmenter
+ses pas au quotidien, profil d'activité, marche après repas.
+
+**Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
+de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
+face à l'incertitude, gestion du temps en indépendant.
+
+## Sources déjà vérifiées (réutilisables sans re-recherche)
+
+Adaptation métabolique : Buechel et al. 2026 (DOI
+10.1080/15502783.2026.2676190), Aragon/Schoenfeld ISSN 2017 (DOI
+10.1186/s12970-017-0174-y), Levine 2002 NEAT (DOI 10.1053/beem.2002.0227).
+Protéines en déficit : Longland 2016 (DOI 10.3945/ajcn.115.119339), Hector
+2017 (DOI 10.1096/fj.201700158RR), Jäger ISSN 2017 (DOI
+10.1186/s12970-017-0177-8). Diet breaks : Müller 2016 (DOI
+10.1007/s13679-016-0237-4), Peos 2019 (DOI 10.3390/sports7010022), Cortez
+2023 (DOI 10.1371/journal.pone.0294131). Fréquence : Schoenfeld/Ogborn/
+Krieger 2016 (DOI 10.1007/s40279-016-0543-8). Temps de repos : Grgic 2017
+(DOI 10.1080/17461391.2017.1340524), Schoenfeld 2016 RCT (DOI
+10.1519/JSC.0000000000001272). Position étirée : Havers 2025 (DOI
+10.1002/ejsc.70087), Kassiano 2023 (DOI 10.1519/JSC.0000000000004460).
+Mécanismes hypertrophie : Schoenfeld 2010 (DOI
+10.1519/JSC.0b013e3181e840f3). Steps : Sheng 2021 (DOI
+10.1016/j.jshs.2021.09.004), Hall 2020 (DOI 10.1186/s12966-020-00978-9).
+Marche postprandiale : Dunstan 2012 (DOI 10.2337/dc11-1931), Moore 2021
+(DOI 10.1016/j.numecd.2021.10.016). Sommeil et déficit : Nedeltcheva 2010
+(DOI 10.7326/0003-4819-153-7-201010050-00006). Cardio à jeun : Gillen 2013
+(DOI 10.1002/oby.20379). Jeûne intermittent : Jóźwiak 2024 (DOI
+10.1186/s12967-024-05738-y), Eglseer 2023 (DOI 10.1016/j.advnut.2023.04.001),
+Richardson 2023 (DOI 10.3390/nu15040985). Variabilité individuelle : Yang
+2024 (DOI 10.1152/physiolgenomics.00019.2024). Cycle menstruel et
+entraînement : Mikkonen 2023 (DOI 10.1007/s40279-023-01955-5).
+
+## Prochaines vagues (backlog de thèmes, non exhaustif)
+
+- Entraînement : périodisation par blocs, unilatéral vs bilatéral, warm up
+  spécifique par groupe musculaire, cardio et interférence avec
+  l'hypertrophie, entraînement à domicile avec matériel limité, gestion
+  des blessures courantes (épaule, genou, lombaires) en musculation,
+  progression sur les mouvements au poids du corps.
+- Nutrition : végétarien/végétalien en musculation, alcool et objectifs
+  physiques, grossesse et activité physique, alimentation étudiante à
+  petit budget, suppléments réellement soutenus par la littérature (créatine,
+  caféine) vs marketing, gestion des fringales.
+- Récupération : massage et rouleau de massage (foam rolling), bains
+  froids/glace, respiration et système nerveux, gestion du jet lag pour
+  les athlètes qui voyagent, blessures et retour progressif à
+  l'entraînement.
+- Steps & activité quotidienne : podomètre vs montre connectée (fiabilité),
+  activité physique au bureau, marche et santé mentale, escaliers vs
+  ascenseur en vrais chiffres.
+- Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
+  auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
+  ne convient plus, transition post-objectif (après une compétition, un
+  mariage, etc.).
+- Entrepreneuriat : image de marque personnelle, contenu et réseaux sociaux
+  pour un coach, gestion administrative de base, premiers salariés/
+  sous-traitants, diversification des revenus, éviter l'épuisement en tant
+  qu'indépendant.
+
+## Mécanisme de production continue
+
+Une routine cloud récurrente doit être créée (via le skill `schedule`,
+même mécanique que la routine de revue des check-ins clients) pour
+continuer la production vers 1000 sur le mois restant. Contraintes déjà
+identifiées (héritées de cette même routine client) :
+
+- Pas d'accès au dépôt git depuis une routine cloud (erreur 403 constatée),
+  donc écriture uniquement via Supabase MCP (table `lead_magnets`
+  directement) et vérification via PubMed MCP.
+- Toujours vérifier `slug` inexistant avant insertion (contrainte unique).
+- Toujours consulter la section "Sujets couverts" ci-dessus avant de
+  proposer un nouveau thème, pour éviter les doublons.
+- Toute affirmation physiologique doit être sourcée dans `sources` avec un
+  DOI réel obtenu via PubMed MCP, jamais inventé.
+- Mettre à jour ce fichier n'est pas possible depuis la routine (pas d'accès
+  repo) : elle doit à la place tenir le compte à jour dans une table ou le
+  signaler dans son rapport, à reporter ici manuellement en session locale.

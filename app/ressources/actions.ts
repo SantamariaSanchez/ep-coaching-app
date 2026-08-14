@@ -34,7 +34,7 @@ export async function submitLead(
     return { error: "Ce numéro ne semble pas valide." };
   }
 
-  const magnet = getLeadMagnet(slug);
+  const magnet = await getLeadMagnet(slug);
   if (!magnet) return { error: "Contenu introuvable." };
 
   try {

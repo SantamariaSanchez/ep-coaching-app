@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, FileText, Download, Heart } from "lucide-react";
+import Link from "next/link";
+import { Search, FileText, Download, Heart, Calculator, ChevronRight, Trophy } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ResourceItem } from "@/lib/resource-categories";
 import { getResourceHref } from "@/lib/resource-href";
 import type { LeadMagnet } from "@/lib/lead-magnets";
 import SignupGateModal from "@/components/ressources/SignupGateModal";
-import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
+import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 
 const FREE_PREVIEW_SECONDS = 60;
 
@@ -104,53 +105,94 @@ export default function PublicRessourcesClient({
           <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
         </div>
 
-        {leadMagnets.length > 0 && <LeadMagnetsGrid magnets={leadMagnets} eyebrow="Gratuit, sans compte" />}
+        {leadMagnets.length > 0 && <LeadMagnetsExplorer magnets={leadMagnets} />}
 
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Bibliothèque du coach
-        </p>
-        <div className="relative mb-5 mt-2">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" strokeWidth={1.8} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher une ressource..."
-            className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
-          />
-        </div>
+        {/* Item 18 : calculateurs publics, sans compte — même logique que les
+            lead magnets ci-dessus, découvrables sans avoir à chercher. */}
+        <Link
+          href="/outils"
+          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+            <Calculator size={15} className="text-[#890404]" strokeWidth={1.8} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white">Calculateurs gratuits</p>
+            <p className="text-[10px] text-[#F5EDED]/35">Calories, macros, charge maximale (1RM)</p>
+          </div>
+          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+        </Link>
 
-        {filtered.length === 0 ? (
-          <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-            <FileText size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-[#F5EDED]/35">Aucune ressource ne correspond à ta recherche.</p>
+        {/* Item 44 : mur de réussites publiques, même logique de découverte
+            que les calculateurs ci-dessus. */}
+        <Link
+          href="/reussites"
+          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+        >
+          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+            <Trophy size={15} className="text-[#890404]" strokeWidth={1.8} />
           </div>
-        ) : (
-          <div className="space-y-2">
-            {filtered.map((r) => (
-              <a
-                key={r.id}
-                href={getResourceHref(r)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
-              >
-                <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-                  <FileText size={15} className="text-[#890404]" strokeWidth={1.8} />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{r.title}</p>
-                  {r.description && (
-                    <p className="text-[10px] text-[#F5EDED]/35 truncate">{r.description}</p>
-                  )}
-                </div>
-                <Download
-                  size={15}
-                  className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/50 transition-colors flex-shrink-0"
-                  strokeWidth={1.8}
-                />
-              </a>
-            ))}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-white">Réussites des membres</p>
+            <p className="text-[10px] text-[#F5EDED]/35">Ce qu&apos;ils partagent, avec leur accord</p>
           </div>
+          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+        </Link>
+
+        {/* Fichiers envoyés à la main par le coach : maintenu uniquement en
+            complément ponctuel maintenant que la bibliothèque principale
+            vit dans les lead magnets ci-dessus (voir LEADMAGNETS.md) ;
+            n'apparaît que s'il y a effectivement quelque chose à montrer,
+            pas de section vide avec un champ de recherche pour rien. */}
+        {resources.length > 0 && (
+          <>
+            <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+              Bibliothèque du coach
+            </p>
+            <div className="relative mb-5 mt-2">
+              <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" strokeWidth={1.8} />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Rechercher une ressource..."
+                className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
+              />
+            </div>
+
+            {filtered.length === 0 ? (
+              <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
+                <FileText size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
+                <p className="text-sm text-[#F5EDED]/35">Aucune ressource ne correspond à ta recherche.</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filtered.map((r) => (
+                  <a
+                    key={r.id}
+                    href={getResourceHref(r)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
+                  >
+                    <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+                      <FileText size={15} className="text-[#890404]" strokeWidth={1.8} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-white truncate">{r.title}</p>
+                      {r.description && (
+                        <p className="text-[10px] text-[#F5EDED]/35 truncate">{r.description}</p>
+                      )}
+                    </div>
+                    <Download
+                      size={15}
+                      className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/50 transition-colors flex-shrink-0"
+                      strokeWidth={1.8}
+                    />
+                  </a>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

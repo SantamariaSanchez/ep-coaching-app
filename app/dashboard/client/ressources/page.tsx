@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
-import { LEAD_MAGNETS } from "@/lib/lead-magnets";
+import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import ResourcesBrowser from "@/components/resources/ResourcesBrowser";
 import ResourceRequests from "@/components/resources/ResourceRequests";
 import LeadMagnetsGrid from "@/components/ressources/LeadMagnetsGrid";
@@ -15,9 +15,10 @@ export default async function ClientRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/ressources");
 
-  const [resources, requests] = await Promise.all([
+  const [resources, requests, leadMagnets] = await Promise.all([
     getResources(profile?.coach_id ?? ""),
     getResourceRequests(profile?.coach_id ?? ""),
+    getAllLeadMagnets(),
   ]);
 
   return (
@@ -32,7 +33,7 @@ export default async function ClientRessourcesPage() {
       {/* Guides/checklists/quiz déjà accessibles publiquement sur /ressources,
           mais invisibles ici jusque là — un client connecté ne devrait pas
           avoir à quitter l'appli pour les trouver. */}
-      <LeadMagnetsGrid magnets={LEAD_MAGNETS} />
+      <LeadMagnetsGrid magnets={leadMagnets} />
 
       <ResourcesBrowser resources={resources} />
 

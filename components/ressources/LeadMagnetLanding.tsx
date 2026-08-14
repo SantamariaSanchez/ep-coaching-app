@@ -3,17 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Dumbbell, ClipboardCheck, Target, Apple, AlertTriangle, Utensils, Flame,
-  Moon, Brain, BedDouble, Activity, Flag, Users, TrendingUp, ClipboardList,
   Check, Mail, Phone, ChevronRight, Sparkles, ArrowRight, Clock,
   type LucideIcon,
 } from "lucide-react";
 import type { LeadMagnet, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
-
-const ICONS: Record<string, LucideIcon> = {
-  Dumbbell, ClipboardCheck, Target, Apple, AlertTriangle, Utensils, Flame,
-  Moon, Brain, BedDouble, Activity, Flag, Users, TrendingUp, ClipboardList,
-};
+import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
 const UNLOCK_PREFIX = "ep-unlocked-";
 
@@ -402,7 +396,7 @@ export default function LeadMagnetLanding({
   magnet: LeadMagnet;
   submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
 }) {
-  const Icon = ICONS[magnet.icon] ?? Target;
+  const Icon = getMagnetIcon(magnet.icon);
   const [unlocked, setUnlocked] = useState(false);
   useEffect(() => setUnlocked(readUnlocked(magnet.slug)), [magnet.slug]);
 

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAllLeads } from "@/utils/leads";
-import { getLeadMagnet } from "@/lib/lead-magnets";
+import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import { ChevronLeft, Mail, Phone } from "lucide-react";
 
@@ -26,7 +26,8 @@ export default async function LeadsAdminPage() {
   const profile = await getProfile(user.id);
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
 
-  const leads = await getAllLeads();
+  const [leads, leadMagnets] = await Promise.all([getAllLeads(), getAllLeadMagnets()]);
+  const magnetsBySlug = new Map(leadMagnets.map((m) => [m.slug, m]));
 
   const byMagnet = new Map<string, number>();
   for (const l of leads) byMagnet.set(l.lead_magnet_slug, (byMagnet.get(l.lead_magnet_slug) ?? 0) + 1);
@@ -63,7 +64,7 @@ export default async function LeadsAdminPage() {
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{leads.length}</span>
         </div>
         {topMagnets.map(([slug, count]) => {
-          const magnet = getLeadMagnet(slug);
+          const magnet = magnetsBySlug.get(slug);
           return (
             <div key={slug} className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0, minWidth: 140 }}>
               <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
@@ -83,7 +84,7 @@ export default async function LeadsAdminPage() {
       ) : (
         <div className="space-y-2">
           {leads.map((l) => {
-            const magnet = getLeadMagnet(l.lead_magnet_slug);
+            const magnet = magnetsBySlug.get(l.lead_magnet_slug);
             return (
               <div
                 key={l.id}
