@@ -54,6 +54,9 @@ export interface CheckIn {
   // Retour vidéo type Loom du coach, attaché à ce check-in (bucket
   // "coach-videos", distinct du video_path du client ci-dessus).
   coach_video_path: string | null;
+  // Alternative à coach_video_path : lien externe (ScreenPal, YouTube,
+  // Vimeo...) plutôt qu'un enregistrement natif dans l'appli.
+  coach_video_link: string | null;
   // Media — URLs signées prêtes à afficher, calculées par les fonctions de
   // lecture ci-dessous. Vide par défaut pour les fonctions qui n'ont pas
   // besoin d'afficher les médias (ex. stats, bilans).

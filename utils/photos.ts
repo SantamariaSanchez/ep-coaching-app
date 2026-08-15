@@ -14,6 +14,8 @@ export interface PhotoUpdate {
   drive_link: string | null;
   photo_paths: string[] | null;
   video_path: string | null;
+  // Alternative à video_path : lien externe (ScreenPal, YouTube, Vimeo...).
+  video_link: string | null;
   // URLs signées prêtes à afficher, calculées par les fonctions de lecture.
   photo_urls: string[];
   video_url: string | null;

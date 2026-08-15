@@ -3,6 +3,7 @@ import { requireOwnClient } from "@/lib/auth-guards";
 
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 type ReplyState = { error: string } | { success: true } | null;
 
@@ -85,6 +86,34 @@ export async function attachCoachVideo(
   const { error } = await supabase
     .from("check_ins")
     .update({ coach_video_path: videoPath })
+    .eq("id", checkinId)
+    .eq("client_id", clientId);
+
+  if (error) return { error: error.message };
+
+  revalidatePath(`/dashboard/coach/clients/${clientId}/checkins`);
+  return {};
+}
+
+// Alternative à attachCoachVideo ci-dessus : lien externe (ScreenPal,
+// YouTube, Vimeo...) plutôt qu'un enregistrement natif dans l'appli —
+// demande explicite du 2026-08-15, même principe que
+// exercise_corrections.coach_video_link côté corrections.
+export async function attachCoachVideoLink(
+  checkinId: string,
+  clientId: string,
+  videoLink: string
+): Promise<{ error?: string }> {
+  const guard = await requireOwnClient(clientId);
+  if (!guard.ok) return { error: guard.error };
+
+  const safeLink = safeExternalUrl(videoLink);
+  if (!safeLink) return { error: "Lien invalide." };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("check_ins")
+    .update({ coach_video_link: safeLink })
     .eq("id", checkinId)
     .eq("client_id", clientId);
 

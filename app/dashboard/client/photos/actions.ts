@@ -7,6 +7,7 @@ import { notifyCoachNewPhotoUpdate } from "@/app/actions/notifications";
 import { requireClient } from "@/lib/auth-guards";
 import type { SubmissionType } from "@/lib/posing-data";
 import { TYPE_LABELS } from "@/lib/posing-data";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 function getISOWeekNumber(date: Date): number {
   const d = new Date(date);
@@ -54,10 +55,15 @@ export async function submitPhotoUpdate(
       .map((v) => (v as string).trim())
       .filter(Boolean);
     const videoPath = (formData.get("video_path") as string)?.trim() || null;
+    // Alternative à videoPath : lien externe (ScreenPal, YouTube, Vimeo...)
+    // — demande explicite du 2026-08-15.
+    const videoLinkRaw = (formData.get("video_link") as string)?.trim() || null;
+    const videoLink = videoLinkRaw ? safeExternalUrl(videoLinkRaw) : null;
+    if (videoLinkRaw && !videoLink) return { error: "Lien vidéo invalide." };
 
     if (!type) return { error: "Type requis." };
     if (type === "mandatory_poses" && photoPaths.length === 0) return { error: "Au moins une photo requise." };
-    if (type !== "mandatory_poses" && !videoPath) return { error: "Vidéo requise." };
+    if (type !== "mandatory_poses" && !videoPath && !videoLink) return { error: "Vidéo requise (upload ou lien)." };
 
     const today = new Date();
     const submitted_at = today.toISOString().split("T")[0];
@@ -73,6 +79,7 @@ export async function submitPhotoUpdate(
       category,
       photo_paths: photoPaths.length > 0 ? photoPaths : null,
       video_path: videoPath,
+      video_link: videoLink,
       notes,
     });
 

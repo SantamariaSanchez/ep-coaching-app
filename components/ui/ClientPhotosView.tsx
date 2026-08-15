@@ -8,6 +8,7 @@ import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 import { safeExternalUrl } from "@/lib/sanitize";
 import PhotoCompareSlider from "./PhotoCompareSlider";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 const MAX_PHOTOS = 4;
 
@@ -132,6 +133,11 @@ function SubmissionForm({
   const [type, setType] = useState<SubmissionType>("mandatory_poses");
   const [photos, setPhotos] = useState<MediaItem[]>([]);
   const [video, setVideo] = useState<MediaItem | null>(null);
+  // Alternative à l'upload : coller un lien externe (ScreenPal, YouTube,
+  // Vimeo...) — demande explicite du 2026-08-15, même principe que côté
+  // check-ins/corrections.
+  const [showVideoLinkInput, setShowVideoLinkInput] = useState(false);
+  const [videoLink, setVideoLink] = useState("");
   const [notes, setNotes] = useState("");
   const [duration, setDuration] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -188,8 +194,8 @@ function SubmissionForm({
       setError("Au moins une photo requise.");
       return;
     }
-    if (type !== "mandatory_poses" && !video?.path) {
-      setError("Vidéo requise.");
+    if (type !== "mandatory_poses" && !video?.path && !videoLink.trim()) {
+      setError("Vidéo requise (upload ou lien).");
       return;
     }
     setSubmitting(true);
@@ -199,6 +205,7 @@ function SubmissionForm({
     fd.set("type", type);
     photos.forEach((p) => { if (p.path) fd.append("photo_paths", p.path); });
     if (video?.path) fd.set("video_path", video.path);
+    else if (videoLink.trim()) fd.set("video_link", videoLink.trim());
     fd.set("notes", notes.trim());
 
     const result = await onSubmit(fd);
@@ -221,7 +228,7 @@ function SubmissionForm({
           {isSelfTracking ? "Retrouve-la dans ton suivi ci-dessous." : "Ton coach recevra une notification."}
         </p>
         <button
-          onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setNotes(""); }}
+          onClick={() => { setSuccess(false); setPhotos([]); setVideo(null); setVideoLink(""); setShowVideoLinkInput(false); setNotes(""); }}
           className="text-xs text-[#E01E1E] hover:underline mt-2"
         >
           Envoyer une autre update
@@ -410,15 +417,42 @@ function SubmissionForm({
                 <X size={13} className="text-[#F5EDED]/40" />
               </button>
             </div>
+          ) : showVideoLinkInput ? (
+            <div className="flex gap-2">
+              <input
+                value={videoLink}
+                onChange={(e) => setVideoLink(e.target.value)}
+                placeholder="https://go.screenpal.com/watch/..."
+                aria-label="Lien vidéo externe"
+                className={inputCls}
+              />
+              <button
+                type="button"
+                onClick={() => { setShowVideoLinkInput(false); setVideoLink(""); }}
+                aria-label="Annuler le lien"
+                className="flex-shrink-0 px-3 text-[#F5EDED]/40"
+              >
+                <X size={14} />
+              </button>
+            </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => videoInputRef.current?.click()}
-              className="w-full flex items-center justify-center gap-2 border border-dashed border-[#890404]/40 bg-black/20 rounded-lg py-2.5 text-[#F5EDED]/40"
-            >
-              <Video size={14} />
-              <span className="text-[11px] font-bold uppercase tracking-widest">Filmer ma vidéo</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => videoInputRef.current?.click()}
+                className="flex-1 flex items-center justify-center gap-2 border border-dashed border-[#890404]/40 bg-black/20 rounded-lg py-2.5 text-[#F5EDED]/40"
+              >
+                <Video size={14} />
+                <span className="text-[11px] font-bold uppercase tracking-widest">Filmer ma vidéo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowVideoLinkInput(true)}
+                className="text-[10.5px] font-bold text-[#F5EDED]/35 underline flex-shrink-0"
+              >
+                ou lien
+              </button>
+            </div>
           )}
           <input
             ref={videoInputRef}
@@ -540,6 +574,7 @@ function PhotoHistoryCard({ photo, isSelfTracking }: { photo: PhotoUpdate; isSel
           )}
         </div>
       )}
+      {!photo.video_url && photo.video_link && <EmbeddedVideo url={photo.video_link} maxWidth={280} />}
 
       {photo.drive_link && (
         <a

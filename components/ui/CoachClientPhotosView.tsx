@@ -8,6 +8,7 @@ import DrawableImage from "@/components/ui/DrawableImage";
 import type { Profile } from "@/utils/auth";
 import type { PhotoUpdate } from "@/utils/photos";
 import { safeExternalUrl } from "@/lib/sanitize";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -241,6 +242,7 @@ function PhotoCard({
           )}
         </div>
       )}
+      {!photo.video_url && photo.video_link && <EmbeddedVideo url={photo.video_link} maxWidth={280} />}
 
       {photo.drive_link && (
         <a
@@ -356,7 +358,7 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
               {photo && !imgUrl && (
                 <div className="aspect-[3/4] flex items-center justify-center bg-[#150000] border border-[#890404]/15 rounded-lg text-center px-4">
                   <p className="text-[10px] text-[#F5EDED]/30">
-                    {photo.video_url || photo.drive_link
+                    {photo.video_url || photo.video_link || photo.drive_link
                       ? "Pas de photo pour cette mise à jour (vidéo)."
                       : "Aperçu indisponible. Le lien Drive doit être partagé en «Tous les utilisateurs disposant du lien»."}
                   </p>
@@ -379,7 +381,8 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
                       Voir la vidéo
                     </a>
                   )}
-                  {!photo.video_url && photo.drive_link && (
+                  {!photo.video_url && photo.video_link && <EmbeddedVideo url={photo.video_link} maxWidth={280} />}
+                  {!photo.video_url && !photo.video_link && photo.drive_link && (
                     <a
                       href={safeExternalUrl(photo.drive_link) ?? "#"}
                       target="_blank"

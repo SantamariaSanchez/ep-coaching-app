@@ -4,8 +4,8 @@ import { useActionState, useEffect, useRef, useState } from "react";
 import { submitCorrection } from "@/app/dashboard/client/program/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ExerciseCorrectionResolved } from "@/utils/corrections";
-import { Video, ExternalLink, CheckCircle2, Clock, Loader2, X } from "lucide-react";
-import { safeExternalUrl } from "@/lib/sanitize";
+import { Video, CheckCircle2, Clock, Loader2, X } from "lucide-react";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 function StatusBadge({ status }: { status: "pending" | "answered" }) {
   return status === "answered" ? (
@@ -58,16 +58,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
         {c.video_url ? (
           <video src={c.video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 4 }} />
         ) : c.video_link ? (
-          <a
-            href={safeExternalUrl(c.video_link) ?? "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium"
-          >
-            <Video size={11} />
-            Voir ma vidéo
-            <ExternalLink size={10} />
-          </a>
+          <EmbeddedVideo url={c.video_link} />
         ) : null}
       </div>
 
@@ -82,16 +73,7 @@ function CorrectionCard({ c }: { c: ExerciseCorrectionResolved }) {
           {c.coach_video_url ? (
             <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10 }} />
           ) : c.coach_video_link ? (
-            <a
-              href={safeExternalUrl(c.coach_video_link) ?? "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 text-green-400/80 hover:text-green-400 transition-colors text-xs font-medium"
-            >
-              <Video size={11} />
-              Vidéo coach
-              <ExternalLink size={10} />
-            </a>
+            <EmbeddedVideo url={c.coach_video_link} />
           ) : null}
         </div>
       )}

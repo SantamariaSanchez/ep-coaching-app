@@ -5,9 +5,10 @@ import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import type { CheckIn } from "@/utils/checkins";
 import type { WeeklyAverages } from "@/utils/daily-logs";
-import { replyToCheckin, attachCoachVideo } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
+import { replyToCheckin, attachCoachVideo, attachCoachVideoLink } from "@/app/dashboard/coach/clients/[id]/checkins/actions";
 import { createClientSupabase } from "@/lib/supabase-client";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 const STRESS_HUNGER_LABEL = ["", "Bas", "Moyen", "Haut"];
@@ -90,6 +91,12 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
   const router = useRouter();
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
+  // Alternative à l'enregistrement natif : coller un lien externe
+  // (ScreenPal, YouTube, Vimeo...) — demande explicite du 2026-08-15.
+  const [showLinkInput, setShowLinkInput] = useState(false);
+  const [videoLinkInput, setVideoLinkInput] = useState("");
+  const [videoLink, setVideoLink] = useState<string | null>(null);
+  const [linkPending, setLinkPending] = useState(false);
 
   useEffect(() => {
     if (state && "success" in state) {
@@ -121,6 +128,22 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
     router.refresh();
   }
 
+  async function handleVideoLinkSave() {
+    const link = videoLinkInput.trim();
+    if (!link) return;
+    setVideoError(null);
+    setLinkPending(true);
+    const result = await attachCoachVideoLink(checkin.id, checkin.client_id, link);
+    setLinkPending(false);
+    if (result.error) {
+      setVideoError(result.error);
+      return;
+    }
+    setVideoLink(link);
+    setShowLinkInput(false);
+    router.refresh();
+  }
+
   return (
     <form ref={formRef} action={formAction} style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(137,4,4,0.15)" }}>
       <input type="hidden" name="checkin_id" value={checkin.id} />
@@ -144,12 +167,51 @@ function CoachReplyForm({ checkin, onDone, onCancel }: { checkin: CheckIn; onDon
         />
       </div>
 
-      <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10 }}>
-        <CoachVideoRecorder onSend={handleVideoSend} triggerLabel="Retour vidéo" />
-        {(videoPath || checkin.coach_video_path) && !videoError && (
-          <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Vidéo attachée</span>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <CoachVideoRecorder onSend={handleVideoSend} triggerLabel="Retour vidéo" />
+          {!showLinkInput && (
+            <button
+              type="button"
+              onClick={() => setShowLinkInput(true)}
+              style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)", fontSize: 11, fontWeight: 700, cursor: "pointer", textDecoration: "underline" }}
+            >
+              ou coller un lien (ScreenPal, YouTube...)
+            </button>
+          )}
+          {(videoPath || checkin.coach_video_path) && !videoError && (
+            <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Vidéo attachée</span>
+          )}
+          {(videoLink || checkin.coach_video_link) && !videoError && (
+            <span style={{ fontSize: 11, color: "#4ade80" }}>✓ Lien attaché</span>
+          )}
+          {videoError && <span style={{ fontSize: 11, color: "#FDC4C4" }}>{videoError}</span>}
+        </div>
+        {showLinkInput && (
+          <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+            <input
+              value={videoLinkInput}
+              onChange={(e) => setVideoLinkInput(e.target.value)}
+              placeholder="https://go.screenpal.com/watch/..."
+              aria-label="Lien vidéo externe"
+              style={{
+                flex: 1, background: "rgba(0,0,0,0.45)", border: "1px solid rgba(137,4,4,0.35)",
+                borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#F5EDED", outline: "none",
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleVideoLinkSave}
+              disabled={linkPending}
+              style={{
+                background: linkPending ? "rgba(224,30,30,0.5)" : "#E01E1E", color: "#fff", border: "none",
+                borderRadius: 8, padding: "0 14px", fontSize: 11, fontWeight: 800, cursor: "pointer",
+              }}
+            >
+              {linkPending ? "..." : "Attacher"}
+            </button>
+          </div>
         )}
-        {videoError && <span style={{ fontSize: 11, color: "#FDC4C4" }}>{videoError}</span>}
       </div>
 
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end" }}>
@@ -473,6 +535,9 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               </p>
               {checkin.coach_video_url && (
                 <video src={checkin.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 320, borderRadius: 10, marginTop: 10 }} />
+              )}
+              {!checkin.coach_video_url && checkin.coach_video_link && (
+                <EmbeddedVideo url={checkin.coach_video_link} />
               )}
             </div>
           ) : (

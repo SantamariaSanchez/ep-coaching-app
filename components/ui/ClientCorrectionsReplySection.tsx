@@ -1,10 +1,10 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { Video, ExternalLink, CheckCircle2, Clock, Loader2, X } from "lucide-react";
+import { Video, CheckCircle2, Clock, Loader2, X } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ExerciseCorrectionResolved, VideoAnnotation } from "@/utils/corrections";
-import { safeExternalUrl } from "@/lib/sanitize";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 type ActionState = { error?: string; success?: boolean } | null;
 
@@ -52,14 +52,7 @@ function AnnotatedClientVideo({
       {videoUrl ? (
         <video ref={videoRef} src={videoUrl} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
       ) : videoLink ? (
-        <a
-          href={safeExternalUrl(videoLink) ?? "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-[#E01E1E]/80 hover:text-[#E01E1E] transition-colors font-medium text-xs"
-        >
-          <Video size={11} /> Vidéo <ExternalLink size={10} />
-        </a>
+        <EmbeddedVideo url={videoLink} maxWidth={280} />
       ) : null}
 
       {annotations.length > 0 && (
@@ -307,14 +300,7 @@ export default function ClientCorrectionsReplySection({
                   {c.coach_video_url ? (
                     <video src={c.coach_video_url} controls playsInline style={{ width: "100%", maxWidth: 280, borderRadius: 8 }} />
                   ) : c.coach_video_link ? (
-                    <a
-                      href={safeExternalUrl(c.coach_video_link) ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 text-green-400/70 hover:text-green-400 transition-colors text-xs font-medium"
-                    >
-                      <Video size={11} /> Vidéo coach <ExternalLink size={10} />
-                    </a>
+                    <EmbeddedVideo url={c.coach_video_link} maxWidth={280} />
                   ) : null}
                 </div>
               </>
