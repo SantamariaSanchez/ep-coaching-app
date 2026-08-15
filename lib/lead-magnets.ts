@@ -38,6 +38,18 @@ interface LeadMagnetBase {
 export interface GuideSection {
   heading: string;
   paragraphs: string[];
+  // Étapes d'action concrètes et numérotées (demande explicite du
+  // 2026-08-15 : "pas juste du texte, mais des vraies choses à appliquer
+  // concrètement") — ce qui distingue un vrai lead magnet ("voilà quoi
+  // faire, dans l'ordre") d'un simple article de blog ("voilà ce qu'on
+  // sait"). Optionnel pour rester rétrocompatible avec les entrées déjà
+  // publiées, mais attendu sur au moins une section de chaque nouveau
+  // guide — voir LEADMAGNETS.md.
+  actionSteps?: string[];
+  // Encart à retenir (chiffre clé, seuil, règle simple) mis en avant
+  // visuellement plutôt que noyé dans un paragraphe — un repère qu'on
+  // retient même en lecture en diagonale.
+  callout?: string;
 }
 
 export interface GuideMagnet extends LeadMagnetBase {

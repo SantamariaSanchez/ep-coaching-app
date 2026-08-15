@@ -104,6 +104,46 @@ intro/groups/conclusion pour checklist, intro/questions/outcomes pour quiz),
 sources (jsonb : [{label, doi, url}]), published, created_at
 ```
 
+Chaque `section` d'un guide (`GuideSection` dans `lib/lead-magnets.ts`) :
+```
+{ heading, paragraphs: string[], actionSteps?: string[], callout?: string }
+```
+
+## Exigence de qualité (règle ajoutée le 2026-08-15, rétroactive sur toute
+## nouvelle production, pas sur les 75 entrées déjà publiées)
+
+Retour direct : "je veux vraiment des leadmagnets et pas des micromagnets...
+pas que du texte mais aussi du visuel... pas juste lire un truc mais avoir de
+vraies choses à appliquer concrètement". Diagnostic sur les entrées déjà
+publiées (ex. `guide-procrastination-avant-seance`) : 3 sections d'un seul
+paragraphe chacune, la partie "concrète" noyée dans une phrase de conseil
+générique. Ça ne suffit plus. Pour toute nouvelle entrée format `guide` :
+
+- **Au moins 4 sections**, chacune avec 2-3 paragraphes (pas 1 seul) — un
+  vrai développement, pas un résumé de résumé.
+- **Au moins une section avec `actionSteps` rempli** (3 à 6 étapes
+  numérotées, concrètes, avec des chiffres/seuils quand c'est pertinent —
+  "fixe un créneau fixe" est vague, "bloque le même créneau 3x/semaine
+  pendant 2 semaines avant de le changer" est actionnable). C'est ce qui
+  distingue un lead magnet d'un article de blog : le lecteur doit pouvoir
+  fermer la page et appliquer, pas juste avoir appris un fait.
+- **`callout` recommandé** sur au moins une section : un chiffre clé, un
+  seuil, une règle simple à retenir même en lecture en diagonale — rendu
+  visuellement distinct (encart) par `LeadMagnetLanding.tsx`, pas noyé dans
+  le texte.
+- Le format `checklist` reste pertinent tel quel pour de l'auto-diagnostic
+  ("est-ce que ça me décrit"), mais quand le sujet s'y prête mieux
+  (protocole, méthode, plan), préférer `guide` avec `actionSteps` plutôt
+  que forcer une checklist qui ne fait qu'observer sans agir.
+- Toujours sourcé (règle déjà en place, inchangée) — le surplus de longueur
+  et d'action ne doit jamais se faire au prix d'une affirmation non
+  vérifiée sur PubMed.
+
+Rattrapage des 75 entrées déjà publiées : pas fait dans cette passe (75
+réécritures substantielles = un chantier à part), mais à prioriser avant de
+continuer la vague de nouvelles entrées si le temps le permet — sinon la
+prochaine session de production locale.
+
 ## Avancement
 
 | Date | Vague | Items | Détail |

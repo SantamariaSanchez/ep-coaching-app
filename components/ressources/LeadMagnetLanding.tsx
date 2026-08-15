@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Check, Mail, Phone, ChevronRight, Sparkles, ArrowRight, Clock,
+  Check, Mail, Phone, ChevronRight, Sparkles, ArrowRight, Clock, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -210,6 +210,38 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
               {p}
             </p>
           ))}
+          {s.callout && (
+            <div
+              style={{
+                display: "flex", gap: 10, alignItems: "flex-start",
+                background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.3)",
+                borderRadius: 10, padding: "12px 14px", margin: "12px 0",
+              }}
+            >
+              <Zap size={15} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
+              <p style={{ fontSize: 13.5, color: "#F5EDED", fontWeight: 700, lineHeight: 1.6, margin: 0 }}>{s.callout}</p>
+            </div>
+          )}
+          {s.actionSteps && s.actionSteps.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
+              {s.actionSteps.map((step, k) => (
+                <div key={k} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span
+                    style={{
+                      flexShrink: 0, width: 22, height: 22, borderRadius: "50%",
+                      background: "#E01E1E", color: "#fff", fontSize: 11, fontWeight: 800,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                    }}
+                  >
+                    {k + 1}
+                  </span>
+                  <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.8)", lineHeight: 1.65, margin: 0, paddingTop: 1 }}>
+                    {step}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       ))}
       <div style={{ borderTop: "1px solid rgba(224,30,30,0.15)", paddingTop: 18, marginTop: 8 }}>
