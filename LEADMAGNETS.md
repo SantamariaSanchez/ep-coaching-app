@@ -190,11 +190,12 @@ production locale.
 | 2026-08-15 | Vague R | 3 | Discipline vs motivation, transition post-objectif, image de marque personnelle — même approche non sourcée que la vague Q. |
 | 2026-08-15 | Vague S | 4 | Gérer un coach qui ne convient plus, contenu & réseaux pour un coach, gestion administrative de base, premiers salariés/sous-traitants — backlog initial épuisé sur ces 4 derniers thèmes, même approche non sourcée. |
 | 2026-08-15 | Vague T | 2 | Stretching statique avant/après (deux corpus distincts : effet aigu négatif, effet chronique positif), retour après blessure aux ischio-jambiers (méta-analyse comparant les protocoles) — ferme les 2 thèmes du backlog initial restés sans source. |
-| **Total au 2026-08-15** | | **111** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague U | 1 | Fréquence d'entraînement par muscle (2 méta-analyses du même auteur, la plus récente et large nuance la première : c'est le volume qui compte, pas la fréquence en soi). |
+| **Total au 2026-08-15** | | **112** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 24, Psychologie 18, Général 11, Récupération 13,
+Nutrition 24, Entraînement 25, Psychologie 18, Général 11, Récupération 13,
 Entrepreneuriat 12, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -213,7 +214,8 @@ cycle menstruel et entraînement, interférence cardio/hypertrophie,
 bilatéral, cross-education), périodisation (force vs hypertrophie, ondulée
 vs linéaire), entraînement à domicile matériel limité (élastiques vs
 charges libres), squat profond et genoux, blessures épaule/lombaires
-(powerlifters, facteurs de risque).
+(powerlifters, facteurs de risque), fréquence d'entraînement par muscle
+(c'est le volume qui compte).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -334,6 +336,9 @@ statique : Opplert & Babault 2018, revue effets aigus (DOI
 10.1007/s40279-017-0797-9), Arntz et al. 2023, méta-analyse 41 études effets
 chroniques (DOI 10.1007/s40279-022-01806-9). Retour blessure ischio-jambiers :
 Abdulridha et al. 2025, méta-analyse (DOI 10.1016/j.jbmt.2025.06.030).
+Fréquence d'entraînement : Schoenfeld/Ogborn/Krieger 2016 (DOI
+10.1007/s40279-016-0543-8), Schoenfeld/Grgic/Krieger 2019, méta-analyse
+25 études (DOI 10.1080/02640414.2018.1555906).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -352,13 +357,14 @@ seul thème du backlog initial encore ouvert).
 Nouveaux thèmes à explorer pour continuer au delà de ce premier backlog
 (non vérifiés, à rechercher avant production) : végétarisme et récupération
 sportive, sauna/bain chaud et récupération (recherche PubMed infructueuse
-le 2026-08-15, à retenter), ratio push/pull dans un programme, fréquence
-d'entraînement optimale par groupe musculaire, gestion du stress
-pré-compétition, syndrome du surentraînement (signes précoces), nutrition
-et qualité du sommeil au delà de la caféine, cyclisme/course à pied et
-interférence avec la force (angle complémentaire à l'axe déjà traité),
-tarification à la valeur vs à l'heure pour un coach, structurer un onboarding
-client qui réduit l'attrition précoce.
+le 2026-08-15, à retenter), ratio push/pull dans un programme (recherche
+PubMed infructueuse le 2026-08-15, sujet plus proche du bon sens
+d'entraînement que de la littérature clinique, à traiter sans source si
+retenté), gestion du stress pré-compétition, syndrome du surentraînement
+(signes précoces), nutrition et qualité du sommeil au delà de la caféine,
+cyclisme/course à pied et interférence avec la force (angle complémentaire
+à l'axe déjà traité), tarification à la valeur vs à l'heure pour un coach,
+structurer un onboarding client qui réduit l'attrition précoce.
 
 ## Mécanisme de production continue
 
