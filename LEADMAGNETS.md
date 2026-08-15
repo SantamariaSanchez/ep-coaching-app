@@ -189,11 +189,12 @@ production locale.
 | 2026-08-15 | Vague Q | 3 | Diversifier ses revenus de coach, éviter l'épuisement en indépendant, auto-sabotage — non sourcés PubMed (littérature clinique limitée sur l'entrepreneuriat), conseils mesurés sans statistique inventée. |
 | 2026-08-15 | Vague R | 3 | Discipline vs motivation, transition post-objectif, image de marque personnelle — même approche non sourcée que la vague Q. |
 | 2026-08-15 | Vague S | 4 | Gérer un coach qui ne convient plus, contenu & réseaux pour un coach, gestion administrative de base, premiers salariés/sous-traitants — backlog initial épuisé sur ces 4 derniers thèmes, même approche non sourcée. |
-| **Total au 2026-08-15** | | **109** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague T | 2 | Stretching statique avant/après (deux corpus distincts : effet aigu négatif, effet chronique positif), retour après blessure aux ischio-jambiers (méta-analyse comparant les protocoles) — ferme les 2 thèmes du backlog initial restés sans source. |
+| **Total au 2026-08-15** | | **111** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 24, Psychologie 18, Général 11, Récupération 11,
+Nutrition 24, Entraînement 24, Psychologie 18, Général 11, Récupération 13,
 Entrepreneuriat 12, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -239,7 +240,9 @@ quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
 indicateur d'efficacité, bains froids (courbatures vs gains long terme),
 foam rolling (mobilité/récupération perçue, pas un effet mécanique sur le
 fascia), respiration et système nerveux (effet réel mais limité), jet lag
-pour athlètes qui voyagent (asymétrie est/ouest).
+pour athlètes qui voyagent (asymétrie est/ouest), stretching statique
+avant/après (effet aigu vs chronique), retour après blessure aux
+ischio-jambiers (comparaison de protocoles).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -326,25 +329,30 @@ et al. 2019, modélisation biomécanique (DOI 10.1016/j.jbiomech.2019.109333).
 Alimentation étudiante : Foglia et al. 2026, étude sur 1973 étudiants (DOI
 10.1016/j.numecd.2026.104672), Pelletier & Laska 2012 (DOI
 10.1016/j.jneb.2012.04.001). Blessures épaule/lombaires : Strömbäck et al.
-2018, étude sur powerlifters (DOI 10.1177/2325967118771016).
+2018, étude sur powerlifters (DOI 10.1177/2325967118771016). Stretching
+statique : Opplert & Babault 2018, revue effets aigus (DOI
+10.1007/s40279-017-0797-9), Arntz et al. 2023, méta-analyse 41 études effets
+chroniques (DOI 10.1007/s40279-022-01806-9). Retour blessure ischio-jambiers :
+Abdulridha et al. 2025, méta-analyse (DOI 10.1016/j.jbmt.2025.06.030).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
 Le backlog initial de cette section (fixé le 2026-08-14) est maintenant
-épuisé, sauf deux thèmes qui n'ont pas trouvé de source PubMed exploitable
-malgré plusieurs recherches (calisthenics/poids du corps : aucune étude
-pertinente trouvée ; retour progressif après blessure : uniquement des
-protocoles d'étude non encore publiés ou des cas isolés N=1) :
+entièrement épuisé, y compris les deux thèmes un temps restés sans source
+exploitable (retour progressif après blessure : traité via l'angle
+spécifique des ischio-jambiers, bien documenté ; progression aux mouvements
+au poids du corps : reste sans bonne source PubMed trouvée à ce jour,
+seul thème du backlog initial encore ouvert).
 
-- Entraînement : progression sur les mouvements au poids du corps (à
-  retenter avec d'autres termes de recherche, ou traiter sans source comme
-  les thèmes entrepreneuriat/psychologie ci-dessus).
-- Récupération : blessures et retour progressif à l'entraînement (idem).
+- Entraînement : progression sur les mouvements au poids du corps (aucune
+  étude pertinente trouvée malgré plusieurs recherches ; à retenter avec
+  d'autres termes, ou traiter sans source comme les thèmes
+  entrepreneuriat/psychologie ci-dessus).
 
 Nouveaux thèmes à explorer pour continuer au delà de ce premier backlog
 (non vérifiés, à rechercher avant production) : végétarisme et récupération
-sportive, sauna/bain chaud et récupération, stretching statique avant
-séance vs après, ratio push/pull dans un programme, fréquence
+sportive, sauna/bain chaud et récupération (recherche PubMed infructueuse
+le 2026-08-15, à retenter), ratio push/pull dans un programme, fréquence
 d'entraînement optimale par groupe musculaire, gestion du stress
 pré-compétition, syndrome du surentraînement (signes précoces), nutrition
 et qualité du sommeil au delà de la caféine, cyclisme/course à pied et
