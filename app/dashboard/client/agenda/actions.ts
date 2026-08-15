@@ -203,3 +203,32 @@ export async function createReminderFromBlock(
   revalidatePath("/dashboard/client/reminders");
   return {};
 }
+
+// Tâches à cocher dans un bloc d'agenda (voir supabase/migrations/
+// 20260815e_schedule_block_task_logs.sql) — le client envoie l'ensemble des
+// clés cochées pour la journée (même mécanique que logSteps/completed_items
+// dans components/steps/StepsClient.tsx), pas une clé à la fois : un seul
+// upsert simple plutôt qu'une opération de tableau côté base.
+export async function saveScheduleBlockTaskCompletion(
+  date: string,
+  completedKeys: string[]
+): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+
+  const supabase = createAdminClient();
+  const { error } = await supabase
+    .from("schedule_block_task_logs")
+    .upsert(
+      { owner_id: guard.userId, log_date: date, completed_keys: completedKeys, updated_at: new Date().toISOString() },
+      { onConflict: "owner_id,log_date" }
+    );
+
+  if (error) {
+    console.error("saveScheduleBlockTaskCompletion error:", error);
+    return { error: "Erreur serveur, réessaie." };
+  }
+
+  revalidateAgendaPaths();
+  return {};
+}

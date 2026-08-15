@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Plus, Trash2, X, Bell, Copy, MoreHorizontal, ChevronLeft, ChevronRight,
-  AlertTriangle,
+  AlertTriangle, Timer, Check,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
 import { AGENDA_PRESETS, AGENDA_ICON_MAP, type AgendaPreset } from "@/lib/agenda-presets";
@@ -198,6 +198,9 @@ export default function WeeklyAgenda({
   deleteScheduleBlock,
   duplicateDayBlocks,
   clearDayBlocks,
+  today,
+  initialCompletedTaskKeys,
+  saveTaskCompletion,
 }: {
   blocks: ScheduleBlock[];
   editable: boolean;
@@ -207,6 +210,11 @@ export default function WeeklyAgenda({
   deleteScheduleBlock?: (blockId: string) => Promise<{ error?: string }>;
   duplicateDayBlocks?: (fromDay: number, toDays: number[]) => Promise<{ error?: string; blocks?: ScheduleBlock[] }>;
   clearDayBlocks?: (day: number) => Promise<{ error?: string }>;
+  /** Date du jour (YYYY-MM-DD, heure de Paris) — sert de clé pour les tâches cochées, voir saveTaskCompletion. */
+  today?: string;
+  /** Clés "{block_id}:{task_index}" déjà cochées aujourd'hui. */
+  initialCompletedTaskKeys?: string[];
+  saveTaskCompletion?: (date: string, completedKeys: string[]) => Promise<{ error?: string }>;
 }) {
   const [blocks, setBlocks] = useState(initialBlocks);
 
@@ -216,6 +224,54 @@ export default function WeeklyAgenda({
   useEffect(() => {
     setBlocks(initialBlocks);
   }, [initialBlocks]);
+
+  // Tâches cochées du bloc en cours (voir "En ce moment" plus bas) — demande
+  // explicite du 2026-08-15 : "des chose a cocher... avec un minuteur
+  // facultatif", pas juste une liste à puces en lecture seule.
+  const [completedKeys, setCompletedKeys] = useState<Set<string>>(new Set(initialCompletedTaskKeys ?? []));
+  useEffect(() => {
+    setCompletedKeys(new Set(initialCompletedTaskKeys ?? []));
+  }, [initialCompletedTaskKeys]);
+
+  async function toggleTaskKey(key: string) {
+    if (!saveTaskCompletion || !today) return;
+    const next = new Set(completedKeys);
+    if (next.has(key)) next.delete(key);
+    else next.add(key);
+    setCompletedKeys(next);
+    const res = await saveTaskCompletion(today, [...next]);
+    if (res.error) setCompletedKeys(completedKeys);
+  }
+
+  // Minuteur facultatif, un seul actif à la fois, lié au bloc en cours —
+  // purement client (pas de valeur à persister, sert juste à se chronométrer
+  // pendant le bloc).
+  const [timerBlockId, setTimerBlockId] = useState<string | null>(null);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  useEffect(() => {
+    if (!timerRunning) return;
+    const id = setInterval(() => setTimerSeconds((s) => s + 1), 1000);
+    return () => clearInterval(id);
+  }, [timerRunning]);
+  function toggleTimer(blockId: string) {
+    if (timerBlockId !== blockId) {
+      setTimerBlockId(blockId);
+      setTimerSeconds(0);
+      setTimerRunning(true);
+      return;
+    }
+    setTimerRunning((r) => !r);
+  }
+  function resetTimer() {
+    setTimerSeconds(0);
+    setTimerRunning(false);
+  }
+  function formatTimer(totalSeconds: number): string {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
   // Avant, la vue semaine n'existait que sur desktop (un isDesktop détecté
   // au resize). Maintenant un vrai bouton Jour/Semaine, disponible sur tous
   // les écrans ; l'effet ci-dessous choisit juste un défaut raisonnable une
@@ -548,26 +604,75 @@ export default function WeeklyAgenda({
 
   return (
     <div className="space-y-3">
-      {/* Bloc en cours, avec ses tâches — le rappel visuel "je fais quoi là" */}
+      {/* Bloc en cours, avec ses tâches — le rappel visuel "je fais quoi là",
+          des cases à cocher réelles plutôt qu'une liste à puces, plus un
+          minuteur facultatif pour se chronométrer dessus. */}
       {currentBlock && (
         <div className="ep-card" style={{ padding: "14px 16px", borderLeft: `3px solid ${currentBlock.color}` }}>
-          <div className="flex items-center gap-2 mb-1.5">
-            {currentBlock.icon && AGENDA_ICON_MAP[currentBlock.icon] && (() => {
-              const Icon = AGENDA_ICON_MAP[currentBlock.icon!];
-              return <Icon size={13} style={{ color: currentBlock.color, flexShrink: 0 }} strokeWidth={2.2} />;
-            })()}
-            <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
-              En ce moment jusqu&apos;à {currentBlock.end_time.slice(0, 5)}
-            </p>
+          <div className="flex items-center justify-between gap-2 mb-1.5">
+            <div className="flex items-center gap-2 min-w-0">
+              {currentBlock.icon && AGENDA_ICON_MAP[currentBlock.icon] && (() => {
+                const Icon = AGENDA_ICON_MAP[currentBlock.icon!];
+                return <Icon size={13} style={{ color: currentBlock.color, flexShrink: 0 }} strokeWidth={2.2} />;
+              })()}
+              <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: 0 }}>
+                En ce moment jusqu&apos;à {currentBlock.end_time.slice(0, 5)}
+              </p>
+            </div>
+            {editable && (
+              <button
+                onClick={() => toggleTimer(currentBlock.id)}
+                className="flex items-center gap-1.5 flex-shrink-0 px-2 py-1 rounded-lg text-[11px] font-bold tabular-nums transition-colors"
+                style={
+                  timerBlockId === currentBlock.id && timerRunning
+                    ? { background: "rgba(224,30,30,0.15)", color: "#E01E1E" }
+                    : { background: "rgba(245,237,237,0.06)", color: "rgba(245,237,237,0.4)" }
+                }
+                title={timerBlockId === currentBlock.id && timerRunning ? "Mettre en pause" : "Lancer le minuteur"}
+              >
+                <Timer size={12} />
+                {timerBlockId === currentBlock.id ? formatTimer(timerSeconds) : "00:00"}
+              </button>
+            )}
           </div>
           <p style={{ fontSize: 14, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>{currentBlock.label}</p>
+          {timerBlockId === currentBlock.id && (timerRunning || timerSeconds > 0) && (
+            <button
+              onClick={resetTimer}
+              className="text-[9px] font-bold uppercase tracking-widest mb-2"
+              style={{ color: "rgba(245,237,237,0.3)" }}
+            >
+              Réinitialiser le minuteur
+            </button>
+          )}
           {currentBlock.tasks && currentBlock.tasks.length > 0 && (
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 4 }}>
-              {currentBlock.tasks.map((t, i) => (
-                <li key={i} style={{ display: "flex", gap: 6, fontSize: 12, color: "rgba(245,237,237,0.65)", lineHeight: 1.4 }}>
-                  <span style={{ color: currentBlock.color, flexShrink: 0 }}>•</span> {t}
-                </li>
-              ))}
+            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
+              {currentBlock.tasks.map((t, i) => {
+                const key = `${currentBlock.id}:${i}`;
+                const done = completedKeys.has(key);
+                return (
+                  <li key={i}>
+                    <button
+                      onClick={() => toggleTaskKey(key)}
+                      disabled={!saveTaskCompletion || !today}
+                      className="flex items-start gap-2 w-full text-left transition-opacity disabled:cursor-default"
+                      style={{ fontSize: 12, color: done ? "rgba(245,237,237,0.35)" : "rgba(245,237,237,0.75)", lineHeight: 1.4 }}
+                    >
+                      <span
+                        className="flex-shrink-0 rounded flex items-center justify-center transition-colors"
+                        style={{
+                          width: 15, height: 15, marginTop: 1,
+                          border: `1.5px solid ${done ? currentBlock.color : "rgba(245,237,237,0.25)"}`,
+                          background: done ? currentBlock.color : "transparent",
+                        }}
+                      >
+                        {done && <Check size={10} strokeWidth={3} style={{ color: "#150000" }} />}
+                      </span>
+                      <span style={{ textDecoration: done ? "line-through" : "none" }}>{t}</span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

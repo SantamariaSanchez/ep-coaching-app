@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
-import { getScheduleBlocks } from "@/utils/agenda";
+import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
+import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
 import {
   addScheduleBlock,
@@ -9,6 +10,7 @@ import {
   deleteScheduleBlock,
   duplicateDayBlocks,
   clearDayBlocks,
+  saveScheduleBlockTaskCompletion,
 } from "./actions";
 import { CalendarDays } from "lucide-react";
 
@@ -16,7 +18,11 @@ export default async function ClientAgendaPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const blocks = await getScheduleBlocks(user.id);
+  const today = todayInParis();
+  const [blocks, completedTaskKeys] = await Promise.all([
+    getScheduleBlocks(user.id),
+    getScheduleBlockTaskLog(user.id, today),
+  ]);
 
   return (
     <div className="px-5 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -41,6 +47,9 @@ export default async function ClientAgendaPage() {
         deleteScheduleBlock={deleteScheduleBlock}
         duplicateDayBlocks={duplicateDayBlocks}
         clearDayBlocks={clearDayBlocks}
+        today={today}
+        initialCompletedTaskKeys={completedTaskKeys}
+        saveTaskCompletion={saveScheduleBlockTaskCompletion}
       />
     </div>
   );

@@ -48,3 +48,22 @@ export async function getScheduleBlocks(ownerId: string): Promise<ScheduleBlock[
     return [];
   }
 }
+
+/**
+ * Clés des tâches de bloc cochées aujourd'hui ("{block_id}:{task_index}"),
+ * voir supabase/migrations/20260815e_schedule_block_task_logs.sql.
+ */
+export async function getScheduleBlockTaskLog(ownerId: string, date: string): Promise<string[]> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("schedule_block_task_logs")
+      .select("completed_keys")
+      .eq("owner_id", ownerId)
+      .eq("log_date", date)
+      .maybeSingle();
+    return (data as { completed_keys: string[] } | null)?.completed_keys ?? [];
+  } catch {
+    return [];
+  }
+}
