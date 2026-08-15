@@ -405,9 +405,19 @@ function ExerciseCard({
 
   const hasLockedVideo = !!exercise.video_url && !videosUnlocked && !isCoach;
 
+  // Bandeau d'accent selon le statut vidéo — signal le plus utile de la
+  // fiche (voir le bandeau amber "0 vidéo" au-dessus), rendu visible dès le
+  // survol de la grille plutôt que seulement en dépliant la carte.
+  const statusAccent = hasLockedVideo
+    ? "#f59e0b"
+    : exercise.video_url
+    ? "#E01E1E"
+    : "rgba(245,237,237,0.12)";
+
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
-      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden flex flex-col h-full">
+      <div style={{ height: 3, background: statusAccent, opacity: 0.7 }} />
+      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-start gap-3 px-4 pt-3.5 pb-3 text-left flex-1">
         <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
           {hasLockedVideo ? (
             <Lock size={14} className="text-amber-400" />
@@ -418,8 +428,8 @@ function ExerciseCard({
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate">{exercise.name}</p>
-          <div className="flex items-center gap-1.5 flex-wrap mt-0.5">
+          <p className="text-sm font-bold text-white leading-snug">{exercise.name}</p>
+          <div className="flex items-center gap-1.5 flex-wrap mt-1.5">
             {exercise.muscle_subgroup && (
               <span className="text-[9px] font-semibold text-[#F5EDED]/35">{exercise.muscle_subgroup}</span>
             )}
@@ -784,7 +794,7 @@ export default function ExerciseLibraryView({
             {!activeGroup && (
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">{group}</p>
             )}
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>
               {list.map((ex) => (
                 <ExerciseCard
                   key={ex.id}

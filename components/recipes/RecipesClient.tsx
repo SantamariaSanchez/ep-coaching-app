@@ -219,9 +219,13 @@ function RecipeCard({
     );
   }
 
+  const tempAccent =
+    recipe.temp === "chaud" ? "#f97316" : recipe.temp === "froid" ? "#38bdf8" : "#a78bfa";
+
   return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
-      <button onClick={onToggle} className="w-full text-left p-4">
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden flex flex-col h-full">
+      <div style={{ height: 3, background: tempAccent, opacity: 0.6 }} />
+      <button onClick={onToggle} className="w-full text-left p-4 flex-1">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
@@ -726,7 +730,7 @@ export default function RecipesClient({
               <p className="text-sm text-[#F5EDED]/35">Aucune recette ne correspond à ces filtres.</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>
               {filtered.map((r) => (
                 <RecipeCard
                   key={r.id}

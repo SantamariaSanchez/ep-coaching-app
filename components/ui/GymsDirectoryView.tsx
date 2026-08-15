@@ -263,15 +263,36 @@ function GymCard({
     );
   }
 
+  const typeAccent =
+    gym.type === "independante"
+      ? { bg: "rgba(245,158,11,0.10)", border: "rgba(245,158,11,0.25)", text: "#fcd34d" }
+      : gym.type === "associative"
+      ? { bg: "rgba(34,197,94,0.10)", border: "rgba(34,197,94,0.25)", text: "#86efac" }
+      : { bg: "rgba(224,30,30,0.10)", border: "rgba(224,30,30,0.25)", text: "#E01E1E" };
+
   return (
-    <div className={`bg-[#1f0101] border rounded-xl overflow-hidden ${isMyGym ? "border-[#E01E1E]/50" : "border-[#890404]/20"}`}>
-      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-center gap-3 px-4 py-3 text-left">
-        <div className="w-9 h-9 rounded-lg bg-[#150000] border border-[#890404]/25 flex items-center justify-center flex-shrink-0">
-          <Dumbbell size={15} className="text-[#E01E1E]" />
+    <div
+      className={`bg-[#1f0101] border rounded-xl overflow-hidden flex flex-col h-full ${isMyGym ? "border-[#E01E1E]/50" : "border-[#890404]/20"}`}
+    >
+      {/* Bandeau coloré selon le type — donne à chaque carte une identité
+          visuelle immédiate dans la grille, sans dépendre d'une photo de
+          salle (donnée qu'on n'a pas). */}
+      <div style={{ height: 4, background: typeAccent.text, opacity: 0.6 }} />
+      <button onClick={() => setExpanded((v) => !v)} className="w-full flex items-start gap-3 px-4 pt-4 pb-3 text-left flex-1">
+        <div
+          className="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border"
+          style={{ background: typeAccent.bg, borderColor: typeAccent.border }}
+        >
+          <Dumbbell size={18} style={{ color: typeAccent.text }} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-bold text-white truncate">{gym.name}</p>
-          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          <p className="text-sm font-black text-white leading-snug">{gym.name}</p>
+          {gym.city && (
+            <p className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/40 mt-0.5">
+              <MapPin size={10} /> {gym.city}
+            </p>
+          )}
+          <div className="flex items-center gap-1.5 mt-2 flex-wrap">
             {isMyGym && (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]">
                 <Pin size={9} /> Ta salle
@@ -279,24 +300,14 @@ function GymCard({
             )}
             {gym.type && (
               <span
-                className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
-                  gym.type === "independante"
-                    ? "bg-amber-500/10 border-amber-500/25 text-amber-300"
-                    : gym.type === "associative"
-                    ? "bg-green-500/10 border-green-500/25 text-green-300"
-                    : "bg-[#150000] border-[#890404]/20 text-[#F5EDED]/40"
-                }`}
+                className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border"
+                style={{ background: typeAccent.bg, borderColor: typeAccent.border, color: typeAccent.text }}
               >
                 {GYM_TYPE_LABELS[gym.type]}
               </span>
             )}
-            {gym.city && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/35">
-                <MapPin size={10} /> {gym.city}
-              </span>
-            )}
             {gym.avgRating != null && (
-              <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/35">
+              <span className="inline-flex items-center gap-1 text-[10px] text-[#F5EDED]/45">
                 <StarDisplay value={gym.avgRating} /> {gym.avgRating} ({gym.reviews.length})
               </span>
             )}
@@ -543,7 +554,7 @@ export default function GymsDirectoryView({
         />
       )}
 
-      <div className="space-y-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>
         {filtered.map((gym) => (
           <GymCard
             key={gym.id}
