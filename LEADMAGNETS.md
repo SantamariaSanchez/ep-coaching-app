@@ -193,12 +193,13 @@ production locale.
 | 2026-08-15 | Vague U | 1 | Fréquence d'entraînement par muscle (2 méta-analyses du même auteur, la plus récente et large nuance la première : c'est le volume qui compte, pas la fréquence en soi). |
 | 2026-08-15 | Vague V | 2 | Surentraînement, signes précoces (consensus officiel ECSS/ACSM), stress pré-compétition (2056 athlètes, résilience et coping comme leviers entraînables). |
 | 2026-08-15 | Vague W | 2 | La force améliore l'endurance (angle complémentaire à l'axe interférence déjà traité), tarification à la valeur vs à l'heure pour un coach (non sourcé). |
-| **Total au 2026-08-15** | | **116** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague X | 1 | Onboarding client et attrition précoce (non sourcé) — ferme la liste de candidats compilée plus tôt dans la session. |
+| **Total au 2026-08-15** | | **117** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
 Nutrition 24, Entraînement 26, Psychologie 19, Général 11, Récupération 14,
-Entrepreneuriat 13, Steps & activité quotidienne 9.
+Entrepreneuriat 14, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -266,7 +267,8 @@ de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
 face à l'incertitude, gestion du temps en indépendant, diversifier ses
 revenus, éviter l'épuisement en indépendant, image de marque personnelle,
 contenu et réseaux sociaux pour un coach, gestion administrative de base,
-premiers salariés/sous-traitants, tarification à la valeur vs à l'heure.
+premiers salariés/sous-traitants, tarification à la valeur vs à l'heure,
+onboarding client et attrition précoce.
 
 ## Sources déjà vérifiées (réutilisables sans re-recherche)
 
@@ -364,16 +366,28 @@ seul thème du backlog initial encore ouvert).
   d'autres termes, ou traiter sans source comme les thèmes
   entrepreneuriat/psychologie ci-dessus).
 
-Nouveaux thèmes à explorer pour continuer au delà de ce premier backlog
-(non vérifiés, à rechercher avant production) : végétarisme et récupération
-sportive, sauna/bain chaud et récupération (recherche PubMed infructueuse
-le 2026-08-15, à retenter), ratio push/pull dans un programme (recherche
-PubMed infructueuse le 2026-08-15, sujet plus proche du bon sens
-d'entraînement que de la littérature clinique, à traiter sans source si
-retenté), nutrition et qualité du sommeil au delà de la caféine (magnésium
-trouvé uniquement en population diabétique le 2026-08-15, à retenter en
-population générale ou traiter avec ce garde-fou explicite), structurer un
-onboarding client qui réduit l'attrition précoce.
+Cette deuxième liste de candidats est maintenant épuisée elle aussi (2
+thèmes traités sans source PubMed faute de littérature exploitable trouvée,
+documenté ci-dessous). Nouveaux thèmes restants ou à explorer pour la
+prochaine session :
+
+- Entraînement : végétarisme et récupération sportive (à rechercher),
+  progression sur les mouvements au poids du corps (aucune source trouvée
+  malgré plusieurs recherches le 2026-08-15).
+- Récupération : sauna/bain chaud et récupération (recherche PubMed
+  infructueuse le 2026-08-15, à retenter avec d'autres termes), nutrition
+  et qualité du sommeil au delà de la caféine (magnésium trouvé uniquement
+  en population diabétique, à retenter en population générale).
+- Entraînement (non sourcé si retenté) : ratio push/pull dans un programme
+  (recherche PubMed infructueuse, sujet plus proche du bon sens
+  d'entraînement que de la littérature clinique).
+
+Au delà de ces thèmes précis, la production continue peut aussi repartir
+des sous-catégories les moins couvertes (voir répartition par catégorie
+ci-dessus : Steps & activité quotidienne et Général restent les plus
+légères) ou creuser des angles plus spécifiques sur des sujets déjà traités
+en surface (ex. déjà 26 entrées Entraînement, mais des variantes précises
+comme un groupe musculaire donné, un mouvement donné, restent ouvertes).
 
 ## Mécanisme de production continue
 
