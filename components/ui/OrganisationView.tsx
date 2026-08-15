@@ -175,6 +175,7 @@ function PoleAccordion({
     <div className="mb-3 rounded-xl overflow-hidden border" style={{ borderColor: `${pole.color}35` }}>
       <button
         onClick={onToggle}
+        aria-expanded={open}
         className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
         style={{ background: open ? `${pole.color}12` : "transparent" }}
       >
@@ -220,7 +221,7 @@ function SimpleAccordionItem({
 }) {
   return (
     <div className="rounded-xl overflow-hidden border border-[#890404]/20 mb-2.5 bg-[#1f0101]">
-      <button onClick={onToggle} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
+      <button onClick={onToggle} aria-expanded={open} className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left">
         {header}
         <ChevronToggle open={open} />
       </button>
@@ -409,6 +410,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       <section className="mb-8">
         <button
           onClick={() => setFicheOpen((v) => !v)}
+          aria-expanded={ficheOpen}
           className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 text-left"
         >
           <div className="flex items-center gap-2 min-w-0">
