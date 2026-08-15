@@ -65,7 +65,7 @@ export default async function CoachFormationsPage() {
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
             {totalPublished === 0
               ? "Aucune vidéo n'est visible côté client pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon) pour que ce contenu serve enfin."
-              : "Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible — pense à la publier."}
+              : "Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible, pense à la publier."}
           </p>
         </div>
       )}

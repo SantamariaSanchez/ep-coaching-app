@@ -229,7 +229,7 @@ export function checkExerciseConflicts(
     if (!allowed.includes(type)) {
       conflicts.push({
         source: "equipment_access",
-        keyword: `${ex.equipment ?? "Matériel"} — client ${TRAINING_ACCESS_LABELS[intake.training_access]}`,
+        keyword: `${ex.equipment ?? "Matériel"} : client ${TRAINING_ACCESS_LABELS[intake.training_access]}`,
       });
     }
   }
@@ -239,7 +239,7 @@ export function checkExerciseConflicts(
     if (extraExcludedEquipment.includes(type)) {
       conflicts.push({
         source: "equipment_access",
-        keyword: `${ex.equipment ?? "Matériel"} — écarté dans l'inventaire matériel de cette séance de conception`,
+        keyword: `${ex.equipment ?? "Matériel"} : écarté dans l'inventaire matériel de cette séance de conception`,
       });
     }
   }

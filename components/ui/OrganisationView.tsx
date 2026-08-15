@@ -308,7 +308,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         <div className="flex items-center gap-2 mb-4">
           <Building2 size={14} className="text-[#E01E1E]" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Organigramme — {totalRoles} postes sur {poles.length} pôles
+            Organigramme : {totalRoles} postes sur {poles.length} pôles
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -326,7 +326,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </div>
         </div>
         <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed">
-          Chaque pôle peut démarrer à une seule personne — la structure tient même à 1 recrutement près.
+          Chaque pôle peut démarrer à une seule personne, la structure tient même à 1 recrutement près.
           Clique un pôle ci-dessous pour voir ses postes, et le statut de chaque poste pour le mettre à jour.
         </p>
       </div>
@@ -415,7 +415,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             <FileText size={14} className="text-[#E01E1E] flex-shrink-0" />
             <div className="min-w-0">
               <h2 className="text-sm font-black uppercase tracking-tight">Exemple de fiche technique</h2>
-              <p className="text-[10.5px] text-[#F5EDED]/35 truncate">Setter — script, étapes, critères de passage en poste</p>
+              <p className="text-[10.5px] text-[#F5EDED]/35 truncate">Setter : script, étapes, critères de passage en poste</p>
             </div>
           </div>
           <ChevronToggle open={ficheOpen} />
@@ -424,7 +424,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         {ficheOpen && (
           <div className="bg-[#1f0101] border border-t-0 border-[#890404]/25 rounded-b-xl -mt-2 pt-4 p-5">
             <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-              <p className="text-[15px] font-black text-white">Setter — Qualification de leads</p>
+              <p className="text-[15px] font-black text-white">Setter : qualification de leads</p>
               <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
                 Pôle Sales
               </span>
@@ -475,7 +475,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
                   { k: "CRM à jour", v: "100% des leads traités ont une fiche complète" },
                 ].map((c) => (
                   <div key={c.k} className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
-                    <p className="text-[11.5px] text-[#F5EDED]/60"><strong className="text-white font-bold">{c.k}</strong> — {c.v}</p>
+                    <p className="text-[11.5px] text-[#F5EDED]/60"><strong className="text-white font-bold">{c.k}</strong> : {c.v}</p>
                   </div>
                 ))}
               </div>
@@ -505,7 +505,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
             <p className="text-[11.5px] text-amber-300/75 leading-relaxed">
               Les fiches de poste, la trame d&apos;intégration et le déroulé de formation avant embauche
               ci-dessus sont des points de départ utilisables tels quels. Les contrats de travail, eux,
-              doivent être rédigés ou validés par un avocat en droit du travail avant toute signature — à
+              doivent être rédigés ou validés par un avocat en droit du travail avant toute signature, à
               faire avant le premier recrutement, pas après.
             </p>
           </div>

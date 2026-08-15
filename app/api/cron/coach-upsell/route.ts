@@ -16,7 +16,7 @@ import { insertNotification } from "@/utils/insert-notification";
 // même si le cron tourne 2x/mois, personne ne reçoit ce nudge plus d'une fois
 // par mois.
 const TITLE = "🚀 Passe la vitesse supérieure";
-const BODY = "Tu utilises déjà l'appli — un coach peut te construire un programme et un suivi sur mesure, avec un vrai humain derrière.";
+const BODY = "Tu utilises déjà l'appli, un coach peut te construire un programme et un suivi sur mesure, avec un vrai humain derrière.";
 const URL = "/dashboard/client/abonnement";
 
 function emailBody(firstName: string) {

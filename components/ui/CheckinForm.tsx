@@ -216,7 +216,7 @@ export default function CheckinForm({
           <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, margin: 0 }}>
             Astuce : l&apos;appli <strong style={{ color: "#F5EDED" }}>Lens Buddy</strong> aide à reprendre
-            exactement la même pose et le même angle chaque semaine — la meilleure
+            exactement la même pose et le même angle chaque semaine, la meilleure
             façon d&apos;avoir des photos de comparaison vraiment lisibles.
           </p>
         </div>

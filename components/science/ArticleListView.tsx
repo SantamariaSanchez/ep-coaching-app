@@ -68,7 +68,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
             <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
               <AlertTriangle size={14} className="flex-shrink-0" />
               {needsReview.length} article{needsReview.length > 1 ? "s" : ""} importé{needsReview.length > 1 ? "s" : ""}{" "}
-              automatiquement sans résumé FR — juste un titre anglais et un lien pour l&apos;instant.
+              automatiquement sans résumé FR, juste un titre anglais et un lien pour l&apos;instant.
             </p>
             <button
               onClick={() => setShowNeedsReview((v) => !v)}

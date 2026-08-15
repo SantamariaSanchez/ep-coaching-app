@@ -74,7 +74,7 @@ export default function AcceptingClientsCard({
             </p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
               {accepting
-                ? "Désactive si tu es à capacité — les membres verront rejoindre une liste d'attente."
+                ? "Désactive si tu es à capacité, les membres verront rejoindre une liste d'attente."
                 : "Les membres non-clients voient un bouton pour rejoindre ta liste d'attente."}
             </p>
           </div>

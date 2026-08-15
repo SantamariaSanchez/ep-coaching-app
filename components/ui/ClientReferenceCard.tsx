@@ -21,7 +21,7 @@ export default function ClientReferenceCard({
   if (intake.goal_3_months) rows.push({ label: "Objectif 3 mois", value: intake.goal_3_months });
   rows.push({
     label: "Lieu d'entraînement",
-    value: intake.training_access ? TRAINING_ACCESS_LABELS[intake.training_access] : "Non renseigné — ne suggère pas de matériel de salle sans vérifier",
+    value: intake.training_access ? TRAINING_ACCESS_LABELS[intake.training_access] : "Non renseigné, ne suggère pas de matériel de salle sans vérifier",
   });
   if (intake.gym_name) rows.push({ label: "Salle", value: intake.gym_name });
   if (intake.diet_type) rows.push({ label: "Régime", value: DIET_LABELS[intake.diet_type] });

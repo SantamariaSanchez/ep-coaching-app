@@ -174,7 +174,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                       }}
                       style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap", cursor: "text" }}
                     >
-                      {note.body || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide — clique pour écrire.</span>}
+                      {note.body || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
                     </p>
                   )}
                 </div>

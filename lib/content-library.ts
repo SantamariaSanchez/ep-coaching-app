@@ -179,20 +179,20 @@ export interface TechnicalSheet {
 export const TECHNICAL_SHEETS: TechnicalSheet[] = [
   {
     title: "Sous-titres qui retiennent l'attention",
-    summary: "Le son est souvent coupé au scroll — sans sous-titres lisibles, le hook ne sert à rien.",
+    summary: "Le son est souvent coupé au scroll, sans sous-titres lisibles, le hook ne sert à rien.",
     steps: [
       "Police épaisse, grande taille (au moins 1/12e de la hauteur d'écran), fort contraste avec le fond.",
-      "2-4 mots affichés à la fois maximum, synchronisés précisément avec la voix — jamais une phrase entière d'un coup.",
+      "2-4 mots affichés à la fois maximum, synchronisés précisément avec la voix, jamais une phrase entière d'un coup.",
       "Mettre en valeur (couleur ou surlignage) le mot clé de chaque segment, pas tout le texte de la même couleur.",
       "Placer les sous-titres dans le tiers central de l'écran, jamais collés en bas où l'UI de la plateforme les recouvre.",
-      "Relire l'orthographe avant export — une faute visible casse la crédibilité plus vite qu'un mauvais montage.",
+      "Relire l'orthographe avant export, une faute visible casse la crédibilité plus vite qu'un mauvais montage.",
     ],
   },
   {
     title: "Overlays qui appuient le propos sans surcharger",
     summary: "Un overlay doit renforcer un point précis, jamais décorer juste pour \"faire dynamique\".",
     steps: [
-      "Un overlay par idée clé, jamais plus de 2-3 par vidéo courte — sinon l'œil ne sait plus où regarder.",
+      "Un overlay par idée clé, jamais plus de 2-3 par vidéo courte, sinon l'œil ne sait plus où regarder.",
       "Faire apparaître l'overlay pile au moment où le mot correspondant est prononcé, pas avant, pas après.",
       "Réserver les flèches/cercles de surlignage pour pointer un détail précis à l'écran (le geste, le chiffre), pas comme simple déco.",
       "Garder une charte visuelle cohérente (mêmes couleurs, même police) d'une vidéo à l'autre pour construire une identité reconnaissable.",
@@ -201,34 +201,34 @@ export const TECHNICAL_SHEETS: TechnicalSheet[] = [
   },
   {
     title: "Technique du clone (split-screen, 2 personnages en opposition)",
-    summary: "Se filmer 2 fois au même endroit pour jouer 2 points de vue opposés dans une même vidéo — très efficace pour les formats mythe/réalité ou débat.",
+    summary: "Se filmer 2 fois au même endroit pour jouer 2 points de vue opposés dans une même vidéo, très efficace pour les formats mythe/réalité ou débat.",
     steps: [
-      "Filmer sur trépied fixe, caméra immobile entre les deux prises — même cadrage, même distance, même lumière, sinon le raccord casse l'illusion.",
-      "Se placer clairement à gauche pour le premier personnage, puis rejouer la scène en se plaçant à droite pour le second — ne jamais chevaucher la même zone.",
+      "Filmer sur trépied fixe, caméra immobile entre les deux prises, même cadrage, même distance, même lumière, sinon le raccord casse l'illusion.",
+      "Se placer clairement à gauche pour le premier personnage, puis rejouer la scène en se plaçant à droite pour le second. Ne jamais chevaucher la même zone.",
       "Garder le même arrière-plan et la même tenue entre les deux prises (sauf si le contraste de tenue sert exprès le contraste des 2 avis).",
-      "En montage, poser un split simple (ligne verticale nette au milieu) plutôt qu'un fondu — la coupure nette vend mieux l'idée de 2 personnes distinctes.",
-      "Faire parler les deux personnages en s'interrompant/se répondant (couper vite entre les deux) plutôt que 2 monologues séparés — c'est ce qui crée la dynamique de dialogue.",
+      "En montage, poser un split simple (ligne verticale nette au milieu) plutôt qu'un fondu, la coupure nette vend mieux l'idée de 2 personnes distinctes.",
+      "Faire parler les deux personnages en s'interrompant/se répondant (couper vite entre les deux) plutôt que 2 monologues séparés, c'est ce qui crée la dynamique de dialogue.",
     ],
   },
   {
-    title: "Structure de montage — format court (Reel/Short/TikTok)",
+    title: "Structure de montage, format court (Reel/Short/TikTok)",
     summary: "0 à 2 secondes décident si la personne reste ou scrolle : chaque seconde du montage doit le savoir.",
     steps: [
       "0-2s : hook visuel ET texte simultanés, jamais un plan neutre ou un logo d'intro qui fait perdre l'attention.",
       "Coupes rapides (1 plan toutes les 2-4s) dans la partie centrale pour maintenir le rythme, plans plus longs seulement sur un moment fort.",
-      "Musique posée sous la voix, jamais au-dessus — baisser le volume musique de moitié dès que la voix commence.",
+      "Musique posée sous la voix, jamais au-dessus. Baisser le volume musique de moitié dès que la voix commence.",
       "Dernier plan = CTA + rappel visuel du bénéfice principal, jamais un simple fondu au noir.",
       "Exporter en 9:16 natif (pas un recadrage a posteriori d'un 16:9), texte et sujet toujours dans la zone centrale sûre.",
     ],
   },
   {
-    title: "Structure de montage — vidéo longue (YouTube)",
+    title: "Structure de montage, vidéo longue (YouTube)",
     summary: "L'objectif n'est plus le premier coup d'œil mais la rétention sur la durée : rythme différent d'un format court.",
     steps: [
       "Accroche de 20-30s qui annonce clairement ce que la vidéo va apporter, sans sur-promettre ce qui n'est pas dedans.",
       "Une transition visuelle ou sonore claire à chaque changement de partie, pour que le spectateur sente la progression.",
       "Réinjecter un rappel du bénéfice toutes les 2-3 minutes (pourquoi continuer à regarder), surtout après une partie plus technique.",
-      "Utiliser des chapitres YouTube correspondant exactement à la structure du script — améliore la rétention ET le référencement.",
+      "Utiliser des chapitres YouTube correspondant exactement à la structure du script, améliore la rétention ET le référencement.",
       "Garder un rythme de coupe plus posé que le format court (1 plan toutes les 6-10s en moyenne), sauf sur les moments de démonstration.",
     ],
   },

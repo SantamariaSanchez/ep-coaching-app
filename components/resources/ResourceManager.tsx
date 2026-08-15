@@ -153,7 +153,7 @@ export default function ResourceManager({ resources }: { resources: ResourceItem
           <div className="flex items-center gap-2 min-w-0">
             <AlertTriangle size={14} className="text-amber-400 flex-shrink-0" />
             <p className="text-[11.5px] text-amber-300/90 leading-snug">
-              {uncategorizedCount} ressource{uncategorizedCount !== 1 ? "s" : ""} sans catégorie — tant qu&apos;il n&apos;y
+              {uncategorizedCount} ressource{uncategorizedCount !== 1 ? "s" : ""} sans catégorie. Tant qu&apos;il n&apos;y
               a qu&apos;une catégorie utilisée (« Autres »), tes clients ne voient aucun filtre pour s&apos;y retrouver.
             </p>
           </div>

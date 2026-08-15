@@ -303,7 +303,7 @@ const PHASES = [
   },
   {
     title: "Mise en pratique encadrée",
-    desc: "Dès que le candidat produit un vrai travail utilisable par l'entreprise (répondre à un vrai client, publier un vrai post, tenir un vrai appel), ce n'est plus de la formation pure : ça relève d'un statut encadré — stage conventionné avec un établissement, alternance, ou période d'essai d'un contrat déjà signé. Le choix se fait avec l'avocat/expert-comptable, pas au feeling.",
+    desc: "Dès que le candidat produit un vrai travail utilisable par l'entreprise (répondre à un vrai client, publier un vrai post, tenir un vrai appel), ce n'est plus de la formation pure : ça relève d'un statut encadré, stage conventionné avec un établissement, alternance, ou période d'essai d'un contrat déjà signé. Le choix se fait avec l'avocat/expert-comptable, pas au feeling.",
     status: "Statut à cadrer avant de démarrer, pas après",
     ok: false,
   },

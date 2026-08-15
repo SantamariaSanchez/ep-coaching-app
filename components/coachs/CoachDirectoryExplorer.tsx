@@ -163,7 +163,7 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
               </Link>
             ) : (
               <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.35)" }}>
-                Complet pour le moment — inscris-toi et rejoins sa liste d&apos;attente depuis ton espace membre.
+                Complet pour le moment, inscris-toi et rejoins sa liste d&apos;attente depuis ton espace membre.
               </p>
             )}
           </div>

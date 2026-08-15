@@ -6,7 +6,7 @@ import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Trouve ton coach — EP Coaching",
+  title: "Trouve ton coach | EP Coaching",
   description: "Annuaire public des coachs EP Coaching : trouve celui qui correspond à ton objectif.",
 };
 

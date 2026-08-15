@@ -632,7 +632,7 @@ export default async function ClientDashboard({
         >
           <Gift size={20} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
           <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>
-            Essai coaching gratuit — se termine dans {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""}
+            Essai coaching gratuit, se termine dans {trialDaysLeft} jour{trialDaysLeft > 1 ? "s" : ""}
           </p>
         </div>
       )}

@@ -119,7 +119,7 @@ export default async function AbonnementPage() {
             borderRadius: "var(--radius-lg)", padding: "12px 16px", marginBottom: 14,
           }}>
             <p style={{ margin: 0, fontSize: 12.5, color: "#fbbf24", fontWeight: 600, lineHeight: 1.5 }}>
-              Ton coaching payant s&apos;est arrêté. Tu gardes l&apos;accès à tous les outils gratuits — pour
+              Ton coaching payant s&apos;est arrêté. Tu gardes l&apos;accès à tous les outils gratuits, pour
               réactiver le suivi avec ton coach, réserve un nouvel appel ci-dessous.
             </p>
           </div>

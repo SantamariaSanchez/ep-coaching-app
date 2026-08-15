@@ -49,7 +49,7 @@ export default async function CoachClientTasksPage({
           <p className="flex items-start gap-2 text-[12px] text-amber-300/90 leading-snug">
             <AlertTriangle size={14} className="flex-shrink-0 mt-0.5" />
             {client.full_name ?? "Ce client"} n&apos;est pas abonné : la page &laquo;&nbsp;Mes tâches&nbsp;&raquo;
-            lui affiche un message &laquo;&nbsp;réservé aux membres coaching&nbsp;&raquo; plutôt que ces tâches — il
+            lui affiche un message &laquo;&nbsp;réservé aux membres coaching&nbsp;&raquo; plutôt que ces tâches, il
             ne les verra ni les recevra en rappel tant qu&apos;il n&apos;est pas abonné{tasks.length > 0 ? `, malgré les ${tasks.length} déjà assignées` : ""}.
           </p>
         </div>

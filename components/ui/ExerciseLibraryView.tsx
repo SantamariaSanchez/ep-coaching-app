@@ -638,7 +638,7 @@ export default function ExerciseLibraryView({
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
               <AlertTriangle size={14} className="flex-shrink-0" />
-              0/{exercises.length} exercices ont une vidéo de démonstration — le système de déblocage par points
+              0/{exercises.length} exercices ont une vidéo de démonstration, le système de déblocage par points
               n&apos;a encore rien à débloquer.
             </p>
             {missingVideoTop.length > 0 && (

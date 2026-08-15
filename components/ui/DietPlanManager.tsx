@@ -204,7 +204,7 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
           Contexte nutritionnel
         </p>
         <p className="text-[11px] text-[#F5EDED]/30">
-          Fiche client absente — impossible de raisonner appétit/stress/habitudes sans elle.
+          Fiche client absente, impossible de raisonner appétit/stress/habitudes sans elle.
         </p>
       </div>
     );
@@ -214,14 +214,14 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   if (intake.stress_level != null) {
     signals.push({
       label: "Niveau de stress",
-      value: `${intake.stress_level}/10${intake.stress_level >= 7 ? " — élevé" : ""}`,
+      value: `${intake.stress_level}/10${intake.stress_level >= 7 ? " (élevé)" : ""}`,
       flag: intake.stress_level >= 7,
     });
   }
   if (intake.sleep_quality != null) {
     signals.push({
       label: "Qualité du sommeil",
-      value: `${intake.sleep_quality}/10${intake.sleep_quality <= 4 ? " — faible" : ""}`,
+      value: `${intake.sleep_quality}/10${intake.sleep_quality <= 4 ? " (faible)" : ""}`,
       flag: intake.sleep_quality <= 4,
     });
   }
@@ -237,7 +237,7 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   if (intake.cheat_meals_per_week != null) {
     signals.push({
       label: "Écarts/semaine",
-      value: `${intake.cheat_meals_per_week}${intake.cheat_meal_impact ? ` — ${intake.cheat_meal_impact}` : ""}`,
+      value: `${intake.cheat_meals_per_week}${intake.cheat_meal_impact ? ` (${intake.cheat_meal_impact})` : ""}`,
     });
   }
   if (intake.known_calories != null) {
@@ -259,7 +259,7 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
         Contexte nutritionnel
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule — à prendre en compte
+        Ce que la cible calorique/macro (onglet Objectifs TDEE) ne dit pas à elle seule, à prendre en compte
         avant de fixer un total définitif, pas après.
       </p>
       {signals.length === 0 ? (
@@ -277,7 +277,7 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
       {highStressPoorSleep && (
         <p className="text-[11px] text-amber-300/90 leading-relaxed border-t border-amber-500/20 pt-2.5">
           Stress élevé + sommeil faible : risque réel d&apos;appétit dérégulé. Une marge plus généreuse qu&apos;un
-          déficit agressif est souvent plus tenable ici — une décision à toi, pas une règle automatique.
+          déficit agressif est souvent plus tenable ici, une décision à toi, pas une règle automatique.
         </p>
       )}
     </div>
@@ -686,7 +686,7 @@ export function PlanBuilder({
         id="diet-phase-contexte"
         n={1}
         title="Réflexion & contexte"
-        subtitle="Pourquoi ce total calorique, pas juste combien — appétit, stress, habitudes déjà en place."
+        subtitle="Pourquoi ce total calorique, pas juste combien : appétit, stress, habitudes déjà en place."
       />
 
       {roadmap && (
@@ -699,7 +699,7 @@ export function PlanBuilder({
         id="diet-phase-programmation"
         n={2}
         title="Programmation"
-        subtitle="Structure de la semaine, nombre de repas, répartition macro visée — avant le moindre aliment."
+        subtitle="Structure de la semaine, nombre de repas, répartition macro visée, avant le moindre aliment."
       />
 
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
@@ -834,7 +834,7 @@ export function PlanBuilder({
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
-          Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier — à prendre en compte dans
+          Pour que la diète reste tenable dans sa vraie vie, pas seulement sur le papier, à prendre en compte dans
           la structure de la semaine ci-dessous.
         </p>
       </div>
@@ -965,7 +965,7 @@ export function PlanBuilder({
           id="diet-phase-construction"
           n={3}
           title="Construction"
-          subtitle="Chaque aliment ajouté porte sa raison d'être — pas juste un nom et un grammage."
+          subtitle="Chaque aliment ajouté porte sa raison d'être, pas juste un nom et un grammage."
         />
       )}
 
@@ -1052,7 +1052,7 @@ export function PlanBuilder({
         id="diet-phase-livraison"
         n={4}
         title="Livraison"
-        subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde — ce que ce client recevra."
+        subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde : ce que ce client recevra."
       />
 
       {mode !== "flexible" && dayMeals.length > 0 && (
@@ -1093,9 +1093,9 @@ export function PlanBuilder({
           </p>
           <ul className="space-y-1.5">
             {[
-              "Cuire les féculents et les protéines en grande quantité 1 à 2 fois par semaine plutôt qu'à chaque repas — la plupart se conservent 3 à 4 jours au frigo dans une boîte hermétique.",
+              "Cuire les féculents et les protéines en grande quantité 1 à 2 fois par semaine plutôt qu'à chaque repas, la plupart se conservent 3 à 4 jours au frigo dans une boîte hermétique.",
               "Portionner tout de suite après cuisson (dans les contenants du repas) : ce qui est déjà pesé et rangé se mange, ce qui reste dans une grande casserole se perd.",
-              "Congeler ce qui ne sera pas mangé sous 3-4 jours (viande cuite, poisson, plats en sauce) plutôt que de le jeter — décongeler au frigo la veille, jamais à température ambiante.",
+              "Congeler ce qui ne sera pas mangé sous 3-4 jours (viande cuite, poisson, plats en sauce) plutôt que de le jeter. Décongeler au frigo la veille, jamais à température ambiante.",
               "Légumes et crudités se préparent la veille pour le lendemain, pas plusieurs jours à l'avance (perte de vitamines et de texture).",
               "Un jour de préparation type : féculent + protéine de la semaine cuits ensemble, légumes lavés/coupés pour 2-3 jours, sauces/assaisonnements préparés à part pour varier le goût sans recuisiner.",
             ].map((tip) => (
@@ -1123,7 +1123,7 @@ export function PlanBuilder({
                 {
                   ok: !!targets,
                   okText: "Cible macro définie (onglet Objectifs TDEE).",
-                  warnText: "Pas de cible macro définie — la répartition ci-dessus n'a rien à viser.",
+                  warnText: "Pas de cible macro définie, la répartition ci-dessus n'a rien à viser.",
                 },
                 {
                   ok: withoutReason === 0,
@@ -1149,7 +1149,7 @@ export function PlanBuilder({
             })()}
           </div>
           <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
-            Rien ici n&apos;empêche d&apos;enregistrer — un rappel, pas un blocage.
+            Rien ici n&apos;empêche d&apos;enregistrer, un rappel, pas un blocage.
           </p>
         </div>
       )}

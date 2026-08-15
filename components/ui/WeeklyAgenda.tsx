@@ -1067,7 +1067,7 @@ export default function WeeklyAgenda({
                 À faire dans ce bloc (optionnel)
               </label>
               <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "0 0 8px", lineHeight: 1.4 }}>
-                Une tâche, un objectif du jour, ou même un prompt à coller dans Claude — ça s&apos;affiche dès que tu arrives dans ce bloc.
+                Une tâche, un objectif du jour, ou même un prompt à coller dans Claude, ça s&apos;affiche dès que tu arrives dans ce bloc.
               </p>
               {form.tasks.length > 0 && (
                 <div className="space-y-1.5 mb-2">

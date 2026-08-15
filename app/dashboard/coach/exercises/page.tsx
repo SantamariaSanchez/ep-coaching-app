@@ -61,7 +61,7 @@ export default async function CoachExercisesPage({
           Bibliothèque
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 mb-3">
-          Exercices et salles de musculation, dans un seul endroit — le matériel d&apos;une salle détermine ce
+          Exercices et salles de musculation, dans un seul endroit. Le matériel d&apos;une salle détermine ce
           qui y est réalisable. Tes membres peuvent aussi enrichir les deux listes.
         </p>
         <div className="flex flex-wrap gap-2">

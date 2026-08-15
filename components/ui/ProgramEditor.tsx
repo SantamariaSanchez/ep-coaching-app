@@ -198,7 +198,7 @@ function VolumeBudgetPanel({
         Budget de volume hebdomadaire
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-4 leading-relaxed max-w-2xl">
-        Fixe une cible de séries directes/semaine par groupe musculaire avant de choisir le moindre exercice —
+        Fixe une cible de séries directes/semaine par groupe musculaire avant de choisir le moindre exercice.
         MEV/MAV/MRV (Renaissance Periodization) comme repère, pas comme règle : la récupération, l&apos;historique
         et les priorités de ce client comptent tout autant. La construction plus bas suit ce budget en direct.
       </p>
@@ -301,7 +301,7 @@ function VolumeReviewPanel({ days, targets }: { days: DayRow[]; targets: Record<
         Séries directes uniquement (le travail indirect n&apos;est pas compté ici) par groupe musculaire sur la
         semaine, comparées à ton budget (ci-dessus) et aux repères MEV/MAV/MRV (Renaissance Periodization). Le
         volume a un effet réel sur l&apos;hypertrophie mais avec des rendements décroissants au-delà d&apos;un
-        certain seuil — la distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un
+        certain seuil, la distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un
         programme
         (
         <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
@@ -374,7 +374,7 @@ function DeliveryReviewPanel({
     },
     {
       ok: hasObjective,
-      okText: "Objectif de phase renseigné — le client saura pourquoi ce programme.",
+      okText: "Objectif de phase renseigné, le client saura pourquoi ce programme.",
       warnText: "Pas d'objectif de phase renseigné (section Structure, phase 1).",
     },
   ];
@@ -393,7 +393,7 @@ function DeliveryReviewPanel({
         ))}
       </div>
       <p className="text-[10px] text-[#F5EDED]/25 mt-3 leading-relaxed">
-        Rien ici n&apos;empêche d&apos;enregistrer — un point ouvert peut être un choix assumé. C&apos;est un
+        Rien ici n&apos;empêche d&apos;enregistrer, un point ouvert peut être un choix assumé. C&apos;est un
         rappel, pas un blocage.
       </p>
     </div>
@@ -723,7 +723,7 @@ function AssignmentOnlyPanel({
           <div className="min-w-0">
             <p className="text-sm font-black text-white truncate">{name || "Exercice"}</p>
             <p className="text-[10px] text-amber-400/80 font-semibold mt-1">
-              Hors bibliothèque — ajoute-le à la bibliothèque pour avoir sa fiche de classification.
+              Hors bibliothèque, ajoute-le à la bibliothèque pour avoir sa fiche de classification.
             </p>
           </div>
           <button onClick={onClose} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
@@ -1402,7 +1402,7 @@ export default function ProgramEditor({
         id="phase-programmation"
         n={2}
         title="Programmation"
-        subtitle="Placement réel dans la semaine, budget de volume, matériel disponible — avant le moindre exercice."
+        subtitle="Placement réel dans la semaine, budget de volume, matériel disponible, avant le moindre exercice."
       />
 
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
@@ -1488,7 +1488,7 @@ export default function ProgramEditor({
           </button>
         </div>
         <p className="mt-2 text-[10px] text-[#F5EDED]/25 leading-relaxed">
-          Ça pose seulement les séances vides du split choisi — aucun exercice n&apos;est choisi à ta place.
+          Ça pose seulement les séances vides du split choisi, aucun exercice n&apos;est choisi à ta place.
           Chaque exercice ajouté ensuite passe par sa propre configuration complète (position, amplitude,
           matériel, risque…), volontairement plus lente qu&apos;un remplissage automatique.
         </p>
@@ -1600,7 +1600,7 @@ export default function ProgramEditor({
                       </p>
                     ) : (
                       <p className="text-[9px] font-bold uppercase tracking-widest text-amber-400/70 mb-1">
-                        Pas encore placée — voir Planification hebdomadaire
+                        Pas encore placée, voir Planification hebdomadaire
                       </p>
                     )}
                     <div className="flex items-center gap-1.5">
@@ -1955,7 +1955,7 @@ export default function ProgramEditor({
         id="phase-livraison"
         n={4}
         title="Livraison"
-        subtitle="Vérification finale et sauvegarde — ce que ce client verra."
+        subtitle="Vérification finale et sauvegarde, ce que ce client verra."
       />
 
       <DeliveryReviewPanel

@@ -130,10 +130,10 @@ export default function SleepScheduleCard({
                   {hasData ? (
                     <>
                       <span style={{ display: "flex", alignItems: "center", gap: 3, color: bedtimeOk ? "#4ade80" : "#FDC4C4" }}>
-                        <BedDouble size={11} /> {log.bedtime_actual?.slice(0, 5) ?? "—"}
+                        <BedDouble size={11} /> {log.bedtime_actual?.slice(0, 5) ?? "N/A"}
                       </span>
                       <span style={{ display: "flex", alignItems: "center", gap: 3, color: wakeOk ? "#4ade80" : "#FDC4C4" }}>
-                        <Sunrise size={11} /> {log.wake_time_actual?.slice(0, 5) ?? "—"}
+                        <Sunrise size={11} /> {log.wake_time_actual?.slice(0, 5) ?? "N/A"}
                       </span>
                     </>
                   ) : (

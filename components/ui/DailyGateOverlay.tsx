@@ -112,7 +112,7 @@ export default function DailyGateOverlay({
             <GateHeader
               icon={Sun}
               title="Bilan du matin"
-              subtitle="Poids et sommeil d'abord — le reste de l'appli attend que ce soit fait."
+              subtitle="Poids et sommeil d'abord, le reste de l'appli attend que ce soit fait."
             />
             <WeightCard today={today} existing={existing} action={action} onSaved={refresh} />
             <SleepCard today={today} existing={existing} action={action} onSaved={refresh} />
@@ -124,7 +124,7 @@ export default function DailyGateOverlay({
             <GateHeader
               icon={UtensilsCrossed}
               title="Un repas t'attend"
-              subtitle={`C'est passé l'heure du ${pendingMeal.label} — logue-le pour continuer.`}
+              subtitle={`C'est passé l'heure du ${pendingMeal.label}, logue-le pour continuer.`}
             />
             <div className="ep-card" style={{ padding: "20px 16px", textAlign: "center" }}>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: "0 0 16px", lineHeight: 1.5 }}>

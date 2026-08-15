@@ -294,7 +294,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   }}
                   style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, whiteSpace: "pre-wrap", cursor: "text", maxHeight: 80, overflow: "hidden" }}
                 >
-                  {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide — clique pour écrire.</span>}
+                  {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
                 </p>
               )}
             </div>

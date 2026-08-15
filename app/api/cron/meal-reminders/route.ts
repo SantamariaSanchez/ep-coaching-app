@@ -97,7 +97,7 @@ export async function GET(req: Request) {
     const result = await sendPushToUser(
       clientId,
       `🍽️ C'est l'heure du ${label}`,
-      "Ton repas est déjà prêt dans ton plan — un tap pour le valider.",
+      "Ton repas est déjà prêt dans ton plan, un tap pour le valider.",
       `/dashboard/client/nutrition?meal=${slot}`
     );
     if (result.ok) notified++;

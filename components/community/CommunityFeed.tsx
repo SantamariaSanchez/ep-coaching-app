@@ -175,7 +175,7 @@ function Composer({
       )}
       {type === "question" && !isCoach && (
         <p className="text-[10px] text-[#F5EDED]/30 mb-2 leading-relaxed">
-          Visible par le coach et toute la communauté — quelqu&apos;un d&apos;autre a probablement la même
+          Visible par le coach et toute la communauté, quelqu&apos;un d&apos;autre a probablement la même
           question. Pour quelque chose de plus personnel,{" "}
           <Link href={`${basePath}/messages`} className="text-[#F5EDED]/50 hover:text-[#F5EDED]/80 underline underline-offset-2">
             écris plutôt en privé

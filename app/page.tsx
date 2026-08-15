@@ -242,7 +242,7 @@ export default function HomePage() {
               textDecoration: "none",
             }}
           >
-            <Users size={12} /> Plusieurs coachs disponibles — trouve le tien
+            <Users size={12} /> Plusieurs coachs disponibles, trouve le tien
           </Link>
         </div>
 

@@ -100,7 +100,7 @@ export async function generatePlanSuggestions(clientId: string): Promise<PlanSug
     );
     if (!intake.training_access) {
       warnings.push(
-        "Programme : lieu d'entraînement non renseigné dans la fiche client — les suggestions incluent aussi bien du matériel de salle que des exercices maison, vérifie avant de les proposer."
+        "Programme : lieu d'entraînement non renseigné dans la fiche client, les suggestions incluent aussi bien du matériel de salle que des exercices maison, vérifie avant de les proposer."
       );
     }
   }

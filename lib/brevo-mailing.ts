@@ -38,7 +38,7 @@ async function getOrCreateCoachList(coachId: string, coachName: string): Promise
   const res = await fetch(`${BREVO_API}/contacts/lists`, {
     method: "POST",
     headers: brevoHeaders(),
-    body: JSON.stringify({ name: `Clients — ${coachName || coachId.slice(0, 8)}`, folderId: BREVO_FOLDER_ID }),
+    body: JSON.stringify({ name: `Clients : ${coachName || coachId.slice(0, 8)}`, folderId: BREVO_FOLDER_ID }),
   });
   if (!res.ok) throw new Error(`Création liste Brevo échouée : ${res.status}`);
   const { id } = (await res.json()) as { id: number };
@@ -94,7 +94,7 @@ export async function sendCoachCampaign(
   if (clients.length === 0) return { recipientCount: 0, campaignId: null };
   if (clients.length > MAX_RECIPIENTS_PER_SEND) {
     throw new Error(
-      `Trop de destinataires (${clients.length}, max ${MAX_RECIPIENTS_PER_SEND} par envoi) — le compte Brevo est sur le plan gratuit, partagé avec les emails critiques de l'app.`
+      `Trop de destinataires (${clients.length}, max ${MAX_RECIPIENTS_PER_SEND} par envoi). Le compte Brevo est sur le plan gratuit, partagé avec les emails critiques de l'app.`
     );
   }
 
@@ -105,7 +105,7 @@ export async function sendCoachCampaign(
     method: "POST",
     headers: brevoHeaders(),
     body: JSON.stringify({
-      name: `${coachName} — ${new Date().toISOString().slice(0, 10)} — ${subject.slice(0, 40)}`,
+      name: `${coachName} : ${new Date().toISOString().slice(0, 10)} : ${subject.slice(0, 40)}`,
       subject,
       sender: SENDER,
       type: "classic",

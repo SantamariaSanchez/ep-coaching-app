@@ -254,7 +254,7 @@ export function SleepCard({ today, existing, action, onSaved }: { today: string;
             </div>
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
-            Facultatif — sert juste à suivre ta régularité dans l&apos;onglet{" "}
+            Facultatif, sert juste à suivre ta régularité dans l&apos;onglet{" "}
             <Link href="/dashboard/client/sommeil" style={{ color: "#E01E1E", fontWeight: 700 }}>Sommeil</Link>.
           </p>
         </div>

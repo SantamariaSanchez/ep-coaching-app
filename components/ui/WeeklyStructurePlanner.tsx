@@ -42,13 +42,13 @@ export default function WeeklyStructurePlanner({
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-4 leading-relaxed max-w-2xl">
         Place chaque séance sur un vrai jour de la semaine, en tenant compte de ce que {subjectLabel} fait déjà ce
-        jour-là (travail, sommeil, autres créneaux — depuis son agenda). Un jour libre sur le papier peut être un
+        jour-là (travail, sommeil, autres créneaux, depuis son agenda). Un jour libre sur le papier peut être un
         mauvais jour dans les faits (rentre tard, dort peu la veille...).
       </p>
 
       {scheduleBlocks.length === 0 && (
         <p className="text-[10.5px] text-amber-300/70 italic mb-4">
-          Ce client n&apos;a pas encore renseigné son agenda (onglet Agenda) — le placement ci-dessous se fait à
+          Ce client n&apos;a pas encore renseigné son agenda (onglet Agenda), le placement ci-dessous se fait à
           l&apos;aveugle pour l&apos;instant.
         </p>
       )}

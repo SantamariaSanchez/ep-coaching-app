@@ -234,11 +234,11 @@ export default function BilanProgressView({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatTile
             label="Poids"
-            value={weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta} kg` : "—"}
+            value={weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta} kg` : "N/A"}
             sub={lastWeight != null ? `${lastWeight} kg actuel` : undefined}
           />
-          <StatTile label="Pas / jour" value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "—"} />
-          <StatTile label="Sommeil" value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "—"} />
+          <StatTile label="Pas / jour" value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "N/A"} />
+          <StatTile label="Sommeil" value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "N/A"} />
           <StatTile label="Bilans d'affilée" value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} />
         </div>
       </div>

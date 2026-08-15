@@ -417,18 +417,18 @@ export default function TrackingClient({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatTile
             label="Sommeil moy. (7j)"
-            value={avgSleep7 != null ? `${avgSleep7.toFixed(1)}h` : "—"}
+            value={avgSleep7 != null ? `${avgSleep7.toFixed(1)}h` : "N/A"}
             delta={avgSleep7 != null && avgSleepPrev7 != null ? avgSleep7 - avgSleepPrev7 : null}
             deltaUnit="h"
           />
           <StatTile
             label="Récup. moy. (7j)"
-            value={avgReadiness7 != null ? `${Math.round(avgReadiness7)}` : "—"}
+            value={avgReadiness7 != null ? `${Math.round(avgReadiness7)}` : "N/A"}
             delta={avgReadiness7 != null && avgReadinessPrev7 != null ? avgReadiness7 - avgReadinessPrev7 : null}
           />
           <StatTile
             label="Dette sommeil (7j)"
-            value={sleepDebt7 != null ? `${sleepDebt7 > 0 ? "+" : ""}${sleepDebt7}h` : "—"}
+            value={sleepDebt7 != null ? `${sleepDebt7 > 0 ? "+" : ""}${sleepDebt7}h` : "N/A"}
           />
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 4px" }}>

@@ -24,7 +24,7 @@ export default function RoadmapContextPanel({
           Road map
         </p>
         <p className="text-[11px] text-[#F5EDED]/30">
-          Pas de road map posée pour {subjectLabel} — {workTypeLabel} n&apos;est rattaché à aucune trajectoire
+          Pas de road map posée pour {subjectLabel}. {workTypeLabel} n&apos;est rattaché à aucune trajectoire
           déclarée.
           {roadmapHref && (
             <>
@@ -76,7 +76,7 @@ export default function RoadmapContextPanel({
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">Objectifs à venir</p>
           {upcomingObjectives.map((o) => (
             <p key={o.id} className="text-[11px] text-[#F5EDED]/55">
-              {o.label} <span className="text-[#F5EDED]/25">— {o.target_date}</span>
+              {o.label} <span className="text-[#F5EDED]/25">({o.target_date})</span>
             </p>
           ))}
         </div>

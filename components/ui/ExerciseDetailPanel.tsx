@@ -39,7 +39,7 @@ type QualKey = "freedom_of_movement" | "easy_to_replicate" | "learning_difficult
 const QUAL_INFO: Record<QualKey, { label: string; help: string }> = {
   freedom_of_movement: {
     label: "Liberté de mouvement",
-    help: "À quel point le geste est guidé (machine, rail) ou libre (barre/haltère au sol). Plus c'est libre, plus ça sollicite la coordination — à surveiller en fin de séance fatiguée.",
+    help: "À quel point le geste est guidé (machine, rail) ou libre (barre/haltère au sol). Plus c'est libre, plus ça sollicite la coordination, à surveiller en fin de séance fatiguée.",
   },
   easy_to_replicate: {
     label: "Facile à répliquer",
@@ -60,7 +60,7 @@ const QUAL_INFO: Record<QualKey, { label: string; help: string }> = {
 };
 
 const POSITION_HELP =
-  "Où l'effort est le plus grand dans l'amplitude du mouvement — le repère par défaut de cet exercice, pas ce qui est visé pour un client précis (ça se décide plus bas). D'après plusieurs études récentes, travailler en position étirée produit une hypertrophie égale ou supérieure au ROM complet pour la plupart des mouvements.";
+  "Où l'effort est le plus grand dans l'amplitude du mouvement, le repère par défaut de cet exercice, pas ce qui est visé pour un client précis (ça se décide plus bas). D'après plusieurs études récentes, travailler en position étirée produit une hypertrophie égale ou supérieure au ROM complet pour la plupart des mouvements.";
 const POSITION_SOURCES = [
   { label: "McMahon et al., J Strength Cond Res 2026", href: "https://doi.org/10.1519/JSC.0000000000005561" },
   { label: "Wolf et al., Sports Med Health Sci 2025 (revue)", href: "https://doi.org/10.1016/j.smhs.2025.03.001" },
@@ -235,7 +235,7 @@ export default function ExerciseDetailPanel({
                 Décisions pour cette séance
               </p>
               <p className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed mb-4">
-                Rien ici n&apos;est déduit automatiquement — c&apos;est ce que toi tu choisis pour ce client précis,
+                Rien ici n&apos;est déduit automatiquement, c&apos;est ce que toi tu choisis pour ce client précis,
                 à cette place précise du programme. La classification ci-dessous est une référence générale sur
                 l&apos;exercice ; ça, c&apos;est la mise en œuvre réelle.
               </p>
@@ -292,7 +292,7 @@ export default function ExerciseDetailPanel({
                     value={assignment.availability_notes}
                     onChange={(e) => onAssignmentChange("availability_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste — prévoir un remplaçant si occupé." aria-label="Notes sur la disponibilité du matériel"
+                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste, prévoir un remplaçant si occupé." aria-label="Notes sur la disponibilité du matériel"
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -376,7 +376,7 @@ export default function ExerciseDetailPanel({
               Adaptations &amp; accessoires (fiche générale de l&apos;exercice)
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
-              Astuces d&apos;installation valables pour tous les clients sur cet exercice — pas propre à celui-ci
+              Astuces d&apos;installation valables pour tous les clients sur cet exercice, pas propre à celui-ci
               (ça, c&apos;est la section décisions plus haut) : élastique pour garder la tension en position
               raccourcie, sangles si la prise devient limitante, ajustement si une machine manque d&apos;amplitude...
             </p>
