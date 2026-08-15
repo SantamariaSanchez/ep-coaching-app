@@ -1,7 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { ChevronLeft, Building2, Users, GraduationCap, FileText, ShieldAlert } from "lucide-react";
+import { createServerSupabase } from "@/lib/supabase-server";
+import { ChevronLeft } from "lucide-react";
+import OrganisationView, { type Pole, type RoleStatus } from "@/components/ui/OrganisationView";
+import { setRoleStatus } from "./actions";
 
 // Réservé au propriétaire de la plateforme (comme le reste du groupe
 // Administration) — organigramme de recrutement, modèle de formation avant
@@ -10,21 +13,13 @@ import { ChevronLeft, Building2, Users, GraduationCap, FileText, ShieldAlert } f
 // l'appli, je vois aucun nouvel onglet, publie hein" — porté ici avec un
 // vrai onglet dans la nav (Administration > Organisation) plutôt qu'un lien
 // à part que personne ne retrouve.
-
-interface RoleCard {
-  title: string;
-  mission: string;
-  levels: string[];
-  tasks: string[];
-  reportsTo: string;
-}
-
-interface Pole {
-  key: string;
-  name: string;
-  color: string;
-  roles: RoleCard[];
-}
+//
+// Rendu confié à OrganisationView.tsx (composant client, accordéons +
+// statut de recrutement cliquable par poste) suite à un deuxième retour le
+// même jour : la première version rendait tout à plat (POLES puis TIMELINE
+// puis PHASES puis la fiche technique, un seul long scroll), jugée trop
+// dense et purement en lecture. Ce fichier ne garde que les données et le
+// garde d'accès.
 
 const POLES: Pole[] = [
   {
@@ -33,6 +28,7 @@ const POLES: Pole[] = [
     color: "#e08a4a",
     roles: [
       {
+        key: "coach-sportif-nutrition",
         title: "Coach sportif & nutrition",
         mission: "Accompagne un portefeuille de clients au quotidien dans l'appli : programme, nutrition, bilans, messagerie.",
         levels: ["Junior", "Confirmé"],
@@ -44,6 +40,7 @@ const POLES: Pole[] = [
         reportsTo: "Head Coach",
       },
       {
+        key: "head-coach",
         title: "Head Coach",
         mission: "Garantit la qualité de coaching sur tout le portefeuille client et forme les nouveaux coachs.",
         levels: ["Lead"],
@@ -55,6 +52,7 @@ const POLES: Pole[] = [
         reportsTo: "Fondateur",
       },
       {
+        key: "coach-onboarding-success",
         title: "Coach Onboarding / Success",
         mission: "Accompagne un nouveau client sur ses 30 premiers jours pour maximiser la rétention.",
         levels: ["Junior", "Confirmé"],
@@ -73,6 +71,7 @@ const POLES: Pole[] = [
     color: "#d4b23c",
     roles: [
       {
+        key: "setter",
         title: "Setter",
         mission: "Qualifie les leads entrants (réseaux sociaux, formulaire, pub) et décroche des rendez-vous pour les closers.",
         levels: ["Junior", "Confirmé"],
@@ -84,6 +83,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Sales",
       },
       {
+        key: "closer",
         title: "Closer",
         mission: "Mène les appels de vente et signe les nouveaux clients coaching.",
         levels: ["Confirmé", "Lead"],
@@ -95,6 +95,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Sales",
       },
       {
+        key: "head-of-sales",
         title: "Head of Sales",
         mission: "Pilote l'équipe commerciale : objectifs, scripts d'appel, recrutement des setters/closers.",
         levels: ["Lead"],
@@ -113,6 +114,7 @@ const POLES: Pole[] = [
     color: "#7fbe68",
     roles: [
       {
+        key: "createur-contenu-videaste",
         title: "Créateur de contenu / Vidéaste",
         mission: "Tourne et monte les formats courts (Reels/Shorts) et longs (YouTube) pour Instagram, YouTube, TikTok.",
         levels: ["Junior", "Confirmé"],
@@ -124,6 +126,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Marketing",
       },
       {
+        key: "community-manager",
         title: "Community Manager",
         mission: "Publie, anime et modère la présence de la marque sur les réseaux sociaux au quotidien.",
         levels: ["Junior", "Confirmé"],
@@ -135,6 +138,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Marketing",
       },
       {
+        key: "copywriter",
         title: "Copywriter",
         mission: "Écrit les textes qui vendent : emails, pages de vente, scripts publicitaires, légendes.",
         levels: ["Confirmé"],
@@ -146,6 +150,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Marketing",
       },
       {
+        key: "personal-brand-manager",
         title: "Personal Brand Manager",
         mission: "Gère et développe l'image publique du fondateur comme figure de la marque.",
         levels: ["Confirmé", "Lead"],
@@ -157,6 +162,7 @@ const POLES: Pole[] = [
         reportsTo: "Fondateur",
       },
       {
+        key: "growth-traffic-manager",
         title: "Growth / Traffic Manager",
         mission: "Pilote l'acquisition payante (Meta, Google, TikTok Ads) pour alimenter le pôle Sales en leads.",
         levels: ["Confirmé", "Lead"],
@@ -168,6 +174,7 @@ const POLES: Pole[] = [
         reportsTo: "Head of Marketing",
       },
       {
+        key: "head-of-marketing",
         title: "Head of Marketing (CMO)",
         mission: "Définit la stratégie de marque et d'acquisition, pilote toute l'équipe contenu & growth.",
         levels: ["Lead"],
@@ -186,6 +193,7 @@ const POLES: Pole[] = [
     color: "#5fc2d6",
     roles: [
       {
+        key: "developpeur-saas",
         title: "Développeur SaaS",
         mission: "Construit et maintient l'application EP Coaching (web, notifications, intégrations).",
         levels: ["Confirmé", "Lead"],
@@ -197,6 +205,7 @@ const POLES: Pole[] = [
         reportsTo: "Product Manager",
       },
       {
+        key: "product-manager",
         title: "Product Manager",
         mission: "Priorise la roadmap produit entre les retours coachs, clients et la vision du fondateur.",
         levels: ["Lead"],
@@ -208,6 +217,7 @@ const POLES: Pole[] = [
         reportsTo: "Fondateur",
       },
       {
+        key: "support-client-tech",
         title: "Support client (Customer Success tech)",
         mission: "Aide les utilisateurs bloqués techniquement et fait le lien avec le développeur.",
         levels: ["Junior"],
@@ -226,6 +236,7 @@ const POLES: Pole[] = [
     color: "#a69ae0",
     roles: [
       {
+        key: "office-ops-manager",
         title: "Office / Ops Manager",
         mission: "Coordonne le quotidien de l'entreprise : outils, process, communication interne.",
         levels: ["Confirmé"],
@@ -237,6 +248,7 @@ const POLES: Pole[] = [
         reportsTo: "Fondateur",
       },
       {
+        key: "secretaire-assistant",
         title: "Secrétaire / Assistant(e) administratif(ve)",
         mission: "Gère les tâches administratives du quotidien : courrier, prise de rendez-vous, classement, premier accueil.",
         levels: ["Junior"],
@@ -248,6 +260,7 @@ const POLES: Pole[] = [
         reportsTo: "Office / Ops Manager",
       },
       {
+        key: "finance-comptabilite",
         title: "Finance / Comptabilité",
         mission: "Suit la facturation, la trésorerie et prépare les éléments pour l'expert-comptable.",
         levels: ["Confirmé"],
@@ -259,6 +272,7 @@ const POLES: Pole[] = [
         reportsTo: "Fondateur",
       },
       {
+        key: "rh-people-ops",
         title: "RH / People Ops",
         mission: "Pilote le recrutement, l'intégration et le suivi administratif de l'équipe.",
         levels: ["Confirmé", "Lead"],
@@ -315,39 +329,6 @@ const CONTRACTS = [
   { title: "Stage conventionné", desc: "Pour la phase de mise en pratique avant embauche, si le candidat est encore en études. Gratification obligatoire au-delà de 2 mois, convention obligatoire." },
 ];
 
-function RoleCardView({ role, color }: { role: RoleCard; color: string }) {
-  return (
-    <div
-      className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 relative overflow-hidden"
-    >
-      <div className="absolute left-0 top-0 bottom-0" style={{ width: 3, background: color }} />
-      <p className="text-sm font-black text-white mb-1">{role.title}</p>
-      <p className="text-[12px] text-[#F5EDED]/55 leading-relaxed mb-3">{role.mission}</p>
-      <div className="flex flex-wrap gap-1.5 mb-3">
-        {role.levels.map((l) => (
-          <span
-            key={l}
-            className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border"
-            style={{ background: `${color}18`, borderColor: `${color}55`, color }}
-          >
-            {l}
-          </span>
-        ))}
-      </div>
-      <ul className="space-y-1 mb-3">
-        {role.tasks.map((t, i) => (
-          <li key={i} className="text-[11.5px] text-[#F5EDED]/55 flex gap-2 leading-snug">
-            <span style={{ color, flexShrink: 0 }}>•</span> {t}
-          </li>
-        ))}
-      </ul>
-      <p className="text-[10px] text-[#F5EDED]/30 pt-2.5 border-t border-dashed border-[#890404]/15">
-        Rattaché à : <strong className="text-[#F5EDED]/55 font-bold">{role.reportsTo}</strong>
-      </p>
-    </div>
-  );
-}
-
 export default async function OrganisationAdminPage() {
   const user = await getUser();
   if (!user) redirect("/");
@@ -355,7 +336,16 @@ export default async function OrganisationAdminPage() {
   const profile = await getProfile(user.id);
   if (!profile?.is_platform_owner) redirect("/dashboard/coach");
 
-  const totalRoles = POLES.reduce((sum, p) => sum + p.roles.length, 0);
+  const supabase = await createServerSupabase();
+  const { data: statusRows } = await supabase
+    .from("org_role_status")
+    .select("role_key, status")
+    .eq("owner_id", user.id);
+
+  const initialStatuses: Record<string, RoleStatus> = {};
+  for (const row of statusRows ?? []) {
+    initialStatuses[row.role_key as string] = row.status as RoleStatus;
+  }
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -366,7 +356,7 @@ export default async function OrganisationAdminPage() {
         <ChevronLeft size={13} /> Retour
       </Link>
 
-      <div className="mb-8">
+      <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Administration
         </p>
@@ -378,203 +368,14 @@ export default async function OrganisationAdminPage() {
         </p>
       </div>
 
-      {/* ── Vue d'ensemble ── */}
-      <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-10">
-        <div className="flex items-center gap-2 mb-4">
-          <Building2 size={14} className="text-[#E01E1E]" />
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Organigramme — {totalRoles} postes sur {POLES.length} pôles
-          </p>
-        </div>
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-          {POLES.map((p) => (
-            <div key={p.key} className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5 text-center">
-              <p className="text-lg font-black text-white">{p.roles.length}</p>
-              <p className="text-[9px] font-bold uppercase tracking-wider mt-0.5" style={{ color: p.color }}>
-                {p.name.split(" ")[0]}
-              </p>
-            </div>
-          ))}
-        </div>
-        <p className="text-[10.5px] text-[#F5EDED]/30 mt-3 leading-relaxed">
-          Chaque pôle peut démarrer à une seule personne — la structure tient même à 1 recrutement près.
-        </p>
-      </div>
-
-      {/* ── Pôles ── */}
-      {POLES.map((pole) => (
-        <section key={pole.key} className="mb-10">
-          <div className="flex items-center gap-2 mb-4 pb-2.5" style={{ borderBottom: `2px solid ${pole.color}` }}>
-            <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: pole.color }}>Pôle</p>
-            <h2 className="text-base font-black">{pole.name}</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 gap-3">
-            {pole.roles.map((role) => (
-              <RoleCardView key={role.title} role={role} color={pole.color} />
-            ))}
-          </div>
-        </section>
-      ))}
-
-      {/* ── Parcours d'intégration ── */}
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-1">
-          <Users size={14} className="text-[#E01E1E]" />
-          <h2 className="text-base font-black uppercase tracking-tight">Parcours d&apos;intégration</h2>
-        </div>
-        <p className="text-[12px] text-[#F5EDED]/40 mb-4 leading-relaxed">
-          Trame générique pour quelqu&apos;un qui vient d&apos;être embauché — aucune nouvelle recrue livrée à
-          elle-même dès le premier jour.
-        </p>
-        <div className="space-y-0">
-          {TIMELINE.map((t, i) => (
-            <div key={i} className={`grid grid-cols-[90px_1fr] gap-4 py-3.5 ${i > 0 ? "border-t border-[#890404]/10" : ""}`}>
-              <p className="text-[11px] font-black text-[#E01E1E] pt-0.5">{t.when}</p>
-              <div>
-                <p className="text-[13px] font-bold text-white mb-1">{t.title}</p>
-                <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">{t.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Formation avant embauche ── */}
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-1">
-          <GraduationCap size={14} className="text-[#E01E1E]" />
-          <h2 className="text-base font-black uppercase tracking-tight">Formation avant embauche</h2>
-        </div>
-        <p className="text-[12px] text-[#F5EDED]/40 mb-4 leading-relaxed">
-          Former quelqu&apos;un avant de s&apos;engager, puis le rémunérer une fois compétent, est sain — mais le
-          droit du travail encadre strictement le travail non rémunéré. Ce déroulé s&apos;appuie sur des
-          statuts qui existent déjà, pas sur un montage inventé.
-        </p>
-        <div className="space-y-2.5">
-          {PHASES.map((phase, i) => (
-            <div key={i} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 flex gap-3.5">
-              <div className="w-8 h-8 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] font-black text-sm flex items-center justify-center flex-shrink-0">
-                {i + 1}
-              </div>
-              <div className="min-w-0">
-                <p className="text-[13px] font-bold text-white mb-1">{phase.title}</p>
-                <p className="text-[11.5px] text-[#F5EDED]/50 leading-relaxed mb-2">{phase.desc}</p>
-                {phase.status && (
-                  <span
-                    className="inline-block text-[10px] font-bold px-2.5 py-1 rounded-full"
-                    style={
-                      phase.ok
-                        ? { background: "rgba(74,222,128,0.1)", color: "#4ade80", border: "1px solid rgba(74,222,128,0.3)" }
-                        : { background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.3)" }
-                    }
-                  >
-                    {phase.status}
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Fiche technique exemple ── */}
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-1">
-          <FileText size={14} className="text-[#E01E1E]" />
-          <h2 className="text-base font-black uppercase tracking-tight">Exemple de fiche technique</h2>
-        </div>
-        <p className="text-[12px] text-[#F5EDED]/40 mb-4 leading-relaxed">
-          Même esprit que les fiches techniques de montage déjà présentes dans l&apos;onglet Idéation : du
-          concret à appliquer. Exemple complet pour le Setter, à dupliquer pour chaque poste le jour où il
-          s&apos;ouvre vraiment.
-        </p>
-        <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-          <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
-            <p className="text-[15px] font-black text-white">Setter — Qualification de leads</p>
-            <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
-              Pôle Sales
-            </span>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">Objectif du poste</p>
-            <p className="text-[12px] text-[#F5EDED]/55 leading-relaxed">
-              Transformer un message ou un commentaire de quelqu&apos;un d&apos;intéressé en un rendez-vous qualifié
-              dans l&apos;agenda du closer, sans jamais faire perdre de temps au closer avec un lead qui n&apos;ira
-              nulle part.
-            </p>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">Étapes à maîtriser, dans l&apos;ordre</p>
-            <ol className="space-y-1 pl-4 list-decimal">
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Répondre en moins de 2h en journée, avec un message qui relance une vraie conversation (jamais un lien direct en premier message)</li>
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Poser 3 questions de qualification : objectif, disponibilité budgétaire approximative, urgence</li>
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Repérer les signaux d&apos;un lead non qualifié et le laisser partir sans insister</li>
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Proposer 2 à 3 créneaux précis, jamais une question ouverte du type &quot;quand es-tu dispo&quot;</li>
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Confirmer le rendez-vous par écrit et programmer une relance automatique 24h avant</li>
-              <li className="text-[12px] text-[#F5EDED]/55 leading-relaxed">Mettre à jour la fiche CRM du lead à chaque étape</li>
-            </ol>
-          </div>
-
-          <div className="mb-4">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">Exemple de script de qualification</p>
-            <pre className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3 text-[11px] text-[#F5EDED]/60 leading-relaxed whitespace-pre-wrap font-mono">{`Salut [Prénom] 👋 merci pour ton message !
-Avant de te proposer un créneau avec [Closer], j'ai 2-3 questions
-rapides pour être sûr qu'on te fasse gagner du temps :
-
-1. Qu'est-ce qui te pousse à chercher un coach en ce moment ?
-2. T'as déjà été coaché avant, ou c'est une première ?
-3. Tu serais dispo cette semaine ou plutôt la semaine prochaine
-   pour un appel de 20 min ?`}</pre>
-          </div>
-
-          <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1.5">Critères de passage en poste rémunéré</p>
-            <div className="grid sm:grid-cols-2 gap-2">
-              {[
-                { k: "Délai de réponse", v: "moins de 2h en journée sur 10 leads test" },
-                { k: "Qualification", v: "8/10 leads correctement qualifiés (audité par le Head of Sales)" },
-                { k: "Taux de présence", v: "au moins 70% des rendez-vous pris se présentent réellement" },
-                { k: "CRM à jour", v: "100% des leads traités ont une fiche complète" },
-              ].map((c) => (
-                <div key={c.k} className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
-                  <p className="text-[11.5px] text-[#F5EDED]/60"><strong className="text-white font-bold">{c.k}</strong> — {c.v}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contrats & légal ── */}
-      <section className="mb-8">
-        <h2 className="text-base font-black uppercase tracking-tight mb-1">Contrats &amp; aspects légaux</h2>
-        <p className="text-[12px] text-[#F5EDED]/40 mb-4 leading-relaxed">
-          Repères pour préparer la discussion avec un professionnel — pas des documents prêts à signer.
-        </p>
-        <div className="grid sm:grid-cols-2 gap-2.5 mb-5">
-          {CONTRACTS.map((c) => (
-            <div key={c.title} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-              <p className="text-[13px] font-bold text-white mb-1">{c.title}</p>
-              <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">{c.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex items-start gap-3 bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5">
-          <ShieldAlert size={16} className="text-amber-400 flex-shrink-0 mt-0.5" />
-          <div>
-            <p className="text-[12.5px] font-bold text-amber-300 mb-1">Ce document ne remplace pas un avocat</p>
-            <p className="text-[11.5px] text-amber-300/75 leading-relaxed">
-              Les fiches de poste, la trame d&apos;intégration et le déroulé de formation avant embauche
-              ci-dessus sont des points de départ utilisables tels quels. Les contrats de travail, eux,
-              doivent être rédigés ou validés par un avocat en droit du travail avant toute signature — à
-              faire avant le premier recrutement, pas après.
-            </p>
-          </div>
-        </div>
-      </section>
+      <OrganisationView
+        poles={POLES}
+        timeline={TIMELINE}
+        phases={PHASES}
+        contracts={CONTRACTS}
+        initialStatuses={initialStatuses}
+        setRoleStatus={setRoleStatus}
+      />
     </div>
   );
 }
