@@ -9,7 +9,6 @@ import {
   Trash2,
   PlayCircle,
   Video,
-  ExternalLink,
   Dumbbell,
   Lock,
   AlertTriangle,
@@ -30,11 +29,10 @@ import {
   getSubgroupsFor,
   type EquipmentType,
 } from "@/lib/exercise-library-content";
-import { resolveVideoEmbed } from "@/lib/video-embed-utils";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { LibraryExercise, ExerciseCategory, ExerciseDifficulty } from "@/utils/exercise-library";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
-import { safeExternalUrl } from "@/lib/sanitize";
+import EmbeddedVideo from "@/components/ui/EmbeddedVideo";
 
 async function uploadExerciseVideo(file: File): Promise<string | null> {
   try {
@@ -63,41 +61,6 @@ function youtubeSearchUrl(exerciseName: string): string {
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
 const labelCls = "block text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5";
-
-// ── Video player ──────────────────────────────────────────────────────────────
-
-function VideoBlock({ url }: { url: string }) {
-  const video = resolveVideoEmbed(url);
-  if (!video) return null;
-
-  if (video.type === "youtube" || video.type === "vimeo") {
-    return (
-      <div className="aspect-video bg-black rounded-lg overflow-hidden mt-3">
-        <iframe
-          src={video.src}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
-  if (video.type === "file") {
-    return (
-      <video src={video.src} controls className="w-full rounded-lg mt-3 bg-black" />
-    );
-  }
-  return (
-    <a
-      href={safeExternalUrl(video.src) ?? "#"}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 text-xs font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors mt-3"
-    >
-      <ExternalLink size={12} /> Voir la vidéo
-    </a>
-  );
-}
 
 // ── Exercise form (create / edit) ───────────────────────────────────────────
 
@@ -524,7 +487,7 @@ function ExerciseCard({
                 </p>
               </div>
             ) : (
-              <VideoBlock url={exercise.video_url} />
+              <EmbeddedVideo url={exercise.video_url} maxWidth={480} />
             )
           ) : (
             <div className="flex items-center gap-3 mt-2 flex-wrap">
