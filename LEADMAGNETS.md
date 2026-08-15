@@ -188,12 +188,13 @@ production locale.
 | 2026-08-15 | Vague P | 1 | Blessures épaule/lombaires en musculation (powerlifters, 70% actuellement blessés, facteurs de risque identifiés). |
 | 2026-08-15 | Vague Q | 3 | Diversifier ses revenus de coach, éviter l'épuisement en indépendant, auto-sabotage — non sourcés PubMed (littérature clinique limitée sur l'entrepreneuriat), conseils mesurés sans statistique inventée. |
 | 2026-08-15 | Vague R | 3 | Discipline vs motivation, transition post-objectif, image de marque personnelle — même approche non sourcée que la vague Q. |
-| **Total au 2026-08-15** | | **105** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague S | 4 | Gérer un coach qui ne convient plus, contenu & réseaux pour un coach, gestion administrative de base, premiers salariés/sous-traitants — backlog initial épuisé sur ces 4 derniers thèmes, même approche non sourcée. |
+| **Total au 2026-08-15** | | **109** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 24, Psychologie 17, Général 11, Récupération 11,
-Entrepreneuriat 9, Steps & activité quotidienne 9.
+Nutrition 24, Entraînement 24, Psychologie 18, Général 11, Récupération 11,
+Entrepreneuriat 12, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -231,7 +232,7 @@ saine à la nourriture, body checking, type de motivation
 (intrinsèque/extrinsèque), charge mentale et vie sportive,
 perfectionnisme et longévité sportive, contenu body positive sur les
 réseaux, auto-sabotage, discipline vs motivation, transition
-post-objectif.
+post-objectif, gérer un coach qui ne convient plus.
 
 **Récupération** : sommeil et prise de muscle, surentraînement, mobilité
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
@@ -253,7 +254,9 @@ ascenseur, marche et santé mentale, podomètre vs montre connectée
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
 face à l'incertitude, gestion du temps en indépendant, diversifier ses
-revenus, éviter l'épuisement en indépendant, image de marque personnelle.
+revenus, éviter l'épuisement en indépendant, image de marque personnelle,
+contenu et réseaux sociaux pour un coach, gestion administrative de base,
+premiers salariés/sous-traitants.
 
 ## Sources déjà vérifiées (réutilisables sans re-recherche)
 
@@ -327,11 +330,27 @@ Alimentation étudiante : Foglia et al. 2026, étude sur 1973 étudiants (DOI
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
-- Entraînement : progression sur les mouvements au poids du corps.
-- Récupération : blessures et retour progressif à l'entraînement.
-- Psychologie : gérer un coach qui ne convient plus.
-- Entrepreneuriat : contenu et réseaux sociaux pour un coach, gestion
-  administrative de base, premiers salariés/sous-traitants.
+Le backlog initial de cette section (fixé le 2026-08-14) est maintenant
+épuisé, sauf deux thèmes qui n'ont pas trouvé de source PubMed exploitable
+malgré plusieurs recherches (calisthenics/poids du corps : aucune étude
+pertinente trouvée ; retour progressif après blessure : uniquement des
+protocoles d'étude non encore publiés ou des cas isolés N=1) :
+
+- Entraînement : progression sur les mouvements au poids du corps (à
+  retenter avec d'autres termes de recherche, ou traiter sans source comme
+  les thèmes entrepreneuriat/psychologie ci-dessus).
+- Récupération : blessures et retour progressif à l'entraînement (idem).
+
+Nouveaux thèmes à explorer pour continuer au delà de ce premier backlog
+(non vérifiés, à rechercher avant production) : végétarisme et récupération
+sportive, sauna/bain chaud et récupération, stretching statique avant
+séance vs après, ratio push/pull dans un programme, fréquence
+d'entraînement optimale par groupe musculaire, gestion du stress
+pré-compétition, syndrome du surentraînement (signes précoces), nutrition
+et qualité du sommeil au delà de la caféine, cyclisme/course à pied et
+interférence avec la force (angle complémentaire à l'axe déjà traité),
+tarification à la valeur vs à l'heure pour un coach, structurer un onboarding
+client qui réduit l'attrition précoce.
 
 ## Mécanisme de production continue
 
