@@ -1614,3 +1614,43 @@ temps ou risque de casse trop élevé pour un fix précipité) :
   vérifié aussi rigoureusement que le reste de la liste.
 
 tsc/eslint/build vérifiés propres après l'ensemble de ces correctifs.
+
+## Axe Q — Tirets em/en restants dans le texte utilisateur (demande explicite du 2026-08-15)
+
+La règle "jamais de tiret em/en dans le texte utilisateur" existe depuis le
+début du projet (voir mémoire utilisateur), mais n'avait jamais fait
+l'objet d'un balayage systématique de tout le code, seulement d'une
+vigilance au fil de l'eau sur les nouveaux textes écrits. Après plusieurs
+mois de développement, environ 40 occurrences résiduelles s'étaient
+accumulées, essentiellement dans des textes d'aide/subtitle/placeholder
+écrits avant que la règle ne soit bien intériorisée.
+
+**Méthode** : `rg '—'`/`rg '–'` sur tout `*.ts`/`*.tsx` (hors
+`node_modules`/`.next`), puis un filtre en deux passes pour isoler le texte
+réellement affiché à l'utilisateur des commentaires de code (qui, eux,
+peuvent légitimement contenir des tirets, la règle ne concerne que ce que
+l'utilisateur voit) :
+1. Ne garder que la partie de chaque ligne avant un éventuel `//`.
+2. Retirer les lignes de blocs de commentaires (`/**`, `{/* `, lignes
+   commençant par `*`).
+
+Cette heuristique n'est pas parfaite (un commentaire multi-lignes sans `*`
+en début de ligne de continuation peut passer le filtre), donc chaque
+résultat restant a été relu manuellement avant correction, pas corrigé en
+masse par script.
+
+**Corrigé** : ~37 fichiers, ~40 occurrences réelles. Deux familles de cas :
+- **Tiret connecteur de phrase** ("Fait ça — parce que", "Objectif atteint
+  — le client verra") : remplacé par une virgule, un point (nouvelle
+  phrase) ou deux-points selon ce que la grammaire du passage demandait,
+  jamais un remplacement mécanique uniforme.
+- **Tiret comme placeholder visuel de donnée manquante** (`value={x ?? "—"}`
+  dans des `StatTile` de stats hebdomadaires/sommeil) : remplacé par
+  `"N/A"`, plus conforme à la règle et tout aussi clair visuellement.
+
+**Non touché, à raison** : tirets dans les commentaires `//`/`/** */`/
+`{/* */}` (des centaines d'occurrences) — ce sont des notes pour les
+développeurs, jamais rendues à l'écran, hors du périmètre de la règle.
+
+eslint + tsc + `npm run build` vérifiés propres après l'ensemble des
+corrections (37 fichiers modifiés en un seul commit).
