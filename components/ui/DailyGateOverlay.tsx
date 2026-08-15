@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Sun, Moon as MoonIcon, UtensilsCrossed } from "lucide-react";
 import {
   WeightCard,
@@ -57,6 +58,7 @@ export default function DailyGateOverlay({
 }) {
   const [active, setActive] = useState<GateReason | null>(initialActive);
   const [pendingMeal, setPendingMeal] = useState<PendingMeal | null>(initialPendingMeal ?? null);
+  const pathname = usePathname();
 
   const refresh = useCallback(async () => {
     try {
@@ -72,7 +74,23 @@ export default function DailyGateOverlay({
     }
   }, []);
 
+  // BUG CORRIGÉ (2026-08-15, signalé en direct) : le bouton "Aller logger
+  // mon repas" renvoie vers la page Nutrition, mais app/dashboard/layout.tsx
+  // (le layout partagé) persiste entre navigations côté client sans
+  // forcément se re-rendre — ses props (initialActive/initialPendingMeal)
+  // ne se rafraîchissent donc pas tout seuls. Deux correctifs :
+  //   1. Revérifier le statut à CHAQUE changement de route, pas seulement
+  //      après une sauvegarde dans une carte du bilan (matin/soir), pour
+  //      détecter qu'un repas vient d'être loggué sur une autre page.
+  //   2. Ne jamais afficher le verrou "repas" par-dessus la page Nutrition
+  //      elle-même — sinon il recouvre la page censée permettre de le
+  //      lever, et personne ne peut plus jamais l'atteindre.
+  useEffect(() => {
+    refresh();
+  }, [pathname, refresh]);
+
   if (!active) return null;
+  if (active === "meal" && pathname === mealBaseHref) return null;
 
   return (
     <div
