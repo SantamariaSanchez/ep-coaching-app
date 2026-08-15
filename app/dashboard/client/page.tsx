@@ -11,6 +11,7 @@ import { getMemberPreferences } from "@/utils/member-preferences";
 import { derivePersonalization, reorderByPriority } from "@/lib/personalization";
 import { getOnboardingChecklist, type OnboardingChecklistItem } from "@/lib/onboarding-checklist";
 import ClientDashboardStats from "@/components/client/DashboardStats";
+import StagnationBanner from "@/components/client/StagnationBanner";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import RegularityCard from "@/components/ui/RegularityCard";
 import { getClientActivityStreak } from "@/lib/client-activity";
@@ -355,6 +356,7 @@ function WelcomeGuide({
       </div>
 
       {!hasCoach && <NoCoachBanner />}
+      {hasCoach && <StagnationBanner />}
 
       <StartChecklist items={checklist} />
 

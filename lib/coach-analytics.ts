@@ -309,6 +309,42 @@ export async function getClientAlerts(
     });
   }
 
+  // ── 9. Relance anti-stagnation envoyée mais jamais suivie d'un appel ────
+  // (voir app/api/cron/stagnation-escalation) — le cron notifie déjà le
+  // client ET le coach, mais une notif seule reste ignorable. Ce signal
+  // distinct rend visible, ici dans le panneau que le coach consulte
+  // réellement, les clients qui n'ont pris aucune action derrière l'alerte
+  // automatique : c'est ce signal-là qui doit pousser un contact direct,
+  // pas une nouvelle notif de plus.
+  const { data: stagnationProfile } = await supabase
+    .from("profiles")
+    .select("last_stagnation_escalation_at")
+    .eq("id", clientId)
+    .maybeSingle();
+
+  const escalatedAt = stagnationProfile?.last_stagnation_escalation_at
+    ? new Date(stagnationProfile.last_stagnation_escalation_at)
+    : null;
+  if (escalatedAt && escalatedAt > d21) {
+    const { count: bookedSince } = await supabase
+      .from("live_events")
+      .select("id", { count: "exact", head: true })
+      .eq("invited_client_id", clientId)
+      .eq("type", "1to1")
+      .neq("status", "cancelled")
+      .gte("created_at", escalatedAt.toISOString());
+    if (!bookedSince) {
+      const daysSince = Math.floor((now.getTime() - escalatedAt.getTime()) / (24 * 60 * 60 * 1000));
+      alerts.push({
+        type: "stagnation_unaddressed",
+        severity: "high",
+        label: `Relance anti-stagnation envoyée il y a ${daysSince}j, toujours aucun appel réservé`,
+        suggestion: "Contacte-le directement, une notification de plus ne suffira pas",
+        icon: "PhoneOff",
+      });
+    }
+  }
+
   return alerts;
 }
 
