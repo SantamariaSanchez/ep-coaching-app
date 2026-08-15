@@ -181,11 +181,12 @@ production locale.
 | 2026-08-15 | Vague I | 1 | Podomètre vs montre connectée (fiabilité, deux études de validation avec chiffres précis d'erreur par appareil). |
 | 2026-08-15 | Vague J | 2 | Respiration et système nerveux (3 essais contrôlés récents, effet réel mais plus limité que le discours bien-être habituel), jet lag pour athlètes qui voyagent (asymétrie est/ouest chiffrée). |
 | 2026-08-15 | Vague K | 2 | Grossesse et activité physique (cadrage médical prudent, 2 études récentes), activité physique au bureau (bureau assis-debout + micro-pauses de marche, chiffres précis). |
-| **Total au 2026-08-15** | | **92** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague L | 2 | Perfectionnisme et longévité sportive (coureurs d'élite, effets forts), contenu body positive sur les réseaux (méta-analyse 56 études, ce qui change et ce qui ne change pas). |
+| **Total au 2026-08-15** | | **94** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 20, Psychologie 12, Général 11, Récupération 11,
+Nutrition 23, Entraînement 20, Psychologie 14, Général 11, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -218,7 +219,9 @@ comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
 gestion du stress, red flags d'un coach, musculation au féminin
 (appréhension des débuts), peur de reprendre le poids perdu, relation
 saine à la nourriture, body checking, type de motivation
-(intrinsèque/extrinsèque), charge mentale et vie sportive.
+(intrinsèque/extrinsèque), charge mentale et vie sportive,
+perfectionnisme et longévité sportive, contenu body positive sur les
+réseaux.
 
 **Récupération** : sommeil et prise de muscle, surentraînement, mobilité
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
@@ -298,6 +301,9 @@ NHL (DOI 10.1016/j.jsams.2022.10.005), Maynard et al. 2025, cohorte WTA (DOI
 (DOI 10.1007/s40279-025-02223-4), Friedman et al. 2025, CrossFit et
 grossesse (DOI 10.1016/j.ejogrb.2025.114840). Activité au bureau : Graves
 et al. 2015, bureau assis-debout (DOI 10.1186/s12889-015-2469-8).
+Perfectionnisme : Dessye 2026, étude sur coureurs d'élite (DOI
+10.1007/s44192-026-00513-5). Body positive : Jiménez-García et al. 2025,
+méta-analyse 56 études (DOI 10.1186/s40337-025-01286-y).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -307,10 +313,9 @@ et al. 2015, bureau assis-debout (DOI 10.1186/s12889-015-2469-8).
   corps.
 - Nutrition : alimentation étudiante à petit budget.
 - Récupération : blessures et retour progressif à l'entraînement.
-- Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
-  auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
-  ne convient plus, transition post-objectif (après une compétition, un
-  mariage, etc.).
+- Psychologie : auto-sabotage, discipline vs motivation au quotidien, gérer
+  un coach qui ne convient plus, transition post-objectif (après une
+  compétition, un mariage, etc.).
 - Entrepreneuriat : image de marque personnelle, contenu et réseaux sociaux
   pour un coach, gestion administrative de base, premiers salariés/
   sous-traitants, diversification des revenus, éviter l'épuisement en tant
