@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet,
+  AlertTriangle, Wallet, Network,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -345,6 +345,10 @@ const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // — donnée plateforme, pas des clients d'un coach en particulier, donc
   // réservée au propriétaire comme le reste de ce groupe.
   { label: "Leads", icon: Mail, segment: "admin/leads" },
+  // Organigramme, formation avant embauche, fiches techniques — demande
+  // explicite du 2026-08-15 : "faut y pousser dans l'appli, je vois aucun
+  // nouvel onglet". Vivait avant uniquement dans un artifact externe.
+  { label: "Organisation", icon: Network, segment: "admin/organisation" },
 ];
 
 // ── Hook ────────────────────────────────────────────────────────────────────
