@@ -7,10 +7,18 @@ import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
+import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { isEmailVerified } from "@/lib/email-verification";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { isStrongSession } from "@/lib/mfa";
+import { getDailyGateStatus } from "@/lib/daily-gate";
+import { getTodayLog } from "@/utils/daily-logs";
+import { getTodayLogs } from "@/utils/nutrition";
+import { getTodayStepsActual } from "@/utils/steps";
+import { todayInParis } from "@/lib/dates";
+import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
+import { upsertCoachDailyLog } from "@/app/dashboard/coach/moi/bilan/actions";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -85,10 +93,55 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
 
+  // Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15,
+  // voir lib/daily-gate.ts) : calculé pour TOUT compte connecté, client ou
+  // coach (chacun a son propre bilan quotidien, via client_id = son propre
+  // id dans les deux cas). Les données lourdes (bilan du jour, repas
+  // loggués, pas auto) ne sont chargées que si un verrou est effectivement
+  // actif — la grande majorité des chargements de page ne paient que le
+  // coût de getDailyGateStatus lui-même.
+  let gateOverlay: React.ReactNode = null;
+  if (user && profile) {
+    const gate = await getDailyGateStatus(user.id);
+    if (gate.active) {
+      const [existing, todayFoodLogs, autoSteps] = await Promise.all([
+        getTodayLog(user.id),
+        getTodayLogs(user.id, todayInParis()),
+        getTodayStepsActual(user.id),
+      ]);
+      const nutritionTotals =
+        todayFoodLogs.length > 0
+          ? todayFoodLogs.reduce(
+              (acc, l) => ({
+                calories: acc.calories + (l.calories ?? 0),
+                proteins: acc.proteins + (l.proteins ?? 0),
+                carbs: acc.carbs + (l.carbs ?? 0),
+                fats: acc.fats + (l.fats ?? 0),
+              }),
+              { calories: 0, proteins: 0, carbs: 0, fats: 0 }
+            )
+          : null;
+      const isCoach = profile.role === "coach";
+      gateOverlay = (
+        <DailyGateOverlay
+          initialActive={gate.active}
+          initialPendingMeal={gate.pendingMeal}
+          today={todayInParis()}
+          existing={existing}
+          action={isCoach ? upsertCoachDailyLog : upsertDailyLog}
+          autoSteps={autoSteps}
+          nutritionTotals={nutritionTotals}
+          mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
+        />
+      );
+    }
+  }
+
   return (
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
       <NavigationProgress />
+      {gateOverlay}
       {/* Dans les enfants et non au dessus de DashboardNav : la barre latérale
           desktop est en position fixed et recouvrirait les 220 premiers pixels
           du bandeau. Ici, il hérite du décalage du contenu. */}

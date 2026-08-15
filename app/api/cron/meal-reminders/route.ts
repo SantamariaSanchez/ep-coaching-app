@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { MEAL_SLOT_TIMES as DEFAULT_SLOT_TIMES, MEAL_SLOT_LABELS as SLOT_LABELS, timeToMinutes, parisNow as parisNowBase } from "@/lib/meal-slots";
+import { todayInParis } from "@/lib/dates";
 
 // Rappel automatique à l'heure habituelle de chaque repas — zéro
 // configuration : des horaires usuels par créneau (pas par client), voir
-// DEFAULT_SLOT_TIMES. Le but explicite est de réduire la friction au
+// lib/meal-slots.ts (partagé avec le verrou de repas obligatoire, voir
+// lib/daily-gate.ts — les deux doivent utiliser exactement les mêmes
+// horaires/labels). Le but explicite est de réduire la friction au
 // minimum : le client tape sur la notif et atterrit directement sur le
 // repas déjà prévu par son coach (aliments + quantités), prêt à valider en
 // un tap — voir handleTogglePlanItem/DietPlanCard dans ClientNutritionView.
@@ -12,50 +16,9 @@ import { sendPushToUser } from "@/lib/push";
 // UTC figé dans le cron comme les autres jobs horaires de l'appli : celui-ci
 // tourne en continu toute la journée (*/15), un simple décalage fixe
 // dériverait au changement d'heure d'été/hiver.
-const DEFAULT_SLOT_TIMES: Record<string, string> = {
-  breakfast: "08:00",
-  morning: "10:30",
-  lunch: "12:30",
-  afternoon: "16:00",
-  preworkout: "17:30",
-  postworkout: "19:00",
-  dinner: "20:00",
-};
-
-const SLOT_LABELS: Record<string, string> = {
-  breakfast: "petit-déjeuner",
-  morning: "collation du matin",
-  lunch: "déjeuner",
-  afternoon: "collation de l'après-midi",
-  preworkout: "repas pré-entraînement",
-  postworkout: "repas post-entraînement",
-  dinner: "dîner",
-};
-
-const DOW_MAP = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"] as const;
-
-function timeToMinutes(hhmm: string): number {
-  const [h, m] = hhmm.split(":").map(Number);
-  return h * 60 + m;
-}
-
 function parisNow(): { minutes: number; today: string; dow: string } {
-  const now = new Date();
-  const hhmm = new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Europe/Paris",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  }).format(now);
-  const parisDate = new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(now);
-  const dowIndex = new Date(`${parisDate}T12:00:00Z`).getUTCDay();
-  // food_logs.logged_at est écrit en date UTC (voir "today" côté client dans
-  // app/dashboard/client/nutrition/page.tsx, et les autres crons nutrition) —
-  // on matche cette même convention pour la vérification "déjà loggué", pour
-  // ne pas introduire un décalage entre les deux. Seuls l'heure du jour et le
-  // jour de semaine (dow) ont besoin d'être calculés en heure de Paris.
-  const today = now.toISOString().split("T")[0];
-  return { minutes: timeToMinutes(hhmm), today, dow: DOW_MAP[dowIndex] };
+  const { minutes, dow } = parisNowBase();
+  return { minutes, today: todayInParis(), dow };
 }
 
 interface PlanRow {

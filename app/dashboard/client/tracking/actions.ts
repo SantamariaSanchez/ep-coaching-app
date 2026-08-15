@@ -28,6 +28,37 @@ export async function disconnectOura(): Promise<{ error?: string }> {
   }
 }
 
+// Heure de coucher/lever visée (MASTERCLASS.md — bilan en 2 temps,
+// 2026-08-15) : réglage 1-1 avec l'utilisateur, sert de référence à
+// lib/daily-gate.ts (bilan du soir déclenché 15 min avant target_bedtime)
+// et à la régularité affichée dans ce même onglet Sommeil.
+export async function updateSleepSchedule(
+  _prev: { error?: string; success?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: string; success?: boolean }> {
+  try {
+    const guard = await requireAuth();
+    if (!guard.ok) return { error: guard.error };
+
+    const bedtime = (formData.get("target_bedtime") as string | null)?.trim() || null;
+    const wakeTime = (formData.get("target_wake_time") as string | null)?.trim() || null;
+
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("profiles")
+      .update({ target_bedtime: bedtime, target_wake_time: wakeTime })
+      .eq("id", guard.userId);
+    if (error) return { error: "Erreur lors de l'enregistrement." };
+
+    revalidatePath("/dashboard/client/tracking");
+    revalidatePath("/dashboard/coach/moi/tracking");
+    return { success: true };
+  } catch (e) {
+    console.error("updateSleepSchedule error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export interface LogBiometricsInput {
   logDate: string;
   sleepHours: number | null;

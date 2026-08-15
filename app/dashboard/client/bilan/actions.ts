@@ -72,6 +72,8 @@ export async function upsertDailyLog(
       { key: "weight_time", kind: "txt" },
       { key: "sleep_hours", kind: "num" },
       { key: "sleep_rating", kind: "num" },
+      { key: "bedtime_actual", kind: "txt" },
+      { key: "wake_time_actual", kind: "txt" },
       { key: "digestion", kind: "txt" },
       { key: "stress", kind: "txt" },
       { key: "proteins_g", kind: "num" },

@@ -3,9 +3,9 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
-import { Check, Scale, Dumbbell, Moon, Apple, Footprints } from "lucide-react";
+import { Check, Scale, Dumbbell, Moon, Apple, Footprints, BedDouble } from "lucide-react";
 
-type BilanAction = (
+export type BilanAction = (
   prev: { error?: string; success?: boolean } | null,
   formData: FormData
 ) => Promise<{ error?: string; success?: boolean }>;
@@ -100,9 +100,17 @@ function SaveButton({ pending, label = "Enregistrer" }: { pending: boolean; labe
 
 // ── Poids du matin — carte autonome, en tête de page, pensée pour être
 // remplie en 5 secondes au réveil sans toucher au reste du bilan. ──────────
-function WeightCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+export function WeightCard({ today, existing, action, onSaved }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void }) {
   const [state, formAction, pending] = useActionState(action, null);
   const nowHour = new Date().toTimeString().slice(0, 5);
+
+  // Overlay de verrouillage (lib/daily-gate.ts) : prévient le parent qu'une
+  // sauvegarde vient de réussir, pour qu'il re-vérifie via /api/gate-status
+  // si le verrou peut maintenant se lever — jamais recalculé côté client,
+  // toujours revérifié contre la même source de vérité serveur.
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
 
   return (
     <form action={formAction}>
@@ -128,7 +136,7 @@ function WeightCard({ today, existing, action }: { today: string; existing: Dail
 // ── Entraînement — bascule repos/entraînement d'abord, pour ne pas forcer
 // une réponse "Pull, Push, Legs" absurde un jour off. Pas de note de séance
 // ici : elle vit déjà dans le logbook à la fin de la séance, pas de doublon. ──
-function TrainingCard({ today, existing, action }: { today: string; existing: DailyLog | null; action: BilanAction }) {
+export function TrainingCard({ today, existing, action, onSaved }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void }) {
   const [state, formAction, pending] = useActionState(action, null);
   const [isRestDay, setIsRestDay] = useState(existing?.training_name === "Repos");
 
@@ -138,6 +146,10 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
   useEffect(() => {
     setIsRestDay(existing?.training_name === "Repos");
   }, [existing]);
+
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
 
   return (
     <form action={formAction}>
@@ -200,18 +212,77 @@ function TrainingCard({ today, existing, action }: { today: string; existing: Da
   );
 }
 
-function LifestyleCard({
+// ── Sommeil — carte autonome du bilan du MATIN (avec WeightCard), séparée du
+// reste du Lifestyle qui vit au bilan du SOIR. Voir MASTERCLASS.md : "il
+// faut mettre le poids et le sommeil" au réveil, "le reste" le soir —
+// sleep_hours/sleep_rating n'ont plus leur place noyés dans LifestyleCard.
+// bedtime_actual/wake_time_actual sont optionnels (jamais bloquants), voir
+// lib/daily-gate.ts pour ce qui est réellement exigé. ──────────────────────
+export function SleepCard({ today, existing, action, onSaved }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void }) {
+  const [state, formAction, pending] = useActionState(action, null);
+
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
+
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="log_date" value={today} />
+      <CardShell icon={BedDouble} title="Sommeil" saved={!!state?.success}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label className={lbl}>Sommeil (heures)</label>
+              <input name="sleep_hours" type="number" step="0.1" min="0" max="24" defaultValue={existing?.sleep_hours ?? ""} placeholder="7.5" aria-label="7.5" className={inp} autoFocus />
+            </div>
+            <div>
+              <label className={lbl}>Qualité sommeil (%)</label>
+              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />
+            </div>
+          </div>
+          <p className={hint} style={{ marginTop: -8 }}>
+            Ton iPhone/montre connectée donne ces chiffres dans l&apos;app Santé/Sommeil, sinon une estimation à l&apos;instinct suffit.
+          </p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            <div>
+              <label className={lbl}>Coucher (hier soir)</label>
+              <input name="bedtime_actual" type="time" defaultValue={existing?.bedtime_actual?.slice(0, 5) ?? ""} aria-label="Heure de coucher" className={inp} />
+            </div>
+            <div>
+              <label className={lbl}>Lever (ce matin)</label>
+              <input name="wake_time_actual" type="time" defaultValue={existing?.wake_time_actual?.slice(0, 5) ?? ""} aria-label="Heure de lever" className={inp} />
+            </div>
+          </div>
+          <p className={hint} style={{ marginTop: -8 }}>
+            Facultatif — sert juste à suivre ta régularité dans l&apos;onglet{" "}
+            <Link href="/dashboard/client/sommeil" style={{ color: "#E01E1E", fontWeight: 700 }}>Sommeil</Link>.
+          </p>
+        </div>
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} />
+      </CardShell>
+    </form>
+  );
+}
+
+export function LifestyleCard({
   today,
   existing,
   action,
   autoSteps,
+  onSaved,
 }: {
   today: string;
   existing: DailyLog | null;
   action: BilanAction;
   autoSteps?: number | null;
+  onSaved?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
+
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
   // Si le bilan du jour n'a pas encore son propre chiffre, on préremplit
   // avec ce que le podomètre (ou une saisie manuelle déjà faite) a déjà
   // enregistré dans Steps, plutôt que de refaire taper le même
@@ -233,19 +304,6 @@ function LifestyleCard({
                 : "Regarde dans l'app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d'inventer."}
             </p>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div>
-              <label className={lbl}>Sommeil (heures)</label>
-              <input name="sleep_hours" type="number" step="0.1" min="0" max="24" defaultValue={existing?.sleep_hours ?? ""} placeholder="7.5" aria-label="7.5" className={inp} />
-            </div>
-            <div>
-              <label className={lbl}>Qualité sommeil (%)</label>
-              <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />
-            </div>
-          </div>
-          <p className={hint} style={{ marginTop: -8 }}>
-            Ton iPhone/montre connectée donne ces chiffres dans l&apos;app Santé/Sommeil, sinon une estimation à l&apos;instinct suffit.
-          </p>
           <div>
             <label className={lbl}>Digestion</label>
             <input name="digestion" defaultValue={existing?.digestion ?? ""} placeholder="OK, Ballonné, Lourd…" aria-label="OK, Ballonné, Lourd…" className={inp} />
@@ -262,14 +320,18 @@ function LifestyleCard({
   );
 }
 
-type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
+export type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
 
-function NutritionCard({
-  today, existing, action, nutritionTotals,
+export function NutritionCard({
+  today, existing, action, nutritionTotals, onSaved,
 }: {
-  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null;
+  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null; onSaved?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
+
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
 
   return (
     <form action={formAction}>
@@ -333,6 +395,7 @@ export default function DailyBilanForm({
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <WeightCard today={today} existing={existing} action={action} />
+      <SleepCard today={today} existing={existing} action={action} />
       <TrainingCard today={today} existing={existing} action={action} />
       <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
       <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />

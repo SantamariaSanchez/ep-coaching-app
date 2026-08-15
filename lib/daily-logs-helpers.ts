@@ -18,6 +18,10 @@ export interface DailyLog {
   weight_time: string | null;
   sleep_hours: number | null;
   sleep_rating: number | null;
+  // Heures réelles de coucher/lever, à comparer à profiles.target_bedtime /
+  // target_wake_time pour la régularité — voir lib/daily-gate.ts.
+  bedtime_actual: string | null;
+  wake_time_actual: string | null;
   digestion: string | null;
   stress: "low" | "medium" | "high" | null;
   // Nutrition

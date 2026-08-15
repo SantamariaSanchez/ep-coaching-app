@@ -4,9 +4,12 @@ import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
+import { getClientDailyLogs } from "@/utils/daily-logs";
+import { getSleepSchedule } from "@/lib/daily-gate";
 import { isOuraConfigured } from "@/lib/oura";
 import TrackingClient from "@/components/tracking/TrackingClient";
-import { logBiometrics, disconnectOura, acknowledgeBiometricInsight } from "@/app/dashboard/client/tracking/actions";
+import SleepScheduleCard from "@/components/tracking/SleepScheduleCard";
+import { logBiometrics, disconnectOura, acknowledgeBiometricInsight, updateSleepSchedule } from "@/app/dashboard/client/tracking/actions";
 
 export default async function CoachMoiTrackingPage({
   searchParams,
@@ -22,10 +25,12 @@ export default async function CoachMoiTrackingPage({
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const admin = createAdminClient();
-  const [logs, insights, { data: ouraConnection }] = await Promise.all([
+  const [logs, insights, { data: ouraConnection }, recentDailyLogs, sleepSchedule] = await Promise.all([
     getBiometricLogs(user.id),
     getBiometricInsights(user.id),
     admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
+    getClientDailyLogs(user.id, 14),
+    getSleepSchedule(user.id),
   ]);
 
   return (
@@ -39,6 +44,13 @@ export default async function CoachMoiTrackingPage({
           Sommeil, récupération, HRV : des données qui débouchent sur de vraies suggestions d&apos;ajustement.
         </p>
       </div>
+
+      <SleepScheduleCard
+        targetBedtime={sleepSchedule.targetBedtime}
+        targetWakeTime={sleepSchedule.targetWakeTime}
+        recentLogs={recentDailyLogs}
+        updateAction={updateSleepSchedule}
+      />
 
       <TrackingClient
         logs={logs}

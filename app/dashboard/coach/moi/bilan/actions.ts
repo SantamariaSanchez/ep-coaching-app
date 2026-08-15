@@ -46,29 +46,46 @@ export async function upsertCoachDailyLog(
 
     const weightMorning = num(formData.get("weight_morning"));
 
-    const { error } = await supabase.from("daily_logs").upsert(
-      {
-        client_id: guard.userId,
-        log_date,
-        training_name: txt(formData.get("training_name")),
-        training_rating: num(formData.get("training_rating")),
-        cardio: txt(formData.get("cardio")),
-        steps: num(formData.get("steps")),
-        weight_morning: weightMorning,
-        weight_time: txt(formData.get("weight_time")),
-        sleep_hours: num(formData.get("sleep_hours")),
-        sleep_rating: num(formData.get("sleep_rating")),
-        digestion: txt(formData.get("digestion")),
-        stress: txt(formData.get("stress")),
-        proteins_g: num(formData.get("proteins_g")),
-        carbs_g: num(formData.get("carbs_g")),
-        fats_g: num(formData.get("fats_g")),
-        calories_kcal: num(formData.get("calories_kcal")),
-        hunger: txt(formData.get("hunger")),
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "client_id,log_date" }
-    );
+    // Écriture partielle : seuls les champs réellement présents dans le
+    // formData sont inclus dans le payload — sans ça, chaque carte de
+    // DailyBilanForm (une par <form> indépendant) écrasait à null tout le
+    // reste du bilan du jour à chaque sauvegarde, puisque cette action
+    // écrivait TOUS les champs même absents de la soumission en cours. Même
+    // correctif que app/dashboard/client/bilan/actions.ts, jamais appliqué
+    // ici jusqu'à l'ajout du bilan en 2 temps (MASTERCLASS.md).
+    const FIELD_SPEC: Array<{ key: string; kind: "num" | "txt" }> = [
+      { key: "training_name", kind: "txt" },
+      { key: "cardio", kind: "txt" },
+      { key: "steps", kind: "num" },
+      { key: "weight_morning", kind: "num" },
+      { key: "weight_time", kind: "txt" },
+      { key: "sleep_hours", kind: "num" },
+      { key: "sleep_rating", kind: "num" },
+      { key: "bedtime_actual", kind: "txt" },
+      { key: "wake_time_actual", kind: "txt" },
+      { key: "digestion", kind: "txt" },
+      { key: "stress", kind: "txt" },
+      { key: "proteins_g", kind: "num" },
+      { key: "carbs_g", kind: "num" },
+      { key: "fats_g", kind: "num" },
+      { key: "calories_kcal", kind: "num" },
+      { key: "hunger", kind: "txt" },
+    ];
+
+    const payload: Record<string, unknown> = {
+      client_id: guard.userId,
+      log_date,
+      updated_at: new Date().toISOString(),
+    };
+    for (const f of FIELD_SPEC) {
+      if (formData.has(f.key)) {
+        payload[f.key] = f.kind === "num" ? num(formData.get(f.key)) : txt(formData.get(f.key));
+      }
+    }
+
+    const { error } = await supabase
+      .from("daily_logs")
+      .upsert(payload, { onConflict: "client_id,log_date" });
 
     if (error) return { error: error.message };
 

@@ -52,6 +52,9 @@ export interface Profile {
   // Miroir de auth.mfa_factors tenu par un trigger : true dès qu'un facteur
   // TOTP vérifié existe sur le compte.
   mfa_enabled: boolean;
+  // target_bedtime/target_wake_time existent en base (voir lib/daily-gate.ts)
+  // mais SONT VOLONTAIREMENT ABSENTS d'ici — ce type reflète PROFILE_FIELDS
+  // dans utils/auth.ts, qui les exclut exprès. Voir le commentaire là-bas.
 }
 
 export function isSubscribed(profile: Profile | null): boolean {
