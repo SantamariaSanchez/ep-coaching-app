@@ -182,11 +182,12 @@ production locale.
 | 2026-08-15 | Vague J | 2 | Respiration et système nerveux (3 essais contrôlés récents, effet réel mais plus limité que le discours bien-être habituel), jet lag pour athlètes qui voyagent (asymétrie est/ouest chiffrée). |
 | 2026-08-15 | Vague K | 2 | Grossesse et activité physique (cadrage médical prudent, 2 études récentes), activité physique au bureau (bureau assis-debout + micro-pauses de marche, chiffres précis). |
 | 2026-08-15 | Vague L | 2 | Perfectionnisme et longévité sportive (coureurs d'élite, effets forts), contenu body positive sur les réseaux (méta-analyse 56 études, ce qui change et ce qui ne change pas). |
-| **Total au 2026-08-15** | | **94** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague M | 1 | Périodisation (2 méta-analyses : force oui, hypertrophie non, ondulée vs linéaire selon le niveau). |
+| **Total au 2026-08-15** | | **95** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 20, Psychologie 14, Général 11, Récupération 11,
+Nutrition 23, Entraînement 21, Psychologie 14, Général 11, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -202,7 +203,8 @@ de stagnation, diagnostic programme, tension vs pump, supersets
 antagonistes, temps de repos, sortir d'un plateau, hypertrophie mollets,
 cycle menstruel et entraînement, interférence cardio/hypertrophie,
 échauffement spécifique vs général, unilatéral vs bilatéral (déficit
-bilatéral, cross-education).
+bilatéral, cross-education), périodisation (force vs hypertrophie, ondulée
+vs linéaire).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -303,14 +305,15 @@ grossesse (DOI 10.1016/j.ejogrb.2025.114840). Activité au bureau : Graves
 et al. 2015, bureau assis-debout (DOI 10.1186/s12889-015-2469-8).
 Perfectionnisme : Dessye 2026, étude sur coureurs d'élite (DOI
 10.1007/s44192-026-00513-5). Body positive : Jiménez-García et al. 2025,
-méta-analyse 56 études (DOI 10.1186/s40337-025-01286-y).
+méta-analyse 56 études (DOI 10.1186/s40337-025-01286-y). Périodisation :
+Moesgaard et al. 2022, méta-analyse 35 études (DOI 10.1007/s40279-021-01636-1),
+Williams et al. 2017, méta-analyse 18 études (DOI 10.1007/s40279-017-0734-y).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
-- Entraînement : périodisation par blocs, entraînement à domicile avec
-  matériel limité, gestion des blessures courantes (épaule, genou,
-  lombaires) en musculation, progression sur les mouvements au poids du
-  corps.
+- Entraînement : entraînement à domicile avec matériel limité, gestion des
+  blessures courantes (épaule, genou, lombaires) en musculation,
+  progression sur les mouvements au poids du corps.
 - Nutrition : alimentation étudiante à petit budget.
 - Récupération : blessures et retour progressif à l'entraînement.
 - Psychologie : auto-sabotage, discipline vs motivation au quotidien, gérer
