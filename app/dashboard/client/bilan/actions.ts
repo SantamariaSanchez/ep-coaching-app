@@ -96,7 +96,31 @@ export async function upsertDailyLog(
 
     const { error } = await supabase.from("daily_logs").upsert(payload, { onConflict: "client_id,log_date" });
 
-    if (error) return { error: error.message };
+    if (error) {
+      console.error("upsertDailyLog error:", error);
+      return { error: "Erreur serveur, réessaie." };
+    }
+
+    // Le bilan devient la seule saisie manuelle de pas nécessaire (voir
+    // StepsClient, qui ne propose plus la sienne) : ce qui est confirmé ici
+    // doit rejoindre step_logs, sinon l'historique/les séries de l'onglet
+    // Steps se figent dès qu'un jour n'a été renseigné que via le bilan.
+    // Écrasement volontaire (pas un max) : le champ steps du bilan est
+    // préempli depuis step_logs (voir getTodayStepsActual), donc ce que le
+    // client soumet ici est sa réponse finale et confirmée du jour, pas une
+    // correction partielle à fusionner.
+    const stepsSubmitted = payload.steps as number | null | undefined;
+    if (stepsSubmitted != null) {
+      supabase
+        .from("step_logs")
+        .upsert(
+          { client_id: guard.userId, log_date, steps_actual: stepsSubmitted },
+          { onConflict: "client_id,log_date" }
+        )
+        .then(({ error: stepsError }) => {
+          if (stepsError) console.error("bilan->step_logs sync error:", stepsError);
+        });
+    }
 
     awardPoints(guard.userId, POINTS.daily_bilan, "Bilan quotidien rempli", "daily_bilan", log_date);
 

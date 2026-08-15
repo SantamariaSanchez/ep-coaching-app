@@ -2,11 +2,10 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, RotateCcw, Activity, AlertTriangle } from "lucide-react";
+import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, Activity, AlertTriangle } from "lucide-react";
 import type { StepSettings, StepRoutineItem, StepLog } from "@/utils/steps";
 import { usePedometer, PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 
-const QUICK_ADD_AMOUNTS = [500, 1000, 2500, 5000];
 const HEATMAP_WEEKS = 4;
 
 function todayStr(): string {
@@ -106,6 +105,7 @@ export default function StepsClient({
   readOnly = false,
   hasOura = false,
   ouraTrackingHref = "/dashboard/client/tracking",
+  bilanHref = "/dashboard/client/bilan",
   updateStepGoal,
   addRoutineItem,
   deleteRoutineItem,
@@ -118,6 +118,8 @@ export default function StepsClient({
   readOnly?: boolean;
   hasOura?: boolean;
   ouraTrackingHref?: string;
+  /** Bilan quotidien — seul endroit qui reste pour saisir/corriger les pas à la main. */
+  bilanHref?: string;
   updateStepGoal?: (goal: number) => Promise<{ error?: string }>;
   addRoutineItem?: (label: string, timeLabel: string) => Promise<{ error?: string; id?: string }>;
   deleteRoutineItem?: (id: string) => Promise<{ error?: string }>;
@@ -134,11 +136,10 @@ export default function StepsClient({
   const [newTime, setNewTime] = useState("");
   const [showAddItem, setShowAddItem] = useState(false);
 
-  const [stepsInput, setStepsInput] = useState(String(todayLog?.steps_actual ?? ""));
   const [completed, setCompleted] = useState<Set<string>>(new Set(todayLog?.completed_items ?? []));
 
   // MASTERCLASS.md Axe E (même piège que todayLogs dans ClientNutritionView) :
-  // goal/items/stepsInput/completed venaient tous de props serveur mais ne se
+  // goal/items/completed venaient tous de props serveur mais ne se
   // resynchronisaient jamais sur un nouveau prop après le premier rendu — un
   // objectif changé, un item de routine ajouté/supprimé ailleurs, ou un pas
   // loggé puis la page rechargée pouvaient rester affichés à l'ancienne valeur.
@@ -149,15 +150,12 @@ export default function StepsClient({
     setItems(routineItems);
   }, [routineItems]);
   useEffect(() => {
-    setStepsInput(String(todayLog?.steps_actual ?? ""));
     setCompleted(new Set(todayLog?.completed_items ?? []));
     // eslint-disable-next-line react-hooks/exhaustive-deps -- todayLog est recalculé chaque rendu depuis logs/today, la vraie dépendance stable est logs
   }, [logs]);
-  const [saving, setSaving] = useState(false);
-  const [savedAt, setSavedAt] = useState<number | null>(null);
-  // MASTERCLASS.md Axe B : ces handlers affichaient "Enregistré ✓" même
-  // quand logSteps/updateStepGoal échouait côté serveur — pire qu'un échec
-  // silencieux, un faux positif qui affirme que ça a marché.
+  // MASTERCLASS.md Axe B : ce handler affichait "Enregistré ✓" même quand
+  // updateStepGoal échouait côté serveur — pire qu'un échec silencieux, un
+  // faux positif qui affirme que ça a marché.
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const [reminderOpenFor, setReminderOpenFor] = useState<string | null>(null);
@@ -171,7 +169,12 @@ export default function StepsClient({
   // listener devicemotion à chaque pas détecté, voir lib/pedometer.ts — tout
   // en lisant toujours la valeur la plus fraîche au moment où il se
   // déclenche vraiment.
-  const manualSteps = parseInt(stepsInput) || 0;
+  // Masterclass 2026-08-15 : la saisie manuelle de pas vivait ici en plus du
+  // podomètre et de la sync Oura, en doublon direct du champ "steps" du
+  // bilan du soir (qui écrit maintenant vers step_logs, voir
+  // app/dashboard/client/bilan/actions.ts). dbSteps lit simplement la
+  // dernière valeur connue en base, quelle que soit sa source.
+  const dbSteps = todayLog?.steps_actual ?? 0;
   const completedRef = useRef(completed);
   const todayStepsRef = useRef(0);
 
@@ -196,7 +199,7 @@ export default function StepsClient({
   // Le total affiché/utilisé partout (barre de progression, heatmap, séries)
   // est le plus grand des deux sources — jamais une simple bascule qui
   // ferait disparaître l'un des deux apports.
-  const todaySteps = Math.max(manualSteps, pedometer.steps);
+  const todaySteps = Math.max(dbSteps, pedometer.steps);
 
   useEffect(() => {
     todayStepsRef.current = todaySteps;
@@ -240,45 +243,6 @@ export default function StepsClient({
     [pastCells, goal]
   );
   const streaks = useMemo(() => computeStreaks(logs, goal, today, todaySteps), [logs, goal, today, todaySteps]);
-
-  // Trois points d'entrée (quick add, reset, saisie manuelle) partagent la
-  // même mécanique de sauvegarde, en trois fonctions "handle*" distinctes
-  // plutôt qu'un helper commun : la règle purity du linter React exige que
-  // l'appel impur (Date.now) reste directement dans le gestionnaire
-  // d'évènement pour prouver qu'il ne peut pas s'exécuter pendant le rendu.
-  async function handleQuickAdd(amount: number) {
-    if (!logSteps) return;
-    const next = Math.max(0, todaySteps + amount);
-    setStepsInput(String(next));
-    setSaving(true);
-    const res = await logSteps(today, next, [...completed]);
-    setSaving(false);
-    if (res.error) {
-      setSaveError(res.error);
-      return;
-    }
-    setSaveError(null);
-    setSavedAt(Date.now());
-    setTimeout(() => setSavedAt(null), 2000);
-  }
-
-  async function handleReset() {
-    if (!logSteps) return;
-    setStepsInput("0");
-    // Sans ça, le podomètre republierait son propre cumul au prochain envoi
-    // automatique et annulerait silencieusement la remise à zéro.
-    pedometer.resetCount(0);
-    setSaving(true);
-    const res = await logSteps(today, 0, [...completed]);
-    setSaving(false);
-    if (res.error) {
-      setSaveError(res.error);
-      return;
-    }
-    setSaveError(null);
-    setSavedAt(Date.now());
-    setTimeout(() => setSavedAt(null), 2000);
-  }
 
   async function handlePedometerToggle() {
     if (pedometer.status === "active") {
@@ -334,20 +298,6 @@ export default function StepsClient({
     }
   }
 
-  async function handleSaveToday() {
-    if (!logSteps) return;
-    setSaving(true);
-    const res = await logSteps(today, todaySteps, [...completed]);
-    setSaving(false);
-    if (res.error) {
-      setSaveError(res.error);
-      return;
-    }
-    setSaveError(null);
-    setSavedAt(Date.now());
-    setTimeout(() => setSavedAt(null), 2000);
-  }
-
   async function handleCreateReminder(item: StepRoutineItem) {
     if (!createReminderFromRoutine) return;
     setReminderStatus((prev) => ({ ...prev, [item.id]: "saving" }));
@@ -358,6 +308,12 @@ export default function StepsClient({
 
   return (
     <div className="space-y-5">
+      {saveError && (
+        <p className="flex items-center gap-1.5 text-[11px] text-red-400 bg-red-500/5 border border-red-500/20 rounded-lg px-3 py-2">
+          <AlertTriangle size={12} className="flex-shrink-0" /> {saveError}
+        </p>
+      )}
+
       {/* Statut Oura */}
       {!readOnly && (
         hasOura ? (
@@ -457,16 +413,9 @@ export default function StepsClient({
           </div>
         </div>
 
-        <div className="flex items-end justify-between gap-4 mb-3">
-          <div>
-            <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
-            <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
-          </div>
-          {!readOnly && logSteps && todaySteps > 0 && (
-            <button onClick={handleReset} title="Réinitialiser" aria-label="Réinitialiser" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors mb-1">
-              <RotateCcw size={14} />
-            </button>
-          )}
+        <div className="mb-3">
+          <p className="text-3xl font-black text-white tabular-nums">{todaySteps.toLocaleString("fr-FR")}</p>
+          <p className="text-[10px] text-[#F5EDED]/30">pas aujourd&apos;hui</p>
         </div>
 
         <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden mb-1">
@@ -475,49 +424,20 @@ export default function StepsClient({
             style={{ width: `${pct}%` }}
           />
         </div>
-        <p className="text-[10px] text-[#F5EDED]/30 mb-4">{pct}% de l&apos;objectif</p>
+        <p className="text-[10px] text-[#F5EDED]/30">{pct}% de l&apos;objectif</p>
 
-        {!readOnly && logSteps && (
-          <>
-            {pedometer.status === "active" && (
-              <p className="text-[10px] text-[#F5EDED]/25 mb-2">
-                Le podomètre compte pour toi, utilise ceci seulement pour corriger un chiffre.
-              </p>
-            )}
-            <div className="flex flex-wrap gap-1.5 mb-2.5">
-              {QUICK_ADD_AMOUNTS.map((amount) => (
-                <button
-                  key={amount}
-                  onClick={() => handleQuickAdd(amount)}
-                  disabled={saving}
-                  className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/50 transition-colors disabled:opacity-40"
-                >
-                  <Plus size={10} /> {amount.toLocaleString("fr-FR")}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="number"
-                value={stepsInput}
-                onChange={(e) => setStepsInput(e.target.value)}
-                placeholder="Saisie précise" aria-label="Saisie précise"
-                className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
-              />
-              <button
-                onClick={handleSaveToday}
-                disabled={saving}
-                className="flex items-center justify-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-              >
-                {saving ? "…" : savedAt ? <><Check size={13} /> Ok</> : "Enregistrer"}
-              </button>
-            </div>
-            {saveError && (
-              <p className="flex items-center gap-1.5 text-[11px] text-red-400 mt-2">
-                <AlertTriangle size={12} /> {saveError}
-              </p>
-            )}
-          </>
+        {/* Masterclass 2026-08-15 : plus de saisie manuelle ici (doublon
+            direct du champ "steps" du bilan du soir, qui alimente
+            maintenant step_logs) — seul le bilan reste l'endroit où confirmer
+            ou corriger le chiffre du jour. */}
+        {!readOnly && !hasOura && pedometer.status !== "active" && (
+          <p className="text-[10px] text-[#F5EDED]/25 mt-3 pt-3 border-t border-[#890404]/10 leading-relaxed">
+            Pas de podomètre actif ni de Oura connectée : renseigne ou corrige tes pas dans ton{" "}
+            <Link href={bilanHref} className="text-[#E01E1E] hover:text-[#ff4444] transition-colors">
+              bilan du soir
+            </Link>
+            , ils remontent ici automatiquement.
+          </p>
         )}
       </div>
 

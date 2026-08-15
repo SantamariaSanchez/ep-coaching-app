@@ -38,6 +38,7 @@ export default async function CoachMoiStepsPage() {
         logs={logs}
         hasOura={!!ouraConnection}
         ouraTrackingHref="/dashboard/coach/moi/tracking"
+        bilanHref="/dashboard/coach/moi/bilan"
         updateStepGoal={updateStepGoal}
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}
