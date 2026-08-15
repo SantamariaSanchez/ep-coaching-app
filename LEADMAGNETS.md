@@ -176,11 +176,12 @@ production locale.
 | 2026-08-15 | Vague D | 2 | Bains froids (bénéfice court terme vs coût sur les gains long terme), escaliers vs ascenseur (étude contrôlée 8 semaines, chiffres précis). |
 | 2026-08-15 | Vague E | 2 | Végétarien/végétalien en musculation (étude contrôlée 10 semaines, gains comparables à apport protéique égal), échauffement spécifique (général vs spécifique, séries d'approche). |
 | 2026-08-15 | Vague F | 2 | Alcool et objectifs physiques (synthèse protéique -24 à -37% post exercice), foam rolling (mobilité et récupération perçue réelles, mythe du fascia relâché écarté). |
-| **Total au 2026-08-15** | | **83** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague G | 2 | Unilatéral vs bilatéral (déficit bilatéral + cross-education, deux mécanismes distincts), créatine et cerveau (fatigue cognitive au-delà du muscle). |
+| **Total au 2026-08-15** | | **85** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 21, Entraînement 19, Psychologie 12, Général 10, Récupération 9,
+Nutrition 22, Entraînement 20, Psychologie 12, Général 10, Récupération 9,
 Entrepreneuriat 6, Steps & activité quotidienne 6.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -195,7 +196,8 @@ deload, progression d'intensité par cycle, fréquence d'entraînement, cause
 de stagnation, diagnostic programme, tension vs pump, supersets
 antagonistes, temps de repos, sortir d'un plateau, hypertrophie mollets,
 cycle menstruel et entraînement, interférence cardio/hypertrophie,
-échauffement spécifique vs général.
+échauffement spécifique vs général, unilatéral vs bilatéral (déficit
+bilatéral, cross-education).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -203,7 +205,8 @@ besoin en déficit, collations protéinées, diagnostic nutrition, fenêtre
 anabolique, rythme de sèche, protéines en sèche, cardio à jeun, sommeil et
 sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
 des glucides autour de l'entraînement, gestion des fringales,
-végétarien/végétalien en musculation, alcool et objectifs physiques.
+végétarien/végétalien en musculation, alcool et objectifs physiques,
+créatine et cerveau (fatigue cognitive).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -270,17 +273,20 @@ systématique (DOI 10.1016/j.jsams.2006.03.026). Alcool : Parr et al. 2014
 (DOI 10.1371/journal.pone.0088384), Lakićević 2019, revue systématique (DOI
 10.3390/jfmk4030041). Foam rolling : Martínez-Aranda et al. 2024, revue
 systématique 25 études (DOI 10.3390/jfmk9010020), Scudamore et al. 2021 (DOI
-10.1016/j.jesf.2021.02.002).
+10.1016/j.jesf.2021.02.002). Unilatéral/bilatéral : Škarabot et al. 2016,
+revue sur le déficit bilatéral (DOI 10.1007/s00421-016-3458-z), Barss et al.
+2018, cross-education (DOI 10.1152/japplphysiol.00390.2017). Créatine et
+cerveau : Gordji-Nejad et al. 2024 (DOI 10.1038/s41598-024-54249-9), Roschel
+et al. 2021, revue (DOI 10.3390/nu13020586).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
-- Entraînement : périodisation par blocs, unilatéral vs bilatéral,
-  entraînement à domicile avec matériel limité, gestion des blessures
-  courantes (épaule, genou, lombaires) en musculation, progression sur les
-  mouvements au poids du corps.
+- Entraînement : périodisation par blocs, entraînement à domicile avec
+  matériel limité, gestion des blessures courantes (épaule, genou,
+  lombaires) en musculation, progression sur les mouvements au poids du
+  corps.
 - Nutrition : grossesse et activité physique, alimentation étudiante à
-  petit budget, suppléments réellement soutenus par la littérature
-  (créatine, caféine) vs marketing.
+  petit budget, caféine réellement soutenue par la littérature vs marketing.
 - Récupération : respiration et système nerveux, gestion du jet lag pour
   les athlètes qui voyagent, blessures et retour progressif à
   l'entraînement.
