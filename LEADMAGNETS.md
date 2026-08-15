@@ -177,12 +177,13 @@ production locale.
 | 2026-08-15 | Vague E | 2 | Végétarien/végétalien en musculation (étude contrôlée 10 semaines, gains comparables à apport protéique égal), échauffement spécifique (général vs spécifique, séries d'approche). |
 | 2026-08-15 | Vague F | 2 | Alcool et objectifs physiques (synthèse protéique -24 à -37% post exercice), foam rolling (mobilité et récupération perçue réelles, mythe du fascia relâché écarté). |
 | 2026-08-15 | Vague G | 2 | Unilatéral vs bilatéral (déficit bilatéral + cross-education, deux mécanismes distincts), créatine et cerveau (fatigue cognitive au-delà du muscle). |
-| **Total au 2026-08-15** | | **85** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague H | 2 | Caféine soutenue par la littérature (dose-réponse, 48 études), marche et santé mentale (revue de portée, 13 000+ études criblées). |
+| **Total au 2026-08-15** | | **87** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 22, Entraînement 20, Psychologie 12, Général 10, Récupération 9,
-Entrepreneuriat 6, Steps & activité quotidienne 6.
+Nutrition 23, Entraînement 20, Psychologie 12, Général 10, Récupération 9,
+Entrepreneuriat 6, Steps & activité quotidienne 7.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -206,7 +207,8 @@ anabolique, rythme de sèche, protéines en sèche, cardio à jeun, sommeil et
 sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
 des glucides autour de l'entraînement, gestion des fringales,
 végétarien/végétalien en musculation, alcool et objectifs physiques,
-créatine et cerveau (fatigue cognitive).
+créatine et cerveau (fatigue cognitive), caféine soutenue par la
+littérature (dose-réponse).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -228,7 +230,7 @@ individuelle à l'entraînement.
 
 **Steps & activité quotidienne** : combien de pas viser, NEAT, augmenter
 ses pas au quotidien, profil d'activité, marche après repas, escaliers vs
-ascenseur.
+ascenseur, marche et santé mentale.
 
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
@@ -277,7 +279,10 @@ systématique 25 études (DOI 10.3390/jfmk9010020), Scudamore et al. 2021 (DOI
 revue sur le déficit bilatéral (DOI 10.1007/s00421-016-3458-z), Barss et al.
 2018, cross-education (DOI 10.1152/japplphysiol.00390.2017). Créatine et
 cerveau : Gordji-Nejad et al. 2024 (DOI 10.1038/s41598-024-54249-9), Roschel
-et al. 2021, revue (DOI 10.3390/nu13020586).
+et al. 2021, revue (DOI 10.3390/nu13020586). Caféine : Martins et al. 2026,
+méta-analyse dose-réponse 48 études (DOI 10.3390/nu18121989). Marche et
+santé mentale : Kelly et al. 2018, revue de portée (DOI
+10.1136/bjsports-2017-098827).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -286,12 +291,12 @@ et al. 2021, revue (DOI 10.3390/nu13020586).
   lombaires) en musculation, progression sur les mouvements au poids du
   corps.
 - Nutrition : grossesse et activité physique, alimentation étudiante à
-  petit budget, caféine réellement soutenue par la littérature vs marketing.
+  petit budget.
 - Récupération : respiration et système nerveux, gestion du jet lag pour
   les athlètes qui voyagent, blessures et retour progressif à
   l'entraînement.
 - Steps & activité quotidienne : podomètre vs montre connectée (fiabilité),
-  activité physique au bureau, marche et santé mentale.
+  activité physique au bureau.
 - Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
   auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
   ne convient plus, transition post-objectif (après une compétition, un
