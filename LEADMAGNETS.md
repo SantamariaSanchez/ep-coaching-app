@@ -183,11 +183,12 @@ production locale.
 | 2026-08-15 | Vague K | 2 | Grossesse et activité physique (cadrage médical prudent, 2 études récentes), activité physique au bureau (bureau assis-debout + micro-pauses de marche, chiffres précis). |
 | 2026-08-15 | Vague L | 2 | Perfectionnisme et longévité sportive (coureurs d'élite, effets forts), contenu body positive sur les réseaux (méta-analyse 56 études, ce qui change et ce qui ne change pas). |
 | 2026-08-15 | Vague M | 1 | Périodisation (2 méta-analyses : force oui, hypertrophie non, ondulée vs linéaire selon le niveau). |
-| **Total au 2026-08-15** | | **95** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague N | 2 | Entraînement à domicile matériel limité (élastiques vs charges libres, essai contrôlé 12 semaines), squat profond et genoux (modélisation biomécanique, mythe inversé). |
+| **Total au 2026-08-15** | | **97** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 21, Psychologie 14, Général 11, Récupération 11,
+Nutrition 23, Entraînement 23, Psychologie 14, Général 11, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -204,7 +205,8 @@ antagonistes, temps de repos, sortir d'un plateau, hypertrophie mollets,
 cycle menstruel et entraînement, interférence cardio/hypertrophie,
 échauffement spécifique vs général, unilatéral vs bilatéral (déficit
 bilatéral, cross-education), périodisation (force vs hypertrophie, ondulée
-vs linéaire).
+vs linéaire), entraînement à domicile matériel limité (élastiques vs
+charges libres), squat profond et genoux.
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -308,12 +310,14 @@ Perfectionnisme : Dessye 2026, étude sur coureurs d'élite (DOI
 méta-analyse 56 études (DOI 10.1186/s40337-025-01286-y). Périodisation :
 Moesgaard et al. 2022, méta-analyse 35 études (DOI 10.1007/s40279-021-01636-1),
 Williams et al. 2017, méta-analyse 18 études (DOI 10.1007/s40279-017-0734-y).
+Entraînement domicile : Schott et al. 2026, essai contrôlé élastiques vs
+charges libres (DOI 10.1016/j.exger.2026.113182). Genou/squat profond : Wu
+et al. 2019, modélisation biomécanique (DOI 10.1016/j.jbiomech.2019.109333).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
-- Entraînement : entraînement à domicile avec matériel limité, gestion des
-  blessures courantes (épaule, genou, lombaires) en musculation,
-  progression sur les mouvements au poids du corps.
+- Entraînement : gestion des blessures courantes (épaule, lombaires) en
+  musculation, progression sur les mouvements au poids du corps.
 - Nutrition : alimentation étudiante à petit budget.
 - Récupération : blessures et retour progressif à l'entraînement.
 - Psychologie : auto-sabotage, discipline vs motivation au quotidien, gérer
