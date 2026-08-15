@@ -184,11 +184,12 @@ production locale.
 | 2026-08-15 | Vague L | 2 | Perfectionnisme et longévité sportive (coureurs d'élite, effets forts), contenu body positive sur les réseaux (méta-analyse 56 études, ce qui change et ce qui ne change pas). |
 | 2026-08-15 | Vague M | 1 | Périodisation (2 méta-analyses : force oui, hypertrophie non, ondulée vs linéaire selon le niveau). |
 | 2026-08-15 | Vague N | 2 | Entraînement à domicile matériel limité (élastiques vs charges libres, essai contrôlé 12 semaines), squat profond et genoux (modélisation biomécanique, mythe inversé). |
-| **Total au 2026-08-15** | | **97** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague O | 1 | Alimentation étudiante à petit budget (1973 étudiants, le budget n'est pas le seul facteur, l'organisation compte presque autant). |
+| **Total au 2026-08-15** | | **98** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 23, Psychologie 14, Général 11, Récupération 11,
+Nutrition 24, Entraînement 23, Psychologie 14, Général 11, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -216,7 +217,7 @@ sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
 des glucides autour de l'entraînement, gestion des fringales,
 végétarien/végétalien en musculation, alcool et objectifs physiques,
 créatine et cerveau (fatigue cognitive), caféine soutenue par la
-littérature (dose-réponse).
+littérature (dose-réponse), alimentation étudiante à petit budget.
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -313,12 +314,14 @@ Williams et al. 2017, méta-analyse 18 études (DOI 10.1007/s40279-017-0734-y).
 Entraînement domicile : Schott et al. 2026, essai contrôlé élastiques vs
 charges libres (DOI 10.1016/j.exger.2026.113182). Genou/squat profond : Wu
 et al. 2019, modélisation biomécanique (DOI 10.1016/j.jbiomech.2019.109333).
+Alimentation étudiante : Foglia et al. 2026, étude sur 1973 étudiants (DOI
+10.1016/j.numecd.2026.104672), Pelletier & Laska 2012 (DOI
+10.1016/j.jneb.2012.04.001).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
 - Entraînement : gestion des blessures courantes (épaule, lombaires) en
   musculation, progression sur les mouvements au poids du corps.
-- Nutrition : alimentation étudiante à petit budget.
 - Récupération : blessures et retour progressif à l'entraînement.
 - Psychologie : auto-sabotage, discipline vs motivation au quotidien, gérer
   un coach qui ne convient plus, transition post-objectif (après une
