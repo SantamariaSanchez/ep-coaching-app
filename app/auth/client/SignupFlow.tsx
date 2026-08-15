@@ -55,8 +55,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!fullName.trim() || !email.trim() || !phone.trim() || password.length < 6) {
-      setError("Prénom, email, téléphone et mot de passe (6 caractères min.) requis.");
+    if (!fullName.trim() || !email.trim() || !phone.trim() || password.length < 8) {
+      setError("Prénom, email, téléphone et mot de passe (8 caractères min.) requis.");
       return;
     }
     setCreatingAccount(true);

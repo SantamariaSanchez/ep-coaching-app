@@ -162,14 +162,24 @@ sans nom accessible), G (champs de formulaire sans nom accessible), H
 et index), J (images de contenu sans texte alternatif), K (`href` sur URL
 stockée sans `safeExternalUrl`), L ("aujourd'hui" calculé en UTC côté
 serveur au lieu de l'heure de Paris), M (pages sans `loading.tsx`), N
-(routes API de mutation sans `enforceRateLimit`) et O (upload sans
-contrôle taille/type avant l'envoi réseau) sont clos — détail de chacun
-plus bas. Idée pas encore commencée :
+(routes API de mutation sans `enforceRateLimit`), O (upload sans contrôle
+taille/type avant l'envoi réseau) et P (passe sécurité sur 20 points) sont
+clos — détail de chacun plus bas. Idées pas encore commencées :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
   différemment des axes précédents (pas un grep mécanique évident, demande
   de relire beaucoup de messages un par un pour juger de leur clarté).
+- **Mailing coach (VISION.md Axe 2), signalé "brouillon" par l'utilisateur
+  le 2026-08-15** : la page (`app/dashboard/coach/mailing/`) et le composant
+  d'envoi existent et semblent fonctionnels (segmentation par tag/liste
+  Brevo, historique, test sur soi-même avant envoi groupé), sans TODO ni
+  incomplétude évidente trouvée à la lecture rapide du code. Pas creusé plus
+  loin dans cette passe faute de savoir précisément ce qui, à l'usage, ne
+  convient pas — à reprendre en demandant à l'utilisateur ce qui cloche
+  concrètement (rendu de l'email ? segmentation trop rigide ? autre chose ?)
+  plutôt qu'en devinant un problème qui n'a peut-être pas encore été
+  identifié avec précision.
 
 ## Axe B — Échecs silencieux : résultat d'action jamais vérifié côté UI
 
@@ -1504,3 +1514,103 @@ grep -rn "\.upload(" --include="*.ts" --include="*.tsx" .   # via l'outil Grep, 
   type passerait donc encore le contrôle client et échouerait à l'upload
   avec le message générique existant, pas un message "mauvais format"
   dédié. Écart mineur, pas revu ici faute de signal concret.
+
+## Axe P — Passe sécurité sur 20 points (demande explicite du 2026-08-15)
+
+**Statut : clos pour les points traités, 3 points restants documentés
+ci-dessous.**
+
+Retour direct (liste à la volée, reformulée ici en items) : clé API dans le
+front, permission navigateur, mot de passe sur GitHub, base lisible par
+tous, API sans limite, texte collé en requête (injection SQL), serveur qui
+croit tout, commentaire qui exécute (XSS stocké), mot de passe en clair,
+jeton côté navigateur, back-office ouvert, serveur ouvert à tous (CORS),
+email non vérifié, identifiants devinables (IDOR), passage en admin,
+webhook non signée, erreurs qui fuitent, librairies pas à jour, "six
+lettres suffisent" (mot de passe faible), fichiers sans contrôle.
+
+**Déjà sain, vérifié sans modification** : clé API front (`NEXT_PUBLIC_*`
+= uniquement anon key Supabase + clé VAPID publique, `SUPABASE_SERVICE_
+ROLE_KEY` jamais préfixé `NEXT_PUBLIC_`) · permission navigateur
+(`PushPermission.tsx` documente déjà l'anti-pattern "prompt hors clic
+utilisateur") · secret sur GitHub (`.env*` gitignored, rien de tracké) ·
+base lisible par tous (RLS activée sur 100% des tables `public`, aucune
+table `rowsecurity = false`) · injection SQL (aucune requête construite en
+concaténant du texte utilisateur, tout passe par le query builder Supabase
+ou des RPC sans argument) · XSS stocké (zéro `dangerouslySetInnerHTML`,
+déjà documenté) · jeton côté navigateur (aucun token d'auth en
+`localStorage`, uniquement de l'état UI non sensible) · back-office ouvert
+(`requirePlatformOwner()` + IDOR : `requireOwnClient`/
+`requireOwnClientOrSelf` bloquent déjà l'accès à un client d'un autre
+coach) · CORS (aucun header `Access-Control-Allow-Origin` posé, donc
+same-origin par défaut) · webhook non signé (Stripe : signature vérifiée
+via `stripe.webhooks.constructEvent`) · passage en admin
+(`updateMyProfile` utilise une allowlist de champs stricte, jamais de
+spread du body).
+
+**Corrigé** :
+- **Librairies pas à jour** (le point le plus sérieux) : `next` 16.2.6 →
+  `16.3.1`, corrigeant 4 CVE HIGH dont un contournement de middleware
+  (CWE-285) et une divulgation non authentifiée d'endpoints Server
+  Function internes. `sharp`/`postcss`/`nanoid` mis à jour en cascade via
+  `npm audit fix --force`. `npm audit --omit=dev` : 0 vulnérabilité
+  restante (4 avant).
+- **Mot de passe faible ("six lettres suffisent")** : minimum réel de 6
+  caractères (littéralement le seuil signalé) sur les 2 signup + le reset
+  password, remonté à 8 (client + serveur, 6 fichiers). Le vrai rempart
+  (vérification contre HaveIBeenPwned via `lib/pwned-password.ts`)
+  existait déjà sur les 3 flux — seul le plancher de longueur était trop
+  bas.
+- **API sans limite** : `submitLead` (`app/ressources/actions.ts`) — page
+  publique, écrit en base via le client admin (RLS contournée) et
+  déclenche un envoi Brevo, strictement aucune limite avant ce fix.
+  Rate-limitée par IP (`PRESETS.email`, 5/h), même pattern `callerIp()` que
+  `app/auth/client/actions.ts`.
+- **Erreurs qui fuitent** : 4 endpoits (`app/api/client/sessions/[id]/**`)
+  renvoyaient `error.message` (texte brut Postgres/Supabase) directement
+  au client sur un 500 — remplacé par un message générique + `console.
+  error` côté serveur.
+- **Serveur qui croit tout** (trouvé en creusant l'item précédent) :
+  `POST .../sessions/[id]/sets` insérait `{ ...body, session_id }` sans
+  allowlist — un body forgé pouvait écrire n'importe quel champ
+  (potentiellement `id`) dans `session_sets`. Allowlist explicite ajoutée,
+  même discipline que `updateMyProfile`.
+- **Fichiers sans contrôle** : `app/onboarding/intake/actions.ts` (upload
+  photo pendant l'onboarding, bucket `progress-photos`) n'avait ni
+  contrôle de type ni de taille, et dérivait l'extension du nom de fichier
+  fourni par le client plutôt que du type MIME — même bucket que
+  `app/dashboard/client/photos/personal-actions.ts` qui, lui, valide
+  déjà les deux. Alignée sur le même allowlist (jpg/png/webp/gif, 8 Mo).
+
+**Reste à faire sur cet axe** (non traité dans cette passe, par manque de
+temps ou risque de casse trop élevé pour un fix précipité) :
+- **10 fonctions RLS `SECURITY DEFINER`** (`is_coach`, `is_platform_
+  owner`, `can_message_recipient`, etc.) sont exposées en RPC public
+  (`/rest/v1/rpc/...`) accessible même par `anon`, alors qu'elles ne
+  servent qu'en interne dans des policies RLS. Risque réel faible (ce
+  sont des vérifications d'identité de session, pas des accesseurs de
+  données arbitraires), mais la vraie correction — déplacer ces fonctions
+  hors du schéma `public` exposé par PostgREST — implique de retoucher
+  toutes les policies RLS qui les référencent. Trop invasif pour être fait
+  sans un passage dédié et testé à part.
+- **Protection mot de passe compromis native Supabase Auth** : le
+  paramètre "Leaked Password Protection" du dashboard Supabase Auth est
+  désactivé. Redondant avec `isPasswordPwned()` déjà en place côté appli
+  (donc pas un vrai trou), mais l'activer ajouterait une défense en
+  profondeur sur tout chemin qui fixerait un mot de passe sans passer par
+  ce code applicatif. Paramètre dashboard, pas modifiable en SQL/MCP — à
+  activer manuellement (Authentication → Policies → Leaked password
+  protection).
+- **Couverture rate limiting incomplète** : 59 fichiers de mutation sur 71
+  n'appellent pas `enforceRateLimit`. La plupart sont des server actions
+  authentifiées (abus limité par la nécessité d'un compte réel), donc
+  risque nettement plus bas que les endpoints publics déjà corrigés
+  ci-dessus — mais pas audité fichier par fichier, seul le point d'entrée
+  public le plus évident (`submitLead`) a été traité.
+- **Email non vérifié** et **mot de passe en clair** : pas creusés en
+  profondeur (le premier a l'air d'être une donnée applicative distincte
+  du gate natif Supabase Auth, le second est géré nativement par Supabase
+  Auth qui hash côté plateforme) — aucun signal concret trouvé, mais pas
+  vérifié aussi rigoureusement que le reste de la liste.
+
+tsc/eslint/build vérifiés propres après l'ensemble de ces correctifs.

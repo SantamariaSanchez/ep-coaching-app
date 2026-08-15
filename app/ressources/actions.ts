@@ -3,12 +3,27 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { getLeadMagnet } from "@/lib/lead-magnets";
+import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { headers } from "next/headers";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function normalizePhone(raw: string): string | null {
   const digits = raw.replace(/[^\d+]/g, "");
   return digits.length >= 6 ? digits : null;
+}
+
+// Adresse IP de l'appelant — même pattern que callerIp() dans
+// app/auth/client/actions.ts, dupliqué ici plutôt que partagé pour éviter un
+// import croisé entre deux dossiers publics sans lien fonctionnel.
+async function callerIp(): Promise<string> {
+  try {
+    const h = await headers();
+    const forwarded = h.get("x-forwarded-for");
+    return forwarded?.split(",")[0]?.trim() || h.get("x-real-ip")?.trim() || "inconnu";
+  } catch {
+    return "inconnu";
+  }
 }
 
 // Capture email/téléphone avant de débloquer un lead magnet (voir
@@ -20,6 +35,16 @@ export async function submitLead(
   email: string,
   phone: string
 ): Promise<{ error?: string }> {
+  // Masterclass Axe P : action publique, sans authentification, qui insère
+  // en base via le client admin (RLS contournée) ET déclenche un envoi
+  // d'email — strictement aucune limite avant ce fix. Même preset que les
+  // autres envois d'email déclenchés par un utilisateur (5/h), par IP.
+  const ip = await callerIp();
+  const limited = await checkRateLimit(`lead-submit:${ip}`, PRESETS.email.limit, PRESETS.email.windowSeconds);
+  if (!limited.allowed) {
+    return { error: "Trop de tentatives, réessaie dans un instant." };
+  }
+
   const trimmedEmail = email.trim();
   const trimmedPhone = phone.trim();
 

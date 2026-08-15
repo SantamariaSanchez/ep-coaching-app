@@ -51,8 +51,11 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
   const email = cleanText(input.email, LIMITS.shortText)?.toLowerCase();
   const password = input.password;
 
-  if (!fullName || !email || typeof password !== "string" || password.length < 6) {
-    return { error: "Nom, email et mot de passe (6 caractères min.) requis." };
+  // Masterclass Axe P : 6 caractères minimum est un seuil trop faible
+  // (référence courante NIST SP 800-63B : 8 minimum), même correction que
+  // app/auth/client/actions.ts.
+  if (!fullName || !email || typeof password !== "string" || password.length < 8) {
+    return { error: "Nom, email et mot de passe (8 caractères min.) requis." };
   }
   if (password.length > 200) {
     return { error: "Mot de passe trop long (200 caractères max)." };

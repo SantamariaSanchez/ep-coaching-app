@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST(
   req: Request,
@@ -35,17 +35,32 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // session_id vient toujours du param d'URL déjà vérifié ci-dessus, jamais
-  // du body — sinon un body { session_id: "<autre session>" } écraserait
-  // cette valeur via le spread et permettrait d'insérer une série dans la
-  // séance d'un autre utilisateur.
+  // Masterclass Axe P : { ...body, session_id: sessionId } écrasait bien
+  // session_id, mais laissait passer n'importe quel autre champ du body tel
+  // quel (y compris id, qui aurait sinon écrasé le défaut généré par la
+  // base). Allowlist explicite des champs qu'un client logue légitimement,
+  // même discipline que updateMyProfile (utils/profile-actions.ts).
+  const set: Record<string, unknown> = { session_id: sessionId };
+  const allowedFields = [
+    "exercise_id", "exercise_name", "muscle_group", "set_number",
+    "reps_target", "reps_actual", "weight_kg", "previous_weight_kg",
+    "rir_target", "rir_actual", "standardization_score",
+    "rest_duration_seconds", "is_pr", "notes", "video_url",
+  ] as const;
+  for (const field of allowedFields) {
+    if (body[field] !== undefined) set[field] = body[field];
+  }
+
   const { data, error } = await supabase
     .from("session_sets")
-    .insert({ ...body, session_id: sessionId })
+    .insert(set)
     .select("id")
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("POST session set error:", error);
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
 
   return NextResponse.json({ id: (data as { id: string }).id });
 }

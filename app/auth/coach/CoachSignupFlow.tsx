@@ -41,8 +41,8 @@ export default function CoachSignupFlow() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!fullName.trim() || !email.trim() || password.length < 6) {
-      setError("Nom, email et mot de passe (6 caractères min.) requis.");
+    if (!fullName.trim() || !email.trim() || password.length < 8) {
+      setError("Nom, email et mot de passe (8 caractères min.) requis.");
       return;
     }
     if (!acceptedTerms) {

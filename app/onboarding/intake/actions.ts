@@ -11,6 +11,20 @@ import {
   mapRadioToEnum,
 } from "@/lib/onboarding-intake-config";
 
+// Masterclass Axe P : aucun contrôle de type ni de taille avant ce fix — un
+// fichier arbitraire (n'importe quelle extension, n'importe quelle taille)
+// atterrissait dans le même bucket "progress-photos" que les photos
+// contrôlées de app/dashboard/client/photos/personal-actions.ts, avec
+// l'extension dérivée du nom de fichier fourni par le client plutôt que du
+// type MIME validé. Même allowlist que les autres flux vers ce bucket.
+const ONBOARDING_PHOTO_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+};
+const ONBOARDING_PHOTO_MAX_SIZE = 8 * 1024 * 1024; // 8MB, aligné sur le bucket "progress-photos"
+
 async function uploadPhoto(
   supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   userId: string,
@@ -18,11 +32,13 @@ async function uploadPhoto(
   slot: string
 ): Promise<string | null> {
   if (!(file instanceof File) || file.size === 0) return null;
-  const ext = file.name.split(".").pop() || "jpg";
+  const ext = ONBOARDING_PHOTO_TYPES[file.type];
+  if (!ext) return null;
+  if (file.size > ONBOARDING_PHOTO_MAX_SIZE) return null;
   const path = `${userId}/onboarding/${slot}-${Date.now()}.${ext}`;
   const { error } = await supabase.storage
     .from("progress-photos")
-    .upload(path, file, { contentType: file.type || "image/jpeg" });
+    .upload(path, file, { contentType: file.type });
   return error ? null : path;
 }
 

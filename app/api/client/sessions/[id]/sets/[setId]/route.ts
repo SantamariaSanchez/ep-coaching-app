@@ -34,7 +34,10 @@ export async function DELETE(
     .eq("id", setId)
     .eq("session_id", sessionId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("DELETE session set error:", error);
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

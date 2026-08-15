@@ -149,7 +149,13 @@ export async function PATCH(
     .eq("id", sessionId)
     .eq("client_id", guard.userId);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  // Masterclass Axe P : error.message (texte brut Postgres/Supabase, peut
+  // révéler des noms de colonnes ou de contraintes) partait tel quel au
+  // client au lieu d'un message générique — loggé côté serveur à la place.
+  if (error) {
+    console.error("PATCH session error:", error);
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
 
@@ -176,6 +182,9 @@ export async function DELETE(
     .eq("client_id", guard.userId)
     .eq("is_completed", false);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error("DELETE session error:", error);
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

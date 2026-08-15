@@ -124,8 +124,13 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   const phone = cleanText(input.phone, LIMITS.phone);
   const password = input.password;
 
-  if (!fullName || !email || !phone || typeof password !== "string" || password.length < 6) {
-    return { error: "Nom, email, téléphone et mot de passe (6 caractères min.) requis." };
+  // Masterclass Axe P : 6 caractères minimum est un seuil trop faible
+  // (référence courante NIST SP 800-63B : 8 minimum). Le vrai rempart reste
+  // le contrôle isPasswordPwned ci-dessous, mais un plancher de longueur
+  // trop bas laisse passer des mots de passe triviaux jamais présents dans
+  // une fuite connue ("azerty1", 7 caractères) sans que rien ne les bloque.
+  if (!fullName || !email || !phone || typeof password !== "string" || password.length < 8) {
+    return { error: "Nom, email, téléphone et mot de passe (8 caractères min.) requis." };
   }
   if (password.length > 200) {
     return { error: "Mot de passe trop long (200 caractères max)." };
