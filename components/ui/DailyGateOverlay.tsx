@@ -110,7 +110,12 @@ export default function DailyGateOverlay({
             />
             <div className="ep-card" style={{ padding: "20px 16px", textAlign: "center" }}>
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: "0 0 16px", lineHeight: 1.5 }}>
-                Tes aliments prévus t&apos;attendent dans Nutrition, prêts à valider en un tap.
+                {/* Le pré-remplissage depuis le plan alimentaire (avec surlignage
+                    automatique du repas concerné) n'existe que côté client — voir
+                    ClientNutritionView.tsx. Message volontairement générique pour
+                    rester vrai aussi côté coach (CoachMoiNutritionTabs.tsx n'a pas
+                    cette UI de plan), qui peut malgré tout logger normalement. */}
+                Direction Nutrition pour le logger.
               </p>
               <a
                 href={`${mealBaseHref}?meal=${pendingMeal.slot}`}
