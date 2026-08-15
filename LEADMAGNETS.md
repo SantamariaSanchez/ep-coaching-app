@@ -173,12 +173,13 @@ production locale.
 | 2026-08-14 | Vague B | 20 | Premiers contenus vraiment nouveaux : 5 Steps & activité quotidienne, 5 Psychologie, 6 Entrepreneuriat (vertical entièrement nouvelle), 4 sujets plus précis (mollets, DOMS, cycle menstruel, répartition glucides). |
 | **Total au 2026-08-14** | | **75** | Sur 1000 visés, échéance 2026-09-13. |
 | 2026-08-15 | Vague C | 2 | Nouveaux sujets sourcés PubMed après épuisement de la réserve à 0 `sources` : interférence cardio/hypertrophie, gestion des fringales. |
-| **Total au 2026-08-15** | | **77** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague D | 2 | Bains froids (bénéfice court terme vs coût sur les gains long terme), escaliers vs ascenseur (étude contrôlée 8 semaines, chiffres précis). |
+| **Total au 2026-08-15** | | **79** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 19, Entraînement 18, Psychologie 12, Général 10, Récupération 7,
-Entrepreneuriat 6, Steps & activité quotidienne 5.
+Nutrition 19, Entraînement 18, Psychologie 12, Général 10, Récupération 8,
+Entrepreneuriat 6, Steps & activité quotidienne 6.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -209,7 +210,7 @@ saine à la nourriture, body checking, type de motivation
 
 **Récupération** : sommeil et prise de muscle, surentraînement, mobilité
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
-indicateur d'efficacité.
+indicateur d'efficacité, bains froids (courbatures vs gains long terme).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -217,7 +218,8 @@ actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
 individuelle à l'entraînement.
 
 **Steps & activité quotidienne** : combien de pas viser, NEAT, augmenter
-ses pas au quotidien, profil d'activité, marche après repas.
+ses pas au quotidien, profil d'activité, marche après repas, escaliers vs
+ascenseur.
 
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
@@ -252,7 +254,10 @@ cardio/hypertrophie : Wilson et al. 2012, méta-analyse (DOI
 10.1519/JSC.0b013e31823a3e2d), Terzis et al. 2016 (DOI
 10.1007/s00421-016-3369-z). Fringales/appétit : Weigle et al. 2005, régime
 hyperprotéiné (DOI 10.1093/ajcn.82.1.41), St-Onge et al. 2012, IRM et
-restriction de sommeil (DOI 10.3945/ajcn.111.027383).
+restriction de sommeil (DOI 10.3945/ajcn.111.027383). Bains froids : Bleakley
+et al. 2012, revue Cochrane (DOI 10.1002/14651858.CD008262.pub2), Roberts et
+al. 2015, adaptations long terme (DOI 10.1113/JP270570). Escaliers : Michael
+et al. 2021, essai contrôlé 8 semaines (DOI 10.3390/ijerph18020603).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -264,13 +269,11 @@ restriction de sommeil (DOI 10.3945/ajcn.111.027383).
   physiques, grossesse et activité physique, alimentation étudiante à
   petit budget, suppléments réellement soutenus par la littérature (créatine,
   caféine) vs marketing.
-- Récupération : massage et rouleau de massage (foam rolling), bains
-  froids/glace, respiration et système nerveux, gestion du jet lag pour
-  les athlètes qui voyagent, blessures et retour progressif à
-  l'entraînement.
+- Récupération : massage et rouleau de massage (foam rolling), respiration
+  et système nerveux, gestion du jet lag pour les athlètes qui voyagent,
+  blessures et retour progressif à l'entraînement.
 - Steps & activité quotidienne : podomètre vs montre connectée (fiabilité),
-  activité physique au bureau, marche et santé mentale, escaliers vs
-  ascenseur en vrais chiffres.
+  activité physique au bureau, marche et santé mentale.
 - Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
   auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
   ne convient plus, transition post-objectif (après une compétition, un
