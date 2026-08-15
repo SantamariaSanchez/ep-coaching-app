@@ -142,10 +142,13 @@ apparition de nouveau code.
 
 ### Reste à faire sur cet axe
 
-- `progression` et `roadmap` (coach/moi) pas encore vérifiés en détail
-  (composants dédiés `CoachMoiRoadmapView` etc., pas encore ouverts) — état
-  plutôt en lecture/édition ponctuelle côté coach, risque a priori plus bas
-  que les checklists quotidiennes déjà couvertes, mais pas confirmé.
+- ~~`progression` et `roadmap` (coach/moi) pas encore vérifiés en détail~~
+  — vérifié le 2026-08-15 : `app/dashboard/coach/moi/progression/page.tsx`
+  est un simple `redirect()` vers `/dashboard/coach/moi/bilan` (déjà
+  couvert), et `CoachMoiRoadmapView` (25 lignes) délègue entièrement à
+  `components/roadmap/RoadmapEditor.tsx`, déjà confirmé `"use client"` et
+  déjà vérifié dans une passe précédente. Rien à corriger, aucune mutation
+  propre à ces deux wrappers.
 
 ## Prochains axes (pas commencés)
 
