@@ -1,8 +1,10 @@
 import { redirect } from "next/navigation";
 import { getUser } from "@/utils/auth";
 import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
+import { getDailyHabitScore } from "@/lib/habit-score";
 import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
+import HabitScoreCard from "@/components/ui/HabitScoreCard";
 import {
   addScheduleBlock,
   addScheduleBlocksBulk,
@@ -19,9 +21,10 @@ export default async function ClientAgendaPage() {
   if (!user) redirect("/");
 
   const today = todayInParis();
-  const [blocks, completedTaskKeys] = await Promise.all([
+  const [blocks, completedTaskKeys, habitScore] = await Promise.all([
     getScheduleBlocks(user.id),
     getScheduleBlockTaskLog(user.id, today),
+    getDailyHabitScore(user.id, today),
   ]);
 
   return (
@@ -36,6 +39,10 @@ export default async function ClientAgendaPage() {
           rendez-vous...), renomme-les et ajuste les horaires comme tu veux. Un modèle par jour peut se
           répéter sur plusieurs jours d&apos;un coup, et se transformer en rappel push.
         </p>
+      </div>
+
+      <div className="mb-5">
+        <HabitScoreCard habitScore={habitScore} />
       </div>
 
       <WeeklyAgenda
