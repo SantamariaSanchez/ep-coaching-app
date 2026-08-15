@@ -185,11 +185,12 @@ production locale.
 | 2026-08-15 | Vague M | 1 | Périodisation (2 méta-analyses : force oui, hypertrophie non, ondulée vs linéaire selon le niveau). |
 | 2026-08-15 | Vague N | 2 | Entraînement à domicile matériel limité (élastiques vs charges libres, essai contrôlé 12 semaines), squat profond et genoux (modélisation biomécanique, mythe inversé). |
 | 2026-08-15 | Vague O | 1 | Alimentation étudiante à petit budget (1973 étudiants, le budget n'est pas le seul facteur, l'organisation compte presque autant). |
-| **Total au 2026-08-15** | | **98** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague P | 1 | Blessures épaule/lombaires en musculation (powerlifters, 70% actuellement blessés, facteurs de risque identifiés). |
+| **Total au 2026-08-15** | | **99** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 23, Psychologie 14, Général 11, Récupération 11,
+Nutrition 24, Entraînement 24, Psychologie 14, Général 11, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -207,7 +208,8 @@ cycle menstruel et entraînement, interférence cardio/hypertrophie,
 échauffement spécifique vs général, unilatéral vs bilatéral (déficit
 bilatéral, cross-education), périodisation (force vs hypertrophie, ondulée
 vs linéaire), entraînement à domicile matériel limité (élastiques vs
-charges libres), squat profond et genoux.
+charges libres), squat profond et genoux, blessures épaule/lombaires
+(powerlifters, facteurs de risque).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -316,12 +318,12 @@ charges libres (DOI 10.1016/j.exger.2026.113182). Genou/squat profond : Wu
 et al. 2019, modélisation biomécanique (DOI 10.1016/j.jbiomech.2019.109333).
 Alimentation étudiante : Foglia et al. 2026, étude sur 1973 étudiants (DOI
 10.1016/j.numecd.2026.104672), Pelletier & Laska 2012 (DOI
-10.1016/j.jneb.2012.04.001).
+10.1016/j.jneb.2012.04.001). Blessures épaule/lombaires : Strömbäck et al.
+2018, étude sur powerlifters (DOI 10.1177/2325967118771016).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
-- Entraînement : gestion des blessures courantes (épaule, lombaires) en
-  musculation, progression sur les mouvements au poids du corps.
+- Entraînement : progression sur les mouvements au poids du corps.
 - Récupération : blessures et retour progressif à l'entraînement.
 - Psychologie : auto-sabotage, discipline vs motivation au quotidien, gérer
   un coach qui ne convient plus, transition post-objectif (après une
