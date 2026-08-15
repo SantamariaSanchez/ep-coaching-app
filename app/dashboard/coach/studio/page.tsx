@@ -1,11 +1,15 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
-import ContentStudio from "@/components/coach/ContentStudio";
+import { getIdeationNotes, getInspirations } from "@/lib/coach-ideation";
+import IdeationHub from "@/components/coach/IdeationHub";
 
-// Axe 2 (VISION.md) : espace de création de contenu du coach — un endroit
-// pour poser des idées Insta/YouTube/LinkedIn avant qu'elles se perdent,
-// alimenté en partie par les questions posées dans l'onglet Communauté.
+// Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
+// création de contenu du coach — poser des idées Insta/YouTube/LinkedIn
+// avant qu'elles se perdent (alimenté en partie par les questions posées
+// dans l'onglet Communauté), noter ce qui ne rentre dans aucune case, et
+// garder une trace des références vues ailleurs qui méritent d'inspirer un
+// futur post. Voir components/coach/IdeationHub.tsx pour les 3 sections.
 export default async function CoachStudioPage() {
   const user = await getUser();
   if (!user) redirect("/");
@@ -13,7 +17,11 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const ideas = await getCoachContentIdeas(user.id);
+  const [ideas, notes, inspirations] = await Promise.all([
+    getCoachContentIdeas(user.id),
+    getIdeationNotes(user.id),
+    getInspirations(user.id),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -21,14 +29,14 @@ export default async function CoachStudioPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Studio créatif
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Idées & brouillons</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Idéation</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
           Un endroit pour ne rien perdre : une idée qui te vient, une question de membre qui
-          mérite un post, un script à finir.
+          mérite un post, un script à finir, une référence vue ailleurs.
         </p>
       </div>
 
-      <ContentStudio initialIdeas={ideas} />
+      <IdeationHub initialIdeas={ideas} initialNotes={notes} initialInspirations={inspirations} />
     </div>
   );
 }

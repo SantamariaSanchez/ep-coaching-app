@@ -746,10 +746,13 @@
 
   .page-enter, .page-transition {
     /* La transition la plus vue de toute l'appli : elle joue à CHAQUE
-       changement de route, dans les deux rôles, du matin au soir. 500ms
-       ajoutait une latence perçue à chaque tap de nav ; 350ms garde le
-       "contenu qui arrive" sans jamais donner l'impression d'attendre. */
-    animation: fadeUp 0.35s cubic-bezier(0.16,1,0.3,1) both;
+       changement de route, dans les deux rôles, du matin au soir — un geste
+       répété des dizaines de fois par jour. 500ms puis 350ms ajoutaient
+       encore une latence perçue à ce rythme (au-delà de ~300ms, une
+       animation qui joue aussi souvent se sent attendue plutôt
+       qu'instantanée) ; 200ms garde le "contenu qui arrive" sans jamais
+       donner l'impression d'attendre le nav lui-même. */
+    animation: fadeUp 0.2s cubic-bezier(0.16,1,0.3,1) both;
     position: relative;
     z-index: 1;
   }

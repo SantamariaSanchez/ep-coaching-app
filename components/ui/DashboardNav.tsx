@@ -185,7 +185,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     // ci-dessus qui est la bibliothèque destinée aux clients.
     group: "Studio créatif",
     items: [
-      { label: "Idées & brouillons", icon: Sparkles, segment: "studio" },
+      { label: "Idéation", icon: Sparkles, segment: "studio" },
     ],
   },
   {

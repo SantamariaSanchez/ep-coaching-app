@@ -2,8 +2,11 @@
 
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
+import { INSPIRATION_PLATFORMS, type InspirationPlatform } from "@/lib/coach-ideation";
+import { safeExternalUrl } from "@/lib/sanitize";
 
 // Axe 2 (VISION.md) : espace de création de contenu du coach.
 
@@ -107,6 +110,117 @@ export async function createIdeaFromQuestion(questionId: string, questionContent
     source: "question",
     source_question_id: questionId,
   });
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+// ── Notes libres (Idéation) ─────────────────────────────────────────────
+
+export async function createIdeationNote(input: {
+  title: string;
+  body?: string;
+}): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const limited = await enforceRateLimit(`ideation-note-create:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return { error: "Trop de notes créées d'un coup, réessaie dans un instant." };
+
+  const title = input.title.trim();
+  if (!title) return { error: "Titre requis." };
+  if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_ideation_notes").insert({
+    coach_id: guard.userId,
+    title,
+    body: input.body?.trim() || null,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+export async function updateIdeationNote(
+  id: string,
+  updates: { title?: string; body?: string; pinned?: boolean }
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const patch: Record<string, string | boolean | null> = { updated_at: new Date().toISOString() };
+  if (updates.title !== undefined) {
+    const title = updates.title.trim();
+    if (!title) return { error: "Titre requis." };
+    if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
+    patch.title = title;
+  }
+  if (updates.body !== undefined) patch.body = updates.body.trim() || null;
+  if (updates.pinned !== undefined) patch.pinned = updates.pinned;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("coach_ideation_notes")
+    .update(patch)
+    .eq("id", id)
+    .eq("coach_id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+export async function deleteIdeationNote(id: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_ideation_notes").delete().eq("id", id).eq("coach_id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+// ── Swipe file (Idéation) ────────────────────────────────────────────────
+
+export async function createInspiration(input: {
+  url: string;
+  platform: InspirationPlatform;
+  note?: string;
+}): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const limited = await enforceRateLimit(`inspiration-create:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return { error: "Trop de liens ajoutés d'un coup, réessaie dans un instant." };
+
+  const safeUrl = safeExternalUrl(input.url);
+  if (!safeUrl) return { error: "Lien invalide." };
+  if (!(INSPIRATION_PLATFORMS as readonly string[]).includes(input.platform)) return { error: "Plateforme invalide." };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_inspirations").insert({
+    coach_id: guard.userId,
+    url: safeUrl,
+    platform: input.platform,
+    note: input.note?.trim() || null,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+export async function deleteInspiration(id: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_inspirations").delete().eq("id", id).eq("coach_id", guard.userId);
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/studio");
