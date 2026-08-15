@@ -139,7 +139,7 @@ générique. Ça ne suffit plus. Pour toute nouvelle entrée format `guide` :
   et d'action ne doit jamais se faire au prix d'une affirmation non
   vérifiée sur PubMed.
 
-Rattrapage des 75 entrées déjà publiées : 20 réécrites au nouveau standard à
+Rattrapage des 75 entrées déjà publiées : 27 réécrites au nouveau standard à
 date (2026-08-15) — `guide-procrastination-avant-seance`,
 `guide-comparaison-reseaux`, `guide-red-flags-coach`, `guide-body-checking`,
 `guide-syndrome-imposteur`, `guide-lancer-offre-coaching`,
@@ -149,17 +149,20 @@ date (2026-08-15) — `guide-procrastination-avant-seance`,
 `guide-lire-progression`, `guide-charge-mentale-vie-sport`,
 `guide-motivation`, `guide-7-erreurs-transformation`,
 `guide-musculation-au-feminin-debuts`, `guide-peur-de-regrossir`,
-`guide-structurer-semaine`, `guide-sortir-stagnation`. Les 19 dernières
-choisies parmi les guides à 0 `sources` (Psychologie / Entrepreneuriat /
-Général, et pour les deux derniers Entraînement mais déjà sans affirmation
-chiffrée à sourcer) pour pouvoir enrichir en `actionSteps` sans ajouter la
-moindre affirmation scientifique non vérifiée — uniquement de la
-structuration de conseils déjà présents en protocole numéroté, plus un
-`callout` par entrée.
-Reste 55 entrées à réécrire, dont une partie sourcée (PubMed) qui demandera
-de relire chaque source avant d'ajouter du contenu, donc plus lent — à
-prioriser avant de continuer la vague de nouvelles entrées si le temps le
-permet, sinon la prochaine session de production locale.
+`guide-structurer-semaine`, `guide-sortir-stagnation`, `guide-rir`,
+`guide-deload`, `guide-hypertrophie-force`, `guide-macros`,
+`guide-sommeil-muscle`, `guide-timing-repas`,
+`guide-complements-alimentaires`. Ce dernier lot de 7 a épuisé la réserve de
+guides à 0 `sources` (Entraînement/Nutrition/Récupération) qui contenaient
+déjà des repères chiffrés jugés suffisamment établis (RIR, %1RM, grammes de
+protéines/kg, dosage créatine) pour rester en l'état sans consultation
+PubMed supplémentaire — restructuration en `actionSteps`/`callout` only,
+aucune affirmation nouvelle ajoutée. Toute réécriture suivante portera sur
+des guides qui ont déjà des `sources` PubMed renseignées, donc demandera de
+relire chaque source avant d'ajouter du contenu, plus lent.
+Reste 48 entrées à réécrire — à prioriser avant de continuer la vague de
+nouvelles entrées si le temps le permet, sinon la prochaine session de
+production locale.
 
 ## Avancement
 
