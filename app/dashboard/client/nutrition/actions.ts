@@ -3,7 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getProfile, isSubscribed } from "@/utils/auth";
-import { requireClient, requireCoach } from "@/lib/auth-guards";
+import { requireClient, requireCoach, requireAuth } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath, updateTag } from "next/cache";
 import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/utils/nutrition";
@@ -126,7 +126,21 @@ export async function addFoodLog(params: {
   loggedAt: string;
 }): Promise<{ id?: string; error?: string }> {
   try {
-    const guard = await requireClient();
+    // Bug remonté en direct (2026-08-15) : cocher un aliment du plan (ou en
+    // logger un via la recherche) ne faisait RIEN pour un coach agissant sur
+    // sa propre nutrition ("Moi > Nutrition", ClientNutritionView réutilisé
+    // tel quel par CoachMoiNutritionTabs) dès lors que ce coach n'a pas lui
+    // même de coach_id renseigné (le cas du fondateur, mais aussi de tout
+    // coach non suivi par un autre coach) — requireClient() rejette
+    // spécifiquement ce cas (role="coach" ET coach_id vide). Résultat concret :
+    // l'insert échouait silencieusement, l'optimistic update revenait en
+    // arrière, et le verrou quotidien (lib/daily-gate.ts) restait bloqué sur
+    // "meal" indéfiniment puisque food_logs ne recevait jamais la ligne
+    // attendue. Cette action n'accepte aucun clientId externe — elle écrit
+    // toujours sur guard.userId — donc l'ouvrir à tout compte authentifié ne
+    // relâche aucune frontière de sécurité, contrairement à un guard qui
+    // accepterait un id de client tiers.
+    const guard = await requireAuth();
     if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
@@ -187,7 +201,10 @@ export async function removeFoodLog(
   logId: string
 ): Promise<{ error?: string }> {
   try {
-    const guard = await requireClient();
+    // Même correctif que addFoodLog ci-dessus, même raisonnement (pas de
+    // clientId externe, la suppression est déjà bornée à guard.userId via le
+    // .eq("client_id", ...) plus bas).
+    const guard = await requireAuth();
     if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
@@ -218,7 +235,9 @@ export async function createCustomFood(params: {
   fibers_per_100: number;
 }): Promise<{ food?: Food; error?: string }> {
   try {
-    const guard = await requireClient();
+    // Même correctif que addFoodLog : cette action ne fait qu'enregistrer
+    // created_by = guard.userId, aucun clientId externe à protéger.
+    const guard = await requireAuth();
     if (!guard.ok) return { error: guard.error };
 
     // Revalidation serveur du nom : la validation côté client ne protège que
@@ -493,7 +512,9 @@ export async function logMealItems(
   mealSlot: string,
   loggedAt: string
 ): Promise<{ error?: string; count?: number }> {
-  const guard = await requireClient();
+  // Même correctif que addFoodLog : pas de clientId externe, écrit
+  // uniquement sur guard.userId.
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
   if (items.length === 0) return { error: "Repas vide." };
 
