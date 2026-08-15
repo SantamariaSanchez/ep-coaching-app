@@ -44,6 +44,53 @@ function isoWeekdayFromDate(date: string): number {
   return jsDay === 0 ? 7 : jsDay;
 }
 
+// Historique sur N jours (par défaut 7) — noté "reste pour une prochaine
+// passe" au moment où le score du jour a été livré (2026-08-15). Réutilise
+// getDailyHabitScore jour par jour plutôt que de dupliquer sa logique : ça
+// reste correct si getDailyHabitScore évolue plus tard, au prix de N fois
+// plus de requêtes (acceptable, appelé une fois par chargement de page,
+// pas à chaque interaction).
+export interface DailyHabitPoint {
+  date: string;
+  score: number;
+}
+
+function isoDatesBack(endDate: string, days: number): string[] {
+  const end = new Date(endDate + "T12:00:00");
+  const out: string[] = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(end);
+    d.setDate(end.getDate() - i);
+    out.push(d.toISOString().split("T")[0]);
+  }
+  return out;
+}
+
+export async function getWeeklyHabitScores(
+  userId: string,
+  endDate: string,
+  days = 7
+): Promise<DailyHabitPoint[]> {
+  const dates = isoDatesBack(endDate, days);
+  const scores = await Promise.all(dates.map((d) => getDailyHabitScore(userId, d)));
+  return dates.map((date, i) => ({ date, score: scores[i].score }));
+}
+
+// Streak = jours consécutifs à ratio "solide" (>=70) en partant d'aujourd'hui
+// et en remontant, arrêté au premier jour en dessous. Un jour sans aucun
+// composant applicable (score 0 par défaut de getDailyHabitScore en cas
+// d'erreur, ou 100 par manque de composants) n'est volontairement pas un
+// cas particulier ici : le calcul reste celui du score déjà produit plus
+// haut, cohérent avec ce que HabitScoreCard affiche pour ce jour-là.
+export function currentStreak(points: DailyHabitPoint[], threshold = 70): number {
+  let streak = 0;
+  for (let i = points.length - 1; i >= 0; i--) {
+    if (points[i].score >= threshold) streak++;
+    else break;
+  }
+  return streak;
+}
+
 export async function getDailyHabitScore(userId: string, date: string): Promise<HabitScore> {
   try {
     const supabase = createAdminClient();

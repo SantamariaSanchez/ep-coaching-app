@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getScheduleBlocks, getScheduleBlockTaskLog } from "@/utils/agenda";
-import { getDailyHabitScore } from "@/lib/habit-score";
+import { getDailyHabitScore, getWeeklyHabitScores, currentStreak } from "@/lib/habit-score";
 import { todayInParis } from "@/lib/dates";
 import WeeklyAgenda from "@/components/ui/WeeklyAgenda";
 import HabitScoreCard from "@/components/ui/HabitScoreCard";
+import HabitScoreTrend from "@/components/ui/HabitScoreTrend";
 import {
   addScheduleBlock,
   addScheduleBlocksBulk,
@@ -24,11 +25,13 @@ export default async function CoachMoiAgendaPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const today = todayInParis();
-  const [blocks, completedTaskKeys, habitScore] = await Promise.all([
+  const [blocks, completedTaskKeys, habitScore, weeklyScores] = await Promise.all([
     getScheduleBlocks(user.id),
     getScheduleBlockTaskLog(user.id, today),
     getDailyHabitScore(user.id, today),
+    getWeeklyHabitScores(user.id, today),
   ]);
+  const streak = currentStreak(weeklyScores);
 
   return (
     <div className="px-5 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -43,8 +46,9 @@ export default async function CoachMoiAgendaPage() {
         </p>
       </div>
 
-      <div className="mb-5">
+      <div className="mb-5 grid sm:grid-cols-2 gap-3">
         <HabitScoreCard habitScore={habitScore} />
+        <HabitScoreTrend points={weeklyScores} streak={streak} />
       </div>
 
       <WeeklyAgenda
