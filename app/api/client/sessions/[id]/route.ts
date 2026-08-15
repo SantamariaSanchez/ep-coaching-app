@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { getActiveProgram } from "@/utils/programs";
 import type { Session, SessionSet, PersonalRecord } from "@/utils/sessions";
 import type { Exercise } from "@/utils/programs";
@@ -128,6 +129,9 @@ export async function PATCH(
   const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
+  const limited = await enforceRateLimit(`session-patch:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
+
   const { id: sessionId } = await params;
   const body = await req.json();
   const supabase = await createServerSupabase();
@@ -158,6 +162,9 @@ export async function DELETE(
 ) {
   const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`session-delete:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id: sessionId } = await params;
   const supabase = await createServerSupabase();

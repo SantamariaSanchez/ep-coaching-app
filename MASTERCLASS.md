@@ -158,8 +158,9 @@ sans nom accessible), G (champs de formulaire sans nom accessible), H
 (pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
 et index), J (images de contenu sans texte alternatif), K (`href` sur URL
 stockée sans `safeExternalUrl`), L ("aujourd'hui" calculé en UTC côté
-serveur au lieu de l'heure de Paris) et M (pages sans `loading.tsx`) sont
-clos — détail de chacun plus bas. Idée pas encore commencée :
+serveur au lieu de l'heure de Paris), M (pages sans `loading.tsx`) et N
+(routes API de mutation sans `enforceRateLimit`) sont clos — détail de
+chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -1355,3 +1356,63 @@ for (const p of files.filter(f => /page\.tsx$/.test(f))) {
   reconsidérer si `app/reussites/` est un jour commité et mérite son
   propre `loading.tsx` (probablement `GridPageSkeleton`, format
   répertoire de témoignages).
+
+## Axe N — Routes API de mutation sans `enforceRateLimit`
+
+**Statut : clos** (2026-08-15).
+
+**Le problème** : `lib/rate-limit.ts` fournit un garde-fou générique
+(`enforceRateLimit` + `PRESETS`, adossé à un compteur Postgres) déjà
+utilisé sur la plupart des routes sensibles — mais 5 routes API qui
+modifient des données (PATCH/DELETE/POST) n'appelaient jamais cette
+fonction, sans aucune autre protection contre un script qui spammerait
+l'endpoint : `guard.ok` (authentification) borne *qui* peut appeler, pas
+*à quelle fréquence*.
+
+**Corrigé** — `enforceRateLimit(..., PRESETS.write.limit,
+PRESETS.write.windowSeconds)` ajouté, clé scoppée par utilisateur et par
+route (même convention que le reste du fichier, ex.
+`` `session-delete:${guard.userId}` ``) :
+- `app/api/client/sessions/[id]/route.ts` — `PATCH` (warmup) et `DELETE`
+  (abandon de séance). `GET` non touché (lecture, pas de mutation).
+- `app/api/client/sessions/[id]/complete/route.ts` — `POST` (déclenche en
+  plus un email au coach à chaque appel : la route la plus abusable du
+  lot avant ce correctif).
+- `app/api/client/sessions/[id]/sets/[setId]/route.ts` — `DELETE`.
+- `app/api/community/posts/[id]/route.ts` — `PATCH` (marquer
+  répondu) et `DELETE`.
+- `app/api/coach/resources/[id]/route.ts` — `PATCH` (recatégoriser) et
+  `DELETE`.
+
+**Vérifié SAIN — ne pas toucher** : les ~30 autres routes sans
+`enforceRateLimit` repérées par le grep initial sont soit protégées
+autrement soit à faible risque — les `app/api/cron/*` (18 routes) et
+`app/api/cleanup-voice` sont verrouillées par `CRON_SECRET` (un secret
+d'appel est une protection plus forte qu'une limite de fréquence),
+`app/api/webhooks/stripe` vérifie une signature Stripe (rate-limiter un
+webhook risquerait de rejeter de vrais retries Stripe), et le reste
+(`notifications/*`, `messages/unread`, `oura/*`, `coach/clients-search`,
+etc.) sont des lectures authentifiées à faible enjeu, cohérent avec le
+fait que beaucoup de routes `GET` authentifiées de l'appli n'ont jamais
+eu de limite non plus — `PRESETS.write`/`expensiveRead` visent les
+mutations et les lectures coûteuses, pas chaque lecture authentifiée.
+
+tsc/eslint (fichiers touchés)/build vérifiés propres.
+
+**Méthode utilisée** (relançable) :
+```bash
+for f in $(find app/api -name "route.ts"); do
+  grep -q "enforceRateLimit" "$f" || echo "$f"
+done
+# Puis pour chaque résultat : grep "^export async function" pour voir les
+# méthodes exposées. GET seul -> generalement sain (lecture). PATCH/POST/
+# DELETE -> vérifier s'il y a une autre protection déjà en place (secret
+# cron, signature webhook) avant de conclure à un vrai trou.
+```
+
+### Reste à faire sur cet axe
+
+- `app/api/coach/clients/[clientId]/route.ts` (`GET` seul) et
+  `app/api/exercise-library/recent/route.ts` n'ont pas été touchés —
+  lectures authentifiées, signal plus faible que les mutations
+  corrigées ici. À revisiter seulement si un usage anormal est constaté.

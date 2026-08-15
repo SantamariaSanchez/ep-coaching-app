@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getProfile } from "@/utils/auth";
 import { requireAuth, requireCoach } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 // Coach marks a question as answered.
 export async function PATCH(
@@ -10,6 +11,9 @@ export async function PATCH(
 ) {
   const guard = await requireCoach();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`community-post-patch:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id: postId } = await params;
   const body = await request.json();
@@ -32,6 +36,9 @@ export async function DELETE(
 ) {
   const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`community-post-delete:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id: postId } = await params;
   const supabase = await createServerSupabase();

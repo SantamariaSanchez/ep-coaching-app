@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 // Isolation entre coachs : requireCoach() dit seulement "c'est un coach", pas
@@ -27,6 +28,9 @@ export async function PATCH(
   const guard = await requireCoach();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
 
+  const limited = await enforceRateLimit(`coach-resource-patch:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
+
   const { id } = await params;
   const body = await request.json();
   const category = typeof body.category === "string" ? body.category.trim() || null : undefined;
@@ -52,6 +56,9 @@ export async function DELETE(
 ) {
   const guard = await requireCoach();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`coach-resource-delete:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id } = await params;
   const admin = createAdminClient();

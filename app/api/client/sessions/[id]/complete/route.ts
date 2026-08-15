@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getProfile } from "@/utils/auth";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { getCoachForClient } from "@/utils/insert-notification";
@@ -41,6 +42,9 @@ export async function POST(
 ) {
   const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`session-complete:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id: sessionId } = await params;
   const body = (await req.json()) as CompleteBody;

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
 export async function DELETE(
   req: Request,
@@ -8,6 +9,9 @@ export async function DELETE(
 ) {
   const guard = await requireAuth();
   if (!guard.ok) return NextResponse.json({ error: guard.error }, { status: 403 });
+
+  const limited = await enforceRateLimit(`session-set-delete:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return limited;
 
   const { id: sessionId, setId } = await params;
 
