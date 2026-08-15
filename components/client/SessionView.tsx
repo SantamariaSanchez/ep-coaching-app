@@ -828,6 +828,14 @@ function SetRow({
 
   async function handleVideoSelect(file: File) {
     if (!set.dbId) return;
+    // MASTERCLASS.md Axe O : le bucket set-videos rejette déjà les fichiers
+    // trop lourds ou au mauvais type côté serveur, mais sans ce contrôle
+    // l'utilisateur attend l'échec de l'upload réseau d'une vidéo de
+    // plusieurs centaines de Mo avant de voir l'erreur.
+    if (file.size > 100 * 1024 * 1024) {
+      alert("Vidéo trop lourde (100 Mo maximum).");
+      return;
+    }
     setUploadingVideo(true);
     try {
       const supabase = createClientSupabase();

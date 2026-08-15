@@ -144,6 +144,14 @@ function ExerciseForm({
   const [accessibility, setAccessibility] = useState(initial?.accessibility ?? "");
 
   async function handleVideoUpload(file: File) {
+    // MASTERCLASS.md Axe O : le bucket exercise-videos rejette déjà les
+    // fichiers trop lourds ou au mauvais type côté serveur, mais sans ce
+    // contrôle l'utilisateur attend l'échec de l'upload réseau d'une vidéo
+    // de plusieurs centaines de Mo avant de voir l'erreur.
+    if (file.size > 150 * 1024 * 1024) {
+      setError("Vidéo trop lourde (150 Mo maximum).");
+      return;
+    }
     setUploadingVideo(true);
     setError(null);
     const url = await uploadExerciseVideo(file);

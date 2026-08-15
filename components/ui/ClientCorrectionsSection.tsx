@@ -115,7 +115,7 @@ export default function ClientCorrectionsSection({
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [videoName, setVideoName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   // Reset form on success — dans un effet, jamais pendant le render (React
   // peut rendre plusieurs fois sans committer, la mutation DOM imperative
@@ -125,13 +125,22 @@ export default function ClientCorrectionsSection({
       formRef.current?.reset();
       setVideoPath(null);
       setVideoName(null);
-      setUploadError(false);
+      setUploadError(null);
     }
   }, [state]);
 
   async function handleVideoSelected(file: File) {
+    // MASTERCLASS.md Axe O : le bucket correction-videos rejette déjà les
+    // fichiers trop lourds ou au mauvais type côté serveur, mais sans ce
+    // contrôle l'utilisateur attend l'échec de l'upload réseau d'une vidéo
+    // de plusieurs centaines de Mo avant de voir l'erreur.
+    if (file.size > 150 * 1024 * 1024) {
+      setVideoName(file.name);
+      setUploadError("Vidéo trop lourde (150 Mo maximum).");
+      return;
+    }
     setUploading(true);
-    setUploadError(false);
+    setUploadError(null);
     setVideoName(file.name);
     try {
       const supabase = createClientSupabase();
@@ -145,7 +154,7 @@ export default function ClientCorrectionsSection({
       if (error) throw error;
       setVideoPath(path);
     } catch {
-      setUploadError(true);
+      setUploadError("Échec de l'envoi, réessaie.");
       setVideoPath(null);
     } finally {
       setUploading(false);
@@ -249,7 +258,7 @@ export default function ClientCorrectionsSection({
               </button>
             )}
             {uploadError && (
-              <p className="text-[#FDC4C4] text-xs mt-1.5">Échec de l&apos;envoi, réessaie.</p>
+              <p className="text-[#FDC4C4] text-xs mt-1.5">{uploadError}</p>
             )}
           </div>
 

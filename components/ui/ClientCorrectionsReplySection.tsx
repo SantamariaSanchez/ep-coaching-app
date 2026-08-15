@@ -127,7 +127,7 @@ function ReplyForm({
   const [videoPath, setVideoPath] = useState<string | null>(null);
   const [videoName, setVideoName] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [annotations, setAnnotations] = useState<VideoAnnotation[]>(correction.video_annotations ?? []);
 
   function addAnnotation(timestampSeconds: number, note: string) {
@@ -139,8 +139,17 @@ function ReplyForm({
   }
 
   async function handleVideoSelected(file: File) {
+    // MASTERCLASS.md Axe O : le bucket coach-videos rejette déjà les
+    // fichiers trop lourds ou au mauvais type côté serveur, mais sans ce
+    // contrôle l'utilisateur attend l'échec de l'upload réseau d'une vidéo
+    // de plusieurs centaines de Mo avant de voir l'erreur.
+    if (file.size > 150 * 1024 * 1024) {
+      setVideoName(file.name);
+      setUploadError("Vidéo trop lourde (150 Mo maximum).");
+      return;
+    }
     setUploading(true);
-    setUploadError(false);
+    setUploadError(null);
     setVideoName(file.name);
     try {
       const supabase = createClientSupabase();
@@ -154,7 +163,7 @@ function ReplyForm({
       if (error) throw error;
       setVideoPath(path);
     } catch {
-      setUploadError(true);
+      setUploadError("Échec de l'envoi, réessaie.");
       setVideoPath(null);
     } finally {
       setUploading(false);
@@ -227,7 +236,7 @@ function ReplyForm({
           )}
         </button>
       )}
-      {uploadError && <p className="text-[#FDC4C4] text-xs">Échec de l&apos;envoi, réessaie.</p>}
+      {uploadError && <p className="text-[#FDC4C4] text-xs">{uploadError}</p>}
 
       {state?.error && <p className="text-[#FDC4C4] text-xs">{state.error}</p>}
       <button

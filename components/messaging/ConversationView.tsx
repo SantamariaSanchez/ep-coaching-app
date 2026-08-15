@@ -516,6 +516,14 @@ export default function ConversationView({
   const sendImage = useCallback(
     async (file: File) => {
       if (!canSend) return;
+      // MASTERCLASS.md Axe O : le bucket message-images rejette déjà les
+      // fichiers trop lourds ou au mauvais type côté serveur, mais sans ce
+      // contrôle l'utilisateur attend l'échec de l'upload réseau d'une image
+      // de plusieurs dizaines de Mo avant de voir l'erreur.
+      if (file.size > 8 * 1024 * 1024) {
+        setSendError("Image trop lourde (8 Mo maximum).");
+        return;
+      }
       setSending(true);
       setSendError(null);
       try {

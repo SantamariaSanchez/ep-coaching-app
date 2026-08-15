@@ -158,9 +158,10 @@ sans nom accessible), G (champs de formulaire sans nom accessible), H
 (pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
 et index), J (images de contenu sans texte alternatif), K (`href` sur URL
 stockée sans `safeExternalUrl`), L ("aujourd'hui" calculé en UTC côté
-serveur au lieu de l'heure de Paris), M (pages sans `loading.tsx`) et N
-(routes API de mutation sans `enforceRateLimit`) sont clos — détail de
-chacun plus bas. Idée pas encore commencée :
+serveur au lieu de l'heure de Paris), M (pages sans `loading.tsx`), N
+(routes API de mutation sans `enforceRateLimit`) et O (upload sans
+contrôle taille/type avant l'envoi réseau) sont clos — détail de chacun
+plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -1416,3 +1417,77 @@ done
   `app/api/exercise-library/recent/route.ts` n'ont pas été touchés —
   lectures authentifiées, signal plus faible que les mutations
   corrigées ici. À revisiter seulement si un usage anormal est constaté.
+
+## Axe O — Upload de fichier sans contrôle taille/type avant l'envoi réseau
+
+**Statut : clos** (2026-08-15).
+
+**Le problème** : 13 endroits uploadent un fichier vers Supabase Storage.
+Plusieurs (`personal-actions.ts`, `profile-actions.ts`,
+`community/posts/route.ts`, `coach/resources/route.ts`) valident déjà
+taille et type MIME avant l'upload, avec un message clair. Mais 5 flux
+d'upload **côté client**, tous déclenchés par un vrai sélecteur de
+fichier (pas un blob généré en interne comme un enregistrement audio),
+n'avaient aucun contrôle avant d'appeler `.upload()` : l'utilisateur
+sélectionne un fichier trop lourd ou du mauvais type, attend l'échec de
+l'upload réseau (potentiellement plusieurs minutes pour une vidéo), pour
+finalement voir un message d'erreur générique.
+
+**Vérifié d'abord (pas juste supposé)** : interrogé `storage.buckets` en
+base pour savoir si c'est un vrai trou de sécurité ou un défaut d'UX —
+`file_size_limit`/`allowed_mime_types` sont déjà configurés côté serveur
+sur tous les buckets concernés (ex. `message-images` 8 Mo images
+seulement, `correction-videos`/`coach-videos`/`exercise-videos` 150 Mo
+vidéo seulement, `set-videos` 100 Mo). Supabase rejette donc déjà un
+fichier invalide **avant** qu'il soit stocké — ce n'est pas une faille de
+sécurité, seulement une mauvaise expérience (attendre l'échec au lieu
+d'être prévenu tout de suite).
+
+**Corrigé** — contrôle `file.size` ajouté avant l'appel `.upload()`, avec
+la même limite que le bucket cible et un message clair, en réutilisant
+l'état d'erreur déjà existant dans chaque composant (pas de nouvelle UI) :
+- `components/messaging/ConversationView.tsx` → `sendImage` (bucket
+  `message-images`, 8 Mo)
+- `components/ui/ClientCorrectionsSection.tsx` → `handleVideoSelected`
+  (bucket `correction-videos`, 150 Mo) — au passage, `uploadError` était
+  un simple booléen affichant toujours "Échec de l'envoi, réessaie.",
+  changé en `string | null` pour pouvoir distinguer "trop lourd" d'un
+  vrai échec réseau
+- `components/ui/ClientCorrectionsReplySection.tsx` → même chose (bucket
+  `coach-videos`, 150 Mo)
+- `components/client/SessionView.tsx` → `handleVideoSelect` (bucket
+  `set-videos`, 100 Mo) — garde le `alert()` déjà utilisé par ce
+  composant pour ses erreurs d'upload, pas de refonte d'UI
+- `components/ui/ExerciseLibraryView.tsx` → `handleVideoUpload` (bucket
+  `exercise-videos`, 150 Mo)
+
+**Vérifié SAIN — ne pas toucher** : `components/ui/CheckinCard.tsx` (vidéo
+`coach-videos`) et l'enregistrement vocal de `ConversationView.tsx`
+uploadent un `Blob` généré en interne par `MediaRecorder`, jamais un
+fichier choisi par l'utilisateur — taille et type déjà bornés par la
+durée d'enregistrement, aucun sélecteur de fichier à valider.
+
+tsc/eslint (fichiers touchés, mêmes 8 erreurs pré-existantes sans rapport
+avec ce correctif avant/après vérifié via `git stash`)/build vérifiés
+propres.
+
+**Méthode utilisée** (relançable) :
+```bash
+grep -rn "\.upload(" --include="*.ts" --include="*.tsx" .   # via l'outil Grep, pas grep -r brut (trop lent sur node_modules)
+# Pour chaque résultat : le fichier uploadé est-il un File choisi par
+# l'utilisateur (input type="file", <input accept=...>) ou un Blob généré
+# en interne (MediaRecorder, canvas...) ? Si File choisi par
+# l'utilisateur et aucun contrôle de taille visible juste avant
+# `.upload(` -> vérifier la vraie limite du bucket en base
+# (`select file_size_limit, allowed_mime_types from storage.buckets`)
+# et ajouter un contrôle client qui matche exactement cette limite.
+```
+
+### Reste à faire sur cet axe
+
+- Le contrôle ajouté ne vérifie que la taille, pas le type MIME exact
+  (l'attribut `accept` du `<input>` suffit comme premier filtre côté UI,
+  et Supabase rejette déjà un mauvais type côté serveur) — un mauvais
+  type passerait donc encore le contrôle client et échouerait à l'upload
+  avec le message générique existant, pas un message "mauvais format"
+  dédié. Écart mineur, pas revu ici faute de signal concret.
