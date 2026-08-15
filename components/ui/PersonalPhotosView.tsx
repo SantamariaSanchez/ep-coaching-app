@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Trash2, Lock, Loader2 } from "lucide-react";
 import type { PersonalPhoto } from "@/utils/personal-photos";
+import PhotoCompareSlider from "@/components/ui/PhotoCompareSlider";
 
 function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -11,6 +12,12 @@ function formatDate(dateStr: string) {
     month: "long",
     year: "numeric",
   }).format(new Date(dateStr + "T12:00:00"));
+}
+
+function formatDateShort(dateStr: string) {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
+    new Date(dateStr + "T12:00:00")
+  );
 }
 
 interface Props {
@@ -37,6 +44,18 @@ export default function PersonalPhotosView({
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Comparaison avant/après (même composant que ClientPhotosView, item 35) —
+  // demande explicite du 2026-08-15 : "les photos ça sert à rien, y'aura
+  // pas de retour" pour qui n'a personne à qui les envoyer (membres
+  // gratuits, mais aussi un coach qui suit ses propres photos sans avoir
+  // lui-même de coach). La vraie valeur d'un suivi photo solo n'est pas
+  // l'envoi, c'est de pouvoir comparer sa propre progression dans le temps.
+  const sortedByDate = [...photos].sort((a, b) => a.taken_at.localeCompare(b.taken_at));
+  const oldestWithUrl = sortedByDate.find((p) => p.url);
+  const newestWithUrl = [...sortedByDate].reverse().find((p) => p.url);
+  const showCompare =
+    !!oldestWithUrl && !!newestWithUrl && oldestWithUrl.id !== newestWithUrl.id;
 
   async function handleFile(file: File) {
     setUploading(true);
@@ -127,6 +146,24 @@ export default function PersonalPhotosView({
           }}
         />
       </div>
+
+      {/* Comparaison avant/après */}
+      {showCompare && oldestWithUrl && newestWithUrl && (
+        <section className="mb-8">
+          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+            Progression
+          </p>
+          <h2 className="text-xl font-black uppercase tracking-tight mb-3">
+            Avant / Après
+          </h2>
+          <PhotoCompareSlider
+            beforeUrl={oldestWithUrl.url as string}
+            afterUrl={newestWithUrl.url as string}
+            beforeLabel={formatDateShort(oldestWithUrl.taken_at)}
+            afterLabel={formatDateShort(newestWithUrl.taken_at)}
+          />
+        </section>
+      )}
 
       {/* Gallery */}
       {photos.length > 0 ? (
