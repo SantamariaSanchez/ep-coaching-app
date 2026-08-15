@@ -187,12 +187,13 @@ production locale.
 | 2026-08-15 | Vague O | 1 | Alimentation étudiante à petit budget (1973 étudiants, le budget n'est pas le seul facteur, l'organisation compte presque autant). |
 | 2026-08-15 | Vague P | 1 | Blessures épaule/lombaires en musculation (powerlifters, 70% actuellement blessés, facteurs de risque identifiés). |
 | 2026-08-15 | Vague Q | 3 | Diversifier ses revenus de coach, éviter l'épuisement en indépendant, auto-sabotage — non sourcés PubMed (littérature clinique limitée sur l'entrepreneuriat), conseils mesurés sans statistique inventée. |
-| **Total au 2026-08-15** | | **102** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague R | 3 | Discipline vs motivation, transition post-objectif, image de marque personnelle — même approche non sourcée que la vague Q. |
+| **Total au 2026-08-15** | | **105** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 24, Psychologie 15, Général 11, Récupération 11,
-Entrepreneuriat 8, Steps & activité quotidienne 9.
+Nutrition 24, Entraînement 24, Psychologie 17, Général 11, Récupération 11,
+Entrepreneuriat 9, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -229,7 +230,8 @@ gestion du stress, red flags d'un coach, musculation au féminin
 saine à la nourriture, body checking, type de motivation
 (intrinsèque/extrinsèque), charge mentale et vie sportive,
 perfectionnisme et longévité sportive, contenu body positive sur les
-réseaux, auto-sabotage.
+réseaux, auto-sabotage, discipline vs motivation, transition
+post-objectif.
 
 **Récupération** : sommeil et prise de muscle, surentraînement, mobilité
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
@@ -251,7 +253,7 @@ ascenseur, marche et santé mentale, podomètre vs montre connectée
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
 face à l'incertitude, gestion du temps en indépendant, diversifier ses
-revenus, éviter l'épuisement en indépendant.
+revenus, éviter l'épuisement en indépendant, image de marque personnelle.
 
 ## Sources déjà vérifiées (réutilisables sans re-recherche)
 
@@ -327,12 +329,9 @@ Alimentation étudiante : Foglia et al. 2026, étude sur 1973 étudiants (DOI
 
 - Entraînement : progression sur les mouvements au poids du corps.
 - Récupération : blessures et retour progressif à l'entraînement.
-- Psychologie : discipline vs motivation au quotidien, gérer un coach qui
-  ne convient plus, transition post-objectif (après une compétition, un
-  mariage, etc.).
-- Entrepreneuriat : image de marque personnelle, contenu et réseaux sociaux
-  pour un coach, gestion administrative de base, premiers salariés/
-  sous-traitants.
+- Psychologie : gérer un coach qui ne convient plus.
+- Entrepreneuriat : contenu et réseaux sociaux pour un coach, gestion
+  administrative de base, premiers salariés/sous-traitants.
 
 ## Mécanisme de production continue
 
