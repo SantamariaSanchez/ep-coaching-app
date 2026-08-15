@@ -893,7 +893,7 @@ export default function WeeklyAgenda({
               <input
                 value={form.label}
                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
-                placeholder="Ex. Salle, Travail, Repas..." aria-label="Ex. Salle, Travail, Repas..."
+                placeholder="Ex. Salle, Travail, Repas..." aria-label="Nom"
                 className={inputClass}
               />
             </div>
@@ -986,7 +986,7 @@ export default function WeeklyAgenda({
                       addTaskToForm();
                     }
                   }}
-                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..." aria-label="Ex. Tourner 3 reels, ou un objectif du jour..."
+                  placeholder="Ex. Tourner 3 reels, ou un objectif du jour..." aria-label="Nouvelle tâche"
                   className={inputClass}
                 />
                 <button type="button" onClick={addTaskToForm} aria-label="Ajouter la tâche" className="ep-btn-secondary" style={{ padding: "0 14px", fontSize: 11 }}>

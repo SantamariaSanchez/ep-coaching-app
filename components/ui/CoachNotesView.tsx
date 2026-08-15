@@ -463,7 +463,7 @@ function KeyDecisionForm({
               rows={2}
               value={form.decision}
               onChange={(e) => set("decision", e.target.value)}
-              placeholder="Ex. Passer de 2000 à 1800 kcal/j suite à plateau" aria-label="Ex. Passer de 2000 à 1800 kcal/j suite à plateau"
+              placeholder="Ex. Passer de 2000 à 1800 kcal/j suite à plateau" aria-label="Décision"
               className={textareaCls}
             />
           </div>

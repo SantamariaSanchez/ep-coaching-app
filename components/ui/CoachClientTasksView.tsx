@@ -165,7 +165,7 @@ export default function CoachClientTasksView({
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Ex. Prends ta créatine" aria-label="Ex. Prends ta créatine"
+            placeholder="Ex. Prends ta créatine" aria-label="Intitulé de la tâche"
             className={inputCls}
           />
         </div>

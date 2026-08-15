@@ -95,7 +95,7 @@ function GymForm({
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Nom de la salle</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Basic-Fit Lille Centre" aria-label="Ex. Basic-Fit Lille Centre" className={inputCls} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Basic-Fit Lille Centre" aria-label="Nom de la salle" className={inputCls} />
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
@@ -152,7 +152,7 @@ function GymForm({
           value={equipmentNotes}
           onChange={(e) => setEquipmentNotes(e.target.value)}
           rows={2}
-          placeholder="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…" aria-label="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…"
+          placeholder="Ex. Plateau powerlifting, beaucoup de machines, peu de fonte libre…" aria-label="Notes sur l'équipement"
           className={`${inputCls} resize-none`}
         />
       </div>

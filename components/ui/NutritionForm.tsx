@@ -540,7 +540,7 @@ export default function NutritionForm({
               type="number"
               value={form.offsetRest}
               onChange={(e) => set("offsetRest", e.target.value)}
-              placeholder="Ex. -200" aria-label="Ex. -200"
+              placeholder="Ex. -200" aria-label="Ajustement calorique jour de repos"
               className={inputCls}
             />
           </div>
@@ -550,7 +550,7 @@ export default function NutritionForm({
               type="number"
               value={form.offsetHigh}
               onChange={(e) => set("offsetHigh", e.target.value)}
-              placeholder="Ex. +400" aria-label="Ex. +400"
+              placeholder="Ex. +400" aria-label="Ajustement calorique jour haut"
               className={inputCls}
             />
           </div>

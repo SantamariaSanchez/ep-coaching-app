@@ -622,7 +622,7 @@ export default function NutritionBilanQuiz({
               autoFocus
               value={searchQ}
               onChange={(e) => setSearchQ(e.target.value)}
-              placeholder="Ex. riz complet, poulet…" aria-label="Ex. riz complet, poulet…"
+              placeholder="Ex. riz complet, poulet…" aria-label="Rechercher un aliment"
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 mb-2"
             />
             <div className="space-y-1 max-h-48 overflow-y-auto">

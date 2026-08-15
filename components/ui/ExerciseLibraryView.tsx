@@ -197,7 +197,7 @@ function ExerciseForm({
     <div className="bg-[#150000] border border-[#890404]/30 rounded-xl p-4 space-y-3">
       <div>
         <label className={labelCls}>Nom de l&apos;exercice</label>
-        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" aria-label="Ex. Développé incliné haltères" className={inputCls} />
+        <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex. Développé incliné haltères" aria-label="Nom de l'exercice" className={inputCls} />
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

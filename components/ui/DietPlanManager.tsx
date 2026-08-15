@@ -780,7 +780,7 @@ export function PlanBuilder({
           <input
             value={planName}
             onChange={(e) => setPlanName(e.target.value)}
-            placeholder="Ex. Prise de masse semaine 1" aria-label="Ex. Prise de masse semaine 1"
+            placeholder="Ex. Prise de masse semaine 1" aria-label="Nom du plan"
             className={inputCls}
           />
         </div>
@@ -817,7 +817,7 @@ export function PlanBuilder({
         <input
           value={objective}
           onChange={(e) => setObjective(e.target.value)}
-          placeholder="Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes" aria-label="Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes"
+          placeholder="Ex. Sèche progressive, 400 kcal sous la maintenance, protéines hautes" aria-label="Objectif"
           className={inputCls}
         />
       </div>
@@ -830,7 +830,7 @@ export function PlanBuilder({
           value={socialNotes}
           onChange={(e) => setSocialNotes(e.target.value)}
           rows={2}
-          placeholder="Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…" aria-label="Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…"
+          placeholder="Ex. Repas de famille le dimanche midi, sort au restaurant le vendredi soir avec ses amis…" aria-label="Notes sur le contexte social"
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
@@ -903,7 +903,7 @@ export function PlanBuilder({
             value={dayNotes[activeDay] ?? ""}
             onChange={(e) => setDayNotes((prev) => ({ ...prev, [activeDay]: e.target.value }))}
             rows={2}
-            placeholder="Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire." aria-label="Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire."
+            placeholder="Ex. Jour haut en glucides avant la séance jambes du lendemain matin. / Jour off, déficit plus marqué, journée sédentaire." aria-label="Notes du jour"
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -1325,7 +1325,7 @@ export function PlanBuilder({
                     value={mealNotes}
                     onChange={(e) => setMealNotes(e.target.value)}
                     rows={2}
-                    placeholder="Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…" aria-label="Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…"
+                    placeholder="Ex. Remplace le poisson qu'il déteste, pratique à emporter au travail, source de glucides avant la séance du soir…" aria-label="Notes sur le repas"
                     className={`${inputCls} resize-none`}
                   />
                 </div>
@@ -1341,7 +1341,7 @@ export function PlanBuilder({
                         value={prepNotesDraft}
                         onChange={(e) => setPrepNotesDraft(e.target.value)}
                         rows={2}
-                        placeholder="Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…" aria-label="Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…"
+                        placeholder="Ex. Se mange froid ou chaud, s'associe bien avec du citron et de l'aneth, se conserve 2 jours au frigo…" aria-label="Notes de préparation"
                         className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                       />
                       <div className="flex gap-2 mt-2">

@@ -266,7 +266,7 @@ export default function ExerciseDetailPanel({
                     value={assignment.rom_notes}
                     onChange={(e) => onAssignmentChange("rom_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser." aria-label="Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser."
+                    placeholder="Ex. Presse à cuisses de sa salle limitée en amplitude basse, ajouter une planche pour compenser." aria-label="Notes sur l'amplitude de mouvement"
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -279,7 +279,7 @@ export default function ExerciseDetailPanel({
                     value={assignment.resistance_notes}
                     onChange={(e) => onAssignmentChange("resistance_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie." aria-label="Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie."
+                    placeholder="Ex. Élastique léger en haut du mouvement pour garder la tension en position raccourcie." aria-label="Notes sur la résistance"
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -292,7 +292,7 @@ export default function ExerciseDetailPanel({
                     value={assignment.availability_notes}
                     onChange={(e) => onAssignmentChange("availability_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste — prévoir un remplaçant si occupé." aria-label="Ex. S'entraîne à 18h, salle bondée sur ce poste — prévoir un remplaçant si occupé."
+                    placeholder="Ex. S'entraîne à 18h, salle bondée sur ce poste — prévoir un remplaçant si occupé." aria-label="Notes sur la disponibilité du matériel"
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -309,7 +309,7 @@ export default function ExerciseDetailPanel({
                     value={assignment.discomfort_notes}
                     onChange={(e) => onAssignmentChange("discomfort_notes", e.target.value)}
                     rows={2}
-                    placeholder="Ex. Passe en amplitude partielle dès la 3e série à RIR 1." aria-label="Ex. Passe en amplitude partielle dès la 3e série à RIR 1."
+                    placeholder="Ex. Passe en amplitude partielle dès la 3e série à RIR 1." aria-label="Notes sur la gêne ou l'inconfort"
                     className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                   />
                 </div>
@@ -386,7 +386,7 @@ export default function ExerciseDetailPanel({
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={2}
-                  placeholder="Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie." aria-label="Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie."
+                  placeholder="Ex. Ajouter un élastique en haut du mouvement pour garder la tension en position raccourcie." aria-label="Notes"
                   className="w-full bg-[#0D0000] border border-[#890404]/30 focus:border-[#E01E1E]/60 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none transition-colors resize-none"
                 />
                 {notes !== (ex.setup_notes ?? "") && (

@@ -896,11 +896,21 @@ repérés par le premier scan du jour.
 
 ### Reste à faire sur cet axe
 
-- Les `aria-label` ajoutés depuis un `placeholder` reprennent parfois un
-  texte d'exemple plutôt qu'une vraie description du champ (ex.
-  `placeholder="Ex. 12"` donne `aria-label="Ex. 12"`, pas
-  "Durée en semaines") — mieux que rien, mais pas idéal ; une relecture
-  ciblée des placeholders de type "Ex. ..." pourrait affiner ça un jour.
+- ~~Les `aria-label` ajoutés depuis un `placeholder` reprennent parfois un
+  texte d'exemple plutôt qu'une vraie description du champ~~ — corrigé le
+  2026-08-15 : les 42 occurrences de `aria-label="Ex. ..."` (grep
+  `aria-label="Ex[.,]`) relues une par une (label visible déjà présent
+  juste au-dessus si possible, sinon description déduite du nom de
+  variable et du champ) et remplacées par une vraie description —
+  `WeeklyAgenda.tsx`, `RoadmapTemplateEditor.tsx`, `ProgramTemplateEditor.tsx`,
+  `ProgramEditor.tsx`, `NutritionForm.tsx`, `NutritionBilanQuiz.tsx`,
+  `GymsDirectoryView.tsx`, `ExerciseLibraryView.tsx`,
+  `ExerciseDetailPanel.tsx`, `DietPlanManager.tsx`, `CoachNotesView.tsx`,
+  `CoachClientTasksView.tsx`, `ClientPhotosView.tsx`, `SessionView.tsx`,
+  `ClientNutritionView.tsx`, `LogbookClient.tsx`, `StepsClient.tsx`,
+  `StudiesView.tsx`, `SearchView.tsx`. tsc/eslint (mêmes 24 problèmes
+  pré-existants avant/après, vérifié via `git stash`)/build vérifiés
+  propres.
 - Le détecteur d'"expression JS unique" (bug `CheckinForm.tsx` plus haut)
   a été corrigé à la main pour ce cas précis, pas réécrit avec une vraie
   vérification d'équilibrage dans le script gardé au scratchpad — à

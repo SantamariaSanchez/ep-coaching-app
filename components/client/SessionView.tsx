@@ -1197,7 +1197,7 @@ function ExerciseCard({
           <textarea
             value={exState.clientNotes}
             onChange={(e) => onNotesChange(e.target.value)}
-            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..." aria-label="Ex. variante testée, gêne à l'épaule, ressenti..."
+            placeholder="Ex. variante testée, gêne à l'épaule, ressenti..." aria-label="Notes sur l'exercice"
             rows={2}
             className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
           />

@@ -608,7 +608,7 @@ export default function StepsClient({
               <input
                 value={newLabel}
                 onChange={(e) => setNewLabel(e.target.value)}
-                placeholder="Ex. Marche après le déjeuner" aria-label="Ex. Marche après le déjeuner"
+                placeholder="Ex. Marche après le déjeuner" aria-label="Nom de l'activité"
                 className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-1.5 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none"
               />
               <button onClick={handleAddItem} className="text-[10px] font-bold text-[#E01E1E] px-2">OK</button>

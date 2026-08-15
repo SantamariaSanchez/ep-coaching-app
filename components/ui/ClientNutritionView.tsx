@@ -2120,7 +2120,7 @@ export default function ClientNutritionView({
                   onChange={(e) =>
                     setCreateForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Riz basmati précuit" aria-label="Ex. Riz basmati précuit"
+                  placeholder="Ex. Riz basmati précuit" aria-label="Nom de l'aliment"
                   className={inputCls}
                 />
               </div>
@@ -2230,7 +2230,7 @@ export default function ClientNutritionView({
                   onChange={(e) =>
                     setQuickAddForm((p) => ({ ...p, name: e.target.value }))
                   }
-                  placeholder="Ex. Repas au restaurant" aria-label="Ex. Repas au restaurant"
+                  placeholder="Ex. Repas au restaurant" aria-label="Nom du repas"
                   className={inputCls}
                 />
               </div>

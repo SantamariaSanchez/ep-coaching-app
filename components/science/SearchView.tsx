@@ -204,7 +204,7 @@ export default function SearchView({ isCoach, importArticle }: {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Ex. creatine supplementation muscle hypertrophy…" aria-label="Ex. creatine supplementation muscle hypertrophy…"
+            placeholder="Ex. creatine supplementation muscle hypertrophy…" aria-label="Rechercher un article scientifique"
             className={`${inputCls} pl-9`}
           />
         </div>

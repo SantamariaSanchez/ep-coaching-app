@@ -279,7 +279,7 @@ export default function RoadmapTemplateEditor({
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. Prépa compétition 12 semaines" aria-label="Ex. Prépa compétition 12 semaines"
+              placeholder="Ex. Prépa compétition 12 semaines" aria-label="Nom du modèle"
               className={inputCls}
             />
           </div>
@@ -293,7 +293,7 @@ export default function RoadmapTemplateEditor({
               max="104"
               value={state.duration_weeks}
               onChange={(e) => updateMeta("duration_weeks", e.target.value)}
-              placeholder="Ex. 12" aria-label="Ex. 12"
+              placeholder="Ex. 12" aria-label="Durée en semaines"
               className={inputCls}
             />
           </div>
@@ -305,7 +305,7 @@ export default function RoadmapTemplateEditor({
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Perte de poids progressive, débutant · Prépa compétition physique" aria-label="Ex. Perte de poids progressive, débutant · Prépa compétition physique"
+            placeholder="Ex. Perte de poids progressive, débutant · Prépa compétition physique" aria-label="Objectif"
             className={inputCls}
           />
         </div>
@@ -317,7 +317,7 @@ export default function RoadmapTemplateEditor({
             value={state.notes}
             onChange={(e) => updateMeta("notes", e.target.value)}
             rows={2}
-            placeholder="Ex. adapter la durée de la phase de cut selon le point de départ du client…" aria-label="Ex. adapter la durée de la phase de cut selon le point de départ du client…"
+            placeholder="Ex. adapter la durée de la phase de cut selon le point de départ du client…" aria-label="Notes"
             className={`${inputCls} resize-none`}
           />
         </div>

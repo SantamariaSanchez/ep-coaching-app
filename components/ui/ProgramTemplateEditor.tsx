@@ -289,7 +289,7 @@ export default function ProgramTemplateEditor({
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. PPL Hypertrophie 5x/semaine" aria-label="Ex. PPL Hypertrophie 5x/semaine"
+              placeholder="Ex. PPL Hypertrophie 5x/semaine" aria-label="Nom du programme"
               className={inputCls}
             />
           </div>
@@ -313,7 +313,7 @@ export default function ProgramTemplateEditor({
               max="7"
               value={state.frequency}
               onChange={(e) => updateMeta("frequency", e.target.value)}
-              placeholder="Ex. 5" aria-label="Ex. 5"
+              placeholder="Ex. 5" aria-label="Fréquence en séances par semaine"
               className={inputCls}
             />
           </div>
@@ -325,7 +325,7 @@ export default function ProgramTemplateEditor({
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Hypertrophie, débutant · Prépa compétition physique" aria-label="Ex. Hypertrophie, débutant · Prépa compétition physique"
+            placeholder="Ex. Hypertrophie, débutant · Prépa compétition physique" aria-label="Objectif"
             className={inputCls}
           />
         </div>
@@ -337,7 +337,7 @@ export default function ProgramTemplateEditor({
             value={state.notes}
             onChange={(e) => updateMeta("notes", e.target.value)}
             rows={2}
-            placeholder="Ex. penser à alterner unilatéral/bilatéral sur les jambes, garder les push légers en semaine 1…" aria-label="Ex. penser à alterner unilatéral/bilatéral sur les jambes, garder les push légers en semaine 1…"
+            placeholder="Ex. penser à alterner unilatéral/bilatéral sur les jambes, garder les push légers en semaine 1…" aria-label="Notes"
             className={`${inputCls} resize-none`}
           />
         </div>

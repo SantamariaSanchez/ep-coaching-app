@@ -1418,7 +1418,7 @@ export default function ProgramEditor({
             <input
               value={state.name}
               onChange={(e) => updateMeta("name", e.target.value)}
-              placeholder="Ex. PPL : Hypertrophie" aria-label="Ex. PPL : Hypertrophie"
+              placeholder="Ex. PPL : Hypertrophie" aria-label="Nom du programme"
               className={inputCls}
             />
           </div>
@@ -1446,7 +1446,7 @@ export default function ProgramEditor({
               max="7"
               value={state.frequency}
               onChange={(e) => updateMeta("frequency", e.target.value)}
-              placeholder="Ex. 4" aria-label="Ex. 4"
+              placeholder="Ex. 4" aria-label="Fréquence en séances par semaine"
               className={inputCls}
             />
           </div>
@@ -1459,7 +1459,7 @@ export default function ProgramEditor({
           <input
             value={state.objective}
             onChange={(e) => updateMeta("objective", e.target.value)}
-            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa" aria-label="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa"
+            placeholder="Ex. Hypertrophie haut du corps, 8 semaines avant la prépa" aria-label="Objectif"
             className={inputCls}
           />
         </div>
@@ -1473,7 +1473,7 @@ export default function ProgramEditor({
             value={state.coach_notes}
             onChange={(e) => updateMeta("coach_notes", e.target.value)}
             rows={2}
-            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…" aria-label="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…"
+            placeholder="Ex. épaule droite sensible, on garde le développé haltères et on surveille le volume vertical…" aria-label="Notes du coach"
             className={`${inputCls} resize-none`}
           />
         </div>
@@ -1541,7 +1541,7 @@ export default function ProgramEditor({
           value={customConstraints}
           onChange={(e) => setCustomConstraints(e.target.value)}
           rows={2}
-          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…" aria-label="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…"
+          placeholder="Ex. tendinite épaule droite non notée dans la fiche, évite le rameur…" aria-label="Contraintes particulières"
           className={`${inputCls} resize-none`}
         />
         <p className="text-[10px] text-[#F5EDED]/25 mt-1.5">
