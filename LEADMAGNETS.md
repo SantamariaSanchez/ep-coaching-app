@@ -192,12 +192,13 @@ production locale.
 | 2026-08-15 | Vague T | 2 | Stretching statique avant/après (deux corpus distincts : effet aigu négatif, effet chronique positif), retour après blessure aux ischio-jambiers (méta-analyse comparant les protocoles) — ferme les 2 thèmes du backlog initial restés sans source. |
 | 2026-08-15 | Vague U | 1 | Fréquence d'entraînement par muscle (2 méta-analyses du même auteur, la plus récente et large nuance la première : c'est le volume qui compte, pas la fréquence en soi). |
 | 2026-08-15 | Vague V | 2 | Surentraînement, signes précoces (consensus officiel ECSS/ACSM), stress pré-compétition (2056 athlètes, résilience et coping comme leviers entraînables). |
-| **Total au 2026-08-15** | | **114** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague W | 2 | La force améliore l'endurance (angle complémentaire à l'axe interférence déjà traité), tarification à la valeur vs à l'heure pour un coach (non sourcé). |
+| **Total au 2026-08-15** | | **116** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 25, Psychologie 19, Général 11, Récupération 14,
-Entrepreneuriat 12, Steps & activité quotidienne 9.
+Nutrition 24, Entraînement 26, Psychologie 19, Général 11, Récupération 14,
+Entrepreneuriat 13, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -216,7 +217,8 @@ bilatéral, cross-education), périodisation (force vs hypertrophie, ondulée
 vs linéaire), entraînement à domicile matériel limité (élastiques vs
 charges libres), squat profond et genoux, blessures épaule/lombaires
 (powerlifters, facteurs de risque), fréquence d'entraînement par muscle
-(c'est le volume qui compte).
+(c'est le volume qui compte), la force améliore l'endurance (économie de
+mouvement).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -264,7 +266,7 @@ de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
 face à l'incertitude, gestion du temps en indépendant, diversifier ses
 revenus, éviter l'épuisement en indépendant, image de marque personnelle,
 contenu et réseaux sociaux pour un coach, gestion administrative de base,
-premiers salariés/sous-traitants.
+premiers salariés/sous-traitants, tarification à la valeur vs à l'heure.
 
 ## Sources déjà vérifiées (réutilisables sans re-recherche)
 
@@ -345,7 +347,8 @@ Fréquence d'entraînement : Schoenfeld/Ogborn/Krieger 2016 (DOI
 et al. 2013, consensus ECSS/ACSM (DOI 10.1249/MSS.0b013e318279a10a). Stress
 pré-compétition : Li et al. 2025, 2056 athlètes (DOI
 10.1038/s41598-025-19213-1), Tharawadeepimuk et al. 2026, essai contrôlé
-(DOI 10.1186/s40359-026-04814-w).
+(DOI 10.1186/s40359-026-04814-w). Force/endurance : Berryman, Mujika &
+Bosquet 2019, revue (DOI 10.1123/ijspp.2018-0103).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -367,10 +370,10 @@ sportive, sauna/bain chaud et récupération (recherche PubMed infructueuse
 le 2026-08-15, à retenter), ratio push/pull dans un programme (recherche
 PubMed infructueuse le 2026-08-15, sujet plus proche du bon sens
 d'entraînement que de la littérature clinique, à traiter sans source si
-retenté), nutrition et qualité du sommeil au delà de la caféine,
-cyclisme/course à pied et interférence avec la force (angle complémentaire
-à l'axe déjà traité), tarification à la valeur vs à l'heure pour un coach,
-structurer un onboarding client qui réduit l'attrition précoce.
+retenté), nutrition et qualité du sommeil au delà de la caféine (magnésium
+trouvé uniquement en population diabétique le 2026-08-15, à retenter en
+population générale ou traiter avec ce garde-fou explicite), structurer un
+onboarding client qui réduit l'attrition précoce.
 
 ## Mécanisme de production continue
 
