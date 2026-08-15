@@ -157,9 +157,9 @@ jamais resynchronisé sur un nouveau prop serveur), F (boutons icône seule
 sans nom accessible), G (champs de formulaire sans nom accessible), H
 (pas d'`error.tsx`/`not-found.tsx`), I (advisors Supabase : policies RLS
 et index), J (images de contenu sans texte alternatif), K (`href` sur URL
-stockée sans `safeExternalUrl`) et L ("aujourd'hui" calculé en UTC côté
-serveur au lieu de l'heure de Paris) sont clos — détail de chacun plus
-bas. Idée pas encore commencée :
+stockée sans `safeExternalUrl`), L ("aujourd'hui" calculé en UTC côté
+serveur au lieu de l'heure de Paris) et M (pages sans `loading.tsx`) sont
+clos — détail de chacun plus bas. Idée pas encore commencée :
 - Cohérence des messages d'erreur utilisateur (certains génériques, d'autres
   précis) et de la discipline "jamais de tiret" déjà en place ailleurs —
   plus une question de polish/cohérence de ton que de vrai bug, à cadrer
@@ -1279,8 +1279,79 @@ grep -rn 'toISOString\(\)\.split\("T"\)\[0\]' --include="*.ts" --include="*.tsx"
   de plage) n'ont volontairement pas été touchés — risque réel mais bien
   plus faible (erreur d'un jour à la frontière d'une fenêtre de N jours,
   pas un blocage total). À revisiter si un symptôme concret apparaît.
-- `app/dashboard/coach/moi/bilan/actions.ts` utilise `todayInParis()`
-  sans la tolérance "hier" que `client/bilan/actions.ts` a maintenant —
-  cohérent avec la page (même today des deux côtés) donc pas de bug actif,
-  mais une fenêtre de course plus étroite existe encore si le coach
-  charge la page juste avant minuit et soumet juste après. Pas prioritaire.
+- ~~`app/dashboard/coach/moi/bilan/actions.ts` utilise `todayInParis()`
+  sans la tolérance "hier"~~ — corrigé le même soir (commit `c964b70`),
+  même tolérance qu'`client/bilan/actions.ts` désormais des deux côtés.
+
+## Axe M — Pages Server Component sans `loading.tsx`
+
+**Statut : clos** (2026-08-15).
+
+**Le problème** : l'appli a déjà 5 skeletons de chargement bien pensés
+(`components/ui/Skeleton.tsx` : `PageSkeleton`, `ListPageSkeleton`,
+`GridPageSkeleton`, `TabbedPageSkeleton`, `FormPageSkeleton`), utilisés de
+façon cohérente sur la grande majorité des routes — mais 33 pages Server
+Component asynchrones n'avaient aucun `loading.tsx` du tout. Next.js
+affiche alors soit la page précédente figée, soit un flash de contenu
+vide, pendant tout le temps de la requête serveur (auth + profil + toutes
+les requêtes de données de la page), au lieu du skeleton immédiat que le
+reste de l'appli offre déjà. Pur problème de performance perçue (aucune
+donnée fausse ni corrompue), mais un vrai écart de finition d'un endroit
+à l'autre de la même appli.
+
+**Corrigé** : 30 nouveaux `loading.tsx` créés, chacun choisi selon la
+forme réelle du contenu de la page (pas un choix mécanique uniforme) :
+`ListPageSkeleton` pour les listes (leads, tâches, disponibilités...),
+`GridPageSkeleton` pour les grilles de cartes à parcourir (annuaire coachs,
+ressources publiques...), `FormPageSkeleton` pour les formulaires/éditeurs
+(mailing, programmes, roadmap, intake...), `PageSkeleton` pour les pages
+de type tableau de bord (stats + blocs). Nouvelle variante ajoutée,
+`AuthCardSkeleton`, pour les écrans de statut/auth à carte centrée étroite
+(2FA, "compte coach en attente") qui ne ressemblent à aucune des 5
+variantes existantes, toutes pensées pour une mise en page tableau de bord
+avec titre en haut à gauche.
+
+**Volontairement exclus** :
+- `app/dashboard/client/live/[id]/page.tsx` et
+  `app/dashboard/coach/live/[id]/page.tsx` (salle Jitsi) : interface plein
+  écran d'appel vidéo, aucun skeleton "page avec titre + blocs" n'a de
+  sens ici — un flash de squelette tableau de bord juste avant une salle
+  d'appel serait plus étrange que l'absence actuelle de skeleton.
+- `app/reussites/page.tsx` : répertoire non suivi par git au moment de
+  cette passe (travail en cours d'une session précédente, pas encore
+  commité) — volontairement laissé de côté pour ne pas mélanger ce
+  chantier avec du travail non terminé d'un autre fil.
+
+tsc/eslint (fichiers touchés)/build vérifiés propres.
+
+**Méthode utilisée** (relançable) :
+```bash
+node -e '
+const fs = require("fs"), path = require("path");
+function walk(dir, out) {
+  for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (e.name === "node_modules" || e.name === ".next") continue;
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) walk(full, out); else out.push(full);
+  }
+}
+const files = []; walk("app", files);
+for (const p of files.filter(f => /page\.tsx$/.test(f))) {
+  const c = fs.readFileSync(p, "utf-8");
+  if (!/export default async function/.test(c)) continue;
+  const loadingPath = path.join(path.dirname(p), "loading.tsx");
+  if (!fs.existsSync(loadingPath)) console.log(p);
+}
+'
+# Pour chaque page trouvée : regarder les composants qu'elle rend
+# (grep -oE "<[A-Z][A-Za-z]+") pour deviner la forme réelle (liste, grille,
+# formulaire, tableau de bord, carte centrée) plutôt que de choisir une
+# variante par défaut au hasard.
+```
+
+### Reste à faire sur cet axe
+
+- Aucun signal connu à ce jour sur les 3 exclusions volontaires — à
+  reconsidérer si `app/reussites/` est un jour commité et mérite son
+  propre `loading.tsx` (probablement `GridPageSkeleton`, format
+  répertoire de témoignages).

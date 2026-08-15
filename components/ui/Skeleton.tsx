@@ -72,6 +72,24 @@ export function TabbedPageSkeleton() {
   );
 }
 
+// Écrans d'auth/statut à carte centrée étroite (2FA, onboarding, "coach en
+// attente"...) — aucune des variantes ci-dessus ne convient : ce sont des
+// pages pleine hauteur avec une seule carte au centre, pas une mise en page
+// tableau de bord avec titre en haut à gauche.
+export function AuthCardSkeleton() {
+  return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", padding: "24px 20px" }}>
+      <div style={{ width: "100%", maxWidth: 420 }}>
+        <Skeleton className="h-14 w-14 mx-auto mb-5" />
+        <Skeleton className="h-6 w-48 mx-auto mb-3" />
+        <Skeleton className="h-4 w-full mb-2" />
+        <Skeleton className="h-4 w-5/6 mx-auto mb-6" />
+        <Skeleton className="h-12 w-full" />
+      </div>
+    </div>
+  );
+}
+
 export function FormPageSkeleton() {
   return (
     <div style={{ padding: "32px 40px", maxWidth: 600, margin: "0 auto" }}>
