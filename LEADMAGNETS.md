@@ -191,11 +191,12 @@ production locale.
 | 2026-08-15 | Vague S | 4 | Gérer un coach qui ne convient plus, contenu & réseaux pour un coach, gestion administrative de base, premiers salariés/sous-traitants — backlog initial épuisé sur ces 4 derniers thèmes, même approche non sourcée. |
 | 2026-08-15 | Vague T | 2 | Stretching statique avant/après (deux corpus distincts : effet aigu négatif, effet chronique positif), retour après blessure aux ischio-jambiers (méta-analyse comparant les protocoles) — ferme les 2 thèmes du backlog initial restés sans source. |
 | 2026-08-15 | Vague U | 1 | Fréquence d'entraînement par muscle (2 méta-analyses du même auteur, la plus récente et large nuance la première : c'est le volume qui compte, pas la fréquence en soi). |
-| **Total au 2026-08-15** | | **112** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague V | 2 | Surentraînement, signes précoces (consensus officiel ECSS/ACSM), stress pré-compétition (2056 athlètes, résilience et coping comme leviers entraînables). |
+| **Total au 2026-08-15** | | **114** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 25, Psychologie 18, Général 11, Récupération 13,
+Nutrition 24, Entraînement 25, Psychologie 19, Général 11, Récupération 14,
 Entrepreneuriat 12, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -235,7 +236,8 @@ saine à la nourriture, body checking, type de motivation
 (intrinsèque/extrinsèque), charge mentale et vie sportive,
 perfectionnisme et longévité sportive, contenu body positive sur les
 réseaux, auto-sabotage, discipline vs motivation, transition
-post-objectif, gérer un coach qui ne convient plus.
+post-objectif, gérer un coach qui ne convient plus, stress
+pré-compétition.
 
 **Récupération** : sommeil et prise de muscle, surentraînement, mobilité
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
@@ -244,7 +246,8 @@ foam rolling (mobilité/récupération perçue, pas un effet mécanique sur le
 fascia), respiration et système nerveux (effet réel mais limité), jet lag
 pour athlètes qui voyagent (asymétrie est/ouest), stretching statique
 avant/après (effet aigu vs chronique), retour après blessure aux
-ischio-jambiers (comparaison de protocoles).
+ischio-jambiers (comparaison de protocoles), surentraînement/signes
+précoces (consensus ECSS/ACSM).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -338,7 +341,11 @@ chroniques (DOI 10.1007/s40279-022-01806-9). Retour blessure ischio-jambiers :
 Abdulridha et al. 2025, méta-analyse (DOI 10.1016/j.jbmt.2025.06.030).
 Fréquence d'entraînement : Schoenfeld/Ogborn/Krieger 2016 (DOI
 10.1007/s40279-016-0543-8), Schoenfeld/Grgic/Krieger 2019, méta-analyse
-25 études (DOI 10.1080/02640414.2018.1555906).
+25 études (DOI 10.1080/02640414.2018.1555906). Surentraînement : Meeusen
+et al. 2013, consensus ECSS/ACSM (DOI 10.1249/MSS.0b013e318279a10a). Stress
+pré-compétition : Li et al. 2025, 2056 athlètes (DOI
+10.1038/s41598-025-19213-1), Tharawadeepimuk et al. 2026, essai contrôlé
+(DOI 10.1186/s40359-026-04814-w).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -360,8 +367,7 @@ sportive, sauna/bain chaud et récupération (recherche PubMed infructueuse
 le 2026-08-15, à retenter), ratio push/pull dans un programme (recherche
 PubMed infructueuse le 2026-08-15, sujet plus proche du bon sens
 d'entraînement que de la littérature clinique, à traiter sans source si
-retenté), gestion du stress pré-compétition, syndrome du surentraînement
-(signes précoces), nutrition et qualité du sommeil au delà de la caféine,
+retenté), nutrition et qualité du sommeil au delà de la caféine,
 cyclisme/course à pied et interférence avec la force (angle complémentaire
 à l'axe déjà traité), tarification à la valeur vs à l'heure pour un coach,
 structurer un onboarding client qui réduit l'attrition précoce.
