@@ -21,15 +21,23 @@ import {
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 
+// Ordre pensé comme un argumentaire, pas une simple liste alphabétique de
+// modules (retour direct du 2026-08-15 : "le gars qui vient veut une
+// transformation, les gros points à mettre en avant c'est la formation et
+// l'accompagnement, y'a aussi les audits" — "programme nutrition" seul ne
+// vend rien, un vrai humain derrière et un vrai parcours, si). Coaching
+// live/audits et formations en tête, le reste (outils de suivi au
+// quotidien) ensuite : ce sont des modules réels et utiles, juste pas ce
+// qui fait venir quelqu'un.
 const FEATURES = [
+  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A avec un vrai coach" },
+  { icon: BookOpen, title: "5 formations complètes", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées, jamais un chatbot" },
+  { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
   { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },
-  { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { icon: ClipboardList, title: "Logbook séances", desc: "Enregistre tes performances en temps réel" },
-  { icon: BookOpen, title: "5 formations complètes", desc: "Bodybuilding, nutrition, training, business, psychologie" },
-  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
   { icon: Activity, title: "Tracker quotidien", desc: "Pas, sommeil, biométrie au jour le jour" },
-  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
   { icon: Users, title: "Communauté", desc: "Échange avec des membres aussi motivés que toi" },
   { icon: FlaskConical, title: "Science & recherche", desc: "Études et actualité sourcées, sans blabla" },
   { icon: Map, title: "Road Map", desc: "Tes objectifs et les étapes pour les atteindre" },
@@ -108,7 +116,7 @@ export default function HomePage() {
               lineHeight: 1.5,
             }}
           >
-            L&apos;espace de coaching bodybuilding tout-en-un : programmes, nutrition, suivi et formations pour progresser sérieusement.
+            Un vrai accompagnement, pas une appli de plus : coaching live, audits, formations complètes et un coach qui répond vraiment.
           </p>
         </div>
 
