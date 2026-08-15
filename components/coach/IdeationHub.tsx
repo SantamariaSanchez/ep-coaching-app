@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus } from "lucide-react";
+import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard } from "lucide-react";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
 import IdeationInspirations from "@/components/coach/IdeationInspirations";
+import IdeationScripts from "@/components/coach/IdeationScripts";
 import type { ContentIdea } from "@/lib/content-ideas";
-import type { IdeationNote, Inspiration } from "@/lib/coach-ideation";
+import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
 
-type Tab = "idees" | "notes" | "inspirations";
+type Tab = "idees" | "scripts" | "notes" | "inspirations";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
+  { id: "scripts", label: "Scripts", icon: Clapperboard },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
 ];
@@ -24,10 +26,12 @@ export default function IdeationHub({
   initialIdeas,
   initialNotes,
   initialInspirations,
+  initialScripts,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
   initialInspirations: Inspiration[];
+  initialScripts: CoachScript[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
 
@@ -61,6 +65,7 @@ export default function IdeationHub({
               <Icon size={13} />
               {label}
               {id === "idees" && initialIdeas.length > 0 && <Count n={initialIdeas.length} active={active} />}
+              {id === "scripts" && initialScripts.length > 0 && <Count n={initialScripts.length} active={active} />}
               {id === "notes" && initialNotes.length > 0 && <Count n={initialNotes.length} active={active} />}
               {id === "inspirations" && initialInspirations.length > 0 && <Count n={initialInspirations.length} active={active} />}
             </button>
@@ -69,6 +74,7 @@ export default function IdeationHub({
       </div>
 
       {tab === "idees" && <ContentStudio initialIdeas={initialIdeas} />}
+      {tab === "scripts" && <IdeationScripts initialScripts={initialScripts} />}
       {tab === "notes" && <IdeationNotes initialNotes={initialNotes} />}
       {tab === "inspirations" && <IdeationInspirations initialInspirations={initialInspirations} />}
     </div>

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
-import { getIdeationNotes, getInspirations } from "@/lib/coach-ideation";
+import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import IdeationHub from "@/components/coach/IdeationHub";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
@@ -17,10 +17,11 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations] = await Promise.all([
+  const [ideas, notes, inspirations, scripts] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
+    getCoachScripts(user.id),
   ]);
 
   return (
@@ -36,7 +37,7 @@ export default async function CoachStudioPage() {
         </p>
       </div>
 
-      <IdeationHub initialIdeas={ideas} initialNotes={notes} initialInspirations={inspirations} />
+      <IdeationHub initialIdeas={ideas} initialNotes={notes} initialInspirations={inspirations} initialScripts={scripts} />
     </div>
   );
 }

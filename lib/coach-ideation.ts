@@ -55,3 +55,30 @@ export async function getInspirations(coachId: string): Promise<Inspiration[]> {
     return [];
   }
 }
+
+export const SCRIPT_FORMATS = ["court", "long"] as const;
+export type ScriptFormat = (typeof SCRIPT_FORMATS)[number];
+
+export interface CoachScript {
+  id: string;
+  coach_id: string;
+  title: string;
+  format: ScriptFormat;
+  content: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
+  try {
+    const admin = createAdminClient();
+    const { data } = await admin
+      .from("coach_scripts")
+      .select("id, coach_id, title, format, content, created_at, updated_at")
+      .eq("coach_id", coachId)
+      .order("updated_at", { ascending: false });
+    return (data as CoachScript[]) ?? [];
+  } catch {
+    return [];
+  }
+}

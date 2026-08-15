@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
-import { INSPIRATION_PLATFORMS, type InspirationPlatform } from "@/lib/coach-ideation";
+import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat } from "@/lib/coach-ideation";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 // Axe 2 (VISION.md) : espace de création de contenu du coach.
@@ -221,6 +221,76 @@ export async function deleteInspiration(id: string): Promise<{ error?: string; s
 
   const admin = createAdminClient();
   const { error } = await admin.from("coach_inspirations").delete().eq("id", id).eq("coach_id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+// ── Scripts (Idéation) ───────────────────────────────────────────────────
+
+export async function createScript(input: {
+  title: string;
+  format: ScriptFormat;
+  content?: string;
+}): Promise<{ error?: string; success?: boolean; id?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const limited = await enforceRateLimit(`script-create:${guard.userId}`, PRESETS.write.limit, PRESETS.write.windowSeconds);
+  if (limited) return { error: "Trop de scripts créés d'un coup, réessaie dans un instant." };
+
+  const title = input.title.trim();
+  if (!title) return { error: "Titre requis." };
+  if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
+  if (!(SCRIPT_FORMATS as readonly string[]).includes(input.format)) return { error: "Format invalide." };
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("coach_scripts")
+    .insert({ coach_id: guard.userId, title, format: input.format, content: input.content?.trim() || null })
+    .select("id")
+    .single();
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true, id: data?.id };
+}
+
+export async function updateScript(
+  id: string,
+  updates: { title?: string; format?: ScriptFormat; content?: string }
+): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const patch: Record<string, string | null> = { updated_at: new Date().toISOString() };
+  if (updates.title !== undefined) {
+    const title = updates.title.trim();
+    if (!title) return { error: "Titre requis." };
+    if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
+    patch.title = title;
+  }
+  if (updates.format !== undefined) {
+    if (!(SCRIPT_FORMATS as readonly string[]).includes(updates.format)) return { error: "Format invalide." };
+    patch.format = updates.format;
+  }
+  if (updates.content !== undefined) patch.content = updates.content.trim() || null;
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
+export async function deleteScript(id: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("coach_scripts").delete().eq("id", id).eq("coach_id", guard.userId);
   if (error) return { error: error.message };
 
   revalidatePath("/dashboard/coach/studio");
