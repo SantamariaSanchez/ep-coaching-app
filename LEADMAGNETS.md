@@ -178,12 +178,13 @@ production locale.
 | 2026-08-15 | Vague F | 2 | Alcool et objectifs physiques (synthèse protéique -24 à -37% post exercice), foam rolling (mobilité et récupération perçue réelles, mythe du fascia relâché écarté). |
 | 2026-08-15 | Vague G | 2 | Unilatéral vs bilatéral (déficit bilatéral + cross-education, deux mécanismes distincts), créatine et cerveau (fatigue cognitive au-delà du muscle). |
 | 2026-08-15 | Vague H | 2 | Caféine soutenue par la littérature (dose-réponse, 48 études), marche et santé mentale (revue de portée, 13 000+ études criblées). |
-| **Total au 2026-08-15** | | **87** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague I | 1 | Podomètre vs montre connectée (fiabilité, deux études de validation avec chiffres précis d'erreur par appareil). |
+| **Total au 2026-08-15** | | **88** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
 Nutrition 23, Entraînement 20, Psychologie 12, Général 10, Récupération 9,
-Entrepreneuriat 6, Steps & activité quotidienne 7.
+Entrepreneuriat 6, Steps & activité quotidienne 8.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -230,7 +231,8 @@ individuelle à l'entraînement.
 
 **Steps & activité quotidienne** : combien de pas viser, NEAT, augmenter
 ses pas au quotidien, profil d'activité, marche après repas, escaliers vs
-ascenseur, marche et santé mentale.
+ascenseur, marche et santé mentale, podomètre vs montre connectée
+(fiabilité).
 
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
@@ -282,7 +284,9 @@ cerveau : Gordji-Nejad et al. 2024 (DOI 10.1038/s41598-024-54249-9), Roschel
 et al. 2021, revue (DOI 10.3390/nu13020586). Caféine : Martins et al. 2026,
 méta-analyse dose-réponse 48 études (DOI 10.3390/nu18121989). Marche et
 santé mentale : Kelly et al. 2018, revue de portée (DOI
-10.1136/bjsports-2017-098827).
+10.1136/bjsports-2017-098827). Podomètre vs montre : Brodie et al. 2018
+(DOI 10.1016/j.mehy.2018.07.015), Höchsmann et al. 2018, étude de validation
+(DOI 10.1111/sms.13074).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -295,8 +299,7 @@ santé mentale : Kelly et al. 2018, revue de portée (DOI
 - Récupération : respiration et système nerveux, gestion du jet lag pour
   les athlètes qui voyagent, blessures et retour progressif à
   l'entraînement.
-- Steps & activité quotidienne : podomètre vs montre connectée (fiabilité),
-  activité physique au bureau.
+- Steps & activité quotidienne : activité physique au bureau.
 - Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
   auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
   ne convient plus, transition post-objectif (après une compétition, un
