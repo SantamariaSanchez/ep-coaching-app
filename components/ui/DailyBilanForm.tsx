@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
-import { Check, Scale, Dumbbell, Moon, Apple, Footprints, BedDouble } from "lucide-react";
+import { Check, Scale, Dumbbell, Moon, Apple, Footprints, BedDouble, Pencil, Sun, MoonStar } from "lucide-react";
 
 export type BilanAction = (
   prev: { error?: string; success?: boolean } | null,
@@ -379,6 +379,98 @@ export function NutritionCard({
   );
 }
 
+// ── Résumés "c'est fait" ────────────────────────────────────────────────
+// Demande explicite du 2026-08-15 : une fois le bilan du matin/soir
+// rempli pour aujourd'hui, plus besoin de revoir tout le formulaire à
+// chaque visite — "c'est fait, c'est fait". Un résumé compact avec un
+// seul bouton Modifier, le formulaire complet ne revient que sur demande
+// (ou tant qu'il manque des champs obligatoires, voir lib/daily-gate.ts).
+
+const summaryStat = { fontSize: 11, color: "rgba(245,237,237,0.35)" };
+const summaryValue = { fontSize: 15, fontWeight: 800, color: "#F5EDED" };
+
+function EditButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        display: "flex", alignItems: "center", gap: 5,
+        background: "transparent", border: "1px solid rgba(245,237,237,0.15)",
+        borderRadius: 999, padding: "5px 12px", fontSize: 10.5, fontWeight: 700,
+        color: "rgba(245,237,237,0.5)", cursor: "pointer",
+      }}
+    >
+      <Pencil size={11} /> Modifier
+    </button>
+  );
+}
+
+function MorningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () => void }) {
+  return (
+    <div className="ep-card" style={{ padding: "16px 16px", display: "flex", alignItems: "center", gap: 8 }}>
+      <div
+        style={{
+          width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+          background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}
+      >
+        <Sun size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+      </div>
+      <div style={{ flex: 1, display: "flex", gap: 20 }}>
+        <div>
+          <p style={summaryStat}>Poids</p>
+          <p style={summaryValue}>{existing.weight_morning} kg</p>
+        </div>
+        <div>
+          <p style={summaryStat}>Sommeil</p>
+          <p style={summaryValue}>{existing.sleep_hours} h · {existing.sleep_rating}%</p>
+        </div>
+      </div>
+      <EditButton onClick={onEdit} />
+    </div>
+  );
+}
+
+function EveningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () => void }) {
+  return (
+    <div className="ep-card" style={{ padding: "16px 16px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: existing.training_name ? 10 : 0 }}>
+        <div
+          style={{
+            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+            background: "rgba(74,222,128,0.12)", border: "1px solid rgba(74,222,128,0.3)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <MoonStar size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
+        </div>
+        <div style={{ flex: 1, display: "flex", gap: 20, flexWrap: "wrap" }}>
+          {existing.steps != null && (
+            <div>
+              <p style={summaryStat}>Pas</p>
+              <p style={summaryValue}>{existing.steps.toLocaleString("fr-FR")}</p>
+            </div>
+          )}
+          {existing.calories_kcal != null && (
+            <div>
+              <p style={summaryStat}>Kcal</p>
+              <p style={summaryValue}>{existing.calories_kcal}</p>
+            </div>
+          )}
+        </div>
+        <EditButton onClick={onEdit} />
+      </div>
+      {existing.training_name && (
+        <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: 0 }}>
+          {existing.training_name === "Repos" ? "Jour de repos" : `Séance : ${existing.training_name}`}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function DailyBilanForm({
   today,
   existing,
@@ -392,13 +484,43 @@ export default function DailyBilanForm({
   nutritionTotals?: NutritionTotals | null;
   autoSteps?: number | null;
 }) {
+  const morningDone = !!existing && existing.weight_morning != null && existing.sleep_hours != null && existing.sleep_rating != null;
+  const eveningDone = !!existing && existing.steps != null && existing.digestion != null && existing.stress != null && existing.hunger != null;
+
+  const [editingMorning, setEditingMorning] = useState(!morningDone);
+  const [editingEvening, setEditingEvening] = useState(!eveningDone);
+
+  // MASTERCLASS.md Axe E : si le bilan du jour change ailleurs (coach,
+  // autre onglet) après le premier rendu, revient automatiquement en vue
+  // résumé/formulaire selon le nouvel état plutôt que de rester figé sur
+  // le choix fait à l'ouverture de la page.
+  useEffect(() => {
+    setEditingMorning(!morningDone);
+  }, [morningDone]);
+  useEffect(() => {
+    setEditingEvening(!eveningDone);
+  }, [eveningDone]);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <WeightCard today={today} existing={existing} action={action} />
-      <SleepCard today={today} existing={existing} action={action} />
-      <TrainingCard today={today} existing={existing} action={action} />
-      <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
-      <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />
+      {morningDone && !editingMorning ? (
+        <MorningSummary existing={existing} onEdit={() => setEditingMorning(true)} />
+      ) : (
+        <>
+          <WeightCard today={today} existing={existing} action={action} />
+          <SleepCard today={today} existing={existing} action={action} />
+        </>
+      )}
+
+      {eveningDone && !editingEvening ? (
+        <EveningSummary existing={existing} onEdit={() => setEditingEvening(true)} />
+      ) : (
+        <>
+          <TrainingCard today={today} existing={existing} action={action} />
+          <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
+          <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />
+        </>
+      )}
     </div>
   );
 }
