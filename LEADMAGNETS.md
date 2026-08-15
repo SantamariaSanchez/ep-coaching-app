@@ -139,19 +139,20 @@ générique. Ça ne suffit plus. Pour toute nouvelle entrée format `guide` :
   et d'action ne doit jamais se faire au prix d'une affirmation non
   vérifiée sur PubMed.
 
-Rattrapage des 75 entrées déjà publiées : 12 réécrites au nouveau standard à
+Rattrapage des 75 entrées déjà publiées : 14 réécrites au nouveau standard à
 date (2026-08-15) — `guide-procrastination-avant-seance`,
 `guide-comparaison-reseaux`, `guide-red-flags-coach`, `guide-body-checking`,
 `guide-syndrome-imposteur`, `guide-lancer-offre-coaching`,
 `guide-fideliser-clients`, `guide-30-premiers-jours`,
 `guide-gestion-temps-independant`, `guide-temps-administratif-coach`,
-`guide-tarifs-coaching`, `guide-premiers-clients-sans-budget`. Les 11
+`guide-tarifs-coaching`, `guide-premiers-clients-sans-budget`,
+`guide-lire-progression`, `guide-charge-mentale-vie-sport`. Les 13
 dernières choisies parmi les guides à 0 `sources` (Psychologie /
 Entrepreneuriat / Général) pour pouvoir enrichir en `actionSteps` sans
 ajouter la moindre affirmation scientifique non vérifiée — uniquement de la
 structuration de conseils déjà présents en protocole numéroté, plus un
 `callout` par entrée.
-Reste 63 entrées à réécrire, dont une partie sourcée (PubMed) qui demandera
+Reste 61 entrées à réécrire, dont une partie sourcée (PubMed) qui demandera
 de relire chaque source avant d'ajouter du contenu, donc plus lent — à
 prioriser avant de continuer la vague de nouvelles entrées si le temps le
 permet, sinon la prochaine session de production locale.
