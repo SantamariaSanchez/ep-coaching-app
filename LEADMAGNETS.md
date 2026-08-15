@@ -172,10 +172,12 @@ production locale.
 | 2026-08-14 | Vague A | 22 | Recréation à l'identique (même sujet, nouveau format) des 22 ressources manuelles uniques envoyées à la main sur `/ressources` (table `resources`, fichiers HTML/PDF). Les 29 lignes originales (22 sujets uniques + doublons de renvoi) supprimées de `resources` une fois les remplacements en ligne. |
 | 2026-08-14 | Vague B | 20 | Premiers contenus vraiment nouveaux : 5 Steps & activité quotidienne, 5 Psychologie, 6 Entrepreneuriat (vertical entièrement nouvelle), 4 sujets plus précis (mollets, DOMS, cycle menstruel, répartition glucides). |
 | **Total au 2026-08-14** | | **75** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague C | 2 | Nouveaux sujets sourcés PubMed après épuisement de la réserve à 0 `sources` : interférence cardio/hypertrophie, gestion des fringales. |
+| **Total au 2026-08-15** | | **77** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 18, Entraînement 17, Psychologie 12, Général 10, Récupération 7,
+Nutrition 19, Entraînement 18, Psychologie 12, Général 10, Récupération 7,
 Entrepreneuriat 6, Steps & activité quotidienne 5.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -189,14 +191,14 @@ hypertrophie vs force, échauffement, niveau (débutant/intermédiaire/avancé),
 deload, progression d'intensité par cycle, fréquence d'entraînement, cause
 de stagnation, diagnostic programme, tension vs pump, supersets
 antagonistes, temps de repos, sortir d'un plateau, hypertrophie mollets,
-cycle menstruel et entraînement.
+cycle menstruel et entraînement, interférence cardio/hypertrophie.
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
 besoin en déficit, collations protéinées, diagnostic nutrition, fenêtre
 anabolique, rythme de sèche, protéines en sèche, cardio à jeun, sommeil et
 sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
-des glucides autour de l'entraînement.
+des glucides autour de l'entraînement, gestion des fringales.
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -245,19 +247,23 @@ Marche postprandiale : Dunstan 2012 (DOI 10.2337/dc11-1931), Moore 2021
 10.1186/s12967-024-05738-y), Eglseer 2023 (DOI 10.1016/j.advnut.2023.04.001),
 Richardson 2023 (DOI 10.3390/nu15040985). Variabilité individuelle : Yang
 2024 (DOI 10.1152/physiolgenomics.00019.2024). Cycle menstruel et
-entraînement : Mikkonen 2023 (DOI 10.1007/s40279-023-01955-5).
+entraînement : Mikkonen 2023 (DOI 10.1007/s40279-023-01955-5). Interférence
+cardio/hypertrophie : Wilson et al. 2012, méta-analyse (DOI
+10.1519/JSC.0b013e31823a3e2d), Terzis et al. 2016 (DOI
+10.1007/s00421-016-3369-z). Fringales/appétit : Weigle et al. 2005, régime
+hyperprotéiné (DOI 10.1093/ajcn.82.1.41), St-Onge et al. 2012, IRM et
+restriction de sommeil (DOI 10.3945/ajcn.111.027383).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
 - Entraînement : périodisation par blocs, unilatéral vs bilatéral, warm up
-  spécifique par groupe musculaire, cardio et interférence avec
-  l'hypertrophie, entraînement à domicile avec matériel limité, gestion
-  des blessures courantes (épaule, genou, lombaires) en musculation,
-  progression sur les mouvements au poids du corps.
+  spécifique par groupe musculaire, entraînement à domicile avec matériel
+  limité, gestion des blessures courantes (épaule, genou, lombaires) en
+  musculation, progression sur les mouvements au poids du corps.
 - Nutrition : végétarien/végétalien en musculation, alcool et objectifs
   physiques, grossesse et activité physique, alimentation étudiante à
   petit budget, suppléments réellement soutenus par la littérature (créatine,
-  caféine) vs marketing, gestion des fringales.
+  caféine) vs marketing.
 - Récupération : massage et rouleau de massage (foam rolling), bains
   froids/glace, respiration et système nerveux, gestion du jet lag pour
   les athlètes qui voyagent, blessures et retour progressif à
