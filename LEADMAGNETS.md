@@ -180,12 +180,13 @@ production locale.
 | 2026-08-15 | Vague H | 2 | Caféine soutenue par la littérature (dose-réponse, 48 études), marche et santé mentale (revue de portée, 13 000+ études criblées). |
 | 2026-08-15 | Vague I | 1 | Podomètre vs montre connectée (fiabilité, deux études de validation avec chiffres précis d'erreur par appareil). |
 | 2026-08-15 | Vague J | 2 | Respiration et système nerveux (3 essais contrôlés récents, effet réel mais plus limité que le discours bien-être habituel), jet lag pour athlètes qui voyagent (asymétrie est/ouest chiffrée). |
-| **Total au 2026-08-15** | | **90** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague K | 2 | Grossesse et activité physique (cadrage médical prudent, 2 études récentes), activité physique au bureau (bureau assis-debout + micro-pauses de marche, chiffres précis). |
+| **Total au 2026-08-15** | | **92** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 20, Psychologie 12, Général 10, Récupération 11,
-Entrepreneuriat 6, Steps & activité quotidienne 8.
+Nutrition 23, Entraînement 20, Psychologie 12, Général 11, Récupération 11,
+Entrepreneuriat 6, Steps & activité quotidienne 9.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
@@ -229,12 +230,12 @@ pour athlètes qui voyagent (asymétrie est/ouest).
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
 30 premiers jours, salle ou maison, structure de la semaine, réponse
-individuelle à l'entraînement.
+individuelle à l'entraînement, grossesse et activité physique.
 
 **Steps & activité quotidienne** : combien de pas viser, NEAT, augmenter
 ses pas au quotidien, profil d'activité, marche après repas, escaliers vs
 ascenseur, marche et santé mentale, podomètre vs montre connectée
-(fiabilité).
+(fiabilité), activité physique au bureau.
 
 **Entrepreneuriat** : lancer une offre de coaching, tarifs, checklist avant
 de se lancer, fidéliser sans dépendre uniquement de l'acquisition, profil
@@ -293,7 +294,10 @@ santé mentale : Kelly et al. 2018, revue de portée (DOI
 10.1016/j.biopsycho.2026.109254), Michels et al. 2025 (DOI
 10.1097/PSY.0000000000001448). Jet lag : Charest et al. 2022, 17 088 matchs
 NHL (DOI 10.1016/j.jsams.2022.10.005), Maynard et al. 2025, cohorte WTA (DOI
-10.1177/19417381251387717).
+10.1177/19417381251387717). Grossesse/activité physique : Bains et al. 2025
+(DOI 10.1007/s40279-025-02223-4), Friedman et al. 2025, CrossFit et
+grossesse (DOI 10.1016/j.ejogrb.2025.114840). Activité au bureau : Graves
+et al. 2015, bureau assis-debout (DOI 10.1186/s12889-015-2469-8).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -301,10 +305,8 @@ NHL (DOI 10.1016/j.jsams.2022.10.005), Maynard et al. 2025, cohorte WTA (DOI
   matériel limité, gestion des blessures courantes (épaule, genou,
   lombaires) en musculation, progression sur les mouvements au poids du
   corps.
-- Nutrition : grossesse et activité physique, alimentation étudiante à
-  petit budget.
+- Nutrition : alimentation étudiante à petit budget.
 - Récupération : blessures et retour progressif à l'entraînement.
-- Steps & activité quotidienne : activité physique au bureau.
 - Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
   auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
   ne convient plus, transition post-objectif (après une compétition, un
