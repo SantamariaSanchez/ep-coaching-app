@@ -179,11 +179,12 @@ production locale.
 | 2026-08-15 | Vague G | 2 | Unilatéral vs bilatéral (déficit bilatéral + cross-education, deux mécanismes distincts), créatine et cerveau (fatigue cognitive au-delà du muscle). |
 | 2026-08-15 | Vague H | 2 | Caféine soutenue par la littérature (dose-réponse, 48 études), marche et santé mentale (revue de portée, 13 000+ études criblées). |
 | 2026-08-15 | Vague I | 1 | Podomètre vs montre connectée (fiabilité, deux études de validation avec chiffres précis d'erreur par appareil). |
-| **Total au 2026-08-15** | | **88** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-15 | Vague J | 2 | Respiration et système nerveux (3 essais contrôlés récents, effet réel mais plus limité que le discours bien-être habituel), jet lag pour athlètes qui voyagent (asymétrie est/ouest chiffrée). |
+| **Total au 2026-08-15** | | **90** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 23, Entraînement 20, Psychologie 12, Général 10, Récupération 9,
+Nutrition 23, Entraînement 20, Psychologie 12, Général 10, Récupération 11,
 Entrepreneuriat 6, Steps & activité quotidienne 8.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
@@ -222,7 +223,8 @@ saine à la nourriture, body checking, type de motivation
 quotidienne, diagnostic sommeil, position étirée / étirements, DOMS et
 indicateur d'efficacité, bains froids (courbatures vs gains long terme),
 foam rolling (mobilité/récupération perçue, pas un effet mécanique sur le
-fascia).
+fascia), respiration et système nerveux (effet réel mais limité), jet lag
+pour athlètes qui voyagent (asymétrie est/ouest).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -286,7 +288,12 @@ méta-analyse dose-réponse 48 études (DOI 10.3390/nu18121989). Marche et
 santé mentale : Kelly et al. 2018, revue de portée (DOI
 10.1136/bjsports-2017-098827). Podomètre vs montre : Brodie et al. 2018
 (DOI 10.1016/j.mehy.2018.07.015), Höchsmann et al. 2018, étude de validation
-(DOI 10.1111/sms.13074).
+(DOI 10.1111/sms.13074). Respiration/système nerveux : Raidl et al. 2026
+(DOI 10.1123/ijspp.2025-0138), Minjoz et al. 2026 (DOI
+10.1016/j.biopsycho.2026.109254), Michels et al. 2025 (DOI
+10.1097/PSY.0000000000001448). Jet lag : Charest et al. 2022, 17 088 matchs
+NHL (DOI 10.1016/j.jsams.2022.10.005), Maynard et al. 2025, cohorte WTA (DOI
+10.1177/19417381251387717).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
@@ -296,9 +303,7 @@ santé mentale : Kelly et al. 2018, revue de portée (DOI
   corps.
 - Nutrition : grossesse et activité physique, alimentation étudiante à
   petit budget.
-- Récupération : respiration et système nerveux, gestion du jet lag pour
-  les athlètes qui voyagent, blessures et retour progressif à
-  l'entraînement.
+- Récupération : blessures et retour progressif à l'entraînement.
 - Steps & activité quotidienne : activité physique au bureau.
 - Psychologie : perfectionnisme, comparaison sociale sur les réseaux,
   auto-sabotage, discipline vs motivation au quotidien, gérer un coach qui
