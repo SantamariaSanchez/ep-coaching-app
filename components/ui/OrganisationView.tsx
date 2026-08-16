@@ -3,9 +3,10 @@
 import { useState } from "react";
 import {
   Building2, Users, GraduationCap, FileText, ShieldAlert,
-  ChevronDown, Copy, Check, Mail, Inbox,
+  ChevronDown, Copy, Check, Mail, Inbox, StickyNote, ListChecks,
 } from "lucide-react";
-import type { JobApplication, ApplicationStatus } from "@/lib/job-applications";
+import type { JobApplication, ApplicationStatus, OnboardingStepState } from "@/lib/job-applications";
+import { ONBOARDING_STEPS } from "@/lib/job-applications";
 
 // Vue interactive de la page Administration > Organisation. Portée en
 // composant client à part le 2026-08-15 suite au retour direct : "au lieu
@@ -223,16 +224,68 @@ function fmtAppDate(iso: string): string {
   );
 }
 
+function OnboardingChecklist({
+  steps,
+  onToggle,
+}: {
+  steps: OnboardingStepState[];
+  onToggle: (stepKey: string, done: boolean) => void;
+}) {
+  const doneSet = new Set(steps.filter((s) => s.done).map((s) => s.step_key));
+  const doneCount = ONBOARDING_STEPS.filter((s) => doneSet.has(s.key)).length;
+  return (
+    <div className="mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15">
+      <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2 flex items-center gap-1.5">
+        <ListChecks size={11} className="text-[#4ade80]" />
+        Parcours d&apos;intégration · {doneCount}/{ONBOARDING_STEPS.length}
+      </p>
+      <div className="space-y-1">
+        {ONBOARDING_STEPS.map((step) => {
+          const done = doneSet.has(step.key);
+          return (
+            <button
+              key={step.key}
+              onClick={() => onToggle(step.key, !done)}
+              className="w-full flex items-center gap-2 text-left py-0.5"
+            >
+              <span
+                className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                  done ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
+                }`}
+              >
+                {done && <Check size={10} className="text-[#0a1f0a]" strokeWidth={3} />}
+              </span>
+              <span className={`text-[11px] ${done ? "text-[#F5EDED]/35 line-through" : "text-[#F5EDED]/65"}`}>
+                {step.label}
+              </span>
+              <span className="text-[9px] text-[#F5EDED]/25 ml-auto flex-shrink-0">{step.when}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function ApplicationRow({
   application,
   roleTitle,
   onChange,
+  onSaveNotes,
+  onboardingSteps,
+  onToggleOnboarding,
 }: {
   application: JobApplication;
   roleTitle: string;
   onChange: (status: ApplicationStatus) => void;
+  onSaveNotes: (notes: string) => void;
+  onboardingSteps: OnboardingStepState[];
+  onToggleOnboarding: (stepKey: string, done: boolean) => void;
 }) {
   const meta = APPLICATION_STATUS_META[application.status];
+  const [notes, setNotes] = useState(application.notes ?? "");
+  const [showNotes, setShowNotes] = useState(!!application.notes);
+
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
       <div className="flex items-start justify-between gap-2 mb-1">
@@ -275,6 +328,33 @@ function ApplicationRow({
           );
         })}
       </div>
+
+      {/* Notes libres (2026-08-17) : repliées par défaut si vides, pour ne
+          pas alourdir chaque carte, toujours visibles si déjà remplies. */}
+      {showNotes ? (
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          onBlur={() => onSaveNotes(notes)}
+          placeholder="Notes d'entretien, impressions, points à vérifier…"
+          rows={2}
+          className="w-full mt-2.5 bg-[#150000] border border-[#890404]/25 rounded-lg px-2.5 py-2 text-[11px] text-[#F5EDED]/70 placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
+        />
+      ) : (
+        <button
+          onClick={() => setShowNotes(true)}
+          className="mt-2.5 inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+        >
+          <StickyNote size={11} /> Ajouter une note
+        </button>
+      )}
+
+      {application.status === "acceptee" && (
+        <OnboardingChecklist
+          steps={onboardingSteps}
+          onToggle={onToggleOnboarding}
+        />
+      )}
     </div>
   );
 }
@@ -311,6 +391,9 @@ export default function OrganisationView({
   applications,
   roleTitleByKey,
   setApplicationStatus,
+  setApplicationNotes,
+  onboardingByApplication,
+  toggleOnboardingStep,
 }: {
   poles: Pole[];
   timeline: TimelineStep[];
@@ -321,6 +404,9 @@ export default function OrganisationView({
   applications: JobApplication[];
   roleTitleByKey: Record<string, string>;
   setApplicationStatus: (applicationId: string, status: ApplicationStatus) => Promise<{ error?: string }>;
+  setApplicationNotes: (applicationId: string, notes: string) => Promise<{ error?: string }>;
+  onboardingByApplication: Record<string, OnboardingStepState[]>;
+  toggleOnboardingStep: (applicationId: string, stepKey: string, done: boolean) => Promise<{ error?: string }>;
 }) {
   const totalRoles = poles.reduce((sum, p) => sum + p.roles.length, 0);
   const [statuses, setStatuses] = useState<Record<string, RoleStatus>>(initialStatuses);
@@ -337,6 +423,26 @@ export default function OrganisationView({
     const result = await setApplicationStatus(id, status);
     if (result.error && backup) {
       setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: backup } : a)));
+    }
+  }
+
+  // Notes : pas de retour en arrière optimiste affiché (un échec silencieux
+  // ici ne casse rien de visible), juste une tentative best effort au blur.
+  function handleSaveNotes(id: string, notes: string) {
+    setApplicationNotes(id, notes);
+  }
+
+  const [onboarding, setOnboarding] = useState<Record<string, OnboardingStepState[]>>(onboardingByApplication);
+  async function handleToggleOnboarding(applicationId: string, stepKey: string, done: boolean) {
+    const backup = onboarding[applicationId] ?? [];
+    setOnboarding((prev) => {
+      const current = prev[applicationId] ?? [];
+      const withoutStep = current.filter((s) => s.step_key !== stepKey);
+      return { ...prev, [applicationId]: [...withoutStep, { step_key: stepKey, done }] };
+    });
+    const result = await toggleOnboardingStep(applicationId, stepKey, done);
+    if (result.error) {
+      setOnboarding((prev) => ({ ...prev, [applicationId]: backup }));
     }
   }
 
@@ -454,6 +560,9 @@ rapides pour être sûr qu'on te fasse gagner du temps :
                   application={app}
                   roleTitle={roleTitleByKey[app.role_key] ?? app.role_key}
                   onChange={(s) => handleChangeApplicationStatus(app.id, s)}
+                  onSaveNotes={(notes) => handleSaveNotes(app.id, notes)}
+                  onboardingSteps={onboarding[app.id] ?? []}
+                  onToggleOnboarding={(stepKey, done) => handleToggleOnboarding(app.id, stepKey, done)}
                 />
               ))}
             </div>

@@ -70,3 +70,76 @@ export async function setApplicationStatus(
     return { error: "Erreur inattendue." };
   }
 }
+
+// Notes libres par candidature (2026-08-17, "je veux une entreprise pas
+// juste ce qu'il y a") — un recrutement réel s'accompagne de notes
+// d'entretien, pas seulement d'un statut binaire.
+export async function setApplicationNotes(
+  applicationId: string,
+  notes: string
+): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("job_applications")
+      .update({ notes: notes.trim() || null })
+      .eq("id", applicationId)
+      .eq("owner_id", guard.userId);
+    if (error) {
+      console.error("setApplicationNotes error:", error);
+      return { error: "Erreur lors de la sauvegarde." };
+    }
+    revalidatePath("/dashboard/coach/admin/organisation");
+    return {};
+  } catch (e) {
+    console.error("setApplicationNotes error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Coche/décoche une étape du parcours d'intégration pour un candidat
+// accepté (voir lib/job-applications.ts::ONBOARDING_STEPS). La RLS sur
+// onboarding_steps passe par job_applications.owner_id, mais on revérifie
+// quand même ici que la candidature appartient bien au fondateur avant
+// d'upsert, pour un message d'erreur clair plutôt qu'un échec RLS muet.
+export async function toggleOnboardingStep(
+  applicationId: string,
+  stepKey: string,
+  done: boolean
+): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { data: application } = await supabase
+      .from("job_applications")
+      .select("id")
+      .eq("id", applicationId)
+      .eq("owner_id", guard.userId)
+      .maybeSingle();
+    if (!application) return { error: "Candidature introuvable." };
+
+    const { error } = await supabase.from("onboarding_steps").upsert(
+      {
+        application_id: applicationId,
+        step_key: stepKey,
+        done,
+        done_at: done ? new Date().toISOString() : null,
+      },
+      { onConflict: "application_id,step_key" }
+    );
+    if (error) {
+      console.error("toggleOnboardingStep error:", error);
+      return { error: "Erreur lors de la sauvegarde." };
+    }
+    revalidatePath("/dashboard/coach/admin/organisation");
+    return {};
+  } catch (e) {
+    console.error("toggleOnboardingStep error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}

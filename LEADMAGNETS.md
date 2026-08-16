@@ -195,6 +195,8 @@ production locale.
 | 2026-08-15 | Vague W | 2 | La force améliore l'endurance (angle complémentaire à l'axe interférence déjà traité), tarification à la valeur vs à l'heure pour un coach (non sourcé). |
 | 2026-08-15 | Vague X | 1 | Onboarding client et attrition précoce (non sourcé) — ferme la liste de candidats compilée plus tôt dans la session. |
 | **Total au 2026-08-15** | | **117** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-17 | Vague Y | 3 | Reprise après la pause du chantier CROISSANCE. Musculation et alimentation végétarienne/végane (anabolisme théorique vs gains réels sur la durée, créatine et récupération), sauna et récupération (cardiovasculaire sur 20 ans de suivi + performance sportive), marche post-repas et glycémie (timing, fractionnement, micro-doses d'escaliers). Referme les 3 derniers thèmes du backlog du 2026-08-15. |
+| **Total au 2026-08-17** | | **120** | Sur 1000 visés, échéance 2026-09-13. |
 
 ## Répartition actuelle par catégorie
 
@@ -368,19 +370,23 @@ seul thème du backlog initial encore ouvert).
 
 Cette deuxième liste de candidats est maintenant épuisée elle aussi (2
 thèmes traités sans source PubMed faute de littérature exploitable trouvée,
-documenté ci-dessous). Nouveaux thèmes restants ou à explorer pour la
-prochaine session :
+documenté ci-dessous). Mise à jour du 2026-08-17 : végétarisme et sauna,
+qui semblaient sans bonne source le 2026-08-15, ont en fait donné de très
+bons résultats avec des termes de recherche anglais plus larges
+("plant-based diet exercise recovery" plutôt que la formulation FR
+littéralement traduite, "sauna bathing cardiovascular mortality" plutôt que
+juste "sauna recovery") — retenir cette leçon : une recherche PubMed
+infructueuse justifie de reformuler la requête avant de conclure à
+l'absence de littérature, pas de l'abandonner après un seul essai.
 
-- Entraînement : végétarisme et récupération sportive (à rechercher),
-  progression sur les mouvements au poids du corps (aucune source trouvée
-  malgré plusieurs recherches le 2026-08-15).
-- Récupération : sauna/bain chaud et récupération (recherche PubMed
-  infructueuse le 2026-08-15, à retenter avec d'autres termes), nutrition
-  et qualité du sommeil au delà de la caféine (magnésium trouvé uniquement
-  en population diabétique, à retenter en population générale).
-- Entraînement (non sourcé si retenté) : ratio push/pull dans un programme
-  (recherche PubMed infructueuse, sujet plus proche du bon sens
-  d'entraînement que de la littérature clinique).
+- Récupération : nutrition et qualité du sommeil au delà de la caféine
+  (magnésium trouvé uniquement en population diabétique le 2026-08-15, à
+  retenter en population générale).
+- Entraînement : progression sur les mouvements au poids du corps (toujours
+  sans source malgré plusieurs recherches), ratio push/pull dans un
+  programme (recherche PubMed infructueuse, sujet plus proche du bon sens
+  d'entraînement que de la littérature clinique, à traiter sans source si
+  retenté).
 
 Au delà de ces thèmes précis, la production continue peut aussi repartir
 des sous-catégories les moins couvertes (voir répartition par catégorie

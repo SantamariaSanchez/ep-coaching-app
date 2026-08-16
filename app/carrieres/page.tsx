@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronLeft, Briefcase } from "lucide-react";
+import { ChevronLeft, Briefcase, GraduationCap, Rocket, MessageCircle } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import { POLES } from "@/lib/org-roles";
 import { getPlatformOwnerId } from "@/lib/job-applications";
@@ -60,6 +60,36 @@ export default async function CarrieresPage() {
           Coaching, sales, contenu, produit, opérations : voici tous les postes ouverts en ce
           moment. Postule directement, on te recontacte par email.
         </p>
+      </div>
+
+      {/* Retour direct 2026-08-17 : la page listait les postes sans jamais
+          vendre l'opportunité, "jamais de la vie il voit ça il va
+          postuler". Trois points concrets et vérifiables (pas de chiffre
+          d'effectif ou d'avantage inventé), avant la liste des postes. */}
+      <div className="grid sm:grid-cols-3 gap-3 mb-8">
+        {[
+          {
+            icon: GraduationCap,
+            title: "Formation avant embauche",
+            desc: "Tu apprends sur du contenu réel de l'entreprise avant d'être jugé sur des résultats, pas jeté dans le vide.",
+          },
+          {
+            icon: Rocket,
+            title: "Une équipe qui se construit maintenant",
+            desc: "Tu arrives tôt : ton poste se façonne avec toi, pas une fiche figée écrite par quelqu'un d'autre il y a 5 ans.",
+          },
+          {
+            icon: MessageCircle,
+            title: "Accès direct au fondateur",
+            desc: "Équipe encore petite, pas de hiérarchie à traverser pour être entendu ou pour progresser vite.",
+          },
+        ].map(({ icon: Icon, title, desc }) => (
+          <div key={title} className="bg-[#150000] border border-[#890404]/20 rounded-xl p-4">
+            <Icon size={16} className="text-[#E01E1E] mb-2" />
+            <p className="text-[12px] font-bold text-white mb-1">{title}</p>
+            <p className="text-[11px] text-[#F5EDED]/40 leading-relaxed">{desc}</p>
+          </div>
+        ))}
       </div>
 
       <CareersClient poles={POLES} statuses={statuses} />

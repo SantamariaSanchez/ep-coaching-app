@@ -5,8 +5,8 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import OrganisationView, { type RoleStatus } from "@/components/ui/OrganisationView";
 import { POLES } from "@/lib/org-roles";
-import { getJobApplications } from "@/lib/job-applications";
-import { setRoleStatus, setApplicationStatus } from "./actions";
+import { getJobApplications, getOnboardingStepsByApplication } from "@/lib/job-applications";
+import { setRoleStatus, setApplicationStatus, setApplicationNotes, toggleOnboardingStep } from "./actions";
 
 // Réservé au propriétaire de la plateforme (comme le reste du groupe
 // Administration) — organigramme de recrutement, modèle de formation avant
@@ -88,6 +88,8 @@ export default async function OrganisationAdminPage() {
   }
 
   const applications = await getJobApplications(user.id);
+  const acceptedIds = applications.filter((a) => a.status === "acceptee").map((a) => a.id);
+  const onboardingByApplication = await getOnboardingStepsByApplication(acceptedIds);
   const roleTitleByKey: Record<string, string> = {};
   for (const pole of POLES) {
     for (const role of pole.roles) roleTitleByKey[role.key] = role.title;
@@ -133,6 +135,9 @@ export default async function OrganisationAdminPage() {
         applications={applications}
         roleTitleByKey={roleTitleByKey}
         setApplicationStatus={setApplicationStatus}
+        setApplicationNotes={setApplicationNotes}
+        onboardingByApplication={onboardingByApplication}
+        toggleOnboardingStep={toggleOnboardingStep}
       />
     </div>
   );
