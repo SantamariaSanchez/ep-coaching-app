@@ -117,6 +117,7 @@ export default function ProgramPresetSelector({
               <div className="px-4 pb-2">
                 <button
                   onClick={() => setExpanded(isExpanded ? null : preset.id)}
+                  aria-expanded={isExpanded}
                   className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors py-1"
                 >
                   {isExpanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}

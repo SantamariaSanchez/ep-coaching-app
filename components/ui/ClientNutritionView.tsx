@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
+import { onKeyActivate } from "@/lib/a11y";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
 import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
@@ -2359,6 +2360,10 @@ function DietPlanCard({
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
+        onKeyDown={onKeyActivate(() => setExpanded((e) => !e))}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
       >
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
@@ -2519,6 +2524,10 @@ function MealSlotCard({
       <div
         className="flex items-center justify-between px-4 py-3 cursor-pointer"
         onClick={() => setExpanded((e) => !e)}
+        onKeyDown={onKeyActivate(() => setExpanded((e) => !e))}
+        role="button"
+        tabIndex={0}
+        aria-expanded={expanded}
       >
         <div className="flex items-center gap-3">
           <div>

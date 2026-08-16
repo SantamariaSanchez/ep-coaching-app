@@ -301,6 +301,7 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
       {/* Header row — clickable */}
       <button
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         style={{
           width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
           padding: "14px 18px", background: "none", border: "none", cursor: "pointer",

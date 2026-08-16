@@ -319,6 +319,7 @@ function SessionHistoryCard({ session }: { session: SessionWithSets }) {
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
       <button
         onClick={() => setExpanded((v) => !v)}
+        aria-expanded={expanded}
         className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
       >
         <div className="flex-1 min-w-0">

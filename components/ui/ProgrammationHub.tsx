@@ -374,7 +374,7 @@ function DietTemplateRow({
 
   return (
     <div className="rounded-xl border border-[#890404]/20 bg-[#150000] overflow-hidden">
-      <button onClick={() => setExpanded((e) => !e)} className="w-full flex items-center justify-between px-4 py-3 text-left">
+      <button onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full flex items-center justify-between px-4 py-3 text-left">
         <div className="min-w-0">
           <p className="text-sm font-bold text-white truncate">{template.name}</p>
           <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap">
@@ -437,7 +437,7 @@ function RoadmapTemplateRow({
 
   return (
     <div className="rounded-xl border border-[#890404]/20 bg-[#150000] overflow-hidden">
-      <button onClick={() => setExpanded((e) => !e)} className="w-full flex items-center justify-between px-4 py-3 text-left">
+      <button onClick={() => setExpanded((e) => !e)} aria-expanded={expanded} className="w-full flex items-center justify-between px-4 py-3 text-left">
         <div className="min-w-0">
           <p className="text-sm font-bold text-white truncate">{template.name}</p>
           {template.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 truncate">{template.objective}</p>}

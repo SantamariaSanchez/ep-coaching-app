@@ -115,6 +115,7 @@ export default function AutoGeneratePlanButton({
                       <div key={day.dayLabel} className="border border-[#890404]/15 rounded-lg overflow-hidden">
                         <button
                           onClick={() => setExpandedDay(expandedDay === i ? null : i)}
+                          aria-expanded={expandedDay === i}
                           className="w-full flex items-center justify-between px-3 py-2 bg-[#150000] text-left"
                         >
                           <span className="text-xs font-bold text-white">{day.dayLabel}</span>

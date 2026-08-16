@@ -131,6 +131,7 @@ export default function SubscriptionToggle({
           onClick={() => setExpanded((v) => !v)}
           className="flex-shrink-0 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           aria-label="Détails"
+          aria-expanded={expanded}
         >
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
         </button>

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
+import { onKeyActivate } from "@/lib/a11y";
 import {
   updateLessonYoutube,
   updateLessonDetails,
@@ -374,8 +375,10 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             {/* Section header */}
             <div
               onClick={() => toggleModule(mod.id)}
+              onKeyDown={onKeyActivate(() => toggleModule(mod.id))}
               role="button"
               tabIndex={0}
+              aria-expanded={openModules.has(mod.id)}
               style={{
                 width: "100%",
                 display: "flex",
@@ -448,8 +451,10 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                     {/* Module header */}
                     <div
                       onClick={() => toggleSection(sec.id)}
+                      onKeyDown={onKeyActivate(() => toggleSection(sec.id))}
                       role="button"
                       tabIndex={0}
+                      aria-expanded={openSections.has(sec.id)}
                       style={{
                         width: "100%",
                         display: "flex",
@@ -687,6 +692,7 @@ function LessonEditor({
             <button
               onClick={() => setShowDetails((v) => !v)}
               title="Description et durée" aria-label="Description et durée"
+              aria-expanded={showDetails}
               style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0 }}
             >
               {showDetails

@@ -199,6 +199,7 @@ export default function CoachingPhasePanel({
       {/* Historique des transitions */}
       <button
         onClick={toggleHistory}
+        aria-expanded={historyOpen}
         className="w-full flex items-center justify-center gap-1.5 mt-3 text-[9px] font-semibold uppercase tracking-widest text-[#F5EDED]/25 hover:text-[#F5EDED]/50 transition-colors"
       >
         <History size={10} />
