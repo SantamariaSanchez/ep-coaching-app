@@ -1700,3 +1700,72 @@ premier coup d'œil comme suspects sont en fait des boutons de réordonnancement
 erreurs `react-hooks/set-state-in-effect` remontées par eslint sur ces
 fichiers (pattern déjà connu, voir Axe E) portaient toutes sur des lignes
 non touchées par cette passe, donc pré-existantes et hors périmètre.
+
+## Axe S — Lint complet du projet (`npx eslint .`), pas seulement les fichiers touchés
+
+**Statut : première passe close (2026-08-16), reproductible à volonté.**
+
+Découverte fortuite : en corrigeant une erreur `react/no-unescaped-entities`
+sur `components/outils/OutilsView.tsx` (apostrophes non échappées, ligne
+déjà présente avant cette session), une question s'est posée : cette
+erreur n'apparaît QUE quand eslint tourne sur ce fichier précis — or le
+projet n'avait jusqu'ici jamais été passé au lint dans son ensemble en une
+seule commande, seulement fichier par fichier au moment de chaque commit
+(l'usage établi tout au long de ce MASTERCLASS, y compris dans ce
+document). Un premier `npx eslint .` complet a donc été lancé pour voir ce
+qu'un passage exhaustif révèle.
+
+**Résultat** : 63 erreurs + 12 warnings, dont 54 déjà connues et acceptées
+(`react-hooks/set-state-in-effect`, voir Axe E) — le reste, une classe de
+règle jamais auditée jusqu'ici :
+
+- **`react-hooks/purity` (8 occurrences)** — appel d'une fonction impure
+  (`Date.now()`) directement pendant le rendu. Deux familles très
+  différentes derrière la même règle :
+  - **Vrais bugs, corrigés** : `components/client/SessionView.tsx` (3
+    endroits). `useRef(expression)` et `useState(expression)` évaluent
+    leur argument à CHAQUE rendu (React ne garde que le résultat du
+    premier rendu, mais l'appel a quand même lieu à chaque fois,
+    contrairement à `useState(() => expression)` qui garantit un seul
+    appel) — un timer de repos et un timer de séance relisaient
+    `localStorage`/rappelaient `Date.now()` inutilement à chaque rendu. Un
+    des trois cas lisait aussi `.current` d'un ref pendant le rendu
+    (`react-hooks/refs`, même correctif) : regroupé en un seul
+    `useState(() => ...)` paresseux.
+  - **Vérifié SAIN, pas un bug** : `components/client/RoadmapView.tsx`,
+    `components/messaging/ConversationView.tsx`,
+    `app/dashboard/coach/live/page.tsx` — ici `Date.now()` calcule une
+    valeur AFFICHÉE qui doit refléter l'instant du rendu (jours restants,
+    heures avant expiration d'un message vocal, prochain live) : recalculer
+    à chaque rendu est le comportement voulu, pas un défaut. Pour
+    `live/page.tsx` (composant serveur, jamais réconcilié côté client), la
+    règle ne s'applique de toute façon pas au même titre.
+- **`react-hooks/exhaustive-deps` (1 erreur + 2 warnings)** :
+  `components/recipes/RecipesClient.tsx` corrigé — `isRecommended`
+  changeait d'identité à chaque rendu (fonction déclarée dans le corps du
+  composant), le `useMemo` qui l'utilise ne pouvait pas la lister
+  honnêtement en dépendance sans se recalculer à chaque rendu. Passé en
+  `useCallback` avec ses vraies dépendances
+  (`isCoach, recipesUnlocked, presetDiet, recommendedPhase`), puis ajouté
+  proprement à la liste de dépendances du `useMemo`. Les 2 warnings
+  restants (`components/steps/StepsClient.tsx`,
+  `components/ui/NutritionForm.tsx`) sont déjà des désactivations
+  volontaires et commentées de la règle, pas des oublis — non touchés.
+- **`@typescript-eslint/no-unused-vars` (10 warnings)** : imports/variables
+  non utilisés, principalement `PRESETS` importé mais jamais appelé dans 3
+  routes API (`import-logbook`, `push/send`, `push/subscribe`) — pas
+  touché dans cette passe (pas de bug fonctionnel, juste du bruit ;
+  reste à faire si une future passe veut nettoyer les imports morts).
+
+**Méthode** (relançable) :
+```bash
+npx eslint . > /tmp/full_eslint.txt 2>&1
+grep -oE "react-hooks/[a-z-]+|@typescript-eslint/[a-z-]+|react/[a-z-]+" /tmp/full_eslint.txt | sort | uniq -c | sort -rn
+```
+Puis lire chaque catégorie autre que `set-state-in-effect` (déjà classée
+Axe E) et juger au cas par cas — cette passe a délibérément laissé de côté
+les 10 warnings `no-unused-vars`, à traiter dans une future itération.
+
+tsc/build vérifiés propres après corrections (deux commits séparés : le
+lot SEO+purity+exhaustive-deps ici, un correctif de bug utilisateur signalé
+en direct pendant cette même session traité et documenté à part).
