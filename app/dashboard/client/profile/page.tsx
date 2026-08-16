@@ -81,6 +81,7 @@ export default async function ClientProfilePage() {
       <ReferralCard
         referralCode={referralStats.code}
         referredCount={referralStats.referredCount}
+        rewardedCount={referralStats.rewardedCount}
         pointsPerReferral={POINTS.referral}
       />
 

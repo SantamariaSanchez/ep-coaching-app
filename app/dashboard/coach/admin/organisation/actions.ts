@@ -3,6 +3,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { requirePlatformOwner } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
+import type { ApplicationStatus } from "@/lib/job-applications";
 
 export type RoleStatus = "a_pourvoir" | "en_recrutement" | "pourvu";
 
@@ -36,6 +37,36 @@ export async function setRoleStatus(
     return {};
   } catch (e) {
     console.error("setRoleStatus error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Fait avancer une candidature reçue via /carrieres (voir
+// lib/job-applications.ts). La RLS sur job_applications borne déjà la
+// visibilité/écriture à owner_id = auth.uid(), le guard applicatif reste la
+// même protection que le reste de cette page (réservée au fondateur).
+export async function setApplicationStatus(
+  applicationId: string,
+  status: ApplicationStatus
+): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("job_applications")
+      .update({ status })
+      .eq("id", applicationId)
+      .eq("owner_id", guard.userId);
+    if (error) {
+      console.error("setApplicationStatus error:", error);
+      return { error: "Erreur lors de la sauvegarde." };
+    }
+    revalidatePath("/dashboard/coach/admin/organisation");
+    return {};
+  } catch (e) {
+    console.error("setApplicationStatus error:", e);
     return { error: "Erreur inattendue." };
   }
 }

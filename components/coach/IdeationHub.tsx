@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard } from "lucide-react";
+import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles } from "lucide-react";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
 import IdeationInspirations from "@/components/coach/IdeationInspirations";
 import IdeationScripts from "@/components/coach/IdeationScripts";
+import SocialGenerator from "@/components/coach/SocialGenerator";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
 
-type Tab = "idees" | "scripts" | "notes" | "inspirations";
+type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
+  { id: "generateur", label: "Générateur", icon: Sparkles },
   { id: "scripts", label: "Scripts", icon: Clapperboard },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
@@ -27,11 +29,13 @@ export default function IdeationHub({
   initialNotes,
   initialInspirations,
   initialScripts,
+  guideMagnets,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
   initialInspirations: Inspiration[];
   initialScripts: CoachScript[];
+  guideMagnets: { slug: string; title: string }[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
 
@@ -74,6 +78,7 @@ export default function IdeationHub({
       </div>
 
       {tab === "idees" && <ContentStudio initialIdeas={initialIdeas} />}
+      {tab === "generateur" && <SocialGenerator guideMagnets={guideMagnets} />}
       {tab === "scripts" && <IdeationScripts initialScripts={initialScripts} />}
       {tab === "notes" && <IdeationNotes initialNotes={initialNotes} />}
       {tab === "inspirations" && <IdeationInspirations initialInspirations={initialInspirations} />}

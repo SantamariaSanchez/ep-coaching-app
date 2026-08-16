@@ -7,20 +7,31 @@ import { createAdminClient } from "@/lib/supabase-admin";
 export interface ReferralStats {
   code: string | null;
   referredCount: number;
+  // Nombre de filleuls devenus clients payants, effectivement crédités
+  // (voir lib/referral-rewards.ts et supabase/migrations/
+  // 20260816b_referral_rewards.sql). Distinct de referredCount, qui compte
+  // toutes les inscriptions, payantes ou non.
+  rewardedCount: number;
 }
 
 export async function getReferralStats(userId: string): Promise<ReferralStats> {
   try {
     const admin = createAdminClient();
-    const [{ data: profile }, { count }] = await Promise.all([
+    const [{ data: profile }, { count }, { count: rewardedCount }] = await Promise.all([
       admin.from("profiles").select("referral_code").eq("id", userId).maybeSingle(),
       admin.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", userId),
+      admin
+        .from("referral_rewards")
+        .select("id", { count: "exact", head: true })
+        .eq("referrer_id", userId)
+        .eq("status", "credited"),
     ]);
     return {
       code: (profile as { referral_code: string | null } | null)?.referral_code ?? null,
       referredCount: count ?? 0,
+      rewardedCount: rewardedCount ?? 0,
     };
   } catch {
-    return { code: null, referredCount: 0 };
+    return { code: null, referredCount: 0, rewardedCount: 0 };
   }
 }

@@ -3,8 +3,9 @@
 import { useState } from "react";
 import {
   Building2, Users, GraduationCap, FileText, ShieldAlert,
-  ChevronDown, Copy, Check,
+  ChevronDown, Copy, Check, Mail, Inbox,
 } from "lucide-react";
+import type { JobApplication, ApplicationStatus } from "@/lib/job-applications";
 
 // Vue interactive de la page Administration > Organisation. Portée en
 // composant client à part le 2026-08-15 suite au retour direct : "au lieu
@@ -65,6 +66,14 @@ const STATUS_META: Record<RoleStatus, { label: string; color: string }> = {
   pourvu: { label: "Pourvu", color: "#4ade80" },
 };
 const STATUS_ORDER: RoleStatus[] = ["a_pourvoir", "en_recrutement", "pourvu"];
+
+const APPLICATION_STATUS_META: Record<ApplicationStatus, { label: string; color: string }> = {
+  nouvelle: { label: "Nouvelle", color: "#60a5fa" },
+  en_discussion: { label: "En discussion", color: "#fbbf24" },
+  acceptee: { label: "Acceptée", color: "#4ade80" },
+  refusee: { label: "Refusée", color: "rgba(245,237,237,0.35)" },
+};
+const APPLICATION_STATUS_ORDER: ApplicationStatus[] = ["nouvelle", "en_discussion", "acceptee", "refusee"];
 
 function ChevronToggle({ open }: { open: boolean }) {
   return (
@@ -208,6 +217,68 @@ function PoleAccordion({
   );
 }
 
+function fmtAppDate(iso: string): string {
+  return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
+    new Date(iso)
+  );
+}
+
+function ApplicationRow({
+  application,
+  roleTitle,
+  onChange,
+}: {
+  application: JobApplication;
+  roleTitle: string;
+  onChange: (status: ApplicationStatus) => void;
+}) {
+  const meta = APPLICATION_STATUS_META[application.status];
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <div className="min-w-0">
+          <p className="text-sm font-black text-white truncate">{application.full_name}</p>
+          <p className="text-[10.5px] text-[#F5EDED]/35 mt-0.5">{roleTitle} · {fmtAppDate(application.created_at)}</p>
+        </div>
+        <span
+          className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0"
+          style={{ background: `${meta.color}1a`, color: meta.color }}
+        >
+          {meta.label}
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2 mb-1">
+        <a href={`mailto:${application.email}`} className="text-[11.5px] text-[#F5EDED]/55 hover:text-white flex items-center gap-1.5">
+          <Mail size={11} className="text-[#E01E1E]" /> {application.email}
+        </a>
+        {application.phone && (
+          <span className="text-[11.5px] text-[#F5EDED]/55">{application.phone}</span>
+        )}
+      </div>
+      <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-[#890404]/15">
+        {APPLICATION_STATUS_ORDER.map((s) => {
+          const m = APPLICATION_STATUS_META[s];
+          const active = application.status === s;
+          return (
+            <button
+              key={s}
+              onClick={() => onChange(s)}
+              className="flex-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-1.5 rounded-md border transition-colors"
+              style={
+                active
+                  ? { background: `${m.color}1f`, borderColor: `${m.color}70`, color: m.color }
+                  : { background: "transparent", borderColor: "rgba(137,4,4,0.2)", color: "rgba(245,237,237,0.3)" }
+              }
+            >
+              {m.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function SimpleAccordionItem({
   open,
   onToggle,
@@ -237,6 +308,9 @@ export default function OrganisationView({
   contracts,
   initialStatuses,
   setRoleStatus,
+  applications,
+  roleTitleByKey,
+  setApplicationStatus,
 }: {
   poles: Pole[];
   timeline: TimelineStep[];
@@ -244,11 +318,27 @@ export default function OrganisationView({
   contracts: Contract[];
   initialStatuses: Record<string, RoleStatus>;
   setRoleStatus: (roleKey: string, status: RoleStatus) => Promise<{ error?: string }>;
+  applications: JobApplication[];
+  roleTitleByKey: Record<string, string>;
+  setApplicationStatus: (applicationId: string, status: ApplicationStatus) => Promise<{ error?: string }>;
 }) {
   const totalRoles = poles.reduce((sum, p) => sum + p.roles.length, 0);
   const [statuses, setStatuses] = useState<Record<string, RoleStatus>>(initialStatuses);
   const filledTotal = Object.values(statuses).filter((s) => s === "pourvu").length;
   const activeTotal = Object.values(statuses).filter((s) => s === "en_recrutement").length;
+
+  const [apps, setApps] = useState<JobApplication[]>(applications);
+  const newApplications = apps.filter((a) => a.status === "nouvelle").length;
+  const [appsOpen, setAppsOpen] = useState(true);
+
+  async function handleChangeApplicationStatus(id: string, status: ApplicationStatus) {
+    const backup = apps.find((a) => a.id === id)?.status;
+    setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status } : a)));
+    const result = await setApplicationStatus(id, status);
+    if (result.error && backup) {
+      setApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: backup } : a)));
+    }
+  }
 
   const [openPoles, setOpenPoles] = useState<Set<string>>(new Set([poles[0]?.key].filter((k): k is string => !!k)));
   function togglePole(key: string) {
@@ -331,6 +421,45 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           Clique un pôle ci-dessous pour voir ses postes, et le statut de chaque poste pour le mettre à jour.
         </p>
       </div>
+
+      {/* ── Candidatures reçues (voir /carrieres) ── */}
+      <section className="mb-8">
+        <button
+          onClick={() => setAppsOpen((v) => !v)}
+          aria-expanded={appsOpen}
+          className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 text-left mb-3"
+        >
+          <div className="flex items-center gap-2">
+            <Inbox size={14} className="text-[#E01E1E]" />
+            <h2 className="text-base font-black uppercase tracking-tight">Candidatures reçues</h2>
+            {newApplications > 0 && (
+              <span className="text-[9px] font-black text-white bg-[#E01E1E] rounded-full px-1.5 py-0.5 min-w-[16px] text-center">
+                {newApplications}
+              </span>
+            )}
+          </div>
+          <ChevronToggle open={appsOpen} />
+        </button>
+        {appsOpen && (
+          apps.length === 0 ? (
+            <p className="text-[11.5px] text-[#F5EDED]/30 italic px-1">
+              Aucune candidature pour l&apos;instant. Le lien public est{" "}
+              <span className="text-[#F5EDED]/50 font-mono">/carrieres</span>, à partager.
+            </p>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-3">
+              {apps.map((app) => (
+                <ApplicationRow
+                  key={app.id}
+                  application={app}
+                  roleTitle={roleTitleByKey[app.role_key] ?? app.role_key}
+                  onChange={(s) => handleChangeApplicationStatus(app.id, s)}
+                />
+              ))}
+            </div>
+          )
+        )}
+      </section>
 
       {/* ── Pôles (accordéon) ── */}
       <section className="mb-8">

@@ -11,10 +11,12 @@ import { ensureReferralCode } from "@/app/dashboard/client/profile/actions";
 export default function ReferralCard({
   referralCode,
   referredCount,
+  rewardedCount,
   pointsPerReferral,
 }: {
   referralCode: string | null;
   referredCount: number;
+  rewardedCount: number;
   pointsPerReferral: number;
 }) {
   const [code, setCode] = useState(referralCode);
@@ -47,7 +49,8 @@ export default function ReferralCard({
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
           Partage ton lien personnel. Dès qu&apos;un ami s&apos;inscrit avec, tu gagnes{" "}
-          {pointsPerReferral} points.
+          {pointsPerReferral} points. Et le jour où il devient client payant, tu reçois un mois
+          offert sur ton abonnement.
         </p>
         {link ? (
           <>
@@ -77,11 +80,21 @@ export default function ReferralCard({
               </button>
             </div>
             {referredCount > 0 && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <Gift size={13} style={{ color: "#FACC15", flexShrink: 0 }} />
-                <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
-                  {referredCount} ami{referredCount > 1 ? "s" : ""} déjà parrainé{referredCount > 1 ? "s" : ""}
-                </span>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Gift size={13} style={{ color: "#FACC15", flexShrink: 0 }} />
+                  <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>
+                    {referredCount} ami{referredCount > 1 ? "s" : ""} déjà parrainé{referredCount > 1 ? "s" : ""}
+                  </span>
+                </div>
+                {rewardedCount > 0 && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <Gift size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
+                    <span style={{ fontSize: 11.5, color: "#4ade80", fontWeight: 700 }}>
+                      {rewardedCount} mois offert{rewardedCount > 1 ? "s" : ""} déjà gagné{rewardedCount > 1 ? "s" : ""}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </>

@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
+import { rewardReferrerForNewPayment, applyPendingRewardsFor } from "@/lib/referral-rewards";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -66,6 +67,19 @@ export async function POST(request: Request) {
             stripe_subscription_id: stripeSubscriptionId,
           })
           .eq("id", userId);
+
+        // Parrainage (demande explicite 2026-08-16, "mois offert /
+        // réduction") : si ce client a été parrainé, crédite son parrain
+        // maintenant qu'il paie réellement. Et si ce client est lui-même
+        // un parrain avec une récompense en attente (il a invité un ami
+        // avant même de payer son propre abonnement), on peut enfin la
+        // créditer puisqu'il a désormais un stripe_customer_id. Best
+        // effort : jamais laissé faire échouer l'accusé de réception du
+        // webhook à Stripe.
+        if (stripeCustomerId) {
+          rewardReferrerForNewPayment(userId).catch(() => {});
+          applyPendingRewardsFor(userId).catch(() => {});
+        }
       }
       break;
     }
