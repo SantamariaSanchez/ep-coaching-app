@@ -17,6 +17,7 @@ import {
   FlaskConical,
   Map,
   UtensilsCrossed,
+  Trophy,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
@@ -197,6 +198,35 @@ export default function HomePage() {
           ))}
         </div>
 
+        {/* ── Preuve sociale, juste avant l'appel à l'action (retour direct
+            2026-08-16 : augmenter le taux d'inscription). Pas de chiffre
+            de membres inventé ou gonflé (12 clients réels à ce jour, pas de
+            quoi impressionner) : le lien vers /reussites, lui, est honnête
+            et vérifiable, ce sont de vraies transformations publiées avec
+            l'accord explicite de leur auteur. ── */}
+        <Link
+          href="/reussites"
+          className="animate-fade-up stagger-4"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 7,
+            marginBottom: 18,
+            padding: "10px 16px",
+            borderRadius: "var(--radius-md)",
+            background: "rgba(224,30,30,0.08)",
+            border: "1px solid rgba(224,30,30,0.2)",
+            color: "#F5EDED",
+            textDecoration: "none",
+            fontSize: 12,
+            fontWeight: 700,
+          }}
+        >
+          <Trophy size={14} style={{ color: "#E01E1E" }} />
+          Voir de vraies transformations de membres
+        </Link>
+
         {/* ── Main CTA ── */}
         <div className="animate-fade-up stagger-5">
           <Link
@@ -243,6 +273,28 @@ export default function HomePage() {
             }}
           >
             <Users size={12} /> Plusieurs coachs disponibles, trouve le tien
+          </Link>
+
+          {/* Chemin de repli pour un visiteur pas encore prêt à créer un
+              compte : plutôt que de le perdre, un lead magnet gratuit sans
+              inscription capture son email pour une relance plus tard (voir
+              LEADMAGNETS.md). Jusqu'ici la page d'accueil ne renvoyait
+              jamais vers /ressources du tout. */}
+          <Link
+            href="/ressources"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
+              marginTop: 8,
+              fontSize: 11.5,
+              fontWeight: 700,
+              color: "rgba(245,237,237,0.3)",
+              textDecoration: "none",
+            }}
+          >
+            <BookOpen size={12} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
           </Link>
         </div>
 

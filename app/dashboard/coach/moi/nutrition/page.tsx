@@ -12,7 +12,7 @@ import {
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import CoachMoiNutritionTabs from "@/components/ui/CoachMoiNutritionTabs";
-import { addFoodLog, removeFoodLog, createCustomFood } from "@/app/dashboard/client/nutrition/actions";
+import { addFoodLog, removeFoodLog, createCustomFood, logMealItems } from "@/app/dashboard/client/nutrition/actions";
 import {
   saveNutritionProfile,
   suggestSupplement,
@@ -74,6 +74,13 @@ export default async function CoachMonNutritionPage() {
           addFoodLog,
           removeFoodLog,
           createCustomFood,
+          // Manquait ici (signalé en direct 2026-08-16, "toujours bloqué") :
+          // le bouton "Valider le repas" de DietPlanCard ne s'affiche que si
+          // logMealItems est fourni. Sur cette page (le coach loggue SES
+          // PROPRES repas), il n'était jamais passé — seul
+          // app/dashboard/client/nutrition/page.tsx l'avait, donc un client
+          // voyait le bouton mais pas le fondateur sur "Ma nutrition".
+          logMealItems,
         }}
         manageProps={{
           clientId: user.id,

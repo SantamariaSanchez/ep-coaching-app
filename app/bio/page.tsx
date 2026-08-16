@@ -5,8 +5,7 @@ import {
   Users,
   BookOpen,
   Trophy,
-  Calculator,
-  AtSign,
+  MessageCircle,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import { BRAND_SOCIALS } from "@/lib/brand-links";
@@ -48,12 +47,6 @@ const LINKS = [
     icon: BookOpen,
     title: "Ressources gratuites",
     desc: "Guides et fiches sans inscription",
-  },
-  {
-    href: "/outils",
-    icon: Calculator,
-    title: "Calculateurs gratuits",
-    desc: "TDEE, macros, 1RM",
   },
 ];
 
@@ -166,10 +159,10 @@ export default function BioPage() {
           }}
         >
           <a
-            href={BRAND_SOCIALS.instagram.url}
+            href={BRAND_SOCIALS.whatsapp.url}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Instagram EP Coaching"
+            aria-label="Contacter sur WhatsApp"
             style={{
               display: "flex",
               alignItems: "center",
@@ -181,7 +174,7 @@ export default function BioPage() {
               color: "rgba(245,237,237,0.5)",
             }}
           >
-            <AtSign size={17} />
+            <MessageCircle size={17} />
           </a>
         </div>
       </div>
