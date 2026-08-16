@@ -1,8 +1,16 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Trophy } from "lucide-react";
 import { getPublicVictories } from "@/utils/community";
 
 export const dynamic = "force-dynamic";
+
+// MASTERCLASS (audit métadonnées SEO, 2026-08-16) : page de preuve sociale
+// publique, aucun titre/description dédié jusqu'ici.
+export const metadata: Metadata = {
+  title: "Réussites des membres | EP Coaching",
+  description: "De vraies transformations partagées par des membres EP Coaching, publiées avec leur accord explicite.",
+};
 
 function fmtDate(d: string): string {
   return new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "long", year: "numeric" }).format(new Date(d));

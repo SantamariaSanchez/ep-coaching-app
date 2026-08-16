@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Search, Clock, MapPin, Flame, ChevronDown, X, UtensilsCrossed,
@@ -448,14 +448,22 @@ export default function RecipesClient({
   // profil du client (jamais pour le coach, qui parcourt le catalogue pour
   // plusieurs clients). Sans donnée de profil, personne n'est mis en avant :
   // le catalogue reste identique à avant.
-  function isRecommended(r: DisplayRecipe): boolean {
-    if (isCoach) return false;
-    if (r.exclusive && !recipesUnlocked) return false;
-    if (!presetDiet && !recommendedPhase) return false;
-    const dietMatch = !presetDiet || r.diet.includes(presetDiet);
-    const phaseMatch = !recommendedPhase || r.phases.includes(recommendedPhase);
-    return dietMatch && phaseMatch;
-  }
+  // MASTERCLASS (react-hooks/exhaustive-deps, 2026-08-16) : useCallback
+  // plutôt qu'une fonction simple, pour que le useMemo plus bas (filtered)
+  // puisse la lister honnêtement dans ses dépendances sans recalculer à
+  // chaque rendu (une fonction déclarée dans le corps du composant change
+  // d'identité à chaque rendu, ce que le useMemo ignorait silencieusement).
+  const isRecommended = useCallback(
+    (r: DisplayRecipe): boolean => {
+      if (isCoach) return false;
+      if (r.exclusive && !recipesUnlocked) return false;
+      if (!presetDiet && !recommendedPhase) return false;
+      const dietMatch = !presetDiet || r.diet.includes(presetDiet);
+      const phaseMatch = !recommendedPhase || r.phases.includes(recommendedPhase);
+      return dietMatch && phaseMatch;
+    },
+    [isCoach, recipesUnlocked, presetDiet, recommendedPhase]
+  );
   const [foods, setFoods] = useState<Food[]>(initialFoods);
   const [tab, setTab] = useState<"bibliotheque" | "creer">("bibliotheque");
   const [showAddForm, setShowAddForm] = useState(false);
@@ -502,7 +510,7 @@ export default function RecipesClient({
       if (ra !== rb) return ra - rb;
       return a.name.localeCompare(b.name, "fr");
     });
-  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens, isCoach, presetDiet, recommendedPhase, recipesUnlocked]);
+  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens, isRecommended]);
 
   const recommendedCount = isCoach ? 0 : filtered.filter(isRecommended).length;
 

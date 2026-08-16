@@ -397,28 +397,34 @@ function WarmupStep({
   // donnant l'impression que la séance vient d'être interrompue/annulée
   // alors que rien ne l'a été : seul le bouton "Terminer" doit y mettre fin.
   const storageKey = `ep-warmup-start-${sessionId}`;
-  const warmupStartRef = useRef<number>((() => {
+  // MASTERCLASS (react-hooks/purity, 2026-08-16) : un useRef(expression)
+  // évalue son argument à CHAQUE rendu (seul le premier résultat est
+  // gardé), contrairement à useState(initialiseur) qui garantit un seul
+  // appel. L'IIFE relisait donc localStorage à chaque rendu ; regroupé ici
+  // en un seul useState paresseux, lu normalement (plus de useRef.current
+  // accédé pendant le rendu, deuxième avertissement du même lint).
+  const [warmupStart] = useState<number>(() => {
     if (typeof window === "undefined") return Date.now();
     const saved = localStorage.getItem(storageKey);
     if (saved) return parseInt(saved, 10);
     const now = Date.now();
     localStorage.setItem(storageKey, now.toString());
     return now;
-  })());
+  });
   const [elapsed, setElapsed] = useState(() =>
-    Math.floor((Date.now() - warmupStartRef.current) / 1000)
+    Math.floor((Date.now() - warmupStart) / 1000)
   );
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     intervalRef.current = setInterval(
-      () => setElapsed(Math.floor((Date.now() - warmupStartRef.current) / 1000)),
+      () => setElapsed(Math.floor((Date.now() - warmupStart) / 1000)),
       1000
     );
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, []);
+  }, [warmupStart]);
 
   const suggested = combineWarmupRecommendations(detectWarmupTypes(dayLabel, muscleGroups));
   // Liste éditable — les exercices proposés sont des suggestions, pas une
@@ -611,7 +617,10 @@ function RestTimerOverlay({
   onUpdate: (patch: Partial<RestTimer>) => void;
   onClose: (elapsed: number) => void;
 }) {
-  const [elapsed, setElapsed] = useState(
+  // MASTERCLASS (react-hooks/purity, 2026-08-16) : useState(expression)
+  // évalue l'expression à chaque rendu même si la valeur n'est utilisée
+  // qu'au premier ; useState(() => expression) garantit un seul appel.
+  const [elapsed, setElapsed] = useState(() =>
     Math.floor((Date.now() - timer.startedAt) / 1000)
   );
   const [noWaitElapsed, setNoWaitElapsed] = useState(0);
@@ -1387,7 +1396,13 @@ export default function SessionView({
   // Session state
   const [step, setStep] = useState<Step>("warmup");
   const [sessionElapsed, setSessionElapsed] = useState(0);
-  const sessionStartRef = useRef<number>(Date.now());
+  // MASTERCLASS (react-hooks/purity, 2026-08-16) : la vraie valeur de
+  // départ est toujours écrite avant lecture, soit par l'effet de
+  // chargement de séance ci-dessous (ligne ~1451, avant tout passage de
+  // `step` à "session"), soit par handleWarmupValidate — jamais lue tant
+  // que ces deux chemins n'ont pas tourné. Pas besoin d'un Date.now() ici
+  // (impur, interdit pendant le rendu), 0 est une valeur de repos sûre.
+  const sessionStartRef = useRef<number>(0);
   const sessionTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Exercise state
