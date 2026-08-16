@@ -124,14 +124,27 @@ export default function CampaignPagesManager({ initialPages }: { initialPages: C
     });
   }
 
-  function handleToggle(id: string, active: boolean) {
+  // Optimiste avec retour en arrière si le serveur refuse, même pattern que
+  // OrganisationView.tsx::handleChangeStatus (MASTERCLASS Axe B : jamais
+  // ignorer le résultat d'une server action déclenchée depuis l'UI).
+  async function handleToggle(id: string, active: boolean) {
+    const backup = pages.find((p) => p.id === id)?.is_active;
     setPages((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: active } : p)));
-    toggleCampaignPage(id, active);
+    const result = await toggleCampaignPage(id, active);
+    if (result.error && backup !== undefined) {
+      setPages((prev) => prev.map((p) => (p.id === id ? { ...p, is_active: backup } : p)));
+      setError(result.error);
+    }
   }
 
-  function handleDelete(id: string) {
+  async function handleDelete(id: string) {
+    const backup = pages;
     setPages((prev) => prev.filter((p) => p.id !== id));
-    deleteCampaignPage(id);
+    const result = await deleteCampaignPage(id);
+    if (result.error) {
+      setPages(backup);
+      setError(result.error);
+    }
   }
 
   return (
@@ -148,6 +161,10 @@ export default function CampaignPagesManager({ initialPages }: { initialPages: C
           <Plus size={13} /> Nouvelle page
         </button>
       </div>
+
+      {error && !showForm && (
+        <p className="text-[11px] text-red-400 mb-3">{error}</p>
+      )}
 
       {showForm && (
         <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-5 space-y-2.5">
