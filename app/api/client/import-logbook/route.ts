@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { parseWorkoutCsv, deriveProgramDaysFromSessions } from "@/utils/csv-import";
 import { saveProgramForClient } from "@/utils/programs";
-import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 const MAX_FILE_BYTES = 4 * 1024 * 1024; // reste sous la limite de payload des fonctions Vercel
 

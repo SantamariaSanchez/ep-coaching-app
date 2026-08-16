@@ -586,7 +586,6 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
               phases={phases.map((p, i) => ({ ...p, id: p.localId, roadmap_id: "", position: i }))}
               objectives={objectives.map((o) => ({ ...o, id: o.localId, roadmap_id: "" }))}
               clientId={clientId}
-              readOnly={false}
             />
           </div>
         </section>

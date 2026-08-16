@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth } from "@/lib/auth-guards";
 import webpush from "web-push";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 function initVapid() {
   if (process.env.VAPID_EMAIL && process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY) {

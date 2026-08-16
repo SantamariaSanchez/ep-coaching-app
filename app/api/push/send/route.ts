@@ -3,7 +3,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
-import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
   const guard = await requireAuth();

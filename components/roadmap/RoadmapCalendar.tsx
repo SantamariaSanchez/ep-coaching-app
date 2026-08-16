@@ -19,7 +19,6 @@ export interface RoadmapCalendarProps {
   objectives: RoadmapObjective[];
   weekStats?: WeekStat[];
   clientId: string;
-  readOnly?: boolean;
   onWeekClick?: (weekStart: Date) => void;
 }
 
@@ -151,7 +150,6 @@ function WeekDetailModal({
   phases,
   objectives,
   stat,
-  readOnly,
   onClose,
 }: {
   weekStart: string;
@@ -159,7 +157,6 @@ function WeekDetailModal({
   phases: RoadmapPhase[];
   objectives: RoadmapObjective[];
   stat: WeekStat | null;
-  readOnly: boolean;
   onClose: () => void;
 }) {
   const phase = getPhaseForDate(phases, weekStart);
@@ -379,7 +376,6 @@ export default function RoadmapCalendar({
   objectives,
   weekStats: initialStats,
   clientId,
-  readOnly = false,
   onWeekClick,
 }: RoadmapCalendarProps) {
   const [weekStats, setWeekStats] = useState<WeekStat[]>(initialStats ?? []);
@@ -680,7 +676,6 @@ export default function RoadmapCalendar({
           phases={phases}
           objectives={objectives}
           stat={selectedStat}
-          readOnly={readOnly}
           onClose={() => setSelectedWeek(null)}
         />
       )}

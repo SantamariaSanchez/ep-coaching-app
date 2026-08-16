@@ -308,7 +308,6 @@ export default function RoadmapView() {
               phases={phases}
               objectives={objectives}
               clientId={userId}
-              readOnly={true}
             />
           )}
         </div>

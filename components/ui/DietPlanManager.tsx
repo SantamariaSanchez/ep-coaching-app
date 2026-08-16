@@ -21,16 +21,14 @@ import {
   Search,
   ClipboardCheck,
   ShoppingCart,
-  CalendarDays,
   RefreshCw,
 } from "lucide-react";
 import type { Food, DietPlanWithMeals, DietMode, DietStructure, DayOfWeek } from "@/utils/nutrition";
-import { calculateNutrients, getMicroDeficiencyOrder } from "@/utils/nutrition-utils";
+import { calculateNutrients } from "@/utils/nutrition-utils";
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import type { DietPlanTemplateWithMeals } from "@/utils/diet-templates";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch } from "@/lib/food-watch-keywords";
-import { MICRO_DAILY_REF } from "@/lib/micro-references";
 import { CATEGORY_ORDER } from "@/lib/shopping-list";
 import { updateFoodPrepNotes } from "@/app/dashboard/client/nutrition/actions";
 import { findFoodSwapCandidate } from "@/lib/food-swap";
