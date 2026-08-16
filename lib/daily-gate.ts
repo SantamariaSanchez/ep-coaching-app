@@ -30,6 +30,15 @@ export interface DailyGateStatus {
 
 const OPEN: DailyGateStatus = { active: null };
 
+// Heure de coucher par défaut quand l'utilisateur n'a jamais configuré la
+// sienne (SleepScheduleCard.tsx, entièrement opt-in). BUG CORRIGÉ
+// (2026-08-17, signalé en direct : "le bilan du soir, j'ouvre l'appli ça
+// me le propose pas") : sans cette valeur de repli, la branche entière du
+// bilan du soir ci-dessous était sautée pour quiconque n'avait jamais
+// rempli SleepScheduleCard — la fonctionnalité n'existait tout simplement
+// jamais tant qu'un objectif de coucher n'était pas configuré à la main.
+const DEFAULT_BEDTIME = "22:30";
+
 async function getPendingMeal(
   supabase: Awaited<ReturnType<typeof createServerSupabase>>,
   userId: string,
@@ -124,20 +133,18 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
     const pendingMeal = await getPendingMeal(supabase, userId, today);
     if (pendingMeal) return { active: "meal", pendingMeal };
 
-    const targetBedtime = profileRes.data?.target_bedtime as string | null | undefined;
-    if (targetBedtime) {
-      const dueAt = timeToMinutes(targetBedtime.slice(0, 5)) - 15;
-      const { minutes: nowMinutes } = parisNow();
-      // Fenêtre soir : à partir de (coucher visé - 15 min) jusqu'à minuit.
-      // Ne gère volontairement pas un coucher visé après minuit (cas rare,
-      // non demandé) ni la période entre minuit et le réveil — le bilan du
-      // matin du lendemain reprend la main dès l'ouverture suivante.
-      const eveningDue = dueAt >= 0 && nowMinutes >= dueAt;
-      if (eveningDue) {
-        const eveningDone =
-          !!log && log.steps != null && log.digestion != null && log.stress != null && log.hunger != null;
-        if (!eveningDone) return { active: "evening" };
-      }
+    const targetBedtime = (profileRes.data?.target_bedtime as string | null | undefined) || DEFAULT_BEDTIME;
+    const dueAt = timeToMinutes(targetBedtime.slice(0, 5)) - 15;
+    const { minutes: nowMinutes } = parisNow();
+    // Fenêtre soir : à partir de (coucher visé - 15 min) jusqu'à minuit.
+    // Ne gère volontairement pas un coucher visé après minuit (cas rare,
+    // non demandé) ni la période entre minuit et le réveil — le bilan du
+    // matin du lendemain reprend la main dès l'ouverture suivante.
+    const eveningDue = dueAt >= 0 && nowMinutes >= dueAt;
+    if (eveningDue) {
+      const eveningDone =
+        !!log && log.steps != null && log.digestion != null && log.stress != null && log.hunger != null;
+      if (!eveningDone) return { active: "evening" };
     }
 
     return OPEN;

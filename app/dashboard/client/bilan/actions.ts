@@ -7,7 +7,7 @@ import { awardPoints, POINTS } from "@/lib/gamification";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
-import { todayInParis } from "@/lib/dates";
+import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -41,19 +41,13 @@ export async function upsertDailyLog(
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
-    // Compare against today AND yesterday, en heure de Paris (MASTERCLASS.md
-    // Axe L) — la page rend son log_date caché au chargement avec
-    // todayInParis(), et ce "today" côté serveur peut changer pendant que le
-    // formulaire reste ouvert (ex. un client qui le remplit juste après
-    // minuit heure de Paris), ce qui rejetterait sinon une soumission
-    // légitime avec une erreur trompeuse. Un calcul en UTC ici rejetait
-    // carrément le bilan du jour pendant toute la fenêtre où Paris a déjà
-    // changé de date mais pas encore l'UTC (jusqu'à 2h en été).
-    const today = todayInParis();
-    const [y, m, d] = today.split("-").map(Number);
-    const yesterday = new Date(Date.UTC(y, m - 1, d - 1)).toISOString().split("T")[0];
-    if (log_date !== today && log_date !== yesterday) {
-      return { error: "Tu ne peux modifier que le bilan du jour." };
+    // Fenêtre de rattrapage (30 jours, en heure de Paris, voir lib/dates.ts)
+    // plutôt qu'une simple tolérance "aujourd'hui ou hier" : la tolérance
+    // d'origine (MASTERCLASS Axe L) absorbait un formulaire resté ouvert
+    // jusqu'après minuit, celle-ci permet en plus de vraiment rattraper
+    // plusieurs jours manqués d'affilée depuis la page Suivi.
+    if (!isWithinBilanBackfillWindow(log_date)) {
+      return { error: `Tu ne peux compléter qu'un bilan des ${BILAN_BACKFILL_DAYS} derniers jours.` };
     }
 
     const supabase = createAdminClient();

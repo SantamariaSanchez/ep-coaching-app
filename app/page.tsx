@@ -257,22 +257,25 @@ export default function HomePage() {
 
           {/* Axe 5 (VISION.md) : plusieurs coachs sur la plateforme
               maintenant, pas seulement celui par défaut — un visiteur
-              indécis doit pouvoir choisir avant de s'inscrire. */}
+              indécis doit pouvoir choisir avant de s'inscrire. Grossi et
+              passé en doré (retour direct 2026-08-17) : cette page sert
+              désormais de destination pour le lien en bio, ces deux liens
+              secondaires méritent plus de poids visuel. */}
           <Link
             href="/coachs"
             style={{
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 5,
-              marginTop: 10,
-              fontSize: 11.5,
-              fontWeight: 700,
-              color: "rgba(245,237,237,0.4)",
+              gap: 6,
+              marginTop: 14,
+              fontSize: 13,
+              fontWeight: 800,
+              color: "#fbbf24",
               textDecoration: "none",
             }}
           >
-            <Users size={12} /> Plusieurs coachs disponibles, trouve le tien
+            <Users size={14} /> Plusieurs coachs disponibles, trouve le tien
           </Link>
 
           {/* Chemin de repli pour un visiteur pas encore prêt à créer un
@@ -286,15 +289,15 @@ export default function HomePage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: 5,
-              marginTop: 8,
-              fontSize: 11.5,
-              fontWeight: 700,
-              color: "rgba(245,237,237,0.3)",
+              gap: 6,
+              marginTop: 10,
+              fontSize: 13,
+              fontWeight: 800,
+              color: "#fbbf24",
               textDecoration: "none",
             }}
           >
-            <BookOpen size={12} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
+            <BookOpen size={14} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
           </Link>
         </div>
 

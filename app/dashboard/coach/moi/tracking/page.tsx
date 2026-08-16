@@ -6,10 +6,13 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { getBiometricLogs, getBiometricInsights } from "@/utils/biometrics";
 import { getClientDailyLogs } from "@/utils/daily-logs";
 import { getSleepSchedule } from "@/lib/daily-gate";
+import { BILAN_BACKFILL_DAYS } from "@/lib/dates";
 import { isOuraConfigured } from "@/lib/oura";
 import TrackingClient from "@/components/tracking/TrackingClient";
 import SleepScheduleCard from "@/components/tracking/SleepScheduleCard";
+import BilanBackfillView from "@/components/ui/BilanBackfillView";
 import { logBiometrics, disconnectOura, acknowledgeBiometricInsight, updateSleepSchedule } from "@/app/dashboard/client/tracking/actions";
+import { upsertCoachDailyLog } from "@/app/dashboard/coach/moi/bilan/actions";
 
 export default async function CoachMoiTrackingPage({
   searchParams,
@@ -29,7 +32,7 @@ export default async function CoachMoiTrackingPage({
     getBiometricLogs(user.id),
     getBiometricInsights(user.id),
     admin.from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
-    getClientDailyLogs(user.id, 14),
+    getClientDailyLogs(user.id, BILAN_BACKFILL_DAYS),
     getSleepSchedule(user.id),
   ]);
 
@@ -64,6 +67,15 @@ export default async function CoachMoiTrackingPage({
         disconnectOura={disconnectOura}
         ouraStatus={ouraStatus}
       />
+
+      {/* Rattrapage de bilans manqués (demande explicite 2026-08-17) */}
+      <div className="mt-8">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Mon suivi
+        </p>
+        <h2 className="text-xl font-black uppercase tracking-tight mb-4">Bilans manqués</h2>
+        <BilanBackfillView logs={recentDailyLogs} action={upsertCoachDailyLog} />
+      </div>
     </div>
   );
 }

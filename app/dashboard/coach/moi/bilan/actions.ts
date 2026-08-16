@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
-import { todayInParis } from "@/lib/dates";
+import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -30,16 +30,10 @@ export async function upsertCoachDailyLog(
     const log_date = formData.get("log_date") as string;
     if (!log_date) return { error: "Date manquante." };
 
-    // MASTERCLASS.md Axe L : tolérance "hier" en plus d'"aujourd'hui" (heure
-    // de Paris) — la page rend son log_date au chargement, et le formulaire
-    // peut rester ouvert pendant que la date change (ex. juste après minuit
-    // heure de Paris), ce qui rejetterait sinon une soumission légitime.
-    // Même correctif que app/dashboard/client/bilan/actions.ts.
-    const today = todayInParis();
-    const [y, m, d] = today.split("-").map(Number);
-    const yesterday = new Date(Date.UTC(y, m - 1, d - 1)).toISOString().split("T")[0];
-    if (log_date !== today && log_date !== yesterday) {
-      return { error: "Tu ne peux modifier que le bilan du jour." };
+    // Fenêtre de rattrapage 30 jours (2026-08-17), même correctif que
+    // app/dashboard/client/bilan/actions.ts — voir lib/dates.ts.
+    if (!isWithinBilanBackfillWindow(log_date)) {
+      return { error: `Tu ne peux compléter qu'un bilan des ${BILAN_BACKFILL_DAYS} derniers jours.` };
     }
 
     const supabase = createAdminClient();

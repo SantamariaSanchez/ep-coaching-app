@@ -15,8 +15,9 @@ export const BRAND_SOCIALS = {
   },
   // Format wa.me : numéro complet, sans le "+" ni espaces (ex "33612345678"
   // pour un numéro français). Retour direct 2026-08-16 : contact humain
-  // réel plutôt qu'un compte Instagram qui n'est pas le sien.
+  // réel plutôt qu'un compte Instagram qui n'est pas le sien. Numéro
+  // fourni le 2026-08-17 (0766834777 → 33766834777 au format wa.me).
   whatsapp: {
-    url: "https://wa.me/33000000000",
+    url: "https://wa.me/33766834777",
   },
 } as const;

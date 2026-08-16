@@ -22,3 +22,25 @@ export function todayInParis(): string {
   const day = parts.find((p) => p.type === "day")!.value;
   return `${year}-${month}-${day}`;
 }
+
+// Fenêtre de rattrapage pour un bilan quotidien (demande explicite
+// 2026-08-17 : "même si on loupe un jour, on peut logger quand même par la
+// suite les jours passés"). Avant ce fix, app/dashboard/client/bilan/
+// actions.ts et app/dashboard/coach/moi/bilan/actions.ts n'autorisaient
+// que aujourd'hui ou hier — une tolérance pensée à l'origine pour absorber
+// un formulaire resté ouvert jusqu'après minuit (MASTERCLASS Axe L), pas
+// pour un vrai rattrapage de plusieurs jours manqués. 30 jours : assez
+// large pour rattraper une semaine chargée, borné pour ne pas permettre de
+// réécrire un historique ancien sans limite.
+export const BILAN_BACKFILL_DAYS = 30;
+
+export function isWithinBilanBackfillWindow(logDate: string, maxDaysBack: number = BILAN_BACKFILL_DAYS): boolean {
+  const today = todayInParis();
+  if (logDate > today) return false; // jamais dans le futur
+  const [ty, tm, td] = today.split("-").map(Number);
+  const todayUtc = Date.UTC(ty, tm - 1, td);
+  const [ly, lm, ld] = logDate.split("-").map(Number);
+  const logUtc = Date.UTC(ly, lm - 1, ld);
+  const daysBack = Math.round((todayUtc - logUtc) / 86_400_000);
+  return daysBack >= 0 && daysBack <= maxDaysBack;
+}
