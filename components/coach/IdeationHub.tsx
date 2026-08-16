@@ -1,20 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles } from "lucide-react";
+import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles, Link2 } from "lucide-react";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
 import IdeationInspirations from "@/components/coach/IdeationInspirations";
 import IdeationScripts from "@/components/coach/IdeationScripts";
 import SocialGenerator from "@/components/coach/SocialGenerator";
+import CampaignPagesManager from "@/components/coach/CampaignPagesManager";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
+import type { CampaignPage } from "@/lib/campaign-pages";
 
-type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
+type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur" | "campagnes";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
   { id: "generateur", label: "Générateur", icon: Sparkles },
+  { id: "campagnes", label: "Landing pages", icon: Link2 },
   { id: "scripts", label: "Scripts", icon: Clapperboard },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
@@ -30,12 +33,14 @@ export default function IdeationHub({
   initialInspirations,
   initialScripts,
   guideMagnets,
+  initialCampaignPages,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
   initialInspirations: Inspiration[];
   initialScripts: CoachScript[];
   guideMagnets: { slug: string; title: string }[];
+  initialCampaignPages: CampaignPage[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
 
@@ -79,6 +84,7 @@ export default function IdeationHub({
 
       {tab === "idees" && <ContentStudio initialIdeas={initialIdeas} />}
       {tab === "generateur" && <SocialGenerator guideMagnets={guideMagnets} />}
+      {tab === "campagnes" && <CampaignPagesManager initialPages={initialCampaignPages} />}
       {tab === "scripts" && <IdeationScripts initialScripts={initialScripts} />}
       {tab === "notes" && <IdeationNotes initialNotes={initialNotes} />}
       {tab === "inspirations" && <IdeationInspirations initialInspirations={initialInspirations} />}
