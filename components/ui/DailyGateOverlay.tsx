@@ -13,6 +13,7 @@ import {
   type NutritionTotals,
 } from "@/components/ui/DailyBilanForm";
 import type { DailyLog } from "@/utils/daily-logs";
+import { GATE_REFRESH_EVENT } from "@/lib/gate-events";
 
 // Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15) :
 // tant que lib/daily-gate.ts dit qu'il y a quelque chose à faire, cet
@@ -88,6 +89,21 @@ export default function DailyGateOverlay({
   useEffect(() => {
     refresh();
   }, [pathname, refresh]);
+
+  // BUG CORRIGÉ (2026-08-16, signalé en direct : "je coche les aliments,
+  // ça bloque le reste de l'appli, j'suis obligé de tout actualiser") : ce
+  // composant ne se revérifiait qu'au changement de route. Or logger un
+  // repas se fait sans navigation (on reste sur /nutrition), donc le
+  // verrou "repas" ne se levait jamais tant qu'on ne quittait pas la page
+  // par un lien — un rechargement complet forçait le nouveau calcul
+  // serveur (initialActive) et donnait l'impression que "ça marchait avec
+  // le refresh". Écoute désormais un événement dédié, déclenché par
+  // ClientNutritionView après chaque log de repas réussi (voir
+  // lib/gate-events.ts).
+  useEffect(() => {
+    window.addEventListener(GATE_REFRESH_EVENT, refresh);
+    return () => window.removeEventListener(GATE_REFRESH_EVENT, refresh);
+  }, [refresh]);
 
   if (!active) return null;
   if (active === "meal" && pathname === mealBaseHref) return null;

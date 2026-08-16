@@ -22,6 +22,7 @@ import type { SavedMeal } from "@/utils/saved-meals";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch, type FoodWatchContext } from "@/lib/food-watch-keywords";
 import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz";
+import { notifyGateRefresh } from "@/lib/gate-events";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -767,6 +768,7 @@ export default function ClientNutritionView({
           l.id === optimisticLog.id ? { ...l, id: result.id! } : l
         )
       );
+      notifyGateRefresh();
     }
   }
 
@@ -806,6 +808,51 @@ export default function ClientNutritionView({
       const ids = new Set(optimisticLogs.map((l) => l.id));
       setTodayLogs((prev) => prev.filter((l) => !ids.has(l.id)));
       setAddingError(result.error);
+    } else {
+      notifyGateRefresh();
+    }
+  }
+
+  // Un vrai bouton "Valider le repas" par créneau plutôt qu'obliger à
+  // cocher chaque aliment un par un (demande explicite 2026-08-16, retour
+  // direct : "je veux un vrai seul bouton pour valider tout le repas").
+  // Même logique optimiste + lot que handleLogSavedMeal, appliquée aux
+  // aliments du PLAN pour ce créneau plutôt qu'à un repas enregistré.
+  async function handleValidateSlot(meals: DietPlanMeal[]) {
+    if (!logMealItems || meals.length === 0) return;
+    const slot = meals[0].meal_slot;
+    const items = meals.filter((m) => m.foods);
+
+    const optimisticLogs: FoodLogWithFood[] = items.map((m) => {
+      const macros = calcMacros(m.foods!, m.quantity_g);
+      return {
+        id: `optimistic-${Date.now()}-${m.food_id}`,
+        client_id: "",
+        food_id: m.food_id,
+        meal_slot: slot,
+        quantity_g: m.quantity_g,
+        logged_at: today,
+        calories: macros.calories,
+        proteins: macros.proteins,
+        carbs: macros.carbs,
+        fats: macros.fats,
+        foods: m.foods!,
+      };
+    });
+
+    setTodayLogs((prev) => [...prev, ...optimisticLogs]);
+
+    const result = await logMealItems(
+      items.map((m) => ({ foodId: m.food_id, quantityG: m.quantity_g })),
+      slot,
+      today
+    );
+    if (result.error) {
+      const ids = new Set(optimisticLogs.map((l) => l.id));
+      setTodayLogs((prev) => prev.filter((l) => !ids.has(l.id)));
+      setAddingError(result.error);
+    } else {
+      notifyGateRefresh();
     }
   }
 
@@ -917,6 +964,7 @@ export default function ClientNutritionView({
       setTodayLogs((prev) =>
         prev.map((l) => (l.id === optimisticId ? { ...l, id: result.id! } : l))
       );
+      notifyGateRefresh();
     }
   }
 
@@ -988,6 +1036,7 @@ export default function ClientNutritionView({
       setTodayLogs((prev) =>
         prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: result.id! } : l))
       );
+      notifyGateRefresh();
     }
   }
 
@@ -1252,6 +1301,7 @@ export default function ClientNutritionView({
           plan={activePlan}
           todayLogs={todayLogs}
           onToggle={handleTogglePlanItem}
+          onValidateSlot={logMealItems ? handleValidateSlot : undefined}
           isOwnPlan={isOwnPlan}
           highlightSlot={highlightSlot}
         />
@@ -2293,15 +2343,18 @@ function DietPlanCard({
   plan,
   todayLogs,
   onToggle,
+  onValidateSlot,
   isOwnPlan = false,
   highlightSlot = null,
 }: {
   plan: DietPlanWithMeals;
   todayLogs: FoodLogWithFood[];
   onToggle: (meal: DietPlanMeal, matchedLogId: string | undefined) => void;
+  onValidateSlot?: (meals: DietPlanMeal[]) => void | Promise<void>;
   isOwnPlan?: boolean;
   highlightSlot?: string | null;
 }) {
+  const [validatingSlot, setValidatingSlot] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
   const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
   const isWeekly = plan.structure === "weekly";
@@ -2406,7 +2459,12 @@ function DietPlanCard({
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
-          {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
+          {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => {
+            const uncheckedMeals = checkable
+              ? bySlot[slot.key].filter((m) => !checkedMap[m.id])
+              : [];
+            const isValidating = validatingSlot === slot.key;
+            return (
             <div
               key={slot.key}
               id={`diet-plan-slot-${slot.key}`}
@@ -2416,9 +2474,30 @@ function DietPlanCard({
                   : undefined
               }
             >
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
-                {slot.label}
-              </p>
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                  {slot.label}
+                </p>
+                {/* Bouton unique pour valider tout le repas d'un coup
+                    (demande explicite 2026-08-16) plutôt que de forcer à
+                    cocher chaque aliment un par un — n'apparaît que s'il
+                    reste au moins un aliment non loggué sur ce créneau. */}
+                {onValidateSlot && uncheckedMeals.length > 0 && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      setValidatingSlot(slot.key);
+                      await onValidateSlot(uncheckedMeals);
+                      setValidatingSlot(null);
+                    }}
+                    disabled={isValidating}
+                    className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
+                  >
+                    <Check size={11} strokeWidth={3} />
+                    {isValidating ? "Validation…" : "Valider le repas"}
+                  </button>
+                )}
+              </div>
               <div className="space-y-1">
                 {bySlot[slot.key].map((m) => {
                   const matchedLogId = checkedMap[m.id];
@@ -2464,7 +2543,8 @@ function DietPlanCard({
                 })}
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
