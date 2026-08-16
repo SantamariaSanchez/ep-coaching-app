@@ -149,16 +149,21 @@ export default function CampaignPagesManager({ initialPages }: { initialPages: C
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-4">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+      <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4">
+        Une page à message unique pour un lien de bio ou une description de vidéo précise, plutôt
+        que de renvoyer vers l&apos;accueil générique.
+      </p>
+
+      <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
+        <p className="text-[11px] font-semibold text-[#F5EDED]/40">
           {pages.length} page{pages.length > 1 ? "s" : ""} de campagne
         </p>
         <button
           onClick={() => setShowForm((v) => !v)}
           aria-expanded={showForm}
-          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]"
+          className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[12px] font-extrabold px-3.5 py-2 rounded-full transition-colors flex-shrink-0"
         >
-          <Plus size={13} /> Nouvelle page
+          <Plus size={14} /> Nouvelle page
         </button>
       </div>
 
@@ -218,8 +223,7 @@ export default function CampaignPagesManager({ initialPages }: { initialPages: C
 
       {pages.length === 0 ? (
         <p className="text-[12px] text-[#F5EDED]/35 italic">
-          Aucune page de campagne pour l&apos;instant. Utile pour un lien de bio ou une description
-          de vidéo précise, avec son propre message.
+          Aucune page de campagne pour l&apos;instant.
         </p>
       ) : (
         <div className="grid sm:grid-cols-2 gap-3">
