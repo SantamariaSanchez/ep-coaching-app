@@ -71,11 +71,21 @@ unique sur `referred_id`) et gère l'ordre "j'invite avant même de payer
 moi-même" (récompense `pending` créditée dès que le parrain obtient son
 propre `stripe_customer_id`).
 
-### 5. Landing pages dédiées par campagne — pas commencé
-Demandé mais pas encore livré : une page d'atterrissage ciblée par
-campagne (ex. un lien spécifique pour une vidéo TikTok précise, avec son
-propre message plutôt que la page d'accueil générique). À prioriser après
-un premier retour d'usage sur `/bio` et `/carrieres`.
+### 5. Landing pages dédiées par campagne — livré 2026-08-16
+Studio créatif > onglet **Landing pages** (`components/coach/
+CampaignPagesManager.tsx`). Un coach crée une page publique `/c/[slug]`
+avec son propre titre, sous-titre et bouton d'action configurable (texte +
+lien interne), pensée pour un lien de bio ou une description de vidéo
+précise plutôt que la page d'accueil générique. Table `campaign_pages`
+(slug unique global, compteur de vues best effort), même principe de
+lecture publique via client admin que `/carrieres` (visiteur toujours
+anonyme).
+
+## Les 5 chantiers du cadrage 2026-08-16 sont livrés
+
+Tous en production au 2026-08-16 : `/bio`, `/carrieres` (+ inbox
+candidatures), le Générateur de contenu social, le parrainage monétaire,
+et les landing pages de campagne. Reste à faire, hors périmètre code :
 
 ## Notes pour une future session
 
