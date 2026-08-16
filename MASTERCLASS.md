@@ -1751,11 +1751,31 @@ règle jamais auditée jusqu'ici :
   restants (`components/steps/StepsClient.tsx`,
   `components/ui/NutritionForm.tsx`) sont déjà des désactivations
   volontaires et commentées de la règle, pas des oublis — non touchés.
-- **`@typescript-eslint/no-unused-vars` (10 warnings)** : imports/variables
-  non utilisés, principalement `PRESETS` importé mais jamais appelé dans 3
-  routes API (`import-logbook`, `push/send`, `push/subscribe`) — pas
-  touché dans cette passe (pas de bug fonctionnel, juste du bruit ;
-  reste à faire si une future passe veut nettoyer les imports morts).
+- **`@typescript-eslint/no-unused-vars` (10 warnings, tous traités)** :
+  - 3× `PRESETS` importé mais jamais appelé (`import-logbook`, `push/send`,
+    `push/subscribe`) — le rate limiting existe bel et bien dans ces 3
+    routes (`enforceRateLimit` avec des seuils écrits en dur), juste sans
+    passer par les constantes partagées. Import mort retiré.
+  - 3× dans `DietPlanManager.tsx` (`CalendarDays`, `getMicroDeficiencyOrder`,
+    `MICRO_DAILY_REF`) — imports laissés après un refactor antérieur,
+    retirés (`calculateNutrients`, importé à côté, restait utilisé).
+  - 1× `readOnly` (`components/roadmap/RoadmapCalendar.tsx`, dans
+    `WeekDetailModal`) — creusé plus loin que le simple import mort : le
+    prop `readOnly` ne gate RIEN nulle part dans tout `RoadmapCalendar`,
+    ni dans la modale. Vérifié qu'aucune des deux utilisations
+    (`RoadmapView.tsx` avec `readOnly={true}` côté client,
+    `RoadmapEditor.tsx` avec `readOnly={false}` côté coach) n'a d'effet :
+    le composant entier n'a qu'une seule interaction, cliquer une semaine
+    pour ouvrir une modale purement informative (aucun bouton d'édition,
+    aucun input). Pas un trou de sécurité (rien à mutation-gate n'a jamais
+    existé ici), mais un prop mort porté à travers 4 endroits — retiré
+    entièrement plutôt que juste supprimé de la déstructuration interne.
+  - 2× `_l` (`RoadmapEditor.tsx`, `phases.map(({ localId: _l, ...p }) =>
+    p)`) — **vérifié SAIN, non touché** : idiome volontaire pour exclure
+    une clé avant l'envoi au serveur, le nom jamais lu est le but même du
+    pattern (nécessiterait `ignoreRestSiblings` dans la config eslint du
+    projet pour faire taire proprement, changement de config disproportionné
+    pour 2 warnings).
 
 **Méthode** (relançable) :
 ```bash
