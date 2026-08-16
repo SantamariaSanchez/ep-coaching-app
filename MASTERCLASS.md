@@ -1654,3 +1654,49 @@ développeurs, jamais rendues à l'écran, hors du périmètre de la règle.
 
 eslint + tsc + `npm run build` vérifiés propres après l'ensemble des
 corrections (37 fichiers modifiés en un seul commit).
+
+## Axe R — Accessibilité clavier des accordéons (`aria-expanded` + `onKeyActivate`)
+
+**Statut : clos (2026-08-15/16).**
+
+Suite de l'Axe C (accessibilité clavier, clos précédemment) : passe ciblée
+sur un pattern précis, les accordéons/panneaux dépliables, pour vérifier
+deux choses systématiquement absentes du premier passage : `aria-expanded`
+sur le déclencheur (pour que les lecteurs d'écran annoncent l'état
+ouvert/fermé) et le support clavier réel quand le déclencheur ne peut pas
+être un vrai `<button>` (cas où il contient déjà un autre `<button>`/
+`<label>` imbriqué, invalide en HTML).
+
+**Méthode** : recherche de tous les composants avec un état
+`open`/`expanded`/`showX` piloté par un chevron (`ChevronUp`/`ChevronDown`),
+lecture de chaque déclencheur pour vérifier la présence de `aria-expanded`
+et, quand c'est un `<div role="button">`, la présence d'un `onKeyDown`.
+
+**Ajouté** : `lib/a11y.ts`, exportant `onKeyActivate(handler)` — gère
+Entrée/Espace pour activer un `<div role="button" tabIndex={0}>`, réservé
+aux cas où un vrai `<button>` est impossible.
+
+**Corrigé** :
+- `aria-expanded` ajouté sur 9 boutons d'accordéon qui ne l'avaient pas :
+  `SubscriptionToggle.tsx`, `CoachLogbookClient.tsx`,
+  `ProgramPresetSelector.tsx`, `ProgrammationHub.tsx` (×2),
+  `ProgramFromScratchSection.tsx`, `DietPlanManager.tsx`,
+  `CoachingPhasePanel.tsx`, `CheckinCard.tsx`,
+  `AutoGeneratePlanButton.tsx`, et les 3 accordéons d'`OrganisationView.tsx`
+  (commit séparé, au moment de la création du composant).
+- Deux **vrais bugs pré-existants découverts en cours de route**, pas de
+  simples oublis d'attribut : `ClientNutritionView.tsx` (en-tête de
+  `DietPlanCard` et d'un créneau de repas) et
+  `CoachFormationEditor.tsx` (toggle module/section) utilisaient
+  `<div role="button" tabIndex={0} onClick={...}>` **sans aucun
+  `onKeyDown`** — focusable au clavier via Tab, mais Entrée/Espace ne
+  faisaient rien. Corrigé avec `onKeyActivate` + `aria-expanded`.
+
+**Vérifié sain, à raison** : `SessionView.tsx` — les chevrons identifiés au
+premier coup d'œil comme suspects sont en fait des boutons de réordonnancement
+(monter/descendre un exercice), pas un accordéon ; aucun changement.
+
+`git diff` vérifié sur chaque fichier avant commit pour confirmer que les
+erreurs `react-hooks/set-state-in-effect` remontées par eslint sur ces
+fichiers (pattern déjà connu, voir Axe E) portaient toutes sur des lignes
+non touchées par cette passe, donc pré-existantes et hors périmètre.
