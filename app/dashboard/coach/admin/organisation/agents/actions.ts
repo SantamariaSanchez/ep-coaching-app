@@ -1,7 +1,7 @@
 "use server";
 
 import Anthropic from "@anthropic-ai/sdk";
-import { requireCoach } from "@/lib/auth-guards";
+import { requirePlatformOwner } from "@/lib/auth-guards";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getAgentByKey } from "@/lib/ai-agents";
@@ -12,11 +12,19 @@ import { revalidatePath } from "next/cache";
 // Même intégration Anthropic que le reste de l'appli (analyze-meal-photo),
 // modèle claude-haiku-4-5. Le prompt système de l'agent (lib/ai-agents.ts)
 // est statique, jamais modifiable côté client.
+//
+// requirePlatformOwner() et non requireCoach() (corrigé 2026-08-17) :
+// cette fonctionnalité vit dans Administration > Organisation, réservée
+// au propriétaire de la plateforme comme le reste du groupe (voir
+// ../actions.ts, même garde sur setRoleStatus/setApplicationStatus). Un
+// coach tiers recruté via /carrieres n'a pas à pouvoir consommer le
+// budget Anthropic du propriétaire via ces actions, même si la page qui
+// les appelle est elle-même déjà protégée par le même contrôle.
 export async function sendAgentMessage(
   agentKey: string,
   message: string
 ): Promise<{ error?: string; reply?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   const agent = getAgentByKey(agentKey);
@@ -86,7 +94,7 @@ export async function sendAgentMessage(
 }
 
 export async function clearAgentConversation(agentKey: string): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -112,7 +120,7 @@ export async function createAgentTask(
   title: string,
   description: string
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   const cleanTitle = title.trim().slice(0, 200);
@@ -145,7 +153,7 @@ export async function updateAgentTaskStatus(
   agentKey: string,
   status: AgentTaskStatus
 ): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -166,7 +174,7 @@ export async function updateAgentTaskStatus(
 }
 
 export async function deleteAgentTask(taskId: string, agentKey: string): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   try {
