@@ -1898,3 +1898,36 @@ Puis, pour chaque résultat, vérifier si la table a une vraie notion de
 "propriétaire" (client/auteur) qui justifierait `is_own_coach(...)` à la
 place — sinon (contenu partagé par conception comme les formations),
 laisser tel quel.
+
+## Axe U — Garde trop permissive sur les nouvelles actions "agents IA"
+
+**Statut : clos (2026-08-17).**
+
+En construisant la fonctionnalité "19 agents IA dans l'appli" (voir
+CROISSANCE.md), les 5 actions serveur du nouveau fichier
+`app/dashboard/coach/admin/organisation/agents/actions.ts` ont été écrites
+avec `requireCoach()` (n'importe quel compte coach) au lieu de
+`requirePlatformOwner()`. Repéré en relisant le fichier juste après
+l'avoir écrit, avant tout signalement externe : le fichier voisin du même
+dossier (`../actions.ts`, `setRoleStatus`/`setApplicationStatus`) utilise
+`requirePlatformOwner()` pour exactement le même groupe de fonctionnalités
+(Administration > Organisation), donc l'incohérence sautait aux yeux dès
+la relecture.
+
+Pas de fuite de données entre coachs (chaque action lit/écrit sous son
+propre `owner_id`, RLS `owner_id = auth.uid()` déjà correcte sur
+`ai_agent_messages`/`ai_agent_tasks`), mais un coach tiers recruté via
+`/carrieres` aurait pu appeler ces actions directement (en contournant la
+garde de la page qui, elle, vérifie bien `is_platform_owner`) et
+consommer le budget Anthropic du propriétaire sous son propre compte —
+un vrai problème maintenant que le recrutement externe est actif, pas une
+hypothèse lointaine. Corrigé avant tout déploiement en prod avec la
+mauvaise garde (le premier `git push` de la fonctionnalité incluait déjà
+`requireCoach()` ; corrigé dans un commit séparé juste après, poussé le
+même jour).
+
+**Leçon pour la suite** : toute nouvelle action serveur dans un dossier
+`admin/*` doit reprendre la garde du fichier `actions.ts` voisin du même
+dossier par défaut (`requirePlatformOwner()` pour tout ce qui vit sous
+Administration), jamais `requireCoach()` par réflexe copié d'un autre
+module de l'appli.
