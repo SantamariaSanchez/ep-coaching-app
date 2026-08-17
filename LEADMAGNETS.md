@@ -195,8 +195,9 @@ production locale.
 | 2026-08-15 | Vague W | 2 | La force améliore l'endurance (angle complémentaire à l'axe interférence déjà traité), tarification à la valeur vs à l'heure pour un coach (non sourcé). |
 | 2026-08-15 | Vague X | 1 | Onboarding client et attrition précoce (non sourcé) — ferme la liste de candidats compilée plus tôt dans la session. |
 | **Total au 2026-08-15** | | **117** | Sur 1000 visés, échéance 2026-09-13. |
-| 2026-08-17 | Vague Y | 3 | Reprise après la pause du chantier CROISSANCE. Musculation et alimentation végétarienne/végane (anabolisme théorique vs gains réels sur la durée, créatine et récupération), sauna et récupération (cardiovasculaire sur 20 ans de suivi + performance sportive), marche post-repas et glycémie (timing, fractionnement, micro-doses d'escaliers). Referme les 3 derniers thèmes du backlog du 2026-08-15. |
-| **Total au 2026-08-17** | | **120** | Sur 1000 visés, échéance 2026-09-13. |
+| 2026-08-16 | Routine cloud | 20 | Tourne en tâche de fond (voir "Mécanisme de production continue" ci-dessous), sans supervision directe de cette session. 20 nouvelles entrées le matin même, réparties sur Steps & activité quotidienne, Récupération, Entrepreneuriat, Général (sieste, HRV, alcool et récupération, marche vs vélo domicile-travail, syndrome de l'imposteur du coach débutant...). Découvert seulement le 2026-08-17 en vérifiant le total réel en base : le compteur manuel de ce document avait pris du retard sur la routine, corrigé ci-dessous. |
+| 2026-08-17 | Vague Y | 4 | Reprise manuelle après la pause du chantier CROISSANCE. Musculation et alimentation végétarienne/végane (anabolisme théorique vs gains réels sur la durée, créatine et récupération), sauna et récupération (cardiovasculaire sur 20 ans de suivi + performance sportive), marche post-repas et glycémie (timing, fractionnement, micro-doses d'escaliers), magnésium et sommeil (association observationnelle réelle mais essais contrôlés mitigés, forme L-thréonate mieux étayée). Referme les 4 derniers thèmes du backlog du 2026-08-15. |
+| **Total vérifié en base au 2026-08-17** | | **159** | Sur 1000 visés, échéance 2026-09-13. Écart de 18 entre 117+20+4=141 (addition manuelle) et 159 (compte réel `select count(*) from lead_magnets`) : la routine cloud a probablement tourné plus d'une fois sans que chaque passage soit individuellement journalisé ici. **À partir de maintenant, se fier au compte SQL réel avant d'écrire un nouveau total, jamais à une addition manuelle des lignes de ce tableau.** |
 
 ## Répartition actuelle par catégorie
 
@@ -208,6 +209,16 @@ chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
 reste également en retrait relatif.
 
 ## Sujets couverts (pour éviter les doublons lors des prochaines vagues)
+
+**Note 2026-08-17** : cette liste couvre le travail manuel (sessions
+locales), pas exhaustivement les lots de la routine cloud quotidienne (voir
+"Mécanisme de production continue" plus bas) — la routine se protège déjà
+elle-même des doublons en listant les 300 titres les plus récents avant
+chaque lot (`order by created_at desc limit 300`), donc le risque réel de
+doublon reste faible même sans réconciliation manuelle parfaite ici. En cas
+de doute sur un sujet précis avant d'en traiter un nouveau, une recherche
+rapide `select slug, title from lead_magnets where title ilike '%mot-clé%'`
+reste plus fiable que cette liste.
 
 **Entraînement** : RIR/intensité, séance efficace, profil pratiquant,
 hypertrophie vs force, échauffement, niveau (débutant/intermédiaire/avancé),
@@ -397,19 +408,33 @@ comme un groupe musculaire donné, un mouvement donné, restent ouvertes).
 
 ## Mécanisme de production continue
 
-Une routine cloud récurrente doit être créée (via le skill `schedule`,
-même mécanique que la routine de revue des check-ins clients) pour
-continuer la production vers 1000 sur le mois restant. Contraintes déjà
-identifiées (héritées de cette même routine client) :
+**Statut au 2026-08-17 : confirmée active et fonctionnelle**, vérifié via
+`RemoteTrigger` (liste des routines programmées) — routine
+`trig_01EtA4CyB4E7QyZS4TRPTrKT`, nom "EP Coaching - Production quotidienne
+de lead magnets", cron `0 6 * * *` (6h UTC chaque jour, soit 7h ou 8h heure
+de Paris selon l'heure d'été/hiver), `enabled: true`,
+`last_fired_at: 2026-08-17T06:15:08Z`, `next_run_at: 2026-08-18T06:04:06Z`.
+Produit 15 à 30 nouvelles entrées par exécution, avec les mêmes contraintes
+que le travail manuel (sourcage PubMed obligatoire pour toute affirmation
+factuelle, zéro tiret em/en, pas de doublon de sujet). Tourne aux côtés
+d'une deuxième routine indépendante et sans rapport ("EP Coaching - Revue
+quotidienne check-ins", cron `30 4 * * *`, lecture/ajustement des
+check-ins clients, notification 7h Paris) — les deux existent déjà, aucune
+des deux n'est à recréer.
 
+**Ce qui reste vrai et à surveiller** :
 - Pas d'accès au dépôt git depuis une routine cloud (erreur 403 constatée),
   donc écriture uniquement via Supabase MCP (table `lead_magnets`
   directement) et vérification via PubMed MCP.
 - Toujours vérifier `slug` inexistant avant insertion (contrainte unique).
-- Toujours consulter la section "Sujets couverts" ci-dessus avant de
-  proposer un nouveau thème, pour éviter les doublons.
 - Toute affirmation physiologique doit être sourcée dans `sources` avec un
   DOI réel obtenu via PubMed MCP, jamais inventé.
-- Mettre à jour ce fichier n'est pas possible depuis la routine (pas d'accès
-  repo) : elle doit à la place tenir le compte à jour dans une table ou le
-  signaler dans son rapport, à reporter ici manuellement en session locale.
+- **Ce fichier ne se met PAS à jour tout seul** : la routine n'a pas accès
+  au dépôt, donc chaque nouveau lot qu'elle produit reste invisible ici
+  tant qu'une session locale (comme celle-ci) ne va pas vérifier le compte
+  réel en base (`select count(*) from lead_magnets`) et reporter
+  l'écart manuellement. Décalage constaté le 2026-08-17 : ce document
+  annonçait 117 alors que la base en contenait 159, soit 42 entrées de
+  retard accumulées sur 2 jours sans qu'aucune session ne les remarque.
+  **Réflexe à prendre systématiquement en reprenant ce chantier : lancer
+  le compte SQL en tout premier, avant de lire le tableau "Avancement" ci-dessus.**
