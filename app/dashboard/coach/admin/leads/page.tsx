@@ -36,11 +36,11 @@ export default async function LeadsAdminPage() {
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
-        href="/dashboard/coach/admin"
+        href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={14} />
-        Administration
+        Retour
       </Link>
 
       <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">

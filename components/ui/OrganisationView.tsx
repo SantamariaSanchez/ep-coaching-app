@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Building2, Users, GraduationCap, FileText, ShieldAlert,
-  ChevronDown, Copy, Check, Mail, Inbox, StickyNote, ListChecks,
+  ChevronDown, Copy, Check, Mail, Inbox, StickyNote, ListChecks, Bot, ArrowRight,
 } from "lucide-react";
 import type { JobApplication, ApplicationStatus, OnboardingStepState } from "@/lib/job-applications";
 import { ONBOARDING_STEPS } from "@/lib/job-applications";
+import { getAgentByKey } from "@/lib/ai-agents";
 
 // Vue interactive de la page Administration > Organisation. Portée en
 // composant client à part le 2026-08-15 suite au retour direct : "au lieu
@@ -24,6 +26,17 @@ import { ONBOARDING_STEPS } from "@/lib/job-applications";
 //      reste demeure du contenu de référence.
 //   3. La fiche technique exemple (la plus longue section) est repliée par
 //      défaut avec un bouton "copier le script" fonctionnel.
+//
+// RESTRUCTURATION DES PÔLES (2026-08-17, retour direct : "je vois toujours
+// pas de changement dans organisation... met moi dans organisation vraiment
+// plusieurs onglets par pôle et des boutons par métier avec un aperçu sur
+// mes agents IA je veux pouvoir leur assigner des tâches") : la section
+// Pôles n'est plus un accordéon (5 blocs empilés qui se ressemblaient tous
+// au premier coup d'œil, d'où le "je vois 0 changement") mais de vrais
+// onglets, un par pôle, un seul actif à la fois. Chaque carte de poste
+// affiche maintenant son agent IA (lib/ai-agents.ts, même clé que le
+// poste) avec un lien direct vers la discussion, et un badge de tâches
+// ouvertes s'il y en a.
 
 export type RoleStatus = "a_pourvoir" | "en_recrutement" | "pourvu";
 
@@ -122,12 +135,15 @@ function RoleCardView({
   color,
   status,
   onChange,
+  openTaskCount,
 }: {
   role: RoleCard;
   color: string;
   status: RoleStatus;
   onChange: (s: RoleStatus) => void;
+  openTaskCount: number;
 }) {
+  const agent = getAgentByKey(role.key);
   return (
     <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4 relative overflow-hidden">
       <div className="absolute left-0 top-0 bottom-0" style={{ width: 3, background: color }} />
@@ -163,57 +179,85 @@ function RoleCardView({
         Rattaché à : <strong className="text-[#F5EDED]/55 font-bold">{role.reportsTo}</strong>
       </p>
       <RoleStatusPicker status={status} onChange={onChange} />
+
+      {/* Aperçu de l'agent IA du poste (2026-08-17) : en attendant un vrai
+          titulaire, l'agent IA correspondant (lib/ai-agents.ts, même clé)
+          peut déjà être discuté et recevoir des tâches assignées. */}
+      {agent && (
+        <Link
+          href={`/dashboard/coach/admin/organisation/agents/${role.key}`}
+          className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15 group"
+        >
+          <div
+            className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+            style={{ background: `${color}1f`, color }}
+          >
+            <Bot size={14} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[11px] font-bold text-[#F5EDED]/75 truncate">
+              Agent IA : {agent.name}
+            </p>
+            <p className="text-[9.5px] text-[#F5EDED]/35 truncate">Discuter · assigner une tâche</p>
+          </div>
+          {openTaskCount > 0 && (
+            <span className="text-[9px] font-black text-white bg-[#E01E1E] rounded-full px-1.5 py-0.5 min-w-[16px] text-center flex-shrink-0">
+              {openTaskCount}
+            </span>
+          )}
+          <ArrowRight size={13} className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/60 transition-colors flex-shrink-0" />
+        </Link>
+      )}
     </div>
   );
 }
 
-function PoleAccordion({
-  pole,
-  open,
-  onToggle,
+function PoleTabBar({
+  poles,
+  activeKey,
+  onChange,
   statuses,
-  onChangeStatus,
 }: {
-  pole: Pole;
-  open: boolean;
-  onToggle: () => void;
+  poles: Pole[];
+  activeKey: string;
+  onChange: (key: string) => void;
   statuses: Record<string, RoleStatus>;
-  onChangeStatus: (roleKey: string, status: RoleStatus) => void;
 }) {
-  const filled = pole.roles.filter((r) => statuses[r.key] === "pourvu").length;
   return (
-    <div className="mb-3 rounded-xl overflow-hidden border" style={{ borderColor: `${pole.color}35` }}>
-      <button
-        onClick={onToggle}
-        aria-expanded={open}
-        className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
-        style={{ background: open ? `${pole.color}12` : "transparent" }}
-      >
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pole.color }} />
-          <div className="min-w-0">
-            <h2 className="text-sm font-black uppercase tracking-tight truncate">{pole.name}</h2>
-            <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-              {pole.roles.length} poste{pole.roles.length > 1 ? "s" : ""}
-              {filled > 0 && <span style={{ color: "#4ade80" }}> · {filled} pourvu{filled > 1 ? "s" : ""}</span>}
-            </p>
-          </div>
-        </div>
-        <ChevronToggle open={open} />
-      </button>
-      {open && (
-        <div className="px-4 pb-4 pt-1 grid sm:grid-cols-2 gap-3 bg-[#150000]/40">
-          {pole.roles.map((role) => (
-            <RoleCardView
-              key={role.key}
-              role={role}
-              color={pole.color}
-              status={statuses[role.key] ?? "a_pourvoir"}
-              onChange={(s) => onChangeStatus(role.key, s)}
-            />
-          ))}
-        </div>
-      )}
+    <div role="tablist" aria-label="Pôles" className="flex gap-1.5 overflow-x-auto mb-4 border-b border-[#890404]/20 pb-0.5">
+      {poles.map((pole) => {
+        const active = pole.key === activeKey;
+        const filled = pole.roles.filter((r) => statuses[r.key] === "pourvu").length;
+        return (
+          <button
+            key={pole.key}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(pole.key)}
+            className="flex items-center gap-2 px-3.5 py-2.5 rounded-t-lg text-left whitespace-nowrap flex-shrink-0 transition-colors"
+            style={{
+              border: "none",
+              borderBottom: active ? `2px solid ${pole.color}` : "2px solid transparent",
+              background: active ? `${pole.color}14` : "transparent",
+            }}
+          >
+            <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: pole.color }} />
+            <span className="flex flex-col items-start">
+              <span
+                className="text-[12px] font-extrabold uppercase tracking-tight"
+                style={{ color: active ? "#F5EDED" : "rgba(245,237,237,0.45)" }}
+              >
+                {pole.name}
+              </span>
+              <span className="text-[9px] text-[#F5EDED]/30">
+                {pole.roles.length} poste{pole.roles.length > 1 ? "s" : ""}
+                {filled > 0 && <span style={{ color: "#4ade80" }}> · {filled} pourvu{filled > 1 ? "s" : ""}</span>}
+              </span>
+            </span>
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -394,6 +438,7 @@ export default function OrganisationView({
   setApplicationNotes,
   onboardingByApplication,
   toggleOnboardingStep,
+  openTaskCountsByAgent,
 }: {
   poles: Pole[];
   timeline: TimelineStep[];
@@ -407,6 +452,7 @@ export default function OrganisationView({
   setApplicationNotes: (applicationId: string, notes: string) => Promise<{ error?: string }>;
   onboardingByApplication: Record<string, OnboardingStepState[]>;
   toggleOnboardingStep: (applicationId: string, stepKey: string, done: boolean) => Promise<{ error?: string }>;
+  openTaskCountsByAgent: Record<string, number>;
 }) {
   const totalRoles = poles.reduce((sum, p) => sum + p.roles.length, 0);
   const [statuses, setStatuses] = useState<Record<string, RoleStatus>>(initialStatuses);
@@ -446,15 +492,8 @@ export default function OrganisationView({
     }
   }
 
-  const [openPoles, setOpenPoles] = useState<Set<string>>(new Set([poles[0]?.key].filter((k): k is string => !!k)));
-  function togglePole(key: string) {
-    setOpenPoles((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }
+  const [activePole, setActivePole] = useState<string>(poles[0]?.key ?? "");
+  const currentPole = poles.find((p) => p.key === activePole) ?? poles[0];
 
   const [openTimeline, setOpenTimeline] = useState<Set<number>>(new Set([0]));
   const [openPhases, setOpenPhases] = useState<Set<number>>(new Set([0]));
@@ -570,18 +609,30 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         )}
       </section>
 
-      {/* ── Pôles (accordéon) ── */}
+      {/* ── Pôles (onglets) ── */}
       <section className="mb-8">
-        {poles.map((pole) => (
-          <PoleAccordion
-            key={pole.key}
-            pole={pole}
-            open={openPoles.has(pole.key)}
-            onToggle={() => togglePole(pole.key)}
-            statuses={statuses}
-            onChangeStatus={handleChangeStatus}
-          />
-        ))}
+        <div className="flex items-center gap-2 mb-1">
+          <Building2 size={14} className="text-[#E01E1E]" />
+          <h2 className="text-base font-black uppercase tracking-tight">Pôles &amp; postes</h2>
+        </div>
+        <p className="text-[11px] text-[#F5EDED]/35 mb-3">
+          Un onglet par pôle. Chaque poste a son agent IA prêt à discuter en attendant un vrai titulaire.
+        </p>
+        <PoleTabBar poles={poles} activeKey={activePole} onChange={setActivePole} statuses={statuses} />
+        {currentPole && (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {currentPole.roles.map((role) => (
+              <RoleCardView
+                key={role.key}
+                role={role}
+                color={currentPole.color}
+                status={statuses[role.key] ?? "a_pourvoir"}
+                onChange={(s) => handleChangeStatus(role.key, s)}
+                openTaskCount={openTaskCountsByAgent[role.key] ?? 0}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* ── Parcours d'intégration (accordéon) ── */}

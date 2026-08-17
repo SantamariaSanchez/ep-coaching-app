@@ -6,6 +6,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 import OrganisationView, { type RoleStatus } from "@/components/ui/OrganisationView";
 import { POLES } from "@/lib/org-roles";
 import { getJobApplications, getOnboardingStepsByApplication } from "@/lib/job-applications";
+import { getOpenTaskCountsByAgent } from "@/utils/ai-agents";
 import { setRoleStatus, setApplicationStatus, setApplicationNotes, toggleOnboardingStep } from "./actions";
 
 // Réservé au propriétaire de la plateforme (comme le reste du groupe
@@ -89,7 +90,10 @@ export default async function OrganisationAdminPage() {
 
   const applications = await getJobApplications(user.id);
   const acceptedIds = applications.filter((a) => a.status === "acceptee").map((a) => a.id);
-  const onboardingByApplication = await getOnboardingStepsByApplication(acceptedIds);
+  const [onboardingByApplication, openTaskCountsByAgent] = await Promise.all([
+    getOnboardingStepsByApplication(acceptedIds),
+    getOpenTaskCountsByAgent(user.id),
+  ]);
   const roleTitleByKey: Record<string, string> = {};
   for (const pole of POLES) {
     for (const role of pole.roles) roleTitleByKey[role.key] = role.title;
@@ -98,30 +102,28 @@ export default async function OrganisationAdminPage() {
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
-        href="/dashboard/coach/admin"
+        href="/dashboard/coach"
         className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6"
       >
         <ChevronLeft size={13} /> Retour
       </Link>
 
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Administration
-          </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Organisation</h1>
-          <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
-            Une structure de référence pour préparer les futures embauches : qui fait quoi,
-            à qui chaque poste rapporte, comment on les forme avant même de les embaucher,
-            et ce qu&apos;il faudra régler légalement avant de signer qui que ce soit.
-          </p>
-        </div>
+      <div className="mb-6">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Administration
+        </p>
+        <h1 className="text-3xl font-black uppercase tracking-tight">Organisation</h1>
+        <p className="text-sm text-[#F5EDED]/45 mt-2 leading-relaxed">
+          Une structure de référence pour préparer les futures embauches : qui fait quoi,
+          à qui chaque poste rapporte, comment on les forme avant même de les embaucher,
+          et ce qu&apos;il faudra régler légalement avant de signer qui que ce soit.
+        </p>
         <Link
           href="/carrieres"
           target="_blank"
-          className="flex-shrink-0 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] border border-[#E01E1E]/30 rounded-lg px-3 py-2 hover:bg-[#E01E1E]/10 transition-colors whitespace-nowrap"
+          className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] border border-[#E01E1E]/30 rounded-lg px-3 py-2 hover:bg-[#E01E1E]/10 transition-colors mt-4"
         >
-          Page publique <ExternalLink size={11} />
+          Voir la page publique de candidature <ExternalLink size={11} />
         </Link>
       </div>
 
@@ -138,6 +140,7 @@ export default async function OrganisationAdminPage() {
         setApplicationNotes={setApplicationNotes}
         onboardingByApplication={onboardingByApplication}
         toggleOnboardingStep={toggleOnboardingStep}
+        openTaskCountsByAgent={openTaskCountsByAgent}
       />
     </div>
   );
