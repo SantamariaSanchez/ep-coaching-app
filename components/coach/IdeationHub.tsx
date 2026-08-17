@@ -1,23 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles, Link2 } from "lucide-react";
+import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles } from "lucide-react";
 import ContentStudio from "@/components/coach/ContentStudio";
 import IdeationNotes from "@/components/coach/IdeationNotes";
 import IdeationInspirations from "@/components/coach/IdeationInspirations";
 import IdeationScripts from "@/components/coach/IdeationScripts";
 import SocialGenerator from "@/components/coach/SocialGenerator";
-import CampaignPagesManager from "@/components/coach/CampaignPagesManager";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
-import type { CampaignPage } from "@/lib/campaign-pages";
+import type { GuideMagnet } from "@/lib/lead-magnets";
 
-type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur" | "campagnes";
+type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
   { id: "idees", label: "Idées", icon: Lightbulb },
   { id: "generateur", label: "Générateur", icon: Sparkles },
-  { id: "campagnes", label: "Landing pages", icon: Link2 },
   { id: "scripts", label: "Scripts", icon: Clapperboard },
   { id: "notes", label: "Notes", icon: StickyNote },
   { id: "inspirations", label: "Inspirations", icon: BookmarkPlus },
@@ -27,20 +25,24 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 // espace "hyper complet" plutôt qu'une seule liste : le pipeline de
 // contenu (ContentStudio, déjà en place) reste le cœur, complété par la
 // prise de notes libre et un swipe file de références externes.
+//
+// BUG CORRIGÉ (2026-08-17, signalé en direct : "je peux plus défiler pour
+// retrouver les autres sous-onglets") : la barre d'onglets n'avait aucun
+// overflow géré, sur mobile les derniers onglets sortaient du cadre sans
+// aucun moyen de les atteindre. `overflow-x-auto` + `flex-shrink-0` sur
+// chaque bouton (même motif que OutilsView.tsx).
 export default function IdeationHub({
   initialIdeas,
   initialNotes,
   initialInspirations,
   initialScripts,
-  guideMagnets,
-  initialCampaignPages,
+  guides,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
   initialInspirations: Inspiration[];
   initialScripts: CoachScript[];
-  guideMagnets: { slug: string; title: string }[];
-  initialCampaignPages: CampaignPage[];
+  guides: GuideMagnet[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
 
@@ -49,7 +51,7 @@ export default function IdeationHub({
       <div
         role="tablist"
         aria-label="Sections Idéation"
-        style={{ display: "flex", gap: 6, marginBottom: 20, borderBottom: "1px solid rgba(137,4,4,0.2)", paddingBottom: 2 }}
+        className="flex gap-1.5 overflow-x-auto mb-5 border-b border-[#890404]/20 pb-0.5"
       >
         {TABS.map(({ id, label, icon: Icon }) => {
           const active = tab === id;
@@ -60,15 +62,12 @@ export default function IdeationHub({
               role="tab"
               aria-selected={active}
               onClick={() => setTab(id)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-t-lg text-[12.5px] font-extrabold whitespace-nowrap flex-shrink-0 transition-colors"
               style={{
-                display: "flex", alignItems: "center", gap: 6,
-                padding: "9px 16px", borderRadius: "10px 10px 0 0",
-                fontSize: 12.5, fontWeight: 800,
-                border: "none", borderBottom: active ? "2px solid #E01E1E" : "2px solid transparent",
+                border: "none",
+                borderBottom: active ? "2px solid #E01E1E" : "2px solid transparent",
                 background: active ? "rgba(224,30,30,0.1)" : "transparent",
                 color: active ? "#F5EDED" : "rgba(245,237,237,0.4)",
-                cursor: "pointer",
-                transition: "background 0.15s, color 0.15s",
               }}
             >
               <Icon size={13} />
@@ -83,8 +82,7 @@ export default function IdeationHub({
       </div>
 
       {tab === "idees" && <ContentStudio initialIdeas={initialIdeas} />}
-      {tab === "generateur" && <SocialGenerator guideMagnets={guideMagnets} />}
-      {tab === "campagnes" && <CampaignPagesManager initialPages={initialCampaignPages} />}
+      {tab === "generateur" && <SocialGenerator guides={guides} />}
       {tab === "scripts" && <IdeationScripts initialScripts={initialScripts} />}
       {tab === "notes" && <IdeationNotes initialNotes={initialNotes} />}
       {tab === "inspirations" && <IdeationInspirations initialInspirations={initialInspirations} />}
