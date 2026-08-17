@@ -1866,6 +1866,20 @@ plateforme au lieu du coach du client concerné, remplacé par
   buckets" mentionnée comme non traitée dans le rappel sécurité d'origine
   semble donc déjà appliquée elle aussi.
 
+**Repéré en passant, PAS corrigé (hors périmètre sécurité de cet axe,
+performance pure)** : l'advisor performance Supabase remonte 154
+occurrences de `multiple_permissive_policies` — des tables avec 2 policies
+permissives qui se chevauchent sur le même rôle/action (typiquement une
+policy `ALL` "Owner can manage X" plus une policy `SELECT` séparée "Owner
+or coach can read X"), forçant Postgres à évaluer les deux à chaque ligne
+au lieu d'une seule consolidée. Pas un risque de sécurité (les deux
+policies disent la même chose côté permissif, juste redondant), un vrai
+sujet de performance à l'échelle, mais pas urgent avec le volume actuel
+(~12 clients). Candidat pour une future passe dédiée : fusionner chaque
+paire en une seule policy `USING (condition_a OR condition_b)`, table par
+table, en vérifiant après coup que le comportement effectif ne change pas
+(même méthode avant/après que le fix `auth_rls_initplan` de l'Axe I).
+
 `community_posts`/`community_recipes` policies DELETE (pas UPDATE) restent
 volontairement restreintes à l'auteur ou au fondateur seul (pas
 `is_own_coach()`) — vérifié que ce n'est PAS une fuite (c'est au contraire
