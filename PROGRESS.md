@@ -8,20 +8,22 @@ Emmanuel review et merge lui-même).
 où c'est marqué "en cours" ou le premier "todo" de l'axe courant. Ne jamais
 redemander une décision déjà actée ici.
 
-**Rappel sécurité (ne pas oublier)** : 6 failles cross-coach déjà identifiées en
-audit séparé (communauté, live, profil, dashboard stats, `/api/push/send`,
-`/api/coach/pending-count`) + une migration SQL storage buckets, **hors périmètre
-de cette liste**, prérequis avant toute commercialisation à d'autres coachs. Si un
-item ci-dessous touche à du code déjà marqué vulnérable dans cet audit, le
-signaler dans "Signalements" ci-dessous plutôt que de corriger en silence.
-**Piste trouvée en cours de chantier** : `getPendingReplies` (utils/checkins.ts),
-`getPendingCorrectionsWithClient` (utils/corrections.ts) et
-`getPendingPhotoUpdates` (utils/photos.ts) — utilisées par `dashboard-stats`,
-déjà dans la liste des 6 — n'ont aucun filtre explicite sur coach_id dans
-leur requête, elles comptent uniquement sur la RLS de session. Probablement
-la même famille de faille. Pas touché ces fonctions ; l'item 8 (boîte de
-réception) reconstruit ses propres requêtes avec un filtre coach_id
-explicite plutôt que de les réutiliser.
+**Rappel sécurité — MIS À JOUR le 2026-08-17, voir MASTERCLASS.md Axe T** :
+les 6 failles cross-coach listées ici à l'origine (communauté, live, profil,
+dashboard stats, `/api/push/send`, `/api/coach/pending-count`) ont été
+ré-auditées une par une. Résultat : **live, profil, dashboard stats,
+`/api/push/send` et `/api/coach/pending-count` étaient déjà corrigés**
+(silencieusement, dans des sessions postérieures à ce fichier, jamais
+reporté ici) — vérifié en lisant le code et la RLS actuels, pas supposé.
+**communauté restait un vrai trou** (policies UPDATE/DELETE sur
+`community_posts`/`community_recipes` avec un check `role = 'coach'`
+générique au lieu de `is_own_coach()`), corrigé le 2026-08-17
+(`supabase/migrations/20260817b_fix_cross_coach_leaks.sql`), avec
+`resource_requests` au passage (même famille, déjà signalée ci-dessous).
+Ce rappel reste dans ce fichier pour l'historique, mais n'est plus un
+blocage actif — voir MASTERCLASS.md Axe T pour le détail complet de
+l'audit et ce qui a été vérifié sain par ailleurs (formations, buckets de
+storage, `getScienceStudies`).
 
 ---
 
@@ -328,23 +330,16 @@ mergé sur `main` — tout reste sur `feature/50-idees`, prêt pour review.
 
 ## Signalements (code touchant une zone déjà marquée vulnérable)
 
-- **`utils/science.ts` — `getScienceStudies`** (rencontré en traitant l'item 1,
-  pas modifié) : son propre commentaire dans le code documente que la fonction
-  peut renvoyer les études de TOUS les coachs de la plateforme à n'importe quel
-  client dès qu'un 2e coach existera ("fuite inter-coachs"). Non exploitable
-  avec un seul coach en prod aujourd'hui. Je n'y ai pas touché (ni mis en
-  cache, ni "corrigé en silence") — à vérifier si c'est déjà une des 6 failles
-  de l'audit séparé ou un doublon à traiter avec elles.
-- **`resource_requests` (RLS)** — trouvé en auditant l'item 49. Les policies
-  "Author or coach can update/delete a request" vérifient juste
-  `role = 'coach'`, pas quel coach précisément : n'importe quel coach tiers
-  de la plateforme peut modifier/supprimer la demande de ressource d'un
-  membre qui n'est pas le sien. Même famille que les 6 failles déjà connues
-  (communauté, live, profil, dashboard-stats, /api/push/send,
-  /api/coach/pending-count), mais `resource_requests` n'est nommée dans
-  aucune d'elles explicitement — possible doublon de "communauté" ou
-  trouvaille distincte, à trancher par l'audit séparé. Non exploitable avec
-  un seul coach en prod aujourd'hui. Pas touché.
+- **`utils/science.ts` — `getScienceStudies`** — **CORRIGÉ** (vérifié
+  2026-08-17, voir MASTERCLASS.md Axe T) : la fonction filtre maintenant
+  bien `.eq("created_by", coachId)`, avec un commentaire dans le code
+  documentant le correctif appliqué le 2026-08-06 (migration `20260806d`
+  pour les participants, le filtre sur `created_by` lui-même semble avoir
+  suivi peu après). Plus une fuite active.
+- **`resource_requests` (RLS)** — **CORRIGÉ le 2026-08-17**
+  (`supabase/migrations/20260817b_fix_cross_coach_leaks.sql`) : les
+  policies UPDATE/DELETE utilisent maintenant `is_own_coach(author_id)`
+  au lieu de `role = 'coach'` générique.
 - **`formations`/`formation_modules`/`formation_lessons`/`formation_sections`**
   (RLS "coach_manage_*", même pattern `role = 'coach'` générique) —
   volontairement PAS signalé comme une fuite : ces tables n'ont pas de

@@ -1789,3 +1789,98 @@ les 10 warnings `no-unused-vars`, à traiter dans une future itération.
 tsc/build vérifiés propres après corrections (deux commits séparés : le
 lot SEO+purity+exhaustive-deps ici, un correctif de bug utilisateur signalé
 en direct pendant cette même session traité et documenté à part).
+
+## Axe T — Les "6 failles cross-coach" de PROGRESS.md, ré-auditées et closes
+
+**Statut : clos (2026-08-17).**
+
+Découverte en lisant le prompt complet d'une routine cloud déjà en place
+(revue quotidienne des check-ins) : son texte mentionne explicitement "6
+failles cross-coach déjà identifiées en audit séparé (communauté, live,
+profil, dashboard stats, `/api/push/send`, `/api/coach/pending-count`) +
+une migration SQL storage buckets, hors périmètre... prérequis avant toute
+commercialisation à d'autres coachs". `PROGRESS.md` (chantier "50 idées",
+clos depuis) documentait la même liste, plus deux signalements
+additionnels (`getScienceStudies`, `resource_requests`), tous explicitement
+laissés non corrigés à l'époque car "non exploitable avec un seul coach en
+prod". Ce prérequis devient faux maintenant que le recrutement de coachs
+est réellement lancé (`/carrieres`, suivi d'onboarding, voir CROISSANCE.md
+et EQUIPE-IA.md) — traité en priorité absolue dès la découverte,
+avant tout autre travail en cours.
+
+**Méthode** : pour chacun des 6 items + 2 signalements, lecture du code
+applicatif réel ET de la RLS réelle (`pg_policies`, jamais supposée à
+partir d'un commentaire ancien) — plusieurs de ces items ont en fait déjà
+été corrigés dans des sessions postérieures à la rédaction de
+`PROGRESS.md`, sans que ce fichier de suivi ne soit mis à jour en
+conséquence. Ne jamais faire confiance à un statut "connu comme
+vulnérable" sans revérifier l'état actuel du code.
+
+**Déjà corrigé, vérifié à nouveau (aucun changement nécessaire)** :
+- **dashboard stats** (`/api/coach/dashboard-stats`) : `getPendingReplies`/
+  `getWeeklyCheckinCount` passent par `createServerSupabase()` (session),
+  et la RLS de `check_ins` est `client_id = auth.uid() OR
+  is_own_coach(client_id)` — correctement cloisonnée.
+- **`/api/push/send`** : vérifie explicitement `target.coach_id ===
+  guard.userId` avant d'autoriser une notification vers un client, avec un
+  commentaire dans le code documentant la règle.
+- **`/api/coach/pending-count`** : commentaire explicite confirmant que les
+  3 fonctions utilisées passent par le client de session, RLS-cloisonnées.
+- **live** (`live_events`, `live_event_rsvps`) : RLS utilise
+  `my_coach_scope()`/`host_id = auth.uid()`, correctement cloisonnée.
+- **profil** (`profiles`) : RLS "Coach reads all profiles" est
+  `auth.uid() = id OR is_own_coach(id) OR is_platform_owner()`, correcte.
+- **`getScienceStudies`** (`utils/science.ts`) : filtre déjà
+  `.eq("created_by", coachId)`, avec un commentaire documentant un
+  correctif du 2026-08-06.
+
+**Réellement vulnérable, corrigé maintenant** (`supabase/migrations/
+20260817b_fix_cross_coach_leaks.sql`) — le motif fautif partout : policy
+`EXISTS (select 1 from profiles where profiles.id = auth.uid() and
+profiles.role = 'coach')`, qui autorise N'IMPORTE QUEL coach de la
+plateforme au lieu du coach du client concerné, remplacé par
+`is_own_coach(author_id)` (déjà utilisé correctement ailleurs) :
+- `community_posts`, policy UPDATE ("Author or coach can update a post")
+- `community_recipes`, policy DELETE ("Author or coach can delete a
+  recipe")
+- `resource_requests`, policies UPDATE et DELETE ("Author or coach can
+  update/delete a request")
+
+**Vérifié SAIN, à raison, non touché** :
+- `formations`/`formation_modules`/`formation_sections`/`formation_lessons`
+  (RLS "coach_manage_*", même motif `role = 'coach'` générique) : ces
+  tables n'ont pas de `coach_id`, c'est une bibliothèque de cours partagée
+  à toute la plateforme par conception, pas une fuite de données client.
+  Déjà noté ainsi dans `PROGRESS.md`, reconfirmé.
+- Bucket de storage `resources` (policies "Coach can upload/delete
+  resources", `is_coach()` générique) et `exercise-videos` (même motif) :
+  même famille que les formations, contenu partagé publiquement lisible
+  par conception (`select ... where bucket_id = 'resources'` publique),
+  pas une fuite.
+- Tous les autres buckets audités (`avatars`, `checkin-media`,
+  `coach-videos`, `correction-videos`, `message-images`,
+  `photo-updates-media`, `progress-photos`, `set-videos`,
+  `voice-messages`) : déjà correctement cloisonnés via
+  `is_own_coach()`/`is_platform_owner()` sur le premier segment du chemin
+  de fichier (convention `{userId}/...`). La "migration SQL storage
+  buckets" mentionnée comme non traitée dans le rappel sécurité d'origine
+  semble donc déjà appliquée elle aussi.
+
+`community_posts`/`community_recipes` policies DELETE (pas UPDATE) restent
+volontairement restreintes à l'auteur ou au fondateur seul (pas
+`is_own_coach()`) — vérifié que ce n'est PAS une fuite (c'est au contraire
+plus restrictif que nécessaire, jamais un accès en trop), donc pas touché
+pour rester focalisé sur les vraies fuites de cette passe.
+
+**Méthode reproductible** (relançable) :
+```sql
+select tablename, policyname, cmd, qual, with_check
+from pg_policies
+where schemaname = 'public'
+  and (qual ilike '%role = ''coach''%' or with_check ilike '%role = ''coach''%')
+order by tablename, policyname;
+```
+Puis, pour chaque résultat, vérifier si la table a une vraie notion de
+"propriétaire" (client/auteur) qui justifierait `is_own_coach(...)` à la
+place — sinon (contenu partagé par conception comme les formations),
+laisser tel quel.
