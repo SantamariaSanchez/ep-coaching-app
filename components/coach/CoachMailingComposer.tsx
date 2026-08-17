@@ -54,7 +54,10 @@ export default function CoachMailingComposer({ initialHistory }: { initialHistor
         setConfirming(false);
         return;
       }
-      setSuccess(`Envoyé à ${result.recipientCount} client${(result.recipientCount ?? 0) > 1 ? "s" : ""}.`);
+      setSuccess(
+        `Envoyé à ${result.recipientCount} client${(result.recipientCount ?? 0) > 1 ? "s" : ""}.` +
+          (result.failedSyncCount ? ` Attention, ${result.failedSyncCount} contact${result.failedSyncCount > 1 ? "s n'ont" : " n'a"} pas pu être synchronisé${result.failedSyncCount > 1 ? "s" : ""} vers Brevo, il${result.failedSyncCount > 1 ? "s" : ""} pourrai${result.failedSyncCount > 1 ? "ent" : "t"} ne pas avoir reçu ce mail.` : "")
+      );
       setHistory((prev) => [
         { id: `tmp-${Date.now()}`, subject, recipient_count: result.recipientCount ?? 0, status: "sent", created_at: new Date().toISOString() },
         ...prev,

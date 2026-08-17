@@ -1931,3 +1931,61 @@ même jour).
 dossier par défaut (`requirePlatformOwner()` pour tout ce qui vit sous
 Administration), jamais `requireCoach()` par réflexe copié d'un autre
 module de l'appli.
+
+## Axe V — Audit de l'onglet Mailing (demande explicite 2026-08-17)
+
+**Statut : bug corrigé, questions de fond posées à l'utilisateur avant
+d'aller plus loin.**
+
+Périmètre audité : `/dashboard/coach/mailing`, `CoachMailingComposer.tsx`,
+`app/dashboard/coach/mailing/actions.ts`, `lib/coach-mailings.ts`,
+`lib/brevo-mailing.ts`, `utils/brevo.ts`, la table `coach_mailings` et sa
+RLS, la garde d'accès. Contexte : livré à l'Axe 2 de VISION.md
+(2026-08-14) — chaque coach compose un message, l'envoie en test à
+lui-même, puis à tous ses clients actifs via une liste Brevo dédiée créée
+à la volée.
+
+**Vérifié sain, pas de changement** :
+- Garde `requireCoach()` correcte ici (contrairement à l'Axe U) : chaque
+  coach ne peut mailer QUE ses propres clients (`getCoachClientsForMailing`
+  filtre par `coach_id = son propre id`), c'est le comportement voulu par
+  design, pas une fuite.
+- RLS `coach_mailings` (`coach_id = auth.uid()`) déjà correcte et déjà
+  passée par le fix `auth_rls_initplan` (migration `20260814o`).
+- Plafond défensif `MAX_RECIPIENTS_PER_SEND = 200` toujours appliqué
+  côté serveur même si le compteur affiché côté client est périmé (chargé
+  une seule fois au montage) — pas de contournement possible.
+- Aucun tiret em/en dans le texte utilisateur des fichiers audités.
+
+**Bug trouvé et corrigé** : `syncClientsToList` avalait silencieusement
+chaque échec de synchronisation d'un contact vers Brevo
+(`.catch(() => {})`), et l'appelant reportait ensuite
+`recipientCount: clients.length` au coach et dans l'historique comme si
+l'envoi avait forcément atteint tout le monde. Un incident Brevo
+(rate limit, contact rejeté...) pouvait donc afficher "Envoyé à 12
+clients" en base et à l'écran alors que certains n'avaient en réalité
+jamais reçu le mail. Corrigé : `syncClientsToList` retourne maintenant les
+échecs, le nombre de destinataires reporté vient de la taille réelle de la
+liste Brevo au moment de l'envoi (`GET /contacts/lists/{id}`, vérité
+terrain plutôt que décompte optimiste), un échec de synchronisation
+partiel est affiché au coach ("N contacts n'ont pas pu être
+synchronisés..."), et si absolument tous les contacts échouent, l'envoi
+est annulé avant de créer une campagne Brevo vers une liste vide ou
+périmée plutôt que de la faire passer pour un succès.
+
+**Questions ouvertes, pas de code écrit dessus** (posées à l'utilisateur
+le 2026-08-17, voir sa réponse pour la suite) :
+- Compliance : les campagnes Brevo (`type: "classic"`) incluent-elles déjà
+  un lien de désabonnement conforme (RGPD/anti-spam) ? Pas vérifiable
+  depuis le code, dépend de la configuration du compte Brevo — aucun
+  outil MCP Brevo authentifié dans cette session pour le vérifier
+  directement.
+- Personnalisation : `FIRSTNAME` est déjà synchronisé comme attribut
+  Brevo sur chaque contact (donc `{{contact.FIRSTNAME}}` fonctionnerait
+  déjà dans le corps du message), mais rien dans l'interface ne le
+  signale au coach — fonctionnalité invisible.
+- Pas de réutilisation d'un envoi précédent (dupliquer depuis
+  l'historique), pas de programmation différée, pas d'aperçu HTML rendu
+  avant envoi (seul le test réel sert d'aperçu), pas d'identité de marque
+  dans le composeur (contrairement au Studio créatif qui soigne logo/
+  handle).

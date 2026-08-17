@@ -42,7 +42,7 @@ export async function sendTestMailing(subject: string, htmlContent: string): Pro
   return { success: true };
 }
 
-export async function sendMailingToClients(subject: string, htmlContent: string): Promise<{ error?: string; success?: boolean; recipientCount?: number }> {
+export async function sendMailingToClients(subject: string, htmlContent: string): Promise<{ error?: string; success?: boolean; recipientCount?: number; failedSyncCount?: number }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
 
@@ -54,7 +54,7 @@ export async function sendMailingToClients(subject: string, htmlContent: string)
   const coachName = (profile as { full_name: string | null } | null)?.full_name ?? "Coach";
 
   try {
-    const { recipientCount, campaignId } = await sendCoachCampaign(guard.userId, coachName, subject, htmlContent);
+    const { recipientCount, campaignId, failedSyncCount } = await sendCoachCampaign(guard.userId, coachName, subject, htmlContent);
     if (recipientCount === 0) return { error: "Aucun client actif à qui envoyer." };
 
     await admin.from("coach_mailings").insert({
@@ -66,7 +66,7 @@ export async function sendMailingToClients(subject: string, htmlContent: string)
     });
 
     revalidatePath("/dashboard/coach/mailing");
-    return { success: true, recipientCount };
+    return { success: true, recipientCount, failedSyncCount };
   } catch (e) {
     await admin.from("coach_mailings").insert({
       coach_id: guard.userId,

@@ -53,13 +53,22 @@ interface CoachClient {
   full_name: string | null;
 }
 
-async function syncClientsToList(listId: number, clients: CoachClient[]): Promise<void> {
+// MASTERCLASS.md Axe V : cette fonction ignorait silencieusement chaque
+// échec de synchronisation (`.catch(() => {})`), et l'appelant reportait
+// ensuite `recipientCount: clients.length` au coach et dans l'historique
+// comme si l'envoi avait forcément atteint tout le monde. Un incident
+// Brevo (clé API rate-limitée, contact rejeté...) pouvait donc faire
+// afficher "Envoyé à 12 clients" alors que certains n'avaient en réalité
+// jamais été ajoutés à la liste. Retourne maintenant les emails en échec,
+// pour que l'appelant reporte un nombre vérifié plutôt que supposé.
+async function syncClientsToList(listId: number, clients: CoachClient[]): Promise<{ failedEmails: string[] }> {
+  const failedEmails: string[] = [];
   // Séquentiel volontairement, pas Promise.all : l'API Brevo a une limite
   // de débit par seconde, et ce n'est jamais assez de contacts pour que la
   // latence supplémentaire soit gênante en pratique (voir MAX_RECIPIENTS_PER_SEND).
   for (const client of clients) {
     if (!client.email) continue;
-    await fetch(`${BREVO_API}/contacts`, {
+    const res = await fetch(`${BREVO_API}/contacts`, {
       method: "POST",
       headers: brevoHeaders(),
       body: JSON.stringify({
@@ -68,7 +77,25 @@ async function syncClientsToList(listId: number, clients: CoachClient[]): Promis
         listIds: [listId],
         updateEnabled: true,
       }),
-    }).catch(() => {}); // un contact en échec ne doit pas bloquer les autres
+    }).catch(() => null);
+    if (!res || !res.ok) failedEmails.push(client.email);
+  }
+  return { failedEmails };
+}
+
+// Nombre réel de contacts dans la liste Brevo au moment de l'envoi — la
+// vérité terrain, plutôt que de recompter nous-mêmes qui a été synchronisé
+// avec succès (ça inclut aussi les contacts déjà présents d'un envoi
+// précédent, et exclut ceux désabonnés côté Brevo). `null` si Brevo ne
+// répond pas, l'appelant se rabat alors sur un décompte best effort.
+async function getListSize(listId: number): Promise<number | null> {
+  try {
+    const res = await fetch(`${BREVO_API}/contacts/lists/${listId}`, { headers: brevoHeaders() });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { totalSubscribers?: number };
+    return typeof data.totalSubscribers === "number" ? data.totalSubscribers : null;
+  } catch {
+    return null;
   }
 }
 
@@ -89,9 +116,9 @@ export async function sendCoachCampaign(
   coachName: string,
   subject: string,
   htmlContent: string
-): Promise<{ recipientCount: number; campaignId: number | null }> {
+): Promise<{ recipientCount: number; campaignId: number | null; failedSyncCount: number }> {
   const clients = await getCoachClientsForMailing(coachId);
-  if (clients.length === 0) return { recipientCount: 0, campaignId: null };
+  if (clients.length === 0) return { recipientCount: 0, campaignId: null, failedSyncCount: 0 };
   if (clients.length > MAX_RECIPIENTS_PER_SEND) {
     throw new Error(
       `Trop de destinataires (${clients.length}, max ${MAX_RECIPIENTS_PER_SEND} par envoi). Le compte Brevo est sur le plan gratuit, partagé avec les emails critiques de l'app.`
@@ -99,7 +126,17 @@ export async function sendCoachCampaign(
   }
 
   const listId = await getOrCreateCoachList(coachId, coachName);
-  await syncClientsToList(listId, clients);
+  const { failedEmails } = await syncClientsToList(listId, clients);
+
+  // Si absolument tous les contacts ont échoué à synchroniser (incident
+  // Brevo, clé API invalide...), on n'envoie pas une campagne vers une
+  // liste potentiellement vide ou périmée en la faisant passer pour un
+  // succès. On échoue franchement plutôt que de créer un envoi fantôme.
+  if (failedEmails.length === clients.length) {
+    throw new Error(
+      `Échec de synchronisation Brevo pour les ${clients.length} destinataire${clients.length > 1 ? "s" : ""}, envoi annulé.`
+    );
+  }
 
   const createRes = await fetch(`${BREVO_API}/emailCampaigns`, {
     method: "POST",
@@ -128,5 +165,10 @@ export async function sendCoachCampaign(
     throw new Error(`Envoi campagne Brevo échoué (${sendRes.status}) : ${body.slice(0, 200)}`);
   }
 
-  return { recipientCount: clients.length, campaignId };
+  // Nombre réel de destinataires : la taille de la liste Brevo au moment de
+  // l'envoi, pas un décompte optimiste côté app (voir syncClientsToList).
+  const listSize = await getListSize(listId);
+  const recipientCount = listSize ?? clients.length - failedEmails.length;
+
+  return { recipientCount, campaignId, failedSyncCount: failedEmails.length };
 }
