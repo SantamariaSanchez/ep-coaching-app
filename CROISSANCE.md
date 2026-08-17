@@ -31,11 +31,19 @@ pas l'app pour l'app.
 
 ## Statut par chantier
 
-### 1. Page lien en bio (`/bio`) — livré 2026-08-16
-Destination unique pour le lien en bio Insta/TikTok, cinq blocs d'action
-(rejoindre, coachs, réussites, ressources, outils). `lib/brand-links.ts`
-centralise les comptes sociaux de la marque — **à compléter avec les
-vraies URLs Instagram/TikTok**, actuellement des espaces réservés.
+### 1. Page lien en bio — abandonnée au profit de la page d'accueil (2026-08-17)
+`/bio` a existé un temps (calculateurs + icône Instagram en pied de page)
+puis a été corrigée une première fois (calculateurs retirés, icône
+Instagram remplacée par un lien WhatsApp réel, `lib/brand-links.ts` →
+`https://wa.me/33766834777`). Retour direct ensuite : "en vrai la page de
+base c'est un peu déjà la même chose... on va rester sur la page de base
+mais améliore-la pour augmenter le taux d'inscription". Décision : le lien
+en bio Instagram pointe vers `/` (page d'accueil), pas `/bio`. La page
+d'accueil a reçu deux ajouts pour ça : un lien vers `/reussites`
+("vraies transformations") et un lien vers `/ressources` ("ressources
+gratuites sans inscription"), tous deux en accent doré pour se distinguer
+du CTA principal. `/bio` reste dans le code mais n'est plus la
+destination active.
 
 ### 2. Candidatures publiques (`/carrieres`) — livré 2026-08-16
 19 postes de l'organigramme (déplacés dans `lib/org-roles.ts`, source
@@ -47,18 +55,19 @@ Organisation avec statut cliquable (nouvelle/en discussion/refusée/
 acceptée) et notification email au fondateur à chaque nouvelle
 candidature.
 
-### 3. Générateur de contenu social — livré 2026-08-16
+### 3. Générateur de contenu social — refondu 2026-08-17 (sans appel IA)
 Studio créatif (`/dashboard/coach/studio`) > onglet **Générateur**.
-Transforme un guide déjà publié (lead magnet) en pack prêt à poster :
-carrousel Instagram (généré à la volée par `app/api/social-carousel`, via
-`next/og` + polices Montserrat chargées depuis Google Fonts au format
-ttf), légende Instagram, post LinkedIn, et un prompt réutilisable à coller
-ailleurs dans Claude pour une variante visuelle différente. Texte généré
-par Claude Haiku (même intégration Anthropic que l'analyse de photo de
-repas, `ANTHROPIC_API_KEY`).
-**Limite connue** : seuls les lead magnets au format "guide" sont
-supportés (checklist/quiz exclus pour l'instant, structure moins adaptée à
-un carrousel).
+Version initiale (2026-08-16) appelait Claude Haiku côté serveur pour
+générer un carrousel Instagram rendu via `next/og`. Retour direct : "le
+truc génération enlève l'IA, moi je veux des prompts pour Claude (toi ou
+Claude) hyper bien construits, et une petite partie à la fin où c'est moi
+qui remplis sujet et angle". Récrit en `buildPrompt()`, une fonction pure
+côté client (`components/coach/SocialGenerator.tsx`) : prend un guide déjà
+publié (titre, accroche, intro, sections, conclusion), construit un prompt
+complet prêt à coller dans Claude, avec Sujet/Angle éditables en bas.
+Plus aucun appel réseau, plus de `ANTHROPIC_API_KEY` nécessaire pour cette
+fonctionnalité. `app/api/social-carousel`, `studio/social-actions.ts` et
+`lib/og-fonts.ts` supprimés (plus référencés nulle part).
 
 ### 4. Parrainage monétaire — livré 2026-08-16
 Le programme de parrainage existait déjà (`referral_code`/`referred_by`,
@@ -71,21 +80,53 @@ unique sur `referred_id`) et gère l'ordre "j'invite avant même de payer
 moi-même" (récompense `pending` créditée dès que le parrain obtient son
 propre `stripe_customer_id`).
 
-### 5. Landing pages dédiées par campagne — livré 2026-08-16
-Studio créatif > onglet **Landing pages** (`components/coach/
-CampaignPagesManager.tsx`). Un coach crée une page publique `/c/[slug]`
-avec son propre titre, sous-titre et bouton d'action configurable (texte +
-lien interne), pensée pour un lien de bio ou une description de vidéo
-précise plutôt que la page d'accueil générique. Table `campaign_pages`
-(slug unique global, compteur de vues best effort), même principe de
-lecture publique via client admin que `/carrieres` (visiteur toujours
-anonyme).
+### 5. Landing pages dédiées par campagne — livré 2026-08-16, supprimé 2026-08-17
+Existait un temps (`/c/[slug]`, `CampaignPagesManager.tsx`, table
+`campaign_pages`). Retour direct : "landing page, ça sert à rien, c'est
+nul, enlève". Supprimé entièrement (`app/c/`, `campaign-actions.ts`,
+`CampaignPagesManager.tsx`, `lib/campaign-pages.ts`, table droppée en
+migration après vérification qu'elle était vide). Aucune trace laissée
+dans la nav ni le Studio créatif.
 
-## Les 5 chantiers du cadrage 2026-08-16 sont livrés
+### 6. Organisation : onglets par pôle + 19 agents IA dans l'appli — livré 2026-08-17
+Deux retours directs traités ensemble : "je vois toujours 0 changement
+dans Organisation... mets-moi vraiment plusieurs onglets par pôle, des
+boutons par métier avec un aperçu de mes agents IA, je veux pouvoir leur
+assigner des tâches" et, la veille, "passe la nuit à configurer 19 agents
+IA ultra compétents dans les 19 domaines de métier de mon entreprise,
+avec nom, rôle, spécificités, compétences, contexte et tâches".
+- `EQUIPE-IA.md` : les 19 personas complets en prose (référence,
+  utilisable aussi en dehors de l'app, collé dans une conversation Claude).
+- `lib/ai-agents.ts` : les mêmes 19 agents portés en données structurées
+  (`AIAgent`), une clé par agent identique à la clé du poste dans
+  `lib/org-roles.ts` — pas de mapping séparé à maintenir.
+- Tables `ai_agent_messages`/`ai_agent_tasks` (RLS par `owner_id`), chat
+  réel avec Claude Haiku (`app/dashboard/coach/admin/organisation/agents/
+  actions.ts`, prompt système = celui de l'agent, non modifiable côté
+  client) et gestion de tâches assignées (à faire/en cours/fait) par agent.
+  Page dédiée par agent : `/dashboard/coach/admin/organisation/agents/
+  [key]`.
+- `components/ui/OrganisationView.tsx` : la section Pôles est passée d'un
+  accordéon (5 blocs qui se ressemblaient, d'où le "0 changement") à de
+  vrais onglets, un par pôle. Chaque carte de poste affiche son agent IA
+  (nom, lien "Discuter · assigner une tâche") avec un badge de tâches
+  ouvertes.
+- Corrigé au passage : le lien "Retour" de la page Organisation (et de la
+  page Leads, même bug) pointait vers `/dashboard/coach/admin` — qui est
+  en fait la page "Coachs" dans la nav, pas un hub Administration. Les
+  deux pointent maintenant vers `/dashboard/coach`, comme le fait déjà
+  `/dashboard/coach/finance`. Le bouton "Page publique" (candidatures),
+  mal placé à côté du titre sur mobile, est descendu sous le texte
+  d'intro.
 
-Tous en production au 2026-08-16 : `/bio`, `/carrieres` (+ inbox
-candidatures), le Générateur de contenu social, le parrainage monétaire,
-et les landing pages de campagne. Reste à faire, hors périmètre code :
+## Les chantiers du cadrage 2026-08-16 sont livrés (revus 2026-08-17)
+
+`/carrieres` (+ inbox candidatures + checklist d'intégration + notes),
+le Générateur de contenu social (version prompt, sans appel IA), le
+parrainage monétaire, et Organisation (onglets par pôle + 19 agents IA en
+chat direct) sont en production. `/bio` et les landing pages de campagne
+ont été abandonnés en cours de route sur retour direct de l'utilisateur.
+Reste à faire, hors périmètre code :
 
 ## Notes pour une future session
 
@@ -96,5 +137,7 @@ et les landing pages de campagne. Reste à faire, hors périmètre code :
   visibilité reste le recrutement d'un profil growth/content (poste
   `growth-traffic-manager`/`community-manager` dans l'organigramme),
   d'où la priorité donnée à `/carrieres`.
-- `lib/brand-links.ts` reste à compléter avec les vraies URLs sociales
-  avant de pousser `/bio` en avant sur les réseaux.
+- `lib/brand-links.ts` : le numéro WhatsApp est réel (`33766834777`), mais
+  `instagram.url`/`tiktok.url` restent des espaces réservés (`ep.coaching`)
+  — sans conséquence tant que `/bio` n'est pas la destination active, mais
+  à corriger avant de la réutiliser un jour.
