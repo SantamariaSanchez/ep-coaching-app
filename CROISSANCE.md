@@ -126,7 +126,7 @@ le Générateur de contenu social (version prompt, sans appel IA), le
 parrainage monétaire, et Organisation (onglets par pôle + 19 agents IA en
 chat direct) sont en production. `/bio` et les landing pages de campagne
 ont été abandonnés en cours de route sur retour direct de l'utilisateur.
-Reste à faire, hors périmètre code :
+Ce qui reste, hors périmètre code, tient dans les notes ci-dessous.
 
 ## Notes pour une future session
 
