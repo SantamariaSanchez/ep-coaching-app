@@ -2062,7 +2062,16 @@ fonctions qui affectent l'affichage plutôt que de dupliquer 3 appels
 `revalidatePath` dans chacune — modèle à suivre si un nouveau créneau
 "partagé client/coach" est ajouté un jour.
 
-## Axe X — Mailing v2 : audience, dupliquer, programmer, aperçu, marque
+**Filet de sécurité ajouté** : routine cloud quotidienne
+(`trig_01Wx8mMe6Nguc7PU6zJ7G3HH`, cron `0 5 * * *` UTC) qui vérifie
+`food_logs` pour d'éventuels doublons exacts (même client/aliment/
+créneau/quantité/jour), les supprime en gardant la ligne la plus
+ancienne si elle en trouve, et notifie seulement dans ce cas — silence
+total si tout est propre (le cas attendu maintenant que le bug est
+corrigé). Accès Supabase uniquement (pas de dépôt git : les routines
+cloud de ce compte n'ont pas d'accès git configuré, contrairement à ce
+que suggérait la doc du skill /schedule — vérifié en listant les 2
+routines déjà actives, aucune des deux n'a de `sources` git non plus).
 
 **Statut : livré (2026-08-18).**
 
