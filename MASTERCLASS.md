@@ -1989,3 +1989,62 @@ le 2026-08-17, voir sa réponse pour la suite) :
   avant envoi (seul le test réel sert d'aperçu), pas d'identité de marque
   dans le composeur (contrairement au Studio créatif qui soigne logo/
   handle).
+
+## Axe W — Nutrition : doublons corrigés, mode éditable, logging rétroactif
+
+**Statut : livré (2026-08-18), demande explicite en direct.**
+
+Trois demandes traitées ensemble, toutes sur `ClientNutritionView.tsx`
+(composant partagé entre le client et "Moi" coach) :
+
+**1. Doublons de repas (bug, voir aussi Axe précédent sur ce fichier).**
+`logMealItems` ("Valider le repas") ne revalidait que
+`/dashboard/client/nutrition`, jamais `/dashboard/coach/moi/nutrition`.
+Un coach qui validait un repas sur sa propre page voyait la case revenir
+décochée au retour sur la page (cache jamais invalidé), revalidait le
+même repas, créait un doublon. 39 groupes de doublons retrouvés et
+nettoyés en base (14-15/08, même compte). Corrigé : revalidatePath
+manquant ajouté, plus un garde-fou idempotent dans `logMealItems`
+lui-même (ignore un item déjà loggué identique au lieu de le dupliquer,
+même si un futur bug de cache fait réapparaître un item coché comme non
+coché).
+
+**2. Mode fixe/flexible éditable depuis le suivi du jour.** Existait déjà
+côté coach mais seulement dans l'onglet "Gérer" (`CoachClientNutritionTabs`,
+`updateDietPlanMode`). `NutritionModeSelector` accepte maintenant un
+`onChange` optionnel qui rend ses 3 badges cliquables ; nouvelle action
+`updateOwnDietPlanMode` pour un membre gratuit gérant son propre plan
+(le coach réutilise `updateDietPlanMode` existant via `.bind(null, userId)`).
+
+**3. Logger un jour passé (pas seulement aujourd'hui) + vue agenda.**
+Jusqu'ici tout le flux d'ajout (recherche, code-barres, recettes, repas
+enregistrés, ajout rapide) écrivait en dur sur `today`. Ajout d'un état
+`loggingDate` (par défaut `today`, réglé explicitement à l'ouverture de
+la modale) traversé par les 4 handlers d'ajout
+(`handleAddFood`/`handleAddRecipe`/`handleLogSavedMeal`/`handleQuickAdd`),
+et d'une copie locale mutable de `historyLogs` (`historyLogsState`, même
+piège prop→state que `todayLogs`) pour que les ajouts/suppressions sur un
+jour passé se reflètent immédiatement sans recharger toute la page.
+L'onglet Historique gagne un sélecteur Jour/Semaine/Mois (agenda) :
+"Mois" = la grille des 30 jours déjà existante, "Semaine" = une rangée de
+7 blocs (lundi→dimanche), "Jour" = un détail éditable par créneau
+(`MealSlotCard`, réutilisé tel quel — le prop `today` de ce composant
+sert en réalité de clé de date générique, pas seulement pour
+aujourd'hui) avec navigation ◀/▶ bornée aux 30 derniers jours.
+
+**Piège évité en cours de route** : `closeModal()` remettait initialement
+`loggingDate` à `today` par hygiène — cassait le cas "créer un aliment
+depuis la recherche" pendant un ajout sur un jour passé (le chaînage
+`handleCreateFood` → `openModal(slot)` perdait alors le jour ciblé).
+Retiré de `closeModal()`, `openModal()` fixe de toute façon `loggingDate`
+à chaque ouverture ; le seul chaînage interne (`handleCreateFood`) passe
+maintenant explicitement `loggingDate` pour le préserver.
+
+**Volontairement pas fait dans cette passe** : le "Plan de ton coach"
+(mode fixe, `DietPlanCard` avec cases à cocher) n'est pas rendu dans la
+vue Historique — un jour passé se logue en ajout libre par créneau
+(`MealSlotCard`), pas en cochant le plan rétroactivement. Aurait demandé
+de rendre `DietPlanCard` conscient d'une date arbitraire (jour de la
+semaine pour les plans "weekly", entre autres), plus risqué sur un
+fichier déjà volumineux et déjà responsable du bug de doublons ci-dessus
+— à reprendre si un vrai besoin se confirme à l'usage.

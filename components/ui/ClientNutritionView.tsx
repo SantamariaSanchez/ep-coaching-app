@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Plus, Trash2, X, ChevronDown, ChevronUp, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode } from "lucide-react";
+import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { onKeyActivate } from "@/lib/a11y";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
@@ -345,6 +345,54 @@ export default function ClientNutritionView({
     setTodayLogs(initialTodayLogs);
   }, [initialTodayLogs]);
 
+  // Copie locale et modifiable de historyLogs (2026-08-18, demande
+  // explicite : "je dois pouvoir logger les jours passés pas que
+  // aujourd'hui"). Même piège prop→state que todayLogs ci-dessus, même
+  // resynchronisation explicite. Permet d'ajouter/retirer un aliment sur un
+  // jour passé (onglet Historique) sans recharger toute la page, et garde
+  // le calendrier (calsByDate) à jour immédiatement après.
+  const [historyLogsState, setHistoryLogsState] = useState<FoodLogWithFood[]>(historyLogs);
+  useEffect(() => {
+    setHistoryLogsState(historyLogs);
+  }, [historyLogs]);
+
+  // Date ciblée par la modale de recherche/ajout d'aliment — "aujourd'hui"
+  // par défaut, mais réglée sur le jour choisi dans l'Historique quand la
+  // modale y est ouverte, pour logger n'importe quel jour des 30 derniers
+  // avec exactement la même interface (recherche, code-barres, recettes,
+  // repas enregistrés) plutôt qu'une version simplifiée dupliquée.
+  const [loggingDate, setLoggingDate] = useState(today);
+
+  // todayLogs sert de vérité pour AUJOURD'HUI, historyLogsState pour tout
+  // le reste des 30 derniers jours — ces trois fonctions appliquent la
+  // même mise à jour optimiste au bon état selon la date visée, pour ne
+  // pas dupliquer la logique dans chaque handler d'ajout.
+  function addOptimisticLog(date: string, log: FoodLogWithFood) {
+    if (date === today) setTodayLogs((prev) => [...prev, log]);
+    else setHistoryLogsState((prev) => [...prev, log]);
+  }
+  function replaceOptimisticLogId(date: string, tempId: string, realId: string) {
+    const apply = (prev: FoodLogWithFood[]) => prev.map((l) => (l.id === tempId ? { ...l, id: realId } : l));
+    if (date === today) setTodayLogs(apply);
+    else setHistoryLogsState(apply);
+  }
+  function removeLogById(date: string, id: string) {
+    const apply = (prev: FoodLogWithFood[]) => prev.filter((l) => l.id !== id);
+    if (date === today) setTodayLogs(apply);
+    else setHistoryLogsState(apply);
+  }
+  // Variantes en lot pour les ajouts groupés (repas enregistré, "Valider le
+  // repas").
+  function addOptimisticLogs(date: string, logs: FoodLogWithFood[]) {
+    if (date === today) setTodayLogs((prev) => [...prev, ...logs]);
+    else setHistoryLogsState((prev) => [...prev, ...logs]);
+  }
+  function removeLogsByIds(date: string, ids: Set<string>) {
+    const apply = (prev: FoodLogWithFood[]) => prev.filter((l) => !ids.has(l.id));
+    if (date === today) setTodayLogs(apply);
+    else setHistoryLogsState(apply);
+  }
+
   // Deuxième filet : forcer un vrai aller-retour serveur (pas juste une
   // resynchronisation du state existant) quand l'onglet/l'appli redevient
   // visible — couvre le cas d'une appli PWA reprise en arrière-plan sans
@@ -393,8 +441,8 @@ export default function ClientNutritionView({
     });
   }
   const shoppingList = useMemo(
-    () => buildShoppingList(activePlan, historyLogs),
-    [activePlan, historyLogs]
+    () => buildShoppingList(activePlan, historyLogsState),
+    [activePlan, historyLogsState]
   );
   const shoppingByCategory = useMemo(() => {
     const map = new Map<string, typeof shoppingList.items>();
@@ -529,8 +577,14 @@ export default function ClientNutritionView({
   // Copy yesterday
   const [copyingYesterday, setCopyingYesterday] = useState(false);
 
-  // History
-  const [historySelectedDate, setHistorySelectedDate] = useState<string | null>(null);
+  // History — vue agenda (2026-08-18, demande explicite : "je veux une vue
+  // comme un agenda... au jour à la semaine et sur le mois"). historyView
+  // choisit l'échelle affichée, historySelectedDate part sur aujourd'hui
+  // (jamais "aucun jour sélectionné") pour que la vue Jour ait toujours un
+  // contenu à montrer, y compris pour logger un jour manqué directement.
+  const [historyView, setHistoryView] = useState<"jour" | "semaine" | "mois">("mois");
+  const [historySelectedDate, setHistorySelectedDate] = useState<string>(today);
+  const viewedDate = historySelectedDate;
 
   // ── Derived ────────────────────────────────────────────────────────────────
   // Carb cycling — même profil, écart de calories les jours de repos/high,
@@ -562,7 +616,7 @@ export default function ClientNutritionView({
   // pour qu'une très mauvaise semaine ne se traduise pas par un objectif du
   // jour absurde — au delà, mieux vaut une vraie conversation avec le coach
   // (voir le cron stagnation-escalation) qu'un chiffre qui décourage.
-  // Repose sur historyLogs (déjà chargé, 30 jours), pas de fetch en plus.
+  // Repose sur historyLogsState (déjà chargé, 30 jours), pas de fetch en plus.
   // Le calcul reste volontairement indépendant du dayType (repos/high) :
   // ce sont deux ajustements orthogonaux qui s'additionnent, l'un anticipe
   // la journée à venir, l'autre rattrape les jours passés.
@@ -578,12 +632,12 @@ export default function ClientNutritionView({
     const daysElapsed = Math.round((todayDate.getTime() - weekStart.getTime()) / 86400000);
     if (daysElapsed <= 0) return 0; // lundi : rien à rattraper encore cette semaine
     const weekStartStr = weekStart.toISOString().split("T")[0];
-    const actualSoFar = historyLogs
+    const actualSoFar = historyLogsState
       .filter((l) => l.logged_at >= weekStartStr && l.logged_at < today)
       .reduce((s, l) => s + (l.calories ?? 0), 0);
     const targetSoFar = dailyTarget * daysElapsed;
     return Math.max(-BANK_CAP_KCAL, Math.min(BANK_CAP_KCAL, Math.round(targetSoFar - actualSoFar)));
-  }, [historyLogs, today, nutritionProfile?.calories_target]);
+  }, [historyLogsState, today, nutritionProfile?.calories_target]);
 
   const targets = {
     calories: (nutritionProfile?.calories_target ?? 0) + dayOffset + weeklyBank,
@@ -623,14 +677,14 @@ export default function ClientNutritionView({
   const recentFoods = useMemo(() => {
     const seen = new Set<string>();
     const list: Food[] = [];
-    for (const log of historyLogs) {
+    for (const log of historyLogsState) {
       if (!log.food_id || !log.foods || seen.has(log.food_id)) continue;
       seen.add(log.food_id);
       list.push(log.foods);
       if (list.length >= 10) break;
     }
     return list;
-  }, [historyLogs]);
+  }, [historyLogsState]);
 
   // Aliments les plus souvent loggués par CE client (fréquence sur
   // l'historique chargé), complétés par les plus loggués tous utilisateurs
@@ -639,7 +693,7 @@ export default function ClientNutritionView({
   // pour un client avec de l'historique.
   const mostUsedFoods = useMemo(() => {
     const counts = new Map<string, { food: Food; count: number }>();
-    for (const log of historyLogs) {
+    for (const log of historyLogsState) {
       if (!log.food_id || !log.foods) continue;
       const entry = counts.get(log.food_id);
       if (entry) entry.count += 1;
@@ -652,18 +706,18 @@ export default function ClientNutritionView({
     const seen = new Set(personal.map((f) => f.id));
     const fill = mostUsedGlobal.filter((f) => !seen.has(f.id));
     return [...personal, ...fill].slice(0, 8);
-  }, [historyLogs, mostUsedGlobal]);
+  }, [historyLogsState, mostUsedGlobal]);
 
-  // historyLogs is ordered most-recent-first, so the first hit per food is
+  // historyLogsState is ordered most-recent-first, so the first hit per food is
   // the last quantity actually eaten — used to pre-fill the quantity field.
   const lastQuantityByFood = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const log of historyLogs) {
+    for (const log of historyLogsState) {
       if (!log.food_id || map[log.food_id] != null) continue;
       map[log.food_id] = log.quantity_g;
     }
     return map;
-  }, [historyLogs]);
+  }, [historyLogsState]);
 
   const yesterday = useMemo(() => {
     const d = new Date(today + "T12:00:00");
@@ -672,8 +726,8 @@ export default function ClientNutritionView({
   }, [today]);
 
   const yesterdayLogs = useMemo(
-    () => historyLogs.filter((l) => l.logged_at === yesterday),
-    [historyLogs, yesterday]
+    () => historyLogsState.filter((l) => l.logged_at === yesterday),
+    [historyLogsState, yesterday]
   );
 
   const yesterdayCals = useMemo(
@@ -683,11 +737,11 @@ export default function ClientNutritionView({
 
   const calsByDate = useMemo(() => {
     const map: Record<string, number> = {};
-    for (const l of historyLogs) {
+    for (const l of historyLogsState) {
       map[l.logged_at] = (map[l.logged_at] ?? 0) + (l.calories ?? 0);
     }
     return map;
-  }, [historyLogs]);
+  }, [historyLogsState]);
 
   const last30Days = useMemo(() => {
     const days: string[] = [];
@@ -700,15 +754,46 @@ export default function ClientNutritionView({
     return days;
   }, [today]);
 
-  const historyDayLogs = useMemo(() => {
-    if (!historySelectedDate) return [];
-    return historyLogs.filter((l) => l.logged_at === historySelectedDate);
-  }, [historyLogs, historySelectedDate]);
+  const historyDayLogs = useMemo(
+    () => historyLogsState.filter((l) => l.logged_at === viewedDate),
+    [historyLogsState, viewedDate]
+  );
+
+  // Semaine (lundi→dimanche) contenant le jour affiché, pour la vue
+  // "Semaine" de l'agenda.
+  const weekDays = useMemo(() => {
+    const d = new Date(viewedDate + "T12:00:00");
+    const dow = d.getDay();
+    const mondayOffset = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(d);
+    monday.setDate(d.getDate() + mondayOffset);
+    const days: string[] = [];
+    for (let i = 0; i < 7; i++) {
+      const dd = new Date(monday);
+      dd.setDate(monday.getDate() + i);
+      days.push(dd.toISOString().split("T")[0]);
+    }
+    return days;
+  }, [viewedDate]);
+
+  // Navigation jour par jour, bornée à la même fenêtre de 30 jours que le
+  // reste de l'historique (last30Days) — jamais dans le futur.
+  const minHistoryDate = last30Days[0];
+  const canGoPrevDay = viewedDate > minHistoryDate;
+  const canGoNextDay = viewedDate < today;
+  function shiftHistoryDay(delta: number) {
+    const d = new Date(viewedDate + "T12:00:00");
+    d.setDate(d.getDate() + delta);
+    const next = d.toISOString().split("T")[0];
+    if (next < minHistoryDate || next > today) return;
+    setHistorySelectedDate(next);
+  }
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
-  function openModal(slot: string) {
+  function openModal(slot: string, date: string = today) {
     setAddingToSlot(slot);
+    setLoggingDate(date);
     setSearchQuery("");
     setSearchTab("aliments");
     setSelectedFood(null);
@@ -726,6 +811,13 @@ export default function ClientNutritionView({
     setQuantityInput("");
     setRecipeServings("1");
     setAddingError(null);
+    // loggingDate n'est volontairement PAS remis à today ici : closeModal()
+    // est aussi appelée par openCreateFood() en plein milieu d'un
+    // enchaînement "créer un aliment depuis la recherche" (voir
+    // handleCreateFood plus bas, qui rouvre le modal sur le même créneau
+    // une fois l'aliment créé) — le remettre ici ferait perdre le jour
+    // ciblé si ce flux avait été lancé depuis un jour passé de
+    // l'Historique. openModal() le fixe de toute façon à chaque ouverture.
   }
 
   function selectFoodForLogging(food: Food) {
@@ -755,6 +847,7 @@ export default function ClientNutritionView({
     if (!selectedFood || !addingToSlot || !quantityInput) return;
     const qty = parseFloat(quantityInput);
     if (isNaN(qty) || qty <= 0) return;
+    const date = loggingDate;
 
     const macros = calcMacros(selectedFood, qty);
     const optimisticLog: FoodLogWithFood = {
@@ -763,7 +856,7 @@ export default function ClientNutritionView({
       food_id: selectedFood.id,
       meal_slot: addingToSlot,
       quantity_g: qty,
-      logged_at: today,
+      logged_at: date,
       calories: macros.calories,
       proteins: macros.proteins,
       carbs: macros.carbs,
@@ -771,7 +864,7 @@ export default function ClientNutritionView({
       foods: selectedFood,
     };
 
-    setTodayLogs((prev) => [...prev, optimisticLog]);
+    addOptimisticLog(date, optimisticLog);
     closeModal();
 
     const result = await addFoodLog({
@@ -782,20 +875,14 @@ export default function ClientNutritionView({
       proteins: macros.proteins,
       carbs: macros.carbs,
       fats: macros.fats,
-      loggedAt: today,
+      loggedAt: date,
     });
 
     if (result.error) {
-      setTodayLogs((prev) =>
-        prev.filter((l) => l.id !== optimisticLog.id)
-      );
+      removeLogById(date, optimisticLog.id);
       setAddingError(result.error);
     } else if (result.id) {
-      setTodayLogs((prev) =>
-        prev.map((l) =>
-          l.id === optimisticLog.id ? { ...l, id: result.id! } : l
-        )
-      );
+      replaceOptimisticLogId(date, optimisticLog.id, result.id);
       notifyGateRefresh();
     }
   }
@@ -805,6 +892,7 @@ export default function ClientNutritionView({
   async function handleLogSavedMeal(meal: SavedMeal) {
     if (!addingToSlot || !logMealItems || meal.saved_meal_items.length === 0) return;
     const slot = addingToSlot;
+    const date = loggingDate;
     const items = meal.saved_meal_items.filter((it) => it.foods);
 
     const optimisticLogs: FoodLogWithFood[] = items.map((it) => {
@@ -815,7 +903,7 @@ export default function ClientNutritionView({
         food_id: it.food_id,
         meal_slot: slot,
         quantity_g: it.quantity_g,
-        logged_at: today,
+        logged_at: date,
         calories: macros.calories,
         proteins: macros.proteins,
         carbs: macros.carbs,
@@ -824,17 +912,16 @@ export default function ClientNutritionView({
       };
     });
 
-    setTodayLogs((prev) => [...prev, ...optimisticLogs]);
+    addOptimisticLogs(date, optimisticLogs);
     closeModal();
 
     const result = await logMealItems(
       items.map((it) => ({ foodId: it.food_id, quantityG: it.quantity_g })),
       slot,
-      today
+      date
     );
     if (result.error) {
-      const ids = new Set(optimisticLogs.map((l) => l.id));
-      setTodayLogs((prev) => prev.filter((l) => !ids.has(l.id)));
+      removeLogsByIds(date, new Set(optimisticLogs.map((l) => l.id)));
       setAddingError(result.error);
     } else {
       notifyGateRefresh();
@@ -997,22 +1084,34 @@ export default function ClientNutritionView({
   }
 
   async function handleDelete(logId: string) {
-    const idx = todayLogs.findIndex((l) => l.id === logId);
-    const backup = todayLogs[idx];
-    setTodayLogs((prev) => prev.filter((l) => l.id !== logId));
+    return handleDeleteForDate(logId, today);
+  }
+
+  // Généralisée (2026-08-18) pour retirer un aliment logué sur n'importe
+  // quel jour des 30 derniers (onglet Historique), pas seulement
+  // aujourd'hui — même logique de restauration à la position d'origine en
+  // cas d'échec serveur.
+  async function handleDeleteForDate(logId: string, date: string) {
+    const source = date === today ? todayLogs : historyLogsState;
+    const idx = source.findIndex((l) => l.id === logId);
+    const backup = source[idx];
+    removeLogById(date, logId);
     const result = await removeFoodLog(logId);
     if (result.error && backup) {
       // Restore at original position
-      setTodayLogs((prev) => {
+      const restore = (prev: FoodLogWithFood[]) => {
         const next = [...prev];
         next.splice(Math.min(idx, next.length), 0, backup);
         return next;
-      });
+      };
+      if (date === today) setTodayLogs(restore);
+      else setHistoryLogsState(restore);
     }
   }
 
   async function handleAddRecipe() {
     if (!selectedRecipe || !addingToSlot) return;
+    const date = loggingDate;
     const servings = parseFloat(recipeServings) || 1;
     const calories = Math.round(selectedRecipe.kcal * servings);
     const proteins = Math.round(selectedRecipe.protein * servings);
@@ -1035,7 +1134,7 @@ export default function ClientNutritionView({
       food_id: null,
       meal_slot: addingToSlot,
       quantity_g: Math.round(servings * 100),
-      logged_at: today,
+      logged_at: date,
       calories,
       proteins,
       carbs,
@@ -1043,7 +1142,7 @@ export default function ClientNutritionView({
       foods: virtualFood,
     };
 
-    setTodayLogs((prev) => [...prev, optimisticLog]);
+    addOptimisticLog(date, optimisticLog);
     closeModal();
 
     const result = await addFoodLog({
@@ -1054,16 +1153,14 @@ export default function ClientNutritionView({
       proteins,
       carbs,
       fats,
-      loggedAt: today,
+      loggedAt: date,
     });
 
     if (result.error) {
-      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
+      removeLogById(date, optimisticLog.id);
       setAddingError(result.error);
     } else if (result.id) {
-      setTodayLogs((prev) =>
-        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: result.id! } : l))
-      );
+      replaceOptimisticLogId(date, optimisticLog.id, result.id);
       notifyGateRefresh();
     }
   }
@@ -1194,20 +1291,21 @@ export default function ClientNutritionView({
 
     setFoods((prev) => [foodResult.food!, ...prev]);
 
+    const date = loggingDate;
     const optimisticLog: FoodLogWithFood = {
       id: `optimistic-${Date.now()}`,
       client_id: "",
       food_id: foodResult.food.id,
       meal_slot: quickAddSlot,
       quantity_g: portion.portionG,
-      logged_at: today,
+      logged_at: date,
       calories,
       proteins,
       carbs,
       fats,
       foods: foodResult.food,
     };
-    setTodayLogs((prev) => [...prev, optimisticLog]);
+    addOptimisticLog(date, optimisticLog);
 
     const logResult = await addFoodLog({
       foodId: foodResult.food.id,
@@ -1217,20 +1315,18 @@ export default function ClientNutritionView({
       proteins,
       carbs,
       fats,
-      loggedAt: today,
+      loggedAt: date,
     });
 
     setQuickAdding(false);
 
     if (logResult.error) {
-      setTodayLogs((prev) => prev.filter((l) => l.id !== optimisticLog.id));
+      removeLogById(date, optimisticLog.id);
       setQuickAddError(logResult.error);
       return;
     }
     if (logResult.id) {
-      setTodayLogs((prev) =>
-        prev.map((l) => (l.id === optimisticLog.id ? { ...l, id: logResult.id! } : l))
-      );
+      replaceOptimisticLogId(date, optimisticLog.id, logResult.id);
     }
     setShowQuickAddModal(false);
   }
@@ -1272,10 +1368,13 @@ export default function ClientNutritionView({
       });
       // Création partie d'une recherche infructueuse : on enchaîne direct sur
       // la saisie de la quantité pour ce créneau plutôt que de tout refermer.
+      // openModal(slot, loggingDate) et pas juste openModal(slot) : sinon le
+      // jour ciblé (si ce flux a démarré depuis un jour passé de
+      // l'Historique) reviendrait sur aujourd'hui par défaut.
       if (createReturnSlot) {
         const slot = createReturnSlot;
         setCreateReturnSlot(null);
-        openModal(slot);
+        openModal(slot, loggingDate);
         selectFoodForLogging(created);
       }
     }
@@ -1555,100 +1654,178 @@ export default function ClientNutritionView({
       {/* ── HISTORY TAB ───────────────────────────────────────────────────── */}
       {activeTab === "history" && (
         <div className="space-y-5">
-          {/* Legend */}
-          <div className="flex items-center gap-4 text-[10px] text-[#F5EDED]/40 font-semibold uppercase tracking-widest">
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-green-600/60 inline-block" />
-              ≥ 90%
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-amber-500/60 inline-block" />
-              70 à 90%
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-3 h-3 rounded-sm bg-red-700/60 inline-block" />
-              &lt; 70%
-            </span>
+          {/* Vue agenda (2026-08-18) : jour / semaine / mois, demande
+              explicite. "Jour" est aussi la seule vue qui permet de logger
+              un aliment oublié sur un jour passé — jusqu'ici l'historique
+              était en lecture seule. */}
+          <div className="flex gap-1.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl p-1">
+            {([
+              { key: "jour", label: "Jour" },
+              { key: "semaine", label: "Semaine" },
+              { key: "mois", label: "Mois" },
+            ] as const).map(({ key, label }) => (
+              <button
+                key={key}
+                onClick={() => setHistoryView(key)}
+                className={`flex-1 text-[10.5px] font-bold uppercase tracking-widest py-2 rounded-lg transition-colors ${
+                  historyView === key ? "bg-[#E01E1E]/15 text-[#E01E1E]" : "text-[#F5EDED]/35 hover:text-[#F5EDED]/60"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
 
-          {/* Calendar grid */}
-          <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-            <div className="grid grid-cols-7 gap-1.5">
-              {last30Days.map((date) => {
-                const cals = calsByDate[date] ?? 0;
-                const isSelected = historySelectedDate === date;
-                return (
-                  <button
-                    key={date}
-                    onClick={() =>
-                      setHistorySelectedDate(
-                        isSelected ? null : date
-                      )
-                    }
-                    title={`${date} : ${Math.round(cals)} kcal`} aria-label={`${date} : ${Math.round(cals)} kcal`}
-                    className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(
-                      cals,
-                      targets.calories
-                    )} ${
-                      isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""
-                    }`}
-                  >
-                    <span className="text-white/70">
-                      {new Date(date + "T12:00:00").getDate()}
-                    </span>
-                  </button>
-                );
-              })}
+          {/* Legend, pertinente pour Semaine et Mois (couleur = adhérence à l'objectif) */}
+          {historyView !== "jour" && (
+            <div className="flex items-center gap-4 text-[10px] text-[#F5EDED]/40 font-semibold uppercase tracking-widest">
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-green-600/60 inline-block" />
+                ≥ 90%
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-amber-500/60 inline-block" />
+                70 à 90%
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="w-3 h-3 rounded-sm bg-red-700/60 inline-block" />
+                &lt; 70%
+              </span>
             </div>
-          </div>
+          )}
 
-          {/* Selected day detail */}
-          {historySelectedDate && (
+          {/* ── Vue Mois : grille des 30 derniers jours ── */}
+          {historyView === "mois" && (
             <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-xs font-bold uppercase tracking-widest text-white">
-                  {new Intl.DateTimeFormat("fr-FR", {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                  }).format(new Date(historySelectedDate + "T12:00:00"))}
-                </p>
+              <div className="grid grid-cols-7 gap-1.5">
+                {last30Days.map((date) => {
+                  const cals = calsByDate[date] ?? 0;
+                  const isSelected = viewedDate === date;
+                  return (
+                    <button
+                      key={date}
+                      onClick={() => {
+                        setHistorySelectedDate(date);
+                        setHistoryView("jour");
+                      }}
+                      title={`${date} : ${Math.round(cals)} kcal`} aria-label={`${date} : ${Math.round(cals)} kcal`}
+                      className={`aspect-square rounded-md border text-[8px] font-bold transition-all ${getDayColor(
+                        cals,
+                        targets.calories
+                      )} ${
+                        isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""
+                      }`}
+                    >
+                      <span className="text-white/70">
+                        {new Date(date + "T12:00:00").getDate()}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Vue Semaine : la semaine (lundi→dimanche) du jour affiché ── */}
+          {historyView === "semaine" && (
+            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+              <div className="grid grid-cols-7 gap-2">
+                {weekDays.map((date) => {
+                  const cals = calsByDate[date] ?? 0;
+                  const isSelected = viewedDate === date;
+                  // Hors fenêtre = pas de données chargées pour ce jour
+                  // (historyLogs ne couvre que les 30 derniers jours),
+                  // même borne que la navigation Jour (shiftHistoryDay).
+                  const outOfRange = date > today || date < minHistoryDate;
+                  const d = new Date(date + "T12:00:00");
+                  return (
+                    <button
+                      key={date}
+                      disabled={outOfRange}
+                      onClick={() => {
+                        setHistorySelectedDate(date);
+                        setHistoryView("jour");
+                      }}
+                      className={`rounded-lg border py-2.5 flex flex-col items-center gap-1 transition-all ${
+                        outOfRange ? "opacity-20 cursor-default border-[#890404]/15" : getDayColor(cals, targets.calories)
+                      } ${isSelected ? "ring-2 ring-white/50 ring-offset-1 ring-offset-[#1f0101]" : ""}`}
+                    >
+                      <span className="text-[8px] uppercase font-bold text-white/50">
+                        {["dim", "lun", "mar", "mer", "jeu", "ven", "sam"][d.getDay()]}
+                      </span>
+                      <span className="text-sm font-black text-white">{d.getDate()}</span>
+                      {!outOfRange && <span className="text-[8px] text-white/60">{Math.round(cals)} kcal</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* ── Vue Jour : détail éditable, seule vue qui permet de logger
+              un jour passé (demande explicite : "je dois pouvoir logger
+              les jours passés pas que aujourd'hui") ── */}
+          {historyView === "jour" && (
+            <div className="space-y-3">
+              <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl px-4 py-3 flex items-center justify-between">
                 <button
-                  onClick={() => setHistorySelectedDate(null)}
-                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+                  onClick={() => shiftHistoryDay(-1)}
+                  disabled={!canGoPrevDay}
+                  aria-label="Jour précédent"
+                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
                 >
-                  <X size={14} />
+                  <ChevronLeft size={18} />
+                </button>
+                <div className="text-center">
+                  <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-1.5 justify-center">
+                    <CalendarDays size={12} className="text-[#E01E1E]" />
+                    {viewedDate === today
+                      ? "Aujourd'hui"
+                      : new Intl.DateTimeFormat("fr-FR", {
+                          weekday: "long",
+                          day: "numeric",
+                          month: "long",
+                        }).format(new Date(viewedDate + "T12:00:00"))}
+                  </p>
+                  {viewedDate !== today && (
+                    <button
+                      onClick={() => setHistorySelectedDate(today)}
+                      className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mt-0.5"
+                    >
+                      Revenir à aujourd&apos;hui
+                    </button>
+                  )}
+                </div>
+                <button
+                  onClick={() => shiftHistoryDay(1)}
+                  disabled={!canGoNextDay}
+                  aria-label="Jour suivant"
+                  className="text-[#F5EDED]/40 hover:text-[#F5EDED]/80 disabled:opacity-20 disabled:hover:text-[#F5EDED]/40 transition-colors"
+                >
+                  <ChevronRight size={18} />
                 </button>
               </div>
 
-              {historyDayLogs.length === 0 ? (
-                <p className="text-xs text-[#F5EDED]/30 italic">
-                  Aucun aliment logué ce jour.
-                </p>
-              ) : (
-                <div className="space-y-1">
-                  {historyDayLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      className="flex items-center justify-between py-1.5 border-b border-[#890404]/10 last:border-0"
-                    >
-                      <div>
-                        <p className="text-xs text-white font-medium">
-                          {log.foods?.name ?? "Aliment"}
-                        </p>
-                        <p className="text-[10px] text-[#F5EDED]/35">
-                          {log.quantity_g}g · {fmt(log.calories ?? 0)} kcal
-                        </p>
-                      </div>
-                      <div className="text-right text-[9px] text-[#F5EDED]/35">
-                        <p>P {fmt(log.proteins ?? 0)}g</p>
-                        <p>G {fmt(log.carbs ?? 0)}g · L {fmt(log.fats ?? 0)}g</p>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-2 text-xs font-bold text-[#F5EDED]/60">
-                    Total : {fmt(calsByDate[historySelectedDate] ?? 0)} kcal
-                  </div>
+              {MEAL_SLOTS.map((slot) => {
+                const slotLogs = historyDayLogs.filter((l) => l.meal_slot === slot.key);
+                const slotCals = slotLogs.reduce((s, l) => s + (l.calories ?? 0), 0);
+                return (
+                  <MealSlotCard
+                    key={slot.key}
+                    slotKey={slot.key}
+                    label={slot.label}
+                    logs={slotLogs}
+                    totalCals={slotCals}
+                    today={viewedDate}
+                    onAdd={() => openModal(slot.key, viewedDate)}
+                    onDelete={(logId) => handleDeleteForDate(logId, viewedDate)}
+                  />
+                );
+              })}
+
+              {historyDayLogs.length > 0 && (
+                <div className="px-1 text-xs font-bold text-[#F5EDED]/60 text-right">
+                  Total : {fmt(calsByDate[viewedDate] ?? 0)} kcal
                 </div>
               )}
             </div>
