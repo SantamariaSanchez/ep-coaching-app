@@ -81,6 +81,11 @@ export default async function CoachMonNutritionPage() {
           // app/dashboard/client/nutrition/page.tsx l'avait, donc un client
           // voyait le bouton mais pas le fondateur sur "Ma nutrition".
           logMealItems,
+          // Changer le mode fixe/flexible directement depuis le suivi du
+          // jour (2026-08-17), pas seulement depuis l'onglet "Gérer" plus
+          // bas. Réutilise updateDietPlanMode déjà importé pour manageProps,
+          // lié à son propre id (le coach agit sur SON PROPRE plan ici).
+          updatePlanMode: updateDietPlanMode.bind(null, user.id),
         }}
         manageProps={{
           clientId: user.id,

@@ -455,6 +455,36 @@ export async function deleteOwnDietPlan(planId: string): Promise<{ error?: strin
   }
 }
 
+// Changer uniquement le mode (flexible/fixe/fixe-flexible) d'un plan libre
+// existant, sans le reconstruire — équivalent de updateDietPlanMode (coach)
+// mais pour un membre gratuit qui gère son propre plan. Demande explicite
+// 2026-08-17 : "je veux pouvoir modifier mon fixe ou variable" — cette
+// capacité existait déjà côté coach (badge sur l'onglet "Gérer") mais
+// nulle part pour un membre en libre-service, ni exposée directement dans
+// le suivi du jour de ClientNutritionView (voir aussi le nouveau prop
+// updatePlanMode côté coach/moi, qui réutilise updateDietPlanMode existant
+// via bind).
+export async function updateOwnDietPlanMode(planId: string, mode: DietMode): Promise<{ error?: string }> {
+  const guard = await guardFreeMember();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase
+      .from("diet_plans")
+      .update({ mode })
+      .eq("id", planId)
+      .eq("client_id", guard.userId);
+    if (error) return { error: "Erreur lors du changement de mode." };
+
+    revalidatePath("/dashboard/client/nutrition");
+    return {};
+  } catch (e) {
+    console.error("updateOwnDietPlanMode error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
 // ── Repas enregistrés — logger un repas complet en un tap au lieu de
 // rechercher/ajouter chaque aliment un par un ────────────────────────────
 
@@ -530,7 +560,33 @@ export async function logMealItems(
       )
     );
 
-    const rows = items
+    // MASTERCLASS.md Axe W : garde-fou en profondeur contre les doublons
+    // (voir le correctif revalidatePath plus bas pour la vraie cause déjà
+    // corrigée) — "Valider le repas" représente une intention idempotente
+    // ("logue les items de CE créneau que je n'ai pas encore loggués"), donc
+    // on ignore silencieusement tout item déjà présent identique (même
+    // aliment/créneau/quantité/jour) plutôt que d'insérer un doublon, même
+    // si un futur bug de cache fait réafficher un item déjà loggué comme
+    // non coché.
+    const { data: existing } = await admin
+      .from("food_logs")
+      .select("food_id, quantity_g")
+      .eq("client_id", guard.userId)
+      .eq("meal_slot", mealSlot)
+      .eq("logged_at", loggedAt);
+    const existingKeys = new Set(
+      ((existing ?? []) as { food_id: string | null; quantity_g: number }[]).map(
+        (l) => `${l.food_id}:${l.quantity_g}`
+      )
+    );
+
+    const newItems = items.filter((it) => !existingKeys.has(`${it.foodId}:${it.quantityG}`));
+
+    // Tout était déjà loggué (doublon évité) : ce n'est pas une erreur, le
+    // repas est déjà à l'état voulu, silencieusement.
+    if (newItems.length === 0) return { count: 0 };
+
+    const rows = newItems
       .map((it) => {
         const food = byId.get(it.foodId);
         if (!food) return null;
@@ -549,13 +605,26 @@ export async function logMealItems(
       })
       .filter((r): r is NonNullable<typeof r> => r !== null);
 
+    // Ici, en revanche, il restait de vrais nouveaux items mais aucun n'a pu
+    // être résolu en aliment connu — ça, c'est une vraie erreur de données.
     if (rows.length === 0) return { error: "Aucun aliment valide dans ce repas." };
 
     const { error } = await admin.from("food_logs").insert(rows);
     if (error) return { error: "Erreur lors de l'ajout." };
 
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
+    // MASTERCLASS.md Axe W : contrairement à addFoodLog/removeFoodLog (voir
+    // plus haut, corrigé le 2026-08-15), cette fonction ne revalidait que la
+    // route client, jamais /dashboard/coach/moi/nutrition qui réutilise le
+    // même composant pour le suivi personnel d'un coach. Conséquence vérifiée
+    // en base : un coach qui validait un repas via "Valider le repas" sur SA
+    // PROPRE page voyait la case revenir décochée dès qu'il revenait sur la
+    // page (cache jamais invalidé côté serveur pour cette route), revalidait
+    // en revalidant le même repas, créant de vrais doublons dans food_logs
+    // (39 groupes de doublons retrouvés et nettoyés le 2026-08-17, tous sur
+    // les 14-15/08, tous sur le même compte).
     revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
     return { count: rows.length };
   } catch (e) {
     console.error("logMealItems error:", e);

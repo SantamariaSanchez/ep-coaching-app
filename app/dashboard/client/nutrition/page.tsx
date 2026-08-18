@@ -29,6 +29,7 @@ import {
   activateOwnDietPlan,
   deactivateOwnDietPlan,
   deleteOwnDietPlan,
+  updateOwnDietPlanMode,
   setOwnSeasonMode,
   createSavedMeal,
   deleteSavedMeal,
@@ -113,6 +114,7 @@ export default async function ClientNutritionPage() {
           createSavedMeal={createSavedMeal}
           deleteSavedMeal={deleteSavedMeal}
           logMealItems={logMealItems}
+          updatePlanMode={updateOwnDietPlanMode}
         />
 
         <OwnDietPlansSection

@@ -268,6 +268,14 @@ interface Props {
   createSavedMeal?: (name: string, items: { foodId: string; quantityG: number }[]) => Promise<{ error?: string; id?: string }>;
   deleteSavedMeal?: (mealId: string) => Promise<{ error?: string }>;
   logMealItems?: (items: { foodId: string; quantityG: number }[], mealSlot: string, loggedAt: string) => Promise<{ error?: string; count?: number }>;
+  // Changer le mode (flexible/fixe/fixe-flexible) du plan actif directement
+  // depuis le suivi du jour (demande explicite 2026-08-17 : "je veux pouvoir
+  // modifier mon fixe ou variable") — jusqu'ici cette capacité existait déjà
+  // côté coach mais seulement dans l'onglet "Gérer", jamais ici où le
+  // fixe/flexible se voit et se coche vraiment au quotidien. Optionnel :
+  // absent pour un client suivi par un coach (lui seul peut changer le mode
+  // de son plan).
+  updatePlanMode?: (planId: string, mode: DietMode) => Promise<{ error?: string }>;
 }
 
 export default function ClientNutritionView({
@@ -290,12 +298,32 @@ export default function ClientNutritionView({
   createSavedMeal,
   deleteSavedMeal,
   logMealItems,
+  updatePlanMode,
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
+
+  // Mode du plan actif (flexible/fixe/fixe-flexible), éditable directement
+  // ici (2026-08-17) via updatePlanMode — même piège prop→state que
+  // todayLogs plus bas, donc même resynchronisation explicite.
+  const [planMode, setPlanMode] = useState<DietMode>(activePlan?.mode ?? dietMode);
+  useEffect(() => {
+    setPlanMode(activePlan?.mode ?? dietMode);
+  }, [activePlan?.mode, dietMode]);
+  const [changingPlanMode, setChangingPlanMode] = useState(false);
+
+  async function handleChangePlanMode(mode: DietMode) {
+    if (!activePlan || !updatePlanMode) return;
+    const backup = planMode;
+    setPlanMode(mode);
+    setChangingPlanMode(true);
+    const result = await updatePlanMode(activePlan.id, mode);
+    setChangingPlanMode(false);
+    if (result.error) setPlanMode(backup);
+  }
 
   // Bug remonté deux fois : cocher un aliment fonctionne, mais revient
   // décoché après être revenu sur la page (navigation, changement d'appli
@@ -1293,7 +1321,11 @@ export default function ClientNutritionView({
       </div>
 
       {/* Mode selector */}
-      <NutritionModeSelector activeMode={dietMode} />
+      <NutritionModeSelector
+        activeMode={planMode}
+        onChange={activePlan && updatePlanMode ? handleChangePlanMode : undefined}
+        changing={changingPlanMode}
+      />
 
       {/* Coach's prescribed plan */}
       {activePlan && activePlan.diet_plan_meals.length > 0 && (
