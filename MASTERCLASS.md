@@ -2165,3 +2165,39 @@ progression globale eux aussi périmable). Entrée "Formations" ajoutée au
 groupe de navigation "Mon Suivi" du coach (`DashboardNav.tsx`), avec
 l'icône `GraduationCap` déjà utilisée partout ailleurs pour ce concept.
 `loading.tsx` sur les 3 nouvelles routes (Axe M).
+
+## Axe Z — Communauté : "marquer répondu" trop permissif, faux succès
+
+**Statut : livré (2026-08-19), suite de l'audit systématique (même
+demande que l'Axe Y).**
+
+`community_posts` a déjà une RLS UPDATE correcte
+(`auth.uid()=author_id OR is_own_coach(author_id) OR is_platform_owner()`,
+fixée à l'Axe T), et sa RLS DELETE l'est aussi (auteur ou propriétaire de
+plateforme seulement, pas `is_own_coach` — suppression volontairement
+plus restreinte que la modification). Mais **deux endroits en amont**
+laissaient passer n'importe quel coach au niveau de la garde applicative,
+sans vérifier qu'il s'agit bien du coach de l'auteur :
+
+1. `PATCH /api/community/posts/[id]` ("marquer répondu" manuel) —
+   `requireCoach()` seul, aucune vérification que ce coach est celui de
+   l'auteur.
+2. `POST /api/community/posts/[id]/comments` (marquage automatique quand
+   un coach commente une question, ajouté sans audit dédié le
+   2026-0X — "répondre EST la donnée") — même trou, `guard.role ===
+   "coach"` seul.
+
+Dans les deux cas, la RLS bloquait bien l'écriture réelle pour un coach
+tiers (aucune fuite de données, `community_posts.status` restait
+inchangé), mais **silencieusement** : `.update()` sans `.select()` ne
+remonte pas d'erreur quand RLS filtre la ligne à 0 résultat, donc l'API
+répondait `{ ok: true }` / `autoAnswered: true` à un coach qui n'avait en
+réalité rien pu modifier — un faux succès (même famille que l'Axe B,
+"résultat d'action jamais vérifié", mais côté API cette fois).
+
+**Corrigé** : les deux endpoints vérifient maintenant explicitement
+`post.author_id`'s `coach_id` (ou `is_platform_owner`) avant de tenter
+l'update, symétrique à ce que fait déjà `DELETE` sur le même fichier
+depuis le début. Un coach tiers reçoit maintenant un vrai 403 (PATCH) ou
+voit `autoAnswered: false` sans même tenter l'update (POST comments) —
+plus de faux positif.

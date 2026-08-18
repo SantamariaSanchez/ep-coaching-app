@@ -66,19 +66,37 @@ export async function POST(
   // qui répond juste par un commentaire (le geste naturel) laissait la
   // question "open" indéfiniment, invisible ensuite dans le compteur de
   // rappel. Répondre EST la donnée ; pas besoin d'un second geste explicite.
+  //
+  // CORRIGÉ 2026-08-19 (audit "Communauté", même bug que app/api/community/
+  // posts/[id]/route.ts PATCH) : `guard.role === "coach"` seul laissait
+  // n'importe quel coach déclencher une tentative de marquage sur la
+  // question d'un client qui n'est pas le sien. La RLS (auth.uid()=
+  // author_id OR is_own_coach(author_id) OR is_platform_owner()) empêchait
+  // bien l'écriture réelle, mais silencieusement (0 ligne filtrée, pas
+  // d'erreur SQL) — `autoAnswered` répondait quand même `true` sans que
+  // rien n'ait changé. Vérifie maintenant que ce coach est bien celui de
+  // l'auteur (ou le propriétaire de la plateforme) avant même de tenter
+  // l'update, pour que la réponse reflète ce qui s'est réellement passé.
   let autoAnswered = false;
   if (guard.role === "coach") {
     const { data: post } = await supabase
       .from("community_posts")
-      .select("type, status")
+      .select("type, status, author_id")
       .eq("id", postId)
       .single();
     if (post?.type === "question" && post.status === "open") {
-      const { error: statusError } = await supabase
-        .from("community_posts")
-        .update({ status: "answered" })
-        .eq("id", postId);
-      autoAnswered = !statusError;
+      const [{ data: profile }, { data: authorProfile }] = await Promise.all([
+        supabase.from("profiles").select("is_platform_owner").eq("id", guard.userId).maybeSingle(),
+        supabase.from("profiles").select("coach_id").eq("id", post.author_id).maybeSingle(),
+      ]);
+      const canAnswer = profile?.is_platform_owner === true || authorProfile?.coach_id === guard.userId;
+      if (canAnswer) {
+        const { error: statusError } = await supabase
+          .from("community_posts")
+          .update({ status: "answered" })
+          .eq("id", postId);
+        autoAnswered = !statusError;
+      }
     }
   }
 
