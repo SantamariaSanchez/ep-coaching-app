@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { Sun, Moon as MoonIcon, UtensilsCrossed } from "lucide-react";
+import { Sun, Moon as MoonIcon, UtensilsCrossed, X } from "lucide-react";
 import {
   WeightCard,
   SleepCard,
@@ -61,6 +61,19 @@ export default function DailyGateOverlay({
   const [pendingMeal, setPendingMeal] = useState<PendingMeal | null>(initialPendingMeal ?? null);
   const pathname = usePathname();
 
+  // Échappatoire (demande explicite 2026-08-19 : "des fois on n'a pas les
+  // data et qu'on veut utiliser l'appli, sinon c'est chiant") : une petite
+  // croix pour fermer le verrou ponctuellement sans rien valider côté
+  // serveur — contrairement aux cartes de bilan, ça ne marque jamais rien
+  // comme fait. Remis à zéro à chaque changement de page ou de raison de
+  // blocage, pour que ça reste "je passe outre maintenant", pas "je
+  // désactive le bilan" : le verrou revient à la prochaine navigation ou
+  // au prochain rechargement tant que les données manquent vraiment.
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    setDismissed(false);
+  }, [pathname, active]);
+
   const refresh = useCallback(async () => {
     try {
       const res = await fetch("/api/gate-status", { cache: "no-store" });
@@ -107,6 +120,7 @@ export default function DailyGateOverlay({
 
   if (!active) return null;
   if (active === "meal" && pathname === mealBaseHref) return null;
+  if (dismissed) return null;
 
   return (
     <div
@@ -122,6 +136,30 @@ export default function DailyGateOverlay({
         WebkitBackdropFilter: "blur(16px) saturate(140%)",
       }}
     >
+      <button
+        type="button"
+        onClick={() => setDismissed(true)}
+        aria-label="Fermer pour l'instant"
+        title="Fermer pour l'instant"
+        style={{
+          position: "fixed",
+          top: 16,
+          right: 16,
+          zIndex: 2001,
+          width: 34,
+          height: 34,
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          background: "rgba(245,237,237,0.08)",
+          border: "1px solid rgba(245,237,237,0.15)",
+          color: "rgba(245,237,237,0.5)",
+          cursor: "pointer",
+        }}
+      >
+        <X size={16} />
+      </button>
       <div style={{ width: "100%", maxWidth: 480, margin: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
         {active === "morning" && (
           <>
