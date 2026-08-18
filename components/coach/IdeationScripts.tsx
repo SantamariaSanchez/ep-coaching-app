@@ -147,19 +147,37 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     });
   }
 
+  // MASTERCLASS.md Axe B (rattrapé le 2026-08-19) : résultat jamais
+  // vérifié — un échec serveur laissait l'écran afficher un état faux
+  // sans retour en arrière, jusqu'au prochain rechargement complet.
   function saveContent(id: string) {
+    const backup = scripts;
     setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, content: draft || null } : s)));
     setOpenId(null);
-    startTransition(() => {
-      updateScript(id, { content: draft });
+    startTransition(async () => {
+      const result = await updateScript(id, { content: draft });
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
     });
   }
 
   function remove(id: string) {
+    const idx = scripts.findIndex((s) => s.id === id);
+    const backup = scripts[idx];
     setScripts((prev) => prev.filter((s) => s.id !== id));
     if (openId === id) setOpenId(null);
-    startTransition(() => {
-      deleteScript(id);
+    startTransition(async () => {
+      const result = await deleteScript(id);
+      if (result.error && backup) {
+        setScripts((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+        setError(result.error);
+      }
     });
   }
 

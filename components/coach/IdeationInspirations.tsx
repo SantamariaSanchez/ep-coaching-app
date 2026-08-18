@@ -61,10 +61,23 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
     });
   }
 
+  // MASTERCLASS.md Axe B (rattrapé le 2026-08-19) : résultat jamais
+  // vérifié — un échec serveur laissait l'écran afficher un état faux
+  // sans retour en arrière, jusqu'au prochain rechargement complet.
   function remove(id: string) {
+    const idx = items.findIndex((i) => i.id === id);
+    const backup = items[idx];
     setItems((prev) => prev.filter((i) => i.id !== id));
-    startTransition(() => {
-      deleteInspiration(id);
+    startTransition(async () => {
+      const result = await deleteInspiration(id);
+      if (result.error && backup) {
+        setItems((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+        setError(result.error);
+      }
     });
   }
 

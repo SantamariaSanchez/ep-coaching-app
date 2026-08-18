@@ -2201,3 +2201,34 @@ l'update, symétrique à ce que fait déjà `DELETE` sur le même fichier
 depuis le début. Un coach tiers reçoit maintenant un vrai 403 (PATCH) ou
 voit `autoAnswered: false` sans même tenter l'update (POST comments) —
 plus de faux positif.
+
+## Axe AA — Studio créatif : le pipeline principal avait le trou Axe B
+
+**Statut : livré (2026-08-19), dernier des 4 chantiers de l'audit
+systématique demandé (Entraînement/Programme, Formations, Communauté,
+Studio créatif).**
+
+`app/dashboard/coach/studio/actions.ts` (toutes les fonctions CRUD
+idées/notes/scripts/inspirations) est déjà propre : `requireCoach()`
+partout, chaque UPDATE/DELETE scopé par `.eq("coach_id", guard.userId)`
+en plus de la RLS, messages d'erreur explicites. Rien à corriger côté
+serveur.
+
+**Côté client, en revanche**, exactement le trou déjà documenté à l'Axe B
+("résultat d'action jamais vérifié côté UI") traînait dans **7 endroits**
+sur 4 fichiers, jamais rattrapés par cette passe-là en son temps :
+`ContentStudio.tsx` (`changeStatus`, `remove`), `IdeationNotes.tsx`
+(`togglePin`, `saveBody`, `remove`), `IdeationScripts.tsx`
+(`saveContent`, `remove`), `IdeationInspirations.tsx` (`remove`). Chacun
+appliquait une mise à jour optimiste puis appelait l'action serveur dans
+un `startTransition(() => { action(...) })` **synchrone, jamais awaité,
+résultat jamais lu** — un échec serveur (RLS, rate limit, réseau)
+laissait l'écran afficher un statut changé ou un élément supprimé qui
+n'avait en réalité pas bougé en base, sans aucun signal ni retour en
+arrière, jusqu'au prochain rechargement complet de la page.
+
+**Corrigé** : les 7 handlers suivent maintenant le même patron déjà
+établi ailleurs dans l'app (`ClientNutritionView.tsx::handleDelete`,
+`OrganisationView.tsx::handleChangeApplicationStatus`) — sauvegarde de
+l'état précédent avant la mise à jour optimiste, `await` du résultat,
+restauration de l'état + message d'erreur si `result.error`.

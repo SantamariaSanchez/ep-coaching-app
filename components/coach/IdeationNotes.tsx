@@ -64,29 +64,53 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
     });
   }
 
+  // MASTERCLASS.md Axe B (rattrapé le 2026-08-19) : les trois mises à jour
+  // optimistes ci-dessous n'attendaient ni ne vérifiaient jamais le
+  // résultat de l'action serveur — un échec laissait l'écran afficher un
+  // état faux sans retour en arrière, jusqu'au prochain rechargement.
   function togglePin(note: IdeationNote) {
+    const backup = notes;
     setNotes((prev) =>
       [...prev]
         .map((n) => (n.id === note.id ? { ...n, pinned: !n.pinned } : n))
         .sort((a, b) => Number(b.pinned) - Number(a.pinned))
     );
-    startTransition(() => {
-      updateIdeationNote(note.id, { pinned: !note.pinned });
+    startTransition(async () => {
+      const result = await updateIdeationNote(note.id, { pinned: !note.pinned });
+      if (result.error) {
+        setNotes(backup);
+        setError(result.error);
+      }
     });
   }
 
   function saveBody(id: string) {
+    const backup = notes;
     setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, body: editBody || null } : n)));
     setEditingId(null);
-    startTransition(() => {
-      updateIdeationNote(id, { body: editBody });
+    startTransition(async () => {
+      const result = await updateIdeationNote(id, { body: editBody });
+      if (result.error) {
+        setNotes(backup);
+        setError(result.error);
+      }
     });
   }
 
   function remove(id: string) {
+    const idx = notes.findIndex((n) => n.id === id);
+    const backup = notes[idx];
     setNotes((prev) => prev.filter((n) => n.id !== id));
-    startTransition(() => {
-      deleteIdeationNote(id);
+    startTransition(async () => {
+      const result = await deleteIdeationNote(id);
+      if (result.error && backup) {
+        setNotes((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+        setError(result.error);
+      }
     });
   }
 

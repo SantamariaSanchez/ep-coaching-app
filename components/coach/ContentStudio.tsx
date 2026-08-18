@@ -84,17 +84,38 @@ export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentI
     });
   }
 
+  // MASTERCLASS.md Axe B (rattrapé ici le 2026-08-19, même trou que
+  // partout ailleurs déjà corrigé) : les deux mises à jour optimistes
+  // ci-dessous n'attendaient ni ne vérifiaient jamais le résultat de
+  // l'action serveur — un échec (réseau, RLS, rate limit) laissait
+  // l'écran afficher un état faux (statut changé, idée supprimée) sans
+  // aucun retour en arrière, jusqu'au prochain rechargement complet.
   function changeStatus(id: string, status: ContentStatus) {
+    const backup = ideas.find((i) => i.id === id)?.status;
     setIdeas((prev) => prev.map((i) => (i.id === id ? { ...i, status } : i)));
-    startTransition(() => {
-      updateContentIdea(id, { status });
+    startTransition(async () => {
+      const result = await updateContentIdea(id, { status });
+      if (result.error && backup) {
+        setIdeas((prev) => prev.map((i) => (i.id === id ? { ...i, status: backup } : i)));
+        setError(result.error);
+      }
     });
   }
 
   function remove(id: string) {
+    const idx = ideas.findIndex((i) => i.id === id);
+    const backup = ideas[idx];
     setIdeas((prev) => prev.filter((i) => i.id !== id));
-    startTransition(() => {
-      deleteContentIdea(id);
+    startTransition(async () => {
+      const result = await deleteContentIdea(id);
+      if (result.error && backup) {
+        setIdeas((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+        setError(result.error);
+      }
     });
   }
 
