@@ -2107,3 +2107,61 @@ nouveau fichier `lib/mailing-audience.ts` sans aucun import sensible
 (pas de `createAdminClient`, pas de `BREVO_API_KEY`) — sûr à importer
 aussi bien depuis un composant client que depuis les fichiers serveur
 existants (`lib/brevo-mailing.ts`, `lib/coach-mailings.ts`).
+
+## Axe Y — Formations : un coach n'avait aucun accès à son propre contenu
+
+**Statut : livré (2026-08-19), audit systématique demandé explicitement
+("organise-toi bien et passe à l'action sur tout") sur Entraînement/
+Programme, Formations, Communauté, Studio créatif.**
+
+Entraînement/Programme (bâtisseur, logbook, API `/api/client/sessions/**`)
+audité en premier : déjà propre (guard, scoping par `client_id`, rate
+limit, messages d'erreur génériques, tout déjà couvert par un passage
+précédent — rien à corriger).
+
+**Formations, en revanche, cache un vrai trou.** `app/dashboard/client/
+formations/**` (catalogue, détail, lecture de leçon) redirige
+systématiquement tout `role === "coach"` hors de ses pages
+(`redirect("/dashboard/coach")`), et il n'existait **aucune** route
+`/dashboard/coach/moi/formations` équivalente — contrairement à tous les
+autres domaines de suivi personnel du coach (bilan, nutrition,
+programme, logbook, roadmap, agenda, steps, tracking, photos, mindset :
+11 domaines déjà avec leur "Moi", Formations le seul absent). Un coach
+n'avait donc **aucun moyen de regarder une seule vidéo de son propre
+catalogue**, y compris `ENTREPRENARIAL SECRET™` (construction d'une
+activité de coaching, suit un coach fictif de zéro client à dix-huit
+mois) et `PSYCHOLOGIE AFFECT™` (biais cognitifs appliqués à
+l'entraînement ET à la construction d'une activité) — du contenu écrit
+explicitement pour un coach, totalement inaccessible à un coach.
+
+Le commentaire de `revalidateFormations()` prétendait que
+`markLessonComplete`/`unmarkLessonComplete` revalidaient déjà "les deux
+routes qui partagent VideoPlayer (client et coach Moi)" — faux : une
+seule route au monde importe `VideoPlayer`
+(`app/dashboard/client/formations/[formationId]/[lessonId]/page.tsx`),
+et le second chemin revalidé,
+`/dashboard/coach/formations/[formationId]`, est en réalité
+`CoachFormationEditor.tsx` (l'éditeur de contenu du coach), qui n'affiche
+jamais de progression de lecture. Cette revalidation ne servait donc
+jamais à rien — un commentaire resté d'une implémentation soit jamais
+finie, soit jamais faite, impossible à trancher avec certitude, mais le
+résultat concret était le même : zéro accès.
+
+**Vérifié avant de construire** (pas supposé) : `formation_progress` et
+`formation_lesson_views` ont des policies RLS génériques
+(`auth.uid() = user_id`, aucune restriction de rôle) — la table n'a
+jamais empêché un coach d'écrire sa propre progression, seule la page
+front manquait. `getResumeLesson`/`getUserProgress`/
+`getFormationWithModules` (`utils/formations.ts`) sont déjà génériques
+par `userId`, aucune hypothèse "client uniquement".
+
+**Corrigé** : 3 nouvelles pages (`app/dashboard/coach/moi/formations/
+page.tsx`, `[formationId]/page.tsx`, `[formationId]/[lessonId]/page.tsx`),
+adaptées des pages client existantes en retirant la logique "membre
+gratuit" (un compte coach n'est jamais free tier, toute leçon publiée
+est directement accessible). `revalidateFormations()` corrigée pour
+viser le vrai chemin coach (plus les deux catalogues, qui affichent une
+progression globale eux aussi périmable). Entrée "Formations" ajoutée au
+groupe de navigation "Mon Suivi" du coach (`DashboardNav.tsx`), avec
+l'icône `GraduationCap` déjà utilisée partout ailleurs pour ce concept.
+`loading.tsx` sur les 3 nouvelles routes (Axe M).

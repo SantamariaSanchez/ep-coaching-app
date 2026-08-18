@@ -232,6 +232,11 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
+      // Manquait entièrement (trouvé en audit 2026-08-19) : un coach était
+      // redirigé hors de toute page de lecture de formation, aucun moyen
+      // de suivre son propre contenu (dont ENTREPRENARIAL SECRET, écrit
+      // pour un coach). Voir app/dashboard/coach/moi/formations/page.tsx.
+      { label: "Formations",     icon: GraduationCap,  segment: "moi/formations" },
       { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
       { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
       { label: "Steps",          icon: Footprints,     segment: "moi/steps" },

@@ -10,11 +10,26 @@ import { revalidatePath } from "next/cache";
 // terminée réapparaît décochée après une navigation arrière/avant (le
 // cache client de Next resert le rendu serveur d'avant la mutation).
 // Syntaxe pattern ("[formationId]", type "layout") : invalide la page +
-// toute page imbriquée sans avoir besoin du vrai formationId ici, pour
-// les deux routes qui partagent VideoPlayer (client et coach "Moi").
+// toute page imbriquée sans avoir besoin du vrai formationId ici.
+//
+// CORRIGÉ 2026-08-19 (audit "Formations") : le chemin coach visait
+// `/dashboard/coach/formations/[formationId]` (l'éditeur de contenu du
+// coach, CoachFormationEditor.tsx) qui n'affiche jamais de progression de
+// lecture — les pages client (`app/dashboard/client/formations/**`)
+// redirigent d'ailleurs tout `role === "coach"` hors de leurs murs, donc
+// cette revalidation ne servait jamais à rien : aucune page accessible à
+// un coach ne dépendait de ce chemin. Un vrai équivalent coach vient
+// d'être créé, `/dashboard/coach/moi/formations/[formationId]` (page de
+// lecture pour le coach lui-même, même contenu que côté client, sa
+// propre redirection réservée à `role === "coach"`) — c'est lui qu'il
+// faut invalider. Les catalogues (pas seulement les pages de détail)
+// sont ajoutés aussi : ils affichent la progression globale (X/Y
+// leçons), qui devenait périmée au même titre.
 function revalidateFormations() {
+  revalidatePath("/dashboard/client/formations");
   revalidatePath("/dashboard/client/formations/[formationId]", "layout");
-  revalidatePath("/dashboard/coach/formations/[formationId]", "layout");
+  revalidatePath("/dashboard/coach/moi/formations");
+  revalidatePath("/dashboard/coach/moi/formations/[formationId]", "layout");
 }
 
 // requireAuth() plutôt qu'un getUser() nu : les formations sont suivies par
