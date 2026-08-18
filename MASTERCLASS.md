@@ -2048,3 +2048,53 @@ de rendre `DietPlanCard` conscient d'une date arbitraire (jour de la
 semaine pour les plans "weekly", entre autres), plus risqué sur un
 fichier déjà volumineux et déjà responsable du bug de doublons ci-dessus
 — à reprendre si un vrai besoin se confirme à l'usage.
+
+**Audit de suivi (même jour)** : le bug ci-dessus venait d'un pattern
+précis — une page réutilisée à la fois par `/dashboard/client/*` et
+`/dashboard/coach/moi/*`, une seule des deux routes revalidée. Vérifié
+systématiquement sur les 5 autres écrans partagés de la même façon
+(`agenda`, `mindset`, `steps`, `tracking`, en plus de `nutrition`) :
+**tous corrects**, `logMealItems` était une omission isolée, pas un
+défaut systémique. `agenda/actions.ts` a même déjà le bon réflexe
+architectural pour éviter ce genre d'oubli : un seul helper
+`revalidateAgendaPaths()` centralise les 3 chemins, appelé par les 6
+fonctions qui affectent l'affichage plutôt que de dupliquer 3 appels
+`revalidatePath` dans chacune — modèle à suivre si un nouveau créneau
+"partagé client/coach" est ajouté un jour.
+
+## Axe X — Mailing v2 : audience, dupliquer, programmer, aperçu, marque
+
+**Statut : livré (2026-08-18).**
+
+Suite directe de l'Axe V (audit initial) et des réponses de l'utilisateur
+aux questions posées sur l'onglet : audience choisie (mes clients actifs
+par défaut pour tout coach ; tous les membres / coachs / une liste Brevo
+existante réservées au propriétaire de la plateforme, ces audiences
+dépassant le périmètre d'un coach sur ses propres clients), dupliquer un
+envoi passé (`html_content` maintenant conservé, absent jusqu'ici),
+programmer un envoi (`scheduledAt` côté Brevo, statut `scheduled`),
+aperçu avec la bannière de marque avant l'envoi réel, bannière/logo
+automatique sur chaque envoi (`wrapBrandedEmail`), refonte visuelle
+complète du composeur.
+
+**Bug de build découvert et corrigé avant tout déploiement cassé** :
+`MAX_RECIPIENTS_PER_SEND` était réexporté depuis
+`app/dashboard/coach/mailing/actions.ts`, un fichier `"use server"` — or
+Next.js interdit à un tel fichier d'exporter autre chose que des
+fonctions async ("A 'use server' file can only export async functions,
+found number"). `npm run build` a échoué proprement et a été repéré
+avant le push, mais la leçon de méthode compte : **une commande pipée
+dans `tail` renvoie le code de sortie de `tail`, pas celui de la
+commande d'origine** — `npm run build 2>&1 | tail -80` avait affiché
+"[exited with code 0]" alors que le build avait réellement échoué
+("Build error occurred" visible seulement dans le texte, pas dans le
+code de sortie rapporté). Depuis, vérifier un build passe par un fichier
+de log + `echo "EXIT_CODE=$?"` explicite après la commande, jamais se
+fier au code de sortie d'une commande pipée dans `tail`/`head`/`grep`.
+
+Corrigé en extrayant `MAX_RECIPIENTS_PER_SEND` (et au passage le type
+`MailingAudience`, sa (dé)sérialisation, et `wrapBrandedEmail`) dans un
+nouveau fichier `lib/mailing-audience.ts` sans aucun import sensible
+(pas de `createAdminClient`, pas de `BREVO_API_KEY`) — sûr à importer
+aussi bien depuis un composant client que depuis les fichiers serveur
+existants (`lib/brevo-mailing.ts`, `lib/coach-mailings.ts`).
