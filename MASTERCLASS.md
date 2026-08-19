@@ -2777,19 +2777,16 @@ assistant mais qui prenne quand même des décisions et ont des tâche auto
 récurente". Confirmé ensuite : action directe sans validation humaine
 avant envoi, fréquence quotidienne.**
 
-Découverte importante avant de construire : en listant les routines
-cloud existantes (claude.ai), aucune n'appelle les routes `/api/cron/*`
-de l'appli — les 3 routines déjà actives (doublons food_logs, lead
-magnets, revue quotidienne check-ins) travaillent en direct sur Supabase
-via MCP, sans passer par le code. Et `vercel.json` ne déclarait qu'UN
-SEUL cron (`weekly-sleep-recap`) alors que le dossier `app/api/cron/`
-contient de nombreuses autres routes (meal-reminders,
-stagnation-escalation, coach-upsell, expire-trials, etc.) — probablement
-du code mort qui ne s'exécute jamais en production, faute d'être
-enregistré. Pas corrigé en bloc ici (risque réel de casser quelque chose
-sans savoir pourquoi ces routes ne sont pas enregistrées — décision
-délibérée ou oubli, à trancher avec l'utilisatrice), seulement signalé ;
-seul le nouveau cron de cet axe est ajouté à `vercel.json`.
+Découverte au moment de construire, initialement mal interprétée : en
+listant les routines cloud existantes (claude.ai), aucune n'appelle les
+routes `/api/cron/*` de l'appli — les 3 routines déjà actives (doublons
+food_logs, lead magnets, revue quotidienne check-ins) travaillent en
+direct sur Supabase via MCP, sans passer par le code. Et `vercel.json` ne
+déclarait qu'UN SEUL cron (`weekly-sleep-recap`) alors que le dossier
+`app/api/cron/` contient de nombreuses autres routes — hypothèse initiale
+(fausse, corrigée juste après, voir Axe AU) : "probablement du code mort
+jamais déclenché". Le nouveau cron de cet axe (`coach-assistant`) a
+d'abord été ajouté à `vercel.json` par précaution.
 
 Nouveau mécanisme :
 - `lib/coach-assistant-sweep.ts::runCoachAssistantSweep` — pour CHAQUE
@@ -2819,3 +2816,44 @@ Nouveau mécanisme :
 
 MIGRATION : aucune nouvelle, réutilise les tables déjà migrées
 (`ai_agent_tasks`, `messages`, `daily_logs`, `programs`).
+
+## Axe AU — Les routes cron ne sont pas du code mort : audit complet + bug de double-déclenchement corrigé
+
+**Statut : livré (2026-08-19). Hypothèse de l'Axe AT ("probablement du
+code mort") explicitement invalidée par un audit dédié, demandé
+directement après avoir signalé le doute : "audite et enregistre celles
+qui sont utiles".**
+
+Vérification directe sur `cron.job` (extension pg_cron) en base de
+production : **les 17 routes `app/api/cron/*` non listées dans
+`vercel.json` ont chacune un job pg_cron actif**, avec le vrai
+`CRON_SECRET` déjà en place, qui appelle l'URL de prod exacte via
+`net.http_get` (extension `pg_net`). Confirmé par plusieurs migrations
+déjà commitées (`20260814c_expire_trials_cron.sql`,
+`20260813b_weekly_progress_recap_cron.sql`) : le pattern établi de cette
+appli est Supabase pg_cron, jamais `vercel.json` — raison technique
+documentée en dur dans `nag-tasks/route.ts` et sa migration : le cron
+natif Vercel ne permet qu'une fréquence quotidienne sur le plan utilisé
+ici, alors que la majorité de ces routes tournent toutes les 5, 10 ou 15
+minutes (rappels de repas, de live, de tâches...). Aucune de ces 17
+routes n'est redondante avec les 3 routines cloud claude.ai (domaines
+différents : notifications in-app/email vs dédoublonnage de données,
+production de contenu, revue de check-ins).
+
+**Bug réel trouvé au passage** : `weekly-sleep-recap` tournait DEUX FOIS
+chaque dimanche 19h UTC — un job pg_cron déjà actif (jobid 22) ET
+l'entrée `vercel.json` historique, mêmes horaire et URL. Corrigé :
+`vercel.json` vidé de tout cron (le mécanisme réel de l'appli est
+pg_cron, `vercel.json` n'apportait plus rien d'utile et créait ce
+doublon), `coach-assistant` (Axe AT) migré vers le même mécanisme pg_cron
+que toutes les autres routes plutôt que de rester un cas particulier
+(`supabase/migrations/20260819g_coach_assistant_cron.sql`).
+
+**Leçon** : ne jamais conclure "code mort" à partir d'un seul indicateur
+(`vercel.json` incomplet) sans vérifier la source de vérité réelle —
+ici, une simple requête sur `cron.job` en base aurait évité l'hypothèse
+fausse initiale de l'Axe AT dès le départ.
+
+MIGRATION SQL À EXÉCUTER MANUELLEMENT
+(`20260819g_coach_assistant_cron.sql`, remplacer le placeholder par le
+vrai `CRON_SECRET` comme pour toutes les migrations cron précédentes).
