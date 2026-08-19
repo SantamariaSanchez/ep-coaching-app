@@ -8,6 +8,8 @@ import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
+import type { NutritionTotals } from "@/components/ui/DailyBilanForm";
+import type { DailyLog } from "@/utils/daily-logs";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { isEmailVerified } from "@/lib/email-verification";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -100,42 +102,71 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // loggués, pas auto) ne sont chargées que si un verrou est effectivement
   // actif — la grande majorité des chargements de page ne paient que le
   // coût de getDailyGateStatus lui-même.
-  let gateOverlay: React.ReactNode = null;
-  if (user && profile) {
-    const gate = await getDailyGateStatus(user.id);
-    if (gate.active) {
-      const [existing, todayFoodLogs, autoSteps] = await Promise.all([
-        getTodayLog(user.id),
-        getTodayLogs(user.id, todayInParis()),
-        getTodayStepsActual(user.id),
-      ]);
-      const nutritionTotals =
-        todayFoodLogs.length > 0
-          ? todayFoodLogs.reduce(
-              (acc, l) => ({
-                calories: acc.calories + (l.calories ?? 0),
-                proteins: acc.proteins + (l.proteins ?? 0),
-                carbs: acc.carbs + (l.carbs ?? 0),
-                fats: acc.fats + (l.fats ?? 0),
-              }),
-              { calories: 0, proteins: 0, carbs: 0, fats: 0 }
-            )
-          : null;
-      const isCoach = profile.role === "coach";
-      gateOverlay = (
-        <DailyGateOverlay
-          initialActive={gate.active}
-          initialPendingMeal={gate.pendingMeal}
-          today={todayInParis()}
-          existing={existing}
-          action={isCoach ? upsertCoachDailyLog : upsertDailyLog}
-          autoSteps={autoSteps}
-          nutritionTotals={nutritionTotals}
-          mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
-        />
-      );
-    }
+  //
+  // CORRIGÉ 2026-08-19 (retour direct, APRÈS l'Axe AB : "ya encore le bilan
+  // qui revient à chaque action"). Le vrai fond du problème n'était pas
+  // encore traité : <DailyGateOverlay> n'était rendu dans l'arbre que
+  // lorsque gate.active était vrai (gateOverlay = null sinon). Or ce layout
+  // est en dynamic = "force-dynamic", et la quasi-totalité des Server
+  // Actions de l'appli appellent revalidatePath() — ce qui fait réexécuter
+  // ce fichier côté serveur après CHAQUE action, pas seulement les actions
+  // nutrition. À chaque fois que gate.active repassait par null (même un
+  // aller-retour d'un seul re-rendu, par exemple juste après avoir loggué
+  // le dernier aliment d'un repas, avant que la prochaine raison de
+  // blocage éventuelle ne soit connue), <DailyGateOverlay> disparaissait de
+  // l'arbre puis un TOUT NOUVEAU composant était monté au rendu suivant dès
+  // que gate.active redevenait vrai — perdant tout son état interne
+  // (dismissed, et surtout `active` lui-même, voir le composant) et
+  // redémarrant sur le initialActive fraîchement recalculé côté serveur.
+  // Perçu à raison comme "le bilan revient", pour une action qui n'avait
+  // souvent rien à voir avec lui.
+  //
+  // Le composant reste maintenant TOUJOURS monté une fois la session
+  // ouverte (jamais démonté/remonté par un simple aller-retour serveur) —
+  // seul le calcul des données lourdes reste conditionné à gate.active
+  // pour préserver l'optimisation de coût. Une fois monté, c'est le
+  // composant lui-même qui décide seul quand revérifier (refreshSoft/
+  // refreshFull) ; le serveur ne fournit plus qu'une valeur de départ.
+  const gate =
+    user && profile ? await getDailyGateStatus(user.id) : { active: null, pendingMeal: undefined };
+  let existing: DailyLog | null = null;
+  let nutritionTotals: NutritionTotals | null = null;
+  let autoSteps: number | null = null;
+  if (user && profile && gate.active) {
+    const [existingRes, todayFoodLogs, autoStepsRes] = await Promise.all([
+      getTodayLog(user.id),
+      getTodayLogs(user.id, todayInParis()),
+      getTodayStepsActual(user.id),
+    ]);
+    existing = existingRes;
+    autoSteps = autoStepsRes;
+    nutritionTotals =
+      todayFoodLogs.length > 0
+        ? todayFoodLogs.reduce(
+            (acc, l) => ({
+              calories: acc.calories + (l.calories ?? 0),
+              proteins: acc.proteins + (l.proteins ?? 0),
+              carbs: acc.carbs + (l.carbs ?? 0),
+              fats: acc.fats + (l.fats ?? 0),
+            }),
+            { calories: 0, proteins: 0, carbs: 0, fats: 0 }
+          )
+        : null;
   }
+  const isCoach = profile?.role === "coach";
+  const gateOverlay: React.ReactNode =
+    user && profile ? (
+      <DailyGateOverlay
+        initialActive={gate.active}
+        initialPendingMeal={gate.pendingMeal}
+        today={todayInParis()}
+        existing={existing}
+        action={isCoach ? upsertCoachDailyLog : upsertDailyLog}
+        autoSteps={autoSteps}
+        nutritionTotals={nutritionTotals}
+        mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
+      />
+    ) : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
