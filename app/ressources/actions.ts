@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { getLeadMagnet } from "@/lib/lead-magnets";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { maybeSendLeadQualification } from "@/lib/lead-qualification";
 import { headers } from "next/headers";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -64,12 +65,16 @@ export async function submitLead(
 
   try {
     const supabase = createAdminClient();
-    const { error } = await supabase.from("leads").insert({
-      lead_magnet_slug: slug,
-      email: trimmedEmail || null,
-      phone: normalizedPhone,
-      source: "ressources_public",
-    });
+    const { data: leadRow, error } = await supabase
+      .from("leads")
+      .insert({
+        lead_magnet_slug: slug,
+        email: trimmedEmail || null,
+        phone: normalizedPhone,
+        source: "ressources_public",
+      })
+      .select("id")
+      .single();
     if (error) return { error: "Erreur lors de l'enregistrement, réessaie." };
 
     if (trimmedEmail) {
@@ -94,6 +99,12 @@ export async function submitLead(
           </div>
         `,
       }).catch(() => {});
+
+      // Suivi commercial réel par l'agent Setter (lib/lead-qualification.ts) —
+      // fire-and-forget, distinct de l'email de remise du guide ci-dessus.
+      if (leadRow) {
+        maybeSendLeadQualification(leadRow.id, trimmedEmail, magnet.title).catch(() => {});
+      }
     }
 
     return {};

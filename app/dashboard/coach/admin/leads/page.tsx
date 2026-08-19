@@ -4,7 +4,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getAllLeads } from "@/utils/leads";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
-import { ChevronLeft, Mail, Phone } from "lucide-react";
+import { ChevronLeft, Mail, Phone, Bot } from "lucide-react";
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -32,6 +32,7 @@ export default async function LeadsAdminPage() {
   const byMagnet = new Map<string, number>();
   for (const l of leads) byMagnet.set(l.lead_magnet_slug, (byMagnet.get(l.lead_magnet_slug) ?? 0) + 1);
   const topMagnets = Array.from(byMagnet.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
+  const qualifiedCount = leads.filter((l) => l.qualification_sent_at).length;
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -63,6 +64,12 @@ export default async function LeadsAdminPage() {
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{leads.length}</span>
         </div>
+        <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#60a5fa" }}>
+            Qualifiés par Santiago (IA)
+          </span>
+          <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{qualifiedCount}</span>
+        </div>
         {topMagnets.map(([slug, count]) => {
           const magnet = magnetsBySlug.get(slug);
           return (
@@ -91,7 +98,17 @@ export default async function LeadsAdminPage() {
                 className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-white truncate">{magnet?.title ?? l.lead_magnet_slug}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-sm font-bold text-white truncate">{magnet?.title ?? l.lead_magnet_slug}</p>
+                    {l.qualification_sent_at && (
+                      <span
+                        title={`Qualifié le ${formatDate(l.qualification_sent_at)}`}
+                        className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/35 flex-shrink-0"
+                      >
+                        <Bot size={9} /> Qualifié
+                      </span>
+                    )}
+                  </div>
                   <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                     {l.email && (
                       <span className="flex items-center gap-1 text-[11px] text-[#F5EDED]/50">

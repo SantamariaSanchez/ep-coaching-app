@@ -7,6 +7,8 @@ export interface Lead {
   phone: string | null;
   source: string;
   created_at: string;
+  /** Email de qualification envoyé par l'agent Setter (lib/lead-qualification.ts), ou null si pas encore/pas d'email. */
+  qualification_sent_at: string | null;
 }
 
 // Donnée plateforme (pas des clients d'un coach en particulier) — lue avec
@@ -17,7 +19,7 @@ export async function getAllLeads(): Promise<Lead[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("leads")
-      .select("id, lead_magnet_slug, email, phone, source, created_at")
+      .select("id, lead_magnet_slug, email, phone, source, created_at, qualification_sent_at")
       .order("created_at", { ascending: false });
     return (data as Lead[]) ?? [];
   } catch {
