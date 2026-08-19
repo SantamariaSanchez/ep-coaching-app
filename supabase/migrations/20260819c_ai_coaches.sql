@@ -1,7 +1,8 @@
 -- ═══════════════════════════════════════════════════════════════════════
 -- EP Coaching — Coachs IA client-facing (demande directe 2026-08-19)
--- Exécuté directement via Supabase MCP par l'agent, pas besoin de le
--- rejouer manuellement — gardé ici pour l'historique du dépôt.
+-- À EXÉCUTER MANUELLEMENT dans le Supabase SQL Editor (tentative
+-- d'application directe via l'outil MCP refusée par le classificateur de
+-- permissions de la session qui l'a écrite).
 -- ═══════════════════════════════════════════════════════════════════════
 -- 10 coachs IA visibles dans l'annuaire public /coachs et le choix de
 -- coach côté client, au même titre qu'un coach humain tiers (même modèle
