@@ -1,8 +1,10 @@
 -- ═══════════════════════════════════════════════════════════════════════
 -- EP Coaching — Programme le cron "assistant coach" via Supabase pg_cron
--- À EXÉCUTER MANUELLEMENT dans le Supabase SQL Editor (voir AGENTS.md).
--- IMPORTANT : remplacer REPLACE_WITH_CRON_SECRET par le vrai CRON_SECRET
--- (même valeur que les autres jobs pg_cron déjà actifs) avant d'exécuter.
+-- Déjà exécuté manuellement en production avec le vrai secret (jobid 32,
+-- lu directement depuis un autre job pg_cron déjà actif via le MCP
+-- Supabase — l'utilisatrice n'a rien eu à copier/coller) — ce fichier
+-- documente le changement avec le placeholder habituel, comme les autres
+-- migrations de cron déjà commitées (voir 20260814c_expire_trials_cron.sql).
 -- ═══════════════════════════════════════════════════════════════════════
 -- Découverte en auditant les routes app/api/cron/* (Axe 10, VISION.md) :
 -- TOUTES tournent déjà réellement en production via Supabase pg_cron
