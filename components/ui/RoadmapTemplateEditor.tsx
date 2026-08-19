@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, AlertCircle, Check, Wand2, CalendarRange, Target } from "lucide-react";
+import { Plus, Trash2, AlertCircle, Check, Wand2, CalendarRange, Target, ChevronDown } from "lucide-react";
 import { uid, inputCls } from "@/components/ui/ProgramEditor";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import type {
@@ -108,6 +108,12 @@ export default function RoadmapTemplateEditor({
   const [state, setState] = useState(() => initFromTemplate(template));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Accordéon (2026-08-19, même retour direct que RoadmapEditor.tsx) : une
+  // phase/un jalon fraîchement ajouté s'ouvre automatiquement, les autres
+  // restent repliés par défaut sur un modèle déjà avancé.
+  const [openPhaseId, setOpenPhaseId] = useState<string | null>(null);
+  const [openMilestoneId, setOpenMilestoneId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
   function updateMeta(field: "name" | "objective" | "duration_weeks" | "notes", value: string) {
@@ -151,12 +157,13 @@ export default function RoadmapTemplateEditor({
   function addPhase() {
     const weeks = Math.max(1, parseInt(state.duration_weeks) || 12);
     const lastEnd = state.phases[state.phases.length - 1]?.end_week_offset ?? "0";
+    const localId = uid();
     setState((s) => ({
       ...s,
       phases: [
         ...s.phases,
         {
-          localId: uid(),
+          localId,
           type: "maintenance",
           label: "Nouvelle phase",
           start_week_offset: lastEnd,
@@ -165,6 +172,7 @@ export default function RoadmapTemplateEditor({
         },
       ],
     }));
+    setOpenPhaseId(localId);
   }
 
   function updatePhase(localId: string, patch: Partial<PhaseRow>) {
@@ -182,12 +190,13 @@ export default function RoadmapTemplateEditor({
 
   function addMilestone() {
     const weeks = Math.max(1, parseInt(state.duration_weeks) || 12);
+    const localId = uid();
     setState((s) => ({
       ...s,
       milestones: [
         ...s.milestones,
         {
-          localId: uid(),
+          localId,
           type: "custom",
           term: "medium",
           label: "",
@@ -198,6 +207,7 @@ export default function RoadmapTemplateEditor({
         },
       ],
     }));
+    setOpenMilestoneId(localId);
   }
 
   function updateMilestone(localId: string, patch: Partial<MilestoneRow>) {
@@ -358,88 +368,106 @@ export default function RoadmapTemplateEditor({
           <div className="space-y-3">
             {state.phases.map((phase, i) => {
               const colors = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
+              const open = openPhaseId === phase.localId;
               return (
                 <div key={phase.localId} className="bg-[#1f0101] border rounded-xl p-4" style={{ borderColor: colors.border }}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-sm">{colors.icon}</span>
-                    <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: colors.solid }}>
-                      Phase {i + 1}
-                    </span>
+                  <div className={`flex items-center gap-2 ${open ? "mb-3" : ""}`}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenPhaseId((prev) => (prev === phase.localId ? null : phase.localId))}
+                      aria-expanded={open}
+                      className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    >
+                      <span className="text-sm flex-shrink-0">{colors.icon}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest flex-shrink-0" style={{ color: colors.solid }}>
+                        Phase {i + 1}
+                      </span>
+                      {!open && (
+                        <span className="text-[11px] text-[#F5EDED]/35 truncate">
+                          {phase.label || colors.label} · S{phase.start_week_offset}-S{phase.end_week_offset}
+                        </span>
+                      )}
+                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                    </button>
                     <button
                       onClick={() => removePhase(phase.localId)}
-                      className="ml-auto text-[#F5EDED]/25 hover:text-red-500 transition-colors"
+                      className="text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
                       title="Supprimer la phase" aria-label="Supprimer la phase"
                     >
                       <Trash2 size={13} />
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Type
-                      </label>
-                      <select aria-label="Type"
-                        value={phase.type}
-                        onChange={(e) => {
-                          const newType = e.target.value;
-                          const newLabel =
-                            PHASE_COLORS[newType as keyof typeof PHASE_COLORS]?.label ?? phase.label;
-                          updatePhase(phase.localId, { type: newType, label: newLabel });
-                        }}
-                        className={inputCls}
-                      >
-                        {PHASE_TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>
-                            {t.icon} {t.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-span-2 sm:col-span-1">
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Label
-                      </label>
-                      <input aria-label="Label"
-                        value={phase.label}
-                        onChange={(e) => updatePhase(phase.localId, { label: e.target.value })}
-                        placeholder={colors.label}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Semaine de début
-                      </label>
-                      <input aria-label="Semaine de début"
-                        type="number"
-                        min="0"
-                        value={phase.start_week_offset}
-                        onChange={(e) => updatePhase(phase.localId, { start_week_offset: e.target.value })}
-                        className={inputCls}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
-                        Semaine de fin
-                      </label>
-                      <input aria-label="Semaine de fin"
-                        type="number"
-                        min="0"
-                        value={phase.end_week_offset}
-                        onChange={(e) => updatePhase(phase.localId, { end_week_offset: e.target.value })}
-                        className={inputCls}
-                      />
-                    </div>
-                  </div>
+                  {open && (
+                    <>
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-3">
+                        <div className="col-span-2 sm:col-span-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                            Type
+                          </label>
+                          <select aria-label="Type"
+                            value={phase.type}
+                            onChange={(e) => {
+                              const newType = e.target.value;
+                              const newLabel =
+                                PHASE_COLORS[newType as keyof typeof PHASE_COLORS]?.label ?? phase.label;
+                              updatePhase(phase.localId, { type: newType, label: newLabel });
+                            }}
+                            className={inputCls}
+                          >
+                            {PHASE_TYPES.map((t) => (
+                              <option key={t.value} value={t.value}>
+                                {t.icon} {t.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="col-span-2 sm:col-span-1">
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                            Label
+                          </label>
+                          <input aria-label="Label"
+                            value={phase.label}
+                            onChange={(e) => updatePhase(phase.localId, { label: e.target.value })}
+                            placeholder={colors.label}
+                            className={inputCls}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                            Semaine de début
+                          </label>
+                          <input aria-label="Semaine de début"
+                            type="number"
+                            min="0"
+                            value={phase.start_week_offset}
+                            onChange={(e) => updatePhase(phase.localId, { start_week_offset: e.target.value })}
+                            className={inputCls}
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
+                            Semaine de fin
+                          </label>
+                          <input aria-label="Semaine de fin"
+                            type="number"
+                            min="0"
+                            value={phase.end_week_offset}
+                            onChange={(e) => updatePhase(phase.localId, { end_week_offset: e.target.value })}
+                            className={inputCls}
+                          />
+                        </div>
+                      </div>
 
-                  <textarea
-                    value={phase.notes}
-                    onChange={(e) => updatePhase(phase.localId, { notes: e.target.value })}
-                    placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
-                    rows={1}
-                    className={`${inputCls} resize-none`}
-                  />
+                      <textarea
+                        value={phase.notes}
+                        onChange={(e) => updatePhase(phase.localId, { notes: e.target.value })}
+                        placeholder="Notes (optionnel)" aria-label="Notes (optionnel)"
+                        rows={1}
+                        className={`${inputCls} resize-none`}
+                      />
+                    </>
+                  )}
                 </div>
               );
             })}
@@ -470,8 +498,36 @@ export default function RoadmapTemplateEditor({
           <div className="space-y-3">
             {state.milestones.map((m) => {
               const typeConfig = MILESTONE_TYPES.find((t) => t.value === m.type);
+              const open = openMilestoneId === m.localId;
               return (
                 <div key={m.localId} className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
+                  <div className={`flex items-center gap-2 ${open ? "mb-3" : ""}`}>
+                    <button
+                      type="button"
+                      onClick={() => setOpenMilestoneId((prev) => (prev === m.localId ? null : m.localId))}
+                      aria-expanded={open}
+                      className="flex items-center gap-2 flex-1 min-w-0 text-left"
+                    >
+                      <Target size={12} className="flex-shrink-0" style={{ color: OBJECTIVE_TERM_COLORS[m.term] ?? "rgba(245,237,237,0.4)" }} />
+                      <span className="text-[12px] font-bold text-white truncate">
+                        {m.label || typeConfig?.label || "Jalon"}
+                      </span>
+                      {!open && (
+                        <span className="text-[10px] text-[#F5EDED]/30 flex-shrink-0">S{m.week_offset}</span>
+                      )}
+                      <ChevronDown size={13} className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform" style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }} />
+                    </button>
+                    <button
+                      onClick={() => removeMilestone(m.localId)}
+                      className="px-1 text-[#F5EDED]/25 hover:text-red-500 transition-colors flex-shrink-0"
+                      title="Supprimer le jalon" aria-label="Supprimer le jalon"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+
+                  {open && (
+                  <>
                   <div className="flex gap-1.5 mb-3">
                     {TERM_OPTIONS.map((t) => (
                       <button
@@ -487,13 +543,6 @@ export default function RoadmapTemplateEditor({
                         {t.label}
                       </button>
                     ))}
-                    <button
-                      onClick={() => removeMilestone(m.localId)}
-                      className="px-2 text-[#F5EDED]/25 hover:text-red-500 transition-colors"
-                      title="Supprimer le jalon" aria-label="Supprimer le jalon"
-                    >
-                      <Trash2 size={13} />
-                    </button>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 mb-3">
@@ -568,6 +617,8 @@ export default function RoadmapTemplateEditor({
                     rows={1}
                     className={`${inputCls} resize-none`}
                   />
+                  </>
+                  )}
                 </div>
               );
             })}
