@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse, Rocket,
+  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -115,7 +115,7 @@ const COACH_TABS: TabItem[] = [
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients", "programmation", "messages", "prioritaires", "mailing"],
+    matchSegments: ["clients", "programmation", "messages", "prioritaires", "mailing", "assistant"],
     badge: "clientsGroup",
   },
   {
@@ -157,6 +157,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // Axe 3 (VISION.md) : vue consolidée "qui a besoin de moi", tous les
       // signaux triés par priorité en une seule page.
       { label: "Priorités", icon: AlertTriangle, segment: "prioritaires" },
+      // Axe 10 (VISION.md) : relance + audit qualité automatiques chaque
+      // jour (app/api/cron/coach-assistant), accessible à tout coach.
+      { label: "Mon assistant", icon: Bot, segment: "assistant" },
       // Item 8 du chantier 50 idées : bilans/corrections/photos en attente
       // de réponse, regroupés en une seule vue triée par ancienneté.
       { label: "Boîte de réception", icon: Inbox, segment: "inbox" },

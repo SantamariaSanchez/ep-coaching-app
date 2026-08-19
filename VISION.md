@@ -326,21 +326,30 @@ au paiement Stripe, rien ne guide ensuite un nouveau coach (profil,
 spécialités, disponibilité, comment fonctionne la plateforme, agents IA
 à sa disposition).
 
-## Axe 10 — NOUVEAU (2026-08-19) : agents IA renforcés + attribution aux coachs humains
+## Axe 10 — Agents IA renforcés + attribution aux coachs humains
 
-**Statut : en construction.**
+**Statut : volet 1 et 2 livrés (2026-08-19, MASTERCLASS.md Axes AS/AT).**
 
 Demande directe : "les agents IA donc renfloué ceux déjà dans ma
 structure et en fonction des nouveaux coachs humains qui vont arriver
-faudra aussi leur donner des agents IA." Deux volets : (1) donner plus de
-capacité réelle aux 19 agents internes déjà en place (au-delà du Setter
-sur les leads et de l'agent onboarding sur les clients à risque, déjà
-livrés le 2026-08-19), (2) concevoir comment un nouveau coach humain qui
-rejoint la plateforme (SaaS multi-coach, Axe 5/`20260729b_multi_coach_
-foundation.sql`) reçoit lui aussi accès à des agents IA adaptés à SA
-structure — actuellement les 19 agents et leurs conversations
-(`ai_agent_messages`/`ai_agent_tasks`) sont scopés au seul propriétaire
-de plateforme, à repenser en multi-tenant pour un vrai deuxième coach.
+faudra aussi leur donner des agents IA." Précisé ensuite : "je veux que
+agent IA pour les coach humain soit des assistant mais qui prenne quand
+même des décisions et ont des tâche auto récurente" — confirmé action
+directe sans validation humaine, fréquence quotidienne.
+
+- **Volet 1 (renfort des 19 agents internes)** : Setter sur l'acquisition
+  des leads (Axe AM), Onboarding/Success sur la relance client (Axe AN),
+  Head Coach sur l'audit qualité (Axe AS) — trois actions réelles,
+  au-delà du simple chat.
+- **Volet 2 (attribution aux coachs humains)** : chaque coach humain
+  (pas seulement le propriétaire) a désormais son propre "Mon assistant"
+  (`/dashboard/coach/assistant`) qui tourne automatiquement chaque jour
+  (`app/api/cron/coach-assistant`, `lib/coach-assistant-sweep.ts`) :
+  relance ses propres clients à risque et signale les problèmes qualité
+  réels trouvés, cloisonné à SA seule structure. Distinct du chat des 19
+  agents internes (resté réservé au propriétaire — ces 19 rôles
+  représentent l'organigramme d'EP Coaching elle-même, pas un outil à
+  dupliquer par coach tiers).
 
 ## Décision explicite (2026-08-19) sur la gouvernance de ces chantiers
 

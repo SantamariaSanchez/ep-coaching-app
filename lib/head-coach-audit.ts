@@ -22,14 +22,31 @@ export interface HeadCoachAuditResult {
 
 const STALE_BILAN_DAYS = 5;
 
-export async function runHeadCoachAudit(ownerId: string): Promise<HeadCoachAuditResult> {
+// CORRIGÉ 2026-08-19 (avant productionisation en cron quotidien, Axe 10) :
+// le titre de tâche incluait le nombre exact de jours ("depuis 5 jours",
+// puis "depuis 6 jours" le lendemain) — chaque jour aurait donc créé une
+// NOUVELLE tâche au lieu d'être reconnu comme déjà signalé, cassant
+// l'idempotence dès qu'exécuté plus d'une fois pour le même client. Le
+// titre reste maintenant stable (le nombre de jours précis va dans la
+// description, qui elle peut varier sans casser la déduplication).
+//
+// scopeToCoachId (nouveau) : un appel sans ce paramètre (le propriétaire
+// de plateforme, depuis le bouton manuel) audite tous les clients de la
+// plateforme, comme avant. Le balayage automatique quotidien (voir
+// app/api/cron/coach-assistant/route.ts) l'utilise pour cloisonner
+// l'audit aux seuls clients de CE coach — jamais les clients d'un autre.
+export async function runHeadCoachAudit(
+  ownerId: string,
+  options?: { scopeToCoachId?: string }
+): Promise<HeadCoachAuditResult> {
   try {
     const admin = createAdminClient();
 
-    const { data: clients } = await admin
-      .from("profiles")
-      .select("id, full_name, coach_id")
-      .eq("role", "client");
+    let query = admin.from("profiles").select("id, full_name, coach_id").eq("role", "client");
+    if (options?.scopeToCoachId) {
+      query = query.eq("coach_id", options.scopeToCoachId);
+    }
+    const { data: clients } = await query;
     const rows = clients ?? [];
 
     const { data: existingTasks } = await admin
@@ -62,7 +79,7 @@ export async function runHeadCoachAudit(ownerId: string): Promise<HeadCoachAudit
       if (lastLog?.log_date) {
         const daysSince = Math.floor((todayMs - new Date(lastLog.log_date as string).getTime()) / 86400000);
         if (daysSince >= STALE_BILAN_DAYS) {
-          const title = `${name} : plus de bilan depuis ${daysSince} jours`;
+          const title = `${name} : bilan à l'arrêt (${STALE_BILAN_DAYS}+ jours)`;
           if (!existingTitles.has(title)) {
             await admin.from("ai_agent_tasks").insert({
               owner_id: ownerId,

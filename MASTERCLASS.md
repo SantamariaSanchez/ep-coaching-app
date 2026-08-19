@@ -2768,3 +2768,54 @@ a besoin d'un agent scopé à SA propre activité (au-delà de la relance
 client déjà livrée), et lequel des 19 rôles ça reproduirait — pas
 construit dans cette passe pour éviter d'inventer une réponse à une
 question pas encore posée par l'utilisatrice.
+
+## Axe AT — L'assistant coach devient réellement récurrent et autonome (suite Axe 10)
+
+**Statut : livré (2026-08-19), réponse directe à la question ouverte de
+l'Axe AS : "je veux que agent IA pour les coach humain soit des
+assistant mais qui prenne quand même des décisions et ont des tâche auto
+récurente". Confirmé ensuite : action directe sans validation humaine
+avant envoi, fréquence quotidienne.**
+
+Découverte importante avant de construire : en listant les routines
+cloud existantes (claude.ai), aucune n'appelle les routes `/api/cron/*`
+de l'appli — les 3 routines déjà actives (doublons food_logs, lead
+magnets, revue quotidienne check-ins) travaillent en direct sur Supabase
+via MCP, sans passer par le code. Et `vercel.json` ne déclarait qu'UN
+SEUL cron (`weekly-sleep-recap`) alors que le dossier `app/api/cron/`
+contient de nombreuses autres routes (meal-reminders,
+stagnation-escalation, coach-upsell, expire-trials, etc.) — probablement
+du code mort qui ne s'exécute jamais en production, faute d'être
+enregistré. Pas corrigé en bloc ici (risque réel de casser quelque chose
+sans savoir pourquoi ces routes ne sont pas enregistrées — décision
+délibérée ou oubli, à trancher avec l'utilisatrice), seulement signalé ;
+seul le nouveau cron de cet axe est ajouté à `vercel.json`.
+
+Nouveau mécanisme :
+- `lib/coach-assistant-sweep.ts::runCoachAssistantSweep` — pour CHAQUE
+  coach humain (jamais un coach IA, qui gère déjà ses propres réponses)
+  : lance l'audit qualité (`runHeadCoachAudit`, maintenant avec un
+  paramètre `scopeToCoachId` pour cloisonner aux seuls clients de ce
+  coach) et relance les clients dont le bilan est à l'arrêt depuis 3
+  jours ou plus — mais seulement si aucun message du coach n'est déjà
+  parti vers ce client il y a moins de 3 jours (sinon un client resté
+  inactif serait relancé chaque jour par le cron, perçu comme du spam).
+- `app/api/cron/coach-assistant/route.ts`, enregistré dans `vercel.json`
+  (`17 6 * * *`, quotidien).
+- Correctif nécessaire dans `lib/head-coach-audit.ts` avant
+  productionisation : le titre de tâche incluait le nombre exact de
+  jours ("depuis 5 jours" puis "depuis 6 jours" le lendemain), donc
+  chaque jour aurait créé une NOUVELLE tâche pour le même client au lieu
+  d'être reconnu comme déjà signalé — titre rendu stable, le nombre
+  précis reste dans la description.
+- Nouvelle page `/dashboard/coach/assistant` ("Mon assistant"),
+  accessible à TOUT coach (contrairement au chat des 19 agents internes,
+  réservé au propriétaire — ces 19 rôles représentent l'organigramme
+  d'EP Coaching elle-même, pas un outil à dupliquer par coach tiers) :
+  affiche les tâches ouvertes créées par l'audit, avec une action
+  "marquer fait" scopée au coach connecté (`app/dashboard/coach/
+  assistant/actions.ts`, `requireCoach()` + `eq("owner_id",
+  guard.userId)`, jamais `requirePlatformOwner()`).
+
+MIGRATION : aucune nouvelle, réutilise les tables déjà migrées
+(`ai_agent_tasks`, `messages`, `daily_logs`, `programs`).
