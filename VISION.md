@@ -251,37 +251,106 @@ réellement autonome : message de bienvenue personnalisé à l'attribution
 (`app/dashboard/client/messages/actions.ts::triggerAICoachReply`), pas
 seulement une fiche statique dans l'annuaire.
 
-## Axe 6 — Formation de coachs (accompagnement business/coaching-des-coachs)
+## Axe 6 — RÉACTIVÉ (2026-08-19) : espace entrepreneuriat pour les coachs
 
-**Statut : confirmé "à terme" avec l'utilisateur (2026-08-14), pas un
-chantier actif. Retiré du travail en cours, gardé ici pour plus tard.**
+**Statut : confirmé "à terme" le 2026-08-14, explicitement RÉACTIVÉ et
+élargi le 2026-08-19 ("un autre espace pour tout ce qui est
+entreprenariat donc la construction de sa propre entreprise d'un coach,
+pas juste gérer leurs clients mais aussi tout ce qui dev son business de
+coaching"). En construction.**
 
-Vision à terme : au delà d'accompagner des clients, accompagner des COACHS
-(business, coaching live, audits) — connaissances déjà couvertes par tes
-formations existantes hors app, donc côté app il s'agit surtout de
-structurer l'ACCOMPAGNEMENT (pas le contenu de formation lui même) :
-coaching live pour coachs, audits d'activité, suivi structuré. Probablement
-un nouveau rôle/tier de compte à modéliser (coach-qui-est-coaché-par-toi),
-distinct du rôle coach actuel.
+Contexte posé par l'utilisatrice : EP Coaching (elle) est l'entreprise
+"au-dessus" des entreprises individuelles de chaque coach de sa
+structure — chaque coach qui rejoint la plateforme est lui-même un
+entrepreneur (coach en ligne) qui doit construire SON business, pas
+seulement suivre ses clients (déjà très poussé côté produit). Elle veut
+un espace dédié à ça, avec un niveau d'exigence x100 par rapport à ce
+qu'elle applique elle-même à EP Coaching.
 
-## Axe 7 — Page d'accueil et cohérence globale
+Contenu attendu, dans l'ordre cité :
+- **Création de contenu, avec de vrais process/systèmes** : déjà un
+  Studio créatif (Idéation, scripts, inspirations) mais pensé pour EP
+  Coaching elle-même — à décliner en version utilisable par CHAQUE coach
+  pour SA propre marque. Séquences par plateforme (story/carrousel Insta,
+  vidéo YouTube), par étage de funnel (TOF/MOF/BOF), pas juste une liste
+  d'idées en vrac.
+- **Personal branding** : construire une identité publique cohérente en
+  tant que coach (pas juste "poster du contenu").
+- **Vraies habitudes, un plan à suivre, une stratégie claire** : pas un
+  simple contenu de référence à lire, un système qui organise ET fait
+  progresser (checklist, rythme, étapes).
 
-**Statut : évaluée (2026-08-14), pas de refonte nécessaire pour l'instant.**
+But explicite : "que ce soit hyper bien" comme résultat, avec liberté
+totale laissée sur la forme (onglets, sections, boutons).
 
-Les deux conditions posées par le message d'origine pour justifier de
-repenser la page d'accueil ("si la plateforme devient aussi un espace
-coach-vers-coach et un annuaire public") : l'annuaire public existe
-désormais (Axe 5) — reflété par un lien discret ajouté sous le CTA
-principal ("Plusieurs coachs disponibles — trouve le tien") et une carte
-de découverte sur `/ressources`, sans toucher au reste de la page. L'espace
-coach-vers-coach (Axe 6) reste confirmé "à terme", donc n'a rien à changer
-à ce qu'un visiteur voit en arrivant.
+## Axe 7 — RÉACTIVÉ (2026-08-19) : cohérence légale + accueil
 
-`app/page.tsx` est une page d'entrée compacte et déjà bien construite
-(mobile-first, un seul écran, animations d'entrée soignées), pas un site
-vitrine à rallonge — une refonte plus large forcerait du contenu qui n'a
-pas encore de vraie justification produit tant qu'Axe 6 dort et que le CRM
-reste à l'arrêt. Reprendre cet axe si l'un des deux redémarre.
+**Statut : évaluée "pas de refonte nécessaire" le 2026-08-14, condition de
+réactivation posée à l'époque ("si Axe 6 redémarre") remplie le
+2026-08-19. Repris en cohérence avec les Axes 6/8/9/10 ci-dessous.**
+
+`app/page.tsx` reste une page d'entrée compacte, pas une refonte totale —
+mais CGU/CGV/politique de confidentialité et la page d'accueil doivent
+refléter les vrais ajouts déjà livrés depuis (coachs IA visibles des
+clients réels, agents IA qui envoient de vrais messages/emails
+automatiques) : transparence IA déjà appliquée dans l'UI (badge "Coach
+IA", voir Axe 5 mis à jour), reste à vérifier qu'elle l'est aussi dans
+les documents légaux eux-mêmes.
+
+## Axe 8 — NOUVEAU (2026-08-19) : espace contraintes médicales & populations spécifiques
+
+**Statut : en construction.**
+
+Demande directe : "fait toute une partie sur le côté médical, blessure,
+réhab etc, maladie, handicap, femme enceinte, ménopause etc, donc
+vraiment toutes les contraintes comme ça."
+
+Garde-fou non négociable (cohérent avec le refus déjà posé à l'Axe AE de
+MASTERCLASS.md pour les coachs IA) : contenu de RÉFÉRENCE pour un coach
+HUMAIN, jamais un système qui donne un diagnostic ou un traitement
+médical directement à un client, et jamais confié à un coach IA — ces
+terrains restent explicitement hors du périmètre des coachs IA
+(`lib/ai-coaches.ts`), qui orientent déjà vers Santamaria ou un
+professionnel de santé dès qu'un de ces sujets apparaît.
+
+## Axe 9 — NOUVEAU (2026-08-19) : onboarding complet pour les coachs
+
+**Statut : gap confirmé (aucun onboarding coach n'existait, seulement le
+formulaire d'inscription + Stripe), en construction.**
+
+Demande directe : "je crois que ya que l'onboarding pour le membre et
+client... fait l'onboarding complet pour les coachs." Vérifié dans le
+code : `/onboarding` (quiz objectif/niveau + fiche physique) n'existe que
+côté client ; côté coach, `app/auth/coach/CoachSignupFlow.tsx` s'arrête
+au paiement Stripe, rien ne guide ensuite un nouveau coach (profil,
+spécialités, disponibilité, comment fonctionne la plateforme, agents IA
+à sa disposition).
+
+## Axe 10 — NOUVEAU (2026-08-19) : agents IA renforcés + attribution aux coachs humains
+
+**Statut : en construction.**
+
+Demande directe : "les agents IA donc renfloué ceux déjà dans ma
+structure et en fonction des nouveaux coachs humains qui vont arriver
+faudra aussi leur donner des agents IA." Deux volets : (1) donner plus de
+capacité réelle aux 19 agents internes déjà en place (au-delà du Setter
+sur les leads et de l'agent onboarding sur les clients à risque, déjà
+livrés le 2026-08-19), (2) concevoir comment un nouveau coach humain qui
+rejoint la plateforme (SaaS multi-coach, Axe 5/`20260729b_multi_coach_
+foundation.sql`) reçoit lui aussi accès à des agents IA adaptés à SA
+structure — actuellement les 19 agents et leurs conversations
+(`ai_agent_messages`/`ai_agent_tasks`) sont scopés au seul propriétaire
+de plateforme, à repenser en multi-tenant pour un vrai deuxième coach.
+
+## Décision explicite (2026-08-19) sur la gouvernance de ces chantiers
+
+"Je veux que toutes les décisions, ça soit principalement moi" —
+confirmé : ce fichier documente ce qui est fait/en cours/proposé, les
+audits et rapports (MASTERCLASS.md, rapports de session) restent le
+canal de décision, jamais une automatisation qui déciderait à sa place
+de la direction produit. Les agents IA agissent dans des périmètres
+précis déjà validés (relances clients, qualification leads), pas sur des
+choix de structure business.
 
 ## Ordre de travail proposé — chantier clos le 2026-08-14
 
@@ -310,3 +379,10 @@ Ce fichier reste vivant : si un des axes mis en pause redémarre (2e coach,
 Axe 6, ou tout nouveau signal remonté par l'usage réel de l'appli),
 reprendre directement la section correspondante ci-dessus plutôt que de
 repartir de zéro.
+
+**Mise à jour 2026-08-19** : exactement ce scénario — Axe 6 explicitement
+réactivé et élargi par l'utilisatrice, entraînant la réactivation d'Axe 7
+(cohérence légale/accueil) et l'ajout des Axes 8 (contraintes médicales),
+9 (onboarding coach) et 10 (agents IA renforcés + multi-coach). Voir les
+sections correspondantes plus haut, pas ce résumé daté du 2026-08-14 qui
+ne reflète plus l'état courant de ces axes.
