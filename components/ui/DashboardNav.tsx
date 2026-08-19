@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network,
+  AlertTriangle, Wallet, Network, HeartPulse,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -134,7 +134,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes"],
   },
   {
     label: "Communauté",
@@ -201,6 +201,10 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Bibliothèque",
     items: [
       { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
+      // Axe 8 (VISION.md) : blessures, maladies chroniques, handicap,
+      // grossesse, ménopause, TCA — contenu de référence pour construire
+      // un programme, jamais confié à un coach IA (lib/ai-coaches.ts).
+      { label: "Contraintes & populations", icon: HeartPulse, segment: "contraintes" },
     ],
   },
   {

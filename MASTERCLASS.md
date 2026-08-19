@@ -2660,3 +2660,35 @@ deux réalités sont en production depuis l'Axe AF. Corrigé :
   parcours par défaut, un coach IA est un choix explicite via l'annuaire).
   Le lien "Plusieurs coachs disponibles, trouve le tien" (Axe 5) restait
   déjà neutre, aucune modification nécessaire.
+
+## Axe AQ — Espace "Contraintes & populations spécifiques" (Axe 8, VISION.md)
+
+**Statut : livré (2026-08-19), demande directe : "fait toute une partie
+sur le côté médical, blessure, réhab etc, maladie, handicap, femme
+enceinte, ménopause etc, donc vraiment toutes les contraintes comme ça".**
+
+Nouvelle section coach uniquement (`/dashboard/coach/contraintes`, groupe
+Bibliothèque à côté de Exercices & salles) : 6 fiches de référence
+(Blessures & réhabilitation, Maladies chroniques, Handicap, Grossesse &
+post-partum, Ménopause, Troubles du comportement alimentaire), chacune
+avec vue d'ensemble, principes d'adaptation concrets, signaux d'alerte
+explicites (quand orienter vers un professionnel plutôt que d'ajuster le
+programme soi-même) et sources.
+
+Garde-fou appliqué de bout en bout, cohérent avec le refus posé à l'Axe
+AE pour les coachs IA : contenu de référence pour un coach HUMAIN qui
+construit un programme, jamais un système de diagnostic, jamais montré à
+un client directement, jamais confié à un coach IA (`lib/ai-coaches.ts`
+exclut déjà explicitement ces sujets et oriente vers un humain — cette
+nouvelle bibliothèque est justement ce vers quoi le coach humain peut se
+tourner quand ce cas se présente).
+
+### Reste à faire
+
+Contenu statique (`lib/medical-constraints.ts`) plutôt qu'un système
+éditable en base — suffisant pour une v1 de référence écrite avec soin,
+mais pas d'admin UI pour l'étendre sans redéploiement. Pas encore de lien
+depuis la fiche client (`ClientProfileTabs.tsx`) vers la fiche
+correspondante si un coach flague une contrainte précise pour CE client —
+prochaine itération naturelle pour fermer la boucle entre référence et
+usage réel.
