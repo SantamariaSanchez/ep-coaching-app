@@ -476,6 +476,20 @@ export default function OrganisationView({
   const totalAiCoachClients = aiCoaches.reduce((sum, c) => sum + c.clientCount, 0);
 
   const [apps, setApps] = useState<JobApplication[]>(applications);
+  const newApplicationsForTab = apps.filter((a) => a.status === "nouvelle").length;
+
+  // Onglets de haut niveau (2026-08-19, meme retour direct que sur
+  // Programme/Diete/Roadmap : "regarde sur toute l'appli si tu trouve des
+  // endroit ou c'est mieux de mettre un bouton... pour pas que ya trop de
+  // truc d'un coup"). Cette page empilait 7 sections en permanence l'une
+  // sous l'autre (chacune deja repliee en interne, mais toutes visibles a
+  // la fois) — un seul onglet actif desormais, "Vue d'ensemble" reste seule
+  // hors onglet (c'est un en-tete de stats, pas du contenu a parcourir).
+  // Defaut intelligent : Candidatures si une nouvelle attend une reponse,
+  // sinon Poles (section la plus consultee au quotidien).
+  const [activeSection, setActiveSection] = useState<
+    "coachs-ia" | "candidatures" | "poles" | "parcours" | "formation" | "fiche" | "contrats"
+  >(newApplicationsForTab > 0 ? "candidatures" : "poles");
   const newApplications = apps.filter((a) => a.status === "nouvelle").length;
   const [appsOpen, setAppsOpen] = useState(true);
 
@@ -583,13 +597,46 @@ rapides pour être sûr qu'on te fasse gagner du temps :
         </p>
       </div>
 
+      {/* ── Onglets de haut niveau ── */}
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
+        {(
+          [
+            { key: "coachs-ia" as const, label: "Coachs IA", icon: Bot, badge: aiCoaches.length || null },
+            { key: "candidatures" as const, label: "Candidatures", icon: Inbox, badge: newApplicationsForTab || null },
+            { key: "poles" as const, label: "Pôles & postes", icon: Building2, badge: null },
+            { key: "parcours" as const, label: "Intégration", icon: Users, badge: null },
+            { key: "formation" as const, label: "Formation", icon: GraduationCap, badge: null },
+            { key: "fiche" as const, label: "Fiche exemple", icon: FileText, badge: null },
+            { key: "contrats" as const, label: "Contrats", icon: ShieldAlert, badge: null },
+          ]
+        ).map(({ key, label, icon: Icon, badge }) => (
+          <button
+            key={key}
+            onClick={() => setActiveSection(key)}
+            className={`relative flex flex-col items-center justify-center gap-1.5 py-3 rounded-xl border text-center transition-colors ${
+              activeSection === key
+                ? "bg-[#E01E1E]/12 border-[#E01E1E]/40 text-[#E01E1E]"
+                : "bg-[#1f0101] border-[#890404]/20 text-[#F5EDED]/45 hover:border-[#890404]/40 hover:text-[#F5EDED]/70"
+            }`}
+          >
+            <Icon size={17} strokeWidth={activeSection === key ? 2.2 : 1.7} />
+            <span className="text-[9px] font-bold uppercase tracking-wider leading-tight">{label}</span>
+            {!!badge && (
+              <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 rounded-full flex items-center justify-center text-[8px] font-black bg-[#E01E1E] text-white">
+                {badge}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
       {/* ── Coachs IA (retour direct 2026-08-19 : "si c'est des coachs dans
           ma structure j'suis censé les voir dans organisation") — de vraies
           lignes profiles (lib/ai-coaches.ts), distinctes des 19 agents IA
           internes listés par pôle plus bas. Visibles aussi dans l'annuaire
           public /coachs et le choix de coach côté client, toujours avec le
           badge "Coach IA" (jamais présentés comme des humains). ── */}
-      {aiCoaches.length > 0 && (
+      {activeSection === "coachs-ia" && aiCoaches.length > 0 && (
         <section className="mb-8">
           <SimpleAccordionItem
             open={aiCoachesOpen}
@@ -648,6 +695,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       )}
 
       {/* ── Candidatures reçues (voir /carrieres) ── */}
+      {activeSection === "candidatures" && (
       <section className="mb-8">
         <button
           onClick={() => setAppsOpen((v) => !v)}
@@ -688,8 +736,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           )
         )}
       </section>
+      )}
 
       {/* ── Pôles (onglets) ── */}
+      {activeSection === "poles" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-1">
           <Building2 size={14} className="text-[#E01E1E]" />
@@ -714,8 +764,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </div>
         )}
       </section>
+      )}
 
       {/* ── Parcours d'intégration (accordéon) ── */}
+      {activeSection === "parcours" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
           <Users size={14} className="text-[#E01E1E]" />
@@ -737,8 +789,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </SimpleAccordionItem>
         ))}
       </section>
+      )}
 
       {/* ── Formation avant embauche (accordéon) ── */}
+      {activeSection === "formation" && (
       <section className="mb-8">
         <div className="flex items-center gap-2 mb-3">
           <GraduationCap size={14} className="text-[#E01E1E]" />
@@ -774,8 +828,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </SimpleAccordionItem>
         ))}
       </section>
+      )}
 
       {/* ── Fiche technique exemple (repliée par défaut) ── */}
+      {activeSection === "fiche" && (
       <section className="mb-8">
         <button
           onClick={() => setFicheOpen((v) => !v)}
@@ -854,8 +910,10 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </div>
         )}
       </section>
+      )}
 
       {/* ── Contrats & légal (accordéon) ── */}
+      {activeSection === "contrats" && (
       <section className="mb-6">
         <h2 className="text-base font-black uppercase tracking-tight mb-3">Contrats &amp; aspects légaux</h2>
         {contracts.map((c, i) => (
@@ -882,6 +940,7 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }
