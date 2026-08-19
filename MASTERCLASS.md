@@ -2478,3 +2478,64 @@ côté modèle de données, au même titre qu'un coach tiers humain :
 - `triggerAICoachReply` ne couvre que les messages texte, pas les
   messages vocaux/images envoyés à un coach IA (pas de transcription/
   vision branchée pour l'instant).
+
+## Axe AI — Messagerie : RLS UPDATE trop permissive sur `messages`
+
+**Statut : migration écrite, PAS ENCORE EXÉCUTÉE (voir "Reste à faire").
+Trouvé par un audit dédié Messages/Inbox, 2026-08-19.**
+
+La policy `UPDATE` de `public.messages` ("Users can update read status",
+depuis `20260601_missing_tables.sql`, ré-écrite pour la perf par
+`20260814o_rls_initplan_perf_fix.sql` sans changer la logique) n'a jamais
+eu de `WITH CHECK` explicite. Postgres réutilise alors le `USING`
+(`receiver_id = auth.uid()`) comme `WITH CHECK` — ça ne contraint QUE
+`receiver_id`, aucune autre colonne. Vérifié en base live : le rôle
+`authenticated` a le `GRANT UPDATE` sur toutes les colonnes de la table,
+et aucun trigger n'existait pour compenser.
+
+**Scénario d'exploitation concret** : n'importe quel utilisateur,
+`receiver_id` d'un message (donc un vrai participant à la conversation,
+pas besoin de deviner un id), peut réécrire ce message via un appel
+direct au client Supabase JS (sa clé anon publique + son propre token de
+session sont exposés côté navigateur) :
+```js
+await supabase.from("messages")
+  .update({ content: "...", sender_id: coachId })
+  .eq("id", messageId);
+```
+`receiver_id` reste inchangé donc la policy laisse passer, alors que
+`ConversationView.tsx` n'envoie jamais que `{ is_read: true }` — la
+falsification ne passe pas par l'UI, elle contourne l'UI directement.
+Impact : contenu de message réécrit après coup, `sender_id` réattribué,
+URLs vocal/image/vidéo remplacées, `type` changé.
+
+**Corrigé** (migration `20260819d_messages_rls_hardening.sql`) : même
+motif déjà en place pour un problème analogue sur `profiles`
+(`protect_profile_privileged_columns`,
+`20260804_security_rls_hardening.sql`) — un trigger `BEFORE UPDATE` qui
+fige toutes les colonnes sauf `is_read` à leur valeur existante pour tout
+appelant qui n'est pas `service_role` (bypass indispensable :
+`app/api/cleanup-voice/route.ts` purge `voice_url`/`content`/`type` des
+vocaux expirés via `createAdminClient()`).
+
+Même audit, en passant : `storage.buckets` `message-images` est
+`public=false` en production réelle, mais AUCUNE migration versionnée ne
+reflète ce changement (créé `public=true` par
+`20260717d_messaging_media_fix.sql`, corrigé directement en base à un
+moment non tracé) — pas une faille active aujourd'hui, mais un rejeu
+complet des migrations depuis zéro recréerait le bucket public sans
+avertissement. La même migration aligne le code source sur l'état réel
+(`update storage.buckets set public = false ...`).
+
+Le reste de l'audit (SELECT/INSERT sur `messages`, RLS storage
+vocaux/images, vérification de participation à la conversation sur
+toutes les pages/routes, pattern Axe B sur l'envoi/lecture, fuite
+d'info coach/client tiers, le nouveau flux coach IA) est sain — aucune
+autre faille trouvée.
+
+### Reste à faire
+
+La migration `20260819d_messages_rls_hardening.sql` n'est pas encore
+appliquée en production (même contrainte que l'Axe AF : `apply_migration`
+refusé par le classificateur de permissions de cette session). À exécuter
+manuellement dans le Supabase SQL Editor.
