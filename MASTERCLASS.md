@@ -2315,3 +2315,54 @@ sections, un seul panneau affiché à la fois) — un commentaire du fichier
 documente même déjà exactement le même raisonnement ("la rangée
 dépassait la largeur de l'écran sur mobile"). Aucune modification
 nécessaire là, le patron demandé y existe déjà.
+
+## Axe AD — Le vrai fond du bilan qui "revient" : démontage à chaque Server Action
+
+**Statut : livré (2026-08-19), retour direct APRÈS l'Axe AB (déployé
+quelques minutes plus tôt) : "ya encore le bilan qui revient à chaque
+action".**
+
+L'Axe AB avait corrigé un vrai bug (l'escalade d'une raison de blocage
+vers une autre pendant une micro-action), mais le retour a continué :
+signe qu'une deuxième cause, plus profonde, restait active.
+
+Trouvée dans `app/dashboard/layout.tsx` : `<DailyGateOverlay>` n'était
+placé dans l'arbre React QUE si `gate.active` était vrai au moment du
+rendu serveur (`let gateOverlay = null; if (gate.active) { gateOverlay =
+<DailyGateOverlay .../> }`). Ce layout est en `dynamic =
+"force-dynamic"`, et la quasi-totalité des Server Actions de l'appli
+appellent `revalidatePath()` en fin de mutation, ce qui fait réexécuter
+ce layout côté serveur après CHAQUE action réussie, dans n'importe quelle
+page du dashboard, pas seulement en nutrition.
+
+Dès que `gate.active` repassait par `null` l'espace d'un seul re-rendu
+(par exemple juste après avoir loggué le dernier aliment d'un repas, le
+temps que le prochain calcul de blocage éventuel se fasse), le composant
+disparaissait de l'arbre. Au rendu suivant où `gate.active` redevenait
+vrai, React ne retrouvait pas l'ancienne instance à cet endroit : il en
+montait une TOUTE NOUVELLE, avec son propre état interne réinitialisé
+depuis zéro (`dismissed` reperdu, et surtout `active` qui redémarre
+directement sur le `initialActive` fraîchement recalculé côté serveur,
+au lieu de garder ce que le client affichait déjà). Résultat perçu :
+l'overlay réapparaissait après une action qui, souvent, n'avait rien à
+voir avec le bilan.
+
+**Corrigé** : `<DailyGateOverlay>` est désormais TOUJOURS rendu dans
+l'arbre dès qu'un utilisateur est connecté (`user && profile`), qui ne
+change jamais au cours d'une session — seul le calcul des données
+lourdes (bilan du jour, logs repas, pas auto) reste conditionné à
+`gate.active`, pour garder l'optimisation de coût d'origine. Le
+composant ne peut plus jamais être démonté/remonté par un simple
+aller-retour serveur ; une fois monté, il ne se refait confiance qu'à
+lui-même pour savoir quand revérifier (`refreshSoft`/`refreshFull`, voir
+Axe AB) — le serveur ne fournit plus qu'une valeur de départ, jamais une
+resynchronisation forcée en cours de session.
+
+**Leçon** : sur un layout `force-dynamic` partagé par tout un groupe de
+routes, ne jamais conditionner la PRÉSENCE d'un composant client à état
+interne sur une valeur qui peut changer d'un rendu serveur à l'autre —
+seuls ses PROPS devraient varier. Le rendu conditionnel (`if (x) return
+<Component/>`) est correct pour un composant sans état propre à
+préserver ; dès qu'un composant garde de l'état côté client entre les
+rendus, sa présence dans l'arbre doit rester stable et seules ses props
+doivent changer.
