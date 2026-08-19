@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse,
+  AlertTriangle, Wallet, Network, HeartPulse, Rocket,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -134,7 +134,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business"],
   },
   {
     label: "Communauté",
@@ -183,9 +183,15 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     // Axe 2 (VISION.md) : espace personnel du coach pour poser des idées de
     // contenu (Insta/YouTube/LinkedIn) — distinct du groupe "Contenu"
     // ci-dessus qui est la bibliothèque destinée aux clients.
-    group: "Studio créatif",
+    //
+    // Axe 6 (VISION.md, réactivé 2026-08-19) : "Développer mon business"
+    // ajouté ici — le cadre (funnel TOF/MOF/BOF, checklist de marque
+    // personnelle) qui manquait par-dessus le Studio créatif, déjà scopé
+    // par coach depuis le début (chaque coach a son propre espace privé).
+    group: "Mon business",
     items: [
-      { label: "Idéation", icon: Sparkles, segment: "studio" },
+      { label: "Développer mon business", icon: Rocket, segment: "business" },
+      { label: "Studio créatif", icon: Sparkles, segment: "studio" },
     ],
   },
   {

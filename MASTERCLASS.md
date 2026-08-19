@@ -2692,3 +2692,39 @@ depuis la fiche client (`ClientProfileTabs.tsx`) vers la fiche
 correspondante si un coach flague une contrainte précise pour CE client —
 prochaine itération naturelle pour fermer la boucle entre référence et
 usage réel.
+
+## Axe AR — Espace "Développer mon business" pour les coachs (Axe 6, VISION.md)
+
+**Statut : livré (2026-08-19), demande directe : "un autre espace pour
+tout ce qui est entreprenariat donc la construction de sa propre
+entreprise d'un coach... des vrai process, des systèmes, des séquences
+story carrousel insta video youtube TOF/MOF/BOF... construire une
+personal brand... une vraie stratégie claire".**
+
+Découverte utile avant de construire : le Studio créatif
+(`app/dashboard/coach/studio`, tables `coach_ideation_notes`/
+`coach_scripts`/`coach_inspirations`) était déjà scopé par
+`coach_id = guard.userId` via `requireCoach()` — chaque coach a déjà,
+depuis le début, son propre espace privé de création de contenu. Pas
+besoin de le reconstruire, seulement de lui donner le CADRE qui manquait
+par-dessus.
+
+Nouvelle page `/dashboard/coach/business` ("Développer mon business",
+groupe nav "Mon business" avec Studio créatif) :
+- **Funnel TOF/MOF/BOF** (`lib/coach-business.ts`) : objectif de chaque
+  étage, gabarits concrets par plateforme/format (Reel, Carrousel, Story,
+  vidéo YouTube) — un repère structurant plutôt que du contenu produit au
+  hasard.
+- **Checklist de construction de marque personnelle**
+  (`coach_business_checklist`, une ligne par coach × item, RLS scopée),
+  10 items répartis en 4 catégories (positionnement, personal branding,
+  contenu, preuve sociale & conversion), cochage persisté avec le même
+  pattern optimiste-vérifié qu'ailleurs dans l'appli (Axe B).
+- Liens directs vers le Studio créatif et la formation ENTREPRENARIAL
+  SECRET déjà existante (`app/dashboard/coach/moi/formations`, trouvée
+  via `supabase/migrations/20260802e_formations_content_plan.sql`) plutôt
+  que de dupliquer ce contenu.
+
+MIGRATION SQL À EXÉCUTER MANUELLEMENT
+(`20260819f_coach_business_checklist.sql`, même contrainte que les axes
+précédents de cette session).
