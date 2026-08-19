@@ -425,6 +425,15 @@ function SimpleAccordionItem({
   );
 }
 
+export interface AICoachSummary {
+  id: string;
+  full_name: string | null;
+  bio: string | null;
+  specializations: string[];
+  accepting_new_clients: boolean;
+  clientCount: number;
+}
+
 export default function OrganisationView({
   poles,
   timeline,
@@ -439,6 +448,7 @@ export default function OrganisationView({
   onboardingByApplication,
   toggleOnboardingStep,
   openTaskCountsByAgent,
+  aiCoaches,
 }: {
   poles: Pole[];
   timeline: TimelineStep[];
@@ -453,11 +463,17 @@ export default function OrganisationView({
   onboardingByApplication: Record<string, OnboardingStepState[]>;
   toggleOnboardingStep: (applicationId: string, stepKey: string, done: boolean) => Promise<{ error?: string }>;
   openTaskCountsByAgent: Record<string, number>;
+  /** Coachs IA client-facing (lib/ai-coaches.ts) — distincts des 19 agents IA internes (poles/roles) ci-dessus. */
+  aiCoaches: AICoachSummary[];
 }) {
   const totalRoles = poles.reduce((sum, p) => sum + p.roles.length, 0);
   const [statuses, setStatuses] = useState<Record<string, RoleStatus>>(initialStatuses);
   const filledTotal = Object.values(statuses).filter((s) => s === "pourvu").length;
   const activeTotal = Object.values(statuses).filter((s) => s === "en_recrutement").length;
+
+  const [aiCoachesOpen, setAiCoachesOpen] = useState(false);
+  const acceptingAiCoaches = aiCoaches.filter((c) => c.accepting_new_clients).length;
+  const totalAiCoachClients = aiCoaches.reduce((sum, c) => sum + c.clientCount, 0);
 
   const [apps, setApps] = useState<JobApplication[]>(applications);
   const newApplications = apps.filter((a) => a.status === "nouvelle").length;
@@ -566,6 +582,70 @@ rapides pour être sûr qu'on te fasse gagner du temps :
           Clique un pôle ci-dessous pour voir ses postes, et le statut de chaque poste pour le mettre à jour.
         </p>
       </div>
+
+      {/* ── Coachs IA (retour direct 2026-08-19 : "si c'est des coachs dans
+          ma structure j'suis censé les voir dans organisation") — de vraies
+          lignes profiles (lib/ai-coaches.ts), distinctes des 19 agents IA
+          internes listés par pôle plus bas. Visibles aussi dans l'annuaire
+          public /coachs et le choix de coach côté client, toujours avec le
+          badge "Coach IA" (jamais présentés comme des humains). ── */}
+      {aiCoaches.length > 0 && (
+        <section className="mb-8">
+          <SimpleAccordionItem
+            open={aiCoachesOpen}
+            onToggle={() => setAiCoachesOpen((v) => !v)}
+            header={
+              <div className="flex items-center gap-2">
+                <Bot size={14} className="text-blue-400" />
+                <h2 className="text-base font-black uppercase tracking-tight">Coachs IA</h2>
+                <span className="text-[10px] font-bold text-[#F5EDED]/35">
+                  {aiCoaches.length} · {acceptingAiCoaches} dispo · {totalAiCoachClients} client{totalAiCoachClients !== 1 ? "s" : ""}
+                </span>
+              </div>
+            }
+          >
+            <p className="text-[10.5px] text-[#F5EDED]/30 leading-relaxed mb-3">
+              Coachs à part entière dans ta structure, badgés &laquo;&nbsp;Coach IA&nbsp;&raquo; partout où un client les voit
+              (annuaire, choix de coach, messagerie). Ils répondent réellement aux messages de leurs
+              clients. Visible aussi sur{" "}
+              <Link href="/coachs" target="_blank" className="text-[#E01E1E] hover:underline">
+                l&apos;annuaire public
+              </Link>.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {aiCoaches.map((coach) => (
+                <div key={coach.id} className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
+                  <div className="flex items-center justify-between gap-2 mb-1">
+                    <p className="text-xs font-black text-white truncate">{coach.full_name ?? "Coach IA"}</p>
+                    <span
+                      className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full flex-shrink-0"
+                      style={{
+                        background: coach.accepting_new_clients ? "rgba(74,222,128,0.15)" : "rgba(245,237,237,0.08)",
+                        color: coach.accepting_new_clients ? "#4ade80" : "rgba(245,237,237,0.4)",
+                      }}
+                    >
+                      {coach.accepting_new_clients ? "Dispo" : "Complet"}
+                    </span>
+                  </div>
+                  {coach.bio && (
+                    <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed line-clamp-2">{coach.bio}</p>
+                  )}
+                  <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                    {coach.specializations.slice(0, 2).map((s) => (
+                      <span key={s} className="text-[9px] font-bold text-[#F5EDED]/35 bg-white/5 rounded-full px-1.5 py-0.5">
+                        {s}
+                      </span>
+                    ))}
+                    <span className="text-[9.5px] text-[#F5EDED]/25 ml-auto flex-shrink-0">
+                      {coach.clientCount} client{coach.clientCount !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </SimpleAccordionItem>
+        </section>
+      )}
 
       {/* ── Candidatures reçues (voir /carrieres) ── */}
       <section className="mb-8">

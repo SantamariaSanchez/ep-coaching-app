@@ -99,6 +99,37 @@ export default async function OrganisationAdminPage() {
     for (const role of pole.roles) roleTitleByKey[role.key] = role.title;
   }
 
+  // Coachs IA (retour direct 2026-08-19 : "si c'est des coachs dans ma
+  // structure j'suis censé les voir dans organisation") — de vraies lignes
+  // profiles (voir lib/ai-coaches.ts), distinctes des 19 agents IA internes
+  // ci-dessus (poles/roles), donc une section à part plutôt que mélangées
+  // aux cartes de poste.
+  const { data: aiCoachRows } = await supabase
+    .from("profiles")
+    .select("id, full_name, bio, specializations, accepting_new_clients")
+    .eq("is_ai_coach", true)
+    .order("full_name");
+  const aiCoachIds = (aiCoachRows ?? []).map((c) => c.id as string);
+  const clientCountByCoach: Record<string, number> = {};
+  if (aiCoachIds.length > 0) {
+    const { data: clientRows } = await supabase
+      .from("profiles")
+      .select("coach_id")
+      .in("coach_id", aiCoachIds);
+    for (const row of clientRows ?? []) {
+      const key = row.coach_id as string;
+      clientCountByCoach[key] = (clientCountByCoach[key] ?? 0) + 1;
+    }
+  }
+  const aiCoaches = (aiCoachRows ?? []).map((c) => ({
+    id: c.id as string,
+    full_name: c.full_name as string | null,
+    bio: c.bio as string | null,
+    specializations: (c.specializations as string[] | null) ?? [],
+    accepting_new_clients: c.accepting_new_clients as boolean,
+    clientCount: clientCountByCoach[c.id as string] ?? 0,
+  }));
+
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
@@ -141,6 +172,7 @@ export default async function OrganisationAdminPage() {
         onboardingByApplication={onboardingByApplication}
         toggleOnboardingStep={toggleOnboardingStep}
         openTaskCountsByAgent={openTaskCountsByAgent}
+        aiCoaches={aiCoaches}
       />
     </div>
   );
