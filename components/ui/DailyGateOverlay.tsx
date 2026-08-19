@@ -57,8 +57,55 @@ export default function DailyGateOverlay({
   nutritionTotals?: NutritionTotals | null;
   mealBaseHref: string;
 }) {
-  const [active, setActive] = useState<GateReason | null>(initialActive);
+  // CORRIGÉ 2026-08-19 (2e passe, retour direct APRÈS le premier correctif
+  // "toujours monté" : "tu mens, le bilan matin me revient à chaque
+  // action"). Le premier correctif (toujours monter <DailyGateOverlay>,
+  // voir plus bas) part du principe documenté par Next.js que
+  // router.refresh() — déclenché après CHAQUE Server Action — "merge le
+  // payload sans perdre l'état client des composants inchangés". En
+  // pratique, sur un layout force-dynamic comme celui-ci, ce n'est pas
+  // garanti à 100% : rien n'exclut qu'un cas précis (nouvelle navigation
+  // combinée à une action, ou une resynchronisation Next.js interne) fasse
+  // malgré tout perdre l'état `active` du composant et repartir sur
+  // `initialActive` — qui peut lui-même être temporairement "en retard"
+  // d'un aller-retour serveur juste après une sauvegarde.
+  //
+  // Deuxième filet de sécurité, indépendant du premier : `active` est
+  // recopié dans sessionStorage à chaque vérification serveur réussie, et
+  // relu en PRIORITÉ sur `initialActive` au montage — sessionStorage
+  // survit à un remount React (contrairement au state), donc même si le
+  // composant redémarre pour une raison qui échappe au premier correctif,
+  // il retrouve le dernier état confirmé au lieu de repartir sur une prop
+  // serveur potentiellement obsolète. Clé datée (today) : s'invalide toute
+  // seule au changement de jour, jamais besoin de la nettoyer à la main.
+  const storageKey = `ep-gate-${today}`;
+  const [active, setActiveState] = useState<GateReason | null>(() => {
+    if (typeof window === "undefined") return initialActive;
+    try {
+      const raw = window.sessionStorage.getItem(storageKey);
+      if (raw === null) return initialActive;
+      const cached = JSON.parse(raw) as { active: GateReason | null };
+      return cached.active;
+    } catch {
+      return initialActive;
+    }
+  });
   const [pendingMeal, setPendingMeal] = useState<PendingMeal | null>(initialPendingMeal ?? null);
+  const setActive = useCallback(
+    (updater: GateReason | null | ((current: GateReason | null) => GateReason | null)) => {
+      setActiveState((current) => {
+        const next = typeof updater === "function" ? (updater as (c: GateReason | null) => GateReason | null)(current) : updater;
+        try {
+          window.sessionStorage.setItem(storageKey, JSON.stringify({ active: next }));
+        } catch {
+          // Stockage indisponible (navigation privée, quota) : l'état reste
+          // correct pour cette session React, seul le filet de secours saute.
+        }
+        return next;
+      });
+    },
+    [storageKey]
+  );
   const pathname = usePathname();
 
   // Échappatoire (demande explicite 2026-08-19 : "des fois on n'a pas les
@@ -119,7 +166,7 @@ export default function DailyGateOverlay({
       // lever sans confirmation du serveur — voir lib/daily-gate.ts pour la
       // règle inverse (le calcul serveur, lui, doit toujours fail-open).
     }
-  }, []);
+  }, [setActive]);
   const refreshSoft = useCallback(() => refresh(false), [refresh]);
   const refreshFull = useCallback(() => refresh(true), [refresh]);
 
