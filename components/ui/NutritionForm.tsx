@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import type { NutritionProfile, NutritionProfileInput } from "@/utils/nutrition";
 import type { DailyLog } from "@/utils/daily-logs";
 import { computeObservedTdee } from "@/lib/tdee-suggestion";
-import { AlertCircle, Check, FlameKindling, TrendingUp } from "lucide-react";
+import { AlertCircle, Check, FlameKindling, TrendingUp, ChevronDown } from "lucide-react";
 
 const TRAINING_TYPES = [
   { label: "Musculation", kcal_per_hour: 45 },
@@ -44,6 +44,51 @@ const inputCls =
 
 const labelCls =
   "text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block";
+
+// Repliable (2026-08-19, retour direct : "regarde sur toute l'appli si tu
+// trouve des endroit où c'est mieux de mettre un bouton... pour pas que ya
+// trop de truc d'un coup") : ce calculateur enchaîne 8 blocs, chacun
+// alimentant le suivant — pas un vrai wizard (le coach doit pouvoir revenir
+// corriger n'importe quel bloc librement), donc pas d'onglets. Seuls les 3
+// blocs de saisie les plus longs (données de base, activité sportive,
+// activité quotidienne) sont repliables ; objectif, résultats calculés et
+// objectifs à enregistrer restent toujours visibles, ce sont eux qu'on
+// consulte en ajustant les blocs repliables au-dessus.
+function CollapsibleSection({
+  title,
+  summary,
+  open,
+  onToggle,
+  children,
+}: {
+  title: string;
+  summary?: string;
+  open: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={open}
+        className={`w-full flex items-center gap-2 text-left ${open ? "mb-4" : ""}`}
+      >
+        <p className={labelCls + " mb-0 flex-shrink-0"}>{title}</p>
+        {!open && summary && (
+          <span className="text-[11px] text-[#F5EDED]/35 truncate">{summary}</span>
+        )}
+        <ChevronDown
+          size={14}
+          className="flex-shrink-0 ml-auto text-[#F5EDED]/30 transition-transform"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
+      {open && children}
+    </div>
+  );
+}
 
 export default function NutritionForm({
   clientId,
@@ -88,6 +133,12 @@ export default function NutritionForm({
       offsetHigh: existingProfile?.calories_offset_high != null ? String(existingProfile.calories_offset_high) : "",
     };
   });
+
+  // Repliés par défaut quand un profil existe déjà (déjà rempli, on vient
+  // surtout consulter/ajuster), dépliés d'entrée sur un profil vierge.
+  const [openBase, setOpenBase] = useState(!existingProfile);
+  const [openSport, setOpenSport] = useState(!existingProfile);
+  const [openDaily, setOpenDaily] = useState(!existingProfile);
 
   // Restore saved inputs from localStorage on mount (only as a fallback when
   // no profile is saved in the DB yet — DB values always take priority)
@@ -343,9 +394,12 @@ export default function NutritionForm({
       )}
 
       {/* Section: Données de base */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className={labelCls + " mb-4"}>Données de base</p>
-
+      <CollapsibleSection
+        title="Données de base"
+        summary={`${form.gender} · ${form.weight || "?"}kg · ${form.height || "?"}cm · ${form.age || "?"} ans`}
+        open={openBase}
+        onToggle={() => setOpenBase((v) => !v)}
+      >
         {/* Gender */}
         <div className="mb-4">
           <label className={labelCls}>Sexe</label>
@@ -407,11 +461,15 @@ export default function NutritionForm({
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Section: Activité sportive */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className={labelCls + " mb-4"}>Activité sportive</p>
+      <CollapsibleSection
+        title="Activité sportive"
+        summary={`${form.trainingType} · ${form.sessionsPerWeek || "?"}x/sem · ${form.sessionDuration || "?"}min`}
+        open={openSport}
+        onToggle={() => setOpenSport((v) => !v)}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className={labelCls}>Type d&apos;entraînement</label>
@@ -451,11 +509,15 @@ export default function NutritionForm({
             />
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Section: Activité quotidienne */}
-      <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-        <p className={labelCls + " mb-4"}>Activité quotidienne</p>
+      <CollapsibleSection
+        title="Activité quotidienne"
+        summary={`${form.stepsPerDay || "?"} pas/j · ${ACTIVITY_LEVELS.find((a) => String(a.value) === form.activityLevel)?.label ?? ""}`}
+        open={openDaily}
+        onToggle={() => setOpenDaily((v) => !v)}
+      >
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className={labelCls}>Pas par jour</label>
@@ -486,7 +548,7 @@ export default function NutritionForm({
             </p>
           </div>
         </div>
-      </div>
+      </CollapsibleSection>
 
       {/* Section: Objectif */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
