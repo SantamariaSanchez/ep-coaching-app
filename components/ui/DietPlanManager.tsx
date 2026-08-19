@@ -418,6 +418,16 @@ export function PlanBuilder({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
+  // Accordéon des 4 phases (2026-08-19, même retour direct que
+  // ProgramEditor.tsx : "ya beaucoup de chose comme ça dans l'appli où
+  // faut mettre des choses dans des boutons pas tout sur la même page").
+  // DietPlanManager partage PhaseHeader.tsx avec ProgramEditor, donc le
+  // même traitement s'applique ici : une seule phase dépliée à la fois.
+  const [openPhase, setOpenPhase] = useState(1);
+  function togglePhase(n: number) {
+    setOpenPhase((prev) => (prev === n ? 0 : n));
+  }
+
   const [showStartingPoint, setShowStartingPoint] = useState(false);
   const [loadedTemplateName, setLoadedTemplateName] = useState<string | null>(null);
 
@@ -685,21 +695,31 @@ export function PlanBuilder({
         n={1}
         title="Réflexion & contexte"
         subtitle="Pourquoi ce total calorique, pas juste combien : appétit, stress, habitudes déjà en place."
+        open={openPhase === 1}
+        onToggle={() => togglePhase(1)}
       />
 
-      {roadmap && (
-        <RoadmapContextPanel roadmap={roadmap} roadmapHref={roadmapHref} subjectLabel={subjectLabel} workTypeLabel="cette diète" />
-      )}
+      {openPhase === 1 && (
+        <>
+          {roadmap && (
+            <RoadmapContextPanel roadmap={roadmap} roadmapHref={roadmapHref} subjectLabel={subjectLabel} workTypeLabel="cette diète" />
+          )}
 
-      <NutritionalContextPanel intake={intake ?? null} />
+          <NutritionalContextPanel intake={intake ?? null} />
+        </>
+      )}
 
       <PhaseHeader
         id="diet-phase-programmation"
         n={2}
         title="Programmation"
         subtitle="Structure de la semaine, nombre de repas, répartition macro visée, avant le moindre aliment."
+        open={openPhase === 2}
+        onToggle={() => togglePhase(2)}
       />
 
+      {openPhase === 2 && (
+      <>
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
       {(templates.length > 0 || templatesHref) && (
         <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
@@ -957,6 +977,8 @@ export function PlanBuilder({
           )}
         </div>
       )}
+      </>
+      )}
 
       {mode !== "flexible" && (
         <PhaseHeader
@@ -964,11 +986,13 @@ export function PlanBuilder({
           n={3}
           title="Construction"
           subtitle="Chaque aliment ajouté porte sa raison d'être, pas juste un nom et un grammage."
+          open={openPhase === 3}
+          onToggle={() => togglePhase(3)}
         />
       )}
 
       {/* Meal slots for fixed modes */}
-      {mode !== "flexible" && (
+      {mode !== "flexible" && openPhase === 3 && (
         <>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
             Détail des repas
@@ -1051,8 +1075,12 @@ export function PlanBuilder({
         n={4}
         title="Livraison"
         subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde : ce que ce client recevra."
+        open={openPhase === 4}
+        onToggle={() => togglePhase(4)}
       />
 
+      {openPhase === 4 && (
+      <>
       {mode !== "flexible" && dayMeals.length > 0 && (
         <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
@@ -1207,7 +1235,11 @@ export function PlanBuilder({
           )}
         </div>
       )}
+      </>
+      )}
 
+      {/* Toujours visible quelle que soit la phase ouverte : enregistrer ne
+          doit jamais dépendre de l'accordéon sur lequel on se trouve. */}
       {error && <p className="text-xs text-red-400">{error}</p>}
 
       <button

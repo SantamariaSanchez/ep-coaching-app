@@ -2280,3 +2280,38 @@ le bilan n'apparaît plus au milieu d'une autre action (seulement au
 prochain moment de vérification volontaire), un repas devenu dû ne se
 réaffiche plus en boucle à chaque micro-action, et le cochage n'est
 plus interrompu en cours de route.
+
+## Axe AC — Accordéon des pages "4 phases" (Programme, Diète)
+
+**Statut : livré (2026-08-19), retour direct : "dans programme les 4
+points jusqu'à livraison, ba tout ça faut y mettre dans un bouton pas
+direct dans la même page... ya beaucoup de chose comme ça dans l'appli
+où faut mettre des choses dans des boutons pour pas que ya trop de truc
+d'un coup, et c'est comme la fiche client aussi".**
+
+`ProgramEditor.tsx` et `DietPlanManager.tsx` affichaient leurs 4 phases
+(Contexte, Programmation, Construction, Livraison) intégralement l'une
+sous l'autre en permanence — `PhaseHeader.tsx` documentait même
+explicitement ce choix ("tout reste visible... pas des étapes
+verrouillées"). Sur un programme ou une diète déjà avancés, ça
+représentait plusieurs milliers de pixels de scroll avant d'atteindre
+la phase suivante, l'exact inverse de ce que demande maintenant ce
+retour.
+
+**Corrigé** : `PhaseHeader.tsx` accepte désormais des props optionnelles
+`open`/`onToggle` — cliquable (accordéon, `aria-expanded`, chevron qui
+tourne) quand elles sont fournies, sinon identique à avant (aucun appel
+existant cassé). Les deux composants ajoutent un état `openPhase`
+(phase 1 dépliée par défaut) et enveloppent le contenu de chaque phase
+dans `{openPhase === N && (...)}`. Dans les deux cas, la barre
+Sauvegarder/Annuler (et pour DietPlanManager, le message d'erreur) reste
+volontairement **hors** de tout conditionnel de phase : l'enregistrement
+doit rester atteignable quelle que soit la phase ouverte, jamais
+dépendant de l'accordéon.
+
+Vérifié séparément que `ClientProfileTabs.tsx` ("la fiche client" citée
+dans le même retour) est déjà construit en grille de boutons/onglets (15
+sections, un seul panneau affiché à la fois) — un commentaire du fichier
+documente même déjà exactement le même raisonnement ("la rangée
+dépassait la largeur de l'écran sur mobile"). Aucune modification
+nécessaire là, le patron demandé y existe déjà.

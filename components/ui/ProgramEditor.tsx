@@ -821,6 +821,18 @@ export default function ProgramEditor({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
+  // Accordéon des 4 phases (2026-08-19, retour direct : "les 4 points
+  // jusqu'à livraison, ba tout ça faut y mettre dans un bouton pas
+  // direct dans la même page... ya trop de truc d'un coup"). Une seule
+  // phase dépliée à la fois, la première par défaut — contrairement à
+  // l'ancien comportement "tout visible en permanence" (voir
+  // PhaseHeader.tsx pour l'historique de cette décision, explicitement
+  // inversée ici).
+  const [openPhase, setOpenPhase] = useState(1);
+  function togglePhase(n: number) {
+    setOpenPhase((prev) => (prev === n ? 0 : n));
+  }
+
   // Point de départ : replié d'entrée quand le client a déjà un programme
   // (on vient surtout retoucher), déplié quand la page est vide.
   const [showStartingPoint, setShowStartingPoint] = useState(() => (program?.days.length ?? 0) === 0);
@@ -1290,27 +1302,33 @@ export default function ProgramEditor({
       <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">Ce projet :</span>
         {[
-          { href: "#phase-contexte", label: "Contexte", detail: intake ? "fiche client chargée" : "fiche client absente" },
+          { n: 1, label: "Contexte", detail: intake ? "fiche client chargée" : "fiche client absente" },
           {
-            href: "#phase-programmation",
+            n: 2,
             label: "Programmation",
             detail: `${placedDays}/${state.days.length || 0} séances placées · ${volumeTargetsSet} groupes budgétés`,
           },
           {
-            href: "#phase-construction",
+            n: 3,
             label: "Construction",
             detail: totalExercises === 0 ? "aucun exercice" : `${configuredExercises}/${totalExercises} exercices configurés`,
           },
-          { href: "#phase-livraison", label: "Livraison", detail: saved ? "sauvegardé" : "brouillon en cours" },
+          { n: 4, label: "Livraison", detail: saved ? "sauvegardé" : "brouillon en cours" },
         ].map((phase) => (
-          <a
-            key={phase.href}
-            href={phase.href}
-            className="flex items-center gap-1.5 bg-[#1f0101] border border-[#890404]/25 hover:border-[#E01E1E]/40 rounded-lg px-2.5 py-1.5 transition-colors"
+          <button
+            key={phase.n}
+            type="button"
+            onClick={() => setOpenPhase(phase.n)}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 transition-colors"
+            style={
+              openPhase === phase.n
+                ? { background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.5)" }
+                : { background: "#1f0101", border: "1px solid rgba(137,4,4,0.25)" }
+            }
           >
             <span className="text-[10px] font-black uppercase tracking-widest text-white">{phase.label}</span>
             <span className="text-[9px] text-[#F5EDED]/35">{phase.detail}</span>
-          </a>
+          </button>
         ))}
       </div>
 
@@ -1319,8 +1337,12 @@ export default function ProgramEditor({
         n={1}
         title="Réflexion & contexte"
         subtitle="Le point de départ : qui est ce client, quelle structure de base, quelles contraintes déjà connues."
+        open={openPhase === 1}
+        onToggle={() => togglePhase(1)}
       />
 
+      {openPhase === 1 && (
+      <>
       {roadmap && <RoadmapContextPanel roadmap={roadmap} roadmapHref={roadmapHref} subjectLabel={subjectLabel} />}
 
       {/* ── 0. Point de départ ────────────────────────────────────────────── */}
@@ -1397,13 +1419,20 @@ export default function ProgramEditor({
           )}
         </div>
       )}
+      </>
+      )}
 
       <PhaseHeader
         id="phase-programmation"
         n={2}
         title="Programmation"
         subtitle="Placement réel dans la semaine, budget de volume, matériel disponible, avant le moindre exercice."
+        open={openPhase === 2}
+        onToggle={() => togglePhase(2)}
       />
+
+      {openPhase === 2 && (
+      <>
 
       {/* ── 1. Structure ──────────────────────────────────────────────────── */}
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
@@ -1549,13 +1578,20 @@ export default function ProgramEditor({
           confirmation est demandée avant de l&apos;ajouter, jamais un blocage silencieux.
         </p>
       </div>
+      </>
+      )}
 
       <PhaseHeader
         id="phase-construction"
         n={3}
         title="Construction"
         subtitle="Chaque exercice se configure entièrement : tension, amplitude, matériel, risque. Pas juste un nom."
+        open={openPhase === 3}
+        onToggle={() => togglePhase(3)}
       />
+
+      {openPhase === 3 && (
+      <>
 
       {/* Days */}
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 px-1">
@@ -1950,22 +1986,30 @@ export default function ProgramEditor({
           )}
         </div>
       )}
+      </>
+      )}
 
       <PhaseHeader
         id="phase-livraison"
         n={4}
         title="Livraison"
         subtitle="Vérification finale et sauvegarde, ce que ce client verra."
+        open={openPhase === 4}
+        onToggle={() => togglePhase(4)}
       />
 
-      <DeliveryReviewPanel
-        unplacedDays={state.days.length - placedDays}
-        unconfiguredExercises={totalExercises - configuredExercises}
-        untargetedTrainedGroups={untargetedTrainedGroups}
-        hasObjective={state.objective.trim() !== ""}
-      />
+      {openPhase === 4 && (
+        <DeliveryReviewPanel
+          unplacedDays={state.days.length - placedDays}
+          unconfiguredExercises={totalExercises - configuredExercises}
+          untargetedTrainedGroups={untargetedTrainedGroups}
+          hasObjective={state.objective.trim() !== ""}
+        />
+      )}
 
-      {/* Actions */}
+      {/* Actions — toujours visibles, jamais cachées derrière une phase
+          repliée : sauvegarder ou annuler doit rester atteignable en 1 clic
+          depuis n'importe quelle phase ouverte, pas seulement "Livraison". */}
       <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#890404]/15">
         <button
           onClick={() => router.back()}
