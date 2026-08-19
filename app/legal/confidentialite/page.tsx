@@ -116,6 +116,11 @@ const sections: LegalSection[] = [
           <li><Strong>Stripe</Strong> : traitement sécurisé des paiements.</li>
           <li><Strong>Oura</Strong> : synchronisation des données de sommeil et de récupération, uniquement si vous connectez votre compte.</li>
           <li><Strong>Jitsi</Strong> : mise à disposition des salons de visioconférence pour les sessions en direct, sans enregistrement.</li>
+          <li>
+            <Strong>Anthropic</Strong> : fournisseur du modèle d&apos;intelligence artificielle (Claude)
+            utilisé pour générer les réponses des coachs IA et certains messages automatisés de suivi
+            (voir section suivante).
+          </li>
         </Ul>
         <P>
           Vos données ne sont jamais vendues à des tiers ni utilisées à des fins publicitaires en dehors
@@ -125,8 +130,38 @@ const sections: LegalSection[] = [
     ),
   },
   {
+    id: "coachs-ia",
+    title: "5. Coachs IA et messages automatisés",
+    body: (
+      <>
+        <P>
+          Certains coachs disponibles sur la plateforme sont des intelligences artificielles et non des
+          personnes humaines. Ils sont systématiquement signalés par un badge « Coach IA » visible
+          partout où ils apparaissent (annuaire, choix de coach, messagerie) : aucun coach IA n&apos;est
+          jamais présenté comme un humain. Un coach IA se présente lui-même comme tel s&apos;il est
+          interrogé directement à ce sujet.
+        </P>
+        <P>
+          Lorsque vous échangez avec un coach IA, le contenu de vos messages est transmis à Anthropic
+          pour générer une réponse, dans les mêmes conditions de sécurité que le reste de vos données
+          (cloisonnement par coach, aucune revente). Les coachs IA sont volontairement limités à des
+          sujets non cliniques (généraliste, prise de masse, perte de gras, force, débutants...) : toute
+          question touchant à un sujet médical (blessure, trouble du comportement alimentaire,
+          grossesse) est explicitement renvoyée vers un coach humain ou un professionnel de santé,
+          jamais traitée par l&apos;intelligence artificielle elle-même.
+        </P>
+        <P>
+          Un coach humain peut également, pour ses propres clients, s&apos;appuyer sur un agent IA interne
+          pour rédiger un message de suivi personnalisé (par exemple une relance après une période
+          d&apos;inactivité) — ce message est alors envoyé depuis le compte de votre coach humain, jamais
+          au nom d&apos;un tiers.
+        </P>
+      </>
+    ),
+  },
+  {
     id: "transferts",
-    title: "5. Transferts hors Union européenne",
+    title: "6. Transferts hors Union européenne",
     body: (
       <P>
         Certains sous-traitants mentionnés ci-dessus peuvent traiter des données en dehors de l&apos;Union
@@ -138,7 +173,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "conservation",
-    title: "6. Durée de conservation",
+    title: "7. Durée de conservation",
     body: (
       <>
         <P>
@@ -157,7 +192,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "securite",
-    title: "7. Sécurité des données",
+    title: "8. Sécurité des données",
     body: (
       <P>
         L&apos;accès à vos données est protégé par des règles de sécurité au niveau de la base de données
@@ -169,7 +204,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "droits",
-    title: "8. Vos droits",
+    title: "9. Vos droits",
     body: (
       <>
         <P>Conformément au Règlement Général sur la Protection des Données (RGPD), vous disposez des droits suivants sur vos données personnelles :</P>
@@ -191,7 +226,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "mineurs",
-    title: "9. Mineurs",
+    title: "10. Mineurs",
     body: (
       <P>
         L&apos;application n&apos;est pas destinée aux personnes mineures sans l&apos;autorisation expresse d&apos;un
@@ -202,7 +237,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "cookies",
-    title: "10. Cookies",
+    title: "11. Cookies",
     body: (
       <P>
         EP Coaching utilise uniquement des cookies techniques strictement nécessaires au
@@ -213,7 +248,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "modifications",
-    title: "11. Modification de la présente politique",
+    title: "12. Modification de la présente politique",
     body: (
       <P>
         Cette politique de confidentialité peut être mise à jour, notamment pour refléter l&apos;évolution
@@ -230,7 +265,7 @@ export default function PrivacyPolicyPage() {
     <LegalPage
       eyebrow="Données personnelles"
       title="Politique de confidentialité"
-      lastUpdated="1 août 2026"
+      lastUpdated="19 août 2026"
       intro={
         <P>
           Cette politique explique quelles données EP Coaching collecte, pourquoi, comment elles sont

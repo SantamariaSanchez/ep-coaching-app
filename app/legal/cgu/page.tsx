@@ -28,7 +28,12 @@ const sections: LegalSection[] = [
         <li><Strong>La Plateforme</Strong> : l&apos;application EP Coaching, accessible via ep-coaching.vercel.app et ses déclinaisons.</li>
         <li><Strong>Le Fondateur</Strong> : Emmanuel Peccoux, éditeur et opérateur de la Plateforme.</li>
         <li><Strong>Un Coach</Strong> : tout professionnel indépendant du sport ou du coaching qui utilise la Plateforme pour suivre ses propres clients, moyennant un abonnement décrit dans les Conditions Générales de Vente.</li>
-        <li><Strong>Un Membre ou Client</Strong> : toute personne suivie par un Coach (le Fondateur ou un Coach tiers), qu&apos;elle bénéficie d&apos;un accompagnement gratuit ou payant.</li>
+        <li>
+          <Strong>Un Coach IA</Strong> : un coach opéré par une intelligence artificielle plutôt que par
+          une personne humaine, systématiquement signalé comme tel par un badge « Coach IA » partout où
+          il apparaît sur la Plateforme. Un Coach IA n&apos;est jamais présenté comme un humain.
+        </li>
+        <li><Strong>Un Membre ou Client</Strong> : toute personne suivie par un Coach (le Fondateur, un Coach tiers ou un Coach IA), qu&apos;elle bénéficie d&apos;un accompagnement gratuit ou payant.</li>
         <li><Strong>Contenu</Strong> : toute donnée, texte, image, vidéo ou message publié ou transmis via la Plateforme.</li>
       </Ul>
     ),
@@ -57,6 +62,13 @@ const sections: LegalSection[] = [
           cadre de son propre suivi auprès d&apos;un autre Coach). Le compte du Fondateur dispose d&apos;un
           statut spécifique et unique lui donnant accès et droits complets sur l&apos;ensemble de la
           Plateforme.
+        </P>
+        <P>
+          Certains Coachs disponibles sur la Plateforme sont des Coachs IA (voir Définitions). Un Coach
+          IA génère ses réponses au moyen d&apos;une intelligence artificielle tierce (voir Politique de
+          confidentialité) et reste volontairement limité aux sujets non cliniques de l&apos;entraînement et
+          de la nutrition : toute question à caractère médical est orientée vers un Coach humain ou un
+          professionnel de santé, jamais traitée par le Coach IA lui-même.
         </P>
       </>
     ),
@@ -234,7 +246,7 @@ export default function CGUPage() {
     <LegalPage
       eyebrow="Conditions d'utilisation"
       title="Conditions Générales d'Utilisation"
-      lastUpdated="1 août 2026"
+      lastUpdated="19 août 2026"
       intro={
         <P>
           Merci de lire attentivement ces conditions avant d&apos;utiliser EP Coaching. Elles définissent les

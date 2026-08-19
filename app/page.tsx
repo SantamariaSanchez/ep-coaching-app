@@ -33,7 +33,7 @@ import InstallAppHint from "@/components/ui/InstallAppHint";
 const FEATURES = [
   { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A avec un vrai coach" },
   { icon: BookOpen, title: "5 formations complètes", desc: "Bodybuilding, nutrition, training, business, psychologie" },
-  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées, jamais un chatbot" },
+  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées, coach humain par défaut" },
   { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
   { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },

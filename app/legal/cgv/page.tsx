@@ -179,12 +179,21 @@ const sections: LegalSection[] = [
     id: "responsabilite-cgv",
     title: "12. Responsabilité relative au coaching dispensé par un tiers",
     body: (
-      <P>
-        Lorsque le service de coaching est dispensé par un Coach tiers, EP Coaching agit uniquement en
-        qualité de fournisseur de la solution technique permettant cette relation. La responsabilité
-        professionnelle liée au contenu, à la qualité et au bon déroulement du coaching relève
-        exclusivement du Coach tiers concerné.
-      </P>
+      <>
+        <P>
+          Lorsque le service de coaching est dispensé par un Coach tiers, EP Coaching agit uniquement en
+          qualité de fournisseur de la solution technique permettant cette relation. La responsabilité
+          professionnelle liée au contenu, à la qualité et au bon déroulement du coaching relève
+          exclusivement du Coach tiers concerné.
+        </P>
+        <P>
+          Un Coach IA (voir Conditions Générales d&apos;Utilisation) est directement opéré par EP
+          Coaching, jamais par un Coach tiers indépendant. Les contenus qu&apos;il génère restent soumis
+          au même principe qu&apos;à l&apos;article 8 des CGU : ils ne se substituent en aucun cas à un avis
+          médical, et tout sujet à caractère clinique est explicitement renvoyé vers un Coach humain ou
+          un professionnel de santé.
+        </P>
+      </>
     ),
   },
   {
@@ -228,7 +237,7 @@ export default function CGVPage() {
     <LegalPage
       eyebrow="Conditions de vente"
       title="Conditions Générales de Vente"
-      lastUpdated="1 août 2026"
+      lastUpdated="19 août 2026"
       intro={
         <P>
           Ces conditions régissent les souscriptions payantes proposées sur EP Coaching, que vous

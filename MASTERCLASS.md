@@ -2595,3 +2595,68 @@ d'insister sur le même type de diagnostic une troisième fois — surtout
 quand l'alternative (ne plus jamais réévaluer après le premier rendu)
 rend la classe de bug structurellement impossible, indépendamment de la
 cause exacte jamais formellement identifiée.
+
+## Axes AG à AO — Rattrapage documentation (livrés le 2026-08-19, non détaillés au fil de l'eau)
+
+**Statut : tous livrés et déployés ; entrée groupée plutôt que 9
+sections séparées pour ne pas retarder le reste du chantier en cours.**
+
+- **AG** — Accordéon appliqué à `RoadmapEditor.tsx`,
+  `RoadmapTemplateEditor.tsx` et sections repliables sur `NutritionForm.tsx`
+  (même retour direct que l'Axe AC, étendu à ces trois écrans).
+- **AJ** — Onglets de haut niveau sur `OrganisationView.tsx` (7 sections
+  empilées → un seul onglet actif, grille de boutons comme
+  `ClientProfileTabs.tsx`).
+- **AL** — `VolumeBudgetPanel` + `VolumeReviewPanel` de `ProgramEditor.tsx`
+  fusionnés en `VolumeBudgetReviewPanel`, déplacés en Phase 4 (Livraison),
+  compactés (une ligne par groupe, seuls les groupes travaillés affichés
+  par défaut) — retour direct : "le volume et l'intensité met en bas de
+  la prog... moins long et chiant à défiler".
+- **AM** — `lib/lead-qualification.ts` : l'agent Setter (Santiago Cooper)
+  envoie un vrai email de qualification personnalisé (Brevo) dès qu'un
+  lead laisse son email sur `/ressources`, distinct de l'email générique
+  de remise du guide. Badge + compteur dans l'écran Leads.
+- **AN** — `lib/coach-agent-checkin.ts` + bouton "Relance agent IA" sur
+  `app/dashboard/coach/messages/[clientId]/page.tsx` : un agent interne
+  (Camila, onboarding par défaut) regarde l'activité réelle d'un client
+  et envoie une relance personnalisée via le compte de son vrai coach.
+  Utilisé en direct pour Rayane et Zacharia (retour explicite : "s'occuper
+  des 2 clients gratuits").
+- **AO** — Onboarding complet pour les coachs (Axe 9, VISION.md) : gap
+  confirmé (seul le client avait un vrai parcours d'accueil), nouveau
+  `/onboarding/coach` en 4 étapes réutilisant des composants déjà
+  existants (`ProfileEditor`, `CoachSpecializationsCard`,
+  `AcceptingClientsCard`, `InviteLinkCard`).
+
+## Axe AP — Cohérence légale et page d'accueil avec les coachs IA (Axe 7, VISION.md)
+
+**Statut : livré (2026-08-19), retour direct : "regarde pour tout les
+endroits et mets à jour, du genre dans les CGV CGU politique de
+confidentialité etc, et même sur la 1ère page de l'appli".**
+
+Audit ciblé : aucune des trois pages légales ne mentionnait nulle part
+les coachs IA ni le traitement de données par Anthropic, alors que ces
+deux réalités sont en production depuis l'Axe AF. Corrigé :
+
+- **Politique de confidentialité** : Anthropic ajouté à la liste des
+  sous-traitants (section 4), nouvelle section 5 dédiée "Coachs IA et
+  messages automatisés" expliquant le badge systématique, le traitement
+  du contenu des messages par Anthropic, et la restriction des coachs IA
+  aux sujets non cliniques. Sections suivantes renumérotées (6 à 12).
+- **CGU** : nouvelle définition "Un Coach IA" (section 2), paragraphe
+  dédié dans "Fonctionnement de la Plateforme" (section 3) — l'article 8
+  déjà existant ("Santé et pratique sportive") couvrait déjà correctement
+  les coachs IA par construction (il vise "les contenus... qu'ils
+  proviennent de votre Coach", sans distinguer humain/IA), aucune
+  modification nécessaire là.
+- **CGV** : précision dans l'article 12 ("Responsabilité relative au
+  coaching dispensé par un tiers") — un Coach IA est directement opéré
+  par EP Coaching, jamais par un Coach tiers indépendant, la logique de
+  répartition de responsabilité de cet article ne s'applique donc pas à
+  lui de la même façon.
+- **Page d'accueil** (`app/page.tsx`) : la carte "Messagerie coach"
+  affirmait "jamais un chatbot" — plus vrai de façon absolue depuis les
+  coachs IA. Corrigé en "coach humain par défaut" (reste vrai : c'est le
+  parcours par défaut, un coach IA est un choix explicite via l'annuaire).
+  Le lien "Plusieurs coachs disponibles, trouve le tien" (Axe 5) restait
+  déjà neutre, aucune modification nécessaire.
