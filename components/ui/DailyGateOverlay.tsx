@@ -1,31 +1,40 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { usePathname } from "next/navigation";
-import { Sun, Moon as MoonIcon, UtensilsCrossed, X } from "lucide-react";
-import {
-  WeightCard,
-  SleepCard,
-  TrainingCard,
-  LifestyleCard,
-  NutritionCard,
-  type BilanAction,
-  type NutritionTotals,
-} from "@/components/ui/DailyBilanForm";
-import type { DailyLog } from "@/utils/daily-logs";
-import { GATE_REFRESH_EVENT } from "@/lib/gate-events";
+import { Sun, Moon as MoonIcon, UtensilsCrossed, X, ChevronRight } from "lucide-react";
 
-// Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15) :
-// tant que lib/daily-gate.ts dit qu'il y a quelque chose à faire, cet
-// overlay recouvre TOUTE l'appli (fond flouté, aucune page en dessous
-// n'est atteignable) — monté une seule fois dans app/dashboard/layout.tsx,
-// partagé entre client et coach (les deux ont leur propre bilan quotidien).
+// REFONTE COMPLÈTE 2026-08-19 (retour direct, après DEUX correctifs
+// distincts qui n'ont pas suffi — remontage stable puis sessionStorage —
+// et le bilan continuait de "revenir à chaque action" : "corrige ou rend
+// le pas obligatoire mais apparaît qu'une seule fois et pas à chaque fois
+// que je change d'onglet"). Les deux correctifs précédents partaient du
+// principe que le bug venait d'une resynchronisation intempestive de
+// l'état — principe qui s'est révélé faux (ou en tout cas insuffisant) en
+// conditions réelles malgré deux angles de correction indépendants.
 //
-// Le statut initial vient du serveur (calculé dans le layout, jamais
-// recalculé côté client). Après une sauvegarde réussie dans une des
-// cartes, on rappelle /api/gate-status pour savoir si on peut lever le
-// verrou ou passer à l'étape suivante (matin -> repas -> soir) — jamais
-// de logique "c'est fait" dupliquée ici, toujours revérifiée serveur.
+// Plutôt que de continuer à chercher un troisième mécanisme de
+// resynchronisation caché, ce composant change complètement de modèle
+// pour rendre la classe de bug elle-même impossible :
+//   - Ce n'est plus un OVERLAY BLOQUANT plein écran (fond flouté,
+//     pointer-events bloqués sur le reste de l'appli). C'est une carte de
+//     rappel compacte, non bloquante, qui laisse l'appli parfaitement
+//     utilisable en dessous.
+//   - Il n'y a PLUS AUCUN mécanisme de revérification automatique (plus
+//     de re-fetch au changement de route, plus d'événement, plus de
+//     minuteur périodique) : plus rien ne peut la faire réapparaître
+//     "à chaque action" ou "à chaque changement d'onglet", puisque plus
+//     rien ne la réévalue après le premier rendu. Le prochain calcul
+//     serveur (lib/daily-gate.ts) n'a lieu qu'au prochain chargement de
+//     page complet.
+//   - Une fois fermée (croix, ou clic sur le lien pour aller faire le
+//     bilan), elle ne réapparaît plus du tout pour cette raison précise
+//     tant que la date ne change pas — mémorisé en sessionStorage, donc
+//     "apparaît qu'une seule fois" au sens strict, y compris si le
+//     composant redémarre pour une raison quelconque.
+// Le bilan complet (toutes les cartes, jamais gating) reste accessible à
+// tout moment via /dashboard/client/bilan ou /dashboard/coach/moi/bilan
+// (voir bilanHref) — cette carte n'est qu'un rappel, plus un verrou.
 
 export type GateReason = "morning" | "meal" | "evening";
 export interface PendingMeal {
@@ -33,292 +42,132 @@ export interface PendingMeal {
   label: string;
 }
 
-interface GateStatusResponse {
-  active: GateReason | null;
-  pendingMeal?: PendingMeal;
-}
+const REASON_META: Record<GateReason, { icon: typeof Sun; title: string; subtitle: string }> = {
+  morning: {
+    icon: Sun,
+    title: "Bilan du matin à faire",
+    subtitle: "Poids et sommeil, quand tu as deux minutes.",
+  },
+  meal: {
+    icon: UtensilsCrossed,
+    title: "Un repas t'attend",
+    subtitle: "Un créneau du plan est passé, logue-le quand tu peux.",
+  },
+  evening: {
+    icon: MoonIcon,
+    title: "Bilan du soir à faire",
+    subtitle: "Pas, digestion, stress, faim : le point avant de dormir.",
+  },
+};
 
 export default function DailyGateOverlay({
   initialActive,
   initialPendingMeal,
   today,
-  existing,
-  action,
-  autoSteps,
-  nutritionTotals,
   mealBaseHref,
+  bilanHref,
 }: {
   initialActive: GateReason | null;
   initialPendingMeal?: PendingMeal;
   today: string;
-  existing: DailyLog | null;
-  action: BilanAction;
-  autoSteps?: number | null;
-  nutritionTotals?: NutritionTotals | null;
   mealBaseHref: string;
+  bilanHref: string;
 }) {
-  // CORRIGÉ 2026-08-19 (2e passe, retour direct APRÈS le premier correctif
-  // "toujours monté" : "tu mens, le bilan matin me revient à chaque
-  // action"). Le premier correctif (toujours monter <DailyGateOverlay>,
-  // voir plus bas) part du principe documenté par Next.js que
-  // router.refresh() — déclenché après CHAQUE Server Action — "merge le
-  // payload sans perdre l'état client des composants inchangés". En
-  // pratique, sur un layout force-dynamic comme celui-ci, ce n'est pas
-  // garanti à 100% : rien n'exclut qu'un cas précis (nouvelle navigation
-  // combinée à une action, ou une resynchronisation Next.js interne) fasse
-  // malgré tout perdre l'état `active` du composant et repartir sur
-  // `initialActive` — qui peut lui-même être temporairement "en retard"
-  // d'un aller-retour serveur juste après une sauvegarde.
-  //
-  // Deuxième filet de sécurité, indépendant du premier : `active` est
-  // recopié dans sessionStorage à chaque vérification serveur réussie, et
-  // relu en PRIORITÉ sur `initialActive` au montage — sessionStorage
-  // survit à un remount React (contrairement au state), donc même si le
-  // composant redémarre pour une raison qui échappe au premier correctif,
-  // il retrouve le dernier état confirmé au lieu de repartir sur une prop
-  // serveur potentiellement obsolète. Clé datée (today) : s'invalide toute
-  // seule au changement de jour, jamais besoin de la nettoyer à la main.
-  const storageKey = `ep-gate-${today}`;
-  const [active, setActiveState] = useState<GateReason | null>(() => {
-    if (typeof window === "undefined") return initialActive;
-    try {
-      const raw = window.sessionStorage.getItem(storageKey);
-      if (raw === null) return initialActive;
-      const cached = JSON.parse(raw) as { active: GateReason | null };
-      return cached.active;
-    } catch {
-      return initialActive;
-    }
-  });
-  const [pendingMeal, setPendingMeal] = useState<PendingMeal | null>(initialPendingMeal ?? null);
-  const setActive = useCallback(
-    (updater: GateReason | null | ((current: GateReason | null) => GateReason | null)) => {
-      setActiveState((current) => {
-        const next = typeof updater === "function" ? (updater as (c: GateReason | null) => GateReason | null)(current) : updater;
-        try {
-          window.sessionStorage.setItem(storageKey, JSON.stringify({ active: next }));
-        } catch {
-          // Stockage indisponible (navigation privée, quota) : l'état reste
-          // correct pour cette session React, seul le filet de secours saute.
-        }
-        return next;
-      });
-    },
-    [storageKey]
-  );
   const pathname = usePathname();
 
-  // Échappatoire (demande explicite 2026-08-19 : "des fois on n'a pas les
-  // data et qu'on veut utiliser l'appli, sinon c'est chiant") : une petite
-  // croix pour fermer le verrou ponctuellement sans rien valider côté
-  // serveur — contrairement aux cartes de bilan, ça ne marque jamais rien
-  // comme fait. Remis à zéro à chaque changement de page ou de raison de
-  // blocage, pour que ça reste "je passe outre maintenant", pas "je
-  // désactive le bilan" : le verrou revient à la prochaine navigation ou
-  // au prochain rechargement tant que les données manquent vraiment.
-  const [dismissed, setDismissed] = useState(false);
-  useEffect(() => {
-    setDismissed(false);
-  }, [pathname, active]);
-
-  // CORRIGÉ 2026-08-19 (retour direct : "il faut que le bilan ne revienne
-  // pas à chaque action... je veux que le système de cochage marche
-  // réellement"). Cause réelle trouvée : chaque micro-action (cocher UN
-  // aliment) déclenchait un refresh() qui appliquait TOUJOURS la nouvelle
-  // raison de blocage renvoyée par le serveur — y compris une raison
-  // DIFFÉRENTE de celle affichée. Si le repas venait tout juste d'être
-  // satisfait pendant qu'un bilan du soir était déjà dû, cocher le
-  // dernier aliment d'un repas faisait apparaître le bilan du soir
-  // PAR-DESSUS la checklist en cours, en pleine action — perçu à raison
-  // comme "le cochage ne marche pas", alors que l'insertion elle-même
-  // fonctionnait très bien (déjà vérifié à l'Axe W).
-  //
-  // Règle désormais : une micro-action (refresh "léger") peut UNIQUEMENT
-  // lever le verrou actif ou en préciser les détails (ex. le prochain
-  // repas), jamais le remplacer par une AUTRE raison de blocage — ce
-  // remplacement ("escalade") n'a lieu que sur une vérification
-  // volontaire : la sauvegarde explicite d'une carte de bilan (onSaved,
-  // l'utilisateur vient justement de valider cette étape) ou la
-  // vérification périodique toutes les 30 minutes ci-dessous.
-  const refresh = useCallback(async (allowEscalation: boolean) => {
+  // Clé datée + raison : mémorisée dès la fermeture, s'invalide seule au
+  // changement de jour (nouvelle valeur de `today`, donc nouvelle clé).
+  const storageKey = initialActive ? `ep-gate-dismissed-${today}-${initialActive}` : null;
+  const [dismissed, setDismissed] = useState(() => {
+    if (!storageKey || typeof window === "undefined") return false;
     try {
-      const res = await fetch("/api/gate-status", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = (await res.json()) as GateStatusResponse;
-      setActive((current) => {
-        if (
-          allowEscalation ||
-          data.active === null ||
-          data.active === current ||
-          current === null
-        ) {
-          return data.active;
-        }
-        // Une autre raison bloquante existe déjà en base, mais on ne
-        // l'impose pas suite à une simple micro-action — elle apparaîtra
-        // à la prochaine vérification volontaire (30 min, ou sauvegarde
-        // d'une carte de bilan).
-        return current;
-      });
-      setPendingMeal(data.pendingMeal ?? null);
+      return window.sessionStorage.getItem(storageKey) === "1";
     } catch {
-      // Échec réseau : on laisse le verrou affiché tel quel plutôt que de le
-      // lever sans confirmation du serveur — voir lib/daily-gate.ts pour la
-      // règle inverse (le calcul serveur, lui, doit toujours fail-open).
+      return false;
     }
-  }, [setActive]);
-  const refreshSoft = useCallback(() => refresh(false), [refresh]);
-  const refreshFull = useCallback(() => refresh(true), [refresh]);
+  });
 
-  // BUG CORRIGÉ (2026-08-15, signalé en direct) : le bouton "Aller logger
-  // mon repas" renvoie vers la page Nutrition, mais app/dashboard/layout.tsx
-  // (le layout partagé) persiste entre navigations côté client sans
-  // forcément se re-rendre — ses props (initialActive/initialPendingMeal)
-  // ne se rafraîchissent donc pas tout seuls. Revérifie à chaque changement
-  // de route pour détecter qu'un repas vient d'être loggué sur une autre
-  // page — en mode "léger" (voir refresh ci-dessus) depuis le 2026-08-19,
-  // pour ne jamais imposer une NOUVELLE raison de blocage juste parce
-  // qu'on a cliqué un lien.
-  useEffect(() => {
-    refreshSoft();
-  }, [pathname, refreshSoft]);
+  function dismiss() {
+    setDismissed(true);
+    if (!storageKey) return;
+    try {
+      window.sessionStorage.setItem(storageKey, "1");
+    } catch {
+      // Stockage indisponible (navigation privée, quota) : reste fermé
+      // pour cette session React, c'est le principal qui compte.
+    }
+  }
 
-  // BUG CORRIGÉ (2026-08-16, signalé en direct : "je coche les aliments,
-  // ça bloque le reste de l'appli, j'suis obligé de tout actualiser") : ce
-  // composant ne se revérifiait qu'au changement de route. Or logger un
-  // repas se fait sans navigation (on reste sur /nutrition), donc le
-  // verrou "repas" ne se levait jamais tant qu'on ne quittait pas la page
-  // par un lien. Écoute désormais un événement dédié, déclenché par
-  // ClientNutritionView après chaque log de repas réussi (voir
-  // lib/gate-events.ts) — en mode "léger" lui aussi (voir plus haut).
-  useEffect(() => {
-    window.addEventListener(GATE_REFRESH_EVENT, refreshSoft);
-    return () => window.removeEventListener(GATE_REFRESH_EVENT, refreshSoft);
-  }, [refreshSoft]);
+  if (!initialActive || dismissed) return null;
+  // Déjà sur la page de destination : pas besoin de le rappeler par-dessus.
+  if (initialActive === "meal" && pathname === mealBaseHref) return null;
+  if ((initialActive === "morning" || initialActive === "evening") && pathname === bilanHref) return null;
 
-  // Vérification périodique (2026-08-19, demande explicite : "toutes les
-  // 30min si jamais pas fait manuellement") : seul moment, avec la
-  // sauvegarde d'une carte de bilan, où une NOUVELLE raison de blocage
-  // peut apparaître automatiquement.
-  useEffect(() => {
-    const id = setInterval(refreshFull, 30 * 60 * 1000);
-    return () => clearInterval(id);
-  }, [refreshFull]);
-
-  if (!active) return null;
-  if (active === "meal" && pathname === mealBaseHref) return null;
-  if (dismissed) return null;
+  const meta = REASON_META[initialActive];
+  const Icon = meta.icon;
+  const href =
+    initialActive === "meal" && initialPendingMeal
+      ? `${mealBaseHref}?meal=${initialPendingMeal.slot}`
+      : bilanHref;
+  const subtitle =
+    initialActive === "meal" && initialPendingMeal
+      ? `C'est passé l'heure du ${initialPendingMeal.label}, logue-le quand tu peux.`
+      : meta.subtitle;
 
   return (
     <div
       style={{
         position: "fixed",
-        inset: 0,
-        zIndex: 2000,
-        display: "flex",
-        padding: "24px 16px",
-        overflowY: "auto",
-        background: "rgba(13,0,0,0.7)",
-        backdropFilter: "blur(16px) saturate(140%)",
-        WebkitBackdropFilter: "blur(16px) saturate(140%)",
+        left: 16,
+        right: 16,
+        bottom: 16,
+        zIndex: 1500,
+        maxWidth: 420,
+        margin: "0 auto",
       }}
+      className="ep-card"
     >
-      <button
-        type="button"
-        onClick={() => setDismissed(true)}
-        aria-label="Fermer pour l'instant"
-        title="Fermer pour l'instant"
-        style={{
-          position: "fixed",
-          top: 16,
-          right: 16,
-          zIndex: 2001,
-          width: 34,
-          height: 34,
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          background: "rgba(245,237,237,0.08)",
-          border: "1px solid rgba(245,237,237,0.15)",
-          color: "rgba(245,237,237,0.5)",
-          cursor: "pointer",
-        }}
-      >
-        <X size={16} />
-      </button>
-      <div style={{ width: "100%", maxWidth: 480, margin: "auto", display: "flex", flexDirection: "column", gap: 14 }}>
-        {active === "morning" && (
-          <>
-            <GateHeader
-              icon={Sun}
-              title="Bilan du matin"
-              subtitle="Poids et sommeil d'abord, le reste de l'appli attend que ce soit fait."
-            />
-            <WeightCard today={today} existing={existing} action={action} onSaved={refreshFull} />
-            <SleepCard today={today} existing={existing} action={action} onSaved={refreshFull} />
-          </>
-        )}
-
-        {active === "meal" && pendingMeal && (
-          <>
-            <GateHeader
-              icon={UtensilsCrossed}
-              title="Un repas t'attend"
-              subtitle={`C'est passé l'heure du ${pendingMeal.label}, logue-le pour continuer.`}
-            />
-            <div className="ep-card" style={{ padding: "20px 16px", textAlign: "center" }}>
-              <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: "0 0 16px", lineHeight: 1.5 }}>
-                {/* Le pré-remplissage depuis le plan alimentaire (avec surlignage
-                    automatique du repas concerné) n'existe que côté client — voir
-                    ClientNutritionView.tsx. Message volontairement générique pour
-                    rester vrai aussi côté coach (CoachMoiNutritionTabs.tsx n'a pas
-                    cette UI de plan), qui peut malgré tout logger normalement. */}
-                Direction Nutrition pour le logger.
-              </p>
-              <a
-                href={`${mealBaseHref}?meal=${pendingMeal.slot}`}
-                className="ep-btn-primary"
-                style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "100%", textDecoration: "none" }}
-              >
-                Aller logger mon repas
-              </a>
-            </div>
-          </>
-        )}
-
-        {active === "evening" && (
-          <>
-            <GateHeader
-              icon={MoonIcon}
-              title="Bilan du soir"
-              subtitle="C'est l'heure de faire le point avant de dormir."
-            />
-            <TrainingCard today={today} existing={existing} action={action} onSaved={refreshFull} />
-            <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} onSaved={refreshFull} />
-            <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} onSaved={refreshFull} />
-          </>
-        )}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px" }}>
+        <div
+          style={{
+            width: 38, height: 38, borderRadius: 12, flexShrink: 0,
+            background: "linear-gradient(135deg, rgba(224,30,30,0.22), rgba(137,4,4,0.12))",
+            border: "1px solid rgba(224,30,30,0.35)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}
+        >
+          <Icon size={17} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{meta.title}</p>
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "3px 0 10px", lineHeight: 1.4 }}>
+            {subtitle}
+          </p>
+          <a
+            href={href}
+            onClick={dismiss}
+            className="ep-btn-primary"
+            style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, padding: "7px 12px", textDecoration: "none" }}
+          >
+            Y aller <ChevronRight size={12} />
+          </a>
+        </div>
+        <button
+          type="button"
+          onClick={dismiss}
+          aria-label="Fermer"
+          title="Fermer"
+          style={{
+            flexShrink: 0,
+            width: 26, height: 26, borderRadius: "50%",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            background: "rgba(245,237,237,0.06)", border: "1px solid rgba(245,237,237,0.12)",
+            color: "rgba(245,237,237,0.4)", cursor: "pointer",
+          }}
+        >
+          <X size={13} />
+        </button>
       </div>
-    </div>
-  );
-}
-
-function GateHeader({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle: string }) {
-  return (
-    <div style={{ textAlign: "center", marginBottom: 4 }}>
-      <div
-        style={{
-          width: 52, height: 52, borderRadius: 16, margin: "0 auto 14px",
-          background: "linear-gradient(135deg, rgba(224,30,30,0.22), rgba(137,4,4,0.12))",
-          border: "1px solid rgba(224,30,30,0.35)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}
-      >
-        <Icon size={22} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-      </div>
-      <h2 className="ep-h2" style={{ margin: "0 0 6px" }}>{title}</h2>
-      <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0, lineHeight: 1.5 }}>{subtitle}</p>
     </div>
   );
 }

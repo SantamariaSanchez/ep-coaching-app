@@ -2539,3 +2539,59 @@ La migration `20260819d_messages_rls_hardening.sql` n'est pas encore
 appliquée en production (même contrainte que l'Axe AF : `apply_migration`
 refusé par le classificateur de permissions de cette session). À exécuter
 manuellement dans le Supabase SQL Editor.
+
+## Axe AK — Bilan : refonte complète, overlay bloquant → carte de rappel
+
+**Statut : livré (2026-08-19), retour direct APRÈS DEUX correctifs distincts
+(Axe AD, Axe AH) qui n'ont pas suffi : "le bilan matin me revient à chaque
+action donc corrige ou rend le pas obligatoire mais apparaît qu'une seule
+fois et pas à chaque fois que je change d'onglet".**
+
+L'Axe AD (composant toujours monté) puis l'Axe AH (sessionStorage comme
+2e filet) partaient tous les deux du même principe : le bug venait d'une
+resynchronisation intempestive de l'état React (remount, prop qui écrase
+le state). Les deux correctifs ont été déployés et vérifiés (build +
+lint), et le bug a malgré tout persisté en usage réel — signe que ce
+principe de diagnostic, même appliqué deux fois sous deux angles
+différents, était insuffisant ou à côté du vrai mécanisme.
+
+**Décision** : plutôt que de chercher un troisième mécanisme de
+resynchronisation cocher, changement de modèle complet pour rendre toute
+cette classe de bug impossible plutôt que de continuer à la traquer :
+
+- `DailyGateOverlay.tsx` n'est plus un overlay BLOQUANT plein écran (fond
+  flouté, `position: fixed; inset: 0`, reste de l'appli inatteignable). Le
+  bilan n'est plus jamais obligatoire. C'est désormais une carte de rappel
+  compacte, en bas de l'écran, qui n'intercepte aucun clic ailleurs.
+- Suppression de TOUT mécanisme de revérification automatique :
+  plus de `refreshSoft` au changement de route, plus d'écoute de
+  `GATE_REFRESH_EVENT`, plus de minuteur périodique (30 min). Plus rien ne
+  réévalue le statut après le premier rendu — donc plus rien ne peut le
+  faire réapparaître "à chaque action" ou "à chaque changement d'onglet",
+  quelle qu'en soit la cause exacte. Le prochain calcul serveur
+  (`lib/daily-gate.ts`) n'a lieu qu'au prochain chargement de page complet
+  (fermeture/réouverture, lendemain).
+- Une fois fermée (croix, ou clic sur "Y aller"), mémorisée en
+  sessionStorage par clé `today` + raison : ne réapparaît plus du tout
+  pour cette raison précise avant le changement de jour, "apparaît qu'une
+  seule fois" au sens strict — y compris si le composant redémarre pour
+  une raison quelconque, puisque sessionStorage survit à un remount.
+- `app/dashboard/layout.tsx` largement simplifié en conséquence : la
+  carte ne rend plus les cartes de bilan elles-mêmes (`WeightCard` etc.),
+  donc plus besoin d'y charger `existing`/`nutritionTotals`/`autoSteps` —
+  seul `getDailyGateStatus` reste appelé. Le bilan complet (toutes les
+  cartes, jamais gating, jamais caché) reste accessible à tout moment sur
+  `/dashboard/client/bilan` ou `/dashboard/coach/moi/bilan` — nouveau prop
+  `bilanHref`, la carte de rappel n'en est que le raccourci.
+- `/api/gate-status/route.ts` et `lib/gate-events.ts` (`GATE_REFRESH_EVENT`,
+  toujours dispatché par `ClientNutritionView.tsx` après un log de repas)
+  deviennent du code mort inoffensif — gardés tels quels plutôt que
+  supprimés dans la foulée d'un correctif déjà volumineux, à nettoyer une
+  prochaine fois si personne ne les rebranche.
+
+**Leçon** : après un deuxième correctif indépendant resté sans effet sur
+le même symptôme rapporté, changer de stratégie de correction plutôt que
+d'insister sur le même type de diagnostic une troisième fois — surtout
+quand l'alternative (ne plus jamais réévaluer après le premier rendu)
+rend la classe de bug structurellement impossible, indépendamment de la
+cause exacte jamais formellement identifiée.

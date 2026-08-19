@@ -8,19 +8,12 @@ import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
-import type { NutritionTotals } from "@/components/ui/DailyBilanForm";
-import type { DailyLog } from "@/utils/daily-logs";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { isEmailVerified } from "@/lib/email-verification";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { isStrongSession } from "@/lib/mfa";
 import { getDailyGateStatus } from "@/lib/daily-gate";
-import { getTodayLog } from "@/utils/daily-logs";
-import { getTodayLogs } from "@/utils/nutrition";
-import { getTodayStepsActual } from "@/utils/steps";
 import { todayInParis } from "@/lib/dates";
-import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
-import { upsertCoachDailyLog } from "@/app/dashboard/coach/moi/bilan/actions";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -95,64 +88,17 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
 
-  // Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15,
-  // voir lib/daily-gate.ts) : calculé pour TOUT compte connecté, client ou
+  // Rappel de bilan (demande explicite 2026-08-15, refondu 2026-08-19 —
+  // voir lib/daily-gate.ts et components/ui/DailyGateOverlay.tsx pour
+  // l'historique complet). Calculé pour TOUT compte connecté, client ou
   // coach (chacun a son propre bilan quotidien, via client_id = son propre
-  // id dans les deux cas). Les données lourdes (bilan du jour, repas
-  // loggués, pas auto) ne sont chargées que si un verrou est effectivement
-  // actif — la grande majorité des chargements de page ne paient que le
-  // coût de getDailyGateStatus lui-même.
-  //
-  // CORRIGÉ 2026-08-19 (retour direct, APRÈS l'Axe AB : "ya encore le bilan
-  // qui revient à chaque action"). Le vrai fond du problème n'était pas
-  // encore traité : <DailyGateOverlay> n'était rendu dans l'arbre que
-  // lorsque gate.active était vrai (gateOverlay = null sinon). Or ce layout
-  // est en dynamic = "force-dynamic", et la quasi-totalité des Server
-  // Actions de l'appli appellent revalidatePath() — ce qui fait réexécuter
-  // ce fichier côté serveur après CHAQUE action, pas seulement les actions
-  // nutrition. À chaque fois que gate.active repassait par null (même un
-  // aller-retour d'un seul re-rendu, par exemple juste après avoir loggué
-  // le dernier aliment d'un repas, avant que la prochaine raison de
-  // blocage éventuelle ne soit connue), <DailyGateOverlay> disparaissait de
-  // l'arbre puis un TOUT NOUVEAU composant était monté au rendu suivant dès
-  // que gate.active redevenait vrai — perdant tout son état interne
-  // (dismissed, et surtout `active` lui-même, voir le composant) et
-  // redémarrant sur le initialActive fraîchement recalculé côté serveur.
-  // Perçu à raison comme "le bilan revient", pour une action qui n'avait
-  // souvent rien à voir avec lui.
-  //
-  // Le composant reste maintenant TOUJOURS monté une fois la session
-  // ouverte (jamais démonté/remonté par un simple aller-retour serveur) —
-  // seul le calcul des données lourdes reste conditionné à gate.active
-  // pour préserver l'optimisation de coût. Une fois monté, c'est le
-  // composant lui-même qui décide seul quand revérifier (refreshSoft/
-  // refreshFull) ; le serveur ne fournit plus qu'une valeur de départ.
+  // id dans les deux cas) — coût minimal, un seul appel à
+  // getDailyGateStatus, plus aucune donnée lourde à charger ici : la carte
+  // de rappel ne fait plus que renvoyer vers le bilan complet
+  // (/dashboard/client/bilan ou /dashboard/coach/moi/bilan), elle
+  // n'affiche plus les cartes elles-mêmes.
   const gate =
     user && profile ? await getDailyGateStatus(user.id) : { active: null, pendingMeal: undefined };
-  let existing: DailyLog | null = null;
-  let nutritionTotals: NutritionTotals | null = null;
-  let autoSteps: number | null = null;
-  if (user && profile && gate.active) {
-    const [existingRes, todayFoodLogs, autoStepsRes] = await Promise.all([
-      getTodayLog(user.id),
-      getTodayLogs(user.id, todayInParis()),
-      getTodayStepsActual(user.id),
-    ]);
-    existing = existingRes;
-    autoSteps = autoStepsRes;
-    nutritionTotals =
-      todayFoodLogs.length > 0
-        ? todayFoodLogs.reduce(
-            (acc, l) => ({
-              calories: acc.calories + (l.calories ?? 0),
-              proteins: acc.proteins + (l.proteins ?? 0),
-              carbs: acc.carbs + (l.carbs ?? 0),
-              fats: acc.fats + (l.fats ?? 0),
-            }),
-            { calories: 0, proteins: 0, carbs: 0, fats: 0 }
-          )
-        : null;
-  }
   const isCoach = profile?.role === "coach";
   const gateOverlay: React.ReactNode =
     user && profile ? (
@@ -160,11 +106,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         initialActive={gate.active}
         initialPendingMeal={gate.pendingMeal}
         today={todayInParis()}
-        existing={existing}
-        action={isCoach ? upsertCoachDailyLog : upsertDailyLog}
-        autoSteps={autoSteps}
-        nutritionTotals={nutritionTotals}
         mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
+        bilanHref={isCoach ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan"}
       />
     ) : null;
 

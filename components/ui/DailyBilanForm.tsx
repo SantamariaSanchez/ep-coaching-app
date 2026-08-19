@@ -104,10 +104,10 @@ export function WeightCard({ today, existing, action, onSaved }: { today: string
   const [state, formAction, pending] = useActionState(action, null);
   const nowHour = new Date().toTimeString().slice(0, 5);
 
-  // Overlay de verrouillage (lib/daily-gate.ts) : prévient le parent qu'une
-  // sauvegarde vient de réussir, pour qu'il re-vérifie via /api/gate-status
-  // si le verrou peut maintenant se lever — jamais recalculé côté client,
-  // toujours revérifié contre la même source de vérité serveur.
+  // onSaved optionnel : plus câblé par défaut depuis la refonte 2026-08-19
+  // de DailyGateOverlay.tsx (qui ne rend plus les cartes elles-mêmes, juste
+  // un lien vers /dashboard/client/bilan) — gardé pour un appelant futur
+  // qui voudrait réagir à une sauvegarde réussie.
   useEffect(() => {
     if (state?.success) onSaved?.();
   }, [state, onSaved]);
