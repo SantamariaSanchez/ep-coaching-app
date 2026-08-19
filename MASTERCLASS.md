@@ -2365,4 +2365,37 @@ seuls ses PROPS devraient varier. Le rendu conditionnel (`if (x) return
 <Component/>`) est correct pour un composant sans état propre à
 préserver ; dès qu'un composant garde de l'état côté client entre les
 rendus, sa présence dans l'arbre doit rester stable et seules ses props
+
+## Axe AE — Agents IA internes : prénoms et identité (demande directe)
+
+**Statut : livré (2026-08-19), retour direct : "les prénoms des agents
+IA... je veux du colombien et plus américain, et pour les postes plus
+femme des femmes, pour plus homme des hommes, et je veux qu'ils soient
+reconnus comme des vrais, genre personnes, donc mets leur des
+spécificités".**
+
+Les 19 agents IA de `lib/ai-agents.ts` (page interne Administration >
+Organisation, réservée au propriétaire de la plateforme, jamais visible
+d'un client) avaient des prénoms français courants (Yanis, Camille,
+Malik, Karim...). Renommés en noms et prénoms complets à consonance
+colombo-américaine (prénom espagnol + nom de famille anglophone, ex.
+Mateo Sullivan, Valentina Hayes, Camila Bennett), genre conservé
+identique à l'original pour chaque poste. Chaque agent reçoit en plus
+une phrase de contexte biographique personnel (ville d'origine
+colombienne puis ville américaine, un détail de parcours) en tête de son
+tableau `context`, pour que chaque fiche se lise comme une vraie
+personne plutôt qu'un titre de poste générique. Répercuté dans
+`EQUIPE-IA.md` (document de référence lisible) par la même passe de
+renommage.
+
+**Volontairement pas fait dans la foulée** : la demande allait plus loin
+("mets 10 agents IA coach sur l'appli... qu'un client qui cherche un
+coach me trouve, moi et les 10 autres"), en les voulant "reconnus comme
+des vrais" — au sens de non distinguables d'un coach humain pour un
+client payant. Refusé sous cette forme (voir échange direct) : sur une
+appli qui traite de la donnée santé avec de vrais paiements, faire
+passer une IA pour un humain réel est trompeur pour le consommateur et
+dangereux si un client suit un conseil santé en pensant qu'un humain l'a
+validé. Remplacé par un badge "Coach IA" explicite sur ces profils,
+confirmé par l'utilisatrice — voir l'axe suivant pour la mise en œuvre.
 doivent changer.
