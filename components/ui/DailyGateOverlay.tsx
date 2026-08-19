@@ -74,12 +74,45 @@ export default function DailyGateOverlay({
     setDismissed(false);
   }, [pathname, active]);
 
-  const refresh = useCallback(async () => {
+  // CORRIGÉ 2026-08-19 (retour direct : "il faut que le bilan ne revienne
+  // pas à chaque action... je veux que le système de cochage marche
+  // réellement"). Cause réelle trouvée : chaque micro-action (cocher UN
+  // aliment) déclenchait un refresh() qui appliquait TOUJOURS la nouvelle
+  // raison de blocage renvoyée par le serveur — y compris une raison
+  // DIFFÉRENTE de celle affichée. Si le repas venait tout juste d'être
+  // satisfait pendant qu'un bilan du soir était déjà dû, cocher le
+  // dernier aliment d'un repas faisait apparaître le bilan du soir
+  // PAR-DESSUS la checklist en cours, en pleine action — perçu à raison
+  // comme "le cochage ne marche pas", alors que l'insertion elle-même
+  // fonctionnait très bien (déjà vérifié à l'Axe W).
+  //
+  // Règle désormais : une micro-action (refresh "léger") peut UNIQUEMENT
+  // lever le verrou actif ou en préciser les détails (ex. le prochain
+  // repas), jamais le remplacer par une AUTRE raison de blocage — ce
+  // remplacement ("escalade") n'a lieu que sur une vérification
+  // volontaire : la sauvegarde explicite d'une carte de bilan (onSaved,
+  // l'utilisateur vient justement de valider cette étape) ou la
+  // vérification périodique toutes les 30 minutes ci-dessous.
+  const refresh = useCallback(async (allowEscalation: boolean) => {
     try {
       const res = await fetch("/api/gate-status", { cache: "no-store" });
       if (!res.ok) return;
       const data = (await res.json()) as GateStatusResponse;
-      setActive(data.active);
+      setActive((current) => {
+        if (
+          allowEscalation ||
+          data.active === null ||
+          data.active === current ||
+          current === null
+        ) {
+          return data.active;
+        }
+        // Une autre raison bloquante existe déjà en base, mais on ne
+        // l'impose pas suite à une simple micro-action — elle apparaîtra
+        // à la prochaine vérification volontaire (30 min, ou sauvegarde
+        // d'une carte de bilan).
+        return current;
+      });
       setPendingMeal(data.pendingMeal ?? null);
     } catch {
       // Échec réseau : on laisse le verrou affiché tel quel plutôt que de le
@@ -87,36 +120,43 @@ export default function DailyGateOverlay({
       // règle inverse (le calcul serveur, lui, doit toujours fail-open).
     }
   }, []);
+  const refreshSoft = useCallback(() => refresh(false), [refresh]);
+  const refreshFull = useCallback(() => refresh(true), [refresh]);
 
   // BUG CORRIGÉ (2026-08-15, signalé en direct) : le bouton "Aller logger
   // mon repas" renvoie vers la page Nutrition, mais app/dashboard/layout.tsx
   // (le layout partagé) persiste entre navigations côté client sans
   // forcément se re-rendre — ses props (initialActive/initialPendingMeal)
-  // ne se rafraîchissent donc pas tout seuls. Deux correctifs :
-  //   1. Revérifier le statut à CHAQUE changement de route, pas seulement
-  //      après une sauvegarde dans une carte du bilan (matin/soir), pour
-  //      détecter qu'un repas vient d'être loggué sur une autre page.
-  //   2. Ne jamais afficher le verrou "repas" par-dessus la page Nutrition
-  //      elle-même — sinon il recouvre la page censée permettre de le
-  //      lever, et personne ne peut plus jamais l'atteindre.
+  // ne se rafraîchissent donc pas tout seuls. Revérifie à chaque changement
+  // de route pour détecter qu'un repas vient d'être loggué sur une autre
+  // page — en mode "léger" (voir refresh ci-dessus) depuis le 2026-08-19,
+  // pour ne jamais imposer une NOUVELLE raison de blocage juste parce
+  // qu'on a cliqué un lien.
   useEffect(() => {
-    refresh();
-  }, [pathname, refresh]);
+    refreshSoft();
+  }, [pathname, refreshSoft]);
 
   // BUG CORRIGÉ (2026-08-16, signalé en direct : "je coche les aliments,
   // ça bloque le reste de l'appli, j'suis obligé de tout actualiser") : ce
   // composant ne se revérifiait qu'au changement de route. Or logger un
   // repas se fait sans navigation (on reste sur /nutrition), donc le
   // verrou "repas" ne se levait jamais tant qu'on ne quittait pas la page
-  // par un lien — un rechargement complet forçait le nouveau calcul
-  // serveur (initialActive) et donnait l'impression que "ça marchait avec
-  // le refresh". Écoute désormais un événement dédié, déclenché par
+  // par un lien. Écoute désormais un événement dédié, déclenché par
   // ClientNutritionView après chaque log de repas réussi (voir
-  // lib/gate-events.ts).
+  // lib/gate-events.ts) — en mode "léger" lui aussi (voir plus haut).
   useEffect(() => {
-    window.addEventListener(GATE_REFRESH_EVENT, refresh);
-    return () => window.removeEventListener(GATE_REFRESH_EVENT, refresh);
-  }, [refresh]);
+    window.addEventListener(GATE_REFRESH_EVENT, refreshSoft);
+    return () => window.removeEventListener(GATE_REFRESH_EVENT, refreshSoft);
+  }, [refreshSoft]);
+
+  // Vérification périodique (2026-08-19, demande explicite : "toutes les
+  // 30min si jamais pas fait manuellement") : seul moment, avec la
+  // sauvegarde d'une carte de bilan, où une NOUVELLE raison de blocage
+  // peut apparaître automatiquement.
+  useEffect(() => {
+    const id = setInterval(refreshFull, 30 * 60 * 1000);
+    return () => clearInterval(id);
+  }, [refreshFull]);
 
   if (!active) return null;
   if (active === "meal" && pathname === mealBaseHref) return null;
@@ -168,8 +208,8 @@ export default function DailyGateOverlay({
               title="Bilan du matin"
               subtitle="Poids et sommeil d'abord, le reste de l'appli attend que ce soit fait."
             />
-            <WeightCard today={today} existing={existing} action={action} onSaved={refresh} />
-            <SleepCard today={today} existing={existing} action={action} onSaved={refresh} />
+            <WeightCard today={today} existing={existing} action={action} onSaved={refreshFull} />
+            <SleepCard today={today} existing={existing} action={action} onSaved={refreshFull} />
           </>
         )}
 
@@ -207,9 +247,9 @@ export default function DailyGateOverlay({
               title="Bilan du soir"
               subtitle="C'est l'heure de faire le point avant de dormir."
             />
-            <TrainingCard today={today} existing={existing} action={action} onSaved={refresh} />
-            <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} onSaved={refresh} />
-            <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} onSaved={refresh} />
+            <TrainingCard today={today} existing={existing} action={action} onSaved={refreshFull} />
+            <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} onSaved={refreshFull} />
+            <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} onSaved={refreshFull} />
           </>
         )}
       </div>

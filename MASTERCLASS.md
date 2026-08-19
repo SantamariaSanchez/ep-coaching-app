@@ -2232,3 +2232,51 @@ arrière, jusqu'au prochain rechargement complet de la page.
 `OrganisationView.tsx::handleChangeApplicationStatus`) — sauvegarde de
 l'état précédent avant la mise à jour optimiste, `await` du résultat,
 restauration de l'état + message d'erreur si `result.error`.
+
+Le même trou a été retrouvé et corrigé le même jour dans
+`CoachFinanceTracker.tsx::remove` (audit Finance/Compta, voir Axe AB) —
+Photos et Roadmap, eux, se sont révélés déjà propres (le premier via un
+mirroring déjà bien fait depuis l'Axe P, le second via une vraie
+vérification de propriété `canAccessRoadmap` côté API, RLS bypass admin
+mais garde applicative correcte).
+
+## Axe AB — Verrou quotidien : le vrai fond du "cochage qui marche pas"
+
+**Statut : livré (2026-08-19), retour direct : "le bilan ne revienne pas
+à chaque action... pour les repas je veux que ça le dise qu'une fois...
+je veux que le système de cochage et validation marche réellement".**
+
+Cause racine trouvée en relisant `DailyGateOverlay.tsx` en entier plutôt
+que de re-déboguer `logMealItems` une troisième fois (déjà fait à l'Axe
+W) : chaque micro-action (cocher UN aliment, ou même une simple
+navigation) déclenchait un `refresh()` qui **appliquait sans condition**
+la nouvelle raison de blocage renvoyée par le serveur — y compris une
+raison **différente** de celle déjà affichée. Scénario concret : un
+repas vient tout juste d'être satisfait pendant que le bilan du soir est
+déjà dû (les deux conditions peuvent coexister en fin de journée) ;
+cocher le DERNIER aliment d'un repas déclenche le `GATE_REFRESH_EVENT`
+existant, qui renvoie maintenant "evening" comme nouvelle raison
+active — et le bilan du soir apparaît PAR-DESSUS la checklist en cours,
+en pleine action de l'utilisateur. Perçu à raison comme "le cochage ne
+marche pas" alors que l'insertion en base fonctionnait très bien (déjà
+vérifié à l'Axe W) : c'est l'INTERFACE qui se faisait arracher sous les
+pieds de l'utilisateur, pas la donnée qui se perdait.
+
+**Corrigé** : `refresh()` distingue maintenant deux modes.
+- **Léger** (`refreshSoft`, déclenché par une navigation ou un
+  `GATE_REFRESH_EVENT` après une micro-action) : peut lever le verrou
+  actif ou en préciser les détails (ex. le prochain repas), mais ne peut
+  jamais le REMPLACER par une raison différente — si le serveur renvoie
+  une autre raison bloquante, elle est ignorée pour l'instant, sans
+  perdre l'information (elle sera reprise à la prochaine vérification).
+- **Complet** (`refreshFull`, déclenché par la sauvegarde explicite
+  d'une carte de bilan — l'utilisateur vient justement de valider cette
+  étape, la suite logique est attendue — ou par une nouvelle vérification
+  périodique **toutes les 30 minutes**, ajoutée pour la première fois) :
+  peut introduire une nouvelle raison de blocage.
+
+Ce même correctif répond directement aux trois demandes du retour :
+le bilan n'apparaît plus au milieu d'une autre action (seulement au
+prochain moment de vérification volontaire), un repas devenu dû ne se
+réaffiche plus en boucle à chaque micro-action, et le cochage n'est
+plus interrompu en cours de route.

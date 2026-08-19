@@ -88,10 +88,24 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
     });
   }
 
+  // MASTERCLASS.md Axe B (rattrapé le 2026-08-19, même trou trouvé et
+  // corrigé le même jour dans Studio créatif) : résultat jamais vérifié —
+  // un échec serveur laissait l'écran afficher une entrée supprimée qui
+  // existait toujours en base, sans retour en arrière.
   function remove(id: string) {
+    const idx = entries.findIndex((e) => e.id === id);
+    const backup = entries[idx];
     setEntries((prev) => prev.filter((e) => e.id !== id));
-    startTransition(() => {
-      deleteFinanceEntry(id);
+    startTransition(async () => {
+      const result = await deleteFinanceEntry(id);
+      if (result.error && backup) {
+        setEntries((prev) => {
+          const next = [...prev];
+          next.splice(Math.min(idx, next.length), 0, backup);
+          return next;
+        });
+        setError(result.error);
+      }
     });
   }
 
