@@ -5,6 +5,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getAgentByKey } from "@/lib/ai-agents";
 import { getAgentMessages, getAgentTasks } from "@/utils/ai-agents";
 import AgentChatView from "@/components/coach/AgentChatView";
+import HeadCoachAuditButton from "@/components/coach/HeadCoachAuditButton";
 
 // Chat avec un agent IA (demande explicite 2026-08-17). Réservé au
 // propriétaire de la plateforme, comme le reste du groupe Administration >
@@ -44,6 +45,10 @@ export default async function AgentChatPage({
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">{agent.name}</h1>
       </div>
+
+      {/* Axe 10 (VISION.md) : action réellement autonome, pas juste du
+          chat — voir lib/head-coach-audit.ts. */}
+      {agent.key === "head-coach" && <HeadCoachAuditButton />}
 
       <AgentChatView agent={agent} initialMessages={messages} initialTasks={tasks} />
     </div>

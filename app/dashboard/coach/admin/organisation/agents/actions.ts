@@ -5,6 +5,7 @@ import { requirePlatformOwner } from "@/lib/auth-guards";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { getAgentByKey } from "@/lib/ai-agents";
+import { runHeadCoachAudit, type HeadCoachAuditResult } from "@/lib/head-coach-audit";
 import { revalidatePath } from "next/cache";
 
 // Chat avec un agent IA (demande explicite 2026-08-17 : "mets moi vraiment
@@ -192,4 +193,21 @@ export async function deleteAgentTask(taskId: string, agentKey: string): Promise
     console.error("deleteAgentTask error:", e);
     return { error: "Erreur inattendue." };
   }
+}
+
+// Action réellement autonome (Axe 10, VISION.md — "renfloué ceux déjà
+// dans ma structure") : Valentina (Head Coach) scanne les vrais clients
+// et crée une vraie tâche par problème concret trouvé, voir
+// lib/head-coach-audit.ts. Réservée au propriétaire de plateforme comme
+// le reste de cette page.
+export async function triggerHeadCoachAudit(): Promise<HeadCoachAuditResult> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { scanned: 0, created: 0, error: guard.error };
+
+  const result = await runHeadCoachAudit(guard.userId);
+  if (result.created > 0) {
+    revalidatePath("/dashboard/coach/admin/organisation/agents/head-coach");
+    revalidatePath("/dashboard/coach/admin/organisation");
+  }
+  return result;
 }

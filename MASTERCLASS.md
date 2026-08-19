@@ -2728,3 +2728,43 @@ groupe nav "Mon business" avec Studio créatif) :
 MIGRATION SQL À EXÉCUTER MANUELLEMENT
 (`20260819f_coach_business_checklist.sql`, même contrainte que les axes
 précédents de cette session).
+
+## Axe AS — Agent Head Coach : l'audit qualité devient réel (Axe 10, VISION.md)
+
+**Statut : livré (2026-08-19), demande directe : "les agents IA donc
+renfloué ceux déjà dans ma structure".**
+
+Valentina Hayes (Head Coach, `lib/ai-agents.ts`) a pour mission déclarée
+"Audit de qualité sur un échantillon de bilans/programmes" — jamais
+réellement exécutée jusqu'ici, l'agent n'existant que comme chat.
+
+`lib/head-coach-audit.ts::runHeadCoachAudit` la rend réelle : scanne tous
+les clients (bilan le plus récent, dernier programme créé), crée une
+vraie tâche `ai_agent_tasks` par problème concret (bilan à l'arrêt depuis
+5 jours ou plus, programme créé sans aucune séance configurée) —
+idempotent, ne recrée jamais une tâche déjà ouverte pour le même client +
+même problème. Bouton "Lancer l'audit qualité" ajouté sur la page de
+chat de l'agent (`/dashboard/coach/admin/organisation/agents/head-coach`),
+résultat visible immédiatement dans la liste de tâches déjà existante de
+cette même page.
+
+Complète les deux autres actions autonomes déjà livrées cette session :
+Setter sur l'acquisition (Axe AM) et Onboarding/Success sur la relance
+client (Axe AN) — trois pôles réels (acquisition, engagement, qualité)
+désormais couverts par une action effective, pas seulement un chat.
+
+### Reste à faire sur l'Axe 10
+
+Le volet "attribution aux futurs coachs humains" reste partiel : le
+bouton "Relance agent IA" (Axe AN) est déjà accessible à TOUT coach (pas
+réservé au propriétaire), donc un nouveau coach tiers en profite déjà
+sans rien à faire de plus. Le chat complet avec les 19 agents internes
+(page Organisation) reste, lui, réservé au propriétaire de plateforme —
+ces 19 agents représentent l'organigramme d'EP Coaching elle-même
+(Sales, Marketing, Produit... de SA structure), pas un outil pertinent à
+dupliquer tel quel pour chaque coach tiers. Question ouverte, à trancher
+avec l'utilisatrice plutôt qu'à deviner : est-ce qu'un futur coach tiers
+a besoin d'un agent scopé à SA propre activité (au-delà de la relance
+client déjà livrée), et lequel des 19 rôles ça reproduirait — pas
+construit dans cette passe pour éviter d'inventer une réponse à une
+question pas encore posée par l'utilisatrice.
