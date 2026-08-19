@@ -3,6 +3,7 @@ import { getUser, getProfile, getClientById, roleBadge } from "@/utils/auth";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 import RoleBadge from "@/components/ui/RoleBadge";
+import AgentCheckinButton from "@/components/messaging/AgentCheckinButton";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
@@ -62,6 +63,7 @@ export default async function CoachClientMessagesPage({
             <RoleBadge label={roleBadge(client)} />
           </p>
         </div>
+        <AgentCheckinButton clientId={clientId} />
       </div>
 
       <ConversationView
