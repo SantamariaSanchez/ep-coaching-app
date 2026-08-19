@@ -15,6 +15,20 @@ export default async function CoachDashboard() {
 
   if (profile?.role === "client") redirect("/dashboard/client");
 
+  // Onboarding coach (Axe 9, VISION.md — gap confirmé 2026-08-19 : seul
+  // le membre/client avait un vrai parcours d'accueil). Seulement pour un
+  // coach tiers dont l'abonnement plateforme est déjà actif (paiement
+  // Stripe confirmé, voir app/api/webhooks/stripe/route.ts) — jamais le
+  // fondateur (déjà "onboardé" par définition), jamais avant paiement.
+  if (
+    profile?.role === "coach" &&
+    !profile.is_platform_owner &&
+    profile.platform_subscription_status === "active" &&
+    !profile.onboarding_completed_at
+  ) {
+    redirect("/onboarding/coach");
+  }
+
   const firstName = profile?.full_name?.split(" ")[0] ?? "Coach";
   const today = new Date();
   const formattedDate = (() => {
