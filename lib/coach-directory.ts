@@ -14,6 +14,8 @@ export interface CoachDirectoryEntry {
   invite_code: string | null;
   accepting_new_clients: boolean;
   specializations: string[];
+  /** Coach IA (lib/ai-coaches.ts) — déclenche le badge "Coach IA" partout où ce coach apparaît. */
+  is_ai_coach: boolean;
 }
 
 export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
@@ -21,7 +23,7 @@ export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select("id, full_name, avatar_url, bio, instagram_handle, invite_code, accepting_new_clients, specializations, is_platform_owner, platform_subscription_status")
+      .select("id, full_name, avatar_url, bio, instagram_handle, invite_code, accepting_new_clients, specializations, is_platform_owner, platform_subscription_status, is_ai_coach")
       .eq("role", "coach")
       .not("invite_code", "is", null);
 
@@ -38,6 +40,7 @@ export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
             specializations: string[] | null;
             is_platform_owner: boolean | null;
             platform_subscription_status: string | null;
+            is_ai_coach: boolean | null;
           }[]
         | null) ?? [];
 
@@ -52,6 +55,7 @@ export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
         invite_code: r.invite_code,
         accepting_new_clients: r.accepting_new_clients ?? true,
         specializations: r.specializations ?? [],
+        is_ai_coach: r.is_ai_coach ?? false,
       }))
       .sort((a, b) => {
         if (a.accepting_new_clients !== b.accepting_new_clients) return a.accepting_new_clients ? -1 : 1;

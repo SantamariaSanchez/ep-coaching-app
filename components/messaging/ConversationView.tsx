@@ -10,6 +10,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X, Search } from "lucide-react";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { triggerAICoachReply } from "@/app/dashboard/client/messages/actions";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -47,6 +48,8 @@ interface Props {
   pushUrl: string;
   /** false = this user can't send yet (free member waiting on the coach to open the conversation) */
   canSend?: boolean;
+  /** true = peerId est un coach IA (lib/ai-coaches.ts) : après un envoi texte, déclenche sa réponse automatique. */
+  isPeerAICoach?: boolean;
 }
 
 // ── Voice message player ──────────────────────────────────────────────────────
@@ -315,6 +318,7 @@ export default function ConversationView({
   isCoach,
   pushUrl,
   canSend = true,
+  isPeerAICoach = false,
 }: Props) {
   // Nom à afficher dans les notifications push envoyées au pair — c'est
   // TOUJOURS mon propre nom (l'expéditeur), jamais celui du destinataire.
@@ -448,12 +452,17 @@ export default function ConversationView({
       setMessages((prev) => [...prev, data as Message]);
       setText("");
       await sendPushNotification(content);
+      // Coach IA : déclenche sa réponse automatique après coup, jamais dans
+      // le chemin qui détermine si LE message du client a réussi ci-dessus.
+      if (isPeerAICoach) {
+        triggerAICoachReply(peerId).catch(() => {});
+      }
     } else {
       setSendError("Message non envoyé, réessaie.");
     }
     setSending(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [text, sending, canSend, conversationId, userId, peerId]);
+  }, [text, sending, canSend, conversationId, userId, peerId, isPeerAICoach]);
 
   const sendVoice = useCallback(
     async (blob: Blob, duration: number) => {

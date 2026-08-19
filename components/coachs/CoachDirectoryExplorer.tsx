@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { AtSign, UserPlus, UserX, Tags } from "lucide-react";
+import { AtSign, UserPlus, UserX, Tags, Bot } from "lucide-react";
 import type { CoachDirectoryEntry } from "@/lib/coach-directory";
 import { COACH_SPECIALIZATIONS } from "@/lib/coach-specializations";
 
@@ -86,7 +86,20 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
   return (
     <div className="ep-card" style={{ padding: 20 }}>
       <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-        {coach.avatar_url ? (
+        {/* Les coachs IA n'ont jamais de photo "humaine" (voir MASTERCLASS.md
+            Axe AE, pas d'impersonation) : icône robot distinctive plutôt que
+            des initiales qui pourraient laisser croire à une vraie personne. */}
+        {coach.is_ai_coach ? (
+          <div
+            style={{
+              width: 52, height: 52, borderRadius: "50%", flexShrink: 0,
+              background: "rgba(96,165,250,0.12)", border: "1px solid rgba(96,165,250,0.35)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Bot size={22} style={{ color: "#60a5fa" }} strokeWidth={1.8} />
+          </div>
+        ) : coach.avatar_url ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={coach.avatar_url}
@@ -111,6 +124,18 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
             <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED" }}>
               {coach.full_name ?? "Coach"}
             </p>
+            {coach.is_ai_coach && (
+              <span
+                style={{
+                  display: "inline-flex", alignItems: "center", gap: 3,
+                  fontSize: 9.5, fontWeight: 800, padding: "3px 8px", borderRadius: 999,
+                  background: "rgba(96,165,250,0.15)", color: "#60a5fa",
+                  border: "1px solid rgba(96,165,250,0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
+                }}
+              >
+                <Bot size={10} /> Coach IA
+              </span>
+            )}
             {coach.accepting_new_clients ? (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#4ade80" }}>
                 <UserPlus size={11} /> Places dispo

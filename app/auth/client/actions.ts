@@ -13,6 +13,7 @@ import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { maybeSendAICoachWelcome } from "@/lib/ai-coach-welcome";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -261,6 +262,12 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Rattaché à : ${escapeHtml(coach?.full_name ?? "aucun coach")}`,
   ]).catch(() => {});
+
+  // Fire-and-forget : si le coach rattaché (lien d'invitation) est un coach
+  // IA, il se présente vraiment au nouveau membre — voir lib/ai-coach-welcome.ts.
+  if (coach) {
+    maybeSendAICoachWelcome(authData.user.id, coach.id).catch(() => {});
+  }
 
   // Item 41 : récompense le parrain une fois l'inscription bien passée,
   // jamais avant (pas de points sur un compte qui échoue à se créer).

@@ -227,10 +227,29 @@ redirection actif entre coachs (voir plus bas).**
   (ex. un client contacte un coach non spécialisé TCA, qui souhaite le
   réorienter vers un collègue qui l'est) — nécessite une action côté coach
   ("réorienter ce prospect/client vers...") et une notification au coach
-  cible, pas juste l'annuaire passif livré aujourd'hui. Actuellement zéro
-  coach externe sur la plateforme (un seul compte coach, le fondateur) donc
-  pas urgent tant qu'il n'y a personne vers qui rediriger — à reprendre
-  quand un deuxième coach rejoint.
+  cible, pas juste l'annuaire passif livré aujourd'hui. Devient plus
+  pertinent depuis l'ajout des coachs IA ci-dessous (ex. un coach IA
+  généraliste qui détecte un sujet TCA/blessure dans un message et voudrait
+  orienter vers Santamaria plutôt que juste le dire dans sa réponse) — pas
+  encore fait, le system prompt (lib/ai-coaches.ts) se contente pour
+  l'instant de le dire en clair au client.
+
+### Coachs IA (2026-08-19, demande directe)
+
+10 comptes coachs IA (`lib/ai-coaches.ts`, `profiles.is_ai_coach`) ajoutés
+au même annuaire, aux côtés de Santamaria et d'éventuels coachs tiers
+humains — 19 agents IA "métier" internes (`lib/ai-agents.ts`, réservés au
+propriétaire) + 10 coachs IA client-facing = 29 personas au total, deux
+registres bien distincts. Toujours badgés "Coach IA" partout où ils
+apparaissent (annuaire, choix de coach, messagerie) — jamais présentés
+comme des humains, voir MASTERCLASS.md Axe AE pour le refus explicite de
+la version indiscernable initialement demandée. Spécialisations
+volontairement restreintes aux sujets non cliniques (jamais TCA, blessures
+& rééducation, grossesse & post-partum, ados, seniors). Comportement
+réellement autonome : message de bienvenue personnalisé à l'attribution
+(`lib/ai-coach-welcome.ts`) et réponse automatique à chaque message reçu
+(`app/dashboard/client/messages/actions.ts::triggerAICoachReply`), pas
+seulement une fiche statique dans l'annuaire.
 
 ## Axe 6 — Formation de coachs (accompagnement business/coaching-des-coachs)
 

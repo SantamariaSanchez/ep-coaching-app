@@ -2365,6 +2365,7 @@ seuls ses PROPS devraient varier. Le rendu conditionnel (`if (x) return
 <Component/>`) est correct pour un composant sans état propre à
 préserver ; dès qu'un composant garde de l'état côté client entre les
 rendus, sa présence dans l'arbre doit rester stable et seules ses props
+doivent changer.
 
 ## Axe AE — Agents IA internes : prénoms et identité (demande directe)
 
@@ -2398,4 +2399,82 @@ passer une IA pour un humain réel est trompeur pour le consommateur et
 dangereux si un client suit un conseil santé en pensant qu'un humain l'a
 validé. Remplacé par un badge "Coach IA" explicite sur ces profils,
 confirmé par l'utilisatrice — voir l'axe suivant pour la mise en œuvre.
-doivent changer.
+
+## Axe AF — 10 coachs IA client-facing (badge "Coach IA", comportement autonome réel)
+
+**Statut : code livré (2026-08-19), migration écrite mais PAS ENCORE
+EXÉCUTÉE (voir "Reste à faire" ci-dessous) — retour direct : "je veux
+que tu mettes 10 agents IA coach sur l'appli... si un gars cherche un
+coach dans l'appli qu'il trouve moi et aussi les 10 autres".**
+
+Suite directe de l'Axe AE : après confirmation du badge "Coach IA"
+(question posée explicitement, réponse : badge visible plutôt
+qu'indiscernable), 10 vraies lignes `profiles` (`role='coach'`) créées
+côté modèle de données, au même titre qu'un coach tiers humain :
+
+- `lib/ai-coaches.ts` (nouveau, distinct de `lib/ai-agents.ts`) : 10
+  personas (Renata Sawyer, Emiliano Vance, Ximena Rowe, Tomás Bellamy,
+  Lucía Marsh, Camilo Winters, Antonia Sloane, Diego Halloway, Paulina
+  Ashford, Emanuel Cross), chacun avec bio, spécialisations et
+  `buildAICoachSystemPrompt()` — un tronc commun non négociable partagé
+  par les 10 (jamais se faire passer pour un humain, escalade
+  systématique vers Santamaria ou un professionnel de santé dès qu'un
+  sujet médical/TCA/blessure apparaît, zéro tiret em/en) plus une note de
+  spécialité par coach. Spécialisations volontairement restreintes aux
+  sujets non cliniques (jamais TCA, blessures & rééducation, grossesse &
+  post-partum, ados, seniors) — ces terrains demandent un vrai humain.
+- Migration `20260819c_ai_coaches.sql` : `profiles.is_ai_coach` (bool) et
+  `profiles.ai_coach_key` (relie la ligne à sa fiche `lib/ai-coaches.ts`).
+- `lib/coach-directory.ts`, `utils/auth.ts` (`getActiveCoachesForDiscovery`)
+  et leurs composants (`CoachDirectoryExplorer`, `CoachDiscoveryList`) :
+  badge "Coach IA" (icône robot, jamais de photo/avatar à apparence
+  humaine pour un coach IA — voir plus bas) partout où un coach apparaît
+  côté client.
+- `app/dashboard/client/messages/page.tsx` : même badge dans l'en-tête de
+  conversation, avec une ligne explicite "Réponses automatiques par IA,
+  disponible 24/7".
+- **Comportement réellement autonome** (répond directement au reproche
+  "les agents IA ba ils ont toujours rien fait... par exemple Inès pour
+  l'onboarding de Rayane elle fait rien") :
+  - `lib/ai-coach-welcome.ts::maybeSendAICoachWelcome` — dès qu'un client
+    se rattache à un coach IA (choix direct via `chooseNewCoach`, ou lien
+    d'invitation à l'inscription via `selfSignup`), un vrai appel
+    Anthropic génère un message de bienvenue personnalisé (prénom du
+    client), inséré directement dans `messages`. Jamais un template
+    statique copié-collé, jamais bloquant (fire-and-forget, erreur
+    avalée) pour ne jamais faire échouer une inscription.
+  - `app/dashboard/client/messages/actions.ts::triggerAICoachReply` —
+    quand le client écrit à son coach IA (`ConversationView.sendText`,
+    nouveau prop `isPeerAICoach`), le coach répond vraiment : historique
+    de conversation récupéré, appelé à Anthropic avec le system prompt du
+    persona, réponse insérée comme un message normal. Comme l'insertion
+    se fait côté admin (service role) et que `ConversationView` écoute
+    déjà les changements Postgres realtime sur `messages`, la réponse
+    apparaît en direct dans la conversation sans plomberie supplémentaire.
+    Vérification explicite d'appartenance (`client.coach_id === aiCoachId`)
+    avant tout appel IA, jamais de confiance sur le seul id transmis par
+    le client.
+- `scripts/seed-ai-coaches.mjs` : crée les 10 comptes réels (`auth.users`
+  + `profiles`, même pattern que `signupCoach()` — email `.internal`
+  jamais délivré, `platform_subscription_status='active'` d'emblée, pas
+  de Stripe). Idempotent, rollback de l'`auth.users` créé si l'insert du
+  profil échoue (même garde-fou que `signupCoach`).
+
+### Reste à faire
+
+- **La migration n'est pas encore appliquée en production.** Tentative
+  d'application directe via l'outil Supabase MCP refusée par le
+  classificateur de permissions de cette session (DDL bloqué) — à
+  exécuter manuellement dans le Supabase SQL Editor, voir AGENTS.md.
+  `scripts/seed-ai-coaches.mjs` a été testé une première fois avant la
+  migration (échec propre, `ai_coach_key` introuvable) : les 10
+  `auth.users` orphelins créés par ce test ont été nettoyés dans la
+  foulée (aucune ligne `profiles` correspondante n'a jamais existé).
+  Une fois la migration jouée, relancer le script pour créer les 10
+  comptes pour de vrai.
+- Pas encore de flux de "redirection" d'un coach IA vers Santamaria en
+  cas de sujet sensible détecté (le system prompt se contente de le DIRE
+  au client, voir Axe 5 de VISION.md).
+- `triggerAICoachReply` ne couvre que les messages texte, pas les
+  messages vocaux/images envoyés à un coach IA (pas de transcription/
+  vision branchée pour l'instant).

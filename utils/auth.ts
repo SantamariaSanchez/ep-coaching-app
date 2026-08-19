@@ -242,6 +242,8 @@ export interface CoachDiscoveryEntry {
   bio: string | null;
   avatar_url: string | null;
   invite_code: string | null;
+  /** Coach IA (lib/ai-coaches.ts) — déclenche le badge "Coach IA". */
+  is_ai_coach: boolean;
 }
 
 // Liste publique (au sein de l'appli) des coachs tiers actifs, utilisée
@@ -252,12 +254,15 @@ export async function getActiveCoachesForDiscovery(): Promise<CoachDiscoveryEntr
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select("id, full_name, bio, avatar_url, invite_code")
+      .select("id, full_name, bio, avatar_url, invite_code, is_ai_coach")
       .eq("role", "coach")
       .eq("is_platform_owner", false)
       .eq("platform_subscription_status", "active")
       .order("full_name");
-    return (data as CoachDiscoveryEntry[]) ?? [];
+    return ((data as (CoachDiscoveryEntry & { is_ai_coach: boolean | null })[]) ?? []).map((c) => ({
+      ...c,
+      is_ai_coach: c.is_ai_coach ?? false,
+    }));
   } catch {
     return [];
   }

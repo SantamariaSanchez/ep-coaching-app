@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 import RoleBadge from "@/components/ui/RoleBadge";
-import { Mail, ChevronRight, Users } from "lucide-react";
+import { Mail, ChevronRight, Users, Bot } from "lucide-react";
 import Link from "next/link";
 
 // Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
@@ -63,9 +63,10 @@ export default async function ClientMessagesPage() {
   const admin = createAdminClient();
   const { data: coachProfile } = await admin
     .from("profiles")
-    .select("full_name, is_platform_owner, role, subscription_status")
+    .select("full_name, is_platform_owner, role, subscription_status, is_ai_coach")
     .eq("id", coachId)
     .maybeSingle();
+  const coachIsAI = coachProfile?.is_ai_coach === true;
   const coachName: string = coachProfile?.full_name ?? "Ton coach";
   const coachInitials = coachName
     .split(" ")
@@ -100,7 +101,17 @@ export default async function ClientMessagesPage() {
           <p className="text-sm font-black text-white flex items-center gap-1.5">
             {coachName}
             <RoleBadge label={coachBadge} />
+            {coachIsAI && (
+              <span className="inline-flex items-center gap-1 text-[9px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/35">
+                <Bot size={9} /> Coach IA
+              </span>
+            )}
           </p>
+          {coachIsAI && (
+            <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
+              Réponses automatiques par IA, disponible 24/7.
+            </p>
+          )}
           {!coachIsFounder && (
             <a
               href="mailto:peccoux.manu@gmail.com"
@@ -122,6 +133,7 @@ export default async function ClientMessagesPage() {
         isCoach={false}
         pushUrl="/dashboard/coach/messages"
         canSend={canSend}
+        isPeerAICoach={coachIsAI}
       />
     </div>
   );

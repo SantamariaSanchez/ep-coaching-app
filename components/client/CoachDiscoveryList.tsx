@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { UserRound, Check } from "lucide-react";
+import { UserRound, Check, Bot } from "lucide-react";
 import { chooseNewCoach } from "@/app/dashboard/client/coachs/actions";
 import type { CoachDiscoveryEntry } from "@/utils/auth";
 
@@ -38,15 +38,34 @@ export default function CoachDiscoveryList({ coaches }: { coaches: CoachDiscover
         <div key={coach.id} className="ep-card" style={{ padding: "16px 18px", display: "flex", alignItems: "center", gap: 14 }}>
           <div style={{
             width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-            background: "rgba(224,30,30,0.1)", border: "1px solid rgba(224,30,30,0.2)",
+            background: coach.is_ai_coach ? "rgba(96,165,250,0.1)" : "rgba(224,30,30,0.1)",
+            border: coach.is_ai_coach ? "1px solid rgba(96,165,250,0.25)" : "1px solid rgba(224,30,30,0.2)",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}>
-            <UserRound size={19} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            {coach.is_ai_coach ? (
+              <Bot size={19} style={{ color: "#60a5fa" }} strokeWidth={1.8} />
+            ) : (
+              <UserRound size={19} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+            )}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-              {coach.full_name ?? "Coach"}
-            </p>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
+                {coach.full_name ?? "Coach"}
+              </p>
+              {coach.is_ai_coach && (
+                <span
+                  style={{
+                    display: "inline-flex", alignItems: "center", gap: 3,
+                    fontSize: 9, fontWeight: 800, padding: "2px 7px", borderRadius: 999,
+                    background: "rgba(96,165,250,0.15)", color: "#60a5fa",
+                    border: "1px solid rgba(96,165,250,0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
+                  }}
+                >
+                  <Bot size={9} /> IA
+                </span>
+              )}
+            </div>
             {coach.bio && (
               <p style={{
                 margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)",
