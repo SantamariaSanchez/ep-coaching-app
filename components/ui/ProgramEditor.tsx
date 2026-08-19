@@ -179,56 +179,110 @@ function volumeStatus(sets: number, mev: number, mav: number, mrv: number): { la
   return { label: "Excessif", color: "#f87171" };
 }
 
-// ── Budget de volume ─────────────────────────────────────────────────────
-// Décidé AVANT le moindre exercice : combien de séries directes/semaine
-// viser par groupe musculaire, informé par MEV/MAV/MRV mais choisi par le
-// coach (récupération, historique, priorités de ce client précis). Le
-// budget devient ensuite le repère que la construction (plus bas) remplit,
-// pas une case de plus à cocher a posteriori.
-function VolumeBudgetPanel({
+// ── Budget de volume & intensité (fusionné, en Livraison) ────────────────
+// CHANGÉ 2026-08-19 (retour direct : "le volume et l'intensité met en bas
+// de la prog... et met genre moins long et chiant à défiler"). Avant :
+// deux panneaux séparés — un pour fixer le budget (Phase 2, toutes les 13
+// lignes de MUSCLE_GROUPS affichées même les groupes pas travaillés) et un
+// pour vérifier l'écart réel (rendu hors accordéon, donc visible en
+// permanence quelle que soit la phase ouverte). Fusionnés en un seul
+// panneau, en Phase 4 (Livraison, cohérent avec "vérification finale avant
+// sauvegarde"), une ligne compacte par groupe (cible + réel + statut sur
+// la même ligne au lieu de deux cartes empilées), et seuls les groupes
+// réellement travaillés ou déjà budgétés sont affichés par défaut — les
+// autres restent accessibles via "+ voir les groupes non travaillés"
+// plutôt que de gonfler la liste par défaut à 13 lignes systématiques.
+function VolumeBudgetReviewPanel({
+  days,
   targets,
   onSetTarget,
 }: {
+  days: DayRow[];
   targets: Record<string, string>;
   onSetTarget: (group: string, value: string) => void;
 }) {
+  const volume = computeWeeklyVolume(days);
+  const [showAll, setShowAll] = useState(false);
+  const relevantGroups = MUSCLE_GROUPS.filter(
+    (g) => (volume[g] ?? 0) > 0 || (targets[g] ?? "").trim() !== ""
+  );
+  const hiddenGroups = MUSCLE_GROUPS.filter((g) => !relevantGroups.includes(g));
+  const displayedGroups = showAll ? MUSCLE_GROUPS : relevantGroups;
+
   return (
     <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Budget de volume hebdomadaire
+        Volume &amp; intensité
       </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-4 leading-relaxed max-w-2xl">
-        Fixe une cible de séries directes/semaine par groupe musculaire avant de choisir le moindre exercice.
-        MEV/MAV/MRV (Renaissance Periodization) comme repère, pas comme règle : la récupération, l&apos;historique
-        et les priorités de ce client comptent tout autant. La construction plus bas suit ce budget en direct.
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+        Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV
+        (Renaissance Periodization) — un repère, pas une règle : récupération, historique et priorités du
+        client comptent tout autant (
+        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
+          Pelland et al., Sports Med 2025
+        </a>
+        ).
       </p>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-        {MUSCLE_GROUPS.map((group) => {
-          const landmark = VOLUME_LANDMARKS[group];
-          return (
-            <div key={group} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
-              <p className="text-xs font-bold text-white mb-0.5">{group}</p>
-              {landmark && (
-                <p className="text-[9px] text-[#F5EDED]/30 mb-1.5">
-                  MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}
-                </p>
-              )}
-              <div className="flex items-center gap-1.5">
-                <input
-                  type="number"
-                  min="0"
-                  value={targets[group] ?? ""}
-                  onChange={(e) => onSetTarget(group, e.target.value)}
-                  placeholder={landmark ? String(landmark.mav) : "0"}
-                  aria-label={`${group}, séries par semaine visées`}
-                  className="w-16 bg-[#1f0101] border border-[#890404]/30 rounded px-2 py-1 text-xs text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
-                />
-                <span className="text-[9.5px] text-[#F5EDED]/25">séries/semaine visées</span>
+
+      {displayedGroups.length === 0 ? (
+        <p className="text-[11px] text-[#F5EDED]/25 italic">Aucun groupe travaillé pour l&apos;instant.</p>
+      ) : (
+        <div className="space-y-1.5">
+          {displayedGroups.map((group) => {
+            const landmark = VOLUME_LANDMARKS[group];
+            const sets = volume[group] ?? 0;
+            const target = targets[group] ? parseInt(targets[group], 10) : null;
+            const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "#F5EDED" };
+            return (
+              <div key={group} className="flex items-center gap-2.5 bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-white truncate">{group}</p>
+                  {landmark && (
+                    <p className="text-[9px] text-[#F5EDED]/25">
+                      MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}
+                    </p>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  <input
+                    type="number"
+                    min="0"
+                    value={targets[group] ?? ""}
+                    onChange={(e) => onSetTarget(group, e.target.value)}
+                    placeholder={landmark ? String(landmark.mav) : "0"}
+                    aria-label={`${group}, séries par semaine visées`}
+                    className="w-12 bg-[#1f0101] border border-[#890404]/30 rounded px-1.5 py-1 text-xs text-center text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60 transition-colors"
+                  />
+                  <span className="text-[9px] text-[#F5EDED]/20">visé</span>
+                </div>
+                <div className="text-right flex-shrink-0" style={{ width: 64 }}>
+                  <p className="text-sm font-black" style={{ color: status.color }}>
+                    {sets}
+                    {target != null && <span className="text-[#F5EDED]/25 font-normal"> /{target}</span>}
+                  </p>
+                  {status.label && (
+                    <p className="text-[8.5px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
+                      {status.label}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
+
+      {hiddenGroups.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="mt-3 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
+        >
+          {showAll
+            ? "Masquer les groupes non travaillés"
+            : `+ ${hiddenGroups.length} groupe${hiddenGroups.length > 1 ? "s" : ""} non travaillé${hiddenGroups.length > 1 ? "s" : ""}`}
+        </button>
+      )}
     </div>
   );
 }
@@ -280,59 +334,6 @@ function EquipmentInventoryPanel({
             >
               {EQUIPMENT_TYPE_LABELS[type]} {isExcluded ? "· écarté pour cette séance" : "· disponible"}
             </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function VolumeReviewPanel({ days, targets }: { days: DayRow[]; targets: Record<string, string> }) {
-  const volume = computeWeeklyVolume(days);
-  const trainedGroups = MUSCLE_GROUPS.filter((g) => (volume[g] ?? 0) > 0 || (targets[g] ?? "").trim() !== "");
-  if (trainedGroups.length === 0) return null;
-
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">
-        Vérification du volume hebdomadaire
-      </p>
-      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed">
-        Séries directes uniquement (le travail indirect n&apos;est pas compté ici) par groupe musculaire sur la
-        semaine, comparées à ton budget (ci-dessus) et aux repères MEV/MAV/MRV (Renaissance Periodization). Le
-        volume a un effet réel sur l&apos;hypertrophie mais avec des rendements décroissants au-delà d&apos;un
-        certain seuil, la distinction séries directes/indirectes compte pour prédire l&apos;effet réel d&apos;un
-        programme
-        (
-        <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
-          Pelland et al., Sports Med 2025
-        </a>
-        ). Un repère, pas une vérité absolue.
-      </p>
-      <div className="grid sm:grid-cols-2 gap-2">
-        {trainedGroups.map((group) => {
-          const sets = volume[group] ?? 0;
-          const landmark = VOLUME_LANDMARKS[group];
-          const target = targets[group] ? parseInt(targets[group], 10) : null;
-          const status = landmark ? volumeStatus(sets, landmark.mev, landmark.mav, landmark.mrv) : { label: "", color: "#F5EDED" };
-          return (
-            <div key={group} className="flex items-center justify-between gap-2 bg-[#150000] rounded-lg px-3 py-2">
-              <div className="min-w-0">
-                <p className="text-xs font-bold text-white truncate">{group}</p>
-                <p className="text-[9.5px] text-[#F5EDED]/30">
-                  {landmark && <>MEV {landmark.mev} · MAV {landmark.mav} · MRV {landmark.mrv}</>}
-                  {target != null && <span className="text-[#E01E1E]/70"> · budget {target}</span>}
-                </p>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <p className="text-sm font-black" style={{ color: status.color }}>
-                  {sets}{target != null && <span className="text-[#F5EDED]/25 font-normal"> /{target}</span>}
-                </p>
-                <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: status.color }}>
-                  {status.label}
-                </p>
-              </div>
-            </div>
           );
         })}
       </div>
@@ -1532,8 +1533,6 @@ export default function ProgramEditor({
         subjectLabel={subjectLabel}
       />
 
-      <VolumeBudgetPanel targets={state.volume_targets} onSetTarget={setVolumeTarget} />
-
       <EquipmentInventoryPanel
         trainingAccess={intake?.training_access ?? null}
         excluded={excludedEquipment}
@@ -1922,8 +1921,6 @@ export default function ProgramEditor({
         </>
       )}
 
-      <VolumeReviewPanel days={state.days} targets={state.volume_targets} />
-
       {/* Error */}
       {error && (
         <div className="flex items-center gap-2.5 bg-red-950/40 border border-red-500/30 rounded-lg px-4 py-3">
@@ -1999,12 +1996,19 @@ export default function ProgramEditor({
       />
 
       {openPhase === 4 && (
-        <DeliveryReviewPanel
-          unplacedDays={state.days.length - placedDays}
-          unconfiguredExercises={totalExercises - configuredExercises}
-          untargetedTrainedGroups={untargetedTrainedGroups}
-          hasObjective={state.objective.trim() !== ""}
-        />
+        <>
+          <VolumeBudgetReviewPanel
+            days={state.days}
+            targets={state.volume_targets}
+            onSetTarget={setVolumeTarget}
+          />
+          <DeliveryReviewPanel
+            unplacedDays={state.days.length - placedDays}
+            unconfiguredExercises={totalExercises - configuredExercises}
+            untargetedTrainedGroups={untargetedTrainedGroups}
+            hasObjective={state.objective.trim() !== ""}
+          />
+        </>
       )}
 
       {/* Actions — toujours visibles, jamais cachées derrière une phase
