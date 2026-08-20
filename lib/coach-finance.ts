@@ -11,6 +11,8 @@ export interface FinanceEntry {
   amount: number;
   note: string | null;
   created_at: string;
+  /** "stripe" = importée auto (lib/coach-finance-stripe-import.ts), "manual" = saisie par le coach. */
+  source: "manual" | "stripe";
 }
 
 export async function getCoachFinanceEntries(coachId: string): Promise<FinanceEntry[]> {
@@ -18,7 +20,7 @@ export async function getCoachFinanceEntries(coachId: string): Promise<FinanceEn
     const admin = createAdminClient();
     const { data } = await admin
       .from("coach_finance_entries")
-      .select("id, coach_id, entry_date, kind, category, label, amount, note, created_at")
+      .select("id, coach_id, entry_date, kind, category, label, amount, note, created_at, source")
       .eq("coach_id", coachId)
       .order("entry_date", { ascending: false })
       .limit(500);

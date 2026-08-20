@@ -21,5 +21,5 @@ alter table public.coach_finance_entries enable row level security;
 
 drop policy if exists "Coach manages own finance entries" on public.coach_finance_entries;
 create policy "Coach manages own finance entries" on public.coach_finance_entries
-  for all using (coach_id = auth.uid())
-  with check (coach_id = auth.uid());
+  for all using (coach_id = (select auth.uid()))
+  with check (coach_id = (select auth.uid()));

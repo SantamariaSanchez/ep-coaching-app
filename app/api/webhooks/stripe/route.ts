@@ -6,6 +6,7 @@ import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { rewardReferrerForNewPayment, applyPendingRewardsFor } from "@/lib/referral-rewards";
+import { logStripeCoachingPayment } from "@/lib/coach-finance-stripe-import";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -42,7 +43,7 @@ export async function POST(request: Request) {
       // On distingue via le rôle du profil cible, jamais via l'URL utilisée.
       const { data: profile } = await admin
         .from("profiles")
-        .select("role, full_name, email")
+        .select("role, full_name, email, coach_id")
         .eq("id", userId)
         .single();
 
@@ -79,6 +80,20 @@ export async function POST(request: Request) {
         if (stripeCustomerId) {
           rewardReferrerForNewPayment(userId).catch(() => {});
           applyPendingRewardsFor(userId).catch(() => {});
+        }
+
+        // Compta perso du coach (Axe 4, VISION.md) : le premier paiement
+        // d'un client s'importe automatiquement dans le journal de SON
+        // coach — voir lib/coach-finance-stripe-import.ts pour le
+        // périmètre exact (premier paiement seulement, pas les
+        // renouvellements). Best-effort, jamais bloquant.
+        if (profile.coach_id) {
+          logStripeCoachingPayment({
+            coachId: profile.coach_id,
+            clientName: profile.full_name,
+            amountTotalCents: session.amount_total,
+            stripeSessionId: session.id,
+          }).catch(() => {});
         }
       }
       break;

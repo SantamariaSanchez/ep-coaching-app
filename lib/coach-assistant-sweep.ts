@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendCoachAgentCheckin } from "@/lib/coach-agent-checkin";
 import { runHeadCoachAudit } from "@/lib/head-coach-audit";
+import { relanceQuietClients } from "@/lib/quiet-client-relance";
 
 // Assistant coach réellement récurrent (Axe 10, VISION.md — demande
 // directe 2026-08-19 : "je veux que agent IA pour les coach humain soit
@@ -28,6 +29,7 @@ export interface CoachAssistantSweepResult {
   coachesProcessed: number;
   checkinsSent: number;
   auditTasksCreated: number;
+  quietRelanced: number;
   errors: string[];
 }
 
@@ -37,6 +39,7 @@ export async function runCoachAssistantSweep(): Promise<CoachAssistantSweepResul
     coachesProcessed: 0,
     checkinsSent: 0,
     auditTasksCreated: 0,
+    quietRelanced: 0,
     errors: [],
   };
 
@@ -57,7 +60,13 @@ export async function runCoachAssistantSweep(): Promise<CoachAssistantSweepResul
       const audit = await runHeadCoachAudit(coachId, { scopeToCoachId: coachId });
       result.auditTasksCreated += audit.created;
 
-      // 2. Relance des clients à risque de CE coach — décision autonome
+      // 2. Relance des clients "silencieux" de CE coach (Axe 3, VISION.md) —
+      // aucune donnée qui cloche, juste une absence de contact humain
+      // depuis 30j+. Signal orthogonal au check-in ci-dessous (étape 3).
+      const quiet = await relanceQuietClients(coachId);
+      result.quietRelanced += quiet.relanced;
+
+      // 3. Relance des clients à risque de CE coach — décision autonome
       // aussi : ne relance que si le bilan est réellement à l'arrêt ET
       // qu'aucun message n'est déjà parti récemment.
       const { data: clients } = await admin

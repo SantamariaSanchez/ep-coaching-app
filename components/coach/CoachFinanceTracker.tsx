@@ -21,8 +21,12 @@ function csvEscape(value: string): string {
 
 // Axe 4 (VISION.md) : journal revenus/dépenses personnel du coach — un
 // suivi rapide de SON activité, pas un logiciel de compta complet. Montants
-// stockés en euros (même convention que lib/coach-billing.ts), jamais liés
-// à Stripe ni à un mouvement d'argent réel : uniquement déclaratif.
+// stockés en euros (même convention que lib/coach-billing.ts). Depuis le
+// 2026-08-20 (Axe AY, MASTERCLASS.md), le premier paiement d'un client
+// s'importe automatiquement depuis Stripe (voir lib/coach-finance-stripe-
+// import.ts) — les lignes importées portent source="stripe" et un badge
+// dédié, tout le reste (dépenses, renouvellements, coaching individuel...)
+// reste déclaratif et saisi à la main.
 export default function CoachFinanceTracker({ initialEntries }: { initialEntries: FinanceEntry[] }) {
   const [entries, setEntries] = useState(initialEntries);
 
@@ -79,6 +83,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
           amount: amountNum,
           note: null,
           created_at: new Date().toISOString(),
+          source: "manual",
         },
         ...prev,
       ]);
@@ -223,7 +228,14 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
                 <TrendingDown size={14} style={{ color: "#f87171", flexShrink: 0 }} />
               )}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED" }}>{e.label}</p>
+                <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6 }}>
+                  {e.label}
+                  {e.source === "stripe" && (
+                    <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", color: "#635bff", background: "#635bff1f", border: "1px solid #635bff40", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>
+                      Stripe
+                    </span>
+                  )}
+                </p>
                 <p style={{ margin: "2px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
                   {e.category} · {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(e.entry_date + "T12:00:00"))}
                 </p>

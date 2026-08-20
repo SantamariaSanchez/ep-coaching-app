@@ -2995,3 +2995,65 @@ corriger (l'oubli de `(select ...)` sur UNE table que je venais de
 créer), et ce qui est un changement à trop fort impact pour une décision
 solo (fonctions RLS partagées, extension déjà utilisée par 17 crons
 actifs) — cette dernière catégorie se signale, ne se corrige pas seule.
+
+## Axe AY — Relance auto des clients "silencieux" (Axe 3, VISION.md)
+
+**Statut : livré (2026-08-20), sur décision directe après question posée.**
+
+"Reste à faire" documenté le 2026-08-14 : automatisation volontairement
+laissée manuelle en attendant un retour d'usage sur
+`/dashboard/coach/prioritaires`, "sinon risque réel de sur-solliciter des
+clients qui vont très bien mais n'ont simplement pas eu de call récent."
+Reprise le 2026-08-20 sur choix explicite de l'utilisatrice.
+
+`lib/quiet-client-relance.ts::relanceQuietClients(coachId)` réutilise
+`getPrioritizedCoachView` (déjà la source de vérité de la page) plutôt que
+de redupliquer sa logique de détection "silencieux" (aucune alerte, aucun
+call passé ou programmé depuis 30j+). Différent du check-in de
+`coach-assistant-sweep` (Axe AT), qui relance sur un signal de DONNÉES
+stagnantes : ici le signal est l'ABSENCE DE CONTACT HUMAIN, orthogonal —
+un client peut logger parfaitement et pourtant n'avoir jamais eu de vrai
+échange avec son coach. Notifie le client (proposition de call, jamais un
+reproche) ET le coach (même convention que
+`app/api/cron/stagnation-escalation`). Cooldown 14 jours par client
+(nouvelle colonne `profiles.last_quiet_relance_at`), plus long que les 7
+jours de la stagnation classique car le signal est plus doux — c'est
+exactement le risque de sur-sollicitation identifié en 2026-08-14.
+Branché dans le sweep quotidien déjà existant (`coach-assistant-sweep.ts`,
+Axe AT) plutôt qu'un nouveau cron séparé : même cadence, même
+cloisonnement par coach, pas de nouvelle entrée pg_cron à créer.
+
+## Axe AZ — Import auto Stripe dans la compta perso du coach (Axe 4, VISION.md)
+
+**Statut : livré (2026-08-20), sur décision directe après question posée.**
+
+"Reste à faire" documenté le 2026-08-14 : "Lien avec Stripe (revenus
+automatiquement importés plutôt que ressaisis)... à cadrer si l'usage de
+la v1 montre que la saisie manuelle est le vrai point de friction." Un
+commentaire du code affirmait même explicitement "jamais liés à Stripe...
+uniquement déclaratif" — décision revisitée ici sur choix direct de
+l'utilisatrice après lui avoir présenté précisément ce que ça impliquait.
+
+Périmètre volontairement limité au PREMIER paiement d'un client
+(`checkout.session.completed`, déjà géré par le webhook Stripe pour
+activer l'abonnement) : les renouvellements mensuels passent par un
+événement Stripe différent (`invoice.payment_succeeded`), pas branché
+ici — toucher le webhook de paiement le plus sensible de l'appli (celui
+qui contrôle l'accès payant des clients) pour un flux financier récurrent
+mérite une vraie session de test dédiée, pas un ajout incrémental dans la
+même passe. `lib/coach-finance-stripe-import.ts::logStripeCoachingPayment`
+insère une ligne `coach_finance_entries` (catégorie "Abonnements
+clients", `source='stripe'`) pour le coach du client qui vient de payer —
+jamais pour un coach IA (personne ne consulte sa compta). Idempotence via
+un index unique `(coach_id, stripe_event_id)` : un retry webhook Stripe ne
+double-compte jamais (conflit 23505 avalé volontairement, toute autre
+erreur reste loguée). `CoachFinanceTracker.tsx` affiche un badge violet
+"Stripe" sur les lignes importées pour qu'un coach ne se demande jamais
+d'où vient une ligne qu'il n'a pas saisie lui-même.
+
+**Leçon** (commune aux deux axes ci-dessus) : un "reste à faire"
+documenté avec une vraie raison de prudence ne doit pas se débloquer sur
+une simple sélection dans un menu — la question posée décrivait
+explicitement le comportement exact avant que l'utilisatrice ne le
+choisisse, pour que le déblocage soit un vrai choix informé, pas une
+case cochée sans en mesurer la portée.

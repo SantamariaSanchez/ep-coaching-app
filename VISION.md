@@ -152,15 +152,10 @@ auto-mis-à-jour existait déjà (voir Axe 1).**
 
 ### Reste à faire sur cet axe
 
-- La proposition proactive d'audit/appel pour un client "silencieux" reste
-  une action manuelle du coach depuis cette page (pas une notification
-  automatique au client) — délibéré : le message d'origine demande de
-  "lutter contre la stagnation" sans "spam", et il existe déjà l'escalade
-  Axe 1 pour les signaux négatifs explicites. Ajouter une relance
-  automatique aussi pour les clients "juste silencieux" (zéro signal
-  négatif) mériterait d'abord un retour d'usage sur cette page avant
-  d'automatiser — sinon risque réel de sur-solliciter des clients qui vont
-  très bien mais n'ont simplement pas eu de call récemment.
+- ~~Relance automatique pour les clients "silencieux"~~ **fait
+  (2026-08-20, MASTERCLASS.md Axe AY)**, sur décision directe de
+  l'utilisatrice : proposition de call envoyée au client + notification
+  au coach, cooldown 14 jours par client pour ne jamais sur-solliciter.
 
 ## Axe 4 — Comptabilité et gestion financière pour les coachs
 
@@ -189,10 +184,14 @@ il s'agit de la compta DU coach pour SON activité.
 
 ### Reste à faire sur cet axe
 
-- Lien avec Stripe (revenus automatiquement importés plutôt que ressaisis)
-  et export au format attendu par un vrai logiciel de compta français : à
-  cadrer si l'usage de la v1 montre que la saisie manuelle est le vrai
-  point de friction.
+- ~~Lien avec Stripe (revenus automatiquement importés)~~ **fait pour le
+  premier paiement (2026-08-20, MASTERCLASS.md Axe AZ)**, sur décision
+  directe. Les renouvellements mensuels (`invoice.payment_succeeded`) ne
+  sont volontairement pas branchés — toucher le webhook de paiement le
+  plus sensible de l'appli pour un flux récurrent mérite sa propre session
+  de test, pas un ajout incrémental.
+- Export au format attendu par un vrai logiciel de compta français :
+  toujours à cadrer si le besoin se confirme.
 
 ## Axe 5 — Annuaire de coachs et spécialisation
 
