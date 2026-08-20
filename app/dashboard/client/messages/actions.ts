@@ -4,7 +4,8 @@ import Anthropic from "@anthropic-ai/sdk";
 import { requireClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
-import { getAICoachByKey, buildAICoachSystemPrompt } from "@/lib/ai-coaches";
+import { getAICoachByKey, buildAICoachSystemPrompt, AI_COACH_ESCALATION_MARKER } from "@/lib/ai-coaches";
+import { escalateToHumanCoach } from "@/lib/ai-coach-escalation";
 import { revalidatePath } from "next/cache";
 
 // Deuxième moitié du comportement autonome d'un coach IA (voir aussi
@@ -77,8 +78,16 @@ export async function triggerAICoachReply(aiCoachId: string): Promise<{ error?: 
       messages: textHistory,
     });
 
-    const reply = (response.content[0] as { type: string; text: string }).text?.trim();
+    let reply = (response.content[0] as { type: string; text: string }).text?.trim();
     if (!reply) return {};
+
+    // Escalade réelle (voir lib/ai-coach-escalation.ts) : le marqueur ne
+    // doit jamais atteindre le client, retiré avant stockage/affichage.
+    const shouldEscalate = reply.startsWith(AI_COACH_ESCALATION_MARKER);
+    if (shouldEscalate) {
+      reply = reply.slice(AI_COACH_ESCALATION_MARKER.length).replace(/^\s+/, "");
+      if (!reply) return {};
+    }
 
     await admin.from("messages").insert({
       conversation_id: guard.userId,
@@ -88,6 +97,11 @@ export async function triggerAICoachReply(aiCoachId: string): Promise<{ error?: 
       content: reply,
       is_read: false,
     });
+
+    if (shouldEscalate) {
+      const lastClientMessage = textHistory[textHistory.length - 1].content;
+      await escalateToHumanCoach(guard.userId, persona.name, lastClientMessage);
+    }
 
     revalidatePath("/dashboard/client/messages");
     return {};

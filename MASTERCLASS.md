@@ -2900,3 +2900,45 @@ pas "le minimum qui marche" mais "le minimum qui ne peut structurellement
 pas toucher la logique déjà fiable" — ici, réutiliser le canal `onUpdate`
 et la convention `showX` déjà en place dans le fichier plutôt
 qu'introduire un nouveau mécanisme d'état.
+
+## Axe AW — Escalade réelle d'un coach IA vers Santamaria (comble le "reste à faire" de VISION.md Axe 5)
+
+**Statut : livré (2026-08-20). Point documenté comme non fait dans
+VISION.md Axe 5 : "un coach IA généraliste qui détecte un sujet TCA/
+blessure dans un message et voudrait orienter vers Santamaria plutôt que
+juste le dire dans sa réponse, pas encore fait, le system prompt se
+contente pour l'instant de le dire en clair au client".**
+
+Le trou réel : le system prompt (`lib/ai-coaches.ts`) demandait déjà au
+coach IA de rediriger le client vers Santamaria dès qu'un sujet sensible
+apparaît (blessure, douleur inhabituelle, TCA, grossesse, médical), mais
+seulement DANS LE TEXTE affiché au client. Si le client ne relançait pas
+lui-même Santamaria après ce conseil, elle n'était jamais prévenue —
+aucune vraie escalade, juste une phrase dans un chat qu'elle ne voit pas
+forcément.
+
+Fix : `AI_COACH_ESCALATION_MARKER` — le system prompt demande au modèle
+de préfixer sa réponse par ce marqueur exact quand (et seulement quand)
+il redirige pour un motif sensible. Pas de second appel Anthropic dédié à
+la détection : le modèle a déjà tout le contexte au moment où il rédige
+sa réponse, dupliquer l'appel n'aurait ajouté que latence et coût pour le
+même jugement. `triggerAICoachReply` (`app/dashboard/client/messages/
+actions.ts`) détecte le marqueur, le retire avant stockage/affichage
+(jamais visible du client), puis appelle `lib/ai-coach-escalation.ts::
+escalateToHumanCoach` : notification in-app réelle (`insertNotification`,
+réutilise le mécanisme déjà en place pour la cloche) à Santamaria
+(résolue via `getPlatformOwnerId()`, déjà existant dans
+`lib/job-applications.ts`), avec le nom du client, un extrait du message,
+et un lien direct vers la conversation (`/dashboard/coach/messages/
+[clientId]`). Dédoublonné sur 6h par client pour ne pas noyer Santamaria
+si le sujet se poursuit sur plusieurs messages.
+
+Volontairement silencieux en cas d'échec (notification ratée) : ne doit
+jamais faire échouer l'envoi du message du coach IA au client, qui
+contient déjà la redirection en clair de toute façon — l'escalade réelle
+est un filet de sécurité en plus, pas un remplacement.
+
+**Leçon** : un system prompt qui "dit la bonne chose au client" n'est pas
+la même chose qu'une vraie escalade opérationnelle — sur des sujets
+médicaux/sensibles, ne jamais laisser la seule garantie reposer sur le
+client qui relance de lui-même.

@@ -223,16 +223,18 @@ redirection actif entre coachs (voir plus bas).**
 
 ### Reste à faire sur cet axe
 
-- Un vrai flux de **redirection active** entre coachs de la plateforme
-  (ex. un client contacte un coach non spécialisé TCA, qui souhaite le
-  réorienter vers un collègue qui l'est) — nécessite une action côté coach
-  ("réorienter ce prospect/client vers...") et une notification au coach
-  cible, pas juste l'annuaire passif livré aujourd'hui. Devient plus
-  pertinent depuis l'ajout des coachs IA ci-dessous (ex. un coach IA
-  généraliste qui détecte un sujet TCA/blessure dans un message et voudrait
-  orienter vers Santamaria plutôt que juste le dire dans sa réponse) — pas
-  encore fait, le system prompt (lib/ai-coaches.ts) se contente pour
-  l'instant de le dire en clair au client.
+- Un vrai flux de **redirection active** entre coachs HUMAINS de la
+  plateforme (ex. un client contacte un coach non spécialisé TCA, qui
+  souhaite le réorienter vers un collègue qui l'est) — nécessite une
+  action côté coach ("réorienter ce prospect/client vers...") et une
+  notification au coach cible. Pas encore pertinent tant qu'un seul coach
+  humain existe sur la plateforme (Santamaria) — à reprendre quand un 2e
+  coach humain rejoint réellement, même dépendance que le CRM (Axe 2).
+- ~~Escalade coach IA → Santamaria sur sujet sensible~~ **fait
+  (2026-08-20, MASTERCLASS.md Axe AW)** : un coach IA qui détecte un sujet
+  TCA/blessure/grossesse/médical ne se contente plus de le dire au client,
+  il prévient réellement Santamaria (notification in-app + lien direct
+  vers la conversation, voir `lib/ai-coach-escalation.ts`).
 
 ### Coachs IA (2026-08-19, demande directe)
 
