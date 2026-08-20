@@ -125,8 +125,9 @@ identifiées dans le message :
   vider le quota du jour et casser ces flux. Plafond défensif ajouté :
   `MAX_RECIPIENTS_PER_SEND = 200`, bloque l'envoi et l'explique dans
   l'interface plutôt que d'échouer silencieusement ou de risquer le quota.
-- Espace documents/data personnels du coach, productivité générale : pas
-  commencé, périmètre encore vague dans le message d'origine.
+- ~~Espace documents/data personnels du coach~~ **fait (2026-08-20,
+  MASTERCLASS.md Axe BA)**, périmètre cadré via question posée : modèles/
+  contrats types, fichiers perso, notes/pense-bête — `/dashboard/coach/documents`.
 
 ## Axe 3 — Suivi client sans faille même si le coach ne fait rien
 

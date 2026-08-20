@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot,
+  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -134,7 +134,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents"],
   },
   {
     label: "Communauté",
@@ -195,6 +195,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Développer mon business", icon: Rocket, segment: "business" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
+      // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
+      // fichiers perso, notes — jamais précisé jusqu'ici.
+      { label: "Documents & notes", icon: FileText, segment: "documents" },
     ],
   },
   {

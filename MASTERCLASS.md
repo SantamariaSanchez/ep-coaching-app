@@ -3057,3 +3057,47 @@ une simple sélection dans un menu — la question posée décrivait
 explicitement le comportement exact avant que l'utilisatrice ne le
 choisisse, pour que le déblocage soit un vrai choix informé, pas une
 case cochée sans en mesurer la portée.
+
+## BA — Espace "Documents & notes" pour les coachs (Axe 2, VISION.md, enfin cadré)
+
+**Statut : livré (2026-08-20). "Jamais cadré depuis le message d'origine
+du 2026-08-14" — cadré via question posée, l'utilisatrice a choisi les 3
+volets (modèles/contrats types, fichiers perso, notes/pense-bête).**
+
+Un seul espace à onglets internes (`/dashboard/coach/documents`,
+`CoachDocumentsSpace.tsx`) plutôt que 3 items de nav séparés — cohérent
+avec la préoccupation répétée cette session de ne pas multiplier les
+surfaces (Axes AC/AJ/AV).
+
+- **Modèles/contrats types** : contenu statique
+  (`lib/coach-document-templates.ts`, même logique que
+  `lib/medical-constraints.ts`) — contrat de coaching type, questionnaire
+  d'onboarding client type, CGV perso type. Garde-fou explicite sur
+  chaque fiche : "base à adapter et à faire relire par un professionnel
+  avant tout usage réel", jamais un document juridique prêt à l'emploi.
+- **Fichiers perso** : nouveau bucket privé `coach-personal-files` (20 Mo
+  max, PDF/image/Word/Excel/ZIP, garde-fou taille/type posé au niveau du
+  bucket dès la création — même passe de sécurité que
+  `20260804g_security_hardening_pass2.sql`), table
+  `coach_personal_files`, URL signée à la lecture (jamais publique, même
+  convention que `progress-photos`).
+- **Notes/pense-bête** : table `coach_personal_notes`, un item devient un
+  todo dès qu'on le coche, sinon c'est juste une note en vrac — pas deux
+  concepts séparés pour un simple bloc-notes.
+
+**Bug attrapé pendant la construction** : l'upload de fichier construisait
+d'abord une entrée optimiste sans URL signée (le fichier existe déjà côté
+serveur mais l'URL de téléchargement n'existe qu'après un nouveau
+chargement serveur) — exactement le piège déjà documenté dans
+`PersonalPhotosView.tsx` ("Optimistic update isn't practical without the
+signed URL"). Corrigé en retrouvant ce composant AVANT de committer :
+`router.refresh()` après upload plutôt qu'un objet optimiste incomplet.
+
+**Leçon sur ma propre vérification** : le fix du webhook Stripe
+(`profile?.coach_id` — voir le commit séparé `fix: null-check manquant`)
+a été raté une première fois parce que j'ai lu le résumé "exited with
+code 0" du wrapper bash au lieu du contenu réel du fichier de log — le
+wrapper `commande ; echo EXIT=$? >> log` renvoie toujours 0 côté bash (le
+`echo` est la dernière commande de la chaîne), seul le contenu du log dit
+la vérité. Rattrapé en relisant systématiquement le log après chaque
+tâche de fond avant d'affirmer qu'une vérification est passée.
