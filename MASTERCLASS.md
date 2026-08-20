@@ -2854,6 +2854,49 @@ que toutes les autres routes plutôt que de rester un cas particulier
 ici, une simple requête sur `cron.job` en base aurait évité l'hypothèse
 fausse initiale de l'Axe AT dès le départ.
 
-MIGRATION SQL À EXÉCUTER MANUELLEMENT
-(`20260819g_coach_assistant_cron.sql`, remplacer le placeholder par le
-vrai `CRON_SECRET` comme pour toutes les migrations cron précédentes).
+**Suivi** : `20260819g_coach_assistant_cron.sql` documente le changement
+avec le placeholder habituel, mais le job est **déjà actif en
+production** (jobid 32) — exécuté directement via le MCP Supabase en
+lisant le vrai `CRON_SECRET` depuis un autre job pg_cron déjà en place
+(`expire-trials`), sans rien demander à l'utilisatrice à copier/coller
+(elle avait signalé ne pas réussir à le retrouver dans le dashboard
+Supabase). Voir le commit `docs: confirme l'execution du cron
+coach-assistant`.
+
+## Axe AV — Accordéon sur les exercices de séance (dernier point de la refonte densité UX)
+
+**Statut : livré (2026-08-20). Dernier point encore ouvert de la demande
+initiale "regarde sur toute l'appli si tu trouve des endroits où c'est
+mieux de mettre un bouton/accordéon... pour pas que ya trop de truc d'un
+coup" (Axe AC pour Programme/Diète, Axe AJ pour Organisation) —
+`SessionView.tsx` (l'écran de séance live du client) avait été identifié
+par un audit comme "gros — fichier déjà très volumineux et stateful...
+la refonte doit être faite avec précaution pour ne pas casser le
+tracking en cours de séance", donc traité en dernier et avec le
+périmètre le plus étroit possible.**
+
+Chaque `ExerciseCard` est maintenant repliable : un chevron dans l'en-tête
+(`onUpdate({ collapsed: !exState.collapsed })`, exactement le même canal
+que `showTips`/`showHistory`/`showNotes` déjà existants dans ce fichier)
+masque le corps de la carte (notes, tips, historique, table des sets,
+bouton "Ajouter un set") derrière `{!exState.collapsed && (...)}`.
+L'en-tête reste toujours visible et affiche un résumé même repliée
+(nombre de sets validés sur le total, 🏆 si un PR a été fait sur
+l'exercice) pour ne jamais avoir besoin de rouvrir juste pour vérifier où
+on en est.
+
+`collapsed` a été ajouté à `ExerciseState` comme un champ **purement
+d'affichage et d'initialisation** : jamais recalculé par un effet en
+cours de séance, jamais lu par la logique de validation/PR/timer. La
+valeur par défaut est dérivée une seule fois à la construction de l'état
+(`buildExerciseState`) : un exercice démarre replié seulement s'il était
+déjà entièrement validé au moment où l'état est construit (reprise de
+séance après fermeture de l'appli/refresh) — un exercice encore à faire
+s'ouvre toujours, jamais besoin de deviner lequel reprendre. Un exercice
+ajouté à la volée en cours de séance démarre toujours ouvert.
+
+**Leçon** : sur un écran identifié comme risqué, la bonne portée n'est
+pas "le minimum qui marche" mais "le minimum qui ne peut structurellement
+pas toucher la logique déjà fiable" — ici, réutiliser le canal `onUpdate`
+et la convention `showX` déjà en place dans le fichier plutôt
+qu'introduire un nouveau mécanisme d'état.

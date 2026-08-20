@@ -117,6 +117,13 @@ interface ExerciseState {
   showHistory: boolean;
   showNotes: boolean;
   clientNotes: string;
+  // Accordéon (2026-08-19, retour direct : "regarde sur toute l'appli si tu
+  // trouve des endroits où c'est mieux de mettre un bouton... pour pas que
+  // ya trop de truc d'un coup"). Purement une valeur d'INITIALISATION,
+  // jamais recalculée en cours de séance par un effet — la logique de
+  // validation/PR/timer live n'est jamais touchée, seul l'affichage du
+  // corps de la carte en dépend (voir ExerciseCard).
+  collapsed: boolean;
 }
 
 type Step = "warmup" | "session" | "recap";
@@ -326,6 +333,12 @@ function buildExerciseState(
         hasVideo: false,
       });
     }
+    // Replié d'entrée uniquement si CET exercice était déjà entièrement
+    // validé lors d'une session reprise (retour après avoir quitté l'appli,
+    // refresh) — un exercice qui reste à faire s'ouvre toujours, jamais
+    // besoin de deviner "lequel je dois reprendre".
+    const allValidated = sets.length > 0 && sets.every((s) => s.validated);
+
     return {
       exercise: ex,
       sets,
@@ -333,6 +346,7 @@ function buildExerciseState(
       showHistory: false,
       showNotes: false,
       clientNotes: clientNotes[ex.name] ?? "",
+      collapsed: allValidated,
     };
   });
 }
@@ -1101,15 +1115,29 @@ function ExerciseCard({
   // fiable (défaut arbitraire) — l'afficher induisait en erreur.
   const isCustomExercise = exState.exercise.id.startsWith("local-");
 
+  // Accordéon (voir ExerciseState.collapsed) : résumé de progression visible
+  // même repliée, pour ne jamais avoir à rouvrir juste pour savoir où on en
+  // est — calcul en lecture seule à partir de sets déjà en scope, aucun
+  // effet, aucun risque sur la validation/PR/timer live.
+  const validatedCount = exState.sets.filter((s) => s.validated).length;
+  const totalSets = exState.sets.length;
+  const hasPR = exState.sets.some((s) => s.isPR);
+
   return (
     <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
       {/* Header */}
       <div className="px-4 py-3.5 flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-sm font-black text-white">
+        <button
+          type="button"
+          onClick={() => onUpdate({ collapsed: !exState.collapsed })}
+          aria-expanded={!exState.collapsed}
+          className="min-w-0 flex-1 text-left"
+        >
+          <p className="text-sm font-black text-white flex items-center gap-1.5">
             {exState.exercise.name}
+            {hasPR && <span title="Record personnel sur cet exercice">🏆</span>}
           </p>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             {exState.exercise.muscle_group && (
               <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#890404]/15 text-[#F5EDED]/40 border border-[#890404]/20">
                 {exState.exercise.muscle_group}
@@ -1123,9 +1151,28 @@ function ExerciseCard({
                   ` · RIR ${exState.exercise.rir}`}
               </span>
             )}
+            <span
+              className={`text-[9px] font-bold ${
+                validatedCount === totalSets && totalSets > 0 ? "text-green-400" : "text-[#F5EDED]/30"
+              }`}
+            >
+              {validatedCount}/{totalSets} validées
+            </span>
           </div>
-        </div>
+        </button>
         <div className="flex gap-1">
+          <button
+            type="button"
+            onClick={() => onUpdate({ collapsed: !exState.collapsed })}
+            className="p-1.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
+            title={exState.collapsed ? "Déplier" : "Replier"}
+            aria-label={exState.collapsed ? "Déplier l'exercice" : "Replier l'exercice"}
+          >
+            <ChevronDown
+              size={14}
+              style={{ transform: exState.collapsed ? "rotate(0deg)" : "rotate(180deg)", transition: "transform 0.15s ease" }}
+            />
+          </button>
           {(onMoveUp || onMoveDown) && (
             <div className="flex flex-col border border-[#890404]/20 rounded-lg overflow-hidden mr-0.5">
               <button
@@ -1197,6 +1244,8 @@ function ExerciseCard({
         </div>
       </div>
 
+      {!exState.collapsed && (
+      <>
       {/* Notes panel */}
       {exState.showNotes && (
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
@@ -1334,6 +1383,8 @@ function ExerciseCard({
           Ajouter un set
         </button>
       </div>
+      </>
+      )}
     </div>
   );
 }
@@ -1709,6 +1760,7 @@ export default function SessionView({
           showHistory: false,
           showNotes: false,
           clientNotes: "",
+          collapsed: false,
         },
       ]);
       saveCustomExercises(sessionId, [...loadCustomExercises(sessionId), newExercise]);
