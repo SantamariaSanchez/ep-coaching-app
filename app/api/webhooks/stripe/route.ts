@@ -87,7 +87,7 @@ export async function POST(request: Request) {
         // coach — voir lib/coach-finance-stripe-import.ts pour le
         // périmètre exact (premier paiement seulement, pas les
         // renouvellements). Best-effort, jamais bloquant.
-        if (profile.coach_id) {
+        if (profile?.coach_id) {
           logStripeCoachingPayment({
             coachId: profile.coach_id,
             clientName: profile.full_name,
