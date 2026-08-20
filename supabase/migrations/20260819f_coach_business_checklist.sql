@@ -1,6 +1,12 @@
 -- ═══════════════════════════════════════════════════════════════════════
 -- EP Coaching — Checklist business personnel du coach (Axe 6, VISION.md)
--- À EXÉCUTER MANUELLEMENT dans le Supabase SQL Editor (voir AGENTS.md).
+-- Déjà exécutée manuellement en production (voir AGENTS.md pour la
+-- convention). Policy corrigée le 2026-08-20 (Axe AX, MASTERCLASS.md) :
+-- auth.uid() était appelé sans (select ...), ré-évalué à chaque ligne
+-- (avis performance `auth_rls_initplan`) — seule table de cette migration
+-- à s'écarter de la convention déjà en place ailleurs (voir
+-- 20260817d_ai_agents.sql), corrigée directement en prod via le MCP
+-- Supabase, ce fichier mis à jour pour rester la source de vérité.
 -- ═══════════════════════════════════════════════════════════════════════
 -- Demande directe 2026-08-19 : espace entrepreneuriat pour que chaque
 -- coach construise SON business (pas juste le suivi de ses clients).
@@ -20,4 +26,4 @@ alter table public.coach_business_checklist enable row level security;
 
 drop policy if exists "Coach manages own business checklist" on public.coach_business_checklist;
 create policy "Coach manages own business checklist" on public.coach_business_checklist
-  for all using (coach_id = auth.uid()) with check (coach_id = auth.uid());
+  for all using (coach_id = (select auth.uid())) with check (coach_id = (select auth.uid()));

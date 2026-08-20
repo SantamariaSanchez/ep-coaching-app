@@ -2942,3 +2942,56 @@ est un filet de sécurité en plus, pas un remplacement.
 la même chose qu'une vraie escalade opérationnelle — sur des sujets
 médicaux/sensibles, ne jamais laisser la seule garantie reposer sur le
 client qui relance de lui-même.
+
+## Axe AX — Audit avis Supabase (sécurité + perf) après le volume de migrations de la session
+
+**Statut : livré (2026-08-20). Aucune régression trouvée, un vrai bug de
+perf corrigé, plusieurs faux positifs identifiés et documentés plutôt que
+"corrigés" à l'aveugle.**
+
+Vérification `get_advisors` (sécurité + perf) sur le projet Supabase de
+prod, déclenchée par prudence après le volume de nouvelles tables/RLS de
+cette session (`ai_agent_tasks`, `leads.qualification_sent_at`,
+`coach_business_checklist`, cron `coach-assistant`...).
+
+- **Sécurité — rien à corriger** : `auth_login_attempts`,
+  `oura_connections`, `rate_limit_counters` remontent en "RLS activée
+  sans policy" (niveau INFO) — vérifié dans le code, les trois ne sont
+  JAMAIS accédées que via `createAdminClient()` (rôle service, contourne
+  RLS), jamais côté client. C'est la posture voulue (accès fermé par
+  défaut), pas un oubli. Les avertissements sur les fonctions
+  `SECURITY DEFINER` (`is_own_coach`, `is_platform_owner`,
+  `can_message_recipient`...) sont le faux positif classique : ce sont
+  les fonctions utilitaires DES policies RLS elles-mêmes, leur retirer
+  l'exécution casserait toutes les policies qui s'appuient dessus —
+  laissées telles quelles, changement à trop haut risque pour une passe
+  non supervisée. `pg_net` en schéma public (avis "à déplacer") pareil :
+  déplacer l'extension pourrait casser les 17 jobs pg_cron actifs
+  (Axe AU) qui l'appellent — pas touché sans supervision. Seul point
+  vraiment actionnable et sans risque : la protection "mot de passe
+  compromis" (HaveIBeenPwned) désactivée côté Auth — se change en un clic
+  dans le dashboard Supabase (Authentication > Policies), hors de portée
+  des outils MCP disponibles ici, signalé à l'utilisatrice plutôt
+  qu'ignoré.
+- **Perf — 1 vrai bug corrigé, 189 autres findings laissés de côté
+  délibérément** : `coach_business_checklist` (créée cette session, Axe
+  6/AR) avait sa policy RLS écrite `coach_id = auth.uid()` au lieu de
+  `coach_id = (select auth.uid())` — seule table à s'écarter de la
+  convention déjà en place ailleurs (`ai_agent_tasks` la respectait
+  déjà), donc re-évaluait la fonction à CHAQUE ligne au lieu d'une fois
+  par requête (avis `auth_rls_initplan`). Corrigé directement en prod via
+  le MCP Supabase + migration mise à jour. Les 154 "multiple permissive
+  policies" et 35 "unused index" restants touchent des tables
+  préexistantes hors du périmètre de cette session — un vrai refactor de
+  policies RLS à cette échelle doit être fait avec supervision et tests,
+  pas en autonomie, laissé pour un audit dédié futur plutôt que "corrigé"
+  à l'aveugle.
+
+**Leçon** : un audit d'avis plateforme après une session à fort volume de
+migrations doit distinguer trois catégories, pas juste "corriger tout ce
+qui est rouge" : ce qui est déjà correct par construction (RLS fermée
+sans policy = intentionnel), ce qui est un vrai bug isolé et sûr à
+corriger (l'oubli de `(select ...)` sur UNE table que je venais de
+créer), et ce qui est un changement à trop fort impact pour une décision
+solo (fonctions RLS partagées, extension déjà utilisée par 17 crons
+actifs) — cette dernière catégorie se signale, ne se corrige pas seule.
