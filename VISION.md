@@ -259,7 +259,11 @@ seulement une fiche statique dans l'annuaire.
 élargi le 2026-08-19 ("un autre espace pour tout ce qui est
 entreprenariat donc la construction de sa propre entreprise d'un coach,
 pas juste gérer leurs clients mais aussi tout ce qui dev son business de
-coaching"). En construction.**
+coaching"). Livré (2026-08-19, MASTERCLASS.md Axe AR) —
+`/dashboard/coach/business` : funnel TOF/MOF/BOF avec gabarits par
+plateforme/format, checklist de construction de marque personnelle
+(positionnement, personal branding, rythme de contenu, preuve sociale,
+conversion), Studio créatif existant réutilisé pour la partie création.**
 
 Contexte posé par l'utilisatrice : EP Coaching (elle) est l'entreprise
 "au-dessus" des entreprises individuelles de chaque coach de sa
@@ -289,7 +293,7 @@ totale laissée sur la forme (onglets, sections, boutons).
 
 **Statut : évaluée "pas de refonte nécessaire" le 2026-08-14, condition de
 réactivation posée à l'époque ("si Axe 6 redémarre") remplie le
-2026-08-19. Repris en cohérence avec les Axes 6/8/9/10 ci-dessous.**
+2026-08-19. Livré (2026-08-19, MASTERCLASS.md Axe AP).**
 
 `app/page.tsx` reste une page d'entrée compacte, pas une refonte totale —
 mais CGU/CGV/politique de confidentialité et la page d'accueil doivent
@@ -301,7 +305,9 @@ les documents légaux eux-mêmes.
 
 ## Axe 8 — NOUVEAU (2026-08-19) : espace contraintes médicales & populations spécifiques
 
-**Statut : en construction.**
+**Statut : livré (2026-08-19, MASTERCLASS.md Axe AQ) —
+`/dashboard/coach/contraintes`, 6 fiches (blessures/rééducation, maladies
+chroniques, handicap, grossesse/post-partum, ménopause, TCA).**
 
 Demande directe : "fait toute une partie sur le côté médical, blessure,
 réhab etc, maladie, handicap, femme enceinte, ménopause etc, donc
@@ -317,8 +323,9 @@ professionnel de santé dès qu'un de ces sujets apparaît.
 
 ## Axe 9 — NOUVEAU (2026-08-19) : onboarding complet pour les coachs
 
-**Statut : gap confirmé (aucun onboarding coach n'existait, seulement le
-formulaire d'inscription + Stripe), en construction.**
+**Statut : livré (2026-08-19, MASTERCLASS.md Axe AO) — `/onboarding/coach`,
+assistant 4 étapes (profil, spécialités, capacité, lien d'invitation),
+redirection automatique après paiement Stripe tant que non complété.**
 
 Demande directe : "je crois que ya que l'onboarding pour le membre et
 client... fait l'onboarding complet pour les coachs." Vérifié dans le
