@@ -95,7 +95,7 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               Crée ton compte
             </h2>
             <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
-              Accès immédiat à la communauté, aux recettes et au suivi. Gratuit, en 30 secondes.
+              Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit, en 30 secondes.
             </p>
           </div>
           <div>
