@@ -4,6 +4,7 @@ import { GUIDE_KEYWORDS } from "@/lib/guide-keywords";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import { getUser, getProfile } from "@/utils/auth";
 import PublicRessourcesClient from "@/components/ressources/PublicRessourcesClient";
+import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 
 // MASTERCLASS (audit métadonnées SEO, 2026-08-16) : cette page est le
 // principal point d'entrée organique (lead magnets/guides gratuits,
@@ -37,11 +38,21 @@ export default async function PublicRessourcesPage({
   const isCoach = profile?.role === "coach";
 
   return (
-    <PublicRessourcesClient
-      resources={resources}
-      leadMagnets={leadMagnets}
-      initialQuery={initialQuery}
-      isCoach={isCoach}
-    />
+    <>
+      <PublicRessourcesClient
+        resources={resources}
+        leadMagnets={leadMagnets}
+        initialQuery={initialQuery}
+        isCoach={isCoach}
+      />
+      {/* Point d'entree organique confirme (voir commentaire metadata
+          ci-dessus) : quelqu'un qui lit un guide gratuit ici est un
+          candidat naturel a la newsletter quotidienne. */}
+      <div style={{ maxWidth: 480, margin: "0 auto", padding: "0 20px 56px" }}>
+        <div className="ep-card-flat" style={{ padding: 16 }}>
+          <NewsletterSignupForm source="ressources" />
+        </div>
+      </div>
+    </>
   );
 }

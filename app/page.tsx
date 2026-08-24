@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
+import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 
 // Ordre pensé comme un argumentaire, pas une simple liste alphabétique de
 // modules (retour direct du 2026-08-15 : "le gars qui vient veut une
@@ -299,6 +300,11 @@ export default function HomePage() {
           >
             <BookOpen size={14} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
           </Link>
+        </div>
+
+        {/* ── Newsletter ── */}
+        <div className="ep-card-flat animate-fade-up stagger-6" style={{ padding: 16, marginTop: 24 }}>
+          <NewsletterSignupForm source="app_home" />
         </div>
 
         {/* ── Coach link ── */}
