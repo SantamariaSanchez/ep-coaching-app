@@ -301,7 +301,7 @@ interface Props {
   deleteSupplement: (clientId: string, supplementId: string) => Promise<{ error?: string }>;
 }
 
-type Tab = "objectifs" | "plan" | "today" | "history" | "supplements";
+type Tab = "plan" | "today" | "history" | "supplements";
 
 export default function CoachClientNutritionTabs({
   clientId,
@@ -332,13 +332,19 @@ export default function CoachClientNutritionTabs({
   setSupplementStatus,
   deleteSupplement,
 }: Props) {
-  const [tab, setTab] = useState<Tab>("objectifs");
+  const [tab, setTab] = useState<Tab>("plan");
   const [showBuilder, setShowBuilder] = useState(allPlans.length === 0);
   const [changingMode, setChangingMode] = useState(false);
+  // Objectifs TDEE repliés par défaut dès qu'un plan existe déjà — simplification
+  // demandée le 2026-08-30 ("réorganise les onglets, que ce soit simple") :
+  // fusionné dans l'onglet Plan au lieu d'être un onglet séparé, puisque les
+  // objectifs ne servent qu'à construire le plan (on les règle une fois, on
+  // les rouvre rarement). Ouverts par défaut seulement quand il n'y a encore
+  // rien à voir dans le plan.
+  const [showObjectifs, setShowObjectifs] = useState(allPlans.length === 0);
 
   const allTabs: { key: Tab; label: string }[] = [
-    { key: "objectifs", label: "Objectifs TDEE" },
-    { key: "plan", label: "Plans" },
+    { key: "plan", label: "Plan & objectifs" },
     { key: "today", label: "Suivi du jour" },
     { key: "history", label: "Historique alimentaire" },
     { key: "supplements", label: "Compléments" },
@@ -367,7 +373,7 @@ export default function CoachClientNutritionTabs({
       </div>
 
       {/* Active plan badge */}
-      {activePlan && tab !== "objectifs" && tab !== "plan" && (
+      {activePlan && tab !== "plan" && (
         <div className="flex items-center justify-between flex-wrap gap-2 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-4">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={13} className="text-green-400" />
@@ -414,18 +420,39 @@ export default function CoachClientNutritionTabs({
       )}
 
       {/* Content */}
-      {tab === "objectifs" && (
-        <NutritionForm
-          clientId={clientId}
-          existingProfile={nutritionProfile}
-          clientWeight={clientWeight}
-          recentDailyLogs={recentDailyLogs}
-          saveNutritionProfile={saveNutritionProfile}
-        />
-      )}
-
       {tab === "plan" && (
         <div className="space-y-5">
+          {/* Objectifs TDEE : repliés une fois qu'un plan existe déjà (voir
+              showObjectifs plus haut) — se règlent une fois, se consultent
+              rarement, pas besoin d'un onglet à part pour ça. */}
+          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
+            <button
+              onClick={() => setShowObjectifs((v) => !v)}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50">
+                Objectifs TDEE
+                {nutritionProfile?.calories_target ? (
+                  <span className="ml-2 text-[#E01E1E] normal-case font-normal">
+                    {nutritionProfile.calories_target} kcal/jour
+                  </span>
+                ) : null}
+              </span>
+              <span className="text-[#F5EDED]/35 text-xs">{showObjectifs ? "Réduire" : "Modifier"}</span>
+            </button>
+            {showObjectifs && (
+              <div className="px-4 pb-4">
+                <NutritionForm
+                  clientId={clientId}
+                  existingProfile={nutritionProfile}
+                  clientWeight={clientWeight}
+                  recentDailyLogs={recentDailyLogs}
+                  saveNutritionProfile={saveNutritionProfile}
+                />
+              </div>
+            )}
+          </div>
+
           <ClientReferenceCard intake={intake} />
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
