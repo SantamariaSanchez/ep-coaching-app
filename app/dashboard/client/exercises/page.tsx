@@ -9,7 +9,7 @@ import ExerciseLibraryView from "@/components/ui/ExerciseLibraryView";
 import GymsDirectoryView from "@/components/ui/GymsDirectoryView";
 import LibraryHub from "@/components/ui/LibraryHub";
 import { createExercise, updateExercise, deleteExercise } from "./actions";
-import { createGym, updateGym, deleteGym, upsertGymReview, deleteGymReview, setMyGym } from "../gyms/actions";
+import { createGym, updateGym, deleteGym, upsertGymReview, deleteGymReview, setMyGymForCurrentUser } from "../gyms/actions";
 import { Dumbbell } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -83,7 +83,7 @@ export default async function ClientExercisesPage({
             deleteGymReview={deleteGymReview}
             exerciseTypeCounts={exerciseTypeCounts}
             myGymName={intake?.gym_name}
-            onSetMyGym={async (gymName, gymWebsite) => { await setMyGym(user.id, gymName, gymWebsite); }}
+            onSetMyGym={setMyGymForCurrentUser}
           />
         }
       />

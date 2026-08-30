@@ -232,3 +232,26 @@ export async function setMyGym(
     return { error: "Erreur inattendue." };
   }
 }
+
+// Variante sans clientId explicite, pour être passée directement comme
+// prop onSetMyGym côté page client (app/dashboard/client/exercises/page.tsx).
+// Avant ça, la page enveloppait setMyGym dans une closure inline capturant
+// user.id — une fonction définie dans un Server Component ne peut pas être
+// sérialisée telle quelle vers un Client Component (erreur runtime réelle
+// en prod : "Event handlers cannot be passed to Client Component props",
+// vue sur /dashboard/client/exercises depuis le 17/06/2026). Une vraie
+// Server Action (ce fichier a "use server" en tête) qui redérive
+// l'utilisateur courant elle-même n'a pas ce problème : elle se transmet
+// comme référence stable, jamais comme closure.
+export async function setMyGymForCurrentUser(
+  gymName: string,
+  gymWebsite: string | null
+): Promise<void> {
+  const guard = await requireAuth();
+  if (!guard.ok) return;
+  // Erreur avalée volontairement : même comportement que l'ancienne closure
+  // inline qu'on remplace ici (elle non plus n'exposait pas l'erreur à
+  // l'appelant), et onSetMyGym (GymsDirectoryView.tsx) est typé Promise<void>,
+  // aucun consommateur ne lit ce retour.
+  await setMyGym(guard.userId, gymName, gymWebsite);
+}
