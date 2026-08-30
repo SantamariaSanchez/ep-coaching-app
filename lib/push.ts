@@ -20,7 +20,13 @@ export async function sendPushToUser(
   userId: string,
   title: string,
   body: string,
-  url?: string
+  url?: string,
+  // "alarm" : traité différemment côté service worker (public/sw.js) — la
+  // notif reste affichée tant qu'elle n'est pas fermée (requireInteraction),
+  // vibre, et surtout déclenche un vrai son d'alarme joué en boucle dans
+  // l'appli si un onglet est ouvert (Notification.silent seul ne "sonne"
+  // pas vraiment, juste un bip discret du système). Voir components/ui/AlarmPlayer.tsx.
+  type?: "alarm"
 ): Promise<{ ok: boolean; reason?: string }> {
   try {
     initVapid();
@@ -57,7 +63,7 @@ export async function sendPushToUser(
 
     await webpush.sendNotification(
       data.subscription as webpush.PushSubscription,
-      JSON.stringify({ title, body, url: url ?? "/" })
+      JSON.stringify({ title, body, url: url ?? "/", type })
     );
 
     return { ok: true };

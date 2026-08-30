@@ -75,11 +75,15 @@ export async function GET(req: Request) {
       .maybeSingle();
     const url = profile?.role === "coach" ? "/dashboard/coach/moi/agenda" : "/dashboard/client/agenda";
 
+    // Un bloc "Réveil" doit vraiment sonner (voir components/ui/AlarmPlayer.tsx),
+    // pas juste afficher une notif silencieuse qu'on peut rater en dormant.
+    const isAlarm = /r[ée]veil/i.test(block.label);
     const result = await sendPushToUser(
       block.owner_id,
       `🕐 ${block.label}`,
       `C'est l'heure, ${block.label} commence maintenant.`,
-      url
+      url,
+      isAlarm ? "alarm" : undefined
     );
     if (result.ok) {
       sent++;

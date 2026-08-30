@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
+import AlarmPlayer from "@/components/ui/AlarmPlayer";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
@@ -114,6 +115,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
+      <AlarmPlayer />
       <NavigationProgress />
       {gateOverlay}
       {/* Dans les enfants et non au dessus de DashboardNav : la barre latérale
