@@ -4,6 +4,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import type { ScheduleBlock } from "@/utils/agenda";
+import { isBlockTimeAlreadyPastToday } from "@/lib/schedule-time";
 
 // Chacun (client ou coach pour lui-même) gère uniquement son propre agenda —
 // pas de paramètre clientId, l'utilisateur connecté est toujours le
@@ -27,6 +28,17 @@ interface BlockData {
   notify: boolean;
 }
 
+// Un bloc dont le jour est aujourd'hui et l'heure déjà passée doit être
+// marqué "déjà notifié aujourd'hui" dès sa création/modification, sinon le
+// cron (toutes les 5 min, voir app/api/cron/schedule-block-notify) le trouve
+// "dû" et envoie une notification parasite dans les minutes qui suivent au
+// lieu d'attendre la vraie prochaine occurrence la semaine suivante. Bug réel
+// remonté le 2026-08-30 ("ça m'envoie des notifs à 16h42 pour le
+// pré-workout" — le bloc venait d'être créé à 16h08 pour un horaire de 14h00).
+function initialLastNotifiedAt(dayOfWeek: number, startTime: string): string | null {
+  return isBlockTimeAlreadyPastToday(dayOfWeek, startTime) ? new Date().toISOString() : null;
+}
+
 function revalidateAgendaPaths() {
   revalidatePath("/dashboard/client/agenda");
   revalidatePath("/dashboard/client/aujourdhui");
@@ -42,7 +54,11 @@ export async function addScheduleBlock(
   const supabase = createAdminClient();
   const { data: row, error } = await supabase
     .from("schedule_blocks")
-    .insert({ owner_id: guard.userId, ...data })
+    .insert({
+      owner_id: guard.userId,
+      ...data,
+      last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
+    })
     .select()
     .single();
 
@@ -80,6 +96,7 @@ export async function addScheduleBlocksBulk(
         notes: data.notes,
         tasks: data.tasks,
         notify: data.notify,
+        last_notified_at: initialLastNotifiedAt(day_of_week, data.start_time),
       }))
     )
     .select();
@@ -100,7 +117,14 @@ export async function updateScheduleBlock(
   const supabase = createAdminClient();
   const { error } = await supabase
     .from("schedule_blocks")
-    .update(data)
+    .update({
+      ...data,
+      // Recalculé à chaque modification (nouveau jour/heure ou juste un
+      // autre champ) : voir initialLastNotifiedAt plus haut. Idempotent et
+      // sans risque de double envoi — au pire ça avance l'horodatage
+      // "déjà géré aujourd'hui" sans jamais renvoyer de notif au passage.
+      last_notified_at: initialLastNotifiedAt(data.day_of_week, data.start_time),
+    })
     .eq("id", blockId)
     .eq("owner_id", guard.userId);
 
@@ -151,7 +175,12 @@ export async function duplicateDayBlocks(
   if (!source || source.length === 0) return { error: "Ce jour n'a aucun bloc à copier." };
 
   const toInsert = targets.flatMap((day_of_week) =>
-    source.map((b) => ({ owner_id: guard.userId, day_of_week, ...b }))
+    source.map((b) => ({
+      owner_id: guard.userId,
+      day_of_week,
+      ...b,
+      last_notified_at: initialLastNotifiedAt(day_of_week, b.start_time),
+    }))
   );
 
   const { data: rows, error } = await supabase.from("schedule_blocks").insert(toInsert).select();

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { parisDateStr, parisTimeStr, parisIsoWeekday } from "@/lib/schedule-time";
 
 // Notifie chaque propriétaire de bloc d'agenda (schedule_blocks) quand
 // l'heure du jour atteint le début d'un bloc marqué notify=true — même
@@ -17,27 +18,6 @@ interface ScheduleBlockRow {
   label: string;
   notify: boolean;
   last_notified_at: string | null;
-}
-
-function parisDateStr(date: Date): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Paris" }).format(date);
-}
-
-function parisTimeStr(date: Date): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    timeZone: "Europe/Paris",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
-  }).format(date);
-}
-
-// getDay() en Europe/Paris — 1 = lundi ... 7 = dimanche, même convention que
-// day_of_week dans schedule_blocks (voir utils/agenda.ts).
-function parisIsoWeekday(date: Date): number {
-  const w = new Intl.DateTimeFormat("en-US", { timeZone: "Europe/Paris", weekday: "short" }).format(date);
-  const map: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
-  return map[w] ?? 1;
 }
 
 export async function GET(req: Request) {
