@@ -28,10 +28,12 @@ const DURATION_PRESETS = [
   { minutes: 120, label: "2h" },
 ];
 
-// Grille horaire 6h-23h — couvre la quasi-totalité des blocs réels (travail,
-// salle, repas, sommeil du soir) sans avoir à scroller une grille de 24h.
-const START_HOUR = 6;
-const END_HOUR = 23;
+// Grille horaire complète 0h-24h — un START_HOUR à 6 écrasait/chevauchait
+// visuellement tout bloc avant 6h (ex. réveil 4h) au même pixel tout en
+// haut de la grille (clamp() dans blockTop/blockHeight), donnant l'illusion
+// d'un chevauchement de données qui n'existait pas réellement en base.
+const START_HOUR = 0;
+const END_HOUR = 24;
 const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR + i);
 // Rangées plus hautes en vue jour (mobile, une seule colonne) qu'en vue
 // semaine (desktop, 7 colonnes côte à côte) — meilleure lisibilité et cibles
