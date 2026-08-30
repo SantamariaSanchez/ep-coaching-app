@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { escapeHtml } from "@/lib/sanitize";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
 
 // Vérification d'email sans casser l'inscription en 30 secondes.
 //
@@ -14,15 +15,24 @@ import { escapeHtml } from "@/lib/sanitize";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
+// Seul vrai email de bienvenue qu'un membre rattaché à un coach humain
+// reçoit (le message de bienvenue généré par IA dans lib/ai-coach-welcome.ts
+// ne se déclenche, lui, que pour un coach IA). Avant le 2026-08-30, ce
+// contenu se limitait à un lien de confirmation sec, sans un mot d'accueil
+// ni la moindre indication de ce qu'il y a à faire dans l'appli — corrigé
+// ici en gardant le lien de confirmation (toujours nécessaire) mais en
+// l'entourant d'un vrai accueil et de 3 premières actions concrètes.
 export function verificationEmailHtml(firstName: string, link: string): string {
-  return `<div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-    <h2 style="color:#E01E1E;margin-top:0;">Confirme ton adresse email</h2>
-    <p>Salut ${escapeHtml(firstName)},</p>
-    <p>Ton compte EP Coaching est déjà actif, tu peux t'en servir tout de suite.</p>
-    <p>Il reste juste à confirmer que cette adresse est bien la tienne : c'est ce qui nous permet de te retrouver si tu perds ton mot de passe.</p>
-    <a href="${link}" style="background:#E01E1E;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin:12px 0;">Confirmer mon email</a>
-    <p style="font-size:12px;color:rgba(245,237,237,0.5);">Si tu n'es pas à l'origine de cette inscription, ignore simplement ce message.</p>
-  </div>`;
+  const body = `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">Bienvenue</p>
+<h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">Bienvenue dans EP Coaching, ${escapeHtml(firstName)}</h1>
+<p style="margin:0 0 12px;">Ton compte est déjà actif, tu peux t'en servir dès maintenant. Avant tout, confirme que cette adresse est bien la tienne, ça nous permet de te retrouver si tu perds ton mot de passe un jour.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px auto 22px;"><tr><td style="border-radius:10px;background:#E01E1E;"><a href="${link}" style="display:inline-block;padding:13px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:10px;">Confirmer mon email</a></td></tr></table>
+<p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#F5EDED;opacity:0.5;">Pour bien démarrer</p>
+<p style="margin:0 0 6px;color:rgba(245,237,237,0.8);">1. Fais ton premier bilan du jour, ça prend deux minutes et ça donne à ton coach une vraie photo de départ.</p>
+<p style="margin:0 0 6px;color:rgba(245,237,237,0.8);">2. Jette un oeil à la bibliothèque de ressources gratuites, des guides sourcés sur la vraie littérature scientifique.</p>
+<p style="margin:0 0 16px;color:rgba(245,237,237,0.8);">3. Complète ta fiche (objectif, matériel, salle) pour que ton programme et ta nutrition collent vraiment à ta situation.</p>
+<p style="margin:0;font-size:12px;color:rgba(245,237,237,0.4);">Si tu n'es pas à l'origine de cette inscription, ignore simplement ce message.</p>`;
+  return wrapBrandedEmail(body);
 }
 
 // Envoie (ou renvoie) l'email de vérification. Ne lève jamais : l'appelant la
