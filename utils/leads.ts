@@ -17,12 +17,22 @@ export interface Lead {
 export async function getAllLeads(): Promise<Lead[]> {
   try {
     const admin = createAdminClient();
-    const { data } = await admin
+    const { data, error } = await admin
       .from("leads")
       .select("id, lead_magnet_slug, email, phone, source, created_at, qualification_sent_at")
       .order("created_at", { ascending: false });
+    // Bug réel trouvé le 2026-08-31 : cette erreur n'était jamais vérifiée,
+    // donc une colonne manquante (qualification_sent_at, voir migration
+    // 20260831_leads_qualification_sent_at) échouait silencieusement et la
+    // page Leads affichait "0 lead" en permanence malgré des leads réels en
+    // base, sans la moindre trace dans les logs.
+    if (error) {
+      console.error("getAllLeads:", error.message);
+      return [];
+    }
     return (data as Lead[]) ?? [];
-  } catch {
+  } catch (e) {
+    console.error("getAllLeads:", e);
     return [];
   }
 }

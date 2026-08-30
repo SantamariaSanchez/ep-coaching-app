@@ -33,13 +33,17 @@ export async function maybeSendLeadQualification(
     // Jamais deux fois le même email, même s'il télécharge plusieurs
     // guides (une ligne "leads" par téléchargement, mais une seule
     // qualification par personne réelle).
-    const { data: already } = await admin
+    const { data: already, error: dedupError } = await admin
       .from("leads")
       .select("id")
       .eq("email", email)
       .not("qualification_sent_at", "is", null)
       .limit(1)
       .maybeSingle();
+    // Ne bloque jamais l'envoi sur une erreur de dédoublonnage (mieux vaut un
+    // envoi en double occasionnel qu'un Setter qui ne parle plus jamais à
+    // personne), mais la trace pour ne pas la manquer une deuxième fois.
+    if (dedupError) console.error("maybeSendLeadQualification dedup check:", dedupError.message);
     if (already) return;
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
