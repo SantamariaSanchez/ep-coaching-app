@@ -110,6 +110,13 @@ interface SetState {
   dbId: string | null;
   restDuration: number | null;
   hasVideo: boolean;
+  // Enregistrement en base en cours : bloque un second envoi du meme set
+  // (double-tap sur "Valider le set" en salle) qui creait une deuxieme ligne.
+  saving?: boolean;
+  // Le set est valide a l'ecran mais l'enregistrement a echoue (reseau coupe
+  // en salle, serveur indisponible). Avant, l'echec etait totalement muet et
+  // le set disparaissait au rechargement suivant.
+  saveFailed?: boolean;
 }
 
 interface ExerciseState {
@@ -138,8 +145,11 @@ interface RestTimer {
   mentalPhysical: boolean | null;
   mentalMental: boolean | null;
   noWaitStartedAt: number | null;
-  exerciseIdx: number;
-  setIdx: number;
+  // Identifie le set concerne par son localId, pas par sa position : entre
+  // l'ouverture et la fermeture du chrono, l'utilisateur peut retirer une
+  // serie ou reordonner ses exercices, ce qui decalait les index et faisait
+  // atterrir la duree de repos sur le mauvais set.
+  setLocalId: string;
 }
 
 const TOOLTIP_STYLE = {
@@ -297,7 +307,19 @@ function buildExerciseState(
 ): ExerciseState[] {
   return exercises.map((ex) => {
     const targetSets = ex.sets ?? 3;
-    const existing = existingSets.filter((s) => s.exercise_name === ex.name);
+    // Un set est identifie par (exercice, numero de serie) : deux lignes qui
+    // partagent le meme numero sont un doublon d'enregistrement, pas deux
+    // series reelles. Sans ce filtre, les doublons deja presents en base
+    // s'affichaient litteralement deux fois ("Set 3" puis "Set 3") et
+    // comptaient double dans le volume. On garde la derniere version
+    // enregistree (existingSets arrive trie par created_at croissant), donc
+    // la plus recente correction.
+    const bySetNumber = new Map<number, SessionSet>();
+    for (const s of existingSets) {
+      if (s.exercise_name !== ex.name) continue;
+      bySetNumber.set(s.set_number, s);
+    }
+    const existing = [...bySetNumber.values()].sort((a, b) => a.set_number - b.set_number);
 
     const sets: SetState[] = [];
     // Populate from existing validated sets
@@ -319,11 +341,17 @@ function buildExerciseState(
     // Fill remaining empty slots up to target — jamais au-delà : sinon
     // rouvrir la séance (retour depuis un autre onglet, refresh) rajoutait à
     // chaque fois un set vide supplémentaire que personne n'avait demandé.
+    // Le numero repart du plus haut numero deja pris, pas du nombre de sets :
+    // si la base contient les series 1 et 3 (une serie a ete retiree en
+    // cours de route), repartir de `existingCount + 1` redonnait le numero 3,
+    // deja utilise — deux "Set 3" a l'ecran et deux lignes en base.
     const existingCount = sets.length;
+    let nextSetNumber = sets.reduce((max, s) => Math.max(max, s.setNumber), 0);
     for (let i = existingCount; i < targetSets; i++) {
+      nextSetNumber += 1;
       sets.push({
         localId: newLocalId(),
-        setNumber: i + 1,
+        setNumber: nextSetNumber,
         weightKg: "",
         repsActual: "",
         rirActual: "",
@@ -854,6 +882,7 @@ function RestTimerOverlay({
 
 function SetRow({
   set,
+  position,
   exercise,
   prevWeight,
   prThreshold,
@@ -862,8 +891,10 @@ function SetRow({
   onValidate,
   onRemove,
   onUnvalidate,
+  onRetrySave,
 }: {
   set: SetState;
+  position: number;
   exercise: Exercise;
   prevWeight: PrevWeight | null;
   prThreshold: number | null;
@@ -872,6 +903,7 @@ function SetRow({
   onValidate: () => void;
   onRemove: () => void;
   onUnvalidate: () => void;
+  onRetrySave: () => void;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
   const isPRCandidate =
@@ -926,7 +958,7 @@ function SetRow({
     >
       <div className="flex items-center gap-2 mb-1">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/30 w-12">
-          Set {set.setNumber}
+          Set {position}
         </span>
         {set.validated && (
           <CheckCircle2 size={12} className="text-green-400" />
@@ -983,9 +1015,35 @@ function SetRow({
             )}
           </div>
 
+          {/* Enregistrement echoue : avant, l'erreur etait avalee en silence
+              et le set validé à l'écran n'existait nulle part en base — il
+              disparaissait au rechargement suivant sans un mot. */}
+          {set.saveFailed && (
+            <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 rounded-lg px-2.5 py-1.5">
+              <AlertCircle size={11} className="text-amber-400 flex-shrink-0" />
+              <p className="text-[10px] text-amber-300 flex-1">
+                Pas encore enregistré, vérifie ta connexion.
+              </p>
+              <button
+                onClick={onRetrySave}
+                disabled={set.saving}
+                className="text-[9px] font-black uppercase tracking-widest text-amber-300 hover:text-amber-200 disabled:opacity-50 transition-colors"
+              >
+                {set.saving ? "Envoi…" : "Réessayer"}
+              </button>
+            </div>
+          )}
+
           {set.hasVideo ? (
             <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
               <Video size={11} /> Vidéo envoyée à ton coach
+            </span>
+          ) : !set.dbId ? (
+            // Filmer un set exige la ligne en base (le chemin de la video y
+            // est rattache) — proposer le bouton alors qu'elle n'existe pas
+            // ne menait qu'a un clic sans effet.
+            <span className="text-[10px] text-[#F5EDED]/25">
+              Vidéo possible une fois le set enregistré
             </span>
           ) : (
             <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
@@ -1097,12 +1155,21 @@ function SetRow({
             </div>
           </div>
 
-          {/* Validate button */}
+          {/* Validate button — desactive pendant l'enregistrement : un
+              double-tap partait sinon en deux requetes et creait deux fois
+              la meme serie en base. */}
           <button
             onClick={onValidate}
-            className="w-full py-2.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors"
+            disabled={set.saving}
+            className="w-full py-2.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest rounded-lg transition-colors flex items-center justify-center gap-2"
           >
-            ✓ Valider le set
+            {set.saving ? (
+              <>
+                <Loader2 size={12} className="animate-spin" /> Enregistrement…
+              </>
+            ) : (
+              "✓ Valider le set"
+            )}
           </button>
         </div>
       )}
@@ -1119,6 +1186,7 @@ function ExerciseCard({
   onUpdate,
   onValidateSet,
   onUnvalidateSet,
+  onRetrySaveSet,
   onRemoveExercise,
   onRemoveSet,
   onMoveUp,
@@ -1133,6 +1201,7 @@ function ExerciseCard({
   onUpdate: (patch: Partial<ExerciseState>) => void;
   onValidateSet: (setIdx: number) => void;
   onUnvalidateSet: (setIdx: number) => void;
+  onRetrySaveSet: (setIdx: number) => void;
   onRemoveExercise: () => void;
   onRemoveSet: (setIdx: number) => void;
   onMoveUp?: () => void;
@@ -1374,6 +1443,11 @@ function ExerciseCard({
           <SetRow
             key={set.localId}
             set={set}
+            // Le numero AFFICHE est la position dans la liste, jamais le
+            // set_number stocke : celui-ci identifie la ligne en base et
+            // peut garder des trous apres un retrait de serie, ce qui
+            // affichait "Set 1" puis "Set 3" a l'ecran.
+            position={idx + 1}
             exercise={exState.exercise}
             prevWeight={prevWeight}
             prThreshold={prThreshold}
@@ -1385,6 +1459,7 @@ function ExerciseCard({
             }}
             onValidate={() => onValidateSet(idx)}
             onUnvalidate={() => onUnvalidateSet(idx)}
+            onRetrySave={() => onRetrySaveSet(idx)}
             onRemove={() => onRemoveSet(idx)}
           />
         ))}
@@ -1392,11 +1467,16 @@ function ExerciseCard({
         {/* Add set */}
         <button
           onClick={() => {
+            // Numero = le plus haut deja utilise + 1, jamais `length + 1` :
+            // apres le retrait d'une serie du milieu, `length + 1` redonnait
+            // un numero deja pris et creait un doublon (a l'ecran et en base).
+            const nextNumber =
+              exState.sets.reduce((max, s) => Math.max(max, s.setNumber), 0) + 1;
             const newSets = [
               ...exState.sets,
               {
                 localId: newLocalId(),
-                setNumber: exState.sets.length + 1,
+                setNumber: nextNumber,
                 weightKg: "",
                 repsActual: "",
                 rirActual: "",
@@ -1650,10 +1730,24 @@ export default function SessionView({
     [sessionId]
   );
 
-  const handleValidateSet = useCallback(
+  // Envois en vol, par set : un double-tap sur "Valider le set" partait en
+  // deux requetes a ~1s d'ecart et enregistrait deux fois la meme serie
+  // (doublons reels constates en base, comptes double dans le volume et le
+  // recap). Le bouton est aussi desactive pendant l'envoi, ce garde couvre
+  // les cas ou l'etat React n'a pas encore ete rendu.
+  const savingSetsRef = useRef<Set<string>>(new Set());
+
+  // Enregistre (ou re-enregistre) un set. La route POST est idempotente sur
+  // (seance, exercice, numero de serie) : la rappeler pour un set deja
+  // enregistre met a jour la meme ligne, elle n'en cree jamais une seconde.
+  const persistSet = useCallback(
     async (exIdx: number, setIdx: number) => {
       const exState = exercises[exIdx];
-      const set = exState.sets[setIdx];
+      const set = exState?.sets[setIdx];
+      if (!exState || !set) return;
+      if (savingSetsRef.current.has(set.localId)) return;
+      savingSetsRef.current.add(set.localId);
+
       const ex = exState.exercise;
       const prevWeight =
         initData?.prevWeights[ex.name.toLowerCase()] ?? null;
@@ -1663,8 +1757,25 @@ export default function SessionView({
         initData?.prMap[ex.name.toLowerCase()] ?? null;
       const isPR = weight != null && prThreshold != null && weight > prThreshold;
 
+      // Retrouve le set par son localId plutot que par son index : entre le
+      // depart de la requete et sa reponse, l'utilisateur a pu retirer une
+      // serie ou reordonner ses exercices.
+      const patchSet = (patch: Partial<SetState>) =>
+        setExercises((prev) =>
+          prev.map((exItem) => {
+            const idx = exItem.sets.findIndex((s) => s.localId === set.localId);
+            if (idx === -1) return exItem;
+            const newSets = [...exItem.sets];
+            newSets[idx] = { ...newSets[idx], ...patch };
+            return { ...exItem, sets: newSets };
+          })
+        );
+
+      patchSet({ saving: true });
+
       // Insert set in DB
       let dbId: string | null = null;
+      let failed = false;
       try {
         const res = await fetch(`/api/client/sessions/${sessionId}/sets`, {
           method: "POST",
@@ -1690,30 +1801,48 @@ export default function SessionView({
             notes: exState.clientNotes || null,
           }),
         });
-        const { id } = await res.json();
-        dbId = id ?? null;
-      } catch {
-        // non-blocking
+        // res.ok n'etait jamais teste : sur un 403/429/500 on lisait `id`
+        // dans un corps { error }, donc undefined, et le set passait quand
+        // meme au vert alors qu'il n'existait nulle part en base. Il
+        // disparaissait au rechargement suivant, sans un mot.
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const json = (await res.json()) as { id?: string };
+        dbId = typeof json.id === "string" ? json.id : null;
+        if (!dbId) throw new Error("réponse sans identifiant");
+      } catch (e) {
+        console.error("Enregistrement du set impossible:", e);
+        failed = true;
       }
 
-      // Update local state
-      setExercises((prev) => {
-        const next = [...prev];
-        const newSets = [...next[exIdx].sets];
-        newSets[setIdx] = {
-          ...newSets[setIdx],
-          validated: true,
-          isPR,
-          dbId,
-        };
-        // Pas d'ajout automatique d'un set vide supplémentaire ici — seul le
-        // bouton "Ajouter un set" doit en créer un, sinon ça apparaît comme
-        // un set rajouté tout seul sans que le client ait rien demandé.
-        next[exIdx] = { ...next[exIdx], sets: newSets };
-        return next;
-      });
+      savingSetsRef.current.delete(set.localId);
 
-      // Start rest timer
+      // Update local state — le geste de l'utilisateur est conserve meme si
+      // le reseau a laché, mais le set porte alors un avertissement visible
+      // et un bouton "Réessayer" (voir SetRow).
+      // Pas d'ajout automatique d'un set vide supplémentaire ici — seul le
+      // bouton "Ajouter un set" doit en créer un, sinon ça apparaît comme
+      // un set rajouté tout seul sans que le client ait rien demandé.
+      patchSet({
+        validated: true,
+        isPR,
+        saving: false,
+        saveFailed: failed,
+        ...(dbId ? { dbId } : {}),
+      });
+    },
+    [exercises, initData, sessionId]
+  );
+
+  const handleValidateSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      const set = exercises[exIdx]?.sets[setIdx];
+      // Le ref est teste en plus de `set.saving` : sur un double-tap, les
+      // deux clics arrivent avant que React n'ait rendu le premier etat, et
+      // le second relancait aussi le chrono de repos a zero.
+      if (!set || set.saving || savingSetsRef.current.has(set.localId)) return;
+
+      // Chrono de repos ouvert immediatement : il doit demarrer quand la
+      // serie se termine, pas a la fin de l'aller-retour reseau.
       const rir = set.rirActual ? parseInt(set.rirActual) : 2;
       const suggested = getSuggestedRest(rir);
       setRestTimer({
@@ -1724,32 +1853,60 @@ export default function SessionView({
         mentalPhysical: null,
         mentalMental: null,
         noWaitStartedAt: null,
-        exerciseIdx: exIdx,
-        setIdx,
+        setLocalId: set.localId,
       });
+
+      void persistSet(exIdx, setIdx);
     },
-    [exercises, initData, sessionId]
+    [exercises, persistSet]
   );
 
-  const handleRestClose = useCallback((elapsed: number) => {
-    setRestTimer((prev) => {
-      if (!prev) return null;
-      // Update rest duration on the validated set
-      setExercises((exs) => {
-        const next = [...exs];
-        const newSets = [...next[prev.exerciseIdx].sets];
-        if (newSets[prev.setIdx]) {
-          newSets[prev.setIdx] = {
-            ...newSets[prev.setIdx],
-            restDuration: elapsed,
-          };
+  const handleRetrySaveSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      void persistSet(exIdx, setIdx);
+    },
+    [persistSet]
+  );
+
+  const handleRestClose = useCallback(
+    (elapsed: number) => {
+      const localId = restTimer?.setLocalId;
+      setRestTimer(null);
+      if (!localId) return;
+
+      let dbId: string | null = null;
+      for (const ex of exercises) {
+        const s = ex.sets.find((x) => x.localId === localId);
+        if (s) {
+          dbId = s.dbId;
+          break;
         }
-        next[prev.exerciseIdx] = { ...next[prev.exerciseIdx], sets: newSets };
-        return next;
-      });
-      return null;
-    });
-  }, []);
+      }
+
+      setExercises((exs) =>
+        exs.map((ex) => {
+          const idx = ex.sets.findIndex((s) => s.localId === localId);
+          if (idx === -1) return ex;
+          const newSets = [...ex.sets];
+          newSets[idx] = { ...newSets[idx], restDuration: elapsed };
+          return { ...ex, sets: newSets };
+        })
+      );
+
+      // La duree de repos n'est connue qu'a la fermeture du chrono, donc
+      // apres l'enregistrement du set : sans ce PATCH la colonne
+      // rest_duration_seconds n'a jamais ete remplie pour un seul set, alors
+      // qu'elle figure dans l'export CSV du logbook.
+      if (dbId) {
+        fetch(`/api/client/sessions/${sessionId}/sets/${dbId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ rest_duration_seconds: elapsed }),
+        }).catch(() => {});
+      }
+    },
+    [exercises, restTimer, sessionId]
+  );
 
   const handleAddExercise = useCallback(
     (input: { name: string; muscleGroup: string | null }) => {
@@ -1819,44 +1976,52 @@ export default function SessionView({
     [sessionId]
   );
 
-  // Retirer un set non-validé d'un exercice.
-  const handleRemoveSet = useCallback((exIdx: number, setIdx: number) => {
-    setExercises((prev) => {
-      const next = [...prev];
-      next[exIdx] = {
-        ...next[exIdx],
-        sets: next[exIdx].sets.filter((_, i) => i !== setIdx),
-      };
-      return next;
-    });
-  }, []);
-
-  // Dévalider un set déjà validé — repasse en mode édition (les valeurs
-  // saisies restent modifiables) et supprime la ligne déjà enregistrée en
-  // base pour éviter un doublon si le client revalide ensuite.
-  const handleUnvalidateSet = useCallback(
+  // Retirer un set d'un exercice.
+  const handleRemoveSet = useCallback(
     (exIdx: number, setIdx: number) => {
+      const removed = exercises[exIdx]?.sets[setIdx];
+      // Retirer une serie ne supprimait jamais la ligne deja enregistree en
+      // base : elle reapparaissait telle quelle au rechargement suivant.
+      // (Le bouton n'apparait que sur un set non valide, mais un set peut
+      // avoir ete devalide juste avant tout en gardant sa ligne en base.)
+      if (removed?.dbId) {
+        fetch(`/api/client/sessions/${sessionId}/sets/${removed.dbId}`, {
+          method: "DELETE",
+        }).catch(() => {});
+      }
       setExercises((prev) => {
-        const set = prev[exIdx].sets[setIdx];
-        if (set.dbId) {
-          fetch(`/api/client/sessions/${sessionId}/sets/${set.dbId}`, {
-            method: "DELETE",
-          }).catch(() => {});
-        }
         const next = [...prev];
-        const newSets = [...next[exIdx].sets];
-        newSets[setIdx] = {
-          ...newSets[setIdx],
-          validated: false,
-          isPR: false,
-          dbId: null,
+        next[exIdx] = {
+          ...next[exIdx],
+          sets: next[exIdx].sets.filter((_, i) => i !== setIdx),
         };
-        next[exIdx] = { ...next[exIdx], sets: newSets };
         return next;
       });
     },
-    [sessionId]
+    [exercises, sessionId]
   );
+
+  // Dévalider un set déjà validé — repasse en mode édition, les valeurs
+  // saisies restent modifiables. La ligne en base est CONSERVEE : la route
+  // POST est idempotente sur (séance, exercice, numéro de série), donc
+  // revalider écrase la même ligne au lieu d'en créer une seconde. Avant,
+  // on supprimait tout de suite en base : cliquer sur le crayon puis
+  // quitter la séance sans revalider effaçait la série pour de bon, sans le
+  // moindre message.
+  const handleUnvalidateSet = useCallback((exIdx: number, setIdx: number) => {
+    setExercises((prev) => {
+      const next = [...prev];
+      const newSets = [...next[exIdx].sets];
+      newSets[setIdx] = {
+        ...newSets[setIdx],
+        validated: false,
+        isPR: false,
+        saveFailed: false,
+      };
+      next[exIdx] = { ...next[exIdx], sets: newSets };
+      return next;
+    });
+  }, []);
 
   // Réordonner les exercices de la séance (flèches haut/bas) — persisté pour
   // survivre à un refresh, sans toucher à l'ordre défini dans le programme.
@@ -2388,6 +2553,7 @@ export default function SessionView({
             }
             onValidateSet={(setIdx) => handleValidateSet(exIdx, setIdx)}
             onUnvalidateSet={(setIdx) => handleUnvalidateSet(exIdx, setIdx)}
+            onRetrySaveSet={(setIdx) => handleRetrySaveSet(exIdx, setIdx)}
             onRemoveExercise={() => handleRemoveExercise(exIdx)}
             onRemoveSet={(setIdx) => handleRemoveSet(exIdx, setIdx)}
             onMoveUp={exIdx > 0 ? () => handleMoveExercise(exIdx, -1) : undefined}

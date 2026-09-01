@@ -51,6 +51,45 @@ export async function POST(
     if (body[field] !== undefined) set[field] = body[field];
   }
 
+  // Un set est identifie de facon unique par (seance, exercice, numero de
+  // serie). Sans ce garde-fou, chaque re-envoi du meme set creait une ligne
+  // de plus : un double-tap sur "Valider le set" en salle (les deux POST
+  // partent a ~1s d'ecart), une revalidation apres correction, ou la meme
+  // seance rouverte dans un autre onglet. On retrouvait donc en base des
+  // series strictement identiques en double, comptees deux fois dans le
+  // volume, le recap et l'historique de l'exercice.
+  const exerciseName = set.exercise_name;
+  const setNumber = set.set_number;
+  const canDeduplicate =
+    typeof exerciseName === "string" && exerciseName.length > 0 && setNumber != null;
+
+  if (canDeduplicate) {
+    const { data: existing } = await supabase
+      .from("session_sets")
+      .select("id")
+      .eq("session_id", sessionId)
+      .eq("exercise_name", exerciseName)
+      .eq("set_number", setNumber)
+      .order("created_at")
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      const existingId = (existing as { id: string }).id;
+      const { error: updateError } = await supabase
+        .from("session_sets")
+        .update(set)
+        .eq("id", existingId)
+        .eq("session_id", sessionId);
+
+      if (updateError) {
+        console.error("POST session set (update) error:", updateError);
+        return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+      }
+      return NextResponse.json({ id: existingId });
+    }
+  }
+
   const { data, error } = await supabase
     .from("session_sets")
     .insert(set)
@@ -58,6 +97,25 @@ export async function POST(
     .single();
 
   if (error) {
+    // 23505 = violation de l'index unique (session, exercice, numero) : deux
+    // requetes parties en meme temps, l'autre a gagne la course. On recupere
+    // la ligne gagnante et on y ecrit nos valeurs plutot que d'echouer.
+    if (error.code === "23505" && canDeduplicate) {
+      const { data: raced } = await supabase
+        .from("session_sets")
+        .select("id")
+        .eq("session_id", sessionId)
+        .eq("exercise_name", exerciseName)
+        .eq("set_number", setNumber)
+        .order("created_at")
+        .limit(1)
+        .maybeSingle();
+      if (raced) {
+        const racedId = (raced as { id: string }).id;
+        await supabase.from("session_sets").update(set).eq("id", racedId);
+        return NextResponse.json({ id: racedId });
+      }
+    }
     console.error("POST session set error:", error);
     return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
   }
