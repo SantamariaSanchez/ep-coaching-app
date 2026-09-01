@@ -1,6 +1,7 @@
 import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
+import CollapsibleSection from "@/components/ui/CollapsibleSection";
 
 function currentWeekStart(): string {
   const today = new Date();
@@ -311,12 +312,13 @@ export default function VolumeIntensitySection({
       )}
 
       {/* ── Volume réalisé cette semaine (logué en temps réel) ── */}
+      {/* Repliable (retour direct 2026-09-01 : "ça doit être optimisé et en
+          liste dépliable et pas long comme actuellement") — ouvert par
+          défaut, c'est la donnée la plus immédiatement utile ("où j'en suis
+          là"). */}
       {hasRealized && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
-            Volume : réalisé cette semaine
-          </p>
-          <div className="space-y-5">
+        <CollapsibleSection title="Volume : réalisé cette semaine" defaultOpen>
+          <div className="space-y-5 pt-1">
             {realizedEntries.map(([group, { direct, indirect, subgroups }]) => {
               const landmark = VOLUME_LANDMARKS[group];
               if (!landmark) return null;
@@ -332,16 +334,13 @@ export default function VolumeIntensitySection({
               );
             })}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
 
       {/* ── Volume section ── */}
       {hasVolume && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-5">
-            Volume : semaine planifiée
-          </p>
-          <div className="space-y-5">
+        <CollapsibleSection title="Volume : semaine planifiée">
+          <div className="space-y-5 pt-1">
             {volumeEntries.map(([group, { direct, indirect, subgroups }]) => {
               const landmark = VOLUME_LANDMARKS[group];
               if (!landmark) return null;
@@ -357,15 +356,12 @@ export default function VolumeIntensitySection({
               );
             })}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
 
       {/* ── Intensity section ── */}
       {hasExercises && (
-        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-            Intensité : RIR & Progression
-          </p>
+        <CollapsibleSection title="Intensité : RIR & Progression" subtitle={`${allExercises.length} exercices`}>
           <div>
             {allExercises.map((ex) => {
               const key = ex.name.toLowerCase();
@@ -381,7 +377,7 @@ export default function VolumeIntensitySection({
               );
             })}
           </div>
-        </div>
+        </CollapsibleSection>
       )}
     </div>
   );

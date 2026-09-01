@@ -233,6 +233,54 @@ export function combineWarmupRecommendations(types: WarmupType[]): WarmupRecomme
   return { articulations, exercises, tips };
 }
 
+// Montée en charge sur les mouvements réels du jour (retour direct
+// 2026-09-01 : "l'échauffement il est même pas fait en fonction de la
+// séance donc de la prog mais il est générique"). Le volet mobilité
+// articulaire ci-dessus varie déjà par push/pull/legs, mais restait
+// toujours la même petite liste d'exercices de mobilité peu importe le
+// programme réel du jour. Ceci ajoute un vrai volet spécifique à la
+// séance : des séries de montée sur les mouvements principaux effectivement
+// prévus, à partir du dernier poids de travail connu.
+export interface RampSet {
+  label: string;
+  weightKg: number | null;
+  reps: string;
+}
+
+export interface MovementPrep {
+  exerciseName: string;
+  targetReps: string | null;
+  ramps: RampSet[];
+}
+
+// Arrondit au multiple de 2.5 le plus proche (incréments standards en salle).
+function roundToPlate(weight: number): number {
+  return Math.round(weight / 2.5) * 2.5;
+}
+
+export function buildMovementPreps(
+  exercises: { name: string; reps: string | null; position: number }[],
+  prevWeights: Record<string, { weight: number | null }>
+): MovementPrep[] {
+  // Les mouvements principaux sont, par convention de programmation, en
+  // tête de séance (position la plus basse) — on se limite aux 3 premiers
+  // pour rester un échauffement, pas une séance en double.
+  const mains = [...exercises].sort((a, b) => a.position - b.position).slice(0, 3);
+
+  return mains.map((ex) => {
+    const lastWeight = prevWeights[ex.name.toLowerCase()]?.weight ?? null;
+    const ramps: RampSet[] =
+      lastWeight && lastWeight > 0
+        ? [
+            { label: "Série 1", weightKg: roundToPlate(lastWeight * 0.5), reps: "8" },
+            { label: "Série 2", weightKg: roundToPlate(lastWeight * 0.7), reps: "5" },
+            { label: "Série 3", weightKg: roundToPlate(lastWeight * 0.85), reps: "3" },
+          ]
+        : [{ label: "Montée", weightKg: null, reps: "monte progressivement jusqu'à ton poids de travail" }];
+    return { exerciseName: ex.name, targetReps: ex.reps, ramps };
+  });
+}
+
 export const EQUIPMENT_COLORS: Record<WarmupExercise["equipment"], string> = {
   poulie: "#60a5fa",
   élastique: "#4ade80",

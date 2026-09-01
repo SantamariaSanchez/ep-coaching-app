@@ -81,25 +81,33 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await getUser();
   const profile = user ? await getProfile(user.id) : null;
 
-  await requireStrongSessionIfNeeded(profile);
+  // Perf (retour direct 2026-09-01, "j'ouvre l'appli c'est censé être
+  // instantané au lieu de ça il y a un chargement de 10s") : ces deux appels
+  // ne dépendent que de user/profile déjà résolus, pas l'un de l'autre —
+  // ils tournaient avant en série (deux allers-retours Supabase de plus,
+  // à chaque ouverture ET chaque rendu serveur de ce layout). En parallèle
+  // ici économise un aller-retour complet sans rien changer au résultat :
+  // requireStrongSessionIfNeeded ne fait que rediriger (throw) si besoin,
+  // Promise.all propage ce throw normalement.
+  const [, gate] = await Promise.all([
+    requireStrongSessionIfNeeded(profile),
+    // Rappel de bilan (demande explicite 2026-08-15, refondu 2026-08-19 —
+    // voir lib/daily-gate.ts et components/ui/DailyGateOverlay.tsx pour
+    // l'historique complet). Calculé pour TOUT compte connecté, client ou
+    // coach (chacun a son propre bilan quotidien, via client_id = son propre
+    // id dans les deux cas) — coût minimal, un seul appel à
+    // getDailyGateStatus, plus aucune donnée lourde à charger ici : la carte
+    // de rappel ne fait plus que renvoyer vers le bilan complet
+    // (/dashboard/client/bilan ou /dashboard/coach/moi/bilan), elle
+    // n'affiche plus les cartes elles-mêmes.
+    user && profile ? getDailyGateStatus(user.id) : Promise.resolve({ active: null, pendingMeal: undefined }),
+  ]);
 
   const initialIsFreeTier = profile?.role === "client" && !isSubscribed(profile);
   // Bandeau non bloquant tant que l'email n'a pas été confirmé (voir
   // lib/email-verification.ts). Tous les comptes antérieurs sont considérés
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
-
-  // Rappel de bilan (demande explicite 2026-08-15, refondu 2026-08-19 —
-  // voir lib/daily-gate.ts et components/ui/DailyGateOverlay.tsx pour
-  // l'historique complet). Calculé pour TOUT compte connecté, client ou
-  // coach (chacun a son propre bilan quotidien, via client_id = son propre
-  // id dans les deux cas) — coût minimal, un seul appel à
-  // getDailyGateStatus, plus aucune donnée lourde à charger ici : la carte
-  // de rappel ne fait plus que renvoyer vers le bilan complet
-  // (/dashboard/client/bilan ou /dashboard/coach/moi/bilan), elle
-  // n'affiche plus les cartes elles-mêmes.
-  const gate =
-    user && profile ? await getDailyGateStatus(user.id) : { active: null, pendingMeal: undefined };
   const isCoach = profile?.role === "coach";
   const gateOverlay: React.ReactNode =
     user && profile ? (

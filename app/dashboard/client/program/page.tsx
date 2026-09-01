@@ -8,6 +8,7 @@ import ClientCorrectionsSection from "@/components/ui/ClientCorrectionsSection";
 import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
+import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
 
@@ -82,17 +83,27 @@ export default async function ClientProgramPage() {
           </>
         )}
 
+        {/* Retour direct 2026-09-01 : "dans programme c'est encore tout la
+            création alors que la prog est déjà créée, faut montrer la prog
+            quoi" — la création/changement de programme reste disponible,
+            mais repliée par défaut dès qu'un programme existe déjà. Ouverte
+            d'office seulement s'il n'y a encore rien à montrer. */}
         <div className="border-t border-[#890404]/15 pt-6">
-          <ProgramPresetSelector
-            clientId={user.id}
-            currentProgramName={program?.name ?? null}
-            saveProgram={saveOwnProgram}
-          />
-          <ProgramFromScratchSection
-            clientId={user.id}
-            program={program}
-            saveProgram={saveOwnProgram}
-          />
+          <CollapsibleSection
+            title={program && program.days.length > 0 ? "Changer de programme" : "Créer mon programme"}
+            defaultOpen={!program || program.days.length === 0}
+          >
+            <ProgramPresetSelector
+              clientId={user.id}
+              currentProgramName={program?.name ?? null}
+              saveProgram={saveOwnProgram}
+            />
+            <ProgramFromScratchSection
+              clientId={user.id}
+              program={program}
+              saveProgram={saveOwnProgram}
+            />
+          </CollapsibleSection>
         </div>
       </div>
     );

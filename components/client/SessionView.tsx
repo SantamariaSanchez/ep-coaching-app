@@ -37,7 +37,9 @@ import {
   EQUIPMENT_COLORS,
   detectWarmupTypes,
   combineWarmupRecommendations,
+  buildMovementPreps,
   type WarmupExercise,
+  type MovementPrep,
 } from "@/lib/warmup-data";
 import ExercisePicker from "@/components/client/ExercisePicker";
 import { createClientSupabase } from "@/lib/supabase-client";
@@ -397,10 +399,12 @@ function WarmupStep({
   sessionId,
   dayLabel,
   muscleGroups,
+  movementPreps,
   onValidate,
   onCancel,
 }: {
   sessionId: string;
+  movementPreps: MovementPrep[];
   dayLabel: string;
   muscleGroups: string[];
   onValidate: (seconds: number) => void;
@@ -536,6 +540,35 @@ function WarmupStep({
       <p className="text-xs text-[#F5EDED]/50 italic mb-5 leading-relaxed">
         💡 {suggested.tips}
       </p>
+
+      {/* Montée sur les mouvements réels du jour (retour direct 2026-09-01 :
+          l'échauffement doit vraiment dépendre de la séance/du programme,
+          pas juste de la catégorie push/pull/legs). Basé sur le dernier
+          poids de travail connu pour chaque mouvement. */}
+      {movementPreps.length > 0 && (
+        <div className="mb-5">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
+            Montée sur tes mouvements du jour
+          </p>
+          <div className="space-y-2">
+            {movementPreps.map((mp) => (
+              <div key={mp.exerciseName} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3">
+                <p className="text-xs font-bold text-white mb-1.5">{mp.exerciseName}</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {mp.ramps.map((r, i) => (
+                    <span
+                      key={i}
+                      className="text-[10px] font-semibold text-[#F5EDED]/55 bg-[#150000] border border-[#890404]/15 rounded-full px-2.5 py-1"
+                    >
+                      {r.weightKg != null ? `${r.weightKg}kg × ${r.reps}` : r.reps}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Exercises list — suggestions éditables : retire ce que tu ne veux
           pas, ajoute les tiens. */}
@@ -1994,6 +2027,7 @@ export default function SessionView({
     return (
       <WarmupStep
         sessionId={sessionId}
+        movementPreps={buildMovementPreps(initData.exercises, initData.prevWeights)}
         dayLabel={session.day_label}
         muscleGroups={muscleGroups}
         onValidate={handleWarmupValidate}

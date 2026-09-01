@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getPointsMap } from "@/lib/gamification";
@@ -10,7 +11,18 @@ import type { Profile } from "@/utils/auth-client";
 // commentaire en tête de ce fichier.
 export * from "@/utils/auth-client";
 
-export async function getUser() {
+// Perf réelle (retour direct 2026-09-01, "j'ouvre l'appli c'est censé être
+// instantané, au lieu de ça il y a un chargement de 10s / la navigation est
+// trop lente") : app/dashboard/layout.tsx appelle déjà getUser()+getProfile(),
+// et 106 fichiers page.tsx les rappellent CHACUN indépendamment pour leur
+// propre garde d'accès — sans mise en cache, ça double (au moins) les
+// allers-retours Supabase sur CHAQUE navigation dans le dashboard. React
+// cache() mémoïse le résultat pour la durée d'un seul rendu serveur (une
+// requête) : le premier appel dans le layout suffit, tous les appels
+// suivants dans les pages/composants du même rendu réutilisent le résultat
+// déjà résolu au lieu de retaper Supabase. Zéro changement de comportement,
+// juste zéro round-trip redondant.
+export const getUser = cache(async function getUser() {
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -27,7 +39,7 @@ export async function getUser() {
   } catch {
     return null;
   }
-}
+});
 
 // target_bedtime/target_wake_time (MASTERCLASS.md — bilan en 2 temps,
 // 2026-08-15) sont VOLONTAIREMENT absents de cette liste partagée par
@@ -44,7 +56,7 @@ export async function getUser() {
 const PROFILE_FIELDS =
   "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, platform_stripe_customer_id, platform_stripe_subscription_id, invite_code, instagram_handle, next_billing_date, external_payment_link, stripe_customer_id, stripe_subscription_id, email_verified_at, mfa_enabled";
 
-export async function getProfile(userId: string): Promise<Profile | null> {
+export const getProfile = cache(async function getProfile(userId: string): Promise<Profile | null> {
   try {
     const supabase = await createServerSupabase();
     const { data } = await supabase
@@ -56,7 +68,7 @@ export async function getProfile(userId: string): Promise<Profile | null> {
   } catch {
     return null;
   }
-}
+});
 
 // Multi-coach : chaque coach ne voit que SES propres clients, jamais ceux
 // d'un autre coach (y compris le propriétaire de la plateforme). coachId
