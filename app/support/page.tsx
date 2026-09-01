@@ -17,7 +17,7 @@ const sections: LegalSection[] = [
     body: (
       <P>
         Une question sur ton compte, ton abonnement, ou un souci technique ? Écris directement à{" "}
-        <Strong>Santamaria Sánchez</Strong> à l&apos;adresse <Strong>peccoux.manu@gmail.com</Strong>.
+        <Strong>Santamaria Sànchez</Strong> à l&apos;adresse <Strong>peccoux.manu@gmail.com</Strong>.
         On te répond sous 48 heures ouvrées.
       </P>
     ),
