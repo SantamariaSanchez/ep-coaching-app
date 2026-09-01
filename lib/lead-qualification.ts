@@ -65,7 +65,7 @@ export async function maybeSendLeadQualification(
     const sent = await sendBrevoEmail({
       to: email,
       subject: `Une question sur "${magnetTitle}"`,
-      htmlContent: `<div style="font-family:sans-serif;color:#222;line-height:1.6;font-size:15px;">${body}<p style="margin-top:24px;font-size:11px;color:#999;">Réponds STOP à cet email si tu ne veux plus être recontacté(e).</p></div>`,
+      htmlContent: `<div style="font-family:sans-serif;color:#222;line-height:1.6;font-size:15px;">${body}<p style="margin-top:24px;font-size:11px;color:#999;">Tu ne veux plus recevoir ce genre de message ? Réponds simplement STOP à cet email, on te retire de la liste.</p></div>`,
     });
 
     if (sent) {

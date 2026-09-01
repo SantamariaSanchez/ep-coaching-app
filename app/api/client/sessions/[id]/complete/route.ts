@@ -5,6 +5,7 @@ import { requireAuth } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
@@ -143,24 +144,25 @@ export async function POST(
         await sendBrevoEmail({
           to: coach.email,
           subject: `Séance terminée : ${clientName}`,
-          htmlContent: `
-            <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-              <h2 style="color:#E01E1E;margin-top:0;">💪 Séance terminée</h2>
-              <p><strong>${clientName}</strong> vient de terminer sa séance <em>${dayLabel}</em>.</p>
-              <ul style="line-height:2;padding-left:16px;">
-                <li>Durée : ${body.duration_minutes} min</li>
-                <li>Énergie : ${body.energy_level}/5</li>
-                <li>Pump : ${body.pump}/5</li>
-                <li>Feeling : ${body.general_feeling}/5</li>
-              </ul>
-              ${prLine}
-              <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
-                 style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
-                        text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
-                Voir le logbook
-              </a>
-            </div>
-          `,
+          // Même habillage de marque que les autres emails de l'appli
+          // (logo, carte rouge sombre, pied de page) : celui-ci partait en
+          // <div> brut, sans logo ni cadre.
+          htmlContent: wrapBrandedEmail(`
+            <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">💪 Séance terminée</h2>
+            <p style="margin:0 0 12px;"><strong>${clientName}</strong> vient de terminer sa séance <em>${dayLabel}</em>.</p>
+            <ul style="line-height:2;padding-left:16px;margin:0 0 12px;">
+              <li>Durée : ${body.duration_minutes} min</li>
+              <li>Énergie : ${body.energy_level}/5</li>
+              <li>Pump : ${body.pump}/5</li>
+              <li>Feeling : ${body.general_feeling}/5</li>
+            </ul>
+            ${prLine}
+            <a href="${APP_URL}/dashboard/coach/clients/${guard.userId}/logbook"
+               style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
+                      text-decoration:none;display:inline-block;margin-top:8px;font-weight:bold;">
+              Voir le logbook
+            </a>
+          `),
         });
       } catch {
         // email failure is non-blocking

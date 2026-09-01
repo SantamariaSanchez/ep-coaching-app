@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
 
 // Rappel hebdomadaire de réengagement — 1 fois par semaine maximum, par
 // client, jamais plus (garde-fou via last_reengagement_notified_at, en plus
@@ -22,18 +23,22 @@ const PUSH_MESSAGES = [
 ];
 
 const EMAIL_SUBJECT = "On continue ?";
+// Habillage de marque commun à tous les emails (logo, carte rouge sombre,
+// pied de page) : celui-ci partait en <div> brut sans logo ni cadre, donc
+// avec une identité visuelle différente des autres emails de l'appli.
+// L'ordre "entraînement, nutrition, suivi de progression" reprend celui
+// déjà arbitré sur la page d'inscription et la homepage : la communauté
+// n'est pas le coeur de l'appli et n'a pas à ouvrir la phrase.
 function emailBody(firstName: string) {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
-  return `
-    <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-      <h2 style="color:#E01E1E;margin-top:0;">Salut ${firstName} 👋</h2>
-      <p>Ton compte EP Coaching est prêt : programme, nutrition, communauté, tout est gratuit et accessible dès maintenant.</p>
-      <p>Deux minutes suffisent pour reprendre où tu t'es arrêté·e.</p>
-      <a href="${url}/dashboard/client" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">
-        Ouvrir mon espace
-      </a>
-    </div>
-  `;
+  return wrapBrandedEmail(`
+    <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">Salut ${firstName} 👋</h2>
+    <p style="margin:0 0 12px;">Ton compte EP Coaching est prêt : ton entraînement, ta nutrition et ton suivi de progression, tout est gratuit et accessible dès maintenant.</p>
+    <p style="margin:0 0 16px;">Deux minutes suffisent pour reprendre là où tu en étais.</p>
+    <a href="${url}/dashboard/client" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">
+      Ouvrir mon espace
+    </a>
+  `);
 }
 
 export async function GET(req: Request) {

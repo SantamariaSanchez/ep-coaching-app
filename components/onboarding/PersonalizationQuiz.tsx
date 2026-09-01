@@ -30,7 +30,7 @@ const QUESTIONS: [
     title: "Où tu te situes aujourd'hui ?",
     options: [
       { value: "debutant" as ExperienceLevel, label: "Je débute, ou je m'y suis jamais vraiment mis" },
-      { value: "intermediaire" as ExperienceLevel, label: "Je m'entraîne depuis un moment, sans être un·e expert·e" },
+      { value: "intermediaire" as ExperienceLevel, label: "Je m'entraîne depuis un moment, sans avoir un niveau expert" },
       { value: "confirme" as ExperienceLevel, label: "Je m'entraîne sérieusement depuis des années, possible objectif compétition (bodybuilding, physique)" },
     ],
   },

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { insertNotification } from "@/utils/insert-notification";
 
 // Déclenché par Supabase pg_cron les 1er et 15 de chaque mois, voir
@@ -19,18 +20,19 @@ const TITLE = "🚀 Passe la vitesse supérieure";
 const BODY = "Tu utilises déjà l'appli, un coach peut te construire un programme et un suivi sur mesure, avec un vrai humain derrière.";
 const URL = "/dashboard/client/abonnement";
 
+// Même habillage de marque que les autres emails de l'appli (logo, carte
+// rouge sombre, pied de page) : celui-ci partait en <div> brut, sans logo
+// ni cadre, donc visuellement étranger au reste.
 function emailBody(firstName: string) {
   const url = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
-  return `
-    <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-      <h2 style="color:#E01E1E;margin-top:0;">${TITLE}</h2>
-      <p>Salut ${firstName},</p>
-      <p>${BODY}</p>
-      <a href="${url}${URL}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">
-        Découvrir le coaching
-      </a>
-    </div>
-  `;
+  return wrapBrandedEmail(`
+    <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${TITLE}</h2>
+    <p style="margin:0 0 12px;">Salut ${firstName},</p>
+    <p style="margin:0 0 16px;">${BODY}</p>
+    <a href="${url}${URL}" style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">
+      Découvrir le coaching
+    </a>
+  `);
 }
 
 export async function GET(req: Request) {

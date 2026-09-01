@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { endCoachingPhaseTracking } from "@/lib/coaching-phase";
 import { notifyUser } from "@/lib/notify";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
 
 // Item 43 (chantier 50 idées) : repasse automatiquement en gratuit les
 // essais coaching arrivés à échéance (trial_ends_at dépassé). Tourne une
@@ -57,17 +58,17 @@ export async function GET(req: Request) {
       sendBrevoEmail({
         to: client.email,
         subject: title,
-        htmlContent: `
-          <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
-            <h2 style="color:#E01E1E;margin-top:0;">${title}</h2>
-            <p>Salut ${client.full_name?.split(" ")[0] ?? ""},</p>
-            <p>${body}</p>
-            <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/client/abonnement"
-               style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;margin-top:8px;">
-              Activer le coaching
-            </a>
-          </div>
-        `,
+        // Même habillage de marque que les autres emails de l'appli : ce
+        // message partait en <div> brut, sans logo ni cadre.
+        htmlContent: wrapBrandedEmail(`
+          <h2 style="color:#E01E1E;margin:0 0 12px;font-size:18px;">${title}</h2>
+          <p style="margin:0 0 12px;">Salut ${client.full_name?.split(" ")[0] ?? ""},</p>
+          <p style="margin:0 0 16px;">${body}</p>
+          <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/dashboard/client/abonnement"
+             style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;display:inline-block;font-weight:700;">
+            Activer le coaching
+          </a>
+        `),
       }).catch(() => {});
     }
   }

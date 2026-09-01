@@ -56,7 +56,7 @@ const SLIDES: Slide[] = [
   {
     icon: Heart,
     eyebrow: "Communauté",
-    title: "T'es plus seul·e",
+    title: "Tu n'avances plus dans ton coin",
     desc: "Partage tes victoires, pose tes questions. Toute la communauté peut te répondre et t'encourager. Chaque publication te rapporte des points.",
     bullets: ["Victoires", "Questions", "Ressources gratuites"],
   },
