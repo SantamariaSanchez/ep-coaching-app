@@ -70,7 +70,10 @@ export async function POST(
       .eq("session_id", sessionId)
       .eq("exercise_name", exerciseName)
       .eq("set_number", setNumber)
-      .order("created_at")
+      // La plus RECENTE : c'est la derniere correction saisie, et c'est
+      // aussi celle que le client affiche et que la migration de nettoyage
+      // conserve. Prendre la plus ancienne aurait fait diverger les trois.
+      .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
 
