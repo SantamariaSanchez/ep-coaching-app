@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText,
+  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -198,6 +198,11 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
       // fichiers perso, notes — jamais précisé jusqu'ici.
       { label: "Documents & notes", icon: FileText, segment: "documents" },
+      // TODO Notion #13 (synthèse webinaire Matis Clouet) : tableau simple
+      // de suivi des appels de vente (show up, closing, CA), scopé par
+      // coach (coach_id = auth.uid()), pas une donnée plateforme, donc ici
+      // et pas dans le groupe Administration.
+      { label: "Appels de vente", icon: PhoneCall, segment: "admin/ventes" },
     ],
   },
   {
