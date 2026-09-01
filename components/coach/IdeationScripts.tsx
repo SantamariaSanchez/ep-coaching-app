@@ -4,7 +4,22 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search } from "lucide-react";
 import { createScript, updateScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
-import type { CoachScript, ScriptFormat } from "@/lib/coach-ideation";
+import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
+
+const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
+  a_tourner: { label: "À tourner", color: "#facc15" },
+  tourne: { label: "Tourné", color: "#60a5fa" },
+  publie: { label: "Publié", color: "#4ade80" },
+};
+const STATUS_CYCLE: Record<ScriptStatus, ScriptStatus> = { a_tourner: "tourne", tourne: "publie", publie: "a_tourner" };
+
+function formatDuration(seconds: number | null): string | null {
+  if (!seconds) return null;
+  if (seconds < 60) return `${seconds}s`;
+  const min = Math.floor(seconds / 60);
+  const rest = seconds % 60;
+  return rest ? `${min}min${rest}` : `${min}min`;
+}
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -138,6 +153,14 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         content: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        duration_seconds: null,
+        hook: null,
+        pillar: null,
+        source_reference: null,
+        cta: null,
+        shot_notes: null,
+        platform: "instagram",
+        status: "a_tourner",
       };
       setScripts((prev) => [newScript, ...prev]);
       setTitle("");
@@ -156,6 +179,19 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     setOpenId(null);
     startTransition(async () => {
       const result = await updateScript(id, { content: draft });
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
+
+  function cycleStatus(id: string, current: ScriptStatus) {
+    const next = STATUS_CYCLE[current];
+    const backup = scripts;
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: next } : s)));
+    startTransition(async () => {
+      const result = await updateScript(id, { status: next });
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -247,9 +283,12 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {scripts.map((script) => (
+          {scripts.map((script) => {
+            const statusInfo = STATUS_LABELS[script.status] ?? STATUS_LABELS.a_tourner;
+            const duration = formatDuration(script.duration_seconds);
+            return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
@@ -258,7 +297,27 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 >
                   {script.format}
                 </span>
-                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1 }}>{script.title}</p>
+                {duration && (
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(245,237,237,0.45)" }}>{duration}</span>
+                )}
+                {script.pillar && (
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.4)", padding: "3px 8px", borderRadius: 999, border: "1px solid rgba(245,237,237,0.12)" }}>
+                    {script.pillar}
+                  </span>
+                )}
+                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120 }}>{script.title}</p>
+                <button
+                  type="button"
+                  onClick={() => cycleStatus(script.id, script.status)}
+                  title="Cliquer pour changer le statut"
+                  style={{
+                    fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
+                    padding: "3px 8px", borderRadius: 999, cursor: "pointer", border: `1px solid ${statusInfo.color}55`,
+                    background: "transparent", color: statusInfo.color,
+                  }}
+                >
+                  {statusInfo.label}
+                </button>
                 {script.content && <CopyButton text={script.content} />}
                 <button
                   type="button"
@@ -269,6 +328,31 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   <Trash2 size={14} />
                 </button>
               </div>
+
+              {(script.hook || script.cta || script.source_reference || script.shot_notes) && (
+                <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
+                  {script.hook && (
+                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>Hook </span>{script.hook}
+                    </p>
+                  )}
+                  {script.cta && (
+                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>CTA </span>{script.cta}
+                    </p>
+                  )}
+                  {script.shot_notes && (
+                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>Tournage </span>{script.shot_notes}
+                    </p>
+                  )}
+                  {script.source_reference && (
+                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)", fontStyle: "italic" }}>
+                      Source : {script.source_reference}
+                    </p>
+                  )}
+                </div>
+              )}
 
               {openId === script.id ? (
                 <div style={{ marginTop: 10 }}>
@@ -316,7 +400,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </p>
               )}
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

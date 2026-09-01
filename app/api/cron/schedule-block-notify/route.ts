@@ -19,6 +19,13 @@ interface ScheduleBlockRow {
   notify: boolean;
   last_notified_at: string | null;
   alarm_ack_date: string | null;
+  // NULL = gabarit récurrent (le comportement historique, sur day_of_week
+  // seul). Renseigné = bloc ponctuel (voir migration
+  // 20260901c_schedule_blocks_specific_date) qui ne doit notifier QUE sa
+  // vraie date, jamais chaque semaine où day_of_week coïncide — sinon un
+  // rendez-vous coiffeur ponctuel du mardi prochain notifierait dès ce
+  // mardi-ci.
+  specific_date: string | null;
 }
 
 // Un réveil raté ("j'ai pas été réveillé car seulement notif sans son",
@@ -51,11 +58,12 @@ export async function GET(req: Request) {
   const supabase = createAdminClient();
   const { data: blocks } = await supabase
     .from("schedule_blocks")
-    .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at, alarm_ack_date")
+    .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at, alarm_ack_date, specific_date")
     .eq("notify", true)
     .eq("day_of_week", todayDow);
 
   const due = (blocks as ScheduleBlockRow[] | null)?.filter((b) => {
+    if (b.specific_date && b.specific_date !== today) return false; // bloc ponctuel, pas encore/plus sa date
     if (b.start_time > nowTime) return false; // pas encore l'heure
     const isAlarm = /r[ée]veil/i.test(b.label);
     if (isAlarm) {

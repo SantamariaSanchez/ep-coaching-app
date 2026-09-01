@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
-import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat } from "@/lib/coach-ideation";
+import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
 import { safeExternalUrl } from "@/lib/sanitize";
 
 // Axe 2 (VISION.md) : espace de création de contenu du coach.
@@ -259,7 +259,7 @@ export async function createScript(input: {
 
 export async function updateScript(
   id: string,
-  updates: { title?: string; format?: ScriptFormat; content?: string }
+  updates: { title?: string; format?: ScriptFormat; content?: string; status?: ScriptStatus }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -276,6 +276,10 @@ export async function updateScript(
     patch.format = updates.format;
   }
   if (updates.content !== undefined) patch.content = updates.content.trim() || null;
+  if (updates.status !== undefined) {
+    if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
+    patch.status = updates.status;
+  }
 
   const admin = createAdminClient();
   const { error } = await admin.from("coach_scripts").update(patch).eq("id", id).eq("coach_id", guard.userId);

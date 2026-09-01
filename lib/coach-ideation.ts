@@ -59,6 +59,13 @@ export async function getInspirations(coachId: string): Promise<Inspiration[]> {
 export const SCRIPT_FORMATS = ["court", "long"] as const;
 export type ScriptFormat = (typeof SCRIPT_FORMATS)[number];
 
+// Cycle de vie d'un script (retour direct 2026-09-01, remplace le suivi
+// manuel "mis en à tourner" qui vivait jusque-là dans Notion) : Notion reste
+// le cerveau/la source de matière première, l'app est l'espace de travail
+// où un script se produit puis se suit jusqu'au tournage.
+export const SCRIPT_STATUSES = ["a_tourner", "tourne", "publie"] as const;
+export type ScriptStatus = (typeof SCRIPT_STATUSES)[number];
+
 export interface CoachScript {
   id: string;
   coach_id: string;
@@ -67,6 +74,16 @@ export interface CoachScript {
   content: string | null;
   created_at: string;
   updated_at: string;
+  // Données enrichies (2026-09-01) : au-delà du seul texte parlé, ce qui
+  // rend un script réellement utilisable pour tourner et publier.
+  duration_seconds: number | null;
+  hook: string | null;
+  pillar: string | null;
+  source_reference: string | null;
+  cta: string | null;
+  shot_notes: string | null;
+  platform: string;
+  status: ScriptStatus;
 }
 
 export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
@@ -74,7 +91,7 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("coach_scripts")
-      .select("id, coach_id, title, format, content, created_at, updated_at")
+      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, shot_notes, platform, status")
       .eq("coach_id", coachId)
       .order("updated_at", { ascending: false });
     return (data as CoachScript[]) ?? [];

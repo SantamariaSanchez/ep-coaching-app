@@ -21,6 +21,12 @@ export interface ScheduleBlock {
   notify: boolean;
   last_notified_at: string | null;
   created_at: string;
+  // NULL = gabarit récurrent chaque semaine (comportement historique).
+  // Renseigné = bloc ponctuel (rendez-vous importé de Google Calendar,
+  // coiffeur/Calendly/Planity/...) valable uniquement cette date-là, nettoyé
+  // automatiquement une fois passé (voir app/api/cron/schedule-block-notify
+  // et la routine cloud "Sync Google Calendar").
+  specific_date: string | null;
 }
 
 export const DAY_LABELS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
