@@ -18,6 +18,23 @@ interface ScheduleBlockRow {
   label: string;
   notify: boolean;
   last_notified_at: string | null;
+  alarm_ack_date: string | null;
+}
+
+// Un réveil raté ("j'ai pas été réveillé car seulement notif sans son",
+// retour direct 2026-09-01) n'a qu'un seul essai avec la logique
+// last_notified_at classique : si le son système n'a pas suffi (téléphone en
+// silencieux, Focus/DND — hors de portée du code, voir AlarmPlayer.tsx), il
+// n'y a jamais de deuxième chance. Pour un bloc réveil, on relance donc la
+// notif à chaque passage du cron (5 min) tant qu'elle n'est pas acquittée
+// (alarm_ack_date, bouton "Arrêter" ou clic notif), avec une limite de 30 min
+// après l'heure du bloc pour ne pas sonner indéfiniment si oublié.
+const ALARM_ESCALATION_WINDOW_MIN = 30;
+
+function minutesSince(startTime: string, nowTime: string): number {
+  const [sh, sm] = startTime.split(":").map(Number);
+  const [nh, nm] = nowTime.split(":").map(Number);
+  return (nh * 60 + nm) - (sh * 60 + sm);
 }
 
 export async function GET(req: Request) {
@@ -34,12 +51,19 @@ export async function GET(req: Request) {
   const supabase = createAdminClient();
   const { data: blocks } = await supabase
     .from("schedule_blocks")
-    .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at")
+    .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at, alarm_ack_date")
     .eq("notify", true)
     .eq("day_of_week", todayDow);
 
   const due = (blocks as ScheduleBlockRow[] | null)?.filter((b) => {
     if (b.start_time > nowTime) return false; // pas encore l'heure
+    const isAlarm = /r[ée]veil/i.test(b.label);
+    if (isAlarm) {
+      // Escalade : renvoyer tant que non acquitté, dans la fenêtre de 30 min.
+      if (b.alarm_ack_date === today) return false; // déjà arrêté par l'utilisateur
+      if (minutesSince(b.start_time, nowTime) > ALARM_ESCALATION_WINDOW_MIN) return false; // abandon, trop tard
+      return true;
+    }
     if (b.last_notified_at && parisDateStr(new Date(b.last_notified_at)) === today) return false; // déjà envoyé aujourd'hui
     return true;
   }) ?? [];
@@ -63,7 +87,8 @@ export async function GET(req: Request) {
       `🕐 ${block.label}`,
       `C'est l'heure, ${block.label} commence maintenant.`,
       url,
-      isAlarm ? "alarm" : undefined
+      isAlarm ? "alarm" : undefined,
+      isAlarm ? block.id : undefined
     );
     if (result.ok) {
       sent++;

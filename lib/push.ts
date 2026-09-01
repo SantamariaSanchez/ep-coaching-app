@@ -26,7 +26,13 @@ export async function sendPushToUser(
   // vibre, et surtout déclenche un vrai son d'alarme joué en boucle dans
   // l'appli si un onglet est ouvert (Notification.silent seul ne "sonne"
   // pas vraiment, juste un bip discret du système). Voir components/ui/AlarmPlayer.tsx.
-  type?: "alarm"
+  type?: "alarm",
+  // Id du schedule_blocks concerné — uniquement utile pour type "alarm" :
+  // transmis jusqu'au bouton "Arrêter" (AlarmPlayer) et à l'action
+  // "stop-alarm" de la notification (sw.js) pour qu'ils puissent acquitter
+  // le bon bloc via /api/client/schedule-blocks/ack-alarm et stopper
+  // l'escalade (voir app/api/cron/schedule-block-notify).
+  blockId?: string
 ): Promise<{ ok: boolean; reason?: string }> {
   try {
     initVapid();
@@ -63,7 +69,7 @@ export async function sendPushToUser(
 
     await webpush.sendNotification(
       data.subscription as webpush.PushSubscription,
-      JSON.stringify({ title, body, url: url ?? "/", type })
+      JSON.stringify({ title, body, url: url ?? "/", type, blockId })
     );
 
     return { ok: true };

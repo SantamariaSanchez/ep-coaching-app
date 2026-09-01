@@ -18,7 +18,7 @@ self.addEventListener("push", (event) => {
         body: data.body || "Nouveau message",
         icon: "/icon-192.png",
         badge: "/icon-192.png",
-        data: { url: data.url || "/", type: data.type },
+        data: { url: data.url || "/", type: data.type, blockId: data.blockId },
         // Un réveil (type "alarm") doit rester affiché tant qu'il n'est pas
         // explicitement fermé/traité — sans ça, la notif peut disparaître
         // toute seule après quelques secondes sur certains appareils et
@@ -40,7 +40,7 @@ self.addEventListener("push", (event) => {
       if (isAlarm) {
         const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
         for (const client of windowClients) {
-          client.postMessage({ type: "PLAY_ALARM", title: data.title, body: data.body, url: data.url || "/" });
+          client.postMessage({ type: "PLAY_ALARM", title: data.title, body: data.body, url: data.url || "/", blockId: data.blockId });
         }
       }
     })()
@@ -49,31 +49,45 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   const isStopAction = event.action === "stop-alarm";
+  const isAlarmNotif = event.notification.data?.type === "alarm";
+  const blockId = event.notification.data?.blockId;
   event.notification.close();
   event.waitUntil(
-    clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((windowClients) => {
-        // Le bouton "Arrêter" coupe le son dans tous les onglets ouverts,
-        // sans forcément les mettre au premier plan.
-        if (isStopAction) {
-          for (const client of windowClients) {
-            client.postMessage({ type: "STOP_ALARM" });
-          }
-          return;
-        }
+    (async () => {
+      // Toute interaction avec une notif réveil (bouton "Arrêter" ou clic sur
+      // la notif elle-même) vaut acquittement : arrête l'escalade côté cron
+      // (voir app/api/cron/schedule-block-notify) sans quoi la notif
+      // reviendrait toutes les 5 min même après que l'utilisateur l'a vue.
+      if (isAlarmNotif && blockId) {
+        fetch("/api/client/schedule-blocks/ack-alarm", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ blockId }),
+          credentials: "include",
+        }).catch(() => {});
+      }
+
+      const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
+      // Le bouton "Arrêter" coupe le son dans tous les onglets ouverts,
+      // sans forcément les mettre au premier plan.
+      if (isStopAction) {
         for (const client of windowClients) {
           client.postMessage({ type: "STOP_ALARM" });
         }
-        const url = event.notification.data?.url || "/";
-        for (const client of windowClients) {
-          if (client.url.includes(url) && "focus" in client) {
-            return client.focus();
-          }
+        return;
+      }
+      for (const client of windowClients) {
+        client.postMessage({ type: "STOP_ALARM" });
+      }
+      const url = event.notification.data?.url || "/";
+      for (const client of windowClients) {
+        if (client.url.includes(url) && "focus" in client) {
+          return client.focus();
         }
-        if (clients.openWindow) {
-          return clients.openWindow(url);
-        }
-      })
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })()
   );
 });

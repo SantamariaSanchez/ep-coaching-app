@@ -18,7 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // reste disponible dans ce cas, c'est une contrainte de la plateforme,
 // pas quelque chose de contournable depuis le code de l'appli.
 export default function AlarmPlayer() {
-  const [ringing, setRinging] = useState<{ title: string; body: string; url: string } | null>(null);
+  const [ringing, setRinging] = useState<{ title: string; body: string; url: string; blockId?: string } | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const stopFnRef = useRef<(() => void) | null>(null);
   const [needsTap, setNeedsTap] = useState(false);
@@ -72,9 +72,19 @@ export default function AlarmPlayer() {
   const stopAlarm = useCallback(() => {
     stopFnRef.current?.();
     stopFnRef.current = null;
+    // Appuyer sur "Arrêter" vaut acquittement : coupe l'escalade côté cron
+    // (voir app/api/cron/schedule-block-notify) sans quoi la notif reviendrait
+    // toutes les 5 min même après que l'utilisateur est réveillé.
+    if (ringing?.blockId) {
+      fetch("/api/client/schedule-blocks/ack-alarm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockId: ringing.blockId }),
+      }).catch(() => {});
+    }
     setRinging(null);
     setNeedsTap(false);
-  }, []);
+  }, [ringing]);
 
   useEffect(() => {
     if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
@@ -83,7 +93,7 @@ export default function AlarmPlayer() {
       const data = event.data;
       if (!data) return;
       if (data.type === "PLAY_ALARM") {
-        setRinging({ title: data.title || "Réveil", body: data.body || "C'est l'heure de te lever.", url: data.url || "/" });
+        setRinging({ title: data.title || "Réveil", body: data.body || "C'est l'heure de te lever.", url: data.url || "/", blockId: data.blockId });
         stopFnRef.current = playAlarmTone();
       } else if (data.type === "STOP_ALARM") {
         stopAlarm();
