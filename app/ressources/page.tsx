@@ -3,6 +3,7 @@ import { getResourcesPublic } from "@/utils/resources";
 import { GUIDE_KEYWORDS } from "@/lib/guide-keywords";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import { getUser, getProfile } from "@/utils/auth";
+import { getPublicVictories } from "@/utils/community";
 import PublicRessourcesClient from "@/components/ressources/PublicRessourcesClient";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 
@@ -29,10 +30,15 @@ export default async function PublicRessourcesPage({
   // client connecté ne doit jamais voir les codes CTA reels (outil
   // d'organisation réservé aux coachs, voir LEADMAGNETS.md). getUser()/
   // getProfile() renvoient null proprement si personne n'est connecté.
-  const [resources, leadMagnets, user] = await Promise.all([
+  const [resources, leadMagnets, user, victories] = await Promise.all([
     getResourcesPublic(),
     getAllLeadMagnets(),
     getUser(),
+    // Même bug corrigé sur app/bio et app/page.tsx (audit de cohérence
+    // 2026-09-01) : la carte "Réussites des membres" ne doit s'afficher que
+    // s'il existe au moins une victoire publique réelle, sinon elle mène
+    // vers un écran vide.
+    getPublicVictories(1),
   ]);
   const profile = user ? await getProfile(user.id) : null;
   const isCoach = profile?.role === "coach";
@@ -44,6 +50,7 @@ export default async function PublicRessourcesPage({
         leadMagnets={leadMagnets}
         initialQuery={initialQuery}
         isCoach={isCoach}
+        hasVictories={victories.length > 0}
       />
       {/* Point d'entree organique confirme (voir commentaire metadata
           ci-dessus) : quelqu'un qui lit un guide gratuit ici est un

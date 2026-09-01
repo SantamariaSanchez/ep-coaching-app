@@ -18,7 +18,24 @@ export interface CoachDirectoryEntry {
   is_ai_coach: boolean;
 }
 
-export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
+/**
+ * Annuaire des coachs.
+ *
+ * `includeAICoaches` est à false par défaut, et c'est volontaire : les
+ * coachs IA restent strictement internes à l'espace connecté (règle de
+ * positionnement Notion du 2026-08-30, "les coachs IA et agents IA internes
+ * ne sont jamais mentionnés publiquement"). L'annuaire /coachs est une page
+ * publique, sans compte, indexable : elle listait jusqu'ici 10 personas IA
+ * portant des noms de personnes, avec un bouton "Commencer avec <prénom>",
+ * face à un visiteur qui découvre la marque. La transparence décidée à
+ * l'Axe AF (badge "Coach IA" visible, jamais d'impersonation) reste entière
+ * là où elle a été demandée, c'est à dire une fois le compte créé : choix
+ * du coach et messagerie côté client, plus la section dédiée de la politique
+ * de confidentialité.
+ */
+export async function getCoachDirectory(
+  { includeAICoaches = false }: { includeAICoaches?: boolean } = {}
+): Promise<CoachDirectoryEntry[]> {
   try {
     const admin = createAdminClient();
     const { data } = await admin
@@ -46,6 +63,7 @@ export async function getCoachDirectory(): Promise<CoachDirectoryEntry[]> {
 
     return rows
       .filter((r) => r.is_platform_owner || r.platform_subscription_status === "active")
+      .filter((r) => includeAICoaches || !r.is_ai_coach)
       .map((r) => ({
         id: r.id,
         full_name: r.full_name,

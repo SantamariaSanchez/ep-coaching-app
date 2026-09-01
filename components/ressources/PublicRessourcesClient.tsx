@@ -17,11 +17,15 @@ export default function PublicRessourcesClient({
   leadMagnets,
   initialQuery,
   isCoach = false,
+  hasVictories = false,
 }: {
   resources: ResourceItem[];
   leadMagnets: LeadMagnet[];
   initialQuery: string;
   isCoach?: boolean;
+  /** Au moins une victoire publiée publiquement : sinon la carte
+   *  "Réussites des membres" mène vers un écran vide (voir app/bio). */
+  hasVictories?: boolean;
 }) {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(FREE_PREVIEW_SECONDS);
@@ -143,20 +147,25 @@ export default function PublicRessourcesClient({
         </Link>
 
         {/* Item 44 : mur de réussites publiques, même logique de découverte
-            que les calculateurs ci-dessus. */}
-        <Link
-          href="/reussites"
-          className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
-        >
-          <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-            <Trophy size={15} className="text-[#890404]" strokeWidth={1.8} />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">Réussites des membres</p>
-            <p className="text-[10px] text-[#F5EDED]/35">Ce qu&apos;ils partagent, avec leur accord</p>
-          </div>
-          <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
-        </Link>
+            que les calculateurs ci-dessus. Repris dans l'audit de cohérence
+            2026-09-01 (même bug que app/bio et app/page.tsx) : affiché
+            uniquement s'il y a au moins une victoire publique réelle à
+            montrer, sinon la carte mène vers un écran vide. */}
+        {hasVictories && (
+          <Link
+            href="/reussites"
+            className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5 mb-6 no-underline"
+          >
+            <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
+              <Trophy size={15} className="text-[#890404]" strokeWidth={1.8} />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-white">Réussites des membres</p>
+              <p className="text-[10px] text-[#F5EDED]/35">Ce qu&apos;ils partagent, avec leur accord</p>
+            </div>
+            <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
+          </Link>
+        )}
 
         {/* Fichiers envoyés à la main par le coach : maintenu uniquement en
             complément ponctuel maintenant que la bibliothèque principale

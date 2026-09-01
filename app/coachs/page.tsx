@@ -6,15 +6,22 @@ import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Trouve ton coach | EP Coaching",
-  description: "Annuaire public des coachs EP Coaching : trouve celui qui correspond à ton objectif.",
+  title: "Ton coach | EP Coaching",
+  description: "Qui t'accompagne chez EP Coaching, et sur quoi.",
 };
 
 // Axe 5 (VISION.md) : annuaire public, accessible sans compte, pour qu'un
 // visiteur trouve le bon coach avant de s'inscrire — plutôt que d'atterrir
 // systématiquement chez le même coach par défaut.
+//
+// getCoachDirectory() exclut les coachs IA par défaut : ils restent réservés
+// à l'espace connecté (voir la justification dans lib/coach-directory.ts).
+// Tant qu'aucun coach tiers humain n'a rejoint la plateforme, cette page ne
+// montre donc qu'un seul coach, d'où le titre et l'intro qui s'adaptent au
+// nombre réel plutôt que de promettre un annuaire qui n'existe pas encore.
 export default async function CoachsDirectoryPage() {
   const coaches = await getCoachDirectory();
+  const isDirectory = coaches.length > 1;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 680, margin: "0 auto" }}>
@@ -28,10 +35,13 @@ export default async function CoachsDirectoryPage() {
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           EP Coaching
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Trouve ton coach</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">
+          {isDirectory ? "Trouve ton coach" : "Ton coach"}
+        </h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          Chaque coach a ses propres points forts. Filtre par ce qui compte pour toi (objectif,
-          contrainte particulière) pour trouver le bon interlocuteur.
+          {isDirectory
+            ? "Chaque coach a ses propres points forts. Filtre par ce qui compte pour toi (objectif, contrainte particulière) pour trouver le bon interlocuteur."
+            : "Voilà qui t'accompagne, et sur quoi. Pas de plan recopié sur quelqu'un d'autre : ton suivi se construit sur ta situation, et tu comprends chaque choix qu'on fait."}
         </p>
       </div>
 

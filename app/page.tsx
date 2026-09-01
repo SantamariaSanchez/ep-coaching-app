@@ -17,11 +17,11 @@ import {
   FlaskConical,
   Map,
   UtensilsCrossed,
-  Trophy,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
+import { ALL_LIVE_TYPES } from "@/lib/live-types";
 
 // Ordre pensé comme un argumentaire, pas une simple liste alphabétique de
 // modules (retour direct du 2026-08-15 : "le gars qui vient veut une
@@ -32,9 +32,17 @@ import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 // quotidien) ensuite : ce sont des modules réels et utiles, juste pas ce
 // qui fait venir quelqu'un.
 const FEATURES = [
-  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A avec un vrai coach" },
-  { icon: BookOpen, title: "5 formations complètes", desc: "Bodybuilding, nutrition, training, business, psychologie" },
-  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées, coach humain par défaut" },
+  { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
+  // Pas de "5 formations complètes" ici (audit de cohérence 2026-09-01) : les
+  // 5 formations existent bien en structure, mais aucune n'est publiée et
+  // aucune leçon n'a encore de vidéo (vérifié en base). Notion compte 2
+  // formations réellement faites sur les 5 prévues, 20h sur 80h. On annonce
+  // donc le périmètre, jamais un état d'avancement qu'on ne peut pas tenir.
+  { icon: BookOpen, title: "Formations", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  // "coach humain par défaut" retiré : la formule n'a de sens que si on sait
+  // qu'il existe des coachs IA, or ils restent strictement internes à
+  // l'espace connecté (règle de positionnement Notion).
+  { icon: MessageCircle, title: "Messagerie coach", desc: "Contact direct, réponses personnalisées" },
   { icon: LineChart, title: "Suivi & progression", desc: "Mesures, photos, pesée, courbes d'évolution" },
   { icon: Dumbbell, title: "Programmes", desc: "Plans de musculation sur mesure, adaptés à ton niveau" },
   { icon: Utensils, title: "Nutrition", desc: "Plans alimentaires et calcul de macros personnalisé" },
@@ -46,9 +54,12 @@ const FEATURES = [
   { icon: UtensilsCrossed, title: "Recettes", desc: "Des idées de repas healthy et gourmands" },
 ];
 
+// Chiffres dérivés du code plutôt qu'écrits à la main : ils ne peuvent pas
+// se désynchroniser de ce que l'app propose réellement (l'ancien "5
+// Formations" annonçait des formations dont aucune n'est publiée à ce jour).
 const STATS = [
-  { value: "5", label: "Formations" },
-  { value: "7", label: "Formats live" },
+  { value: String(FEATURES.length), label: "Outils inclus" },
+  { value: String(ALL_LIVE_TYPES.length), label: "Formats live" },
   { value: "100%", label: "Personnalisé" },
 ];
 
@@ -118,7 +129,7 @@ export default function HomePage() {
               lineHeight: 1.5,
             }}
           >
-            Un vrai accompagnement, pas une appli de plus : coaching live, audits, formations complètes et un coach qui répond vraiment.
+            Tu t&apos;entraînes, tu fais attention à ce que tu manges, et les résultats ne suivent pas. Ici tu comprends chaque choix, ton suivi se construit sur ta situation. Pas une appli de plus.
           </p>
         </div>
 
@@ -199,34 +210,18 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* ── Preuve sociale, juste avant l'appel à l'action (retour direct
-            2026-08-16 : augmenter le taux d'inscription). Pas de chiffre
-            de membres inventé ou gonflé (12 clients réels à ce jour, pas de
-            quoi impressionner) : le lien vers /reussites, lui, est honnête
-            et vérifiable, ce sont de vraies transformations publiées avec
-            l'accord explicite de leur auteur. ── */}
-        <Link
-          href="/reussites"
-          className="animate-fade-up stagger-4"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 7,
-            marginBottom: 18,
-            padding: "10px 16px",
-            borderRadius: "var(--radius-md)",
-            background: "rgba(224,30,30,0.08)",
-            border: "1px solid rgba(224,30,30,0.2)",
-            color: "#F5EDED",
-            textDecoration: "none",
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          <Trophy size={14} style={{ color: "#E01E1E" }} />
-          Voir de vraies transformations de membres
-        </Link>
+        {/* ── Preuve sociale : volontairement absente (audit de cohérence
+            2026-09-01). Le bloc précédent promettait "de vraies
+            transformations de membres" et menait vers /reussites, qui ne
+            contient aujourd'hui aucune victoire publique (0 ligne
+            community_posts publique, vérifié en base) : la page d'accueil
+            promettait donc une preuve qui n'existe pas et envoyait le
+            visiteur sur un écran vide, juste avant l'appel à l'action.
+            L'absence de preuve sociale est assumée dans la stratégie
+            (0 client payant à ce jour, la légitimité repose sur
+            l'exécution), elle ne se compense pas par un lien qui sonne
+            creux. À restaurer tel quel dès qu'un membre a publié une
+            victoire publique, c'est le premier levier à débloquer. ── */}
 
         {/* ── Main CTA ── */}
         <div className="animate-fade-up stagger-5">
@@ -256,12 +251,16 @@ export default function HomePage() {
             Accès gratuit · Sans engagement
           </p>
 
-          {/* Axe 5 (VISION.md) : plusieurs coachs sur la plateforme
-              maintenant, pas seulement celui par défaut — un visiteur
-              indécis doit pouvoir choisir avant de s'inscrire. Grossi et
-              passé en doré (retour direct 2026-08-17) : cette page sert
-              désormais de destination pour le lien en bio, ces deux liens
-              secondaires méritent plus de poids visuel. */}
+          {/* Axe 5 (VISION.md) : un visiteur indécis doit pouvoir voir qui
+              l'accompagnera avant de s'inscrire. Grossi et passé en doré
+              (retour direct 2026-08-17) : cette page sert aussi de
+              destination pour le lien en bio, ces deux liens secondaires
+              méritent plus de poids visuel.
+              Le libellé ne promet plus "plusieurs coachs" (audit de
+              cohérence 2026-09-01) : l'annuaire public ne liste que les
+              coachs humains, et il n'y en a qu'un à ce jour. Cette
+              formulation reste juste le jour où un coach tiers rejoint la
+              plateforme. */}
           <Link
             href="/coachs"
             style={{
@@ -276,7 +275,7 @@ export default function HomePage() {
               textDecoration: "none",
             }}
           >
-            <Users size={14} /> Plusieurs coachs disponibles, trouve le tien
+            <Users size={14} /> Voir qui va t&apos;accompagner
           </Link>
 
           {/* Chemin de repli pour un visiteur pas encore prêt à créer un

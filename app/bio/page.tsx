@@ -9,6 +9,9 @@ import {
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
 import { BRAND_SOCIALS } from "@/lib/brand-links";
+import { getPublicVictories } from "@/utils/community";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "EP Coaching",
@@ -22,7 +25,15 @@ export const metadata: Metadata = {
 // arrive avec zéro contexte et doit comprendre où cliquer en 2 secondes.
 // Volontairement sans nav ni footer de l'appli : une seule colonne de
 // choix, rien d'autre à regarder.
-const LINKS = [
+type BioLink = {
+  href: string;
+  icon: typeof Heart;
+  title: string;
+  desc: string;
+  primary?: boolean;
+};
+
+const LINKS: BioLink[] = [
   {
     href: "/auth/client",
     icon: Heart,
@@ -30,17 +41,14 @@ const LINKS = [
     desc: "Accès immédiat, sans engagement",
     primary: true,
   },
+  // Ne promet plus "plusieurs coachs" (audit de cohérence 2026-09-01) :
+  // l'annuaire public ne liste que les coachs humains, et il n'y en a qu'un
+  // à ce jour. Formulation qui reste juste quand un coach tiers arrive.
   {
     href: "/coachs",
     icon: Users,
-    title: "Trouver ton coach",
-    desc: "Plusieurs coachs disponibles",
-  },
-  {
-    href: "/reussites",
-    icon: Trophy,
-    title: "Voir les résultats",
-    desc: "De vraies transformations de membres",
+    title: "Voir qui va t'accompagner",
+    desc: "Le coach, ses spécialités",
   },
   {
     href: "/ressources",
@@ -50,7 +58,22 @@ const LINKS = [
   },
 ];
 
-export default function BioPage() {
+// Le lien "réussites" n'est ajouté que s'il y a réellement quelque chose à
+// montrer : tant qu'aucun membre n'a publié de victoire publique, un lien
+// "de vraies transformations" mène vers un écran vide et détruit la
+// confiance au lieu de la construire. 0 client payant à ce jour, l'absence
+// de preuve sociale est assumée dans la stratégie, pas maquillée.
+const VICTORIES_LINK: BioLink = {
+  href: "/reussites",
+  icon: Trophy,
+  title: "Voir les résultats",
+  desc: "Ce que les membres partagent eux-mêmes",
+};
+
+export default async function BioPage() {
+  const victories = await getPublicVictories(1);
+  const links = victories.length > 0 ? [...LINKS, VICTORIES_LINK] : LINKS;
+
   return (
     <div
       style={{
@@ -81,11 +104,11 @@ export default function BioPage() {
             margin: "0 0 32px",
           }}
         >
-          Coaching bodybuilding & nutrition, 100% en ligne
+          Comprendre ce que tu fais, pour que ton physique suive enfin tes efforts
         </p>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {LINKS.map(({ href, icon: Icon, title, desc, primary }, i) => (
+          {links.map(({ href, icon: Icon, title, desc, primary }, i) => (
             <Link
               key={href}
               href={href}

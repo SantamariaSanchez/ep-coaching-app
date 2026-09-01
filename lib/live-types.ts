@@ -20,7 +20,7 @@ export function isOneToOneType(type: LiveType): boolean {
   return ONE_TO_ONE_TYPES.includes(type);
 }
 
-const ALL_LIVE_TYPES: LiveType[] = [
+export const ALL_LIVE_TYPES: LiveType[] = [
   "1to1", "webinaire", "qna", "audit", "checkin_hebdo", "acces_direct", "atelier",
 ];
 
