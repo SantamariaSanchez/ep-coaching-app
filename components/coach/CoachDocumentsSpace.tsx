@@ -187,7 +187,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
       <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/50 rounded-xl py-8 cursor-pointer transition-colors mb-4">
         <Upload size={18} className="text-[#F5EDED]/30" />
         <span className="text-xs font-bold text-[#F5EDED]/50">
-          {uploading ? "Envoi..." : "Choisis un fichier (PDF, image, Word, Excel, ZIP — 20MB max)"}
+          {uploading ? "Envoi..." : "Choisis un fichier (PDF, image, Word, Excel, ZIP, 20MB max)"}
         </span>
         <input
           ref={inputRef}

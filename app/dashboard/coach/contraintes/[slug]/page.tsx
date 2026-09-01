@@ -54,7 +54,7 @@ export default async function CoachContraintePage({
       <div className="bg-amber-500/5 border border-amber-500/25 rounded-xl px-4 py-3.5 mb-8">
         <p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-amber-300 mb-2.5">
           <ShieldAlert size={13} />
-          Signaux d&apos;alerte — orienter vers un professionnel
+          Signaux d&apos;alerte : orienter vers un professionnel
         </p>
         <ul className="space-y-2">
           {constraint.redFlags.map((f, i) => (

@@ -216,7 +216,7 @@ function VolumeBudgetReviewPanel({
       </p>
       <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
         Séries directes/semaine par groupe musculaire, comparées au budget visé et aux repères MEV/MAV/MRV
-        (Renaissance Periodization) — un repère, pas une règle : récupération, historique et priorités du
+        (Renaissance Periodization). Un repère, pas une règle : récupération, historique et priorités du
         client comptent tout autant (
         <a href="https://doi.org/10.1007/s40279-025-02344-w" target="_blank" rel="noopener noreferrer" className="underline hover:text-[#F5EDED]/50">
           Pelland et al., Sports Med 2025

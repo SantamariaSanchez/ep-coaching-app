@@ -41,7 +41,7 @@ export default async function CoachBusinessPage() {
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
           Suivre tes clients, c&apos;est déjà couvert partout ailleurs dans l&apos;appli. Ici, c&apos;est
-          ton propre business de coach : contenu, marque personnelle, stratégie — un système à suivre,
+          ton propre business de coach : contenu, marque personnelle, stratégie. Un système à suivre,
           pas juste des idées en vrac.
         </p>
       </div>
@@ -58,7 +58,7 @@ export default async function CoachBusinessPage() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[12.5px] font-bold text-white">Studio créatif</p>
-            <p className="text-[10.5px] text-[#F5EDED]/35">Idées, scripts, inspirations — ton espace de création</p>
+            <p className="text-[10.5px] text-[#F5EDED]/35">Idées, scripts, inspirations : ton espace de création</p>
           </div>
           <ArrowRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors flex-shrink-0" />
         </Link>

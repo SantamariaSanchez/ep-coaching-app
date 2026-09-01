@@ -62,10 +62,10 @@ export default async function SalesCallsPage() {
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
         <StatCard label="Appels bookés" value={String(calls.length)} />
-        <StatCard label="Show up" value={showUpRate !== null ? `${showUpRate}%` : "—"} sub={`${shownUp.length}/${known.length}`} color="#60a5fa" />
-        <StatCard label="Closing" value={closingRate !== null ? `${closingRate}%` : "—"} sub={`${closed.length}/${shownUp.length}`} color="#4ade80" />
+        <StatCard label="Show up" value={showUpRate !== null ? `${showUpRate}%` : "···"} sub={`${shownUp.length}/${known.length}`} color="#60a5fa" />
+        <StatCard label="Closing" value={closingRate !== null ? `${closingRate}%` : "···"} sub={`${closed.length}/${shownUp.length}`} color="#4ade80" />
         <StatCard label="CA total" value={`${revenue.toLocaleString("fr-FR")}€`} color="#E01E1E" />
-        <StatCard label="CA / appel" value={revenuePerCall !== null ? `${revenuePerCall}€` : "—"} />
+        <StatCard label="CA / appel" value={revenuePerCall !== null ? `${revenuePerCall}€` : "···"} />
       </div>
 
       {calls.length === 0 ? (

@@ -27,7 +27,7 @@ export default async function CoachDocumentsPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Documents & notes</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          Des modèles à adapter, tes fichiers perso, et un bloc-notes rapide — tout au même endroit.
+          Des modèles à adapter, tes fichiers perso, et un bloc-notes rapide, tout au même endroit.
         </p>
       </div>
 

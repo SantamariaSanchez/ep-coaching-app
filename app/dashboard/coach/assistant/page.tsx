@@ -51,7 +51,7 @@ export default async function CoachAssistantPage() {
         <div className="ep-card flex items-start gap-3" style={{ padding: "16px 18px" }}>
           <ShieldCheck size={16} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
           <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed">
-            Audit qualité quotidien : programmes laissés inachevés, décrochages réels — jamais un
+            Audit qualité quotidien : programmes laissés inachevés, décrochages réels, jamais un
             rapport creux, seulement ce qui mérite vraiment ton attention.
           </p>
         </div>

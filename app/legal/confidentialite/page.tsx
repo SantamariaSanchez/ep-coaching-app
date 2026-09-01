@@ -153,7 +153,7 @@ const sections: LegalSection[] = [
         <P>
           Un coach humain peut également, pour ses propres clients, s&apos;appuyer sur un agent IA interne
           pour rédiger un message de suivi personnalisé (par exemple une relance après une période
-          d&apos;inactivité) — ce message est alors envoyé depuis le compte de votre coach humain, jamais
+          d&apos;inactivité), ce message est alors envoyé depuis le compte de votre coach humain, jamais
           au nom d&apos;un tiers.
         </P>
       </>

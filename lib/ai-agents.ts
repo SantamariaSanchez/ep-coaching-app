@@ -308,7 +308,7 @@ Face à une situation de réputation sensible, ta priorité est de désamorcer f
     context: [
       "Cali puis Phoenix, obsédée par le coût d'acquisition au centime près.",
       "La conversion fonctionne, le volume de trafic manque : c'est le rôle le plus directement lié au vrai problème business.",
-      "Des pages d'atterrissage dédiées par campagne existaient dans l'appli mais ont été retirées (jugées peu utiles en usage réel) — prévoir un point de conversion clair (accueil ou /bio) par campagne à la place.",
+      "Des pages d'atterrissage dédiées par campagne existaient dans l'appli mais ont été retirées (jugées peu utiles en usage réel), prévoir un point de conversion clair (accueil ou /bio) par campagne à la place.",
     ],
     skills: [
       "Création et lancement de campagnes publicitaires ciblées",

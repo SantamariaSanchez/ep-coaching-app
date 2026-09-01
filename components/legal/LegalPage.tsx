@@ -29,12 +29,21 @@ export function LegalPage({
   lastUpdated,
   intro,
   sections,
+  showLegalIdentity = true,
 }: {
   eyebrow: string;
   title: string;
   lastUpdated: string;
   intro?: ReactNode;
   sections: LegalSection[];
+  /**
+   * Mentions légales de l'éditeur en pied de page. Obligatoires sur les
+   * documents contractuels (CGU, CGV, confidentialité), inutiles ailleurs :
+   * ce composant sert aussi à des pages non contractuelles comme
+   * l'assistance, où afficher l'identité administrative n'apporte rien et
+   * n'a pas à figurer. La marque publique reste "EP Coaching".
+   */
+  showLegalIdentity?: boolean;
 }) {
   return (
     <div style={{ minHeight: "100vh", padding: "32px 18px 64px", position: "relative", zIndex: 1 }}>
@@ -155,7 +164,9 @@ export function LegalPage({
             fontWeight: 600,
           }}
         >
-          EP Coaching · Emmanuel Peccoux · SIRET 10483817200013
+          {showLegalIdentity
+            ? "EP Coaching · Emmanuel Peccoux · SIRET 10483817200013"
+            : "EP Coaching"}
         </p>
       </div>
     </div>

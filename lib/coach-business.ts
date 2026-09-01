@@ -25,17 +25,17 @@ export interface FunnelStageInfo {
 export const FUNNEL_STAGES: FunnelStageInfo[] = [
   {
     key: "TOF",
-    label: "TOF — Top of funnel",
+    label: "TOF : top of funnel",
     goal: "Se faire découvrir par quelqu'un qui ne te connaît pas encore. Un contenu TOF doit fonctionner sans aucun contexte préalable.",
     formats: [
       { platform: "Instagram", format: "Reel", idea: "Un mythe fitness démonté en 30 secondes, ou un avant/après réel de client (avec accord)." },
-      { platform: "Instagram", format: "Carrousel", idea: "\"5 erreurs que tout le monde fait en [sujet]\" — accroche forte sur la 1ère image." },
+      { platform: "Instagram", format: "Carrousel", idea: "\"5 erreurs que tout le monde fait en [sujet]\", accroche forte sur la 1ère image." },
       { platform: "YouTube", format: "Short", idea: "Réponse directe à une question fréquente, format vertical, sans intro." },
     ],
   },
   {
     key: "MOF",
-    label: "MOF — Middle of funnel",
+    label: "MOF : middle of funnel",
     goal: "Approfondir avec quelqu'un qui te suit déjà mais n'est pas encore convaincu. Montre ta méthode, pas juste ton résultat.",
     formats: [
       { platform: "Instagram", format: "Story (séquence)", idea: "Coulisses d'une vraie séance ou d'un vrai bilan client, montrées en plusieurs stories." },
@@ -45,7 +45,7 @@ export const FUNNEL_STAGES: FunnelStageInfo[] = [
   },
   {
     key: "BOF",
-    label: "BOF — Bottom of funnel",
+    label: "BOF : bottom of funnel",
     goal: "Convertir quelqu'un déjà convaincu du fond, qui hésite encore sur la forme (prix, confiance, timing).",
     formats: [
       { platform: "Instagram", format: "Story", idea: "Témoignage client en story avec réponse à une objection courante (prix, temps, motivation)." },
@@ -68,7 +68,7 @@ export const BUSINESS_CHECKLIST: BusinessChecklistItem[] = [
     key: "positioning-statement",
     category: "Positionnement",
     label: "Une phrase claire de positionnement",
-    detail: "Qui tu aides, avec quel problème précis, avec quelle méthode — une seule phrase, pas un paragraphe.",
+    detail: "Qui tu aides, avec quel problème précis, avec quelle méthode : une seule phrase, pas un paragraphe.",
   },
   {
     key: "positioning-niche",
@@ -81,7 +81,7 @@ export const BUSINESS_CHECKLIST: BusinessChecklistItem[] = [
     key: "brand-bio",
     category: "Personal branding",
     label: "Bio Instagram optimisée",
-    detail: "Qui tu es, pour qui, un lien unique et à jour — pas une bio générique copiée d'ailleurs.",
+    detail: "Qui tu es, pour qui, un lien unique et à jour, pas une bio générique copiée d'ailleurs.",
   },
   {
     key: "brand-profile-photo",
@@ -106,7 +106,7 @@ export const BUSINESS_CHECKLIST: BusinessChecklistItem[] = [
     key: "content-funnel-mix",
     category: "Contenu",
     label: "Un mix TOF/MOF/BOF pensé, pas au hasard",
-    detail: "Voir le funnel ci-dessus — la majorité du contenu doit rester TOF (découverte), pas juste BOF (vente).",
+    detail: "Voir le funnel ci-dessus : la majorité du contenu doit rester TOF (découverte), pas juste BOF (vente).",
   },
   {
     key: "content-studio",
@@ -119,7 +119,7 @@ export const BUSINESS_CHECKLIST: BusinessChecklistItem[] = [
     key: "proof-testimonials",
     category: "Preuve sociale",
     label: "Au moins 3 témoignages clients réels collectés",
-    detail: "Avec l'accord explicite du client — avant/après, ressenti, résultat concret.",
+    detail: "Avec l'accord explicite du client : avant/après, ressenti, résultat concret.",
   },
   {
     key: "conversion-offer-clarity",

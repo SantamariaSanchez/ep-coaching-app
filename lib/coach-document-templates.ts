@@ -34,7 +34,7 @@ export const DOCUMENT_TEMPLATES: DocumentTemplate[] = [
 
 Entre les soussignés :
 
-[Nom du coach], [statut juridique — auto-entrepreneur / société], [numéro SIRET], domicilié(e) à [adresse], ci-après désigné "le Coach",
+[Nom du coach], [statut juridique : auto-entrepreneur / société], [numéro SIRET], domicilié(e) à [adresse], ci-après désigné "le Coach",
 
 Et :
 
@@ -42,28 +42,28 @@ Et :
 
 Il a été convenu ce qui suit :
 
-ARTICLE 1 — OBJET
+ARTICLE 1 : OBJET
 Le présent contrat a pour objet la fourniture par le Coach d'un accompagnement en [entraînement / nutrition / les deux], comprenant [détail des prestations : programme d'entraînement, suivi nutritionnel, séances de coaching, disponibilité messagerie, etc.].
 
-ARTICLE 2 — DURÉE ET RÉSILIATION
+ARTICLE 2 : DURÉE ET RÉSILIATION
 Le présent contrat est conclu pour une durée de [durée] à compter du [date], reconductible tacitement par périodes de [durée] sauf résiliation par l'une des parties avec un préavis de [délai, ex : 15 jours] avant la date d'échéance.
 
-ARTICLE 3 — TARIFS ET MODALITÉS DE PAIEMENT
+ARTICLE 3 : TARIFS ET MODALITÉS DE PAIEMENT
 La prestation est facturée [montant] € par [mois / séance / cycle], payable [avant le 5 de chaque mois / à la réservation / etc.] par [moyen de paiement]. Tout retard de paiement de plus de [délai] entraîne [conséquence, ex : suspension de l'accompagnement].
 
-ARTICLE 4 — OBLIGATIONS DU COACH
+ARTICLE 4 : OBLIGATIONS DU COACH
 Le Coach s'engage à mettre en œuvre les moyens nécessaires à l'atteinte des objectifs du Client (obligation de moyens, non de résultat), à adapter le programme à l'évolution du Client, et à respecter la confidentialité des informations personnelles et de santé communiquées.
 
-ARTICLE 5 — OBLIGATIONS DU CLIENT
+ARTICLE 5 : OBLIGATIONS DU CLIENT
 Le Client s'engage à communiquer au Coach toute information de santé pertinente (antécédents médicaux, blessures, traitements en cours) avant le début de l'accompagnement et à toute évolution, à suivre les recommandations du Coach, et à consulter un médecin avant reprise ou poursuite d'une activité physique en cas de doute sur son état de santé.
 
-ARTICLE 6 — RESPONSABILITÉ
+ARTICLE 6 : RESPONSABILITÉ
 Le Coach ne saurait être tenu responsable d'un accident, blessure ou incident de santé résultant d'une information de santé incomplète ou erronée communiquée par le Client, ou d'un non-respect par le Client des consignes données. Le Coach dispose d'une assurance responsabilité civile professionnelle n° [numéro].
 
-ARTICLE 7 — DONNÉES PERSONNELLES
+ARTICLE 7 : DONNÉES PERSONNELLES
 Les données de santé et personnelles communiquées par le Client sont utilisées exclusivement dans le cadre de l'accompagnement et ne sont transmises à aucun tiers sans son accord explicite, conformément au RGPD.
 
-ARTICLE 8 — LITIGES
+ARTICLE 8 : LITIGES
 Tout litige relatif à l'exécution du présent contrat relève, à défaut de résolution amiable, des tribunaux compétents du ressort de [ville].
 
 Fait à [ville], le [date], en deux exemplaires.
@@ -74,10 +74,10 @@ Signature du Coach                              Signature du Client`,
     slug: "questionnaire-onboarding-client",
     title: "Questionnaire d'onboarding client",
     shortLabel: "Questionnaire",
-    summary: "Les questions à poser avant de démarrer un accompagnement : santé, objectifs, expérience, disponibilités — la base d'un vrai bilan initial.",
+    summary: "Les questions à poser avant de démarrer un accompagnement : santé, objectifs, expérience, disponibilités, la base d'un vrai bilan initial.",
     disclaimer:
-      "Ce questionnaire recueille des données de santé sensibles : conserve-le de façon sécurisée (jamais par simple email en clair) et n'improvise jamais une réponse à une alerte santé — oriente toujours vers un professionnel de santé (voir aussi la fiche Contraintes & populations spécifiques de la Bibliothèque).",
-    content: `QUESTIONNAIRE D'ONBOARDING — NOUVEAU CLIENT
+      "Ce questionnaire recueille des données de santé sensibles : conserve-le de façon sécurisée (jamais par simple email en clair) et n'improvise jamais une réponse à une alerte santé, oriente toujours vers un professionnel de santé (voir aussi la fiche Contraintes & populations spécifiques de la Bibliothèque).",
+    content: `QUESTIONNAIRE D'ONBOARDING, NOUVEAU CLIENT
 
 IDENTITÉ
 - Nom, prénom, date de naissance
@@ -89,7 +89,7 @@ OBJECTIFS
 - Échéance visée s'il y en a une (événement, date)
 - Ce qui a déjà été essayé, et pourquoi ça n'a pas tenu dans la durée
 
-SANTÉ — À REMPLIR AVEC SÉRIEUX, RÉPONSES CONFIDENTIELLES
+SANTÉ : À REMPLIR AVEC SÉRIEUX, RÉPONSES CONFIDENTIELLES
 - As-tu un problème cardiaque connu, ou un médecin t'a-t-il déjà dit de ne pratiquer une activité physique que sous surveillance médicale ?
 - Ressens-tu une douleur à la poitrine pendant l'effort, ou des vertiges/pertes d'équilibre ?
 - As-tu une blessure articulaire ou musculaire actuelle ou récente (moins de 6 mois) ?
@@ -125,35 +125,35 @@ CONSENTEMENT
     slug: "cgv-perso-coach",
     title: "CGV de mon activité de coaching",
     shortLabel: "CGV perso",
-    summary: "Les conditions générales de vente de TA propre activité de coach — distinctes des CGV de la plateforme EP Coaching, à personnaliser si tu vends aussi en dehors.",
+    summary: "Les conditions générales de vente de TA propre activité de coach, distinctes des CGV de la plateforme EP Coaching, à personnaliser si tu vends aussi en dehors.",
     disclaimer: CONTRACT_DISCLAIMER,
-    content: `CONDITIONS GÉNÉRALES DE VENTE — [Nom du coach / de la marque]
+    content: `CONDITIONS GÉNÉRALES DE VENTE : [Nom du coach / de la marque]
 
-ARTICLE 1 — OBJET
+ARTICLE 1 : OBJET
 Les présentes conditions générales de vente régissent la vente de prestations de coaching sportif et/ou nutritionnel par [Nom du coach], [statut juridique], SIRET [numéro], à toute personne physique souhaitant y souscrire, ci-après "le Client".
 
-ARTICLE 2 — PRESTATIONS PROPOSÉES
+ARTICLE 2 : PRESTATIONS PROPOSÉES
 [Détail des offres : coaching individuel, programme en ligne, formation, etc., avec leur contenu respectif.]
 
-ARTICLE 3 — PRIX ET PAIEMENT
+ARTICLE 3 : PRIX ET PAIEMENT
 Les prix sont indiqués en euros, [TTC / net de TVA si micro-entreprise]. Le paiement s'effectue [comptant / par abonnement mensuel] via [moyen de paiement]. Toute prestation commence après réception du paiement, sauf accord contraire écrit.
 
-ARTICLE 4 — RÉTRACTATION ET REMBOURSEMENT
+ARTICLE 4 : RÉTRACTATION ET REMBOURSEMENT
 Conformément à l'article L221-18 du Code de la consommation, le Client dispose d'un délai de 14 jours pour se rétracter, sauf si la prestation a déjà commencé avec son accord exprès (auquel cas le droit de rétractation s'exerce au prorata des sommes déjà exécutées). [Préciser toute politique de remboursement complémentaire.]
 
-ARTICLE 5 — RÉSILIATION
+ARTICLE 5 : RÉSILIATION
 Le Client peut résilier son abonnement avec un préavis de [délai]. Aucune séance ou période déjà entamée n'est remboursée sauf accord exprès du Coach.
 
-ARTICLE 6 — OBLIGATIONS ET LIMITES
+ARTICLE 6 : OBLIGATIONS ET LIMITES
 Le Coach agit dans le cadre d'une obligation de moyens, jamais de résultat. Les conseils donnés ne remplacent en aucun cas un avis médical. Le Client déclare ne présenter aucune contre-indication médicale à la pratique d'une activité physique, ou avoir obtenu l'accord d'un médecin le cas échéant.
 
-ARTICLE 7 — PROPRIÉTÉ INTELLECTUELLE
+ARTICLE 7 : PROPRIÉTÉ INTELLECTUELLE
 Les programmes, contenus et documents fournis par le Coach restent sa propriété intellectuelle exclusive et ne peuvent être reproduits, revendus ou partagés sans autorisation écrite.
 
-ARTICLE 8 — DONNÉES PERSONNELLES
+ARTICLE 8 : DONNÉES PERSONNELLES
 Conformément au RGPD, le Client dispose d'un droit d'accès, de rectification et de suppression de ses données personnelles, à exercer auprès de [contact].
 
-ARTICLE 9 — DROIT APPLICABLE
+ARTICLE 9 : DROIT APPLICABLE
 Les présentes CGV sont soumises au droit français. Tout litige relève, à défaut de résolution amiable, des tribunaux compétents du ressort de [ville].
 
 Dernière mise à jour : [date]`,

@@ -18,7 +18,7 @@ function formatDate(iso: string): string {
 // fait tourner inconnu → oui → non → inconnu.
 function TriState({ value, onChange, labelYes, labelNo }: { value: boolean | null; onChange: (v: boolean | null) => void; labelYes: string; labelNo: string }) {
   const next = value === null ? true : value === true ? false : null;
-  const text = value === null ? "—" : value ? labelYes : labelNo;
+  const text = value === null ? "···" : value ? labelYes : labelNo;
   const color = value === null ? "rgba(245,237,237,0.35)" : value ? "#4ade80" : "#f87171";
   return (
     <button
