@@ -318,7 +318,6 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 >
                   {statusInfo.label}
                 </button>
-                {script.content && <CopyButton text={script.content} />}
                 <button
                   type="button"
                   onClick={() => remove(script.id)}
@@ -327,6 +326,65 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 >
                   <Trash2 size={14} />
                 </button>
+              </div>
+
+              {/* Script mot pour mot — retour direct 2026-09-02 : "le script
+                  que je dois lire mot pour mot y'a pas encore" — c'était déjà
+                  là en base, mais noyé sous la description Instagram et
+                  tronqué à 80px sans le moindre libellé. Maintenant en
+                  premier, en entier, clairement identifié. */}
+              <div style={{ marginTop: 10, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.2)", borderRadius: 10, padding: "10px 12px" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                  <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#E01E1E" }}>
+                    Script (mot pour mot)
+                  </span>
+                  {script.content && <CopyButton text={script.content} />}
+                </div>
+                {openId === script.id ? (
+                  <div>
+                    <textarea
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      rows={8}
+                      aria-label="Contenu du script"
+                      style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
+                      autoFocus
+                    />
+                    <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                      <button
+                        type="button"
+                        onClick={() => saveContent(script.id)}
+                        style={{
+                          background: "#E01E1E", color: "#fff", padding: "9px 18px", borderRadius: "var(--radius-lg)",
+                          fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
+                        }}
+                      >
+                        Enregistrer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(null)}
+                        style={{
+                          background: "transparent", color: "rgba(245,237,237,0.5)", padding: "9px 18px",
+                          borderRadius: "var(--radius-lg)", fontWeight: 700, fontSize: 12.5,
+                          border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
+                        }}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p
+                    onClick={() => {
+                      setOpenId(script.id);
+                      setDraft(script.content ?? "");
+                    }}
+                    style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6, whiteSpace: "pre-wrap", cursor: "text" }}
+                  >
+                    {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
+                  </p>
+                )}
               </div>
 
               {(script.hook || script.cta || script.source_reference) && (
@@ -349,8 +407,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </div>
               )}
 
-              {/* Description Instagram à poster avec le reel — retour direct
-                  2026-09-02, distincte du script parlé ci-dessus. */}
+              {/* Description Instagram à poster avec le reel — distincte du
+                  script parlé ci-dessus. */}
               {script.instagram_caption && (
                 <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
@@ -363,52 +421,6 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                     {script.instagram_caption}
                   </p>
                 </div>
-              )}
-
-              {openId === script.id ? (
-                <div style={{ marginTop: 10 }}>
-                  <textarea
-                    value={draft}
-                    onChange={(e) => setDraft(e.target.value)}
-                    rows={8}
-                    aria-label="Contenu du script"
-                    style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
-                    autoFocus
-                  />
-                  <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
-                    <button
-                      type="button"
-                      onClick={() => saveContent(script.id)}
-                      style={{
-                        background: "#E01E1E", color: "#fff", padding: "9px 18px", borderRadius: "var(--radius-lg)",
-                        fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
-                      }}
-                    >
-                      Enregistrer
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(null)}
-                      style={{
-                        background: "transparent", color: "rgba(245,237,237,0.5)", padding: "9px 18px",
-                        borderRadius: "var(--radius-lg)", fontWeight: 700, fontSize: 12.5,
-                        border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
-                      }}
-                    >
-                      Annuler
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <p
-                  onClick={() => {
-                    setOpenId(script.id);
-                    setDraft(script.content ?? "");
-                  }}
-                  style={{ margin: "8px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, whiteSpace: "pre-wrap", cursor: "text", maxHeight: 80, overflow: "hidden" }}
-                >
-                  {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
-                </p>
               )}
             </div>
             );
