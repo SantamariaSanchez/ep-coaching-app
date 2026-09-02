@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronDown, Send, Check, Circle } from "lucide-react";
+import { ChevronDown, Send, Check, Circle, Wallet, ShieldCheck } from "lucide-react";
 import type { Pole, RoleStatus } from "@/components/ui/OrganisationView";
 import { submitApplication } from "@/app/carrieres/actions";
 import { onKeyActivate } from "@/lib/a11y";
@@ -113,6 +113,51 @@ function RoleCardPublic({
           </span>
         ))}
       </div>
+
+      {/* Rémunération (retour direct 2026-09-02 : "ya toujours pas les
+          salaires affichés, corrige et mets les") — variable et fixe
+          affichés séparément, jamais mélangés, cohérent avec le statut de
+          collaboration indépendante rappelé en haut de page. */}
+      <div
+        className="rounded-lg px-3 py-2.5 mb-3"
+        style={{ background: "rgba(217,169,78,0.07)", border: "1px solid rgba(217,169,78,0.2)" }}
+      >
+        <div className="flex items-center gap-1.5 mb-1.5">
+          <Wallet size={11} style={{ color: "var(--ep-gold)" }} />
+          <span className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "var(--ep-gold)" }}>
+            Rémunération
+          </span>
+        </div>
+        {role.compensation.variable && (
+          <p className="text-[11px] text-[#F5EDED]/70 leading-relaxed">
+            <span className="font-bold text-[#F5EDED]/90">Variable </span>{role.compensation.variable}
+          </p>
+        )}
+        {role.compensation.fixed && (
+          <p className="text-[11px] text-[#F5EDED]/70 leading-relaxed mt-1">
+            <span className="font-bold text-[#F5EDED]/90">Fixe </span>{role.compensation.fixed}
+          </p>
+        )}
+      </div>
+
+      {role.nonNegotiable.length > 0 && (
+        <div className="mb-3">
+          <div className="flex items-center gap-1.5 mb-1.5">
+            <ShieldCheck size={11} className="text-[#F5EDED]/35" />
+            <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
+              Non négociable
+            </span>
+          </div>
+          <ul className="space-y-1">
+            {role.nonNegotiable.map((n) => (
+              <li key={n} className="text-[11px] text-[#F5EDED]/55 leading-relaxed pl-3 relative">
+                <span className="absolute left-0" style={{ color: "#890404" }}>·</span>
+                {n}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {applyable ? (
         <>

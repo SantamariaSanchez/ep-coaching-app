@@ -5,6 +5,33 @@ import type { Pole } from "@/components/ui/OrganisationView";
 // la page publique de candidature (app/carrieres/page.tsx) sans dupliquer
 // la définition, une seule source de vérité pour les postes et leur
 // role_key stable (utilisé aussi par org_role_status et job_applications).
+//
+// Rémunération ajoutée le 2026-09-02 (retour direct : "dans carrière ya
+// toujours pas les salaires affichés, corrige et mets les, mets vraiment
+// ce que Matis Clouet a dit sur le recrutement"). Deux niveaux de fidélité
+// au transcript (voir Notion 📚 Synthèse Webinaire Matis Clouet et
+// TRANSCRIPT 4H LIVE SCALING 2E SOIRÉE) :
+// 1. Setting/Closing et Coaching/CSM : chiffres CITÉS TEXTUELLEMENT par
+//    Matis Clouet dans le transcript ("le closer, ça va de 8 à 10%",
+//    "le setter, ça va de 4% [leads fournis] à 7% [prospection]",
+//    "comment bien rémunérer un coach en CSM, ça va de 10 à 15% avec un
+//    fixe", "le setting, je vous conseille pas de rémunérer en fixe, je
+//    vous conseille vraiment au pourcentage"). Repris tels quels.
+// 2. Tous les autres pôles (Marketing, Produit, Opérations) : Matis
+//    Clouet ne donne aucun chiffre pour ces postes dans le transcript (son
+//    intervention porte sur le scaling d'une activité de vente/coaching),
+//    donc on applique le MÊME PRINCIPE qu'il pose en général (collaboration
+//    indépendante, variable/prestation d'abord, fixe activé progressivement
+//    une fois un vrai chiffre d'affaires récurrent en place) sans inventer
+//    de pourcentage ou de montant précis qu'il n'a pas dit. Le seuil de CA
+//    exact qui active un fixe reste à trancher par Emmanuel avec son
+//    expert comptable (voir Notion 💰 Grille de rémunération), donc jamais
+//    chiffré ici.
+// Tous les postes sont des collaborations indépendantes (freelance/auto
+// entrepreneur), pas des CDI — cohérent avec le statut légal actuel d'EP
+// Coaching (micro-entreprise). Voir aussi `nonNegotiable`, la méthode
+// "scorecard" de Matis Clouet : mission, résultats attendus, compétences
+// non négociables posés AVANT de voir un premier candidat.
 export const POLES: Pole[] = [
   {
     key: "coaching",
@@ -22,6 +49,14 @@ export const POLES: Pole[] = [
           "Détecte les décrochages et relance avant qu'un client abandonne",
         ],
         reportsTo: "Head Coach",
+        compensation: {
+          variable: "10 à 15% du montant payé par chaque client suivi",
+          fixed: "Un fixe s'active une fois le poste réellement intégré (seuil de chiffre d'affaires récurrent à définir)",
+        },
+        nonNegotiable: [
+          "Répond à un client sous 24h ouvrées, sans exception",
+          "Sait justifier chaque décision de programme par une vraie raison, pas une habitude",
+        ],
       },
       {
         key: "head-coach",
@@ -34,6 +69,14 @@ export const POLES: Pole[] = [
           "Arbitre les cas clients difficiles (litiges, résiliations, urgences)",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: "5% de supervision sur le chiffre d'affaires total du portefeuille coaching",
+          fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "A déjà coaché des clients en direct, pas seulement supervisé",
+          "Sait dire non à un coach qui baisse le niveau, même si c'est inconfortable",
+        ],
       },
       {
         key: "coach-onboarding-success",
@@ -46,6 +89,14 @@ export const POLES: Pole[] = [
           "Remonte les frictions produit à l'équipe Produit & Tech",
         ],
         reportsTo: "Head Coach",
+        compensation: {
+          variable: "Prime versée pour chaque client toujours actif à J+30 (rétention)",
+          fixed: null,
+        },
+        nonNegotiable: [
+          "Contacte tout nouveau client dans les 24h suivant sa signature",
+          "Remonte une friction produit le jour même où elle est repérée",
+        ],
       },
     ],
   },
@@ -65,6 +116,18 @@ export const POLES: Pole[] = [
           "Tient le CRM à jour (source du lead, statut, notes)",
         ],
         reportsTo: "Head of Sales",
+        compensation: {
+          // Cité textuellement par Matis Clouet : "le setter, c'est 4%
+          // d'une bonne [lead fourni] ou 7% dans une bonne [prospection]"
+          // et "le setting, je vous conseille pas de rémunérer en fixe,
+          // je vous conseille vraiment au pourcentage".
+          variable: "4% du montant encaissé si le lead est fourni par EP Coaching, 7% s'il va chercher lui-même ses leads (prospection)",
+          fixed: null,
+        },
+        nonNegotiable: [
+          "Qualifie un lead entrant en moins de 2h en journée",
+          "Ne booke jamais un appel juste pour remplir l'agenda du closer",
+        ],
       },
       {
         key: "closer",
@@ -77,6 +140,16 @@ export const POLES: Pole[] = [
           "Suit son propre taux de conversion et panier moyen",
         ],
         reportsTo: "Head of Sales",
+        compensation: {
+          // Cité textuellement par Matis Clouet : "le closer, ça va de 8
+          // à 10%" (commission pure sur le montant encaissé).
+          variable: "8 à 10% du montant encaissé sur chaque vente conclue",
+          fixed: null,
+        },
+        nonNegotiable: [
+          "Qualifie avant de persuader : ne pousse jamais une vente à quelqu'un qui n'est pas prêt",
+          "Suit son propre taux de conversion sans qu'on ait à le lui demander",
+        ],
       },
       {
         key: "head-of-sales",
@@ -89,6 +162,14 @@ export const POLES: Pole[] = [
           "Reporting direct au fondateur sur le chiffre d'affaires signé",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: "3% du chiffre d'affaires total généré par l'équipe sales",
+          fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "A déjà closé des ventes lui-même, pas seulement managé une équipe",
+          "Diagnostique le vrai goulot d'étranglement (offre, acquisition ou vente) avant d'agir",
+        ],
       },
     ],
   },
@@ -108,6 +189,14 @@ export const POLES: Pole[] = [
           "Puise dans l'onglet Idéation de l'appli pour ne jamais tourner à vide",
         ],
         reportsTo: "Head of Marketing",
+        compensation: {
+          variable: "Payé à la pièce, un forfait par vidéo montée et livrée",
+          fixed: "Un fixe mensuel s'active si le volume devient régulier, une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Livre dans le délai annoncé, sans relance nécessaire",
+          "Respecte l'identité visuelle de la marque sans qu'on ait à tout recadrer",
+        ],
       },
       {
         key: "community-manager",
@@ -120,6 +209,14 @@ export const POLES: Pole[] = [
           "Suit les statistiques d'engagement et ajuste le calendrier",
         ],
         reportsTo: "Head of Marketing",
+        compensation: {
+          variable: "Forfait mensuel proportionné au temps réel passé",
+          fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Répond à un commentaire ou message public sous 4h en journée",
+          "Remonte immédiatement une question chaude ou un signal de crise",
+        ],
       },
       {
         key: "copywriter",
@@ -132,6 +229,14 @@ export const POLES: Pole[] = [
           "Garde une voix de marque cohérente sur tous les supports",
         ],
         reportsTo: "Head of Marketing",
+        compensation: {
+          variable: "Payé à la pièce, un forfait par texte livré (email, page de vente, script)",
+          fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Écrit dans la voix de la marque dès le premier jet, sans qu'on ait à tout réécrire",
+          "Justifie chaque accroche par une vraie intention, pas un cliché marketing",
+        ],
       },
       {
         key: "personal-brand-manager",
@@ -144,6 +249,14 @@ export const POLES: Pole[] = [
           "Protège et développe la réputation en ligne du fondateur",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: "Forfait mensuel",
+          fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Ne valide jamais une prise de parole publique sans relire l'alignement avec la marque",
+          "Réagit sous 24h face à un enjeu de réputation",
+        ],
       },
       {
         key: "growth-traffic-manager",
@@ -156,6 +269,14 @@ export const POLES: Pole[] = [
           "Teste de nouveaux formats et audiences en continu",
         ],
         reportsTo: "Head of Marketing",
+        compensation: {
+          variable: "Un pourcentage du retour généré par les campagnes (ROAS), aligné sur la performance",
+          fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Suit un coût d'acquisition précis, pas une intuition",
+          "Coupe une campagne qui ne performe pas plutôt que d'attendre",
+        ],
       },
       {
         key: "head-of-marketing",
@@ -168,6 +289,14 @@ export const POLES: Pole[] = [
           "Reporting direct au fondateur sur notoriété et acquisition",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: "Un pourcentage de la croissance de chiffre d'affaires générée",
+          fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Distingue explicitement contenu d'acquisition et contenu de conversion dans sa stratégie",
+          "Diagnostique le vrai canal en panne avant de tout changer",
+        ],
       },
     ],
   },
@@ -187,6 +316,14 @@ export const POLES: Pole[] = [
           "Garde l'app rapide, fiable et sécurisée (données de santé)",
         ],
         reportsTo: "Product Manager",
+        compensation: {
+          variable: "TJM (taux journalier), logique de prestation classique, à définir selon la mission",
+          fixed: null,
+        },
+        nonNegotiable: [
+          "Ne livre jamais une fonctionnalité touchant des données de santé sans test réel",
+          "Documente ce qu'il livre, pas juste le code",
+        ],
       },
       {
         key: "product-manager",
@@ -199,6 +336,14 @@ export const POLES: Pole[] = [
           "Suit les métriques d'usage pour prioriser objectivement",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Priorise avec des données d'usage réelles, pas la dernière demande reçue",
+          "Rédige une spec qu'un développeur peut suivre sans revenir poser 10 questions",
+        ],
       },
       {
         key: "support-client-tech",
@@ -211,6 +356,14 @@ export const POLES: Pole[] = [
           "Maintient une base de réponses aux questions fréquentes",
         ],
         reportsTo: "Product Manager",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel, souvent à temps partiel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Répond à un ticket sous 24h ouvrées",
+          "Sait dire je ne sais pas et remonter plutôt qu'inventer une réponse",
+        ],
       },
     ],
   },
@@ -230,6 +383,14 @@ export const POLES: Pole[] = [
           "Coordonne entre les pôles quand un sujet dépasse une équipe",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Documente un process au lieu de le garder dans sa tête",
+          "Alerte avant qu'un sujet devienne un problème, pas après",
+        ],
       },
       {
         key: "secretaire-assistant",
@@ -242,6 +403,14 @@ export const POLES: Pole[] = [
           "Classe et archive les documents (contrats, factures, courriers)",
         ],
         reportsTo: "Office / Ops Manager",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel à temps partiel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Ne laisse jamais un email administratif sans réponse plus de 48h",
+          "Classe un document le jour où il arrive, pas en fin de mois",
+        ],
       },
       {
         key: "finance-comptabilite",
@@ -254,6 +423,14 @@ export const POLES: Pole[] = [
           "Fait le lien avec l'expert-comptable et l'avocat de l'entreprise",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel ou prestation ponctuelle, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Signale un écart de trésorerie dès qu'il le voit, pas en fin de mois",
+          "Ne communique jamais un chiffre qu'il n'a pas vérifié",
+        ],
       },
       {
         key: "rh-people-ops",
@@ -266,8 +443,15 @@ export const POLES: Pole[] = [
           "Prépare les dossiers contrats avec l'avocat en droit du travail",
         ],
         reportsTo: "Fondateur",
+        compensation: {
+          variable: null,
+          fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+        },
+        nonNegotiable: [
+          "Écrit une fiche de poste avec mission, résultats attendus et critères non négociables avant tout recrutement",
+          "Ne fait jamais traîner une réponse à un candidat, positive ou négative",
+        ],
       },
     ],
   },
 ];
-

@@ -62,6 +62,23 @@ export default async function CarrieresPage() {
         </p>
       </div>
 
+      {/* Retour direct 2026-09-02 : "ya toujours pas les salaires
+          affichés, corrige et mets les". La rémunération est maintenant
+          affichée sur chaque poste plus bas ; ce bloc pose le cadre commun
+          avant d'y arriver, pour que personne ne découvre le modèle
+          collaboration indépendante seulement en scrollant. */}
+      <div
+        className="rounded-xl px-4 py-3.5 mb-6 text-center"
+        style={{ background: "rgba(217,169,78,0.06)", border: "1px solid rgba(217,169,78,0.18)" }}
+      >
+        <p className="text-[11.5px] text-[#F5EDED]/60 leading-relaxed">
+          Tous les postes sont des collaborations indépendantes (freelance), pas des CDI.
+          Rémunération variable dès le premier jour sur ce que le poste influence vraiment,
+          un fixe s&apos;ajoute une fois un vrai chiffre d&apos;affaires récurrent en place.
+          Le détail est affiché sur chaque poste ci-dessous.
+        </p>
+      </div>
+
       {/* Retour direct 2026-08-17 : la page listait les postes sans jamais
           vendre l'opportunité, "jamais de la vie il voit ça il va
           postuler". Trois points concrets et vérifiables (pas de chiffre

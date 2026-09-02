@@ -40,6 +40,21 @@ import { getAgentByKey } from "@/lib/ai-agents";
 
 export type RoleStatus = "a_pourvoir" | "en_recrutement" | "pourvu";
 
+// Rémunération (ajouté 2026-09-02, retour direct : "dans carrière ya
+// toujours pas les salaires affichés, corrige et mets les, mets vraiment
+// ce que Matis Clouet a dit sur le recrutement"). Deux champs distincts
+// pour ne jamais mélanger ce qui est verifie et cite du transcript Matis
+// Clouet (setting/closing/coaching, voir org-roles.ts) et ce qui applique
+// juste le meme principe general (variable d'abord, fixe progressif) aux
+// postes qu'il n'a pas traites specifiquement. `fixed` reste null quand le
+// poste est rémunéré purement en pourcentage (setting/closing, conseil
+// explicite de Matis Clouet : "je vous conseille pas de rémunérer en
+// fixe, je vous conseille vraiment au pourcentage").
+export interface RoleCompensation {
+  variable: string | null;
+  fixed: string | null;
+}
+
 export interface RoleCard {
   key: string;
   title: string;
@@ -47,6 +62,11 @@ export interface RoleCard {
   levels: string[];
   tasks: string[];
   reportsTo: string;
+  compensation: RoleCompensation;
+  // Criteres non negociables (methode "scorecard" de Matis Clouet : mission
+  // en une phrase, resultats attendus, competences non negociables, avant
+  // meme de voir un premier candidat).
+  nonNegotiable: string[];
 }
 
 export interface Pole {
