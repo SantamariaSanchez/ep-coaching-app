@@ -3,7 +3,7 @@
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
-import { Download, Flame } from "lucide-react";
+import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets } from "lucide-react";
 import type { DailyLog } from "@/utils/daily-logs";
 import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
 
@@ -62,14 +62,21 @@ function computeLogStreak(logs: DailyLog[], today: string): number {
   return run;
 }
 
-function StatTile({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function StatTile({ label, value, sub, gold = false }: { label: string; value: string; sub?: string; gold?: boolean }) {
   return (
-    <div className="ep-card" style={{ padding: "12px 14px" }}>
+    <div
+      className="ep-card"
+      style={{
+        padding: "12px 14px",
+        borderColor: gold ? "rgba(217,169,78,0.4)" : undefined,
+        boxShadow: gold ? "0 0 0 1px rgba(217,169,78,0.15), 0 6px 18px rgba(217,169,78,0.1)" : undefined,
+      }}
+    >
       <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: "0 0 4px" }}>
         {label}
       </p>
-      <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
-      {sub && <p style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", margin: "2px 0 0" }}>{sub}</p>}
+      <p style={{ fontSize: 18, fontWeight: 900, color: gold ? "var(--ep-gold)" : "#F5EDED", margin: 0, letterSpacing: "-0.02em" }}>{value}</p>
+      {sub && <p style={{ fontSize: 10, color: gold ? "rgba(217,169,78,0.6)" : "rgba(245,237,237,0.3)", margin: "2px 0 0" }}>{sub}</p>}
     </div>
   );
 }
@@ -125,20 +132,57 @@ function StressChip({ val }: { val: "low" | "medium" | "high" | null }) {
   );
 }
 
-function KV({ k, v }: { k: string; v: string }) {
+// Chaque métrique a sa propre couleur (reprise des TrendChart au dessus,
+// même langage visuel du haut en bas de l'écran) et sa propre icône —
+// retour direct 2026-09-02 : "tout en bas les infos de bilan sont très
+// mal, illisible, c'est moche, c'est le même style partout, difficile de
+// repérer". Avant, tout (poids, pas, sommeil, macros) rendait en gris
+// uniforme minuscule, sans aucun repère visuel pour distinguer une ligne
+// d'une autre au premier coup d'œil.
+const METRIC_STYLE = {
+  poids:     { color: "var(--ep-red)",   Icon: Scale },
+  pas:       { color: "#4ade80",         Icon: Footprints },
+  sommeil:   { color: "#818cf8",         Icon: Moon },
+  kcal:      { color: "#fbbf24",         Icon: Zap },
+  proteines: { color: "var(--ep-pink)",  Icon: Beef },
+  glucides:  { color: "var(--ep-gold)",  Icon: Wheat },
+  lipides:   { color: "#fb923c",         Icon: Droplets },
+} as const;
+
+function KV({ metric, label, value }: { metric: keyof typeof METRIC_STYLE; label: string; value: string | null }) {
+  const { color, Icon } = METRIC_STYLE[metric];
   return (
-    <div style={{ display: "flex", gap: 6, alignItems: "baseline" }}>
-      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>{k}</span>
-      <span style={{ fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{v}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+      <div style={{
+        width: 22, height: 22, borderRadius: 7, flexShrink: 0,
+        background: `${color}1a`, display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Icon size={11} style={{ color }} strokeWidth={2.2} />
+      </div>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ fontSize: 8.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", margin: 0, lineHeight: 1.3 }}>
+          {label}
+        </p>
+        <p style={{ fontSize: 13, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.2)", margin: 0, lineHeight: 1.3 }}>
+          {value ?? "-"}
+        </p>
+      </div>
     </div>
   );
 }
 
-function AvgRow({ label, value, unit = "" }: { label: string; value: number | null; unit?: string }) {
+function AvgRow({ metric, label, value, unit = "" }: { metric: keyof typeof METRIC_STYLE; label: string; value: number | null; unit?: string }) {
+  const { color, Icon } = METRIC_STYLE[metric];
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
-      <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 800, color: value !== null ? "#F5EDED" : "rgba(245,237,237,0.15)" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 0", borderBottom: "1px solid rgba(137,4,4,0.08)" }}>
+      <div style={{
+        width: 24, height: 24, borderRadius: 7, flexShrink: 0,
+        background: `${color}1a`, display: "flex", alignItems: "center", justifyContent: "center",
+      }}>
+        <Icon size={12} style={{ color }} strokeWidth={2.2} />
+      </div>
+      <span style={{ flex: 1, fontSize: 11.5, color: "rgba(245,237,237,0.5)", fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 14, fontWeight: 900, color: value !== null ? color : "rgba(245,237,237,0.15)", letterSpacing: "-0.01em" }}>
         {value !== null ? `${value}${unit}` : "-"}
       </span>
     </div>
@@ -147,26 +191,24 @@ function AvgRow({ label, value, unit = "" }: { label: string; value: number | nu
 
 function DayCard({ log }: { log: DailyLog }) {
   return (
-    <div className="ep-card" style={{ padding: "10px 14px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 16px" }}>
-      <div style={{ gridColumn: "1 / -1", marginBottom: 4 }}>
-        <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.5)" }}>
-          {fmtShort(log.log_date)}
-        </span>
-        {log.training_name && (
-          <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
-        )}
-      </div>
-      {log.weight_morning != null && <KV k="Poids" v={`${log.weight_morning} kg`} />}
-      {log.steps != null && <KV k="Pas" v={log.steps.toLocaleString("fr-FR")} />}
-      {log.sleep_hours != null && <KV k="Sommeil" v={`${log.sleep_hours}h`} />}
-      {log.calories_kcal != null && <KV k="Kcal" v={`${log.calories_kcal}`} />}
-      {log.proteins_g != null && <KV k="Prot" v={`${log.proteins_g}g`} />}
-      {log.stress && (
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)" }}>Stress</span>
-          <StressChip val={log.stress} />
+    <div className="ep-card" style={{ padding: "12px 14px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
+            {fmtShort(log.log_date)}
+          </span>
+          {log.training_name && (
+            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#F5EDED" }}>{log.training_name}</span>
+          )}
         </div>
-      )}
+        {log.stress && <StressChip val={log.stress} />}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px" }}>
+        <KV metric="poids" label="Poids" value={log.weight_morning != null ? `${log.weight_morning} kg` : null} />
+        <KV metric="pas" label="Pas" value={log.steps != null ? log.steps.toLocaleString("fr-FR") : null} />
+        <KV metric="sommeil" label="Sommeil" value={log.sleep_hours != null ? `${log.sleep_hours}h` : null} />
+        <KV metric="kcal" label="Kcal" value={log.calories_kcal != null ? `${log.calories_kcal}` : null} />
+      </div>
     </div>
   );
 }
@@ -239,7 +281,7 @@ export default function BilanProgressView({
           />
           <StatTile label="Pas / jour" value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "N/A"} />
           <StatTile label="Sommeil" value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "N/A"} />
-          <StatTile label="Bilans d'affilée" value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} />
+          <StatTile label="Bilans d'affilée" value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} gold={streak > 0} />
         </div>
       </div>
 
@@ -271,23 +313,26 @@ export default function BilanProgressView({
                 <span style={{ fontSize: 9, color: "rgba(245,237,237,0.2)", fontWeight: 600 }}>
                   {wLogs.length} jour{wLogs.length > 1 ? "s" : ""}
                   {streak > 0 && weekStart === weeks[0]?.weekStart && (
-                    <Flame size={10} style={{ display: "inline", marginLeft: 4, verticalAlign: -1, color: "#E01E1E" }} />
+                    <Flame size={10} style={{ display: "inline", marginLeft: 4, verticalAlign: -1, color: "var(--ep-gold)" }} />
                   )}
                 </span>
               </div>
 
-              <div className="ep-card" style={{ padding: "10px 14px", marginBottom: 10 }}>
-                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 8px" }}>
-                  Moyennes
+              <div className="ep-card" style={{ padding: "12px 14px 4px", marginBottom: 10 }}>
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 4px" }}>
+                  Moyennes · corps &amp; activité
                 </p>
-                <AvgRow label="Poids" value={averages.weight} unit=" kg" />
-                <AvgRow label="Pas" value={averages.steps} />
-                <AvgRow label="Sommeil" value={averages.sleep_hours} unit="h" />
-                <AvgRow label="Qualité sommeil" value={averages.sleep_rating} unit="%" />
-                <AvgRow label="Kcal" value={averages.calories_kcal} unit=" kcal" />
-                <AvgRow label="Protéines" value={averages.proteins_g} unit="g" />
-                <AvgRow label="Glucides" value={averages.carbs_g} unit="g" />
-                <AvgRow label="Lipides" value={averages.fats_g} unit="g" />
+                <AvgRow metric="poids" label="Poids" value={averages.weight} unit=" kg" />
+                <AvgRow metric="pas" label="Pas" value={averages.steps} />
+                <AvgRow metric="sommeil" label="Sommeil" value={averages.sleep_hours} unit="h" />
+                <AvgRow metric="sommeil" label="Qualité sommeil" value={averages.sleep_rating} unit="%" />
+                <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "14px 0 4px" }}>
+                  Moyennes · nutrition
+                </p>
+                <AvgRow metric="kcal" label="Kcal" value={averages.calories_kcal} unit=" kcal" />
+                <AvgRow metric="proteines" label="Protéines" value={averages.proteins_g} unit="g" />
+                <AvgRow metric="glucides" label="Glucides" value={averages.carbs_g} unit="g" />
+                <AvgRow metric="lipides" label="Lipides" value={averages.fats_g} unit="g" />
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

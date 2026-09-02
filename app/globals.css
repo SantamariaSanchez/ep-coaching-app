@@ -10,6 +10,13 @@
   --ep-deep:       #0D0000;
   --ep-light:      #F5EDED;
   --ep-pink:       #FDC4C4;
+  /* Accent premium (retour direct 2026-09-02 : "joue sur les couleurs, du
+     rouge et noir mais ajoute a des endroits du or, du blanc, du rose") —
+     réservé aux moments qui méritent d'être remarqués (série en cours,
+     record personnel, palier franchi), jamais la couleur dominante d'un
+     écran : l'identité reste rouge/noir, l'or est la touche qui récompense. */
+  --ep-gold:       #D9A94E;
+  --ep-gold-soft:  rgba(217, 169, 78, 0.15);
 
   --ep-glass:      rgba(16, 1, 1, 0.60);
   --ep-glass-med:  rgba(24, 2, 2, 0.72);
@@ -54,6 +61,7 @@
   --color-ep-deep:     #0D0000;
   --color-ep-light:    #F5EDED;
   --color-ep-pink:     #FDC4C4;
+  --color-ep-gold:     #D9A94E;
   --color-primary:     #E01E1E;
   --color-dark:        #270101;
   --color-dark-red:    #890404;
