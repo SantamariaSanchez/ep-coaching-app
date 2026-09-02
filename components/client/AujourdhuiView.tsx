@@ -184,18 +184,15 @@ export default function AujourdhuiView({
         </div>
       </section>
 
-      {/* Agenda du jour */}
+      {/* Agenda du jour — ouvert à tout client connecté (audit de cohérence
+          2026-09-02) : la page /dashboard/client/agenda elle-même n'a jamais
+          eu de restriction d'abonnement (emploi du temps perso + score
+          d'habitudes, pas du contenu livré par un coach), cette carte était
+          la seule à afficher un cadenas qui ne correspondait à aucun vrai
+          verrou. */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
         <SectionLabel icon={Calendar}>Ton programme du jour</SectionLabel>
-        {!isSubscribedClient ? (
-          <Link href="/dashboard/client/abonnement" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", gap: 12, textDecoration: "none" }}>
-            <Lock size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
-            <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", flex: 1 }}>
-              L&apos;agenda personnel est réservé aux clients coachés.
-            </span>
-            <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
-          </Link>
-        ) : todayBlocks.length === 0 ? (
+        {todayBlocks.length === 0 ? (
           <Link href="/dashboard/client/agenda" className="ep-card" style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "space-between", textDecoration: "none" }}>
             <span style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>Rien de prévu aujourd&apos;hui dans ton agenda.</span>
             <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />

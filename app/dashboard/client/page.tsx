@@ -129,7 +129,7 @@ const GUIDE_ITEMS = [
     href: "/dashboard/client/abonnement",
     icon: GraduationCap,
     title: "Formations",
-    desc: "80h+ de contenu vidéo. Réservé aux clients coachés (optionnel).",
+    desc: "Modules vidéo complets. Réservé aux clients coachés (optionnel).",
     locked: true,
   },
 ];

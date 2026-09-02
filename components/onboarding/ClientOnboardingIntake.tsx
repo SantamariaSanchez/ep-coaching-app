@@ -390,7 +390,7 @@ export default function ClientOnboardingIntake() {
             </h1>
             <p style={{ fontSize: 14, lineHeight: 1.6, color: "#e3caca", margin: "0 0 20px" }}>
               T&apos;as accès à l&apos;appli complète : programme, nutrition, suivi, road map, tout centralisé au même endroit.
-              Plus de 80h de formations pour que tu comprennes ce que tu fais, pas juste que tu le suives.
+              Des formations pour que tu comprennes ce que tu fais, pas juste que tu le suives.
               <br /><br />
               Réponds à ces quelques questions, ça me permet de démarrer sur des bases solides.
             </p>
