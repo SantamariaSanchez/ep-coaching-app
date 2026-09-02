@@ -10,6 +10,8 @@ import { getScheduleBlocks } from "@/utils/agenda";
 import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]/program/actions";
 import ProgramEditor from "@/components/ui/ProgramEditor";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
+import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
+import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { saveOwnCoachProgram } from "./actions";
 
 export default async function CoachMonProgrammePage() {
@@ -39,21 +41,37 @@ export default async function CoachMonProgrammePage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Mon programme</h1>
       </div>
 
+      {/* Retour direct 2026-09-02 : "en bas ya encore le truc pour créer la
+          prog, or ma prog est déjà créée, donc direct ma prog bien visible
+          en premier" — même schéma que app/dashboard/client/program/page.tsx
+          (déjà corrigé le 2026-09-01) : programme réel d'abord, formulaire
+          d'édition replié en dessous, ouvert par défaut seulement s'il n'y a
+          encore rien à montrer. */}
       {program && program.days.length > 0 && (
-        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+        <>
+          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
+          <ProgramDaysGrid program={program} />
+        </>
       )}
 
-      <ProgramEditor
-        clientId={user.id}
-        program={program}
-        saveProgram={saveOwnCoachProgram}
-        successRedirect="/dashboard/coach/moi/programme"
-        templates={templates}
-        saveAsTemplate={saveCurrentProgramAsTemplate}
-        templatesHref="/dashboard/coach/programmation"
-        subjectLabel="moi"
-        scheduleBlocks={scheduleBlocks}
-      />
+      <div style={{ marginTop: program && program.days.length > 0 ? 24 : 0 }}>
+        <CollapsibleSection
+          title={program && program.days.length > 0 ? "Modifier mon programme" : "Créer mon programme"}
+          defaultOpen={!program || program.days.length === 0}
+        >
+          <ProgramEditor
+            clientId={user.id}
+            program={program}
+            saveProgram={saveOwnCoachProgram}
+            successRedirect="/dashboard/coach/moi/programme"
+            templates={templates}
+            saveAsTemplate={saveCurrentProgramAsTemplate}
+            templatesHref="/dashboard/coach/programmation"
+            subjectLabel="moi"
+            scheduleBlocks={scheduleBlocks}
+          />
+        </CollapsibleSection>
+      </div>
     </div>
   );
 }

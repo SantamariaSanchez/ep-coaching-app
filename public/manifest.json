@@ -2,7 +2,7 @@
   "name": "EP Coaching",
   "short_name": "EP Coaching",
   "description": "Ton espace coaching personnalisé",
-  "start_url": "/",
+  "start_url": "/launch",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#000000",

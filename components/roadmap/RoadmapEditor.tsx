@@ -4,6 +4,7 @@ import { useEffect, useState, isValidElement, cloneElement } from "react";
 import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown } from "lucide-react";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import RoadmapCalendar from "@/components/roadmap/RoadmapCalendar";
+import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 
 // ── Local form types ──────────────────────────────────────────────────────────
@@ -595,23 +596,18 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
     updated_at: "",
   };
 
-  return (
-    <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 20 }}>
-        <button
-          onClick={() => setShowCalendar((v) => !v)}
-          className="ep-btn-secondary"
-          style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}
-        >
-          {showCalendar ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showCalendar ? "Masquer la vue d'ensemble" : "Vue d'ensemble"}
-        </button>
-        <button onClick={handleSave} disabled={saving} className="ep-btn-primary">
-          <Save size={14} />
-          {saved ? "Sauvegardé !" : saving ? "Sauvegarde…" : "Sauvegarder"}
-        </button>
-      </div>
+  // Retour direct 2026-09-02 : "si je vais sur roadmap je veux pas le truc
+  // de creation mais juste la roadmap" — dès qu'une roadmap existe déjà, la
+  // vue d'ensemble (calendrier) passe en premier et devient ce qu'on voit en
+  // ouvrant l'onglet ; le formulaire dates/phases/objectifs passe dans un
+  // bloc repliable en dessous (même schéma que "Changer de programme").
+  // Rien à cacher tant qu'il n'y a encore aucune roadmap : le formulaire de
+  // création doit alors rester visible directement, il n'y a rien d'autre à
+  // montrer.
+  const hasRoadmap = !!existingRoadmap;
 
+  const editForm = (
+    <>
       {/* Section 1 — Global dates */}
       <section style={{ marginBottom: 28 }}>
         <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
@@ -646,8 +642,10 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         </div>
       </section>
 
-      {/* Calendar preview */}
-      {showCalendar && startDate && endDate && (
+      {/* Calendar preview, seulement utile ici quand il n'y a pas encore de
+          roadmap existante (sinon elle est déjà affichée en premier,
+          au-dessus, voir plus bas) */}
+      {!hasRoadmap && showCalendar && startDate && endDate && (
         <section style={{ marginBottom: 28 }}>
           <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
             Vue d&apos;ensemble : les phases sur les mois et les semaines
@@ -758,6 +756,47 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
           {saved ? "Sauvegardé !" : saving ? "Sauvegarde en cours…" : "Sauvegarder la road map"}
         </button>
       </div>
+    </>
+  );
+
+  return (
+    <div>
+      {hasRoadmap && (
+        <>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginBottom: 20 }}>
+            <button
+              onClick={() => setShowCalendar((v) => !v)}
+              className="ep-btn-secondary"
+              style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12 }}
+            >
+              {showCalendar ? <EyeOff size={14} /> : <Eye size={14} />}
+              {showCalendar ? "Masquer la vue d'ensemble" : "Vue d'ensemble"}
+            </button>
+          </div>
+
+          {showCalendar && startDate && endDate && (
+            <section style={{ marginBottom: 28 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 12 }}>
+                Ma roadmap : les phases sur les mois et les semaines
+              </p>
+              <div className="ep-card" style={{ padding: 20 }}>
+                <RoadmapCalendar
+                  roadmap={calendarRoadmap}
+                  phases={phases.map((p, i) => ({ ...p, id: p.localId, roadmap_id: "", position: i }))}
+                  objectives={objectives.map((o) => ({ ...o, id: o.localId, roadmap_id: "" }))}
+                  clientId={clientId}
+                />
+              </div>
+            </section>
+          )}
+
+          <CollapsibleSection title="Modifier ma roadmap" defaultOpen={false}>
+            {editForm}
+          </CollapsibleSection>
+        </>
+      )}
+
+      {!hasRoadmap && editForm}
     </div>
   );
 }

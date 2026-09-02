@@ -288,12 +288,6 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     ],
   },
   {
-    group: "Bibliothèque",
-    items: [
-      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
-    ],
-  },
-  {
     group: "Suivi",
     items: [
       { label: "Bilan & progression", icon: ClipboardCheck, segment: "bilan" },
@@ -307,6 +301,16 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       // N'apparaît que pour les clientes dont la fiche client indique le
       // genre "Femme" — filtré dynamiquement dans useNavState (showCycle).
       { label: "Cycle",          icon: Droplet,         segment: "cycle" },
+    ],
+  },
+  {
+    // Descendu sous Suivi (retour direct 2026-09-02, "hiérarchise mieux
+    // l'ordre des onglets, du plus important/utilisé au moins important") :
+    // une bibliothèque de référence consultée ponctuellement, pas un suivi
+    // quotidien comme les groupes du dessus.
+    group: "Bibliothèque",
+    items: [
+      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
