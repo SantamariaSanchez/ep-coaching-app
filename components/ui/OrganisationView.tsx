@@ -195,6 +195,13 @@ function RoleCardView({
           </li>
         ))}
       </ul>
+      {/* Même rémunération que celle affichée publiquement sur /carrieres
+          (2026-09-02) — vue interne, pour que le fondateur voie exactement
+          ce qu'un candidat voit avant de publier un changement. */}
+      <div className="text-[10px] text-[#F5EDED]/40 pt-2 mt-2 border-t border-dashed border-[#890404]/15 space-y-0.5">
+        {role.compensation.variable && <p>Variable : {role.compensation.variable}</p>}
+        {role.compensation.fixed && <p>Fixe : {role.compensation.fixed}</p>}
+      </div>
       <p className="text-[10px] text-[#F5EDED]/30 pt-2 mt-2 border-t border-dashed border-[#890404]/15">
         Rattaché à : <strong className="text-[#F5EDED]/55 font-bold">{role.reportsTo}</strong>
       </p>
