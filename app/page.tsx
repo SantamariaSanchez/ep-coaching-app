@@ -33,12 +33,14 @@ import { ALL_LIVE_TYPES } from "@/lib/live-types";
 // qui fait venir quelqu'un.
 const FEATURES = [
   { icon: Video, title: "Coaching live", desc: "1:1, audits, suivi hebdo, ateliers, webinaires, Q&A" },
-  // Pas de "5 formations complètes" ici (audit de cohérence 2026-09-01) : les
-  // 5 formations existent bien en structure, mais aucune n'est publiée et
-  // aucune leçon n'a encore de vidéo (vérifié en base). Notion compte 2
-  // formations réellement faites sur les 5 prévues, 20h sur 80h. On annonce
-  // donc le périmètre, jamais un état d'avancement qu'on ne peut pas tenir.
-  { icon: BookOpen, title: "Formations", desc: "Bodybuilding, nutrition, training, business, psychologie" },
+  // Pas de "5 formations complètes" ici (audit de cohérence 2026-09-01,
+  // confirmé et corrigé le 2026-09-02) : les 5 formations existent bien en
+  // structure (148 leçons planifiées, ~25h au total, vérifié en base
+  // formation_lessons.duration_min), mais aucune n'est publiée et aucune
+  // leçon n'a encore de vidéo tournée. On annonce donc le périmètre et le
+  // statut réel ("à venir"), jamais un état d'avancement qu'on ne peut pas
+  // tenir.
+  { icon: BookOpen, title: "Formations (à venir)", desc: "Bodybuilding, nutrition, training, business, psychologie" },
   // "coach humain par défaut" retiré : la formule n'a de sens que si on sait
   // qu'il existe des coachs IA, or ils restent strictement internes à
   // l'espace connecté (règle de positionnement Notion).

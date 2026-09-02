@@ -70,8 +70,8 @@ const SLIDES: Slide[] = [
   {
     icon: GraduationCap,
     eyebrow: "Contenu",
-    title: "Des formations complètes",
-    desc: "Entraînement, nutrition, mental : des modules vidéo complets, accessibles à vie. C'est la seule chose réservée aux clients coachés (tout le reste que tu viens de voir est gratuit, ou débloquable par points).",
+    title: "5 formations à venir",
+    desc: "Musculation, nutrition, training, entrepreneuriat, psychologie : environ 25h de contenu au total, en cours de tournage. Une fois disponibles, ce sera la seule chose réservée aux clients coachés (tout le reste que tu viens de voir est gratuit, ou débloquable par points).",
   },
   {
     icon: Crown,

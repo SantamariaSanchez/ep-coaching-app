@@ -39,8 +39,8 @@ const COACHING_PILLARS = [
   },
   {
     icon: GraduationCap,
-    title: "Formations incluses",
-    body: "Des contenus vidéo sur l'entraînement, la nutrition, le mental et la récupération. Accessibles à vie, enrichis régulièrement.",
+    title: "5 formations à venir",
+    body: "Musculation, nutrition, training, entrepreneuriat, psychologie : environ 25h de contenu au total, en cours de tournage. Accessibles à vie une fois disponibles.",
   },
 ];
 

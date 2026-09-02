@@ -18,10 +18,17 @@ export default async function CoachRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/ressources");
 
+  // "Mes lead magnets" n'a de sens que pour un coach TIERS : le fondateur de
+  // la plateforme n'en a pas besoin, ses lead magnets à lui sont déjà le
+  // catalogue officiel des 1000 produit par la routine cloud (retour direct
+  // 2026-09-02 : "moi mes leadmagnet c'est les 1000, donc enlève"). Un futur
+  // coach tiers, qui n'a aucun accès au catalogue officiel, en a besoin.
+  const isPlatformOwner = profile?.is_platform_owner ?? false;
+
   const [requests, leadMagnets, ownLeadMagnets] = await Promise.all([
     getResourceRequests(user.id),
     getAllLeadMagnets(),
-    getCoachLeadMagnets(user.id),
+    isPlatformOwner ? Promise.resolve([]) : getCoachLeadMagnets(user.id),
   ]);
 
   return (
@@ -42,7 +49,7 @@ export default async function CoachRessourcesPage() {
           d'un lead magnet précis (isCoach=true, voir LeadMagnetsExplorer). */}
       <LeadMagnetsExplorer magnets={leadMagnets} isCoach />
 
-      <CoachLeadMagnetManager ownMagnets={ownLeadMagnets} />
+      {!isPlatformOwner && <CoachLeadMagnetManager ownMagnets={ownLeadMagnets} />}
 
       <div className="mt-8 pt-6 border-t border-[#890404]/15">
         <ResourceRequests
