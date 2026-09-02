@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
-import ResourcesBrowser from "@/components/resources/ResourcesBrowser";
 import ResourceRequests from "@/components/resources/ResourceRequests";
 import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 import { createResourceRequest, respondToResourceRequest, deleteResourceRequest } from "./request-actions";
@@ -15,8 +13,7 @@ export default async function ClientRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/ressources");
 
-  const [resources, requests, leadMagnets] = await Promise.all([
-    getResources(profile?.coach_id ?? ""),
+  const [requests, leadMagnets] = await Promise.all([
     getResourceRequests(profile?.coach_id ?? ""),
     getAllLeadMagnets(),
   ]);
@@ -36,8 +33,6 @@ export default async function ClientRessourcesPage() {
           absent (donc false) : les codes CTA reels sont un outil coach, pas
           une information utile pour un client. */}
       <LeadMagnetsExplorer magnets={leadMagnets} />
-
-      <ResourcesBrowser resources={resources} />
 
       <div className="mt-8 pt-6 border-t border-[#890404]/15">
         <ResourceRequests

@@ -223,6 +223,39 @@ export interface LeadMagnetSearchResult {
   total: number;
 }
 
+// Lead magnets ajoutés par CE coach lui-même (coach_id non NULL), distincts
+// du catalogue officiel (coach_id NULL, produit par la routine cloud IA) —
+// voir 20260902b_lead_magnets_coach_owned.sql. Liste courte et propre à un
+// coach, consultée uniquement depuis son propre dashboard (voir
+// CoachLeadMagnetManager.tsx) : pas de unstable_cache ici, inutile pour un
+// aussi petit volume et ça éviterait de refléter une suppression instantanée.
+export interface CoachLeadMagnet {
+  id: string;
+  slug: string;
+  title: string;
+  hook: string;
+  category: ResourceCategory;
+  format: LeadMagnetFormat;
+  keyword: string;
+  published: boolean;
+  created_at: string;
+}
+
+export async function getCoachLeadMagnets(coachId: string): Promise<CoachLeadMagnet[]> {
+  if (!coachId) return [];
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("lead_magnets")
+      .select("id, slug, title, hook, category, format, keyword, published, created_at")
+      .eq("coach_id", coachId)
+      .order("created_at", { ascending: false });
+    return (data as CoachLeadMagnet[]) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 // Recherche/filtre côté serveur pour l'onglet Ressources : pas de cache ici
 // (dépend d'une saisie utilisateur arbitraire), la recherche plein texte
 // Postgres (colonne search_text, config 'french') est largement assez

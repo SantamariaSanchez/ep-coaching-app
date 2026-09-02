@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getResourcesPublic } from "@/utils/resources";
 import { GUIDE_KEYWORDS } from "@/lib/guide-keywords";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import { getUser, getProfile } from "@/utils/auth";
@@ -30,8 +29,7 @@ export default async function PublicRessourcesPage({
   // client connecté ne doit jamais voir les codes CTA reels (outil
   // d'organisation réservé aux coachs, voir LEADMAGNETS.md). getUser()/
   // getProfile() renvoient null proprement si personne n'est connecté.
-  const [resources, leadMagnets, user, victories] = await Promise.all([
-    getResourcesPublic(),
+  const [leadMagnets, user, victories] = await Promise.all([
     getAllLeadMagnets(),
     getUser(),
     // Même bug corrigé sur app/bio et app/page.tsx (audit de cohérence
@@ -46,7 +44,6 @@ export default async function PublicRessourcesPage({
   return (
     <>
       <PublicRessourcesClient
-        resources={resources}
         leadMagnets={leadMagnets}
         initialQuery={initialQuery}
         isCoach={isCoach}

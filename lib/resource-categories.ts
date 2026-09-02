@@ -1,7 +1,8 @@
-// Types/constantes pures (aucun import serveur) — séparé de utils/resources.ts
-// pour que les composants client (ex. ResourceManager.tsx) puissent les
-// importer sans entraîner createServerSupabase (next/headers) dans le
-// bundle navigateur, ce qui casse le build Next.js.
+// Types/constantes pures (aucun import serveur) — catégories partagées par
+// tout ce qui touche aux lead magnets (LeadMagnetsExplorer, la routine
+// cloud, CoachLeadMagnetManager), pour rester importables depuis un
+// composant client sans entraîner createServerSupabase (next/headers) dans
+// le bundle navigateur, ce qui casse le build Next.js.
 
 export const RESOURCE_CATEGORIES = [
   "Entraînement",
@@ -66,12 +67,3 @@ export const RESOURCE_SUBCATEGORIES: Record<ResourceCategory, readonly string[]>
   ],
   "Général": [],
 };
-
-export interface ResourceItem {
-  id: string;
-  title: string;
-  description: string | null;
-  file_url: string;
-  category: string | null;
-  created_at: string;
-}

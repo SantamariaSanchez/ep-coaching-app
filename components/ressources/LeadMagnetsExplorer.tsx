@@ -135,8 +135,13 @@ function MagnetCard({
 export default function LeadMagnetsExplorer({
   magnets,
   isCoach = false,
+  initialQuery = "",
 }: {
   magnets: LeadMagnet[];
+  // Préremplit la recherche depuis un lien de campagne (/ressources?guide=xxx,
+  // voir lib/guide-keywords.ts) : auparavant reçu par PublicRessourcesClient
+  // mais jamais transmis jusqu'ici, donc sans effet réel.
+  initialQuery?: string;
   // Le code à 3 chiffres (voir LEADMAGNETS.md) est un outil d'organisation
   // pour les coachs (n'importe lequel, pas seulement le fondateur de la
   // plateforme) : ils s'en servent pour retrouver quel lead magnet
@@ -147,7 +152,7 @@ export default function LeadMagnetsExplorer({
   // précise.
   isCoach?: boolean;
 }) {
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialQuery);
   const [category, setCategory] = useState<ResourceCategory | null>(null);
   const [subcategory, setSubcategory] = useState<string | null>(null);
   const [format, setFormat] = useState<LeadMagnetFormat | null>(null);

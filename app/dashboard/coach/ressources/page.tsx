@@ -1,11 +1,10 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
-import { getResources } from "@/utils/resources";
 import { getResourceRequests } from "@/utils/resource-requests";
-import { getAllLeadMagnets } from "@/lib/lead-magnets";
-import ResourceManager from "@/components/resources/ResourceManager";
+import { getAllLeadMagnets, getCoachLeadMagnets } from "@/lib/lead-magnets";
 import ResourceRequests from "@/components/resources/ResourceRequests";
 import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
+import CoachLeadMagnetManager from "@/components/coach/CoachLeadMagnetManager";
 import {
   createResourceRequest,
   respondToResourceRequest,
@@ -19,10 +18,10 @@ export default async function CoachRessourcesPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/ressources");
 
-  const [resources, requests, leadMagnets] = await Promise.all([
-    getResources(user.id),
+  const [requests, leadMagnets, ownLeadMagnets] = await Promise.all([
     getResourceRequests(user.id),
     getAllLeadMagnets(),
+    getCoachLeadMagnets(user.id),
   ]);
 
   return (
@@ -43,7 +42,7 @@ export default async function CoachRessourcesPage() {
           d'un lead magnet précis (isCoach=true, voir LeadMagnetsExplorer). */}
       <LeadMagnetsExplorer magnets={leadMagnets} isCoach />
 
-      <ResourceManager resources={resources} />
+      <CoachLeadMagnetManager ownMagnets={ownLeadMagnets} />
 
       <div className="mt-8 pt-6 border-t border-[#890404]/15">
         <ResourceRequests
