@@ -80,8 +80,14 @@ export interface CoachScript {
   hook: string | null;
   pillar: string | null;
   source_reference: string | null;
+  // CTA PARLÉ à la caméra (distinct de instagram_caption ci-dessous), doit
+  // citer le même numéro de leadmagnet que source_reference.
   cta: string | null;
-  shot_notes: string | null;
+  // Description Instagram à poster avec le reel — retour direct 2026-09-02,
+  // structure 3 blocs (voir Notion Guide rédaction description Instagram) :
+  // ouverture "Abonne toi à @santamariasanchez_ et COMMENTE [numéro]", corps
+  // en "je" (confession/coût/déclic), fermeture "Commente [numéro] si...".
+  instagram_caption: string | null;
   platform: string;
   status: ScriptStatus;
 }
@@ -91,7 +97,7 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("coach_scripts")
-      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, shot_notes, platform, status")
+      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status")
       .eq("coach_id", coachId)
       .order("updated_at", { ascending: false });
     return (data as CoachScript[]) ?? [];

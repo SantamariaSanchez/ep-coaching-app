@@ -158,7 +158,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         pillar: null,
         source_reference: null,
         cta: null,
-        shot_notes: null,
+        instagram_caption: null,
         platform: "instagram",
         status: "a_tourner",
       };
@@ -329,7 +329,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </button>
               </div>
 
-              {(script.hook || script.cta || script.source_reference || script.shot_notes) && (
+              {(script.hook || script.cta || script.source_reference) && (
                 <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
                   {script.hook && (
                     <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
@@ -338,12 +338,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   )}
                   {script.cta && (
                     <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>CTA </span>{script.cta}
-                    </p>
-                  )}
-                  {script.shot_notes && (
-                    <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>Tournage </span>{script.shot_notes}
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>CTA parlé </span>{script.cta}
                     </p>
                   )}
                   {script.source_reference && (
@@ -351,6 +346,22 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                       Source : {script.source_reference}
                     </p>
                   )}
+                </div>
+              )}
+
+              {/* Description Instagram à poster avec le reel — retour direct
+                  2026-09-02, distincte du script parlé ci-dessus. */}
+              {script.instagram_caption && (
+                <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
+                      Description Instagram
+                    </span>
+                    <CopyButton text={script.instagram_caption} />
+                  </div>
+                  <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
+                    {script.instagram_caption}
+                  </p>
                 </div>
               )}
 
