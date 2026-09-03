@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Footprints, ChevronRight, AlertTriangle, Moon } from "lucide-react";
+import { Bell, Footprints, ChevronRight, AlertTriangle, Moon, Camera, MapPin, Contact } from "lucide-react";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 import { setQuietHours } from "@/app/actions/quiet-hours";
@@ -34,6 +34,11 @@ export default function PermissionsCard({
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
   const [pedometerEnabled, setPedometerEnabled] = useState(false);
+  const [cameraStatus, setCameraStatus] = useState<"idle" | "granted" | "denied">("idle");
+  const [cameraLoading, setCameraLoading] = useState(false);
+  const [locationStatus, setLocationStatus] = useState<"idle" | "granted" | "denied">("idle");
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [contactsSupported, setContactsSupported] = useState(false);
   const [quietStart, setQuietStart] = useState(quietHoursStart ?? DEFAULT_QUIET_START);
   const [quietEnd, setQuietEnd] = useState(quietHoursEnd ?? DEFAULT_QUIET_END);
   const [quietSaving, setQuietSaving] = useState(false);
@@ -81,6 +86,81 @@ export default function PermissionsCard({
       // ignore
     }
   }, []);
+
+  // Reflète l'état déjà accordé (autre session, autorisé au niveau OS) sans
+  // attendre un clic — même logique que push/pedometer ci-dessus. Le picker
+  // de contacts n'a pas de notion d'autorisation persistante (un choix
+  // ponctuel à chaque appel), donc seul son support est détecté ici.
+  useEffect(() => {
+    try {
+      const nav = navigator as unknown as { contacts?: { select?: unknown } };
+      setContactsSupported(!!nav.contacts?.select);
+    } catch {
+      // ignore
+    }
+    (async () => {
+      try {
+        if (!navigator.permissions?.query) return;
+        const cam = await navigator.permissions.query({ name: "camera" as PermissionName });
+        setCameraStatus(cam.state === "granted" ? "granted" : cam.state === "denied" ? "denied" : "idle");
+        const loc = await navigator.permissions.query({ name: "geolocation" as PermissionName });
+        setLocationStatus(loc.state === "granted" ? "granted" : loc.state === "denied" ? "denied" : "idle");
+      } catch {
+        // Nom de permission non supporté par ce navigateur : on reste sur
+        // l'état par défaut, le bouton "Autoriser" gère quand même le cas.
+      }
+    })();
+  }, []);
+
+  async function enableCamera() {
+    setCameraLoading(true);
+    try {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setCameraStatus("denied");
+        return;
+      }
+      // On ouvre puis on referme immédiatement le flux : le but ici est
+      // uniquement de déclencher la demande d'autorisation du navigateur,
+      // pas de filmer quoi que ce soit depuis cet écran de réglages.
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      stream.getTracks().forEach((t) => t.stop());
+      setCameraStatus("granted");
+    } catch {
+      setCameraStatus("denied");
+    } finally {
+      setCameraLoading(false);
+    }
+  }
+
+  async function enableLocation() {
+    setLocationLoading(true);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        if (!navigator.geolocation) {
+          reject(new Error("unsupported"));
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(() => resolve(), () => reject(new Error("denied")), { timeout: 8000 });
+      });
+      setLocationStatus("granted");
+    } catch {
+      setLocationStatus("denied");
+    } finally {
+      setLocationLoading(false);
+    }
+  }
+
+  async function pickContact() {
+    try {
+      const nav = navigator as unknown as {
+        contacts?: { select: (props: string[], opts: { multiple: boolean }) => Promise<unknown> };
+      };
+      await nav.contacts?.select(["name", "tel"], { multiple: false });
+    } catch {
+      // Choix annulé par l'utilisateur ou refusé : rien à faire, ce n'est
+      // pas une erreur applicative.
+    }
+  }
 
   // Même mécanique que l'ancien bouton dans AccountActions — voir ce fichier
   // dans l'historique git pour le contexte complet sur pourquoi chaque étape
@@ -211,6 +291,87 @@ export default function PermissionsCard({
         </div>
         <ChevronRight size={13} className="text-[#F5EDED]/20 group-hover:text-[#F5EDED]/50 transition-colors flex-shrink-0" />
       </Link>
+
+      {/* Photos & vidéo, localisation, contacts : mêmes réglages que ceux
+          qu'iOS/Android affichent pour n'importe quelle appli installée, un
+          navigateur/PWA ne peut demander chacun que via son propre déclencheur
+          (caméra, géolocalisation, sélecteur de contacts) — pas de simple
+          case à cocher globale côté OS. */}
+      <div className="flex items-center justify-between gap-3 py-1 mb-1 border-b border-[#890404]/10 pb-4">
+        <div className="flex items-center gap-2.5">
+          <Camera size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-white">Photos & vidéo</p>
+            <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+              {cameraStatus === "granted"
+                ? "Autorisées sur cet appareil"
+                : cameraStatus === "denied"
+                  ? "Refusées, à réactiver dans les réglages du navigateur"
+                  : "Utilisées pour filmer tes scripts/vidéos"}
+            </p>
+          </div>
+        </div>
+        {cameraStatus === "granted" ? (
+          <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
+            Activées
+          </span>
+        ) : (
+          <button
+            onClick={enableCamera}
+            disabled={cameraLoading}
+            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+          >
+            <Camera size={12} /> {cameraLoading ? "Activation…" : "Autoriser"}
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center justify-between gap-3 py-1 mb-1 border-b border-[#890404]/10 pb-4">
+        <div className="flex items-center gap-2.5">
+          <MapPin size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-white">Localisation</p>
+            <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
+              {locationStatus === "granted"
+                ? "Autorisée sur cet appareil"
+                : locationStatus === "denied"
+                  ? "Refusée, à réactiver dans les réglages du navigateur"
+                  : "Utilisée pour te proposer une salle/un coach à proximité"}
+            </p>
+          </div>
+        </div>
+        {locationStatus === "granted" ? (
+          <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
+            Activée
+          </span>
+        ) : (
+          <button
+            onClick={enableLocation}
+            disabled={locationLoading}
+            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+          >
+            <MapPin size={12} /> {locationLoading ? "Activation…" : "Autoriser"}
+          </button>
+        )}
+      </div>
+
+      {contactsSupported && (
+        <div className="flex items-center justify-between gap-3 py-1 mb-1 border-b border-[#890404]/10 pb-4">
+          <div className="flex items-center gap-2.5">
+            <Contact size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-semibold text-white">Contacts</p>
+              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">Utilisés pour inviter un proche en parrainage</p>
+            </div>
+          </div>
+          <button
+            onClick={pickContact}
+            className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
+          >
+            <Contact size={12} /> Choisir
+          </button>
+        </div>
+      )}
 
       <div className="pt-1">
         <InstallAppHint />

@@ -174,6 +174,11 @@ export interface DietPlanMeal {
   day_of_week: DayOfWeek | null;
   notes?: string | null;
   foods?: Food;
+  // NULL/1 = repas principal (compte dans les totaux macro). >=2 = variante
+  // alternative interchangeable pour ce même créneau (ex : matin, flocons
+  // d'avoine OU pain) — affichée mais exclue des totaux, pour ne jamais
+  // compter comme si les deux options étaient mangées le même jour.
+  variant_group?: number | null;
 }
 
 export interface DietPlanWithMeals extends DietPlan {

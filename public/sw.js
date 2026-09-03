@@ -42,6 +42,16 @@ self.addEventListener("push", (event) => {
         for (const client of windowClients) {
           client.postMessage({ type: "PLAY_ALARM", title: data.title, body: data.body, url: data.url || "/", blockId: data.blockId });
         }
+      } else {
+        // Retour direct : "faut que les notifs fassent reellement du son de
+        // notif" — le silent:false d'une Notification systeme ne suffit pas
+        // toujours (reglages Android/iOS, volume notif coupe). Si un onglet
+        // de l'appli est ouvert, on lui demande de jouer un court son audible
+        // en plus, voir components/ui/AlarmPlayer.tsx (listener PLAY_CHIME).
+        const windowClients = await clients.matchAll({ type: "window", includeUncontrolled: true });
+        for (const client of windowClients) {
+          client.postMessage({ type: "PLAY_CHIME" });
+        }
       }
     })()
   );

@@ -69,6 +69,40 @@ export default function AlarmPlayer() {
     };
   }, []);
 
+  // Court son audible pour un bloc d'agenda "normal" (pas un réveil) : une
+  // seule tonalité brève, pas de boucle, pas d'overlay plein écran. Sert de
+  // filet en plus du bip système (silent: false), qui reste parfois inaudible
+  // selon les réglages du téléphone (retour direct : "faut que les notifs
+  // fassent reellement du son de notif").
+  const playChimeTone = useCallback(() => {
+    const Ctx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+    if (!Ctx) return;
+    try {
+      const ctx = new Ctx();
+      const emit = () => {
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = 740;
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(0.3, now + 0.02);
+        gain.gain.linearRampToValueAtTime(0, now + 0.35);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.36);
+        setTimeout(() => ctx.close().catch(() => {}), 500);
+      };
+      if (ctx.state === "suspended") {
+        ctx.resume().then(emit).catch(() => {});
+      } else {
+        emit();
+      }
+    } catch {
+      // ignore : l'app reste fonctionnelle même sans ce son d'appoint
+    }
+  }, []);
+
   const stopAlarm = useCallback(() => {
     stopFnRef.current?.();
     stopFnRef.current = null;
@@ -97,12 +131,14 @@ export default function AlarmPlayer() {
         stopFnRef.current = playAlarmTone();
       } else if (data.type === "STOP_ALARM") {
         stopAlarm();
+      } else if (data.type === "PLAY_CHIME") {
+        playChimeTone();
       }
     }
 
     navigator.serviceWorker.addEventListener("message", onMessage);
     return () => navigator.serviceWorker.removeEventListener("message", onMessage);
-  }, [playAlarmTone, stopAlarm]);
+  }, [playAlarmTone, stopAlarm, playChimeTone]);
 
   // Retente le démarrage du son au premier geste utilisateur si l'autoplay
   // avait été bloqué (politique navigateur : un AudioContext ne peut pas

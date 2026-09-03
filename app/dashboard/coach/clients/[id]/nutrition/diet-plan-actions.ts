@@ -124,6 +124,10 @@ export interface DietPlanMealInput {
   // Pourquoi ce choix pour ce repas précis — décision du coach (migration
   // 20260807 diet_meal_reasoning_and_food_prep_notes), jamais déduite.
   notes?: string | null;
+  // NULL/1 = repas principal. >=2 = variante alternative interchangeable
+  // pour ce créneau (migration 20260903_diet_plan_meals_variant_group),
+  // exclue des totaux macro pour ne jamais compter les 2 options ensemble.
+  variant_group?: number | null;
 }
 
 // Colonne `objective` ajoutée par la migration 20260806, exécutée à la main

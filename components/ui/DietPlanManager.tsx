@@ -334,6 +334,18 @@ interface PlanMealRow {
   // Pourquoi ce choix pour ce repas précis — décision du coach, jamais
   // déduite (migration 20260807 diet_meal_reasoning_and_food_prep_notes).
   notes: string;
+  // undefined/1 = repas principal (compte dans les totaux). >=2 = variante
+  // alternative pour ce créneau (ex : flocons d'avoine OU pain le matin) —
+  // affichée à côté mais jamais additionnée avec l'option principale.
+  variantGroup?: number;
+}
+
+// Filtre l'option "principale" de chaque créneau/jour — c'est sur CE
+// sous-ensemble que les totaux macro et la liste de courses se calculent,
+// jamais sur l'ensemble des variantes (sinon un repas à 2 choix compterait
+// comme si les deux étaient mangés le même jour).
+function primaryOnly(rows: PlanMealRow[]): PlanMealRow[] {
+  return rows.filter((m) => !m.variantGroup || m.variantGroup === 1);
 }
 
 export function PlanBuilder({
@@ -393,6 +405,9 @@ export function PlanBuilder({
   const [activeDay, setActiveDay] = useState<DayOfWeek>("lun");
   const [meals, setMeals] = useState<PlanMealRow[]>([]);
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
+  // undefined = ajoute au repas principal du créneau ; un nombre = ajoute
+  // comme variante alternative (ex : 2 pour "2e choix : pain").
+  const [addingVariantGroup, setAddingVariantGroup] = useState<number | undefined>(undefined);
 
   // MASTERCLASS.md Axe C (suite) : le fond se fermait déjà au clic, rien
   // au clavier avant ça.
@@ -456,7 +471,7 @@ export function PlanBuilder({
   );
 
   const planTotals = useMemo(() => {
-    return dayMeals.reduce(
+    return primaryOnly(dayMeals).reduce(
       (acc, m) => {
         const food = foods.find((f) => f.id === m.foodId);
         if (!food) return acc;
@@ -506,7 +521,9 @@ export function PlanBuilder({
   // hebdomadaire : somme réelle de tous les jours déjà remplis.
   const draftShoppingItems = useMemo(() => {
     const totals = new Map<string, { name: string; category: string; grams: number }>();
-    const rows = structure === "weekly" ? meals : dayMeals;
+    // Liste de courses = option principale seulement : une variante alternative
+    // (flocons OU pain) n'est pas achetée en plus, elle remplace l'option 1.
+    const rows = primaryOnly(structure === "weekly" ? meals : dayMeals);
     const multiplier = structure === "weekly" ? 1 : 7;
     for (const m of rows) {
       const food = foods.find((f) => f.id === m.foodId);
@@ -528,7 +545,7 @@ export function PlanBuilder({
   // repas par repas ("mon petit-déj couvre 40 g de protéines") au lieu de ne
   // voir que le total de fin de journée.
   function slotTotals(slotKey: string) {
-    return dayMeals
+    return primaryOnly(dayMeals)
       .filter((m) => m.slotKey === slotKey)
       .reduce(
         (acc, m) => {
@@ -561,13 +578,27 @@ export function PlanBuilder({
         quantityG: q,
         day: currentDay,
         notes: mealNotes.trim(),
+        variantGroup: addingVariantGroup,
       },
     ]);
     setAddingToSlot(null);
+    setAddingVariantGroup(undefined);
     setSelectedFood(null);
     setSearch("");
     setQty("100");
     setMealNotes("");
+  }
+
+  // Prochain numéro de variante disponible pour ce créneau/jour (1 = option
+  // principale déjà implicite, donc on démarre toujours à 2 pour une
+  // nouvelle alternative, même si la précédente a été supprimée entre temps).
+  function nextVariantGroup(slotKey: string): number {
+    const used = dayMeals
+      .filter((m) => m.slotKey === slotKey)
+      .map((m) => m.variantGroup ?? 1);
+    let n = 2;
+    while (used.includes(n)) n++;
+    return n;
   }
 
   // Remplace un aliment par un autre de la même catégorie (rotation, ou
@@ -612,6 +643,7 @@ export function PlanBuilder({
         quantityG: m.quantity_g,
         day: m.day_of_week,
         notes: m.notes ?? "",
+        variantGroup: m.variant_group ?? undefined,
       }))
     );
     setLoadedTemplateName(template.name);
@@ -626,6 +658,7 @@ export function PlanBuilder({
       position: i,
       day_of_week: m.day,
       notes: m.notes.trim() || null,
+      variant_group: m.variantGroup ?? null,
     }));
   }
 
@@ -1001,6 +1034,9 @@ export function PlanBuilder({
             {MEAL_SLOTS.map((slot) => {
               const slotMeals = dayMeals.filter((m) => m.slotKey === slot.key);
               const st = slotTotals(slot.key);
+              // Groupe par variante : 1 (ou sans variantGroup) = option
+              // principale, les groupes >=2 s'affichent en "2e choix"/"3e choix".
+              const variantGroups = [...new Set(slotMeals.map((m) => m.variantGroup ?? 1))].sort((a, b) => a - b);
               return (
                 <div key={slot.key} className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
                   <div className="flex items-center justify-between mb-2">
@@ -1012,51 +1048,83 @@ export function PlanBuilder({
                         <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
                           {Math.round(st.calories)} kcal · P {Math.round(st.proteins)}g · G {Math.round(st.carbs)}g · L{" "}
                           {Math.round(st.fats)}g
+                          {variantGroups.length > 1 && " · option principale"}
                         </p>
                       )}
                     </div>
-                    <button
-                      onClick={() => {
-                        setAddingToSlot(slot.key);
-                        setSelectedFood(null);
-                        setSearch("");
-                        setQty("100");
-                      }}
-                      className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors"
-                    >
-                      <Plus size={11} /> Ajouter
-                    </button>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {slotMeals.length > 0 && variantGroups.length < 3 && (
+                        <button
+                          onClick={() => {
+                            setAddingToSlot(slot.key);
+                            setAddingVariantGroup(nextVariantGroup(slot.key));
+                            setSelectedFood(null);
+                            setSearch("");
+                            setQty("100");
+                          }}
+                          title="Ajouter une option alternative pour ce créneau (ex : 2e choix)"
+                          className="inline-flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/45 hover:text-[#F5EDED]/80 transition-colors"
+                        >
+                          <Shuffle size={11} /> Variante
+                        </button>
+                      )}
+                      <button
+                        onClick={() => {
+                          setAddingToSlot(slot.key);
+                          setAddingVariantGroup(undefined);
+                          setSelectedFood(null);
+                          setSearch("");
+                          setQty("100");
+                        }}
+                        className="inline-flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors"
+                      >
+                        <Plus size={11} /> Ajouter
+                      </button>
+                    </div>
                   </div>
                   {slotMeals.length === 0 ? (
                     <p className="text-[10px] text-[#F5EDED]/20 italic">Aucun aliment</p>
                   ) : (
-                    <div className="space-y-1">
-                      {slotMeals.map((m) => (
-                        <div
-                          key={m.localId}
-                          className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
-                        >
-                          <div className="min-w-0">
-                            <p className="text-xs text-white">{m.foodName}</p>
-                            <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
-                            {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic mt-0.5">{m.notes}</p>}
-                          </div>
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {canSwapFood(m.foodId) && (
-                              <button
-                                onClick={() => swapFood(m.localId)}
-                                title="Remplacer par un autre aliment de la même catégorie (rotation)" aria-label="Remplacer par un autre aliment de la même catégorie (rotation)"
-                                className="text-[#F5EDED]/20 hover:text-green-400 transition-colors p-0.5"
-                              >
-                                <RefreshCw size={12} />
-                              </button>
-                            )}
-                            <button
-                              onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
-                              className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
-                            >
-                              <Trash2 size={12} />
-                            </button>
+                    <div className="space-y-3">
+                      {variantGroups.map((vg) => (
+                        <div key={vg}>
+                          {variantGroups.length > 1 && (
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+                              {vg === 1 ? "Option principale" : `${vg}e choix`}
+                            </p>
+                          )}
+                          <div className="space-y-1">
+                            {slotMeals
+                              .filter((m) => (m.variantGroup ?? 1) === vg)
+                              .map((m) => (
+                                <div
+                                  key={m.localId}
+                                  className="flex items-center justify-between py-1 border-b border-[#890404]/10 last:border-0"
+                                >
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-white">{m.foodName}</p>
+                                    <p className="text-[10px] text-[#F5EDED]/35">{m.quantityG}g</p>
+                                    {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic mt-0.5">{m.notes}</p>}
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    {canSwapFood(m.foodId) && (
+                                      <button
+                                        onClick={() => swapFood(m.localId)}
+                                        title="Remplacer par un autre aliment de la même catégorie (rotation)" aria-label="Remplacer par un autre aliment de la même catégorie (rotation)"
+                                        className="text-[#F5EDED]/20 hover:text-green-400 transition-colors p-0.5"
+                                      >
+                                        <RefreshCw size={12} />
+                                      </button>
+                                    )}
+                                    <button
+                                      onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
+                                      className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
+                                    >
+                                      <Trash2 size={12} />
+                                    </button>
+                                  </div>
+                                </div>
+                              ))}
                           </div>
                         </div>
                       ))}
@@ -1256,9 +1324,16 @@ export function PlanBuilder({
           <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={() => setAddingToSlot(null)} />
           <div className="ep-modal-panel relative w-full sm:max-w-md bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[80vh] flex flex-col z-10">
             <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-[#890404]/20 flex-shrink-0">
-              <p className="text-xs font-bold uppercase tracking-widest text-white">
-                {selectedFood ? selectedFood.name : MEAL_SLOTS.find((s) => s.key === addingToSlot)?.label}
-              </p>
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest text-white">
+                  {selectedFood ? selectedFood.name : MEAL_SLOTS.find((s) => s.key === addingToSlot)?.label}
+                </p>
+                {addingVariantGroup && (
+                  <p className="text-[10px] text-[#F5EDED]/40 mt-0.5">
+                    {addingVariantGroup}e choix, une option alternative pour ce créneau
+                  </p>
+                )}
+              </div>
               <button onClick={() => setAddingToSlot(null)} className="text-[#F5EDED]/40 hover:text-white">
                 <X size={16} />
               </button>
@@ -1503,20 +1578,25 @@ function PlanDetailRow({
   }, [visibleMeals, plan]);
 
   const totals = useMemo(() => {
-    return visibleMeals.reduce(
-      (acc, m) => {
-        const food = m.foods ?? foods.find((f) => f.id === m.food_id);
-        if (!food) return acc;
-        const n = calculateNutrients(food, m.quantity_g);
-        return {
-          calories: acc.calories + n.calories,
-          proteins: acc.proteins + n.proteins,
-          carbs: acc.carbs + n.carbs,
-          fats: acc.fats + n.fats,
-        };
-      },
-      { calories: 0, proteins: 0, carbs: 0, fats: 0 }
-    );
+    // Option principale seulement (voir DietPlanMeal.variant_group) : une
+    // variante alternative (2e choix) ne s'additionne pas à côté, sinon les
+    // totaux compteraient les 2 options comme mangées le même jour.
+    return visibleMeals
+      .filter((m) => !m.variant_group || m.variant_group === 1)
+      .reduce(
+        (acc, m) => {
+          const food = m.foods ?? foods.find((f) => f.id === m.food_id);
+          if (!food) return acc;
+          const n = calculateNutrients(food, m.quantity_g);
+          return {
+            calories: acc.calories + n.calories,
+            proteins: acc.proteins + n.proteins,
+            carbs: acc.carbs + n.carbs,
+            fats: acc.fats + n.fats,
+          };
+        },
+        { calories: 0, proteins: 0, carbs: 0, fats: 0 }
+      );
   }, [visibleMeals, foods]);
 
   return (
@@ -1575,24 +1655,42 @@ function PlanDetailRow({
             <p className="text-[10px] text-[#F5EDED]/25 italic">Aucun aliment pour ce jour.</p>
           ) : (
             <>
-              {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => (
-                <div key={slot.key}>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
-                    {slot.label}
-                  </p>
-                  <div className="space-y-1">
-                    {bySlot[slot.key].map((m) => (
-                      <div key={m.id} className="flex items-center justify-between py-1">
-                        <div className="min-w-0">
-                          <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
-                          {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic">{m.notes}</p>}
+              {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => {
+                const variantGroups = [...new Set(bySlot[slot.key].map((m) => m.variant_group ?? 1))].sort(
+                  (a, b) => a - b
+                );
+                return (
+                  <div key={slot.key}>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
+                      {slot.label}
+                    </p>
+                    <div className="space-y-2">
+                      {variantGroups.map((vg) => (
+                        <div key={vg}>
+                          {variantGroups.length > 1 && (
+                            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
+                              {vg === 1 ? "Option principale" : `${vg}e choix`}
+                            </p>
+                          )}
+                          <div className="space-y-1">
+                            {bySlot[slot.key]
+                              .filter((m) => (m.variant_group ?? 1) === vg)
+                              .map((m) => (
+                                <div key={m.id} className="flex items-center justify-between py-1">
+                                  <div className="min-w-0">
+                                    <p className="text-xs text-white">{m.foods?.name ?? "Aliment"}</p>
+                                    {m.notes && <p className="text-[10px] text-[#F5EDED]/30 italic">{m.notes}</p>}
+                                  </div>
+                                  <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">{m.quantity_g}g</p>
+                                </div>
+                              ))}
+                          </div>
                         </div>
-                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0">{m.quantity_g}g</p>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               <div className="flex gap-4 pt-2 border-t border-[#890404]/15 text-xs">
                 <span className="text-[#E01E1E] font-black">{Math.round(totals.calories)} kcal</span>
                 <span className="text-blue-300">P {Math.round(totals.proteins)}g</span>
