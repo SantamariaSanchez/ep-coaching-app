@@ -3,9 +3,11 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { FUNNEL_STAGES } from "@/lib/coach-business";
+import type { RoadmapHorizon } from "@/lib/coach-roadmap";
 import BusinessChecklist from "@/components/coach/BusinessChecklist";
 import FunnelIdeaCard from "@/components/coach/FunnelIdeaCard";
-import { Rocket, Sparkles, GraduationCap, ArrowRight } from "lucide-react";
+import RoadmapPlanner, { type RoadmapMilestone } from "@/components/coach/RoadmapPlanner";
+import { Rocket, Sparkles, GraduationCap, ArrowRight, Compass } from "lucide-react";
 
 // Axe 6 (VISION.md) — demande directe 2026-08-19 : "un autre espace pour
 // tout ce qui est entreprenariat donc la construction de sa propre
@@ -23,12 +25,21 @@ export default async function CoachBusinessPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const supabase = await createServerSupabase();
-  const { data: checklistRows } = await supabase
-    .from("coach_business_checklist")
-    .select("item_key")
-    .eq("coach_id", user.id)
-    .eq("done", true);
+  const [{ data: checklistRows }, { data: visionRows }, { data: milestoneRows }] = await Promise.all([
+    supabase.from("coach_business_checklist").select("item_key").eq("coach_id", user.id).eq("done", true),
+    supabase.from("coach_business_roadmap").select("horizon, vision").eq("coach_id", user.id),
+    supabase
+      .from("coach_roadmap_milestones")
+      .select("id, horizon, label, done")
+      .eq("coach_id", user.id)
+      .order("position"),
+  ]);
   const initialDone = (checklistRows ?? []).map((r) => r.item_key as string);
+  const initialVisions: Partial<Record<RoadmapHorizon, string>> = {};
+  for (const row of visionRows ?? []) {
+    if (row.vision) initialVisions[row.horizon as RoadmapHorizon] = row.vision as string;
+  }
+  const initialMilestones = (milestoneRows ?? []) as RoadmapMilestone[];
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -45,6 +56,25 @@ export default async function CoachBusinessPage() {
           ton propre business de coach : contenu, marque personnelle, stratégie. Un système à suivre,
           pas juste des idées en vrac.
         </p>
+      </div>
+
+      {/* Roadmap 1/3/10/20 ans (2026-09-08) : la vision long terme, avant le
+          tactique (funnel, checklist) plus bas — sans direction, un système
+          de contenu n'est qu'une machine à produire sans savoir où elle va. */}
+      <div className="mt-6 mb-10">
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+          Vision long terme
+        </p>
+        <h2 className="text-xl font-black uppercase tracking-tight mb-1 flex items-center gap-2.5">
+          <Compass size={18} className="text-[#E01E1E]" />
+          Ta roadmap sur 1, 3, 10 et 20 ans
+        </h2>
+        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
+          Un horizon différent appelle une question différente : dans 1 an c&apos;est l&apos;exécution,
+          dans 20 c&apos;est ce qui reste si tu t&apos;arrêtes. Écris, coche des jalons, révise
+          régulièrement.
+        </p>
+        <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
       </div>
 
       {/* Liens rapides */}
