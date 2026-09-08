@@ -10,19 +10,29 @@ import {
   type GuideRef,
 } from "@/lib/reengagement";
 
-// Relance hebdomadaire des membres dormants, en séquence (voir lib/reengagement.ts
-// pour le contenu et le raisonnement derrière chaque étape).
+// Relance des membres dormants, en séquence (voir lib/reengagement.ts
+// pour le contenu et le raisonnement derrière chaque étape). Le nom de la
+// route ("weekly") est un vestige : le job pg_cron qui l'appelle tourne
+// désormais tous les jours (voir plus bas pourquoi), gardé tel quel plutôt
+// que renommé pour un simple changement de fréquence.
 //
 // Corrigé le 2026-09-08 après lecture des vraies données : 14 membres sur 15
 // n'avaient jamais fait la moindre action et la dernière connexion de presque
-// tous était le jour de leur inscription. Trois défauts de l'ancienne version
-// expliquaient qu'ils ne recevaient rien d'utile :
+// tous était le jour de leur inscription. Quatre défauts expliquaient qu'ils
+// ne recevaient rien d'utile :
 //   1. le filtre `onboarding_completed_at not null` excluait précisément ceux
 //      qui décrochent le premier jour, donc la population à récupérer ;
 //   2. le message était tiré au hasard parmi 5 textes génériques, répétés
 //      indéfiniment, sans jamais rien apporter ;
 //   3. aucune notion de progression : impossible de varier l'angle ni de
-//      s'arrêter proprement.
+//      s'arrêter proprement ;
+//   4. le cron lui-même ne tournait qu'une fois par semaine (lundi) : un
+//      membre inscrit le mardi et resté inactif attendait jusqu'à 6 jours
+//      avant le tout premier message, en plein milieu de la fenêtre où son
+//      intérêt est le plus fort. Passé à un passage quotidien le même jour :
+//      la vraie garde anti-spam reste MIN_DAYS_BETWEEN_MESSAGES ci-dessous
+//      (6 jours par personne), la fréquence du cron ne change que le délai
+//      maximum avant le premier contact, pas le rythme des suivants.
 //
 // Un membre actif (check-in, repas loggé ou séance récente) n'est jamais
 // relancé : la séquence ne s'adresse qu'à ceux qui ne reviennent pas.
