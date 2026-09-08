@@ -1,9 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronDown, Send, Check, Circle, Wallet, ShieldCheck } from "lucide-react";
+import { ChevronDown, Send, Check, Circle, Wallet, ShieldCheck, CalendarCheck } from "lucide-react";
 import type { Pole, RoleStatus } from "@/components/ui/OrganisationView";
 import { submitApplication } from "@/app/carrieres/actions";
+import {
+  QUALIFYING_QUESTIONS,
+  CAREERS_INTERVIEW_BOOKING_URL,
+  type QualifyingAnswerKey,
+  type QualifyingAnswers,
+} from "@/lib/job-applications-shared";
 import { onKeyActivate } from "@/lib/a11y";
 
 const STATUS_META: Record<RoleStatus, { label: string; color: string }> = {
@@ -16,14 +22,19 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [answers, setAnswers] = useState<QualifyingAnswers>({});
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  function setAnswer(key: QualifyingAnswerKey, value: string) {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  }
+
   function submit() {
     setError(null);
     startTransition(async () => {
-      const result = await submitApplication(roleKey, roleTitle, fullName, email, phone);
+      const result = await submitApplication(roleKey, roleTitle, fullName, email, phone, answers);
       if (result.error) {
         setError(result.error);
         return;
@@ -34,11 +45,31 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
 
   if (sent) {
     return (
-      <div className="flex items-center gap-2 bg-[#0D2B15] border border-[#4ade80]/25 rounded-lg px-3 py-2.5 mt-3">
-        <Check size={14} className="text-[#4ade80] flex-shrink-0" />
-        <p className="text-[11px] text-[#4ade80] font-semibold">
-          Candidature envoyée, on te recontacte par email.
-        </p>
+      <div className="mt-3 space-y-2">
+        <div className="flex items-center gap-2 bg-[#0D2B15] border border-[#4ade80]/25 rounded-lg px-3 py-2.5">
+          <Check size={14} className="text-[#4ade80] flex-shrink-0" />
+          <p className="text-[11px] text-[#4ade80] font-semibold">
+            {CAREERS_INTERVIEW_BOOKING_URL
+              ? "Candidature envoyée et vraiment lue."
+              : "Candidature envoyée. Elle est vraiment lue : si ça matche, tu es recontacté pour un appel."}
+          </p>
+        </div>
+        {/* Dès que CAREERS_INTERVIEW_BOOKING_URL est renseigné (voir
+            job-applications-shared.ts), la réservation devient immédiate au
+            lieu de faire attendre un email — c'est tout l'objet du chantier
+            "de la page carrières jusqu'à l'appel" du 2026-09-08. */}
+        {CAREERS_INTERVIEW_BOOKING_URL && (
+          <a
+            href={CAREERS_INTERVIEW_BOOKING_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ep-btn-primary w-full"
+            style={{ height: 44, borderRadius: "var(--radius-sm)", textDecoration: "none" }}
+          >
+            <CalendarCheck size={13} />
+            Réserve ton entretien (20 min)
+          </a>
+        )}
       </div>
     );
   }
@@ -65,6 +96,31 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
         placeholder="Téléphone (optionnel)"
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
       />
+
+      {/* Qualification (2026-09-08) : ce qui distingue une candidature
+          alignée d'un formulaire rempli au hasard, avant même le premier
+          échange. */}
+      <div className="pt-1 pb-0.5">
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">
+          Quelques questions, pour de vrai
+        </p>
+      </div>
+      {QUALIFYING_QUESTIONS.map((q) => (
+        <div key={q.key}>
+          <label className="block text-[11px] font-semibold text-[#F5EDED]/60 mb-1">
+            {q.label}
+            {!q.required && <span className="text-[#F5EDED]/25"> (optionnel)</span>}
+          </label>
+          <textarea
+            value={answers[q.key] ?? ""}
+            onChange={(e) => setAnswer(q.key, e.target.value)}
+            placeholder={q.placeholder}
+            rows={q.key === "motivation" ? 3 : 2}
+            className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
+          />
+        </div>
+      ))}
+
       {error && <p className="text-[11px] text-red-400">{error}</p>}
       <button
         onClick={submit}

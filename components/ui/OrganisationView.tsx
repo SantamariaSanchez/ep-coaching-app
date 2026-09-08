@@ -7,7 +7,7 @@ import {
   ChevronDown, Copy, Check, Mail, Inbox, StickyNote, ListChecks, Bot, ArrowRight,
 } from "lucide-react";
 import type { JobApplication, ApplicationStatus, OnboardingStepState } from "@/lib/job-applications";
-import { ONBOARDING_STEPS } from "@/lib/job-applications";
+import { ONBOARDING_STEPS, QUALIFYING_QUESTIONS } from "@/lib/job-applications";
 import { getAgentByKey } from "@/lib/ai-agents";
 
 // Vue interactive de la page Administration > Organisation. Portée en
@@ -386,6 +386,34 @@ function ApplicationRow({
           <span className="text-[11.5px] text-[#F5EDED]/55">{application.phone}</span>
         )}
       </div>
+
+      {/* Réponses de qualification (2026-09-08) : ce que le candidat a
+          répondu lui-même à la candidature, jamais ce que le coach note à
+          part (ça reste dans "notes" plus bas). */}
+      {application.answers && Object.keys(application.answers).length > 0 && (
+        <div className="mt-2.5 pt-2.5 border-t border-dashed border-[#890404]/15 space-y-2">
+          {QUALIFYING_QUESTIONS.filter((q) => application.answers?.[q.key]).map((q) => (
+            <div key={q.key}>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{q.label}</p>
+              {q.key === "link" ? (
+                <a
+                  href={application.answers![q.key]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[11.5px] text-[#E01E1E] hover:underline break-all"
+                >
+                  {application.answers![q.key]}
+                </a>
+              ) : (
+                <p className="text-[11.5px] text-[#F5EDED]/65 leading-relaxed whitespace-pre-wrap">
+                  {application.answers![q.key]}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="flex gap-1 pt-2.5 mt-2.5 border-t border-dashed border-[#890404]/15">
         {APPLICATION_STATUS_ORDER.map((s) => {
           const m = APPLICATION_STATUS_META[s];
