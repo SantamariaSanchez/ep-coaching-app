@@ -37,6 +37,8 @@ import {
   deleteDietPlan,
 } from "./nutrition/diet-plan-actions";
 import { getClientIntake } from "@/utils/client-intake";
+import { getClientConstraints, getRecoveryLogs } from "@/lib/client-medical-constraints";
+import { toggleClientConstraint, addRecoveryLog, deleteRecoveryLog } from "./medical/actions";
 import { getClientMeasurementsAsCoach } from "@/utils/measurements";
 import { getPeriodLogs, computeCycleStats } from "@/utils/period-tracking";
 import { getScheduleBlocks } from "@/utils/agenda";
@@ -121,6 +123,8 @@ export default async function ClientDetailPage({
     mindsetProfile,
     mindsetHabitLogs,
     measurements,
+    medicalConstraints,
+    recoveryLogs,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -158,6 +162,8 @@ export default async function ClientDetailPage({
     getHabitLogs(id, thirtyDaysAgoStr),
     // Item 13 : comparateur avant/après (mensurations + photos de check-in).
     getClientMeasurementsAsCoach(id),
+    getClientConstraints(id),
+    getRecoveryLogs(id),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -284,6 +290,11 @@ export default async function ClientDetailPage({
         saveDietAsTemplate={createDietTemplateAction}
         mindsetProfile={mindsetProfile}
         mindsetHabitLogs={mindsetHabitLogs}
+        medicalConstraints={medicalConstraints}
+        recoveryLogs={recoveryLogs}
+        toggleClientConstraint={toggleClientConstraint}
+        addRecoveryLog={addRecoveryLog}
+        deleteRecoveryLog={deleteRecoveryLog}
       />
     </div>
   );

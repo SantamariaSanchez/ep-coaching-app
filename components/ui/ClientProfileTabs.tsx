@@ -35,6 +35,8 @@ import type { StepRoutineItem, StepLog } from "@/utils/steps";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { MindsetProfile, MindsetHabitLog } from "@/utils/mindset";
 import type { Measurement } from "@/utils/measurements";
+import type { ClientMedicalConstraint, RecoveryLog } from "@/lib/client-medical-constraints";
+import ClientMedicalConstraintsPanel from "./ClientMedicalConstraintsPanel";
 import WeeklyAgenda from "./WeeklyAgenda";
 import BeforeAfterComparator from "./BeforeAfterComparator";
 import StepsClient from "@/components/steps/StepsClient";
@@ -252,6 +254,11 @@ export default function ClientProfileTabs({
   saveDietAsTemplate,
   mindsetProfile,
   mindsetHabitLogs,
+  medicalConstraints,
+  recoveryLogs,
+  toggleClientConstraint,
+  addRecoveryLog,
+  deleteRecoveryLog,
 }: {
   client: Profile;
   latestWeight: number | null;
@@ -338,6 +345,16 @@ export default function ClientProfileTabs({
   // CoachClientMindsetView). Le journal reste volontairement absent d'ici.
   mindsetProfile: MindsetProfile | null;
   mindsetHabitLogs: MindsetHabitLog[];
+  // Contraintes médicales rattachées à ce client (Axe 8, tourné en outil
+  // le 2026-09-09) — voir ClientMedicalConstraintsPanel.
+  medicalConstraints: ClientMedicalConstraint[];
+  recoveryLogs: RecoveryLog[];
+  toggleClientConstraint: (clientId: string, slug: string, active: boolean) => Promise<{ error?: string }>;
+  addRecoveryLog: (
+    clientId: string,
+    data: { log_date: string; zone: string; load_note: string | null; pain: number; note: string | null }
+  ) => Promise<{ error?: string }>;
+  deleteRecoveryLog: (clientId: string, logId: string) => Promise<{ error?: string }>;
 }) {
   const { rank, next, progressPct } = getRankForPoints(points);
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
@@ -432,6 +449,16 @@ export default function ClientProfileTabs({
           )}
 
           <ClientSuggestionsPanel suggestions={suggestions} />
+
+          <ClientMedicalConstraintsPanel
+            clientId={client.id}
+            activeConstraints={medicalConstraints}
+            recoveryLogs={recoveryLogs}
+            today={today}
+            toggleClientConstraint={toggleClientConstraint}
+            addRecoveryLog={addRecoveryLog}
+            deleteRecoveryLog={deleteRecoveryLog}
+          />
 
           {intake ? (
             <Card title="Fiche client : l'essentiel">
