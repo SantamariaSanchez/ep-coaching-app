@@ -7,6 +7,8 @@ import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
 import PermissionsPrimer from "@/components/ui/PermissionsPrimer";
+import FreeTierGate from "@/components/ui/FreeTierGate";
+import FreeTierBanner from "@/components/ui/FreeTierBanner";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
@@ -16,6 +18,8 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { isStrongSession } from "@/lib/mfa";
 import { getDailyGateStatus } from "@/lib/daily-gate";
 import { todayInParis } from "@/lib/dates";
+import { freeTierStatus, freeTierUrgencyLabel } from "@/lib/free-tier";
+import { getAccessType } from "@/utils/auth-client";
 
 // Double authentification : le mot de passe seul ne donne accès à aucune page
 // du dashboard tant que la session n'est pas passée en aal2.
@@ -105,6 +109,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
   ]);
 
   const initialIsFreeTier = profile?.role === "client" && !isSubscribed(profile);
+
+  // Verrou du compte gratuit à 60 jours (voir lib/free-tier.ts). Calculé côté
+  // serveur à chaque rendu du layout : dès que subscription_status repasse à
+  // "active", ce calcul redevient neutre au prochain chargement, sans action
+  // manuelle ni cron à attendre pour débloquer quelqu'un qui vient de payer.
+  const tierStatus = freeTierStatus(profile, getAccessType(profile));
+  const urgencyLabel = freeTierUrgencyLabel(tierStatus);
   // Bandeau non bloquant tant que l'email n'a pas été confirmé (voir
   // lib/email-verification.ts). Tous les comptes antérieurs sont considérés
   // vérifiés, seules les nouvelles inscriptions le voient.
@@ -130,11 +141,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
           autorisation pour l'appli (voir PermissionsPrimer). */}
       <PermissionsPrimer />
       <NavigationProgress />
+      {/* Verrou dur : rien d'autre ne doit rester utilisable en dessous tant
+          que le compte gratuit est verrouillé (voir lib/free-tier.ts). */}
+      {tierStatus.locked && <FreeTierGate />}
       {gateOverlay}
       {/* Dans les enfants et non au dessus de DashboardNav : la barre latérale
           desktop est en position fixed et recouvrirait les 220 premiers pixels
           du bandeau. Ici, il hérite du décalage du contenu. */}
       <DashboardNav initialIsFreeTier={initialIsFreeTier}>
+        {/* Compte à rebours doux avant le verrou dur ci-dessus (21 puis 7
+            jours restants). Jamais affiché en même temps que le verrou :
+            urgencyLabel devient null dès que locked est vrai. */}
+        {!tierStatus.locked && urgencyLabel && <FreeTierBanner label={urgencyLabel} />}
         {showEmailBanner && <EmailVerificationBanner email={profile.email} />}
         {/* Item 47 : pousse sans forcer, voir requireStrongSessionIfNeeded
             ci-dessus pour pourquoi le blocage dur reste désactivé. */}

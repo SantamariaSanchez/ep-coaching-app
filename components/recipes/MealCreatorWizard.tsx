@@ -259,9 +259,15 @@ export default function MealCreatorWizard({
   onFoodCreated,
   presetDiet,
   presetAllergens,
+  checkGenerationQuota,
 }: {
   foods: Food[];
   onSaveRecipe?: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
+  // Quota mensuel des membres gratuits (voir lib/free-tier.ts et
+  // checkRecipeGenerationQuota dans app/dashboard/client/recettes/actions.ts).
+  // Absent = pas de limite (coach, client accompagné) : le composant ne
+  // connaît pas le rôle de qui l'utilise, seul l'appelant le sait.
+  checkGenerationQuota?: () => Promise<{ allowed: boolean; message?: string }>;
   createCustomFood?: (params: {
     name: string;
     category: string;
@@ -306,6 +312,8 @@ export default function MealCreatorWizard({
   const [result, setResult] = useState<GeneratedRecipe | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [saveError, setSaveError] = useState("");
+  const [checkingQuota, setCheckingQuota] = useState(false);
+  const [quotaError, setQuotaError] = useState("");
 
   const step = STEP_ORDER[stepIdx];
 
@@ -365,8 +373,18 @@ export default function MealCreatorWizard({
     return true;
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (step === "time") {
+      setQuotaError("");
+      if (checkGenerationQuota) {
+        setCheckingQuota(true);
+        const quota = await checkGenerationQuota();
+        setCheckingQuota(false);
+        if (!quota.allowed) {
+          setQuotaError(quota.message ?? "Limite de générations atteinte pour ce mois-ci.");
+          return;
+        }
+      }
       // Generate on the way into "result"
       const answers: MealCreatorAnswers = {
         meal: meal!,
@@ -401,6 +419,7 @@ export default function MealCreatorWizard({
     setPrepTime(null);
     setResult(null);
     setSaveStatus("idle");
+    setQuotaError("");
   }
 
   const foodGroups = useMemo(() => buildFoodGroups(foods), [foods]);
@@ -690,22 +709,36 @@ export default function MealCreatorWizard({
       </AnimatePresence>
 
       {step !== "result" && (
-        <div className="flex gap-2 mt-7">
-          {stepIdx > 0 && (
-            <button
-              onClick={() => go(stepIdx - 1, -1)}
-              className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
-            >
-              <ArrowLeft size={16} />
-            </button>
+        <div className="mt-7">
+          {quotaError && (
+            <div className="flex items-start gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/25 rounded-xl px-4 py-3 mb-2.5">
+              <Sparkles size={13} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
+              <p className="text-[12px] text-[#F5EDED]/75 leading-snug">{quotaError}</p>
+            </div>
           )}
-          <button
-            onClick={handleNext}
-            disabled={!canAdvance()}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
-          >
-            {step === "time" ? "Créer ma recette" : "Suivant"} <ArrowRight size={15} />
-          </button>
+          <div className="flex gap-2">
+            {stepIdx > 0 && (
+              <button
+                onClick={() => go(stepIdx - 1, -1)}
+                className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
+              >
+                <ArrowLeft size={16} />
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={!canAdvance() || checkingQuota}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-sm font-bold uppercase tracking-widest h-12 rounded-xl transition-colors"
+            >
+              {checkingQuota ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <>
+                  {step === "time" ? "Créer ma recette" : "Suivant"} <ArrowRight size={15} />
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>

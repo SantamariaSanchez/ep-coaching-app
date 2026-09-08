@@ -401,6 +401,7 @@ export default function RecipesClient({
   presetDiet,
   presetAllergens,
   recommendedPhase,
+  checkGenerationQuota,
 }: {
   communityRecipes: CommunityRecipe[];
   foods: Food[];
@@ -410,6 +411,7 @@ export default function RecipesClient({
   isSubscribed: boolean;
   createRecipe: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
   deleteRecipe: (id: string) => Promise<{ error?: string }>;
+  checkGenerationQuota?: () => Promise<{ allowed: boolean; message?: string }>;
   createCustomFood: (params: {
     name: string;
     category: string;
@@ -595,6 +597,7 @@ export default function RecipesClient({
           onFoodCreated={(food) => setFoods((prev) => [food, ...prev])}
           presetDiet={presetDiet}
           presetAllergens={presetAllergens}
+          checkGenerationQuota={checkGenerationQuota}
           onSaveRecipe={async (input) => {
             const res = await createRecipe(input);
             if (!res.error && res.id) {

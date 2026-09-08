@@ -54,7 +54,7 @@ export const getUser = cache(async function getUser() {
 // petit select dédié, à faible rayon d'explosion si jamais en retard sur
 // la migration.
 const PROFILE_FIELDS =
-  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, platform_stripe_customer_id, platform_stripe_subscription_id, invite_code, instagram_handle, next_billing_date, external_payment_link, stripe_customer_id, stripe_subscription_id, email_verified_at, mfa_enabled";
+  "id, role, full_name, email, phone, start_date, weight_start, goal, status, competition_category, competition_date, photo_frequency, season_mode, subscription_status, subscription_plan, level, source, bio, avatar_url, onboarding_completed_at, checkin_day, coach_id, is_platform_owner, platform_subscription_status, platform_stripe_customer_id, platform_stripe_subscription_id, invite_code, instagram_handle, next_billing_date, external_payment_link, stripe_customer_id, stripe_subscription_id, email_verified_at, mfa_enabled, free_tier_started_at, locked_at";
 
 export const getProfile = cache(async function getProfile(userId: string): Promise<Profile | null> {
   try {

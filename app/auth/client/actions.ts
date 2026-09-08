@@ -14,6 +14,7 @@ import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { maybeSendAICoachWelcome } from "@/lib/ai-coach-welcome";
+import { CGU_VERSION } from "@/lib/legal";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -47,6 +48,11 @@ export interface SelfSignupInput {
   // coach ci-dessus), ex. /auth/client?ref=CODE — ne change jamais le
   // coach attribué, sert uniquement à créditer le parrain.
   refCode?: string;
+  // Acceptation explicite des CGU/CGV/politique de confidentialité, cochée au
+  // formulaire. Revérifiée ici : une requête forgée contourne trivialement la
+  // case côté navigateur, et c'est justement cette acceptation qu'on doit
+  // pouvoir prouver plus tard (profiles.cgu_accepted_at).
+  acceptedTerms?: boolean;
 }
 
 // Résout un éventuel parrain — n'importe quel profil (coach ou pas), pas
@@ -139,6 +145,9 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     return { error: "Adresse email invalide." };
   }
+  if (input.acceptedTerms !== true) {
+    return { error: "Tu dois accepter les conditions d'utilisation pour créer ton compte." };
+  }
 
   // Quota par adresse IP. Attention : cette inscription passe par
   // admin.auth.admin.createUser, qui est une API d'administration et ne
@@ -212,6 +221,12 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
     coach_id: coach?.id ?? null,
     referred_by: referrer?.id ?? null,
     email_verified_at: null,
+    // Point de départ des 60 jours gratuits (voir lib/free-tier.ts) et trace de
+    // l'acceptation des conditions, horodatée avec la version acceptée pour
+    // rester opposable si les CGU évoluent ensuite.
+    free_tier_started_at: new Date().toISOString(),
+    cgu_accepted_at: new Date().toISOString(),
+    cgu_version: CGU_VERSION,
   });
 
   if (profileError) {

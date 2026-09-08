@@ -4,6 +4,10 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth-guards";
+import { getUser, getProfile } from "@/utils/auth";
+import { getAccessType } from "@/utils/auth-client";
+import { checkRateLimit } from "@/lib/rate-limit";
+import { FREE_RECIPE_GENERATIONS_PER_MONTH } from "@/lib/free-tier";
 import type {
   Allergen,
   Diet,
@@ -12,6 +16,34 @@ import type {
   Season,
   Temp,
 } from "@/lib/recipes-data";
+
+const RECIPE_GENERATION_WINDOW_SECONDS = 30 * 24 * 60 * 60;
+
+// Quota du créateur de recette pour un membre gratuit (voir lib/free-tier.ts,
+// demande du 2026-09-08 : "des limites sur par exemple la génération de
+// recette"). Un coach ou un client accompagné n'a jamais de limite.
+// Consomme un jeton à chaque appel : le composant n'appelle cette action
+// qu'au moment réel de générer une recette, jamais en boucle.
+export async function checkRecipeGenerationQuota(): Promise<{ allowed: boolean; message?: string }> {
+  const user = await getUser();
+  if (!user) return { allowed: false, message: "Connecte-toi pour créer une recette." };
+
+  const profile = await getProfile(user.id);
+  const accessType = getAccessType(profile);
+  if (accessType !== "membre_gratuit") return { allowed: true };
+
+  const result = await checkRateLimit(
+    `recipe-gen:${user.id}`,
+    FREE_RECIPE_GENERATIONS_PER_MONTH,
+    RECIPE_GENERATION_WINDOW_SECONDS
+  );
+  if (result.allowed) return { allowed: true };
+
+  return {
+    allowed: false,
+    message: `Tu as utilisé tes ${FREE_RECIPE_GENERATIONS_PER_MONTH} générations gratuites de ce mois-ci. Passe en accompagnement pour un accès illimité.`,
+  };
+}
 
 export interface CommunityRecipeInput {
   name: string;

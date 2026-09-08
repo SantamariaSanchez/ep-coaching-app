@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, P, Ul, Strong, type LegalSection } from "@/components/legal/LegalPage";
+import { LEGAL_LAST_UPDATED } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Conditions Générales d'Utilisation · EP Coaching",
@@ -93,8 +94,59 @@ const sections: LegalSection[] = [
     ),
   },
   {
+    id: "compte-gratuit",
+    title: "5. Compte gratuit : durée, limites et inactivité",
+    body: (
+      <>
+        <P>
+          L&apos;inscription à la Plateforme donne accès à un compte gratuit d&apos;une durée de{" "}
+          <Strong>soixante (60) jours</Strong>, décomptés à partir de la date de création du compte.
+          Ce compte gratuit est une période de découverte : il permet d&apos;utiliser la Plateforme et
+          d&apos;échanger avec un Coach avant de décider de s&apos;engager dans un accompagnement.
+        </P>
+        <P>
+          Au terme de ces 60 jours, si aucun accompagnement payant n&apos;a été souscrit, l&apos;accès aux
+          fonctionnalités du compte est <Strong>suspendu</Strong>. Les données du compte
+          (entraînements, mesures, historique, messages) sont conservées et redeviennent
+          intégralement accessibles dès la souscription d&apos;un accompagnement. Aucune donnée
+          n&apos;est supprimée du fait de cette suspension. Vous pouvez à tout moment demander la
+          suppression définitive de votre compte, ou exercer votre droit à la portabilité de vos
+          données dans les conditions prévues par la Politique de confidentialité.
+        </P>
+        <P>
+          Pendant la période gratuite, certaines fonctionnalités sont volontairement limitées ou
+          réservées aux Clients accompagnés, notamment :
+        </P>
+        <Ul>
+          <li>
+            <Strong>La bibliothèque de ressources</Strong> n&apos;est pas parcourable depuis
+            l&apos;application. Les guides et ressources restent accessibles individuellement par le
+            lien qui vous est transmis.
+          </li>
+          <li>
+            <Strong>Les outils de génération automatique</Strong> (recettes, contenus assistés par
+            intelligence artificielle) sont soumis à un quota mensuel.
+          </li>
+          <li>
+            D&apos;autres fonctionnalités peuvent être réservées aux Clients accompagnés. La liste des
+            limitations en vigueur est consultable à tout moment depuis les paramètres de votre
+            compte.
+          </li>
+        </Ul>
+        <P>
+          <Strong>Inactivité.</Strong> Un compte gratuit resté sans aucune connexion pendant{" "}
+          <Strong>soixante (60) jours consécutifs</Strong> est considéré comme abandonné et fait
+          l&apos;objet d&apos;une suppression définitive. Deux avertissements sont envoyés par email
+          avant toute suppression, le premier après environ 40 jours d&apos;inactivité, le second
+          après environ 55 jours. Une simple connexion suffit à annuler la procédure. Cette règle ne
+          s&apos;applique jamais aux Clients bénéficiant d&apos;un accompagnement payant.
+        </P>
+      </>
+    ),
+  },
+  {
     id: "abonnements",
-    title: "5. Abonnements et accès payant",
+    title: "6. Abonnements et accès payant",
     body: (
       <P>
         Certaines fonctionnalités de la Plateforme sont soumises à un abonnement payant (abonnement
@@ -110,7 +162,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "contenu",
-    title: "6. Contenu publié par les utilisateurs",
+    title: "7. Contenu publié par les utilisateurs",
     body: (
       <>
         <P>
@@ -130,7 +182,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "communaute",
-    title: "7. Règles de la Communauté et modération",
+    title: "8. Règles de la Communauté et modération",
     body: (
       <>
         <P>
@@ -149,7 +201,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "sante",
-    title: "8. Santé et pratique sportive",
+    title: "9. Santé et pratique sportive",
     body: (
       <P>
         Les contenus et recommandations disponibles sur la Plateforme, qu&apos;ils proviennent de votre
@@ -161,7 +213,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "disponibilite",
-    title: "9. Disponibilité du service",
+    title: "10. Disponibilité du service",
     body: (
       <P>
         Le Fondateur s&apos;efforce d&apos;assurer un accès continu à la Plateforme mais ne peut garantir une
@@ -173,7 +225,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "resiliation",
-    title: "10. Résiliation et suppression de compte",
+    title: "11. Résiliation et suppression de compte",
     body: (
       <P>
         Vous pouvez supprimer votre compte à tout moment depuis les paramètres de votre profil. Le
@@ -188,7 +240,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "responsabilite",
-    title: "11. Responsabilité",
+    title: "12. Responsabilité",
     body: (
       <P>
         La responsabilité du Fondateur, en tant qu&apos;éditeur de la Plateforme, ne saurait être engagée en
@@ -200,7 +252,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "donnees-perso",
-    title: "12. Protection des données personnelles",
+    title: "13. Protection des données personnelles",
     body: (
       <P>
         Le traitement de vos données personnelles est décrit en détail dans notre{" "}
@@ -213,7 +265,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "droit",
-    title: "13. Droit applicable et litiges",
+    title: "14. Droit applicable et litiges",
     body: (
       <P>
         Les présentes CGU sont soumises au droit français. En cas de litige, les parties s&apos;engagent à
@@ -225,7 +277,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "modification-cgu",
-    title: "14. Modification des CGU",
+    title: "15. Modification des CGU",
     body: (
       <P>
         Les présentes CGU peuvent être modifiées à tout moment afin de refléter l&apos;évolution de la
@@ -236,7 +288,7 @@ const sections: LegalSection[] = [
   },
   {
     id: "contact-cgu",
-    title: "15. Contact",
+    title: "16. Contact",
     body: <P>Pour toute question relative aux présentes CGU, contactez peccoux.manu@gmail.com.</P>,
   },
 ];
@@ -246,7 +298,7 @@ export default function CGUPage() {
     <LegalPage
       eyebrow="Conditions d'utilisation"
       title="Conditions Générales d'Utilisation"
-      lastUpdated="19 août 2026"
+      lastUpdated={LEGAL_LAST_UPDATED}
       intro={
         <P>
           Merci de lire attentivement ces conditions avant d&apos;utiliser EP Coaching. Elles définissent les

@@ -6,7 +6,7 @@ import { getTotalPoints } from "@/lib/gamification";
 import { getClientIntake } from "@/utils/client-intake";
 import { goalToPhase } from "@/lib/recipes-data";
 import RecipesClient from "@/components/recipes/RecipesClient";
-import { createCommunityRecipe, deleteCommunityRecipe } from "./actions";
+import { createCommunityRecipe, deleteCommunityRecipe, checkRecipeGenerationQuota } from "./actions";
 import { createCustomFood, addFoodLog } from "@/app/dashboard/client/nutrition/actions";
 
 export default async function ClientRecettesPage() {
@@ -46,6 +46,7 @@ export default async function ClientRecettesPage() {
         isSubscribed={isSubscribed(profile)}
         createRecipe={createCommunityRecipe}
         deleteRecipe={deleteCommunityRecipe}
+        checkGenerationQuota={checkRecipeGenerationQuota}
         createCustomFood={createCustomFood}
         addFoodLog={addFoodLog}
         presetDiet={intake?.diet_type ?? null}

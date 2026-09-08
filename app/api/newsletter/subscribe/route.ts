@@ -7,11 +7,13 @@ import { NextResponse } from "next/server";
 // serveur possible) ET la page d'accueil/ressources de cette app appellent
 // tous les deux ce même endpoint, jamais de clé Brevo côté navigateur.
 //
-// CORS : ep-site est hébergé sur emmanuelpeccoux.github.io (pas de domaine
-// personnalisé, voir absence de CNAME dans le repo), seule origine externe
-// autorisée en plus de cette app elle-même.
+// CORS : ep-site est hébergé sur santamariasanchez.github.io/EPCoaching
+// (pas de domaine personnalisé, voir absence de CNAME dans le repo) — l'origine
+// CORS ne porte que le sous-domaine github.io, jamais le chemin /EPCoaching,
+// donc elle est identique quel que soit le nom du repo. Renommé le 2026-09-08
+// suite au changement de compte GitHub (ex emmanuelpeccoux.github.io).
 const ALLOWED_ORIGINS = new Set([
-  "https://emmanuelpeccoux.github.io",
+  "https://santamariasanchez.github.io",
   "https://ep-coaching.vercel.app",
 ]);
 

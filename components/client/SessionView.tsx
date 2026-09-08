@@ -23,6 +23,7 @@ import {
   Pencil,
   StickyNote,
   Backpack,
+  ExternalLink,
 } from "lucide-react";
 import {
   BarChart,
@@ -2536,17 +2537,30 @@ export default function SessionView({
             <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
               <Backpack size={11} /> À prévoir pour cette séance
             </p>
-            <div className="flex flex-wrap gap-1.5">
+            {/* La raison est affichée, pas cachée dans un title : sur mobile le
+                survol n'existe pas, et sans le pourquoi la liste n'est qu'un
+                nom de produit de plus. */}
+            <ul className="space-y-2">
               {sessionAccessories.map((a) => (
-                <span
-                  key={a.accessory}
-                  title={`${a.reason} (${a.forExercises.join(", ")})`}
-                  className="text-[11px] font-semibold text-[#F5EDED]/75 bg-[#150000] border border-[#890404]/25 rounded-full px-2.5 py-1"
-                >
-                  {a.accessory}
-                </span>
+                <li key={a.accessory}>
+                  <a
+                    href={a.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block group"
+                  >
+                    <span className="flex items-center gap-1 text-[12.5px] font-bold text-white group-hover:text-[#E01E1E] transition-colors">
+                      {a.accessory}
+                      <ExternalLink size={10} className="text-[#F5EDED]/30" />
+                    </span>
+                    <span className="block text-[11px] text-[#F5EDED]/45 leading-snug">{a.reason}</span>
+                    <span className="block text-[10px] text-[#F5EDED]/25 mt-0.5">
+                      Pour {a.forExercises.slice(0, 3).join(", ")}
+                    </span>
+                  </a>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         </div>
       )}

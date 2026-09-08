@@ -48,6 +48,10 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  // Acceptation explicite des conditions : jamais pré-cochée, et vérifiée aussi
+  // côté serveur (voir selfSignup) — une case cochée dans le navigateur ne
+  // prouve rien face à une requête forgée.
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [creatingAccount, setCreatingAccount] = useState(false);
   const [submitting, setSubmitting] = useState<string | null>(null); // "free" | "coaching" | null
@@ -59,9 +63,13 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
       setError("Prénom, email, téléphone et mot de passe (8 caractères min.) requis.");
       return;
     }
+    if (!acceptedTerms) {
+      setError("Tu dois accepter les conditions d'utilisation pour créer ton compte.");
+      return;
+    }
     setCreatingAccount(true);
     try {
-      const result = await selfSignup({ fullName, email, phone, password, inviteCode, refCode });
+      const result = await selfSignup({ fullName, email, phone, password, inviteCode, refCode, acceptedTerms });
       if ("error" in result) {
         setError(result.error);
         setCreatingAccount(false);
@@ -95,7 +103,8 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               Crée ton compte
             </h2>
             <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
-              Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit, en 30 secondes.
+              Accès immédiat à ton entraînement, ta nutrition et ton suivi de progression. Gratuit
+              pendant 60 jours, en 30 secondes.
             </p>
           </div>
           <div>
@@ -120,6 +129,43 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               autoComplete="new-password"
             />
           </div>
+
+          {/* Acceptation des conditions. Le compte gratuit est borné à 60 jours
+              et comporte des limites réelles : c'est dit ici en clair, pas
+              seulement dans un lien que personne n'ouvre. */}
+          <label
+            style={{
+              display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
+              padding: "12px 14px", borderRadius: 8,
+              background: acceptedTerms ? "rgba(224,30,30,0.06)" : "rgba(245,237,237,0.03)",
+              border: `1px solid ${acceptedTerms ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.08)"}`,
+              transition: "background 160ms ease, border-color 160ms ease",
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              style={{ width: 17, height: 17, marginTop: 1, accentColor: "#E01E1E", flexShrink: 0, cursor: "pointer" }}
+            />
+            <span style={{ fontSize: 11.5, lineHeight: 1.5, color: "rgba(245,237,237,0.55)" }}>
+              J&apos;accepte les{" "}
+              <a href="/legal/cgu" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+                conditions d&apos;utilisation
+              </a>
+              ,{" "}
+              <a href="/legal/cgv" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+                les CGV
+              </a>{" "}
+              et la{" "}
+              <a href="/legal/confidentialite" target="_blank" rel="noopener noreferrer" style={{ color: "#E01E1E", fontWeight: 700 }}>
+                politique de confidentialité
+              </a>
+              . Je comprends que le compte gratuit dure 60 jours, qu&apos;il est suspendu ensuite si je
+              ne prends pas d&apos;accompagnement, et qu&apos;un compte laissé sans connexion pendant 60
+              jours est supprimé.
+            </span>
+          </label>
 
           {error && (
             <div style={{

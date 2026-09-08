@@ -52,6 +52,10 @@ export interface Profile {
   // Miroir de auth.mfa_factors tenu par un trigger : true dès qu'un facteur
   // TOTP vérifié existe sur le compte.
   mfa_enabled: boolean;
+  // Départ des 60 jours de compte gratuit, et date de verrouillage posée par le
+  // cron une fois ce délai écoulé. Voir lib/free-tier.ts pour les règles.
+  free_tier_started_at: string | null;
+  locked_at: string | null;
   // target_bedtime/target_wake_time existent en base (voir lib/daily-gate.ts)
   // mais SONT VOLONTAIREMENT ABSENTS d'ici — ce type reflète PROFILE_FIELDS
   // dans utils/auth.ts, qui les exclut exprès. Voir le commentaire là-bas.
