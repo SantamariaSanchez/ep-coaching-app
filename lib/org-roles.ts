@@ -52,6 +52,8 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "10 à 15% du montant payé par chaque client suivi",
           fixed: "Un fixe s'active une fois le poste réellement intégré (seuil de chiffre d'affaires récurrent à définir)",
+          earnings:
+            "50 à 75 € par mois et par client suivi (sur l'abonnement à 500 €/mois). 10 clients suivis = 500 à 750 € par mois, 30 clients = 1 500 à 2 250 € par mois, en récurrent tant que le client reste.",
         },
         nonNegotiable: [
           "Répond à un client sous 24h ouvrées, sans exception",
@@ -72,6 +74,8 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "5% de supervision sur le chiffre d'affaires total du portefeuille coaching",
           fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings:
+            "5% du portefeuille coaching supervisé : 20 clients à 500 €/mois représentent 500 € par mois, 50 clients 1 250 € par mois, en plus du fixe une fois activé.",
         },
         nonNegotiable: [
           "A déjà coaché des clients en direct, pas seulement supervisé",
@@ -92,6 +96,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Prime versée pour chaque client toujours actif à J+30 (rétention)",
           fixed: null,
+          earnings: null,
         },
         nonNegotiable: [
           "Contacte tout nouveau client dans les 24h suivant sa signature",
@@ -123,6 +128,8 @@ export const POLES: Pole[] = [
           // je vous conseille vraiment au pourcentage".
           variable: "4% du montant encaissé si le lead est fourni par EP Coaching, 7% s'il va chercher lui-même ses leads (prospection)",
           fixed: null,
+          earnings:
+            "120 € par vente conclue sur une offre à 3 000 € avec un lead fourni, 210 € si tu as trouvé le lead toi-même. Sur l'offre à 1 500 €, 60 à 105 €. Un rendez-vous qualifié transformé par semaine représente environ 500 à 900 € par mois.",
         },
         nonNegotiable: [
           "Qualifie un lead entrant en moins de 2h en journée",
@@ -145,6 +152,8 @@ export const POLES: Pole[] = [
           // à 10%" (commission pure sur le montant encaissé).
           variable: "8 à 10% du montant encaissé sur chaque vente conclue",
           fixed: null,
+          earnings:
+            "240 à 300 € par vente conclue sur l'offre à 3 000 €, 120 à 150 € sur l'offre à 1 500 €. Deux ventes par semaine sur l'offre haute représentent environ 2 000 à 2 400 € par mois.",
         },
         nonNegotiable: [
           "Qualifie avant de persuader : ne pousse jamais une vente à quelqu'un qui n'est pas prêt",
@@ -165,6 +174,8 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "3% du chiffre d'affaires total généré par l'équipe sales",
           fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings:
+            "3% du chiffre d'affaires de toute l'équipe sales : 30 000 € encaissés dans le mois représentent 900 €, 60 000 € représentent 1 800 €, en plus du fixe une fois activé.",
         },
         nonNegotiable: [
           "A déjà closé des ventes lui-même, pas seulement managé une équipe",
@@ -192,6 +203,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Payé à la pièce, un forfait par vidéo montée et livrée",
           fixed: "Un fixe mensuel s'active si le volume devient régulier, une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Livre dans le délai annoncé, sans relance nécessaire",
@@ -212,6 +224,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Forfait mensuel proportionné au temps réel passé",
           fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Répond à un commentaire ou message public sous 4h en journée",
@@ -232,6 +245,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Payé à la pièce, un forfait par texte livré (email, page de vente, script)",
           fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Écrit dans la voix de la marque dès le premier jet, sans qu'on ait à tout réécrire",
@@ -252,6 +266,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Forfait mensuel",
           fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Ne valide jamais une prise de parole publique sans relire l'alignement avec la marque",
@@ -272,6 +287,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Un pourcentage du retour généré par les campagnes (ROAS), aligné sur la performance",
           fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Suit un coût d'acquisition précis, pas une intuition",
@@ -292,6 +308,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "Un pourcentage de la croissance de chiffre d'affaires générée",
           fixed: "S'active une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Distingue explicitement contenu d'acquisition et contenu de conversion dans sa stratégie",
@@ -319,6 +336,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: "TJM (taux journalier), logique de prestation classique, à définir selon la mission",
           fixed: null,
+          earnings: null,
         },
         nonNegotiable: [
           "Ne livre jamais une fonctionnalité touchant des données de santé sans test réel",
@@ -339,6 +357,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Priorise avec des données d'usage réelles, pas la dernière demande reçue",
@@ -359,6 +378,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel, souvent à temps partiel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Répond à un ticket sous 24h ouvrées",
@@ -386,6 +406,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Documente un process au lieu de le garder dans sa tête",
@@ -406,6 +427,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel à temps partiel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Ne laisse jamais un email administratif sans réponse plus de 48h",
@@ -426,6 +448,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel ou prestation ponctuelle, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Signale un écart de trésorerie dès qu'il le voit, pas en fin de mois",
@@ -446,6 +469,7 @@ export const POLES: Pole[] = [
         compensation: {
           variable: null,
           fixed: "Forfait mensuel, activé une fois un seuil de chiffre d'affaires récurrent atteint",
+          earnings: null,
         },
         nonNegotiable: [
           "Écrit une fiche de poste avec mission, résultats attendus et critères non négociables avant tout recrutement",

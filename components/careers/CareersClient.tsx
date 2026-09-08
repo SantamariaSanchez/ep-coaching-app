@@ -128,6 +128,14 @@ function RoleCardPublic({
             Rémunération
           </span>
         </div>
+        {/* Les gains en euros d'abord, avant les pourcentages : un candidat veut
+            savoir ce qu'il gagne, pas faire le calcul lui-meme (retour direct
+            2026-09-08, "les salaires il n'y a pas de chiffre ou de fourchette clair"). */}
+        {role.compensation.earnings && (
+          <p className="text-[13px] font-bold leading-relaxed mb-2" style={{ color: "var(--ep-gold)" }}>
+            {role.compensation.earnings}
+          </p>
+        )}
         {role.compensation.variable && (
           <p className="text-[11px] text-[#F5EDED]/70 leading-relaxed">
             <span className="font-bold text-[#F5EDED]/90">Variable </span>{role.compensation.variable}
