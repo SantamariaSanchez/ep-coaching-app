@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Camera, Trash2, Lock, Loader2 } from "lucide-react";
 import type { PersonalPhoto } from "@/utils/personal-photos";
 import PhotoCompareSlider from "@/components/ui/PhotoCompareSlider";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -32,6 +33,7 @@ export default function PersonalPhotosView({
   deletePersonalPhoto,
 }: Props) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [photos, setPhotos] = useState(initialPhotos);
   const [notes, setNotes] = useState("");
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand initialPhotos
@@ -39,6 +41,7 @@ export default function PersonalPhotosView({
   // reprend jamais un nouveau prop après le premier rendu). Déjà en place
   // avant cet axe pour couvrir le router.refresh() après upload ; gardé tel
   // quel, un seul effet suffit.
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- resync legitime avec le prop serveur, voir le commentaire ci-dessus.
   useEffect(() => setPhotos(initialPhotos), [initialPhotos]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +80,7 @@ export default function PersonalPhotosView({
   }
 
   async function handleDelete(photo: PersonalPhoto) {
-    if (!confirm("Supprimer cette photo ?")) return;
+    if (!(await confirm("Supprimer cette photo ?"))) return;
     setDeletingId(photo.id);
     const result = await deletePersonalPhoto(photo.id, photo.storage_path);
     setDeletingId(null);

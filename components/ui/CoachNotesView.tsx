@@ -16,6 +16,7 @@ import type {
   CoachNoteInput,
   KeyDecisionInput,
 } from "@/utils/notes";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -523,12 +524,13 @@ function DecisionCard({
   deleteDecision: (clientId: string, id: string) => Promise<{ error?: string }>;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
   async function handleDelete() {
-    if (!confirm("Supprimer cette décision ?")) return;
+    if (!(await confirm("Supprimer cette décision ?"))) return;
     setDeleting(true);
     setDeleteError(null);
     const result = await deleteDecision(clientId, decision.id);

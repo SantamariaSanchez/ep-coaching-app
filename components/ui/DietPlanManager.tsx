@@ -36,6 +36,7 @@ import type { RoadmapWithData } from "@/utils/roadmap";
 import PhaseHeader from "./PhaseHeader";
 import RoadmapContextPanel from "./RoadmapContextPanel";
 import MicroBarList from "./MicroBarList";
+import { useConfirm } from "./ConfirmDialogProvider";
 
 export interface MacroTargets {
   calories: number;
@@ -398,6 +399,7 @@ export function PlanBuilder({
   roadmap?: RoadmapWithData | null;
   roadmapHref?: string;
 }) {
+  const confirm = useConfirm();
   const [planName, setPlanName] = useState("");
   const [objective, setObjective] = useState("");
   const [mode, setMode] = useState<DietMode>("fixed");
@@ -623,10 +625,10 @@ export function PlanBuilder({
 
   // Charge un modèle de diète dans le constructeur : copie de travail
   // entièrement modifiable pour ce client, le modèle n'est jamais touché.
-  function loadTemplate(template: DietPlanTemplateWithMeals) {
+  async function loadTemplate(template: DietPlanTemplateWithMeals) {
     if (
       meals.length > 0 &&
-      !confirm(`Charger « ${template.name} » va remplacer les repas en cours de construction. Continuer ?`)
+      !(await confirm(`Charger « ${template.name} » va remplacer les repas en cours de construction. Continuer ?`))
     ) {
       return;
     }
@@ -1556,6 +1558,7 @@ function PlanDetailRow({
   onDeactivate: () => void;
   onDelete: () => void;
 }) {
+  const confirm = useConfirm();
   const [expanded, setExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const isWeekly = plan.structure === "weekly";
@@ -1721,7 +1724,7 @@ function PlanDetailRow({
             <button
               disabled={busy}
               onClick={async () => {
-                if (!confirm("Supprimer ce plan définitivement ?")) return;
+                if (!(await confirm("Supprimer ce plan définitivement ?"))) return;
                 setBusy(true);
                 await onDelete();
                 setBusy(false);

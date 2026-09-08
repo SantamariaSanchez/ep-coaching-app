@@ -16,11 +16,13 @@ import {
   deleteCoachLeadMagnet,
   toggleCoachLeadMagnetPublished,
 } from "@/app/dashboard/coach/ressources/leadmagnet-actions";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 type Format = "guide" | "checklist";
 
 export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: CoachLeadMagnet[] }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
   const [hook, setHook] = useState("");
@@ -69,7 +71,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Supprimer ce lead magnet ? Le lien ne fonctionnera plus.")) return;
+    if (!(await confirm("Supprimer ce lead magnet ? Le lien ne fonctionnera plus."))) return;
     setBusyId(id);
     try {
       await deleteCoachLeadMagnet(id);

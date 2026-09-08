@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
 import { onKeyActivate } from "@/lib/a11y";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import {
   updateLessonYoutube,
   updateLessonDetails,
@@ -217,6 +218,7 @@ function AddItemButton({
 
 export default function CoachFormationEditor({ formation }: { formation: FormationWithModules }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [saving, setSaving] = useState<string | null>(null);
   const [saved, setSaved] = useState<string | null>(null);
   const [openModules, setOpenModules] = useState<Set<string>>(new Set(formation.modules.map(m => m.id)));
@@ -315,26 +317,36 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
     if (!res.error) router.refresh();
   }
 
+  // handleDeleteModule/handleDeleteSection avaient leurs messages de
+  // confirmation inversés (2026-09-08, même bug que les libellés des
+  // boutons "Ajouter..." plus haut) : supprimer un module affichait "la
+  // section", et inversement — corrigé ici en même temps que le passage à
+  // useConfirm().
   async function handleDeleteModule(moduleId: string, title: string) {
-    if (!confirm(`Supprimer la section "${title}" et tout son contenu (modules, vidéos) ?`)) return;
+    if (!(await confirm(`Supprimer le module "${title}" et tout son contenu (sections, vidéos) ?`))) return;
     const res = await runAction(() => deleteModule(moduleId));
     if (!res.error) router.refresh();
   }
 
   async function handleDeleteSection(sectionId: string, title: string) {
-    if (!confirm(`Supprimer le module "${title}" et ses vidéos ?`)) return;
+    if (!(await confirm(`Supprimer la section "${title}" et ses vidéos ?`))) return;
     const res = await runAction(() => deleteSection(sectionId));
     if (!res.error) router.refresh();
   }
 
   async function handleDeleteLesson(lessonId: string, title: string) {
-    if (!confirm(`Supprimer la vidéo "${title}" ?`)) return;
+    if (!(await confirm(`Supprimer la vidéo "${title}" ?`))) return;
     const res = await runAction(() => deleteLesson(lessonId));
     if (!res.error) router.refresh();
   }
 
   async function handleDeleteFormation() {
-    if (!confirm(`Supprimer définitivement la formation "${formation.title}" et tout son contenu ? Cette action est irréversible.`)) return;
+    if (
+      !(await confirm(
+        `Supprimer définitivement la formation "${formation.title}" et tout son contenu ? Cette action est irréversible.`
+      ))
+    )
+      return;
     const res = await runAction(() => deleteFormation(formation.id));
     if (!res.error) router.push("/dashboard/coach/formations");
   }

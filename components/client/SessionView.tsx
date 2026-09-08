@@ -51,6 +51,7 @@ import { accessoriesForSession } from "@/lib/session-accessories";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
 // (voir le bouton "Partager en Victoire") — le client reste libre de le
@@ -1214,6 +1215,7 @@ function ExerciseCard({
   onMoveDown?: () => void;
   onNotesChange: (notes: string) => void;
 }) {
+  const confirm = useConfirm();
   // Conseils réels de la bibliothèque d'exercices en priorité — sinon les
   // cues génériques (avant : c'était toujours ces cues génériques, quasi
   // identiques pour tous les exercices faute de correspondance).
@@ -1339,8 +1341,8 @@ function ExerciseCard({
             <StickyNote size={12} />
           </button>
           <button
-            onClick={() => {
-              if (confirm(`Retirer "${exState.exercise.name}" de cette séance ?`)) {
+            onClick={async () => {
+              if (await confirm(`Retirer "${exState.exercise.name}" de cette séance ?`)) {
                 onRemoveExercise();
               }
             }}
@@ -1554,6 +1556,7 @@ export default function SessionView({
   returnPath?: string;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   // SessionView est aussi utilisé pour le logbook perso du coach
   // (/dashboard/coach/moi/logbook) — le lien de partage doit pointer vers
   // le mur Victoires du bon rôle, pas toujours celui du client.
@@ -2096,7 +2099,7 @@ export default function SessionView({
   // Abandonner une séance de test/erreur sans rien enregistrer — jusqu'ici
   // seul "Terminer" existait, qui sauvegarde toujours tout.
   const handleCancelSession = useCallback(async () => {
-    if (!confirm("Annuler cette séance ? Rien ne sera enregistré.")) return;
+    if (!(await confirm("Annuler cette séance ? Rien ne sera enregistré."))) return;
     setCanceling(true);
     try {
       await fetch(`/api/client/sessions/${sessionId}`, { method: "DELETE" });
@@ -2109,7 +2112,7 @@ export default function SessionView({
     localStorage.removeItem(customExercisesKey(sessionId));
     localStorage.removeItem("ep-active-session-id");
     router.push(returnPath);
-  }, [sessionId, returnPath, router]);
+  }, [sessionId, returnPath, router, confirm]);
 
   const handleCompleteSession = useCallback(async () => {
     setSaving(true);

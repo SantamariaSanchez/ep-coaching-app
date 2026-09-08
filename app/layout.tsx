@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
+import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
 import "./globals.css";
 
 const montserrat = Montserrat({
@@ -75,7 +76,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`}>
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+      </body>
     </html>
   );
 }

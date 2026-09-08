@@ -7,6 +7,7 @@ import type { ProgramWithDays, ProgramInput, TensionFocus } from "@/utils/progra
 import { MUSCLE_GROUPS, MUSCLE_SUBGROUPS, VOLUME_LANDMARKS, type MuscleGroup } from "@/lib/volume-data";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import type { ClientIntake } from "@/utils/client-intake";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import {
   LIBRARY_MUSCLE_GROUPS,
   EQUIPMENT_TYPES,
@@ -817,6 +818,7 @@ export default function ProgramEditor({
   subjectLabel?: string;
 }) {
   const router = useRouter();
+  const confirm = useConfirm();
   const [state, setState] = useState(() => initFromProgram(program));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -899,12 +901,12 @@ export default function ProgramEditor({
 
   // Génère les séances vides du split choisi — la structure d'abord, les
   // exercices ensuite.
-  function applyScaffold() {
+  async function applyScaffold() {
     // Le confirm reste hors du updater de setState : un updater peut être
     // rejoué par React, et la question serait alors posée deux fois.
     if (
       state.days.length > 0 &&
-      !confirm("Regénérer les séances va remplacer la structure actuelle et ses exercices. Continuer ?")
+      !(await confirm("Regénérer les séances va remplacer la structure actuelle et ses exercices. Continuer ?"))
     ) {
       return;
     }
@@ -960,12 +962,12 @@ export default function ProgramEditor({
   // Charge un modèle de la bibliothèque dans l'éditeur. Copie en mémoire :
   // tout est modifiable dans la foulée pour ce client précis, et le modèle
   // d'origine n'est jamais touché.
-  function loadTemplate(template: ProgramTemplateWithDays) {
+  async function loadTemplate(template: ProgramTemplateWithDays) {
     if (
       state.days.length > 0 &&
-      !confirm(
+      !(await confirm(
         `Charger « ${template.name} » va remplacer la structure en cours d'édition. Le programme déjà enregistré n'est modifié qu'au moment où tu sauvegardes. Continuer ?`
-      )
+      ))
     ) {
       return;
     }

@@ -17,6 +17,7 @@ import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils
 import RankBadge from "@/components/ui/RankBadge";
 import { POINTS } from "@/lib/gamification-types";
 import { createIdeaFromQuestion } from "@/app/dashboard/coach/studio/actions";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 function badgeLabel(role: "coach" | "client", subscriptionStatus: string): string {
   if (role === "coach") return "Coach";
@@ -388,6 +389,7 @@ function PostCard({
   onStatusChanged: (status: "open" | "answered") => void;
   onDeleted: () => void;
 }) {
+  const confirm = useConfirm();
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [ideaSaved, setIdeaSaved] = useState(false);
@@ -398,7 +400,7 @@ function PostCard({
   const canDelete = isPlatformOwner || currentUserId === post.author_id;
 
   async function handleDelete() {
-    if (!confirm("Supprimer ce post ?")) return;
+    if (!(await confirm("Supprimer ce post ?"))) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/community/posts/${post.id}`, { method: "DELETE" });

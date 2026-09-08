@@ -42,6 +42,7 @@ import {
   type TipCategory,
 } from "@/lib/mindset-content";
 import type { MindsetProfile, MindsetHabitLog, MindsetJournalEntry } from "@/utils/mindset";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 const ICONS: Record<string, React.ElementType> = {
   Moon, Smartphone, Target, Utensils, Sparkles, EyeOff, ClipboardList, Wind,
@@ -259,6 +260,7 @@ function HabitsTab({
   // sans ça, revenir sur cette page sans remontage complet du composant
   // pouvait laisser un habitLogs plus frais du serveur ignoré.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resync legitime avec le prop serveur, voir le commentaire ci-dessus.
     setOptimisticLogs(habitLogs);
   }, [habitLogs]);
   const [error, setError] = useState<string | null>(null);
@@ -481,6 +483,7 @@ function JournalTab({
   onAdd: (promptKey: string | null, content: string, mood: number | null) => Promise<{ error?: string; id?: string }>;
   onDelete: (id: string) => Promise<{ error?: string }>;
 }) {
+  const confirm = useConfirm();
   const dayPrompt = getPromptOfDay();
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(dayPrompt.key);
   const [content, setContent] = useState("");
@@ -490,6 +493,7 @@ function JournalTab({
   const [localEntries, setLocalEntries] = useState(entries);
   // MASTERCLASS.md Axe E : même piège que todayLogs dans ClientNutritionView.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- resync legitime avec le prop serveur, meme piege que ci-dessus.
     setLocalEntries(entries);
   }, [entries]);
 
@@ -525,7 +529,7 @@ function JournalTab({
   }
 
   async function handleDelete(id: string) {
-    if (!confirm("Supprimer cette entrée du journal ?")) return;
+    if (!(await confirm("Supprimer cette entrée du journal ?"))) return;
     const prev = localEntries;
     setLocalEntries((cur) => cur.filter((e) => e.id !== id));
     const result = await onDelete(id);

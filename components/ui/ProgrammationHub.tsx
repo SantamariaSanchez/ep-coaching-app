@@ -25,6 +25,7 @@ import { PlanBuilder, MODE_LABELS } from "@/components/ui/DietPlanManager";
 import ApplyTemplateModal, { type ApplyTemplateClient } from "@/components/ui/ApplyTemplateModal";
 import BulkCalorieAdjustModal from "@/components/ui/BulkCalorieAdjustModal";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
+import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
@@ -332,12 +333,13 @@ function EmptyState({ text, ctaHref, ctaLabel }: { text: string; ctaHref?: strin
 }
 
 function DeleteButton({ onDelete }: { onDelete: () => Promise<{ error?: string }> }) {
+  const confirm = useConfirm();
   const [busy, setBusy] = useState(false);
   return (
     <button
       disabled={busy}
       onClick={async () => {
-        if (!confirm("Supprimer ce modèle définitivement ? Les programmes déjà appliqués à des clients ne sont pas affectés.")) return;
+        if (!(await confirm("Supprimer ce modèle définitivement ? Les programmes déjà appliqués à des clients ne sont pas affectés."))) return;
         setBusy(true);
         await onDelete();
         setBusy(false);
