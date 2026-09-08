@@ -110,6 +110,111 @@ function EditableTitle({
   );
 }
 
+// Bouton "Ajouter..." avec saisie inline plutôt qu'un prompt() natif du
+// navigateur (2026-09-08) : même principe que EditableTitle ci-dessus (un
+// clic révèle un champ, jamais de popup système qui casse l'identité
+// visuelle de l'appli et bloque tout l'onglet). Un seul composant pour les
+// 3 usages (module/section/vidéo) plutôt que dupliquer la logique 3 fois.
+function AddItemButton({
+  label,
+  onAdd,
+  dashed = true,
+  iconSize = 12,
+  style,
+  className,
+}: {
+  label: string;
+  onAdd: (title: string) => Promise<unknown>;
+  dashed?: boolean;
+  iconSize?: number;
+  style?: React.CSSProperties;
+  /** Quand fourni, le déclencheur utilise cette classe (ex. "ep-btn-secondary")
+   * au lieu du style pointillé par défaut — pour le bouton racine "Ajouter un
+   * module", visuellement plus important que les ajouts imbriqués. */
+  className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [text, setText] = useState("");
+  const [adding, setAdding] = useState(false);
+
+  async function commit() {
+    const trimmed = text.trim();
+    if (!trimmed) {
+      setEditing(false);
+      return;
+    }
+    setAdding(true);
+    await onAdd(trimmed);
+    setAdding(false);
+    setText("");
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <input
+        autoFocus
+        value={text}
+        disabled={adding}
+        placeholder={label}
+        aria-label={label}
+        onClick={(e) => e.stopPropagation()}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={commit}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") commit();
+          if (e.key === "Escape") {
+            setText("");
+            setEditing(false);
+          }
+        }}
+        style={{
+          background: "rgba(0,0,0,0.4)",
+          border: "1px solid rgba(224,30,30,0.35)",
+          borderRadius: dashed ? 6 : 8,
+          color: "#F5EDED",
+          padding: dashed ? "5px 10px" : "7px 14px",
+          fontSize: dashed ? 11 : 12,
+          fontFamily: "var(--font-montserrat,'Montserrat'),sans-serif",
+          outline: "none",
+          width: "100%",
+          maxWidth: 260,
+          ...style,
+        }}
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setEditing(true)}
+      className={className}
+      style={
+        className
+          ? { alignSelf: "flex-start", ...style }
+          : {
+              display: "flex",
+              alignItems: "center",
+              gap: dashed ? 5 : 6,
+              background: "none",
+              border: `1px dashed rgba(224,30,30,${dashed ? 0.14 : 0.18})`,
+              borderRadius: dashed ? 6 : 8,
+              color: `rgba(224,30,30,${dashed ? 0.4 : 0.5})`,
+              fontSize: dashed ? 10 : 11,
+              fontWeight: 700,
+              padding: dashed ? "5px 10px" : "7px 14px",
+              cursor: "pointer",
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              ...style,
+            }
+      }
+    >
+      <Plus size={iconSize} /> {label}
+    </button>
+  );
+}
+
 export default function CoachFormationEditor({ formation }: { formation: FormationWithModules }) {
   const router = useRouter();
   const [saving, setSaving] = useState<string | null>(null);
@@ -195,24 +300,18 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
     if (!res.error) router.refresh();
   }
 
-  async function handleAddModule() {
-    const title = prompt("Titre de la section :");
-    if (!title?.trim()) return;
-    const res = await runAction(() => addModule(formation.id, title.trim(), formation.modules.length));
+  async function handleAddModule(title: string) {
+    const res = await runAction(() => addModule(formation.id, title, formation.modules.length));
     if (!res.error) router.refresh();
   }
 
-  async function handleAddSection(moduleId: string, currentCount: number) {
-    const title = prompt("Titre du module :");
-    if (!title?.trim()) return;
-    const res = await runAction(() => addSection(moduleId, title.trim(), currentCount));
+  async function handleAddSection(moduleId: string, currentCount: number, title: string) {
+    const res = await runAction(() => addSection(moduleId, title, currentCount));
     if (!res.error) router.refresh();
   }
 
-  async function handleAddLesson(sectionId: string, currentCount: number) {
-    const title = prompt("Titre de la vidéo :");
-    if (!title?.trim()) return;
-    const res = await runAction(() => addLesson(sectionId, title.trim(), currentCount));
+  async function handleAddLesson(sectionId: string, currentCount: number, title: string) {
+    const res = await runAction(() => addLesson(sectionId, title, currentCount));
     if (!res.error) router.refresh();
   }
 
@@ -545,57 +644,31 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                           />
                         ))}
 
-                        {/* Add lesson in section */}
-                        {/* Ajouter une vidéo dans ce module */}
+                        {/* Ajouter une vidéo dans cette section */}
                         <div style={{ padding: "8px 18px 8px 36px" }}>
-                          <button
-                            onClick={() => handleAddLesson(sec.id, sec.lessons.length)}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 5,
-                              background: "none",
-                              border: "1px dashed rgba(224,30,30,0.14)",
-                              borderRadius: 6,
-                              color: "rgba(224,30,30,0.4)",
-                              fontSize: 10,
-                              fontWeight: 700,
-                              padding: "5px 10px",
-                              cursor: "pointer",
-                              letterSpacing: "0.06em",
-                              textTransform: "uppercase",
-                            }}
-                          >
-                            <Plus size={10} /> Ajouter une vidéo
-                          </button>
+                          <AddItemButton
+                            label="Ajouter une vidéo"
+                            iconSize={10}
+                            onAdd={(title) => handleAddLesson(sec.id, sec.lessons.length, title)}
+                          />
                         </div>
                       </div>
                     )}
                   </div>
                 ))}
 
-                {/* Add section */}
+                {/* Ajouter une section dans ce module. Le libellé de ce
+                    bouton disait "Ajouter un module" avant ce fix
+                    (2026-09-08) — inversé avec celui juste en dessous, un
+                    coach cliquait "Ajouter un module" en pensant en créer un
+                    nouveau et se retrouvait avec une section de plus dans
+                    l'existant. */}
                 <div style={{ padding: "10px 18px" }}>
-                  <button
-                    onClick={() => handleAddSection(mod.id, mod.sections.length)}
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 6,
-                      background: "none",
-                      border: "1px dashed rgba(224,30,30,0.18)",
-                      borderRadius: 8,
-                      color: "rgba(224,30,30,0.5)",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      padding: "7px 14px",
-                      cursor: "pointer",
-                      letterSpacing: "0.06em",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    <Plus size={12} /> Ajouter un module
-                  </button>
+                  <AddItemButton
+                    label="Ajouter une section"
+                    dashed={false}
+                    onAdd={(title) => handleAddSection(mod.id, mod.sections.length, title)}
+                  />
                 </div>
               </div>
             )}
@@ -603,14 +676,14 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         );
       })}
 
-      {/* Add section */}
-      <button
-        onClick={handleAddModule}
+      {/* Ajouter un module à la formation (voir le commentaire ci-dessus sur
+          l'inversion des deux libellés). */}
+      <AddItemButton
+        label="Ajouter un module"
+        iconSize={14}
+        onAdd={handleAddModule}
         className="ep-btn-secondary"
-        style={{ alignSelf: "flex-start" }}
-      >
-        <Plus size={14} /> Ajouter une section
-      </button>
+      />
     </div>
   );
 }
@@ -649,6 +722,9 @@ function LessonEditor({
   // url/description/durationMin restent volontairement non resynchronisés
   // (saisie libre en cours, jamais modifiée par l'action groupée).
   useEffect(() => {
+    // Resync légitime avec une écriture externe (voir commentaire ci-dessus),
+    // pas une dérivation qu'on pourrait calculer pendant le rendu.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPublished(lesson.is_published);
   }, [lesson.is_published]);
   const [showDetails, setShowDetails] = useState(false);
