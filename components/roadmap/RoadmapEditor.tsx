@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, isValidElement, cloneElement } from "react";
-import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown, AlertCircle } from "lucide-react";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import RoadmapCalendar from "@/components/roadmap/RoadmapCalendar";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
@@ -465,6 +465,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   // Vue globale visible par defaut — avant, la vraie vision multi-mois
   // (blocs de phase sur les semaines) etait cachee derriere un toggle et
   // seule la liste plate des cartes de phase etait visible d'emblee.
@@ -547,8 +548,9 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   }
 
   async function handleSave() {
+    setSaveError(null);
     if (!startDate || !endDate) {
-      alert("Renseigne les dates de début et de fin.");
+      setSaveError("Renseigne les dates de début et de fin.");
       return;
     }
     setSaving(true);
@@ -568,11 +570,11 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
       } else {
-        alert("Erreur : " + (data.error ?? "inconnue"));
+        setSaveError(data.error ?? "Erreur inconnue.");
       }
     } catch (e) {
       console.error(e);
-      alert("Erreur de sauvegarde.");
+      setSaveError("Erreur de sauvegarde.");
     }
     setSaving(false);
   }
@@ -750,7 +752,19 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       </section>
 
       {/* Save footer */}
-      <div style={{ marginTop: 32, display: "flex", justifyContent: "flex-end" }}>
+      <div style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
+        {saveError && (
+          <div
+            style={{
+              display: "flex", alignItems: "center", gap: 8,
+              background: "rgba(224,30,30,0.08)", border: "1px solid rgba(224,30,30,0.25)",
+              borderRadius: 8, padding: "10px 14px",
+            }}
+          >
+            <AlertCircle size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
+            <p style={{ margin: 0, fontSize: 12.5, color: "#FDC4C4" }}>{saveError}</p>
+          </div>
+        )}
         <button onClick={handleSave} disabled={saving} className="ep-btn-primary" style={{ fontSize: 14, padding: "14px 32px" }}>
           <Save size={16} />
           {saved ? "Sauvegardé !" : saving ? "Sauvegarde en cours…" : "Sauvegarder la road map"}

@@ -2,33 +2,31 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { createFormation } from "./actions";
+import NewFormationModal from "./NewFormationModal";
 
 export default function NewFormationButton() {
   const router = useRouter();
-  const [creating, setCreating] = useState(false);
+  const [open, setOpen] = useState(false);
 
-  async function handleCreate() {
-    const title = prompt("Titre de la nouvelle formation :");
-    if (!title?.trim()) return;
-    const emoji = prompt("Emoji (optionnel) :", "📚") ?? "📚";
-    setCreating(true);
-    const res = await createFormation(title.trim(), emoji.trim());
-    setCreating(false);
+  async function handleCreate(title: string, emoji: string) {
+    const res = await createFormation(title, emoji);
     if (res.id) router.push(`/dashboard/coach/formations/${res.id}`);
-    else alert(res.error ?? "Erreur lors de la création.");
+    return res;
   }
 
   return (
-    <button
-      onClick={handleCreate}
-      disabled={creating}
-      className="ep-btn-secondary"
-      style={{ marginBottom: 16, alignSelf: "flex-start" }}
-    >
-      {creating ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
-      Nouvelle formation
-    </button>
+    <>
+      <button
+        onClick={() => setOpen(true)}
+        className="ep-btn-secondary"
+        style={{ marginBottom: 16, alignSelf: "flex-start" }}
+      >
+        <Plus size={14} />
+        Nouvelle formation
+      </button>
+      {open && <NewFormationModal onCreate={handleCreate} onClose={() => setOpen(false)} />}
+    </>
   );
 }

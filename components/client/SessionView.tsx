@@ -912,6 +912,7 @@ function SetRow({
   const isPRCandidate =
     prThreshold != null && weight > prThreshold && weight > 0;
   const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [videoError, setVideoError] = useState<string | null>(null);
 
   const suggestedWeight = suggestNextWeight(prevWeight, exercise.rir ?? null);
   const suggestionDiffersFromLast =
@@ -919,12 +920,13 @@ function SetRow({
 
   async function handleVideoSelect(file: File) {
     if (!set.dbId) return;
+    setVideoError(null);
     // MASTERCLASS.md Axe O : le bucket set-videos rejette déjà les fichiers
     // trop lourds ou au mauvais type côté serveur, mais sans ce contrôle
     // l'utilisateur attend l'échec de l'upload réseau d'une vidéo de
     // plusieurs centaines de Mo avant de voir l'erreur.
     if (file.size > 100 * 1024 * 1024) {
-      alert("Vidéo trop lourde (100 Mo maximum).");
+      setVideoError("Vidéo trop lourde (100 Mo maximum).");
       return;
     }
     setUploadingVideo(true);
@@ -946,7 +948,7 @@ function SetRow({
       onChange({ hasVideo: true });
     } catch (e) {
       console.error("Video upload failed:", e);
-      alert("Échec de l'envoi de la vidéo. Réessaie.");
+      setVideoError("Échec de l'envoi de la vidéo. Réessaie.");
     }
     setUploadingVideo(false);
   }
@@ -1072,6 +1074,7 @@ function SetRow({
               />
             </label>
           )}
+          {videoError && <p className="text-[10px] text-red-400 mt-1">{videoError}</p>}
         </div>
       ) : (
         <div className="space-y-2">
