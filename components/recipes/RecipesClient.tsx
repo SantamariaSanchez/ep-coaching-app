@@ -250,8 +250,18 @@ function RecipeCard({
               <Link
                 href={`${basePath}/profile/${recipe.authorId}`}
                 onClick={(e) => e.stopPropagation()}
-                className="text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
+                className="inline-flex items-center gap-1.5 text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
               >
+                {recipe.authorAvatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={recipe.authorAvatarUrl}
+                    alt=""
+                    className="w-3.5 h-3.5 rounded-full object-cover flex-shrink-0"
+                  />
+                ) : (
+                  <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex-shrink-0" />
+                )}
                 par {recipe.authorName}
               </Link>
             )}

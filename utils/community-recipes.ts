@@ -1,4 +1,5 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { resolveAvatarUrls } from "@/utils/avatar";
 import type {
   Allergen,
   Diet,
@@ -56,11 +57,16 @@ export async function getCommunityRecipes(): Promise<CommunityRecipe[]> {
     for (const a of (authors ?? []) as AuthorRow[]) {
       authorMap[a.id] = a;
     }
+    // Le bucket avatars est privé : avatar_url en base n'est qu'un chemin,
+    // jamais une URL affichable telle quelle (voir utils/avatar.ts).
+    const resolvedAvatars = await resolveAvatarUrls(
+      (authors ?? []).map((a) => ({ id: a.id as string, avatar_url: a.avatar_url as string | null }))
+    );
 
     return recipes.map((r) => ({
       ...r,
       author_name: authorMap[r.author_id]?.full_name ?? "Membre",
-      author_avatar_url: authorMap[r.author_id]?.avatar_url ?? null,
+      author_avatar_url: resolvedAvatars[r.author_id] ?? null,
     })) as CommunityRecipe[];
   } catch {
     return [];
