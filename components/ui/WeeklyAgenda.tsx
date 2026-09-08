@@ -40,6 +40,13 @@ const HOURS = Array.from({ length: END_HOUR - START_HOUR }, (_, i) => START_HOUR
 // tactiles plus grandes là où l'espace horizontal n'est plus la contrainte.
 const ROW_HEIGHT_WEEK = 44;
 const ROW_HEIGHT_DAY = 60;
+// Hauteur d'une heure sans aucun bloc dedans (demande explicite du
+// 2026-09-09 : "je vois le 00h a 6h en vide mais sa prend quand meme la
+// place a l'ecran donc je dois defiler"). Une heure creuse ne disparaît
+// jamais complètement (on doit pouvoir encore taper dessus pour ajouter un
+// bloc), mais elle n'occupe plus que cette bande fine plutôt qu'une rangée
+// pleine — voir buildHourOffsets/buildHourSegments plus bas.
+const EMPTY_ROW_HEIGHT = 12;
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -64,15 +71,71 @@ function isoWeekday(d: Date): number {
   return w === 0 ? 7 : w;
 }
 
-function blockTop(startTime: string, rowHeight: number): number {
-  const mins = clamp(timeToMinutes(startTime), START_HOUR * 60, END_HOUR * 60) - START_HOUR * 60;
-  return (mins / 60) * rowHeight;
+// Heures effectivement occupées par au moins un bloc, dans le périmètre
+// donné (toute la semaine pour la vue semaine, un seul jour pour la vue
+// jour, voir les deux appels plus bas — chacun compresse sur SA propre
+// notion de "vide", la vue jour peut donc compresser plus large qu'une
+// vue semaine où un autre jour occupe cette heure-là).
+function computeActiveHours(scopedBlocks: ScheduleBlock[]): Set<number> {
+  const set = new Set<number>();
+  for (const b of scopedBlocks) {
+    const startH = Math.floor(clamp(timeToMinutes(b.start_time), START_HOUR * 60, END_HOUR * 60 - 1) / 60);
+    const endH = Math.ceil(clamp(timeToMinutes(b.end_time), START_HOUR * 60 + 1, END_HOUR * 60) / 60);
+    for (let h = startH; h < endH; h++) set.add(h);
+  }
+  return set;
 }
 
-function blockHeight(startTime: string, endTime: string, rowHeight: number): number {
-  const startMins = clamp(timeToMinutes(startTime), START_HOUR * 60, END_HOUR * 60);
-  const endMins = clamp(timeToMinutes(endTime), START_HOUR * 60, END_HOUR * 60);
-  return Math.max(18, ((endMins - startMins) / 60) * rowHeight);
+// Décalage cumulé (en px) du haut de chaque heure : offsets[h] = distance
+// entre le haut de la grille et le début de l'heure h, offsets[END_HOUR] =
+// hauteur totale. Une heure active garde rowHeight plein, une heure vide
+// est compressée à EMPTY_ROW_HEIGHT — c'est ce tableau qui remplace le
+// calcul linéaire "heure * rowHeight" partout où un bloc doit être placé.
+function buildHourOffsets(activeHours: Set<number>, rowHeight: number): number[] {
+  const offsets = [0];
+  for (let h = START_HOUR; h < END_HOUR; h++) {
+    const height = activeHours.has(h) ? rowHeight : EMPTY_ROW_HEIGHT;
+    offsets.push(offsets[offsets.length - 1] + height);
+  }
+  return offsets;
+}
+
+// Position (en px) d'un instant quelconque de la journée (pas forcément
+// pile sur une heure ronde, ex. la ligne "maintenant" ou le début d'un
+// bloc à 7h30) : l'heure elle-même est toujours "active" dès qu'un bloc la
+// touche (voir computeActiveHours), donc interpoler avec sa propre hauteur
+// (pleine ou compressée) à l'intérieur de cette heure reste toujours exact.
+function offsetAtMinutes(mins: number, offsets: number[]): number {
+  const clamped = clamp(mins, START_HOUR * 60, END_HOUR * 60);
+  const hour = Math.min(Math.floor(clamped / 60), END_HOUR - 1);
+  const fracMins = clamped - hour * 60;
+  const hourHeight = offsets[hour + 1] - offsets[hour];
+  return offsets[hour] + (fracMins / 60) * hourHeight;
+}
+
+function blockTop(startTime: string, offsets: number[]): number {
+  return offsetAtMinutes(timeToMinutes(startTime), offsets);
+}
+
+function blockHeight(startTime: string, endTime: string, offsets: number[]): number {
+  const top = offsetAtMinutes(timeToMinutes(startTime), offsets);
+  const bottom = offsetAtMinutes(timeToMinutes(endTime), offsets);
+  return Math.max(18, bottom - top);
+}
+
+// Regroupe les heures consécutives de même nature (actives ensemble, vides
+// ensemble) : une plage vide de plusieurs heures (ex. 0h à 6h la nuit)
+// devient UNE seule bande cliquable avec un seul libellé fusionné, plutôt
+// que 6 rangées identiques quasi illisibles à 12px de haut chacune.
+function buildHourSegments(activeHours: Set<number>): { hours: number[]; active: boolean }[] {
+  const segments: { hours: number[]; active: boolean }[] = [];
+  for (const h of HOURS) {
+    const active = activeHours.has(h);
+    const last = segments[segments.length - 1];
+    if (last && last.active === active) last.hours.push(h);
+    else segments.push({ hours: [h], active });
+  }
+  return segments;
 }
 
 function formatHours(minutes: number): string {
@@ -505,11 +568,15 @@ export default function WeeklyAgenda({
   // ── Rendu d'une colonne jour (grille horaire + blocs + ligne "maintenant") ──
   // Partagé entre la vue semaine (7 colonnes étroites, desktop) et la vue
   // jour (1 colonne large, mobile) pour ne pas dupliquer le positionnement.
-  function renderDayContent(day: number, rowHeight: number) {
+  // activeHours vient de l'appelant (semaine ou jour, voir plus bas) : lui
+  // seul sait sur quel périmètre juger une heure "vide".
+  function renderDayContent(day: number, rowHeight: number, activeHours: Set<number>) {
     const dayBlocks = blocks
       .filter((b) => b.day_of_week === day)
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
-    const totalHeight = HOURS.length * rowHeight;
+    const offsets = buildHourOffsets(activeHours, rowHeight);
+    const segments = buildHourSegments(activeHours);
+    const totalHeight = offsets[END_HOUR];
     const isToday = todayDow === day;
     const nowMinutes = now ? now.getHours() * 60 + now.getMinutes() : null;
     const showNowLine = isToday && nowMinutes !== null && nowMinutes >= START_HOUR * 60 && nowMinutes <= END_HOUR * 60;
@@ -519,17 +586,53 @@ export default function WeeklyAgenda({
         className="relative border-l border-[#890404]/10"
         style={{ height: totalHeight, background: isToday ? "rgba(224,30,30,0.025)" : "transparent" }}
       >
-        {HOURS.map((h) => (
-          <div
-            key={h}
-            onClick={() => openAddAt(day, h)}
-            className="absolute w-full border-t border-[#890404]/8 hover:bg-[#890404]/5 transition-colors"
-            style={{ top: (h - START_HOUR) * rowHeight, height: rowHeight, cursor: editable ? "pointer" : "default" }}
-          />
-        ))}
+        {segments.map((seg) => {
+          const segTop = offsets[seg.hours[0]];
+          const segBottom = offsets[seg.hours[seg.hours.length - 1] + 1];
+          const segHeight = segBottom - segTop;
+
+          if (seg.active) {
+            // Heures pleines : un bloc cliquable par heure, comme avant.
+            return seg.hours.map((h) => (
+              <div
+                key={h}
+                onClick={() => openAddAt(day, h)}
+                className="absolute w-full border-t border-[#890404]/8 hover:bg-[#890404]/5 transition-colors"
+                style={{ top: offsets[h], height: offsets[h + 1] - offsets[h], cursor: editable ? "pointer" : "default" }}
+              />
+            ));
+          }
+
+          // Plage vide (une ou plusieurs heures) : une seule bande fine,
+          // en pointillés pour la distinguer visuellement des heures
+          // actives. Le clic reste précis malgré la fusion : la position Y
+          // dans la bande est reconvertie vers l'heure correspondante,
+          // plutôt que de toujours retomber sur la première heure du trou.
+          return (
+            <div
+              key={`gap-${seg.hours[0]}`}
+              onClick={(e) => {
+                if (!editable) return;
+                const rect = e.currentTarget.getBoundingClientRect();
+                const relY = clamp(e.clientY - rect.top, 0, segHeight);
+                const idx = Math.min(seg.hours.length - 1, Math.floor((relY / segHeight) * seg.hours.length));
+                openAddAt(day, seg.hours[idx]);
+              }}
+              className="absolute w-full flex items-center justify-center border-t border-b border-dashed border-[#890404]/10 hover:bg-[#890404]/5 transition-colors"
+              style={{ top: segTop, height: segHeight, cursor: editable ? "pointer" : "default" }}
+              title={editable ? `Rien de prévu entre ${seg.hours[0]}h et ${seg.hours[seg.hours.length - 1] + 1}h, cliquer pour ajouter un bloc` : undefined}
+            >
+              {segHeight >= 20 && (
+                <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.08em", color: "rgba(245,237,237,0.14)" }}>
+                  {seg.hours.length > 1 ? `${seg.hours[0]}h à ${seg.hours[seg.hours.length - 1] + 1}h` : `${seg.hours[0]}h`}
+                </span>
+              )}
+            </div>
+          );
+        })}
         {dayBlocks.map((block) => {
-          const top = blockTop(block.start_time, rowHeight);
-          const height = blockHeight(block.start_time, block.end_time, rowHeight);
+          const top = blockTop(block.start_time, offsets);
+          const height = blockHeight(block.start_time, block.end_time, offsets);
           const Icon = block.icon ? AGENDA_ICON_MAP[block.icon] : null;
           const showIcon = !!Icon && height >= 30;
           return (
@@ -561,7 +664,7 @@ export default function WeeklyAgenda({
         {showNowLine && (
           <div
             className="absolute left-0 right-0 pointer-events-none"
-            style={{ top: ((nowMinutes! - START_HOUR * 60) / 60) * rowHeight, zIndex: 5 }}
+            style={{ top: offsetAtMinutes(nowMinutes!, offsets), zIndex: 5 }}
           >
             <div style={{ height: 2, background: "#E01E1E", boxShadow: "0 0 6px rgba(224,30,30,0.7)" }} />
             <div style={{ position: "absolute", left: -3, top: -3, width: 8, height: 8, borderRadius: "50%", background: "#E01E1E" }} />
@@ -571,24 +674,52 @@ export default function WeeklyAgenda({
     );
   }
 
-  function renderHourLabels(rowHeight: number) {
+  function renderHourLabels(rowHeight: number, activeHours: Set<number>) {
+    const offsets = buildHourOffsets(activeHours, rowHeight);
+    const segments = buildHourSegments(activeHours);
     return (
-      <div className="relative" style={{ height: HOURS.length * rowHeight }}>
-        {HOURS.map((h) => (
-          <p
-            key={h}
-            className="absolute right-1 text-[9px] text-[#F5EDED]/25 font-semibold"
-            style={{ top: (h - START_HOUR) * rowHeight - 6 }}
-          >
-            {h}h
-          </p>
-        ))}
+      <div className="relative" style={{ height: offsets[END_HOUR] }}>
+        {segments.map((seg) => {
+          if (seg.active) {
+            return seg.hours.map((h) => (
+              <p
+                key={h}
+                className="absolute right-1 text-[9px] text-[#F5EDED]/25 font-semibold"
+                style={{ top: offsets[h] - 6 }}
+              >
+                {h}h
+              </p>
+            ));
+          }
+          // Un seul libellé, centré dans la bande fusionnée, plutôt qu'une
+          // étiquette par heure vide (illisible à 12px de haut chacune).
+          const segTop = offsets[seg.hours[0]];
+          const segBottom = offsets[seg.hours[seg.hours.length - 1] + 1];
+          return (
+            <p
+              key={`gap-${seg.hours[0]}`}
+              className="absolute right-1 text-[8px] text-[#F5EDED]/15 font-semibold"
+              style={{ top: (segTop + segBottom) / 2 - 5 }}
+            >
+              {seg.hours[0]}h
+            </p>
+          );
+        })}
       </div>
     );
   }
 
   const overlapBlocks = modalOpen ? findOverlaps(blocks, form.day_of_week, form.start_time, form.end_time, editingBlockId) : [];
   const { totalMinutes, topCategories } = computeStats(blocks);
+
+  // Compression des heures vides (voir buildHourOffsets/buildHourSegments) :
+  // la vue semaine doit garder les 7 colonnes alignées entre elles, donc
+  // une heure n'y est compressée que si AUCUN jour de la semaine ne
+  // l'occupe. La vue jour, elle, n'affiche qu'une colonne à la fois : rien
+  // n'empêche de compresser sur les seules heures vides de CE jour précis,
+  // ce qui compresse davantage (et donc défile moins) sur un jour creux.
+  const weekActiveHours = computeActiveHours(blocks);
+  const dayActiveHours = computeActiveHours(blocks.filter((b) => b.day_of_week === selectedDay));
 
   // Bloc en cours : celui qu'on est censé être en train de vivre là,
   // maintenant — pour répondre "je suis dans quel bloc, qu'est-ce que
@@ -751,7 +882,7 @@ export default function WeeklyAgenda({
           <div className="flex" style={{ minWidth: 760 }}>
             <div style={{ width: 40, flexShrink: 0 }}>
               <div style={{ height: 24 }} />
-              {renderHourLabels(ROW_HEIGHT_WEEK)}
+              {renderHourLabels(ROW_HEIGHT_WEEK, weekActiveHours)}
             </div>
             {ALL_DAYS.map((day) => (
               <div key={day} style={{ flex: 1, minWidth: 100 }}>
@@ -770,7 +901,7 @@ export default function WeeklyAgenda({
                     </>
                   )}
                 </div>
-                {renderDayContent(day, ROW_HEIGHT_WEEK)}
+                {renderDayContent(day, ROW_HEIGHT_WEEK, weekActiveHours)}
               </div>
             ))}
           </div>
@@ -803,8 +934,8 @@ export default function WeeklyAgenda({
             </div>
           </div>
           <div className="flex">
-            <div style={{ width: 34, flexShrink: 0 }}>{renderHourLabels(ROW_HEIGHT_DAY)}</div>
-            <div style={{ flex: 1 }}>{renderDayContent(selectedDay, ROW_HEIGHT_DAY)}</div>
+            <div style={{ width: 34, flexShrink: 0 }}>{renderHourLabels(ROW_HEIGHT_DAY, dayActiveHours)}</div>
+            <div style={{ flex: 1 }}>{renderDayContent(selectedDay, ROW_HEIGHT_DAY, dayActiveHours)}</div>
           </div>
         </div>
       )}
