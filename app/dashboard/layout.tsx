@@ -6,6 +6,7 @@ import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
+import PermissionsPrimer from "@/components/ui/PermissionsPrimer";
 import EmailVerificationBanner from "@/components/ui/EmailVerificationBanner";
 import TwoFactorNudgeBanner from "@/components/ui/TwoFactorNudgeBanner";
 import DailyGateOverlay from "@/components/ui/DailyGateOverlay";
@@ -124,6 +125,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
       <AlarmPlayer />
+      {/* Demande les vraies autorisations systeme au premier lancement : sans
+          appel effectif aux API du navigateur, le telephone n'affiche aucune
+          autorisation pour l'appli (voir PermissionsPrimer). */}
+      <PermissionsPrimer />
       <NavigationProgress />
       {gateOverlay}
       {/* Dans les enfants et non au dessus de DashboardNav : la barre latérale

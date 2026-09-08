@@ -24,7 +24,12 @@ self.addEventListener("push", (event) => {
         // toute seule après quelques secondes sur certains appareils et
         // passer complètement inaperçue pendant le sommeil.
         requireInteraction: isAlarm,
-        vibrate: isAlarm ? [400, 200, 400, 200, 400, 200, 400] : undefined,
+        // Vibration sur TOUTES les notifs, pas seulement les reveils : le son
+        // systeme depend du canal de notification du site cote Android (reglable
+        // uniquement dans les parametres du telephone, hors de portee du code).
+        // Sans vibration, une notif arrivant sur un canal silencieux ne laisse
+        // aucun signal perceptible, d'ou le retour "les notifs font 0 son".
+        vibrate: isAlarm ? [400, 200, 400, 200, 400, 200, 400] : [200, 100, 200],
         actions: isAlarm ? [{ action: "stop-alarm", title: "Arrêter" }] : undefined,
         silent: false,
         tag: isAlarm ? "ep-coaching-alarm" : undefined,

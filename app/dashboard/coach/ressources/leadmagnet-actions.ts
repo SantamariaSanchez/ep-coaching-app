@@ -7,7 +7,7 @@
 // officiel produit par la routine cloud IA (coach_id NULL, jamais touché
 // ici). Voir supabase/migrations/20260902b_lead_magnets_coach_owned.sql.
 
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { RESOURCE_CATEGORIES } from "@/lib/resource-categories";
@@ -33,7 +33,12 @@ function estimateReadTime(wordCount: number): string {
 }
 
 function revalidateEverywhere() {
-  revalidateTag("lead-magnets");
+  // updateTag et non revalidateTag : ces actions tournent dans un Server Action
+  // et le coach doit voir SON lead magnet immediatement apres l'avoir cree ou
+  // supprime (read-your-own-writes). revalidateTag en profil "max" sert du
+  // contenu perime le temps du rafraichissement, ce qui donnerait l'impression
+  // que l'ajout n'a pas fonctionne.
+  updateTag("lead-magnets");
   revalidatePath("/dashboard/coach/ressources");
   revalidatePath("/dashboard/client/ressources");
   revalidatePath("/ressources");
