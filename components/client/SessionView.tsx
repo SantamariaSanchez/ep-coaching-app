@@ -22,6 +22,7 @@ import {
   X,
   Pencil,
   StickyNote,
+  Backpack,
 } from "lucide-react";
 import {
   BarChart,
@@ -45,6 +46,7 @@ import ExercisePicker from "@/components/client/ExercisePicker";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { getTips } from "@/lib/execution-tips";
 import { VOLUME_LANDMARKS } from "@/lib/volume-data";
+import { accessoriesForSession } from "@/lib/session-accessories";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 import { safeExternalUrl } from "@/lib/sanitize";
@@ -2470,6 +2472,9 @@ export default function SessionView({
   // ── SESSION ──────────────────────────────────────────────────────────────────
   const totalSetsAll = exercises.flatMap((e) => e.sets.filter((s) => s.validated)).length;
   const musclesBeingTrained = Object.keys(volumeByMuscle);
+  // Accessoires à prévoir, déduits des noms d'exercices de la séance (le
+  // matériel n'est pas une donnée saisie, voir lib/session-accessories.ts).
+  const sessionAccessories = accessoriesForSession(exercises.map((e) => e.exercise.name));
 
   return (
     <div className="pb-32">
@@ -2521,6 +2526,30 @@ export default function SessionView({
           )}
         </div>
       </div>
+
+      {/* À prévoir : accessoires déduits des exercices de la séance (demande
+          directe 2026-09-08). Rien ne s'affiche si aucun exercice ne le
+          justifie, plutôt qu'une carte vide. */}
+      {sessionAccessories.length > 0 && (
+        <div className="px-4 pt-5 max-w-2xl mx-auto">
+          <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3">
+            <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
+              <Backpack size={11} /> À prévoir pour cette séance
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {sessionAccessories.map((a) => (
+                <span
+                  key={a.accessory}
+                  title={`${a.reason} (${a.forExercises.join(", ")})`}
+                  className="text-[11px] font-semibold text-[#F5EDED]/75 bg-[#150000] border border-[#890404]/25 rounded-full px-2.5 py-1"
+                >
+                  {a.accessory}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Exercise cards */}
       <div className="px-4 pt-5 max-w-2xl mx-auto space-y-4">
