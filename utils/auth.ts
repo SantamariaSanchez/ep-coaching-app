@@ -145,6 +145,15 @@ export interface CommunityMemberActivity {
   postCount: number;
   /** Inscrit, onboarding fait ou pas, mais aucune trace d'usage réel de l'appli. */
   neverReturned: boolean;
+  /**
+   * Inscrit dans la période de grâce (3 jours), sans trace d'usage pour
+   * l'instant — la fenêtre où un message personnel du coach a le plus de
+   * chances de transformer une inscription en vraie première action, avant
+   * que la relance automatique ne prenne le relais (voir cron
+   * weekly-reengagement). Jamais vrai en même temps que neverReturned : soit
+   * on est encore dans la fenêtre de découverte, soit on l'a dépassée.
+   */
+  isNew: boolean;
 }
 
 export interface CommunityMemberWithActivity extends Profile {
@@ -207,13 +216,14 @@ export async function getCommunityMembersWithActivity(coachId: string): Promise<
           lastSessionAt: lastSessionMap[m.id] ?? null,
           postCount,
           neverReturned: pastGracePeriod && points === 0 && sessionCount === 0 && postCount === 0,
+          isNew: !pastGracePeriod && points === 0 && sessionCount === 0 && postCount === 0,
         },
       };
     });
   } catch {
     return members.map((m) => ({
       ...m,
-      activity: { points: 0, sessionCount: 0, lastSessionAt: null, postCount: 0, neverReturned: false },
+      activity: { points: 0, sessionCount: 0, lastSessionAt: null, postCount: 0, neverReturned: false, isNew: false },
     }));
   }
 }

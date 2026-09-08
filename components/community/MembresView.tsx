@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, Mail, MessageCircle, Bell, CheckCircle2, Flame, MoonStar } from "lucide-react";
+import { Search, Mail, MessageCircle, Bell, CheckCircle2, Flame, MoonStar, Sparkles } from "lucide-react";
 import type { CommunityMemberWithActivity } from "@/utils/auth";
 import RankBadge from "@/components/ui/RankBadge";
 
@@ -28,7 +28,7 @@ function initials(name: string | null): string {
     .slice(0, 2);
 }
 
-type Filter = "all" | "active" | "dormant";
+type Filter = "all" | "new" | "active" | "dormant";
 type Sort = "recent" | "active";
 
 function MemberRow({
@@ -58,7 +58,11 @@ function MemberRow({
           <div className="flex items-center gap-1.5 flex-wrap">
             <p className="text-sm font-bold text-white truncate">{member.full_name}</p>
             <RankBadge points={activity.points} />
-            {activity.neverReturned ? (
+            {activity.isNew ? (
+              <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#D9A94E]/10 border border-[#D9A94E]/30 text-[#D9A94E]">
+                <Sparkles size={9} /> Nouveau, à accueillir
+              </span>
+            ) : activity.neverReturned ? (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/35">
                 <MoonStar size={9} /> Jamais revenu
               </span>
@@ -143,16 +147,19 @@ export default function MembresView({
   const counts = useMemo(() => {
     let active = 0;
     let dormant = 0;
+    let fresh = 0;
     for (const m of members) {
-      if (m.activity.neverReturned) dormant++;
+      if (m.activity.isNew) fresh++;
+      else if (m.activity.neverReturned) dormant++;
       else if (m.activity.points > 0 || m.activity.sessionCount > 0 || m.activity.postCount > 0) active++;
     }
-    return { all: members.length, active, dormant };
+    return { all: members.length, active, dormant, fresh };
   }, [members]);
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
     let list = members.filter((m) => {
+      if (filter === "new") return m.activity.isNew;
       if (filter === "active") return !m.activity.neverReturned && (m.activity.points > 0 || m.activity.sessionCount > 0 || m.activity.postCount > 0);
       if (filter === "dormant") return m.activity.neverReturned;
       return true;
@@ -192,9 +199,29 @@ export default function MembresView({
     <div className="space-y-4">
       <p className="text-[10px] text-[#F5EDED]/30">
         {counts.all} membre{counts.all > 1 ? "s" : ""} gratuit{counts.all > 1 ? "s" : ""}
+        {counts.fresh > 0 && ` · ${counts.fresh} nouveau${counts.fresh > 1 ? "x" : ""}`}
         {counts.active > 0 && ` · ${counts.active} actif${counts.active > 1 ? "s" : ""}`}
         {counts.dormant > 0 && ` · ${counts.dormant} jamais revenu${counts.dormant > 1 ? "s" : ""}`}
       </p>
+
+      {/* Fenêtre de découverte (3 jours) : le moment où un message personnel
+          a le plus de chances de transformer une inscription en vraie
+          première action, avant que la relance automatique ne prenne le
+          relais (2026-09-08). Mis en avant séparément de "Jamais revenus",
+          qui ne se déclenche qu'après cette fenêtre. */}
+      {counts.fresh > 0 && filter === "all" && (
+        <button
+          onClick={() => setFilter("new")}
+          className="w-full flex items-center gap-2.5 bg-[#D9A94E]/8 border border-[#D9A94E]/25 rounded-xl px-4 py-3 text-left"
+        >
+          <Sparkles size={14} className="text-[#D9A94E] flex-shrink-0" />
+          <span className="flex-1 text-[12px] text-[#F5EDED]/70">
+            <strong className="text-[#D9A94E]">{counts.fresh} nouveau{counts.fresh > 1 ? "x" : ""}</strong>
+            {" "}membre{counts.fresh > 1 ? "s" : ""} inscrit{counts.fresh > 1 ? "s" : ""} ces 3 derniers jours, encore rien fait,
+            le meilleur moment pour un message perso.
+          </span>
+        </button>
+      )}
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -215,6 +242,7 @@ export default function MembresView({
       <div className="flex gap-1.5 overflow-x-auto pb-1">
         {([
           ["all", `Tous (${counts.all})`],
+          ["new", `Nouveaux (${counts.fresh})`],
           ["active", `Actifs (${counts.active})`],
           ["dormant", `Jamais revenus (${counts.dormant})`],
         ] as [Filter, string][]).map(([key, label]) => (
