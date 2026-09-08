@@ -10,12 +10,14 @@ function csvEscape(value: string): string {
 
 export default function LeadsExportButton({ leads }: { leads: Lead[] }) {
   function handleExport() {
-    const header = ["Date", "Lead magnet", "Email", "Téléphone"];
+    const header = ["Date", "Lead magnet", "Email", "Téléphone", "Statut", "Note"];
     const rows = leads.map((l) => [
       new Date(l.created_at).toISOString().split("T")[0],
       l.lead_magnet_slug,
       l.email ?? "",
       l.phone ?? "",
+      l.status,
+      l.coach_note ?? "",
     ]);
     const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });

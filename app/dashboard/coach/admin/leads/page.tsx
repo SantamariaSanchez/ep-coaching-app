@@ -4,17 +4,9 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getAllLeads } from "@/utils/leads";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
-import { ChevronLeft, Mail, Phone, Bot } from "lucide-react";
-
-function formatDate(iso: string): string {
-  return new Intl.DateTimeFormat("fr-FR", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(iso));
-}
+import LeadsPipeline from "@/components/coach/LeadsPipeline";
+import { updateLeadStatus, updateLeadNote } from "./actions";
+import { ChevronLeft } from "lucide-react";
 
 // Réservé au propriétaire de la plateforme, même garde que
 // app/dashboard/coach/admin — les leads captés sur /ressources sont une
@@ -83,51 +75,12 @@ export default async function LeadsAdminPage() {
         })}
       </div>
 
-      {leads.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <Mail size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun lead capté pour l&apos;instant.</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {leads.map((l) => {
-            const magnet = magnetsBySlug.get(l.lead_magnet_slug);
-            return (
-              <div
-                key={l.id}
-                className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3.5"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-sm font-bold text-white truncate">{magnet?.title ?? l.lead_magnet_slug}</p>
-                    {l.qualification_sent_at && (
-                      <span
-                        title={`Qualifié le ${formatDate(l.qualification_sent_at)}`}
-                        className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/35 flex-shrink-0"
-                      >
-                        <Bot size={9} /> Qualifié
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
-                    {l.email && (
-                      <span className="flex items-center gap-1 text-[11px] text-[#F5EDED]/50">
-                        <Mail size={10} /> {l.email}
-                      </span>
-                    )}
-                    {l.phone && (
-                      <span className="flex items-center gap-1 text-[11px] text-[#F5EDED]/50">
-                        <Phone size={10} /> {l.phone}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <span className="text-[10px] text-[#F5EDED]/25 flex-shrink-0">{formatDate(l.created_at)}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+      <LeadsPipeline
+        leads={leads}
+        magnetTitleBySlug={Object.fromEntries(leadMagnets.map((m) => [m.slug, m.title]))}
+        updateLeadStatus={updateLeadStatus}
+        updateLeadNote={updateLeadNote}
+      />
     </div>
   );
 }
