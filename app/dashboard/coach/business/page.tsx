@@ -4,6 +4,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { FUNNEL_STAGES } from "@/lib/coach-business";
 import BusinessChecklist from "@/components/coach/BusinessChecklist";
+import FunnelIdeaCard from "@/components/coach/FunnelIdeaCard";
 import { Rocket, Sparkles, GraduationCap, ArrowRight } from "lucide-react";
 
 // Axe 6 (VISION.md) — demande directe 2026-08-19 : "un autre espace pour
@@ -91,12 +92,13 @@ export default async function CoachBusinessPage() {
               <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-3">{stage.goal}</p>
               <div className="grid sm:grid-cols-3 gap-2">
                 {stage.formats.map((f, i) => (
-                  <div key={i} className="bg-[#150000] border border-[#890404]/15 rounded-lg px-3 py-2.5">
-                    <p className="text-[9px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1">
-                      {f.platform} · {f.format}
-                    </p>
-                    <p className="text-[10.5px] text-[#F5EDED]/50 leading-relaxed">{f.idea}</p>
-                  </div>
+                  <FunnelIdeaCard
+                    key={i}
+                    stage={stage.key}
+                    platform={f.platform}
+                    format={f.format}
+                    idea={f.idea}
+                  />
                 ))}
               </div>
             </div>

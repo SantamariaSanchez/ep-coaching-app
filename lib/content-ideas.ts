@@ -16,7 +16,7 @@ export interface ContentIdea {
   title: string;
   notes: string | null;
   status: ContentStatus;
-  source: "manuel" | "question";
+  source: "manuel" | "question" | "funnel";
   source_question_id: string | null;
   created_at: string;
   updated_at: string;

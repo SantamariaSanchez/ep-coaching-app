@@ -116,6 +116,41 @@ export async function createIdeaFromQuestion(questionId: string, questionContent
   return { success: true };
 }
 
+// Point d'entrée depuis la page "Développer mon business" (funnel
+// TOF/MOF/BOF, voir lib/coach-business.ts) : jusqu'ici le funnel n'était que
+// des idées à lire, il fallait les recopier à la main dans le Studio pour
+// les travailler réellement. platformLabel arrive tel qu'affiché ("Instagram",
+// "YouTube"...), traduit ici vers la valeur attendue par content_ideas.
+export async function createContentIdeaFromFunnel(input: {
+  stage: "TOF" | "MOF" | "BOF";
+  platformLabel: string;
+  format: string;
+  idea: string;
+}): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const platformMap: Record<string, ContentPlatform> = {
+    Instagram: "instagram",
+    YouTube: "youtube",
+    LinkedIn: "linkedin",
+  };
+  const platform = platformMap[input.platformLabel] ?? "general";
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("content_ideas").insert({
+    coach_id: guard.userId,
+    title: `${input.stage} · ${input.format} · ${input.idea.slice(0, 140)}`,
+    platform,
+    notes: input.idea,
+    source: "funnel",
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/studio");
+  return { success: true };
+}
+
 // ── Notes libres (Idéation) ─────────────────────────────────────────────
 
 export async function createIdeationNote(input: {
