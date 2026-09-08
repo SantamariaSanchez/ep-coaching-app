@@ -547,6 +547,12 @@ export default function DashboardNav({
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 768px)");
+    // `window` n'existe pas côté serveur : lire matchMedia pendant le rendu
+    // (même via un initialiseur "lazy" de useState) produirait un mismatch
+    // d'hydratation, donc ça ne peut être lu qu'ici, après montage. La valeur
+    // initiale ET les changements ultérieurs passent par le même setState,
+    // c'est le seul endroit qui synchronise cet état avec l'API navigateur.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDesktop(mq.matches);
     const h = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
     mq.addEventListener("change", h);
@@ -732,6 +738,32 @@ export default function DashboardNav({
             <NotificationBell />
           </div>
         </div>
+
+        {/* Bouton de recherche visible (2026-09-08) : la palette de commande
+            existait déjà (clients, pages, aliments, exercices...) mais
+            n'avait jamais de point d'entrée visible, seulement Ctrl/Cmd+K —
+            personne ne peut découvrir un raccourci qui ne s'affiche nulle
+            part. */}
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
+          style={{
+            display: "flex", alignItems: "center", gap: 8,
+            margin: "0 16px 12px", padding: "8px 10px",
+            background: "rgba(245,237,237,0.04)", border: "1px solid rgba(224,30,30,0.14)",
+            borderRadius: 10, color: "rgba(245,237,237,0.35)", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, textAlign: "left",
+          }}
+        >
+          <Search size={13} style={{ flexShrink: 0 }} />
+          <span style={{ flex: 1 }}>Rechercher</span>
+          <span style={{
+            fontSize: 9, fontWeight: 700, color: "rgba(245,237,237,0.25)",
+            border: "1px solid rgba(245,237,237,0.15)", borderRadius: 4, padding: "1px 5px",
+          }}>
+            ⌘K
+          </span>
+        </button>
 
         <div className="ep-divider-subtle" style={{ margin: "0 16px 8px" }} />
 
@@ -1087,6 +1119,44 @@ export default function DashboardNav({
 
         {children}
       </main>
+
+      {/* ── Recherche + notifications, mobile (2026-09-08) ───────────────────
+          Les deux vivaient uniquement dans la sidebar desktop jusqu'ici :
+          NotificationBell prévoyait déjà un variant="mobile" jamais branché
+          nulle part, et la recherche n'avait que Ctrl/Cmd+K comme point
+          d'entrée — inexistant au toucher. Sans bouton flottant, il n'y
+          avait tout simplement aucun moyen de voir ses notifications ou de
+          chercher quoi que ce soit depuis un téléphone.
+          Ancré en BAS, pas en haut (comme ActiveSessionBanner juste
+          au-dessus de la nav) : un ancrage en haut chevaucherait la bande de
+          sous-onglets sticky et les bandeaux (vérification email, compte
+          gratuit) qui vivent tout en haut du contenu — voir le commentaire
+          plus bas sur mobileSubItems, "plus rien de fixed en haut", déjà
+          un choix assumé qu'il ne fallait pas défaire. */}
+      <div
+        style={{
+          display: isDesktop ? "none" : "flex",
+          position: "fixed",
+          bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
+          right: 14,
+          zIndex: 45,
+          gap: 8,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => window.dispatchEvent(new Event("ep:open-search"))}
+          aria-label="Rechercher"
+          className="ep-btn-icon"
+          style={{ width: 36, height: 36 }}
+        >
+          <Search size={17} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
+        </button>
+        {/* .ep-btn-icon (déclencheur interne à NotificationBell) porte déjà
+            son propre fond/flou/bordure, cohérents avec le bouton recherche
+            ci-dessus — pas besoin d'un wrapper de plus autour. */}
+        <NotificationBell variant="mobile" alignLeft openUpward />
+      </div>
 
       {/* ── Mobile bottom nav — Oura style ─────────────────────────────────── */}
       <nav

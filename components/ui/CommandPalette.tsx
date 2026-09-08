@@ -65,29 +65,58 @@ export default function CommandPalette({
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
+  // Ouvre la palette et réinitialise son état — centralisé ici plutôt que
+  // répété dans chaque déclencheur (raccourci clavier, bouton visible
+  // desktop, bouton flottant mobile) et plutôt que dans un effet réagissant
+  // à `open` : la remise à zéro est une conséquence directe du clic/de la
+  // touche qui ouvre, pas une synchronisation avec un système externe.
+  function openPalette() {
+    setOpen(true);
+    setQuery("");
+    setActiveIndex(0);
+    requestAnimationFrame(() => inputRef.current?.focus());
+  }
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setOpen((v) => !v);
+        setOpen((v) => {
+          if (v) return false;
+          openPalette();
+          return true;
+        });
       } else if (e.key === "Escape") {
         setOpen(false);
       }
     }
+    // Déclenchement externe (bouton "Rechercher" desktop, bouton flottant
+    // mobile — voir DashboardNav) : Ctrl/Cmd+K n'existe pas au toucher, donc
+    // sans ce second point d'entrée toute la recherche restait invisible et
+    // inutilisable sur téléphone, le seul raccourci clavier ne suffisant que
+    // sur desktop.
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("ep:open-search", openPalette);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("ep:open-search", openPalette);
+    };
   }, []);
 
-  // Focus l'input à l'ouverture. Les clients ne sont chargés qu'une fois,
-  // à la première ouverture (pas à chaque montage de la nav) : pas besoin
-  // d'alourdir chaque page pour une fonctionnalité qu'on n'utilise pas
-  // forcément à chaque visite.
+  // Les clients ne sont chargés qu'une fois, à la première ouverture (pas à
+  // chaque montage de la nav) : pas besoin d'alourdir chaque page pour une
+  // fonctionnalité qu'on n'utilise pas forcément à chaque visite. Le
+  // chargement lui-même reste dans un effet (legitime : c'est une
+  // synchronisation avec l'API externe /api/coach/clients-search), la remise
+  // à zéro de l'input est passée à openPalette() ci-dessus.
   useEffect(() => {
     if (!open) return;
-    setQuery("");
-    setActiveIndex(0);
-    const t = requestAnimationFrame(() => inputRef.current?.focus());
     if (isCoach && clients === null && !loadingClients) {
+      // Le flag doit passer à true avant l'appel réseau, pas dans son .then :
+      // c'est justement lui qui empêche un second fetch de partir si l'effet
+      // se rejoue (StrictMode, changement d'une autre dépendance) avant que
+      // la première réponse n'arrive.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoadingClients(true);
       fetch("/api/coach/clients-search")
         .then((r) => r.json())
@@ -95,7 +124,6 @@ export default function CommandPalette({
         .catch(() => setClients([]))
         .finally(() => setLoadingClients(false));
     }
-    return () => cancelAnimationFrame(t);
   }, [open, isCoach, clients, loadingClients]);
 
   // Item 38 : recherche dans les bibliothèques de contenu (aliments,
