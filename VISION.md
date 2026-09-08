@@ -186,11 +186,14 @@ il s'agit de la compta DU coach pour SON activité.
 ### Reste à faire sur cet axe
 
 - ~~Lien avec Stripe (revenus automatiquement importés)~~ **fait pour le
-  premier paiement (2026-08-20, MASTERCLASS.md Axe AZ)**, sur décision
-  directe. Les renouvellements mensuels (`invoice.payment_succeeded`) ne
-  sont volontairement pas branchés — toucher le webhook de paiement le
-  plus sensible de l'appli pour un flux récurrent mérite sa propre session
-  de test, pas un ajout incrémental.
+  premier paiement (2026-08-20, MASTERCLASS.md Axe AZ)**, **et pour les
+  renouvellements mensuels (2026-09-08)** : `invoice.payment_succeeded`
+  filtré sur `billing_reason === "subscription_cycle"` (pour ne jamais
+  compter deux fois le tout premier paiement, déjà importé par
+  `checkout.session.completed`), voir `lib/coach-finance-stripe-import.ts`.
+  Aucune ligne touchée dans la logique qui accorde/révoque l'accès payant
+  (`customer.subscription.updated/deleted`, inchangée) : uniquement de la
+  lecture et une écriture best-effort dans `coach_finance_entries`.
 - Export au format attendu par un vrai logiciel de compta français :
   toujours à cadrer si le besoin se confirme.
 

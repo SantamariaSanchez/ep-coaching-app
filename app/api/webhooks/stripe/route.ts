@@ -6,7 +6,7 @@ import { detachClientsFromCoach } from "@/lib/coach-lifecycle";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { rewardReferrerForNewPayment, applyPendingRewardsFor } from "@/lib/referral-rewards";
-import { logStripeCoachingPayment } from "@/lib/coach-finance-stripe-import";
+import { logStripeCoachingPayment, logStripeRenewalPayment } from "@/lib/coach-finance-stripe-import";
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -95,6 +95,42 @@ export async function POST(request: Request) {
             stripeSessionId: session.id,
           }).catch(() => {});
         }
+      }
+      break;
+    }
+
+    // Renouvellement mensuel d'un abonnement client (voir lib/coach-
+    // finance-stripe-import.ts pour le pourquoi et le filtre billing_reason).
+    // Uniquement de la LECTURE + une écriture dans coach_finance_entries,
+    // best-effort : rien ici ne touche subscription_status ni l'accès du
+    // client, cette logique reste exclusivement dans customer.subscription.
+    // updated/deleted ci-dessous, inchangée.
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object as Stripe.Invoice;
+      // "subscription_create" = tout premier paiement, déjà importé par
+      // checkout.session.completed (event id différent) : sans ce filtre,
+      // le premier paiement serait compté deux fois dans la compta du coach.
+      if (invoice.billing_reason !== "subscription_cycle") break;
+
+      const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
+      if (!customerId || !invoice.amount_paid) break;
+
+      const { data: clientProfile } = await admin
+        .from("profiles")
+        .select("role, full_name, coach_id")
+        .eq("stripe_customer_id", customerId)
+        .maybeSingle();
+
+      // role !== "coach" : un coach tiers qui renouvelle SON abonnement à
+      // la plateforme EP Coaching n'est pas un revenu pour lui-même, c'est
+      // une dépense — hors périmètre de ce chantier, jamais importé ici.
+      if (clientProfile?.coach_id && clientProfile.role !== "coach") {
+        logStripeRenewalPayment({
+          coachId: clientProfile.coach_id,
+          clientName: clientProfile.full_name,
+          amountPaidCents: invoice.amount_paid,
+          stripeInvoiceId: invoice.id,
+        }).catch(() => {});
       }
       break;
     }

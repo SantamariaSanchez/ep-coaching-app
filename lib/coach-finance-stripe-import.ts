@@ -5,14 +5,16 @@ import { createAdminClient } from "@/lib/supabase-admin";
 // 2026-08-14 ("à cadrer si l'usage de la v1 montre que la saisie manuelle
 // est le vrai point de friction").
 //
-// Périmètre VOLONTAIREMENT limité au premier paiement (checkout.session.
-// completed, déjà géré par le webhook Stripe pour activer l'abonnement) :
-// les renouvellements mensuels arrivent par un événement Stripe différent
-// (invoice.payment_succeeded) qui n'est pas branché ici. Ajouter ce
-// deuxième événement toucherait le webhook de paiement le plus sensible de
-// l'appli (celui qui contrôle l'accès payant des clients) pour un gain
-// incrémental — pas fait dans cette passe, une vraie session de test
-// dédiée est plus appropriée pour un flux financier récurrent.
+// Longtemps limité au premier paiement (checkout.session.completed, déjà
+// géré par le webhook Stripe pour activer l'abonnement) : les
+// renouvellements mensuels arrivaient par un événement Stripe différent
+// (invoice.payment_succeeded), volontairement laissé de côté ("toucher le
+// webhook de paiement le plus sensible de l'appli pour un gain
+// incrémental... une vraie session de test dédiée est plus appropriée").
+// Branché le 2026-09-08 (voir logStripeRenewalPayment ci-dessous) : reste
+// un ajout, aucune ligne touchée dans checkout.session.completed ni dans
+// la logique qui accorde/révoque l'accès payant, uniquement de la lecture
+// et une écriture dans coach_finance_entries.
 //
 // Jamais bloquant : appelé en best-effort depuis le webhook, une erreur
 // ici ne doit jamais empêcher l'activation réelle de l'abonnement du
@@ -23,8 +25,42 @@ export async function logStripeCoachingPayment(params: {
   amountTotalCents: number | null;
   stripeSessionId: string;
 }): Promise<void> {
+  await insertCoachRevenueEntry({
+    coachId: params.coachId,
+    amountCents: params.amountTotalCents,
+    label: `Abonnement ${params.clientName ?? "client"} — premier paiement`,
+    stripeEventId: params.stripeSessionId,
+  });
+}
+
+// Renouvellement mensuel d'un abonnement client (invoice.payment_succeeded,
+// billing_reason "subscription_cycle" uniquement — voir le filtre posé côté
+// webhook : "subscription_create" correspond au tout premier paiement, déjà
+// importé par logStripeCoachingPayment ci-dessus via checkout.session.
+// completed, sur un event id différent. Sans ce filtre, le premier paiement
+// serait compté deux fois).
+export async function logStripeRenewalPayment(params: {
+  coachId: string;
+  clientName: string | null;
+  amountPaidCents: number | null;
+  stripeInvoiceId: string;
+}): Promise<void> {
+  await insertCoachRevenueEntry({
+    coachId: params.coachId,
+    amountCents: params.amountPaidCents,
+    label: `Abonnement ${params.clientName ?? "client"} — renouvellement`,
+    stripeEventId: params.stripeInvoiceId,
+  });
+}
+
+async function insertCoachRevenueEntry(params: {
+  coachId: string;
+  amountCents: number | null;
+  label: string;
+  stripeEventId: string;
+}): Promise<void> {
   try {
-    if (!params.amountTotalCents || params.amountTotalCents <= 0) return;
+    if (!params.amountCents || params.amountCents <= 0) return;
 
     const admin = createAdminClient();
 
@@ -41,20 +77,20 @@ export async function logStripeCoachingPayment(params: {
       coach_id: params.coachId,
       kind: "revenu",
       category: "Abonnements clients",
-      label: `Abonnement ${params.clientName ?? "client"} — premier paiement`,
-      amount: Math.round(params.amountTotalCents) / 100,
+      label: params.label,
+      amount: Math.round(params.amountCents) / 100,
       entry_date: new Date().toISOString().split("T")[0],
       note: "Importé automatiquement depuis Stripe.",
       source: "stripe",
-      stripe_event_id: params.stripeSessionId,
+      stripe_event_id: params.stripeEventId,
     });
     // 23505 = conflit sur l'index unique (coach_id, stripe_event_id), donc
     // webhook déjà traité une première fois (retry Stripe) : attendu, pas
     // de log bruyant. Toute autre erreur reste loguée normalement.
     if (error && error.code !== "23505") {
-      console.error("logStripeCoachingPayment insert error:", error);
+      console.error("insertCoachRevenueEntry insert error:", error);
     }
   } catch (e) {
-    console.error("logStripeCoachingPayment error:", e);
+    console.error("insertCoachRevenueEntry error:", e);
   }
 }
