@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { resolveAvatarUrls } from "@/utils/avatar";
 
 // Axe 5 (VISION.md) : annuaire public des coachs de la plateforme, pour
 // qu'un visiteur trouve celui qui correspond à son profil avant même de
@@ -61,13 +62,21 @@ export async function getCoachDirectory(
           }[]
         | null) ?? [];
 
-    return rows
+    const eligible = rows
       .filter((r) => r.is_platform_owner || r.platform_subscription_status === "active")
-      .filter((r) => includeAICoaches || !r.is_ai_coach)
+      .filter((r) => includeAICoaches || !r.is_ai_coach);
+
+    // Le bucket avatars est privé : avatar_url en base n'est qu'un chemin,
+    // jamais une URL affichable telle quelle (voir utils/avatar.ts). Sans
+    // cette résolution, la photo de chaque coach — y compris celle du
+    // Fondateur — restait invisible sur cet annuaire public.
+    const resolvedAvatars = await resolveAvatarUrls(eligible.map((r) => ({ id: r.id, avatar_url: r.avatar_url })));
+
+    return eligible
       .map((r) => ({
         id: r.id,
         full_name: r.full_name,
-        avatar_url: r.avatar_url,
+        avatar_url: resolvedAvatars[r.id] ?? null,
         bio: r.bio,
         instagram_handle: r.instagram_handle,
         invite_code: r.invite_code,

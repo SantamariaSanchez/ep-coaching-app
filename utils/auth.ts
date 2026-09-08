@@ -2,6 +2,7 @@ import { cache } from "react";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getPointsMap } from "@/lib/gamification";
+import { resolveAvatarUrls } from "@/utils/avatar";
 import type { Profile } from "@/utils/auth-client";
 
 // Réexporte les helpers purs (Profile, roleBadge, isSubscribed,
@@ -165,10 +166,14 @@ export async function getCommunityMembersWithActivity(coachId: string): Promise<
     const ids = members.map((m) => m.id);
     const admin = createAdminClient();
 
-    const [pointsMap, sessionsRes, postsRes] = await Promise.all([
+    const [pointsMap, sessionsRes, postsRes, avatarMap] = await Promise.all([
       getPointsMap(ids),
       admin.from("sessions").select("client_id, created_at").eq("is_completed", true).in("client_id", ids),
       admin.from("community_posts").select("author_id").in("author_id", ids),
+      // Le bucket avatars est privé : avatar_url en base n'est qu'un chemin
+      // (voir utils/avatar.ts). Sans résolution, la photo de chaque membre
+      // restait invisible dans cette liste, y compris pour son propre coach.
+      resolveAvatarUrls(members.map((m) => ({ id: m.id, avatar_url: m.avatar_url }))),
     ]);
 
     const sessionCountMap: Record<string, number> = {};
@@ -195,6 +200,7 @@ export async function getCommunityMembersWithActivity(coachId: string): Promise<
       const pastGracePeriod = m.start_date ? Date.now() - new Date(m.start_date).getTime() > GRACE_PERIOD_MS : true;
       return {
         ...m,
+        avatar_url: avatarMap[m.id] ?? null,
         activity: {
           points,
           sessionCount,
