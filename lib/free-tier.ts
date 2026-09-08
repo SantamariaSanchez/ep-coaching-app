@@ -23,6 +23,14 @@ export const INACTIVITY_DELETE_DAYS = 60;
 export const INACTIVITY_WARN_DAYS = [40, 55] as const;
 
 /**
+ * Avertissements de fin de période gratuite pour un membre ACTIF (qui ouvre
+ * l'appli, contrairement à INACTIVITY_WARN_DAYS qui cible celui qui ne
+ * revient jamais). En jours écoulés depuis free_tier_started_at : à 7 jours
+ * puis 1 jour du verrou (FREE_TIER_DAYS = 60).
+ */
+export const EXPIRY_WARN_DAYS = [FREE_TIER_DAYS - 7, FREE_TIER_DAYS - 1] as const;
+
+/**
  * Générations de recettes autorisées par mois pour un membre gratuit.
  * L'outil reste utilisable pour se faire une idée, sans devenir un générateur
  * illimité qui remplace complètement l'accompagnement.
