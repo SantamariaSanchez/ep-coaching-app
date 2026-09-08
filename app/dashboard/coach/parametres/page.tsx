@@ -8,6 +8,8 @@ import AccountActions from "@/components/profile/AccountActions";
 import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
 import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
+import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
+import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
 import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
@@ -48,17 +50,20 @@ export default async function CoachParametresPage() {
   // Item 45 : lecture ciblée (pas dans PROFILE_FIELDS), même convention que
   // referral_code/trial_ends_at côté client — évite d'alourdir getProfile()
   // utilisé partout avec des colonnes que seule cette page consulte.
-  const [acceptingRow, waitlist] = await Promise.all([
+  const [acceptingRow, waitlist, notifRow] = await Promise.all([
     createAdminClient()
       .from("profiles")
       .select("accepting_new_clients, specializations")
       .eq("id", user.id)
       .maybeSingle(),
     getCoachWaitlist(user.id),
+    supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
   ]);
   const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null } | null;
   const accepting = acceptingData?.accepting_new_clients ?? true;
   const specializations = acceptingData?.specializations ?? [];
+  const notifPrefs = (notifRow.data?.notification_preferences as NotificationPreferences | null) ?? {};
+  const mutedCategories = MUTABLE_CATEGORIES.filter((c) => notifPrefs[c] === true) as NotificationCategory[];
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -75,6 +80,8 @@ export default async function CoachParametresPage() {
         quietHoursStart={pushSub?.quiet_hours_start ?? null}
         quietHoursEnd={pushSub?.quiet_hours_end ?? null}
       />
+
+      <NotificationPreferencesCard initialMuted={mutedCategories} />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/coach" />
 

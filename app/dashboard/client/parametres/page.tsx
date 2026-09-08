@@ -3,8 +3,10 @@ import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
 import AccountActions from "@/components/profile/AccountActions";
 import PermissionsCard from "@/components/settings/PermissionsCard";
+import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
+import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
 
 export default async function ClientParametresPage() {
   const user = await getUser();
@@ -15,11 +17,19 @@ export default async function ClientParametresPage() {
   if (profile.role === "coach") redirect("/dashboard/coach/parametres");
 
   const supabase = await createServerSupabase();
-  const { data: pushSub } = await supabase
-    .from("push_subscriptions")
-    .select("id, quiet_hours_start, quiet_hours_end")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  const [{ data: pushSub }, { data: notifRow }] = await Promise.all([
+    supabase
+      .from("push_subscriptions")
+      .select("id, quiet_hours_start, quiet_hours_end")
+      .eq("user_id", user.id)
+      .maybeSingle(),
+    // Colonne consultée uniquement ici, pas dans PROFILE_FIELDS (même
+    // convention que accepting_new_clients côté coach) : lecture ciblée
+    // plutôt que d'alourdir getProfile() utilisé partout dans l'appli.
+    supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
+  ]);
+  const notifPrefs = (notifRow?.notification_preferences as NotificationPreferences | null) ?? {};
+  const mutedCategories = MUTABLE_CATEGORIES.filter((c) => notifPrefs[c] === true) as NotificationCategory[];
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -36,6 +46,8 @@ export default async function ClientParametresPage() {
         quietHoursStart={pushSub?.quiet_hours_start ?? null}
         quietHoursEnd={pushSub?.quiet_hours_end ?? null}
       />
+
+      <NotificationPreferencesCard initialMuted={mutedCategories} />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/client" />
 
