@@ -17,7 +17,7 @@ interface ClientResult {
 interface LibraryResult {
   key: string;
   label: string;
-  category: "Aliment" | "Exercice" | "Salle" | "Science";
+  category: "Aliment" | "Exercice" | "Salle" | "Science" | "Ressource";
 }
 
 interface Result {
@@ -29,11 +29,13 @@ interface Result {
 
 // Item 38 : où renvoyer chaque type de contenu trouvé par /api/library-search
 // — mêmes chemins que la nav (voir DashboardNav), pas de page dédiée par
-// résultat individuel (les bibliothèques elles-mêmes ont leur propre
-// recherche interne une fois sur place).
-function libraryHref(category: LibraryResult["category"], isCoach: boolean): string {
+// résultat individuel pour la plupart des bibliothèques (elles ont leur
+// propre recherche interne une fois sur place). Les ressources font
+// exception : /ressources/[slug] existe et se laisse deep-linker
+// directement, pas de raison de renvoyer vers une liste à re-filtrer.
+function libraryHref(result: LibraryResult, isCoach: boolean): string {
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
-  switch (category) {
+  switch (result.category) {
     case "Exercice":
     case "Salle":
       return `${base}/exercises`;
@@ -41,6 +43,8 @@ function libraryHref(category: LibraryResult["category"], isCoach: boolean): str
       return isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition";
     case "Science":
       return `${base}/science/recherche`;
+    case "Ressource":
+      return `/ressources/${result.key.replace(/^lm-/, "")}`;
   }
 }
 
@@ -170,7 +174,7 @@ export default function CommandPalette({
       key: r.key,
       label: r.label,
       sub: r.category,
-      href: libraryHref(r.category, isCoach),
+      href: libraryHref(r, isCoach),
     })),
     ...matchedNav.map((n) => ({ key: `n-${n.href}`, label: n.label, sub: "Page", href: n.href })),
   ];
