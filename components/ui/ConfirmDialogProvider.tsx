@@ -61,9 +61,14 @@ export default function ConfirmDialogProvider({ children }: { children: React.Re
 
   useEffect(() => {
     if (!pending) return;
+    // Seulement Escape ici, jamais Enter : le bouton Annuler reçoit le focus
+    // à l'ouverture (autoFocus plus bas), donc Enter agit déjà nativement
+    // dessus (annule). Intercepter Enter globalement pour confirmer
+    // court-circuiterait ce focus et confirmerait l'action destructrice
+    // même quand Annuler est visuellement et sémantiquement le bouton actif
+    // — l'exact inverse de ce qu'un clavier attend ici.
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") settle(false);
-      if (e.key === "Enter") settle(true);
     }
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
