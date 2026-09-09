@@ -2630,15 +2630,25 @@ function DietPlanCard({
     [plan.diet_plan_meals, isWeekly, activeDay]
   );
 
+  // Regroupé par créneau PUIS par variante (variant_group, "pain OU flocons
+  // d'avoine" pour le même créneau, voir sa définition dans utils/nutrition.ts)
+  // — jusqu'ici les variantes étaient mélangées comme si elles étaient toutes
+  // à manger le même jour, jamais présentées comme des choix alternatifs.
+  // Retour direct 2026-09-09 : "pour les repas où y'a 2 possibilités, dans
+  // le code tu modifie pour que ya 2 truc [distincts]".
   const bySlot = useMemo(() => {
-    const map: Record<string, typeof plan.diet_plan_meals> = {};
+    const map: Record<string, Record<number, typeof plan.diet_plan_meals>> = {};
     for (const m of dayMeals) {
-      const key = m.meal_slot;
-      if (!map[key]) map[key] = [];
-      map[key].push(m);
+      const slotKey = m.meal_slot;
+      const variant = m.variant_group ?? 1;
+      if (!map[slotKey]) map[slotKey] = {};
+      if (!map[slotKey][variant]) map[slotKey][variant] = [];
+      map[slotKey][variant].push(m);
     }
-    for (const key of Object.keys(map)) {
-      map[key].sort((a, b) => a.position - b.position);
+    for (const slotKey of Object.keys(map)) {
+      for (const variant of Object.keys(map[slotKey])) {
+        map[slotKey][Number(variant)].sort((a, b) => a.position - b.position);
+      }
     }
     return map;
   }, [dayMeals, plan]);
@@ -2726,11 +2736,12 @@ function DietPlanCard({
 
       {expanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-[#890404]/15 pt-3">
-          {MEAL_SLOTS.filter((slot) => bySlot[slot.key]?.length).map((slot) => {
-            const uncheckedMeals = checkable
-              ? bySlot[slot.key].filter((m) => !checkedMap[m.id])
-              : [];
-            const isValidating = validatingSlot === slot.key;
+          {MEAL_SLOTS.filter((slot) => bySlot[slot.key] && Object.keys(bySlot[slot.key]).length > 0).map((slot) => {
+            // Variantes triées par numéro croissant, mais étiquetées par leur
+            // POSITION (1, 2, 3...) plutôt que par leur variant_group brut —
+            // robuste même si un coach a sauté des numéros en construisant le plan.
+            const variantKeys = Object.keys(bySlot[slot.key]).map(Number).sort((a, b) => a - b);
+            const hasVariants = variantKeys.length > 1;
             return (
             <div
               key={slot.key}
@@ -2741,69 +2752,93 @@ function DietPlanCard({
                   : undefined
               }
             >
-              <div className="flex items-center justify-between gap-2 mb-1.5">
-                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
-                  {slot.label}
-                </p>
-                {/* Bouton unique pour valider tout le repas d'un coup
-                    (demande explicite 2026-08-16) plutôt que de forcer à
-                    cocher chaque aliment un par un — n'apparaît que s'il
-                    reste au moins un aliment non loggué sur ce créneau. */}
-                {onValidateSlot && uncheckedMeals.length > 0 && (
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      setValidatingSlot(slot.key);
-                      await onValidateSlot(uncheckedMeals);
-                      setValidatingSlot(null);
-                    }}
-                    disabled={isValidating}
-                    className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
-                  >
-                    <Check size={11} strokeWidth={3} />
-                    {isValidating ? "Validation…" : "Valider le repas"}
-                  </button>
-                )}
-              </div>
-              <div className="space-y-1">
-                {bySlot[slot.key].map((m) => {
-                  const matchedLogId = checkedMap[m.id];
-                  const isChecked = !!matchedLogId;
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
+                {slot.label}
+              </p>
+              <div className={hasVariants ? "space-y-3" : undefined}>
+                {variantKeys.map((variant, variantIndex) => {
+                  const items = bySlot[slot.key][variant];
+                  const uncheckedMeals = checkable ? items.filter((m) => !checkedMap[m.id]) : [];
+                  const validatingKey = `${slot.key}:${variant}`;
+                  const isValidating = validatingSlot === validatingKey;
                   return (
                     <div
-                      key={m.id}
-                      className={`flex items-center gap-3 py-1.5 ${
-                        checkable ? "cursor-pointer" : ""
-                      }`}
-                      onClick={
-                        checkable ? () => onToggle(m, matchedLogId) : undefined
-                      }
+                      key={variant}
+                      className={hasVariants ? "rounded-lg border border-[#890404]/15 px-2.5 py-2 -mx-2.5" : undefined}
                     >
-                      {checkable && (
-                        <span
-                          className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                            isChecked
-                              ? "bg-[#E01E1E] border-[#E01E1E]"
-                              : "border-[#890404]/40 bg-transparent"
-                          }`}
-                        >
-                          {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
-                        </span>
-                      )}
-                      <div className="flex-1 flex items-center justify-between min-w-0">
-                        <p
-                          className={`text-xs font-medium truncate ${
-                            isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
-                          }`}
-                        >
-                          {m.foods?.name ?? "Aliment"}
-                        </p>
-                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
-                          {m.quantity_g}g
-                          {m.foods
-                            ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
-                            : ""}
-                        </p>
+                      <div className="flex items-center justify-between gap-2 mb-1.5">
+                        {/* "Option 2", "Option 3"... jamais "Option 1" : le
+                            premier choix reste juste "le" repas, comme
+                            lorsqu'il n'y a qu'une seule variante. */}
+                        {hasVariants && (
+                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30">
+                            {variantIndex === 0 ? "Choix habituel" : `Option ${variantIndex + 1}`}
+                          </p>
+                        )}
+                        {/* Bouton unique pour valider tout le repas (ou cette
+                            option) d'un coup (demande explicite 2026-08-16)
+                            plutôt que de forcer à cocher chaque aliment un par
+                            un — n'apparaît que s'il reste au moins un aliment
+                            non loggué sur cette variante. */}
+                        {onValidateSlot && uncheckedMeals.length > 0 && (
+                          <button
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              setValidatingSlot(validatingKey);
+                              await onValidateSlot(uncheckedMeals);
+                              setValidatingSlot(null);
+                            }}
+                            disabled={isValidating}
+                            className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors ml-auto"
+                          >
+                            <Check size={11} strokeWidth={3} />
+                            {isValidating ? "Validation…" : hasVariants ? "Valider" : "Valider le repas"}
+                          </button>
+                        )}
+                      </div>
+                      <div className="space-y-1">
+                        {items.map((m) => {
+                          const matchedLogId = checkedMap[m.id];
+                          const isChecked = !!matchedLogId;
+                          return (
+                            <div
+                              key={m.id}
+                              className={`flex items-center gap-3 py-1.5 ${
+                                checkable ? "cursor-pointer" : ""
+                              }`}
+                              onClick={
+                                checkable ? () => onToggle(m, matchedLogId) : undefined
+                              }
+                            >
+                              {checkable && (
+                                <span
+                                  className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                                    isChecked
+                                      ? "bg-[#E01E1E] border-[#E01E1E]"
+                                      : "border-[#890404]/40 bg-transparent"
+                                  }`}
+                                >
+                                  {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
+                                </span>
+                              )}
+                              <div className="flex-1 flex items-center justify-between min-w-0">
+                                <p
+                                  className={`text-xs font-medium truncate ${
+                                    isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
+                                  }`}
+                                >
+                                  {m.foods?.name ?? "Aliment"}
+                                </p>
+                                <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                                  {m.quantity_g}g
+                                  {m.foods
+                                    ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
+                                    : ""}
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   );
