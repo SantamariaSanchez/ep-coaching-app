@@ -56,6 +56,19 @@ export async function GET(req: Request) {
   const nowTime = parisTimeStr(now) + ":00"; // aligne sur le format start_time ("HH:MM:SS")
 
   const supabase = createAdminClient();
+
+  // Nettoyage : la migration 20260901c_schedule_blocks_specific_date
+  // prévoyait "un nettoyage quotidien (voir routine Sync Google Calendar)
+  // supprime tout bloc dont specific_date est dans le passé", mais cette
+  // routine n'a jamais existé — les blocs ponctuels (rendez-vous coiffeur,
+  // appels de vente...) s'accumulaient indéfiniment en base. Ce cron tourne
+  // déjà toutes les 5 min avec les bons accès, plutôt qu'une routine à
+  // part : retour direct 2026-09-09, "ya encore le rdv du coiffeur de la
+  // semaine derniere" — l'affichage (WeeklyAgenda.tsx) filtre maintenant
+  // aussi ces blocs, mais autant les supprimer réellement plutôt que de
+  // laisser la table grossir pour rien.
+  await supabase.from("schedule_blocks").delete().not("specific_date", "is", null).lt("specific_date", today);
+
   const { data: blocks } = await supabase
     .from("schedule_blocks")
     .select("id, owner_id, day_of_week, start_time, label, notify, last_notified_at, alarm_ack_date, specific_date")

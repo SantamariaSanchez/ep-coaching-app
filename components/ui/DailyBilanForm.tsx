@@ -45,6 +45,60 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
   );
 }
 
+// Retour direct 2026-09-09 : "le sommeil faut qu'on puisse le log en
+// heure... c'est juste un chiffre à virgule avec qu'un nombre" — saisir
+// "7.5" au clavier numérique est pénible et pas comment on pense sa nuit
+// ("7h30", pas "7 virgule 5"). Deux sélecteurs h/min plutôt qu'un champ
+// décimal, convertis en décimal dans un champ caché : sleep_hours reste un
+// nombre décimal en base (utils/checkins.ts, biometrics.ts...), donc zéro
+// changement côté serveur, uniquement la façon de le saisir.
+function hoursToParts(hours: number | null | undefined): { h: string; m: string } {
+  if (hours == null) return { h: "", m: "" };
+  const totalMin = Math.round(hours * 60);
+  return { h: String(Math.floor(totalMin / 60)), m: String(totalMin % 60) };
+}
+
+function SleepDurationInput({ defaultValue }: { defaultValue?: number | null }) {
+  const initial = hoursToParts(defaultValue);
+  const [h, setH] = useState(initial.h);
+  const [m, setM] = useState(initial.m);
+  const decimal = h === "" && m === "" ? "" : (Number(h || 0) + Number(m || 0) / 60).toFixed(2);
+
+  return (
+    <div>
+      <label className={lbl}>Sommeil</label>
+      <div style={{ display: "flex", gap: 8 }}>
+        <select
+          value={h}
+          onChange={(e) => setH(e.target.value)}
+          aria-label="Heures de sommeil"
+          className={inp}
+          style={{ flex: 1 }}
+          autoFocus
+        >
+          <option value="">h</option>
+          {Array.from({ length: 17 }, (_, i) => i).map((v) => (
+            <option key={v} value={v}>{v} h</option>
+          ))}
+        </select>
+        <select
+          value={m}
+          onChange={(e) => setM(e.target.value)}
+          aria-label="Minutes de sommeil"
+          className={inp}
+          style={{ flex: 1 }}
+        >
+          <option value="">min</option>
+          {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55].map((v) => (
+            <option key={v} value={v}>{v} min</option>
+          ))}
+        </select>
+      </div>
+      <input type="hidden" name="sleep_hours" value={decimal} />
+    </div>
+  );
+}
+
 function CardShell({
   icon: Icon,
   title,
@@ -231,10 +285,7 @@ export function SleepCard({ today, existing, action, onSaved }: { today: string;
       <CardShell icon={BedDouble} title="Sommeil" saved={!!state?.success}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <div>
-              <label className={lbl}>Sommeil (heures)</label>
-              <input name="sleep_hours" type="number" step="0.1" min="0" max="24" defaultValue={existing?.sleep_hours ?? ""} placeholder="7.5" aria-label="7.5" className={inp} autoFocus />
-            </div>
+            <SleepDurationInput defaultValue={existing?.sleep_hours} />
             <div>
               <label className={lbl}>Qualité sommeil (%)</label>
               <input name="sleep_rating" type="number" min="0" max="100" defaultValue={existing?.sleep_rating ?? ""} placeholder="80" aria-label="80" className={inp} />

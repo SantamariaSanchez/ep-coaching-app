@@ -59,15 +59,43 @@ export default function PermissionsPrimer() {
     setShow(false);
   }, []);
 
+  // Bug réel trouvé en creusant le retour direct 2026-09-09 ("les notif...
+  // ba y'a toujours aucun son", "aussi les autorisation bug") : cette
+  // fonction ne faisait QUE Notification.requestPermission(), jamais
+  // l'abonnement push réel (pushManager.subscribe + enregistrement en base
+  // via /api/push/subscribe, voir components/settings/PermissionsCard.tsx
+  // enablePush, la vraie référence). Résultat : "Notifications" passait au
+  // vert "OK" ici (la permission navigateur est bien accordée) sans qu'un
+  // seul push ne puisse jamais partir — sendPushToUser (lib/push.ts) exige
+  // une ligne dans push_subscriptions, jamais créée par ce composant. Un
+  // utilisateur qui ne passe QUE par cet écran (premier lancement) croyait
+  // donc avoir activé ses rappels/réveil alors que rien n'était vraiment
+  // abonné. Même flux complet que PermissionsCard.enablePush ici.
   async function askNotifications() {
     setBusy("notif");
     try {
-      if (typeof Notification === "undefined") {
+      if (typeof Notification === "undefined" || !("serviceWorker" in navigator)) {
         setNotif("denied");
         return;
       }
-      const result = await Notification.requestPermission();
-      setNotif(result === "granted" ? "granted" : "denied");
+      const reg = await navigator.serviceWorker.register("/sw.js");
+      await navigator.serviceWorker.ready;
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted") {
+        setNotif("denied");
+        return;
+      }
+      const b64 = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!;
+      const pad = "=".repeat((4 - (b64.length % 4)) % 4);
+      const raw = window.atob((b64 + pad).replace(/-/g, "+").replace(/_/g, "/"));
+      const key = Uint8Array.from([...raw].map((c) => c.charCodeAt(0))).buffer as ArrayBuffer;
+      const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+      const res = await fetch("/api/push/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ subscription: sub.toJSON() }),
+      });
+      setNotif(res.ok ? "granted" : "denied");
     } catch {
       setNotif("denied");
     } finally {

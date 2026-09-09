@@ -63,7 +63,14 @@ export async function sendPushToUser(
     // Reason distincte de "no subscription" : les appelants qui font un
     // repli email sur cette chaîne précise (ex. weekly-reengagement) ne
     // doivent pas changer de comportement ici.
-    if (isWithinQuietHours(data.quiet_hours_start, data.quiet_hours_end)) {
+    //
+    // JAMAIS pour un réveil (type "alarm") : les heures de silence existent
+    // pour ne pas déranger PENDANT le sommeil, exactement la plage horaire
+    // où un réveil doit justement sonner. Sans cette exception, un réveil
+    // programmé à 6h avec des heures de silence couvrant 6h (ex. 22h-7h,
+    // le défaut) ne partirait jamais — bug réel trouvé en creusant le
+    // retour direct 2026-09-09 "je me suis pas reveiller".
+    if (type !== "alarm" && isWithinQuietHours(data.quiet_hours_start, data.quiet_hours_end)) {
       return { ok: false, reason: "quiet hours" };
     }
 

@@ -71,6 +71,37 @@ function isoWeekday(d: Date): number {
   return w === 0 ? 7 : w;
 }
 
+function toDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+// Lundi 00:00 → dimanche 23:59 de la semaine de `now`, en "YYYY-MM-DD"
+// directement comparable à ScheduleBlock.specific_date.
+function currentWeekBounds(now: Date): { start: string; end: string } {
+  const monday = new Date(now);
+  monday.setDate(monday.getDate() - (isoWeekday(now) - 1));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  return { start: toDateStr(monday), end: toDateStr(sunday) };
+}
+
+// Un bloc récurrent (specific_date NULL) est un gabarit hebdomadaire, il
+// s'affiche toujours. Un bloc ponctuel (specific_date renseigné, importé de
+// Google Calendar — un rendez-vous coiffeur, un appel de vente...) ne doit
+// s'afficher QUE la semaine où il tombe réellement : sans ce filtre, un
+// rendez-vous d'une semaine passée ou future s'affichait sur SON jour de la
+// semaine générique (day_of_week) en permanence, un rendez-vous coiffeur
+// d'il y a 15 jours ne disparaissant jamais de la grille (retour direct
+// 2026-09-09 : "ya encore le rdv du coiffeur de la semaine derniere").
+// La grille n'a pas de vraie navigation multi-semaine (voir shiftDay plus
+// bas, purement cyclique 1-7) : "cette semaine" est donc toujours celle de
+// `now`, jamais une autre.
+function isRelevantThisWeek(block: ScheduleBlock, weekBounds: { start: string; end: string } | null): boolean {
+  if (!block.specific_date) return true;
+  if (!weekBounds) return true; // now pas encore connu (avant montage) : ne rien cacher à tort
+  return block.specific_date >= weekBounds.start && block.specific_date <= weekBounds.end;
+}
+
 // Heures effectivement occupées par au moins un bloc, dans le périmètre
 // donné (toute la semaine pour la vue semaine, un seul jour pour la vue
 // jour, voir les deux appels plus bas — chacun compresse sur SA propre
@@ -395,7 +426,13 @@ export default function WeeklyAgenda({
   }, []);
 
   const todayDow = now ? isoWeekday(now) : null;
-  const blocksByDay = blocks.reduce<Record<number, number>>((acc, b) => {
+  // Semaine affichée = toujours celle de "now" (voir isRelevantThisWeek) :
+  // tous les calculs agrégés (compteurs, stats, grille) doivent partir de
+  // relevantBlocks, jamais de blocks brut, sous peine de recompter un
+  // rendez-vous ponctuel d'une autre semaine (trou/incohérence signalés).
+  const weekBounds = now ? currentWeekBounds(now) : null;
+  const relevantBlocks = blocks.filter((b) => isRelevantThisWeek(b, weekBounds));
+  const blocksByDay = relevantBlocks.reduce<Record<number, number>>((acc, b) => {
     acc[b.day_of_week] = (acc[b.day_of_week] ?? 0) + 1;
     return acc;
   }, {});
@@ -571,7 +608,7 @@ export default function WeeklyAgenda({
   // activeHours vient de l'appelant (semaine ou jour, voir plus bas) : lui
   // seul sait sur quel périmètre juger une heure "vide".
   function renderDayContent(day: number, rowHeight: number, activeHours: Set<number>) {
-    const dayBlocks = blocks
+    const dayBlocks = relevantBlocks
       .filter((b) => b.day_of_week === day)
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
     const offsets = buildHourOffsets(activeHours, rowHeight);
@@ -709,8 +746,8 @@ export default function WeeklyAgenda({
     );
   }
 
-  const overlapBlocks = modalOpen ? findOverlaps(blocks, form.day_of_week, form.start_time, form.end_time, editingBlockId) : [];
-  const { totalMinutes, topCategories } = computeStats(blocks);
+  const overlapBlocks = modalOpen ? findOverlaps(relevantBlocks, form.day_of_week, form.start_time, form.end_time, editingBlockId) : [];
+  const { totalMinutes, topCategories } = computeStats(relevantBlocks);
 
   // Compression des heures vides (voir buildHourOffsets/buildHourSegments) :
   // la vue semaine doit garder les 7 colonnes alignées entre elles, donc
@@ -718,8 +755,10 @@ export default function WeeklyAgenda({
   // l'occupe. La vue jour, elle, n'affiche qu'une colonne à la fois : rien
   // n'empêche de compresser sur les seules heures vides de CE jour précis,
   // ce qui compresse davantage (et donc défile moins) sur un jour creux.
-  const weekActiveHours = computeActiveHours(blocks);
-  const dayActiveHours = computeActiveHours(blocks.filter((b) => b.day_of_week === selectedDay));
+  // relevantBlocks (pas blocks) : un bloc ponctuel d'une autre semaine ne
+  // doit pas empêcher la compression d'une heure vide cette semaine-ci.
+  const weekActiveHours = computeActiveHours(relevantBlocks);
+  const dayActiveHours = computeActiveHours(relevantBlocks.filter((b) => b.day_of_week === selectedDay));
 
   // Bloc en cours : celui qu'on est censé être en train de vivre là,
   // maintenant — pour répondre "je suis dans quel bloc, qu'est-ce que
@@ -727,7 +766,7 @@ export default function WeeklyAgenda({
   const nowMinutesForCurrent = now ? now.getHours() * 60 + now.getMinutes() : null;
   const currentBlock =
     todayDow !== null && nowMinutesForCurrent !== null
-      ? blocks.find(
+      ? relevantBlocks.find(
           (b) =>
             b.day_of_week === todayDow &&
             timeToMinutes(b.start_time) <= nowMinutesForCurrent &&
@@ -812,7 +851,7 @@ export default function WeeklyAgenda({
       )}
 
       {/* Stats de la semaine */}
-      {blocks.length > 0 && (
+      {relevantBlocks.length > 0 && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1" style={{ WebkitOverflowScrolling: "touch" }}>
           <div className="ep-card" style={{ padding: "8px 14px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
             <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
@@ -837,7 +876,7 @@ export default function WeeklyAgenda({
       )}
 
       {/* Démarrage rapide quand l'agenda est vide */}
-      {blocks.length === 0 && editable && (
+      {relevantBlocks.length === 0 && editable && (
         <div className="ep-card" style={{ padding: 16 }}>
           <p className={labelClass} style={{ marginBottom: 10 }}>Démarrage rapide</p>
           <div className="flex flex-wrap gap-1.5">
@@ -984,7 +1023,7 @@ export default function WeeklyAgenda({
       {/* Options du jour : dupliquer / vider */}
       {dayOptionsFor !== null && (() => {
         const day = dayOptionsFor;
-        const dayBlocks = blocks.filter((b) => b.day_of_week === day);
+        const dayBlocks = relevantBlocks.filter((b) => b.day_of_week === day);
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={closeDayOptions} />

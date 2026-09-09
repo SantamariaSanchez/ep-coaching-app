@@ -1388,7 +1388,15 @@ export default function ClientNutritionView({
   // être swappé (fixe-flexible). Le journal détaillé par repas (ajout
   // manuel, bilan rapide, copier hier) reste réservé à la diète flexible,
   // où il n'y a justement pas de plan à cocher.
-  const isFreeTracking = dietMode === "flexible";
+  //
+  // planMode (pas dietMode) : dietMode est la préférence par défaut du
+  // profil nutrition, planMode priorise le mode du PLAN réellement actif
+  // (voir sa définition plus haut, déjà utilisé pour activeMode ci-dessous).
+  // Avec dietMode, un client dont le profil était resté sur "flexible"
+  // continuait de voir le tracker libre même après qu'un plan "fixed" lui
+  // soit assigné — retour direct 2026-09-09 : "je suis en diete fixe donc
+  // c'est pas possible qu'il y ait en bas le truc pour tracker des aliments".
+  const isFreeTracking = planMode === "flexible";
 
   return (
     <div className="px-6 py-8 ep-page-medium">
@@ -2595,7 +2603,17 @@ function DietPlanCard({
     return map;
   }, [dayMeals, plan]);
 
-  // Match each plan item to an unclaimed log of the same food/slot/quantity logged today
+  // Match each plan item to an unclaimed log of the same food/slot/quantity logged today.
+  // quantity_g est une colonne `numeric` côté DB des deux côtés (diet_plan_meals
+  // ET food_logs) : selon le chemin de sérialisation, l'une peut revenir en
+  // JS `number` et l'autre en `string` ("150" !== 150), et une comparaison
+  // stricte fait alors échouer TOUS les matchs — la coche ne s'affiche
+  // jamais, et retaper dessus rajoute un nouveau log au lieu de retirer
+  // l'existant (retour direct 2026-09-09 : "le truc pour cocher ne
+  // fonctionne toujours pas"). Number(...) des deux côtés + tolérance
+  // (au lieu d'une égalité stricte) : robuste au type ET à un éventuel
+  // écart d'arrondi flottant, sans risque (personne ne distingue 0.01g).
+  const QUANTITY_MATCH_EPSILON = 0.01;
   const checkedMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
     const used = new Set<string>();
@@ -2605,7 +2623,7 @@ function DietPlanCard({
           !used.has(l.id) &&
           l.food_id === m.food_id &&
           l.meal_slot === m.meal_slot &&
-          l.quantity_g === m.quantity_g
+          Math.abs(Number(l.quantity_g) - Number(m.quantity_g)) < QUANTITY_MATCH_EPSILON
       );
       if (match) {
         map[m.id] = match.id;
