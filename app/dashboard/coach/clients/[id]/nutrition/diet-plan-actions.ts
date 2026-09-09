@@ -49,7 +49,7 @@ export async function rescaleActiveDietPlanToTargets(
 
   const { data: meals } = await supabase
     .from("diet_plan_meals")
-    .select("id, quantity_g, foods(calories_per_100, proteins_per_100, carbs_per_100, fats_per_100)")
+    .select("id, quantity_g, variant_group, foods(calories_per_100, proteins_per_100, carbs_per_100, fats_per_100)")
     .eq("plan_id", plan.id);
 
   if (!meals || meals.length === 0) return { rescaled: false };
@@ -57,9 +57,18 @@ export async function rescaleActiveDietPlanToTargets(
   type MealRow = {
     id: string;
     quantity_g: number;
+    variant_group: number | null;
     foods: { calories_per_100: number | null; proteins_per_100: number | null; carbs_per_100: number | null; fats_per_100: number | null } | null;
   };
-  const rows = meals as unknown as MealRow[];
+  // Option principale seulement (voir le commentaire sur variant_group dans
+  // DietPlanMealInput plus bas, déjà écrit mais jamais appliqué ici) : sans
+  // ce filtre, une variante alternative (2e choix d'un créneau) entrait dans
+  // le calcul des totaux comme si elle était mangée EN PLUS de l'option
+  // principale, faussant le ratio de rescale appliqué à TOUT le plan — et
+  // contrairement à handleAutoAdjust (DietPlanManager.tsx, même bug corrigé
+  // là-bas), ce rescale se déclenche automatiquement à chaque changement de
+  // cible macro (voir saveNutritionProfile), pas seulement sur un clic.
+  const rows = (meals as unknown as MealRow[]).filter((m) => !m.variant_group || m.variant_group === 1);
 
   let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
   for (const row of rows) {
