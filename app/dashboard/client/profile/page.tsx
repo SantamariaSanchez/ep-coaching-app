@@ -10,6 +10,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import ReferralCard from "@/components/client/ReferralCard";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 function weeksSince(dateStr: string): number {
   return Math.floor(
@@ -34,11 +35,12 @@ export default async function ClientProfilePage() {
   if (!profile) redirect("/");
   if (profile.role === "coach") redirect("/dashboard/coach/profile");
 
-  const [postCount, points, avatarSrc, referralStats] = await Promise.all([
+  const [postCount, points, avatarSrc, referralStats, websiteRow] = await Promise.all([
     getCommunityPostCount(user.id),
     getTotalPoints(user.id),
     resolveAvatarUrl(profile.avatar_url),
     getReferralStats(user.id),
+    createAdminClient().from("profiles").select("website").eq("id", user.id).maybeSingle(),
   ]);
 
   const weeks = profile.start_date ? weeksSince(profile.start_date) : null;
@@ -59,6 +61,7 @@ export default async function ClientProfilePage() {
         phone={profile.phone}
         bio={profile.bio}
         instagramHandle={profile.instagram_handle}
+        website={(websiteRow.data as { website: string | null } | null)?.website ?? null}
       />
 
       {profile.subscription_status === "active" && (

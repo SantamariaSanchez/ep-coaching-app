@@ -9,6 +9,7 @@ export interface UpdateProfileInput {
   phone?: string | null;
   bio?: string | null;
   instagram_handle?: string | null;
+  website?: string | null;
 }
 
 export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error?: string }> {
@@ -31,6 +32,16 @@ export async function updateMyProfile(data: UpdateProfileInput): Promise<{ error
     if (data.instagram_handle !== undefined) {
       const handle = cleanText(data.instagram_handle, LIMITS.handle)?.replace(/^@/, "") || null;
       update.instagram_handle = handle;
+    }
+    // Colonne "website" déjà en base depuis un moment (jamais reliée à
+    // aucune UI) — retour direct 2026-09-09, "ajoute des choses auxquelles
+    // on n'a pas encore pensé". http(s):// ajouté d'office si absent : un
+    // lien sans protocole ("moncoaching.fr") casse un <a href> (relatif à
+    // la page courante au lieu d'être un vrai lien externe).
+    if (data.website !== undefined) {
+      let site = cleanText(data.website, LIMITS.url);
+      if (site && !/^https?:\/\//i.test(site)) site = `https://${site}`;
+      update.website = site;
     }
 
     const { error } = await supabase.from("profiles").update(update).eq("id", user.id);

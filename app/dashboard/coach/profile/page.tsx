@@ -9,6 +9,7 @@ import ProfileHeader from "@/components/profile/ProfileHeader";
 import { resolveAvatarUrl } from "@/utils/avatar";
 import ProfileEditor from "@/components/profile/ProfileEditor";
 import ClientIntakeForm from "@/components/ui/ClientIntakeForm";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 export default async function CoachProfilePage() {
   const user = await getUser();
@@ -18,10 +19,14 @@ export default async function CoachProfilePage() {
   if (!profile) redirect("/");
   if (profile.role === "client") redirect("/dashboard/client/profile");
 
-  const [postCount, avatarSrc, intake] = await Promise.all([
+  const [postCount, avatarSrc, intake, websiteRow] = await Promise.all([
     getCommunityPostCount(user.id),
     resolveAvatarUrl(profile.avatar_url),
     getClientIntake(user.id),
+    // Lecture ciblée (pas dans PROFILE_FIELDS, même convention que
+    // accepting_new_clients/specializations sur Paramètres) : colonne déjà
+    // en base, jamais reliée à aucune UI jusqu'ici.
+    createAdminClient().from("profiles").select("website").eq("id", user.id).maybeSingle(),
   ]);
 
   return (
@@ -40,6 +45,7 @@ export default async function CoachProfilePage() {
         phone={profile.phone}
         bio={profile.bio}
         instagramHandle={profile.instagram_handle}
+        website={(websiteRow.data as { website: string | null } | null)?.website ?? null}
       />
 
       <div className="mt-8">

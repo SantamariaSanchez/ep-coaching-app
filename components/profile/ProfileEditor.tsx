@@ -2,7 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Check, AlertCircle } from "lucide-react";
+import { Camera, Check, AlertCircle, Globe } from "lucide-react";
 import { updateMyProfile, uploadAvatar } from "@/utils/profile-actions";
 
 export default function ProfileEditor({
@@ -10,11 +10,13 @@ export default function ProfileEditor({
   phone,
   bio,
   instagramHandle,
+  website,
 }: {
   fullName: string;
   phone: string | null;
   bio: string | null;
   instagramHandle?: string | null;
+  website?: string | null;
 }) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -22,6 +24,7 @@ export default function ProfileEditor({
   const [phoneVal, setPhoneVal] = useState(phone ?? "");
   const [bioVal, setBioVal] = useState(bio ?? "");
   const [instagramVal, setInstagramVal] = useState(instagramHandle ?? "");
+  const [websiteVal, setWebsiteVal] = useState(website ?? "");
   const [uploading, setUploading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -35,6 +38,7 @@ export default function ProfileEditor({
         phone: phoneVal.trim() || null,
         bio: bioVal,
         instagram_handle: instagramVal.trim() || null,
+        website: websiteVal.trim() || null,
       });
       if (result.error) {
         setStatus("error");
@@ -128,6 +132,20 @@ export default function ProfileEditor({
             value={instagramVal}
             onChange={(e) => setInstagramVal(e.target.value)}
             placeholder="tonpseudo" aria-label="tonpseudo"
+            className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
+          />
+        </div>
+        {/* Colonne déjà en base, jamais reliée à aucune UI jusqu'ici (retour
+            direct 2026-09-09, "ajoute des choses auxquelles on n'a pas
+            encore pensé") — site perso, chaîne YouTube, page de vente... */}
+        <div>
+          <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5 flex items-center gap-1.5">
+            <Globe size={11} /> Site web
+          </label>
+          <input
+            value={websiteVal}
+            onChange={(e) => setWebsiteVal(e.target.value)}
+            placeholder="moncoaching.fr" aria-label="moncoaching.fr"
             className="w-full bg-black/30 border border-[#890404]/30 focus:border-[#E01E1E]/50 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 focus:outline-none transition-colors"
           />
         </div>
