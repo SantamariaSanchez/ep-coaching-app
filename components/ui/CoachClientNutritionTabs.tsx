@@ -525,7 +525,12 @@ export default function CoachClientNutritionTabs({
       {tab === "supplements" && (
         <SupplementsSection
           supplements={supplements}
-          isCoachView
+          // isCoachView pilote le texte ("Suggérer"/"ce client" vs
+          // "Ajouter"/"pour l'instant") — figé à true auparavant, donc un
+          // coach gérant SES PROPRES compléments (isOwnPlan) voyait un texte
+          // écrit pour gérer la liste d'un tiers ("Suggérer", "Aucun
+          // complément renseigné pour ce client").
+          isCoachView={!isOwnPlan}
           onAdd={(input) => suggestSupplement(clientId, input)}
           onSetStatus={(id, status) => setSupplementStatus(clientId, id, status)}
           onDelete={(id) => deleteSupplement(clientId, id)}
