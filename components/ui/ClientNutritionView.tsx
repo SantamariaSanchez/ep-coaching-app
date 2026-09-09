@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
@@ -2737,7 +2737,40 @@ function DietPlanCard({
   // repas d'un coup qui apparaissent mais un petit bouton pour les
   // switch"). Indexé par jour+créneau : changer de jour ne doit jamais
   // garder le choix d'un autre jour affiché par erreur.
+  //
+  // Retour direct 2026-09-09 : "je viens de valider mon repas du midi et
+  // cette fois tous se coche donc parfait, mais là je reviens voir et c'est
+  // plus coché". Les lignes food_logs étaient pourtant bien en base : ce
+  // choix de variante vivait uniquement en state React, donc REMIS À ZÉRO
+  // à chaque rechargement. On repartait toujours sur l'Option 1 alors que
+  // le repas validé était celui de l'Option 2 — et comme les deux options
+  // n'ont pas les mêmes quantités (105 g vs 110 g, 25 g vs 12,5 g...), les
+  // coches semblaient avoir disparu alors que la donnée était intacte.
+  // Persisté par plan (localStorage) pour survivre au rechargement.
   const [variantChoice, setVariantChoice] = useState<Record<string, number>>({});
+  const variantStorageKey = `ep-diet-variant:${plan.id}`;
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(variantStorageKey);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- hydratation depuis localStorage, impossible dans un initialiseur useState (rendu serveur : localStorage n'existe pas), même schéma que la liste de courses plus haut.
+      if (saved) setVariantChoice(JSON.parse(saved));
+    } catch {
+      // localStorage indisponible (navigation privée stricte) : on repart
+      // simplement sur la détection automatique ci-dessous.
+    }
+  }, [variantStorageKey]);
+
+  function chooseVariant(stateKey: string, variant: number) {
+    setVariantChoice((prev) => {
+      const next = { ...prev, [stateKey]: variant };
+      try {
+        localStorage.setItem(variantStorageKey, JSON.stringify(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  }
 
   // Regroupé par créneau PUIS par variante (variant_group, "pain OU flocons
   // d'avoine" pour le même créneau, voir sa définition dans utils/nutrition.ts)
@@ -2788,16 +2821,66 @@ function DietPlanCard({
   // Fix : ne faire matcher que les items de la variante RÉELLEMENT affichée
   // par créneau (même logique que le calcul de activeVariant plus bas),
   // jamais toutes les options mélangées.
+  // Deuxième filet, plus fort que le choix mémorisé : la variante RÉELLEMENT
+  // mangée se déduit de ce qui est déjà loggué aujourd'hui. Si les logs du
+  // jour correspondent aux quantités de l'Option 2, c'est l'Option 2 qu'il
+  // faut rouvrir — même sur un autre appareil, ou après un vidage du cache
+  // du navigateur, là où le localStorage ci-dessus ne dit plus rien.
+  const loggedVariantBySlot = useMemo(() => {
+    const out: Record<string, number> = {};
+    if (!isViewingToday) return out;
+    for (const slotKey of Object.keys(bySlot)) {
+      let bestVariant: number | null = null;
+      let bestCount = 0;
+      const variantKeys = Object.keys(bySlot[slotKey]).map(Number).sort((a, b) => a - b);
+      for (const variant of variantKeys) {
+        const used = new Set<string>();
+        let count = 0;
+        for (const m of bySlot[slotKey][variant]) {
+          const match = todayLogs.find(
+            (l) =>
+              !used.has(l.id) &&
+              l.food_id === m.food_id &&
+              l.meal_slot === m.meal_slot &&
+              Math.abs(Number(l.quantity_g) - Number(m.quantity_g)) < QUANTITY_MATCH_EPSILON
+          );
+          if (match) {
+            used.add(match.id);
+            count++;
+          }
+        }
+        if (count > bestCount) {
+          bestCount = count;
+          bestVariant = variant;
+        }
+      }
+      if (bestVariant !== null) out[slotKey] = bestVariant;
+    }
+    return out;
+  }, [bySlot, todayLogs, isViewingToday]);
+
+  // Résolution unique, partagée par le calcul des coches ET par l'affichage,
+  // pour qu'ils ne puissent jamais diverger : choix explicite mémorisé, puis
+  // variante déduite des logs du jour, puis première variante par défaut.
+  const resolveVariant = useCallback(
+    (slotKey: string): number => {
+      const variantKeys = Object.keys(bySlot[slotKey] ?? {}).map(Number).sort((a, b) => a - b);
+      const chosen = variantChoice[`${viewDow}:${slotKey}`];
+      if (chosen !== undefined && variantKeys.includes(chosen)) return chosen;
+      const logged = loggedVariantBySlot[slotKey];
+      if (logged !== undefined && variantKeys.includes(logged)) return logged;
+      return variantKeys[0];
+    },
+    [bySlot, variantChoice, viewDow, loggedVariantBySlot]
+  );
+
   const visibleMeals = useMemo(() => {
     const out: DietPlanMeal[] = [];
     for (const slotKey of Object.keys(bySlot)) {
-      const variantKeys = Object.keys(bySlot[slotKey]).map(Number).sort((a, b) => a - b);
-      const chosen = variantChoice[`${viewDow}:${slotKey}`];
-      const activeVariant = chosen !== undefined && variantKeys.includes(chosen) ? chosen : variantKeys[0];
-      out.push(...bySlot[slotKey][activeVariant]);
+      out.push(...bySlot[slotKey][resolveVariant(slotKey)]);
     }
     return out;
-  }, [bySlot, variantChoice, viewDow]);
+  }, [bySlot, resolveVariant]);
 
   const checkedMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
@@ -2917,9 +3000,11 @@ function DietPlanCard({
             // Un switch, jamais les deux affichées en même temps (retour
             // direct 2026-09-09) — état gardé par jour+créneau pour ne
             // jamais laisser le choix d'un autre jour affiché par erreur.
+            // resolveVariant (et pas un calcul local dupliqué) : l'affichage
+            // et le calcul des coches doivent TOUJOURS parler de la même
+            // variante, sinon on recoche des aliments déjà loggués.
             const variantStateKey = `${viewDow}:${slot.key}`;
-            const chosen = variantChoice[variantStateKey];
-            const activeVariant = chosen !== undefined && variantKeys.includes(chosen) ? chosen : variantKeys[0];
+            const activeVariant = resolveVariant(slot.key);
             const activeVariantIndex = variantKeys.indexOf(activeVariant);
             const items = bySlot[slot.key][activeVariant];
             const uncheckedMeals = checkable ? items.filter((m) => !checkedMap[m.id]) : [];
@@ -2967,7 +3052,7 @@ function DietPlanCard({
                       key={v}
                       onClick={(e) => {
                         e.stopPropagation();
-                        setVariantChoice((prev) => ({ ...prev, [variantStateKey]: v }));
+                        chooseVariant(variantStateKey, v);
                       }}
                       className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border transition-colors ${
                         i === activeVariantIndex
