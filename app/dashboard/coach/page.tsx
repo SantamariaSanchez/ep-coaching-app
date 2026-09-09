@@ -10,6 +10,8 @@ import { getTodayLog } from "@/utils/daily-logs";
 import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
+import { getActiveProgram } from "@/utils/programs";
+import { accessoriesForSession } from "@/lib/session-accessories";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis, nowInParis } from "@/lib/dates";
 import { getTipOfTheDay } from "@/lib/coach-daily-tips";
@@ -80,12 +82,13 @@ export default async function CoachDashboard() {
   const todayStr = todayInParis();
   const { isoDow, hhmm } = nowInParis();
   const supabase = await createServerSupabase();
-  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, unreadMsgs] = await Promise.all([
+  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, unreadMsgs] = await Promise.all([
     getTodayLog(user.id),
     getNutritionProfile(user.id),
     getTodayLogs(user.id, todayStr),
     getScheduleBlocks(user.id),
     getAllLiveEventsForCoach(user.id),
+    getActiveProgram(user.id),
     supabase
       .from("messages")
       .select("id, conversation_id, content, type, created_at")
@@ -100,9 +103,32 @@ export default async function CoachDashboard() {
     ? { logged: nutritionLogged, target: nutritionProfile?.calories_target ?? null }
     : null;
 
+  // Idée "onglet Aujourd'hui, suite" (2026-09-09) : l'agenda vient d'être
+  // reconstruit avec du montage/tournage partout entre les moments qui
+  // comptent — "prochain créneau" tel quel tombait donc presque toujours sur
+  // "Travail : montage", jamais très utile à afficher. On saute les blocs de
+  // travail (icon "travail") pour ne surfacer que le prochain repas, trajet,
+  // live, formation ou séance — l'info qu'on a vraiment envie de voir d'un
+  // coup d'oeil.
   const nextBlock = scheduleBlocks
-    .filter((b) => b.day_of_week === isoDow && b.start_time >= hhmm)
+    .filter((b) => b.day_of_week === isoDow && b.start_time >= hhmm && b.icon !== "travail")
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
+
+  // Idée "onglet Aujourd'hui, suite" : le nom de séance dans l'agenda
+  // ("Séance : Push"...) correspond exactement à un day_label du programme
+  // actif — accessoriesForSession() existait déjà pour "Programme" et
+  // "Logbook" mais nulle part sur le tableau de bord, alors que c'est
+  // justement le moment où on planifie sa journée, avant de partir.
+  const todaySeanceBlock = scheduleBlocks.find(
+    (b) => b.day_of_week === isoDow && b.icon === "salle"
+  );
+  const todaySeanceLabel = todaySeanceBlock?.label.replace(/^Séance\s*:\s*/i, "").trim() ?? null;
+  const todayProgramDay = todaySeanceLabel
+    ? todayProgram?.days.find((d) => d.day_label === todaySeanceLabel) ?? null
+    : null;
+  const todayAccessories = todayProgramDay
+    ? accessoriesForSession(todayProgramDay.exercises.map((ex) => ex.name))
+    : [];
 
   const nowMs = Date.now();
   const nextLive = liveEvents
@@ -143,6 +169,8 @@ export default async function CoachDashboard() {
         nextBlock={nextBlock ? { label: nextBlock.label, startTime: nextBlock.start_time } : null}
         nextLive={nextLive ? { title: nextLive.title, startsAt: nextLive.starts_at } : null}
         unreadPreview={unreadPreview}
+        todaySeanceLabel={todaySeanceLabel}
+        todayAccessories={todayAccessories}
       />
 
       {/* ── Stats (client-side fetch) ────────────────────────────────────────── */}

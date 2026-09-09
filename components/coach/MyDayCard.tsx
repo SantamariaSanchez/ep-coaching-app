@@ -1,8 +1,9 @@
 import Link from "next/link";
 import {
   Sparkles, Apple, Moon, CalendarClock, Video, MessageCircle,
-  LayoutTemplate, CalendarDays, ArrowRight, Mail,
+  LayoutTemplate, CalendarDays, ArrowRight, Mail, Backpack, ExternalLink,
 } from "lucide-react";
+import type { SessionAccessory } from "@/lib/session-accessories";
 
 // Section "Ma journée" — idées #1 à #8 de la passe "onglet Aujourd'hui"
 // (2026-09-09, retour direct "au moins 20 idées") : jusqu'ici, le tableau de
@@ -30,6 +31,10 @@ export interface MyDayCardProps {
   nextBlock: { label: string; startTime: string } | null;
   nextLive: { title: string; startsAt: string } | null;
   unreadPreview: UnreadPreview[];
+  /** Nom de la séance du jour, déduit de l'agenda ("Push", "Legs / Biceps"...), null si jour off. */
+  todaySeanceLabel: string | null;
+  /** Accessoires à prévoir pour la séance du jour (lib/session-accessories.ts). */
+  todayAccessories: SessionAccessory[];
 }
 
 // Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" fixe toute la
@@ -99,6 +104,8 @@ export default function MyDayCard({
   nextBlock,
   nextLive,
   unreadPreview,
+  todaySeanceLabel,
+  todayAccessories,
 }: MyDayCardProps) {
   const nutritionValue =
     nutrition && nutrition.target
@@ -126,8 +133,21 @@ export default function MyDayCard({
 
   return (
     <section className="animate-fade-up" style={{ marginBottom: 28 }}>
-      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 12, flexWrap: "wrap" }}>
         <p className="ep-section-title" style={{ margin: 0 }}>Ma journée</p>
+        {/* Jour ON/OFF — repère immédiat maintenant que l'agenda a une
+            structure fixe et prévisible chaque semaine. */}
+        <span
+          style={{
+            fontSize: 9, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase",
+            padding: "3px 9px", borderRadius: 999,
+            color: todaySeanceLabel ? "#E01E1E" : "#4ade80",
+            background: todaySeanceLabel ? "rgba(224,30,30,0.1)" : "rgba(74,222,128,0.1)",
+            border: `1px solid ${todaySeanceLabel ? "rgba(224,30,30,0.25)" : "rgba(74,222,128,0.25)"}`,
+          }}
+        >
+          {todaySeanceLabel ? `Jour ON · ${todaySeanceLabel}` : "Jour OFF"}
+        </span>
       </div>
 
       {/* Astuce du jour — idée #2, stable toute la journée (getTipOfTheDay). */}
@@ -153,6 +173,39 @@ export default function MyDayCard({
         <MiniCard icon={CalendarClock} accent="#fb923c" label="Prochain créneau" value={agendaValue} sub={agendaSub} href="/dashboard/coach/moi/agenda" delay={100} />
         <MiniCard icon={Video} accent="#c084fc" label="Prochain live" value={liveValue} sub={liveSub} href="/dashboard/coach/live" delay={150} />
       </div>
+
+      {/* "À prévoir" pour la séance du jour — même logique que
+          ProgramDaysGrid, mais directement sur le tableau de bord, au
+          moment où on planifie sa journée plutôt qu'une fois arrivé à la
+          salle. Le nom de séance dans l'agenda ("Séance : Push") correspond
+          exactement à un day_label du programme actif, voir
+          app/dashboard/coach/page.tsx. */}
+      {todaySeanceLabel && todayAccessories.length > 0 && (
+        <div
+          style={{
+            marginBottom: 14, padding: "12px 16px", borderRadius: "var(--radius-lg)",
+            background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.2)",
+          }}
+        >
+          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.09em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)", margin: "0 0 8px" }}>
+            <Backpack size={12} /> À prévoir pour {todaySeanceLabel}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+            {todayAccessories.map((a) => (
+              <a
+                key={a.accessory}
+                href={a.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+              >
+                {a.accessory}
+                <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Aperçu messages non lus — idée #9. */}
       {unreadPreview.length > 0 && (
