@@ -1,9 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Users2, CalendarClock } from "lucide-react";
+import { Calendar, Users2, CalendarClock, ArrowUp, ArrowDown, Minus } from "lucide-react";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS } from "@/lib/live-types";
+import { getWeekStart } from "@/utils/checkins";
 import LiveEventsList from "@/components/live/LiveEventsList";
 import FlashRequestsPanel from "@/components/coach/FlashRequestsPanel";
 import {
@@ -38,6 +39,26 @@ export default async function CoachLivePage() {
   const next = scheduled.sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
   const weekEnd = now + 7 * 24 * 60 * 60 * 1000;
   const thisWeekCount = scheduled.filter((e) => new Date(e.starts_at).getTime() <= weekEnd).length;
+
+  // Nouveau (même logique que Finance/Leads : un chiffre isolé sans repère
+  // ne dit rien de la direction) : lives tenus cette semaine calendaire
+  // (lundi-dimanche, passés + encore à venir) vs la semaine dernière —
+  // distinct de "Cette semaine" ci-dessus qui regarde 7 jours glissants à
+  // venir, pas la semaine calendaire déjà entamée.
+  const thisCalWeekStart = new Date(getWeekStart() + "T00:00:00").getTime();
+  const lastCalWeekStart = thisCalWeekStart - 7 * 24 * 60 * 60 * 1000;
+  const nonCancelled = events.filter((e) => e.status !== "cancelled");
+  const heldThisCalWeek = nonCancelled.filter((e) => {
+    const t = new Date(e.starts_at).getTime();
+    return t >= thisCalWeekStart && t < thisCalWeekStart + 7 * 24 * 60 * 60 * 1000;
+  }).length;
+  const heldLastCalWeek = nonCancelled.filter((e) => {
+    const t = new Date(e.starts_at).getTime();
+    return t >= lastCalWeekStart && t < thisCalWeekStart;
+  }).length;
+  const liveDelta = heldThisCalWeek - heldLastCalWeek;
+  const LiveTrendIcon = liveDelta > 0 ? ArrowUp : liveDelta < 0 ? ArrowDown : Minus;
+  const liveTrendColor = liveDelta > 0 ? "#4ade80" : liveDelta < 0 ? "#fb923c" : "rgba(245,237,237,0.35)";
 
   return (
     <div className="px-6 py-8 ep-page-wide pb-24 md:pb-8 page-transition">
@@ -79,6 +100,18 @@ export default async function CoachLivePage() {
             <Users2 size={11} /> Cette semaine
           </p>
           <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{thisWeekCount}</p>
+        </div>
+        <div>
+          <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
+            <Calendar size={11} /> Tenus cette semaine
+          </p>
+          <p style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+            {heldThisCalWeek}
+            <span style={{ display: "flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 800, color: liveTrendColor }}>
+              <LiveTrendIcon size={11} strokeWidth={2.5} />
+              {liveDelta !== 0 && `${liveDelta > 0 ? "+" : ""}${liveDelta}`}
+            </span>
+          </p>
         </div>
         {flashRequests.length > 0 && (
           <div>
