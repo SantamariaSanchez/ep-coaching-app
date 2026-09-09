@@ -1,5 +1,11 @@
 import { redirect } from "next/navigation";
-import { getUser, getProfile, getClients } from "@/utils/auth";
+import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
+import { getPointsMap } from "@/lib/gamification";
+import { isEligibleForLegendReward } from "@/lib/gamification-types";
+import { getCoachingPhaseOverview } from "@/lib/coaching-phase";
+import { getClientsLastActivity, getClientsWeeklyConsistency } from "@/lib/client-activity";
+import { getClientsIntakeCompletion } from "@/utils/client-intake";
+import { relaunchMember } from "@/app/dashboard/coach/communaute/membres/actions";
 import ClientsSection from "@/components/ui/ClientsSection";
 import DashboardStats from "@/components/coach/DashboardStats";
 import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
@@ -28,6 +34,26 @@ export default async function CoachDashboard() {
   ) {
     redirect("/onboarding/coach");
   }
+
+  // Retour direct 2026-09-09 : "onglet par onglet, masterclass" — la grille
+  // de clients ici réutilisait déjà ClientsSection mais sans lui passer les
+  // données d'enrichissement (alertes, phase de coaching, silence, fiche
+  // incomplète, constance hebdo, relance) que /dashboard/coach/clients lui
+  // passe pourtant — les cartes du tableau de bord affichaient donc les
+  // clients "à nu", sans aucun des signaux de triage visibles sur la vraie
+  // page Clients. Même chargement, dupliqué ici pour que les deux vues
+  // restent cohérentes.
+  const clientIds = clients.map((c) => c.id);
+  const [pointsMap, phaseOverview, activity, intakeComplete, weeklyConsistency] = await Promise.all([
+    getPointsMap(clientIds),
+    getCoachingPhaseOverview(clientIds),
+    getClientsLastActivity(clientIds),
+    getClientsIntakeCompletion(clientIds),
+    getClientsWeeklyConsistency(clientIds),
+  ]);
+  const ouraEligibleIds = clients
+    .filter((c) => isEligibleForLegendReward(pointsMap[c.id] ?? 0, isSubscribed(c)))
+    .map((c) => c.id);
 
   const firstName = profile?.full_name?.split(" ")[0] ?? "Coach";
   const today = new Date();
@@ -59,7 +85,15 @@ export default async function CoachDashboard() {
 
       {/* ── Clients ─────────────────────────────────────────────────────────── */}
       <section>
-        <ClientsSection clients={clients} />
+        <ClientsSection
+          clients={clients}
+          ouraEligibleIds={ouraEligibleIds}
+          phaseOverview={phaseOverview}
+          activity={activity}
+          intakeComplete={intakeComplete}
+          weeklyConsistency={weeklyConsistency}
+          relaunchMember={relaunchMember}
+        />
       </section>
     </div>
   );
