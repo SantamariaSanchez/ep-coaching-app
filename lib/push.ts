@@ -74,9 +74,22 @@ export async function sendPushToUser(
       return { ok: false, reason: "quiet hours" };
     }
 
+    // Retour direct 2026-09-09 ("la notif de 17h n'est jamais arrivée") :
+    // les logs pg_cron/pg_net confirment que ce cron a bien tourné à
+    // l'heure et que webpush.sendNotification n'a jamais levé d'erreur
+    // (FCM a donc accepté le message) — le problème n'est pas ici. Mais par
+    // défaut web-push n'envoie aucun header Urgency, et sans lui Android
+    // peut légitimement repousser la remise en Doze/économie de batterie
+    // (FCM ne traite en priorité que les messages marqués high-priority).
+    // Pour tout ce qui est daté (repas, réveil, live), une notif qui arrive
+    // en retard ou jamais est aussi inutile qu'une notif jamais envoyée :
+    // urgency "high" demande une remise immédiate, et un TTL court évite
+    // qu'un envoi resté en attente ne "rattrape" son retard bien après coup
+    // (une notif "repas 17h" livrée à 19h n'a plus de sens).
     await webpush.sendNotification(
       data.subscription as webpush.PushSubscription,
-      JSON.stringify({ title, body, url: url ?? "/", type, blockId })
+      JSON.stringify({ title, body, url: url ?? "/", type, blockId }),
+      { urgency: "high", TTL: type === "alarm" ? 1800 : 900 }
     );
 
     return { ok: true };

@@ -421,40 +421,64 @@ function durationLabel(start: string, end: string): string {
 }
 
 // Local inline PhaseTimelineBar
+//
+// Idée "onglet Moi, Road Map" (2026-09-09) : sur une roadmap qui s'étend
+// sur plusieurs mois voire années, rien n'indiquait où "aujourd'hui" tombe
+// sur la frise — impossible de savoir en un coup d'oeil dans quelle phase
+// on est sans comparer les dates à la main. Repère "aujourd'hui" ajouté en
+// plus des segments de phase déjà là.
 function PhaseTimelineBar({ phases, startDate, endDate }: {
   phases: Array<{ type: string; label: string; start_date: string; end_date: string; localId: string }>;
   startDate: string;
   endDate: string;
 }) {
+  // MASTERCLASS.md Axe E : lazy useState(Date.now()) plutôt que Date.now()
+  // direct au rendu (impur) — un repère "aujourd'hui" n'a de toute façon
+  // pas besoin d'être plus frais que le rendu initial de l'écran.
+  const [now] = useState(() => Date.now());
   if (!startDate || !endDate || phases.length === 0) return null;
   const totalDays = Math.max(
     1,
     (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000
   );
+  const todayOffset = (now - new Date(startDate).getTime()) / 86400000;
+  const todayPct = todayOffset >= 0 && todayOffset <= totalDays ? (todayOffset / totalDays) * 100 : null;
   return (
-    <div style={{ display: "flex", height: 24, borderRadius: 6, overflow: "hidden" }}>
-      {phases.map((phase) => {
-        const pStart = Math.max(
-          0,
-          (new Date(phase.start_date).getTime() - new Date(startDate).getTime()) / 86400000
-        );
-        const pEnd = Math.min(
-          totalDays,
-          (new Date(phase.end_date).getTime() - new Date(startDate).getTime()) / 86400000
-        );
-        const width = Math.max(0, ((pEnd - pStart) / totalDays) * 100);
-        const c = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
-        return (
-          <div key={phase.localId} title={`${c.icon} ${phase.label}`} style={{
-            width: `${width}%`, background: c.solid, opacity: 0.8,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 9, fontWeight: 700, color: "#fff", overflow: "hidden",
-            whiteSpace: "nowrap", borderRight: "1px solid rgba(0,0,0,0.2)",
-          }}>
-            {width > 8 ? `${c.icon}` : ""}
-          </div>
-        );
-      })}
+    <div style={{ position: "relative" }}>
+      <div style={{ display: "flex", height: 24, borderRadius: 6, overflow: "hidden" }}>
+        {phases.map((phase) => {
+          const pStart = Math.max(
+            0,
+            (new Date(phase.start_date).getTime() - new Date(startDate).getTime()) / 86400000
+          );
+          const pEnd = Math.min(
+            totalDays,
+            (new Date(phase.end_date).getTime() - new Date(startDate).getTime()) / 86400000
+          );
+          const width = Math.max(0, ((pEnd - pStart) / totalDays) * 100);
+          const c = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
+          return (
+            <div key={phase.localId} title={`${c.icon} ${phase.label}`} style={{
+              width: `${width}%`, background: c.solid, opacity: 0.8,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 9, fontWeight: 700, color: "#fff", overflow: "hidden",
+              whiteSpace: "nowrap", borderRight: "1px solid rgba(0,0,0,0.2)",
+            }}>
+              {width > 8 ? `${c.icon}` : ""}
+            </div>
+          );
+        })}
+      </div>
+      {todayPct != null && (
+        <div
+          title="Aujourd'hui"
+          style={{
+            position: "absolute", top: -3, bottom: -3, left: `${todayPct}%`,
+            width: 2, background: "#fff", boxShadow: "0 0 4px rgba(255,255,255,0.8)",
+            pointerEvents: "none",
+          }}
+        />
+      )}
     </div>
   );
 }
