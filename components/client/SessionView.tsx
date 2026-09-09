@@ -1797,6 +1797,20 @@ export default function SessionView({
     [sessionId]
   );
 
+  // Bug réel confirmé sur son compte (88 sets tapés, 0 PR jamais détecté
+  // malgré des charges lourdes, ex. 120kg au soulevé de terre) : isPR
+  // exigeait un prThreshold déjà existant (initData.prMap, dérivé de
+  // personal_records) — sur un exercice jamais fait avant, ce seuil est
+  // toujours null, donc AUCUN poids ne peut jamais devenir un premier PR.
+  // Bloque tout le monde en permanence sur tout exercice tout juste ajouté
+  // à un programme, pas seulement lui. sessionBestWeightRef complète le
+  // seuil serveur (figé au chargement de la page, jamais mis à jour par les
+  // sets déjà validés PENDANT la séance) : premier poids validé sur un
+  // exercice sans historique = PR (c'est littéralement son seul record),
+  // et relève la barre pour les sets suivants de la même séance — pas de
+  // faux PR répété à chaque set fait à poids identique.
+  const sessionBestWeightRef = useRef<Record<string, number>>({});
+
   // Envois en vol, par set : un double-tap sur "Valider le set" partait en
   // deux requetes a ~1s d'ecart et enregistrait deux fois la meme serie
   // (doublons reels constates en base, comptes double dans le volume et le
@@ -1826,9 +1840,20 @@ export default function SessionView({
         initData?.prevWeights[ex.name.toLowerCase()] ?? null;
 
       const weight = parseFloat(set.weightKg) || null;
-      const prThreshold =
-        initData?.prMap[ex.name.toLowerCase()] ?? null;
-      const isPR = weight != null && prThreshold != null && weight > prThreshold;
+      const exKey = ex.name.toLowerCase();
+      const serverThreshold = initData?.prMap[exKey] ?? null;
+      // Le seuil réel est le plus haut des deux : l'historique déjà en base
+      // (serverThreshold) ET ce qui a déjà été battu PENDANT cette séance
+      // (serverThreshold ne bouge jamais après le chargement initial).
+      const sessionBest = sessionBestWeightRef.current[exKey] ?? null;
+      const effectiveThreshold =
+        serverThreshold != null && sessionBest != null
+          ? Math.max(serverThreshold, sessionBest)
+          : serverThreshold ?? sessionBest;
+      const isPR = weight != null && (effectiveThreshold == null || weight > effectiveThreshold);
+      if (isPR && weight != null) {
+        sessionBestWeightRef.current[exKey] = weight;
+      }
 
       // Retrouve le set par son localId plutot que par son index : entre le
       // depart de la requete et sa reponse, l'utilisateur a pu retirer une
