@@ -97,25 +97,33 @@ export async function logPersonalMeasurement(input: {
     if (!guard.ok) return { error: guard.error };
     const supabase = await createServerSupabase();
 
-    const { error } = await supabase.from("measurements").insert({
-      client_id: guard.userId,
-      measured_at: input.measuredAt,
-      weight: input.weight,
-      waist: input.waist,
-      hips: input.hips,
-      chest: input.chest,
-      shoulders: input.shoulders,
-      arm_relaxed: input.armRelaxed,
-      arm_flexed: input.armFlexed,
-      forearm: input.forearm,
-      thigh: input.thigh,
-      calf: input.calf,
-      abdomen: input.abdomen,
-      neck: input.neck,
-      notes: input.notes?.trim() || null,
-    });
+    // Upsert, pas insert brut (migration 20260909f, une seule prise par
+    // client et par jour) : un double-tap sur "Enregistrer", ou re-sauvegarder
+    // le même jour après correction d'une valeur, créait une ligne en plus au
+    // lieu de remplacer l'existante — faussait silencieusement l'historique
+    // et le comparateur avant/après (deux entrées pour un même jour).
+    const { error } = await supabase.from("measurements").upsert(
+      {
+        client_id: guard.userId,
+        measured_at: input.measuredAt,
+        weight: input.weight,
+        waist: input.waist,
+        hips: input.hips,
+        chest: input.chest,
+        shoulders: input.shoulders,
+        arm_relaxed: input.armRelaxed,
+        arm_flexed: input.armFlexed,
+        forearm: input.forearm,
+        thigh: input.thigh,
+        calf: input.calf,
+        abdomen: input.abdomen,
+        neck: input.neck,
+        notes: input.notes?.trim() || null,
+      },
+      { onConflict: "client_id,measured_at" }
+    );
     if (error) {
-      console.error("logPersonalMeasurement insert error:", error);
+      console.error("logPersonalMeasurement upsert error:", error);
       return { error: "Échec de l'enregistrement." };
     }
 
