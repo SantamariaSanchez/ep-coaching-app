@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import {
   Plus, Trash2, X, Bell, Copy, MoreHorizontal, ChevronLeft, ChevronRight,
-  AlertTriangle, Timer, Check,
+  AlertTriangle, Timer, Check, AlarmClock,
 } from "lucide-react";
 import type { ScheduleBlock } from "@/utils/agenda";
 import { AGENDA_PRESETS, AGENDA_ICON_MAP, type AgendaPreset } from "@/lib/agenda-presets";
@@ -437,6 +437,22 @@ export default function WeeklyAgenda({
     return acc;
   }, {});
 
+  // Retour direct 2026-09-09 : "le réveil c'est vraiment pas un event à
+  // mettre [dans le planning]". Le bloc "Reveil" garde une existence en base
+  // (le cron d'alarme réel — son, escalade jusqu'à acquittement, voir
+  // app/api/cron/schedule-block-notify — s'appuie dessus et fonctionne déjà
+  // très bien, pas de raison de le reconstruire), mais n'apparaît plus dans
+  // la grille horaire comme un bloc parmi d'autres : un badge ⏰ compact au
+  // dessus de chaque jour, pas une ligne de plus qui peut sembler chevaucher
+  // le premier repas.
+  const isReveilLabel = (label: string) => /r[ée]veil/i.test(label);
+  function reveilBlockFor(day: number): ScheduleBlock | null {
+    return relevantBlocks.find((x) => x.day_of_week === day && isReveilLabel(x.label)) ?? null;
+  }
+  function reveilTimeFor(day: number): string | null {
+    return reveilBlockFor(day)?.start_time.slice(0, 5) ?? null;
+  }
+
   function openAddAt(day: number, hour: number) {
     if (!editable) return;
     setForm(emptyForm(day, hour));
@@ -609,7 +625,7 @@ export default function WeeklyAgenda({
   // seul sait sur quel périmètre juger une heure "vide".
   function renderDayContent(day: number, rowHeight: number, activeHours: Set<number>) {
     const dayBlocks = relevantBlocks
-      .filter((b) => b.day_of_week === day)
+      .filter((b) => b.day_of_week === day && !isReveilLabel(b.label))
       .sort((a, b) => a.start_time.localeCompare(b.start_time));
     const offsets = buildHourOffsets(activeHours, rowHeight);
     const segments = buildHourSegments(activeHours);
@@ -923,12 +939,26 @@ export default function WeeklyAgenda({
               <div style={{ height: 24 }} />
               {renderHourLabels(ROW_HEIGHT_WEEK, weekActiveHours)}
             </div>
-            {ALL_DAYS.map((day) => (
+            {ALL_DAYS.map((day) => {
+              const reveilTime = reveilTimeFor(day);
+              return (
               <div key={day} style={{ flex: 1, minWidth: 100 }}>
                 <div className="flex items-center justify-center gap-1" style={{ height: 24 }}>
                   <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
                     {DAY_LABELS_SHORT[day]}
                   </p>
+                  {reveilTime && (
+                    <button
+                      type="button"
+                      onClick={() => editable && openEdit(reveilBlockFor(day)!)}
+                      title={editable ? `Réveil à ${reveilTime} — cliquer pour changer` : `Réveil à ${reveilTime}`}
+                      className="flex items-center gap-0.5 text-[8px] font-bold text-[#a78bfa]/70"
+                      style={{ cursor: editable ? "pointer" : "default" }}
+                    >
+                      <AlarmClock size={8} />
+                      {reveilTime}
+                    </button>
+                  )}
                   {editable && (
                     <>
                       <button onClick={() => openAddAt(day, 9)} className="text-[#F5EDED]/20 hover:text-[#E01E1E]" title={`Ajouter le ${DAY_LABELS[day]}`} aria-label={`Ajouter le ${DAY_LABELS[day]}`}>
@@ -942,7 +972,8 @@ export default function WeeklyAgenda({
                 </div>
                 {renderDayContent(day, ROW_HEIGHT_WEEK, weekActiveHours)}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : (
@@ -952,9 +983,21 @@ export default function WeeklyAgenda({
             <button onClick={() => shiftDay(-1)} className="text-[#F5EDED]/25 hover:text-white p-1">
               <ChevronLeft size={16} />
             </button>
-            <p className="text-xs font-black uppercase tracking-widest text-white">
+            <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
               {DAY_LABELS[selectedDay]}
               {selectedDay === todayDow && <span style={{ color: "#E01E1E" }}> · Aujourd&apos;hui</span>}
+              {reveilBlockFor(selectedDay) && (
+                <button
+                  type="button"
+                  onClick={() => editable && openEdit(reveilBlockFor(selectedDay)!)}
+                  title={editable ? "Heure de réveil — cliquer pour la changer (alarme réelle, pas un simple rappel)" : "Heure de réveil (alarme réelle, pas un simple rappel)"}
+                  className="flex items-center gap-1 text-[10px] font-bold normal-case tracking-normal text-[#a78bfa] bg-[#a78bfa]/10 border border-[#a78bfa]/25 rounded-full px-2 py-0.5"
+                  style={{ cursor: editable ? "pointer" : "default" }}
+                >
+                  <AlarmClock size={10} />
+                  {reveilTimeFor(selectedDay)}
+                </button>
+              )}
             </p>
             <div className="flex items-center gap-2">
               {editable && (
