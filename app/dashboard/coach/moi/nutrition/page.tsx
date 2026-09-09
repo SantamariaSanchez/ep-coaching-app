@@ -34,7 +34,7 @@ export default async function CoachMonNutritionPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/coach");
 
-  const { data: profile } = await supabase.from("profiles").select("role, weight_start").eq("id", user.id).single();
+  const { data: profile } = await supabase.from("profiles").select("role, weight_start, season_mode").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
   const today = todayInParis();
@@ -74,6 +74,13 @@ export default async function CoachMonNutritionPage() {
           initialFoods: foods,
           dietMode: activePlan?.mode ?? "flexible",
           activePlan,
+          // Repere hors-saison/prep manquant ici (present cote client, voir
+          // app/dashboard/client/nutrition/page.tsx) : le coach peut deja
+          // regler son season_mode depuis Moi > Photos (formulaire "Reglages
+          // competition", voir CoachClientPhotosView) mais la valeur n'etait
+          // jamais transmise a ClientNutritionView sur SA PROPRE page
+          // Nutrition, donc le badge ne s'affichait jamais ici.
+          seasonMode: profile?.season_mode,
           // Sans ça, le plan que le coach construit pour lui-même (page Moi)
           // affichait "Plan de ton coach" au lieu de "Mon plan" — le prop
           // n'était tout simplement jamais passé ici, il retombait sur son
