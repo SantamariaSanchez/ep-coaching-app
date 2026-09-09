@@ -1,22 +1,21 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser, getProfile, getClients } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { FUNNEL_STAGES } from "@/lib/coach-business";
 import type { RoadmapHorizon } from "@/lib/coach-roadmap";
-import BusinessChecklist from "@/components/coach/BusinessChecklist";
-import FunnelIdeaCard from "@/components/coach/FunnelIdeaCard";
-import RoadmapPlanner, { type RoadmapMilestone } from "@/components/coach/RoadmapPlanner";
-import { Rocket, Sparkles, GraduationCap, ArrowRight, Compass } from "lucide-react";
+import { getBusinessGoals, resolveGoalValue, currentMonthRevenue } from "@/lib/coach-business-goals";
+import { getBusinessCanvas } from "@/lib/coach-business-canvas";
+import { getNetworkContacts } from "@/lib/coach-network";
+import BusinessHub from "@/components/coach/BusinessHub";
+import type { RoadmapMilestone } from "@/components/coach/RoadmapPlanner";
+import { Rocket } from "lucide-react";
 
 // Axe 6 (VISION.md) — demande directe 2026-08-19 : "un autre espace pour
 // tout ce qui est entreprenariat donc la construction de sa propre
-// entreprise d'un coach, pas juste gérer leurs clients (déjà hyper
-// poussé) mais aussi tout ce qui dev son business de coaching". Le Studio
-// créatif (/dashboard/coach/studio) est déjà scopé par coach — cette page
-// fournit le cadre qui manquait par-dessus (funnel TOF/MOF/BOF) et la
-// checklist de construction de marque personnelle, jamais fournis
-// ailleurs.
+// entreprise d'un coach". Passe "masterclass" 2026-09-09 : "pas juste un
+// petit onglet avec des cases à cocher mais une incroyable architecture de
+// choses utiles... plein plein de fonctionnalités optimisées". 7 sections
+// réelles (tableau de bord, objectifs, roadmap, modèle économique, funnel,
+// réseau, checklist) plutôt qu'une page qui défile, voir BusinessHub.
 export default async function CoachBusinessPage() {
   const user = await getUser();
   if (!user) redirect("/");
@@ -25,7 +24,16 @@ export default async function CoachBusinessPage() {
   if (profile?.role === "client") redirect("/dashboard/client");
 
   const supabase = await createServerSupabase();
-  const [{ data: checklistRows }, { data: visionRows }, { data: milestoneRows }] = await Promise.all([
+  const [
+    { data: checklistRows },
+    { data: visionRows },
+    { data: milestoneRows },
+    goals,
+    canvas,
+    networkContacts,
+    clients,
+    revenueThisMonth,
+  ] = await Promise.all([
     supabase.from("coach_business_checklist").select("item_key").eq("coach_id", user.id).eq("done", true),
     supabase.from("coach_business_roadmap").select("horizon, vision").eq("coach_id", user.id),
     supabase
@@ -33,7 +41,13 @@ export default async function CoachBusinessPage() {
       .select("id, horizon, label, done")
       .eq("coach_id", user.id)
       .order("position"),
+    getBusinessGoals(user.id),
+    getBusinessCanvas(user.id),
+    getNetworkContacts(user.id),
+    getClients(user.id),
+    currentMonthRevenue(user.id),
   ]);
+
   const initialDone = (checklistRows ?? []).map((r) => r.item_key as string);
   const initialVisions: Partial<Record<RoadmapHorizon, string>> = {};
   for (const row of visionRows ?? []) {
@@ -41,9 +55,18 @@ export default async function CoachBusinessPage() {
   }
   const initialMilestones = (milestoneRows ?? []) as RoadmapMilestone[];
 
+  const activeClientsCount = clients.filter((c) => c.subscription_status === "active").length;
+  const goalsWithProgress = goals.map((goal) => ({
+    goal,
+    currentValue: resolveGoalValue(goal, { activeClientsCount, revenueThisMonth }),
+  }));
+
+  const monthPrefix = new Date().toISOString().slice(0, 7);
+  const newClientsThisMonth = clients.filter((c) => c.start_date?.startsWith(monthPrefix)).length;
+
   return (
-    <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
-      <div className="mb-2">
+    <div className="px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
+      <div className="mb-6">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
           Mon espace
         </p>
@@ -53,97 +76,21 @@ export default async function CoachBusinessPage() {
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
           Suivre tes clients, c&apos;est déjà couvert partout ailleurs dans l&apos;appli. Ici, c&apos;est
-          ton propre business de coach : contenu, marque personnelle, stratégie. Un système à suivre,
-          pas juste des idées en vrac.
+          ton propre business de coach : où tu en es, où tu vas, et un système pour y arriver.
         </p>
       </div>
 
-      {/* Roadmap 1/3/10/20 ans (2026-09-08) : la vision long terme, avant le
-          tactique (funnel, checklist) plus bas — sans direction, un système
-          de contenu n'est qu'une machine à produire sans savoir où elle va. */}
-      <div className="mt-6 mb-10">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Vision long terme
-        </p>
-        <h2 className="text-xl font-black uppercase tracking-tight mb-1 flex items-center gap-2.5">
-          <Compass size={18} className="text-[#E01E1E]" />
-          Ta roadmap sur 1, 3, 10 et 20 ans
-        </h2>
-        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
-          Un horizon différent appelle une question différente : dans 1 an c&apos;est l&apos;exécution,
-          dans 20 c&apos;est ce qui reste si tu t&apos;arrêtes. Écris, coche des jalons, révise
-          régulièrement.
-        </p>
-        <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
-      </div>
-
-      {/* Liens rapides */}
-      <div className="grid sm:grid-cols-2 gap-3 mt-6 mb-10">
-        <Link
-          href="/dashboard/coach/studio"
-          className="ep-card group flex items-center gap-3"
-          style={{ padding: "16px 18px", textDecoration: "none" }}
-        >
-          <div className="w-9 h-9 rounded-xl bg-[#E01E1E]/12 flex items-center justify-center flex-shrink-0">
-            <Sparkles size={16} className="text-[#E01E1E]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[12.5px] font-bold text-white">Studio créatif</p>
-            <p className="text-[10.5px] text-[#F5EDED]/35">Idées, scripts, inspirations : ton espace de création</p>
-          </div>
-          <ArrowRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors flex-shrink-0" />
-        </Link>
-        <Link
-          href="/dashboard/coach/moi/formations"
-          className="ep-card group flex items-center gap-3"
-          style={{ padding: "16px 18px", textDecoration: "none" }}
-        >
-          <div className="w-9 h-9 rounded-xl bg-[#E01E1E]/12 flex items-center justify-center flex-shrink-0">
-            <GraduationCap size={16} className="text-[#E01E1E]" />
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[12.5px] font-bold text-white">Mes formations</p>
-            <p className="text-[10.5px] text-[#F5EDED]/35">Dont ENTREPRENARIAL SECRET, écrite pour toi</p>
-          </div>
-          <ArrowRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors flex-shrink-0" />
-        </Link>
-      </div>
-
-      {/* Funnel TOF/MOF/BOF */}
-      <div className="mb-10">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Système de contenu
-        </p>
-        <h2 className="text-xl font-black uppercase tracking-tight mb-4">Ton funnel de contenu</h2>
-        <div className="space-y-3">
-          {FUNNEL_STAGES.map((stage) => (
-            <div key={stage.key} className="ep-card" style={{ padding: "18px 20px" }}>
-              <p className="text-sm font-black text-white mb-1">{stage.label}</p>
-              <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-3">{stage.goal}</p>
-              <div className="grid sm:grid-cols-3 gap-2">
-                {stage.formats.map((f, i) => (
-                  <FunnelIdeaCard
-                    key={i}
-                    stage={stage.key}
-                    platform={f.platform}
-                    format={f.format}
-                    idea={f.idea}
-                  />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Checklist personal branding */}
-      <div>
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Marque personnelle
-        </p>
-        <h2 className="text-xl font-black uppercase tracking-tight mb-4">Construis ta base</h2>
-        <BusinessChecklist initialDone={initialDone} />
-      </div>
+      <BusinessHub
+        activeClientsCount={activeClientsCount}
+        newClientsThisMonth={newClientsThisMonth}
+        revenueThisMonth={revenueThisMonth}
+        goalsWithProgress={goalsWithProgress}
+        initialVisions={initialVisions}
+        initialMilestones={initialMilestones}
+        canvas={canvas}
+        networkContacts={networkContacts}
+        checklistDone={initialDone}
+      />
     </div>
   );
 }
