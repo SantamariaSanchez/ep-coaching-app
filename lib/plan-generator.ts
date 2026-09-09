@@ -448,16 +448,24 @@ export function generateProgramDraft(
 // utilisé par le bouton "remplacer" de l'éditeur pour itérer exercice par
 // exercice sans tout régénérer. `excludeNames` évite de retomber sur un
 // exercice déjà utilisé ailleurs dans la même séance.
+//
+// Bug trouvé en creusant ce fichier : contrairement à checkExerciseConflicts
+// (qui inclut intake.injuries comme source de conflit), cette fonction
+// n'excluait que le matériel détesté et les exercices déjà signalés
+// problématiques — jamais les BLESSURES déclarées. Remplacer un exercice
+// pouvait donc suggérer un mouvement qui aggrave une blessure connue, alors
+// que la donnée existe déjà et sert déjà à avertir sur le choix initial.
 export function findSwapCandidate(
   current: { muscle_group: string; category: "compose" | "isolation" | null },
   library: LibraryExercise[],
   dislikedEquipment: string | null,
   exercisesProblematic: string | null,
+  injuries: string | null,
   trainingAccess: ClientIntake["training_access"],
   excludeNames: string[]
 ): LibraryExercise | null {
   if (!current.category) return null;
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
+  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
   const allowed = allowedEquipmentTypes(trainingAccess);
   const candidates = filteredCandidates(library, current.muscle_group, current.category, excludeText, allowed).filter(
     (ex) => !excludeNames.includes(ex.name)

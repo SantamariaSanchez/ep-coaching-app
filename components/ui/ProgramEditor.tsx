@@ -932,6 +932,7 @@ export default function ProgramEditor({
       library,
       intake?.disliked_equipment ?? null,
       intake?.exercises_problematic ?? null,
+      intake?.injuries ?? null,
       intake?.training_access ?? null,
       namesInDay
     );
