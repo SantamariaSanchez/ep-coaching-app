@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { todayInParis } from "@/lib/dates";
 
 // Import auto Stripe dans la compta perso du coach (Axe 4, VISION.md).
 // Décision directe du 2026-08-20 : cadrage du "reste à faire" documenté le
@@ -79,7 +80,8 @@ async function insertCoachRevenueEntry(params: {
       category: "Abonnements clients",
       label: params.label,
       amount: Math.round(params.amountCents) / 100,
-      entry_date: new Date().toISOString().split("T")[0],
+      // MASTERCLASS.md Axe L : todayInParis(), pas new Date().toISOString().
+      entry_date: todayInParis(),
       note: "Importé automatiquement depuis Stripe.",
       source: "stripe",
       stripe_event_id: params.stripeEventId,

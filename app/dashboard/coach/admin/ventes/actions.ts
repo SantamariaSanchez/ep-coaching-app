@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { todayInParis } from "@/lib/dates";
 
 const PATH = "/dashboard/coach/admin/ventes";
 
@@ -24,7 +25,8 @@ export async function addSalesCall(input: {
   const { error } = await supabase.from("sales_calls").insert({
     coach_id: guard.userId,
     lead_name: leadName,
-    call_date: input.callDate || new Date().toISOString().slice(0, 10),
+    // MASTERCLASS.md Axe L : todayInParis(), pas new Date().toISOString().
+    call_date: input.callDate || todayInParis(),
   });
   if (error) return { error: "Erreur lors de l'enregistrement." };
 

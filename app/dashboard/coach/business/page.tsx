@@ -5,6 +5,7 @@ import type { RoadmapHorizon } from "@/lib/coach-roadmap";
 import { getBusinessGoals, resolveGoalValue, currentMonthRevenue } from "@/lib/coach-business-goals";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getNetworkContacts } from "@/lib/coach-network";
+import { todayInParis } from "@/lib/dates";
 import BusinessHub from "@/components/coach/BusinessHub";
 import type { RoadmapMilestone } from "@/components/coach/RoadmapPlanner";
 import { Rocket } from "lucide-react";
@@ -61,7 +62,12 @@ export default async function CoachBusinessPage() {
     currentValue: resolveGoalValue(goal, { activeClientsCount, revenueThisMonth }),
   }));
 
-  const monthPrefix = new Date().toISOString().slice(0, 7);
+  // MASTERCLASS.md Axe L : "aujourd'hui" côté serveur doit passer par
+  // todayInParis(), pas new Date().toISOString() (heure UTC) — sinon, dans
+  // la fenêtre entre minuit heure de Paris et minuit UTC (1h à 2h selon la
+  // saison), un client dont le start_date est déjà dans le nouveau mois
+  // (lui aussi calculé en heure de Paris) n'était pas compté dans "ce mois-ci".
+  const monthPrefix = todayInParis().slice(0, 7);
   const newClientsThisMonth = clients.filter((c) => c.start_date?.startsWith(monthPrefix)).length;
 
   return (

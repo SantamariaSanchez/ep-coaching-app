@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { MAX_RECIPIENTS_PER_SEND, type MailingAudience } from "@/lib/mailing-audience";
+import { todayInParis } from "@/lib/dates";
 
 // Axe 2 (VISION.md) : mailing par coach — décision retenue avec
 // l'utilisateur (2026-08-14) = segmentation par tag/liste sous le compte
@@ -252,7 +253,7 @@ export async function sendCoachCampaign(
     method: "POST",
     headers: brevoHeaders(),
     body: JSON.stringify({
-      name: `${coachName} : ${new Date().toISOString().slice(0, 10)} : ${subject.slice(0, 40)}`,
+      name: `${coachName} : ${todayInParis()} : ${subject.slice(0, 40)}`,
       subject,
       sender: SENDER,
       type: "classic",

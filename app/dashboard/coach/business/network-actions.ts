@@ -4,6 +4,7 @@ import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { cleanText, LIMITS } from "@/lib/sanitize";
+import { todayInParis } from "@/lib/dates";
 import type { ContactCategory, ContactStatus } from "@/lib/coach-network";
 
 const VALID_CATEGORIES: ContactCategory[] = ["partenaire", "affilie", "influenceur", "fournisseur", "autre"];
@@ -46,7 +47,10 @@ export async function updateContactStatus(id: string, status: ContactStatus): Pr
   const admin = createAdminClient();
   const { error } = await admin
     .from("coach_network_contacts")
-    .update({ status, last_contact_date: new Date().toISOString().split("T")[0] })
+    // MASTERCLASS.md Axe L : todayInParis(), pas new Date().toISOString()
+    // (UTC) — sinon, entre minuit heure de Paris et minuit UTC, la date
+    // enregistrée reste celle de la veille.
+    .update({ status, last_contact_date: todayInParis() })
     .eq("id", id)
     .eq("coach_id", guard.userId);
   if (error) return { error: "Erreur lors de la mise à jour." };

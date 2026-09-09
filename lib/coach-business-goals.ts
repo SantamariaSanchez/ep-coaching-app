@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getClients } from "@/utils/auth";
 import { getCoachFinanceEntries } from "@/lib/coach-finance";
+import { todayInParis } from "@/lib/dates";
 
 // Objectifs business (Axe 6, passe "masterclass" 2026-09-09) : deux
 // familles de métrique se calculent EN DIRECT depuis des données déjà
@@ -54,7 +55,8 @@ export async function countActiveClients(coachId: string): Promise<number> {
 /** Revenu net (revenus - dépenses) du mois calendaire en cours, depuis le journal déclaratif du coach. */
 export async function currentMonthRevenue(coachId: string): Promise<number> {
   const entries = await getCoachFinanceEntries(coachId);
-  const monthPrefix = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+  // MASTERCLASS.md Axe L : todayInParis(), pas new Date().toISOString() (UTC).
+  const monthPrefix = todayInParis().slice(0, 7); // "YYYY-MM"
   return entries
     .filter((e) => e.entry_date.startsWith(monthPrefix))
     .reduce((sum, e) => sum + (e.kind === "revenu" ? e.amount : -e.amount), 0);

@@ -18,7 +18,6 @@ export const COACH_DAILY_TIPS: string[] = [
   "Le sommeil est le levier le plus sous-exploité en coaching. Un client mal reposé n'a pas un problème d'entraînement, il a un problème de récupération.",
   "Un compliment précis ('ta technique sur le squat s'est nettement améliorée') marque plus qu'un compliment vague ('bon travail').",
   "La phase de calibrage est la plus fragile : c'est là que se joue la moitié de la rétention à 3 mois.",
-  "Filmer un exercice avant de le valider, pas après : la correction arrive avant l'erreur suivante, pas après.",
   "Un client qui pose beaucoup de questions n'est pas un client difficile, c'est un client engagé. Traite chaque question comme un signal positif.",
   "Le meilleur moment pour demander un témoignage : juste après une victoire concrète, jamais à froid.",
   "Une fiche client incomplète est une fiche client à risque : les débuts flous produisent des attentes floues.",
