@@ -12,7 +12,8 @@ import {
   getAllDietPlansWithMeals,
 } from "@/utils/nutrition";
 import CoachMoiNutritionTabs from "@/components/ui/CoachMoiNutritionTabs";
-import { addFoodLog, removeFoodLog, createCustomFood, logMealItems } from "@/app/dashboard/client/nutrition/actions";
+import { addFoodLog, removeFoodLog, createCustomFood, logMealItems, createSavedMeal, deleteSavedMeal, importPlanMealsAsSavedMeals } from "@/app/dashboard/client/nutrition/actions";
+import { getSavedMeals } from "@/utils/saved-meals";
 import {
   saveNutritionProfile,
   suggestSupplement,
@@ -38,7 +39,7 @@ export default async function CoachMonNutritionPage() {
 
   const today = todayInParis();
 
-  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, supplements] = await Promise.all([
+  const [nutritionProfile, todayLogs, historyLogs, foods, activePlan, allPlans, supplements, savedMeals] = await Promise.all([
     getNutritionProfile(user.id),
     getTodayLogs(user.id, today),
     getLast30DaysLogs(user.id),
@@ -46,6 +47,13 @@ export default async function CoachMonNutritionPage() {
     getActiveDietPlan(user.id),
     getAllDietPlansWithMeals(user.id),
     getClientSupplements(user.id),
+    // Manquait entièrement ici (retour direct 2026-09-09 : "dans repas et
+    // recette y'a rien") : createSavedMeal/deleteSavedMeal n'étaient même
+    // pas importées sur cette page, donc le bouton "Enregistrer ce repas"
+    // de DietPlanCard ne s'affichait jamais pour le coach sur sa propre
+    // nutrition (onSaveAsMeal exige createSavedMeal). Voir aussi le
+    // correctif requireClient() → requireAuth() dans les actions elles-mêmes.
+    getSavedMeals(user.id),
   ]);
 
   return (
@@ -81,6 +89,10 @@ export default async function CoachMonNutritionPage() {
           // app/dashboard/client/nutrition/page.tsx l'avait, donc un client
           // voyait le bouton mais pas le fondateur sur "Ma nutrition".
           logMealItems,
+          savedMeals,
+          createSavedMeal,
+          deleteSavedMeal,
+          importPlanMealsAsSavedMeals,
           // Changer le mode fixe/flexible directement depuis le suivi du
           // jour (2026-08-17), pas seulement depuis l'onglet "Gérer" plus
           // bas. Réutilise updateDietPlanMode déjà importé pour manageProps,

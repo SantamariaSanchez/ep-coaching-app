@@ -487,12 +487,19 @@ export async function updateOwnDietPlanMode(planId: string, mode: DietMode): Pro
 
 // ── Repas enregistrés — logger un repas complet en un tap au lieu de
 // rechercher/ajouter chaque aliment un par un ────────────────────────────
+// requireAuth(), pas requireClient() : même correctif que addFoodLog/
+// logMealItems plus haut (écrit uniquement sur guard.userId, jamais un
+// clientId externe). Un coach loggue aussi SES PROPRES repas depuis "Ma
+// nutrition" (app/dashboard/coach/moi/nutrition) — avec requireClient(),
+// ces deux actions y étaient invisibles/impossibles, ce qui les laissait
+// jamais câblées sur cette page (retour direct 2026-09-09 : "dans repas et
+// recette y'a rien alors que ça devrait avoir chaque repas de ma diète").
 
 export async function createSavedMeal(
   name: string,
   items: { foodId: string; quantityG: number }[]
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
   if (!name.trim() || items.length === 0) return { error: "Nom et au moins un aliment requis." };
 
@@ -511,6 +518,7 @@ export async function createSavedMeal(
     if (itemsError) return { error: "Erreur lors de la sauvegarde des aliments du repas." };
 
     revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
     return { id: meal.id };
   } catch (e) {
     console.error("createSavedMeal error:", e);
@@ -518,14 +526,108 @@ export async function createSavedMeal(
   }
 }
 
+const MEAL_SLOT_LABELS: Record<string, string> = {
+  breakfast: "Petit-déjeuner",
+  morning: "Collation matin",
+  lunch: "Déjeuner",
+  afternoon: "Collation après-midi",
+  preworkout: "Pré-entraînement",
+  postworkout: "Post-entraînement",
+  dinner: "Dîner",
+};
+
+const WEEKDAY_LABELS: Record<string, string> = {
+  lun: "lundi", mar: "mardi", mer: "mercredi", jeu: "jeudi",
+  ven: "vendredi", sam: "samedi", dim: "dimanche", high: "jour high",
+};
+
+// Retour direct 2026-09-09 : "dans repas et recette y'a rien alors que
+// dans repas y'a censé avoir chaque repas de ma diète avec juste le nom du
+// repas, sans avoir besoin de tout relogger à chaque fois". Plutôt que de
+// forcer à enregistrer chaque repas à la main un par un (le seul chemin
+// existant, via "Enregistrer ce repas" une fois le repas déjà loggué),
+// importe d'un coup tous les repas d'un plan fixe/fixe-flexible comme
+// autant de "repas enregistrés" réutilisables en un tap. Un groupe
+// (jour de semaine, créneau, variante) = un repas complet — la variante
+// (variant_group, "pain OU flocons d'avoine" pour le même créneau) donne
+// naturellement 2 repas enregistrés distincts plutôt que d'exiger une UI
+// de sélection dédiée dans la grille du plan.
+export async function importPlanMealsAsSavedMeals(planId: string): Promise<{ error?: string; imported?: number }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+
+  try {
+    const supabase = await createServerSupabase();
+
+    // Le plan doit appartenir à l'appelant — jamais importer les repas d'un
+    // plan tiers via un id deviné/copié.
+    const { data: plan } = await supabase
+      .from("diet_plans")
+      .select("id, client_id")
+      .eq("id", planId)
+      .maybeSingle();
+    if (!plan || plan.client_id !== guard.userId) return { error: "Plan introuvable." };
+
+    const { data: meals } = await supabase
+      .from("diet_plan_meals")
+      .select("meal_slot, food_id, quantity_g, day_of_week, variant_group")
+      .eq("plan_id", planId);
+    if (!meals || meals.length === 0) return { error: "Ce plan n'a aucun repas à importer." };
+
+    type MealRow = { meal_slot: string; food_id: string; quantity_g: number; day_of_week: string | null; variant_group: number | null };
+    const groups = new Map<string, MealRow[]>();
+    for (const m of meals as MealRow[]) {
+      const key = `${m.day_of_week ?? "_"}|${m.meal_slot}|${m.variant_group ?? 1}`;
+      const group = groups.get(key);
+      if (group) group.push(m);
+      else groups.set(key, [m]);
+    }
+
+    // Jamais re-créer un repas déjà importé (même nom) si le plan a déjà
+    // été importé une première fois puis juste complété/modifié depuis.
+    const { data: existing } = await supabase.from("saved_meals").select("name").eq("owner_id", guard.userId);
+    const existingNames = new Set((existing ?? []).map((e) => e.name as string));
+
+    let imported = 0;
+    for (const [key, items] of groups) {
+      const [dayKey, slotKey, variantKey] = key.split("|");
+      const dayLabel = dayKey !== "_" ? WEEKDAY_LABELS[dayKey] ?? dayKey : null;
+      const slotLabel = MEAL_SLOT_LABELS[slotKey] ?? slotKey;
+      const variantSuffix = Number(variantKey) > 1 ? ` (option ${variantKey})` : "";
+      const name = ([slotLabel, dayLabel].filter(Boolean).join(" · ") + variantSuffix).slice(0, 200);
+      if (existingNames.has(name)) continue;
+
+      const { data: savedMeal, error } = await supabase
+        .from("saved_meals")
+        .insert({ owner_id: guard.userId, name })
+        .select("id")
+        .single();
+      if (error || !savedMeal) continue;
+
+      await supabase.from("saved_meal_items").insert(
+        items.map((it) => ({ saved_meal_id: savedMeal.id, food_id: it.food_id, quantity_g: it.quantity_g }))
+      );
+      imported++;
+    }
+
+    revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
+    return { imported };
+  } catch (e) {
+    console.error("importPlanMealsAsSavedMeals error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function deleteSavedMeal(mealId: string): Promise<{ error?: string }> {
-  const guard = await requireClient();
+  const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
 
   try {
     const supabase = await createServerSupabase();
     await supabase.from("saved_meals").delete().eq("id", mealId).eq("owner_id", guard.userId);
     revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
     return {};
   } catch (e) {
     console.error("deleteSavedMeal error:", e);

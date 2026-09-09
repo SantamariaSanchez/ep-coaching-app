@@ -267,6 +267,10 @@ interface Props {
   }) => Promise<{ food?: Food; error?: string }>;
   createSavedMeal?: (name: string, items: { foodId: string; quantityG: number }[]) => Promise<{ error?: string; id?: string }>;
   deleteSavedMeal?: (mealId: string) => Promise<{ error?: string }>;
+  // Importe d'un coup tous les repas d'un plan (fixe/fixe-flexible) comme
+  // autant de repas enregistrés — voir le bouton dans l'onglet "Repas" de
+  // la recherche. Optionnel : absent si l'appelant n'a pas encore de plan.
+  importPlanMealsAsSavedMeals?: (planId: string) => Promise<{ error?: string; imported?: number }>;
   logMealItems?: (items: { foodId: string; quantityG: number }[], mealSlot: string, loggedAt: string) => Promise<{ error?: string; count?: number }>;
   // Changer le mode (flexible/fixe/fixe-flexible) du plan actif directement
   // depuis le suivi du jour (demande explicite 2026-08-17 : "je veux pouvoir
@@ -297,6 +301,7 @@ export default function ClientNutritionView({
   createCustomFood,
   createSavedMeal,
   deleteSavedMeal,
+  importPlanMealsAsSavedMeals,
   logMealItems,
   updatePlanMode,
 }: Props) {
@@ -467,6 +472,25 @@ export default function ClientNutritionView({
   const [savingMealSlot, setSavingMealSlot] = useState<string | null>(null);
   const [savingMealName, setSavingMealName] = useState("");
   const [savingMealBusy, setSavingMealBusy] = useState(false);
+  const [importingPlan, setImportingPlan] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+
+  async function handleImportPlanMeals() {
+    if (!importPlanMealsAsSavedMeals || !activePlan) return;
+    setImportingPlan(true);
+    setImportError(null);
+    const result = await importPlanMealsAsSavedMeals(activePlan.id);
+    setImportingPlan(false);
+    if (result.error) {
+      setImportError(result.error);
+      return;
+    }
+    // revalidatePath (server) rafraîchit savedMeals au prochain rendu, mais
+    // l'utilisateur reste sur cette même modale ouverte : forcer un
+    // rechargement de la page serait plus violent que nécessaire pour un
+    // simple import, on laisse le useEffect de resync faire son travail au
+    // prochain passage du serveur (déjà le comportement du reste du fichier).
+  }
 
   const watchContext = useMemo(() => buildFoodWatchContext(intake), [intake]);
   const hasWatch = hasFoodWatchContext(watchContext);
@@ -2092,6 +2116,22 @@ export default function ClientNutritionView({
 
                 {searchTab === "repas" && (
                   <div className="flex-1 overflow-y-auto px-3 pb-3 pt-2">
+                    {activePlan && importPlanMealsAsSavedMeals && (
+                      <div className="mb-3">
+                        <button
+                          onClick={handleImportPlanMeals}
+                          disabled={importingPlan}
+                          className="w-full flex items-center justify-center gap-2 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 disabled:opacity-50 text-[#E01E1E] text-[11px] font-black uppercase tracking-widest px-4 py-3 rounded-xl transition-colors"
+                        >
+                          <Bookmark size={13} />
+                          {importingPlan ? "Import…" : "Importer les repas de mon plan"}
+                        </button>
+                        {importError && <p className="text-[10.5px] text-red-400 mt-1.5 text-center">{importError}</p>}
+                        <p className="text-[10px] text-[#F5EDED]/25 mt-1.5 text-center leading-relaxed">
+                          Chaque repas de ton plan devient réutilisable en un tap, sans avoir à tout re-rentrer.
+                        </p>
+                      </div>
+                    )}
                     {savedMeals.length === 0 ? (
                       <div className="text-center py-8 px-4">
                         <UtensilsCrossed size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />

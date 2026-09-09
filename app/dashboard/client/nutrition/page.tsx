@@ -33,6 +33,7 @@ import {
   setOwnSeasonMode,
   createSavedMeal,
   deleteSavedMeal,
+  importPlanMealsAsSavedMeals,
   logMealItems,
   addOwnSupplement,
   setOwnSupplementStatus,
@@ -113,6 +114,7 @@ export default async function ClientNutritionPage() {
           createCustomFood={createCustomFood}
           createSavedMeal={createSavedMeal}
           deleteSavedMeal={deleteSavedMeal}
+          importPlanMealsAsSavedMeals={importPlanMealsAsSavedMeals}
           logMealItems={logMealItems}
           updatePlanMode={updateOwnDietPlanMode}
         />
@@ -172,6 +174,7 @@ export default async function ClientNutritionPage() {
         createCustomFood={createCustomFood}
         createSavedMeal={createSavedMeal}
         deleteSavedMeal={deleteSavedMeal}
+        importPlanMealsAsSavedMeals={importPlanMealsAsSavedMeals}
         logMealItems={logMealItems}
       />
       <div className="px-6 ep-page-medium mt-6">
