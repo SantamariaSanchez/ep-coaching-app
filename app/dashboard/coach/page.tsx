@@ -12,6 +12,7 @@ import { getScheduleBlocks } from "@/utils/agenda";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { getActiveProgram } from "@/utils/programs";
 import { accessoriesForSession } from "@/lib/session-accessories";
+import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis, nowInParis } from "@/lib/dates";
 import { getTipOfTheDay } from "@/lib/coach-daily-tips";
@@ -82,13 +83,15 @@ export default async function CoachDashboard() {
   const todayStr = todayInParis();
   const { isoDow, hhmm } = nowInParis();
   const supabase = await createServerSupabase();
-  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, unreadMsgs] = await Promise.all([
+  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, unreadMsgs] = await Promise.all([
     getTodayLog(user.id),
     getNutritionProfile(user.id),
     getTodayLogs(user.id, todayStr),
     getScheduleBlocks(user.id),
     getAllLiveEventsForCoach(user.id),
     getActiveProgram(user.id),
+    getStepSettings(user.id),
+    getTodayStepsActual(user.id),
     supabase
       .from("messages")
       .select("id, conversation_id, content, type, created_at")
@@ -171,6 +174,7 @@ export default async function CoachDashboard() {
         unreadPreview={unreadPreview}
         todaySeanceLabel={todaySeanceLabel}
         todayAccessories={todayAccessories}
+        steps={{ actual: todaySteps, goal: stepSettings.daily_goal }}
       />
 
       {/* ── Stats (client-side fetch) ────────────────────────────────────────── */}

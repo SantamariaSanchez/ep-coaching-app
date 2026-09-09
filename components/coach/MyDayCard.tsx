@@ -1,7 +1,7 @@
 import Link from "next/link";
 import {
   Sparkles, Apple, Moon, CalendarClock, Video, MessageCircle,
-  LayoutTemplate, CalendarDays, ArrowRight, Mail, Backpack, ExternalLink,
+  LayoutTemplate, CalendarDays, ArrowRight, Mail, Backpack, ExternalLink, Footprints,
 } from "lucide-react";
 import type { SessionAccessory } from "@/lib/session-accessories";
 
@@ -35,6 +35,8 @@ export interface MyDayCardProps {
   todaySeanceLabel: string | null;
   /** Accessoires à prévoir pour la séance du jour (lib/session-accessories.ts). */
   todayAccessories: SessionAccessory[];
+  /** Pas du jour — actual = null tant qu'aucune source (Oura, manuel) n'a rien remonté. */
+  steps: { actual: number | null; goal: number };
 }
 
 // Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" fixe toute la
@@ -106,6 +108,7 @@ export default function MyDayCard({
   unreadPreview,
   todaySeanceLabel,
   todayAccessories,
+  steps,
 }: MyDayCardProps) {
   const nutritionValue =
     nutrition && nutrition.target
@@ -130,6 +133,14 @@ export default function MyDayCard({
   const liveSub = nextLive
     ? new Intl.DateTimeFormat("fr-FR", { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(new Date(nextLive.startsAt))
     : "voir Live";
+
+  const stepsValue = steps.actual != null ? steps.actual.toLocaleString("fr-FR") : "···";
+  const stepsSub =
+    steps.actual == null
+      ? "pas encore remonté"
+      : steps.actual >= steps.goal
+        ? "objectif atteint"
+        : `sur ${steps.goal.toLocaleString("fr-FR")}`;
 
   return (
     <section className="animate-fade-up" style={{ marginBottom: 28 }}>
@@ -172,6 +183,7 @@ export default function MyDayCard({
         <MiniCard icon={Moon} accent="#60a5fa" label="Sommeil" value={sleepValue} sub={sleepSub} href="/dashboard/coach/moi/tracking" delay={50} />
         <MiniCard icon={CalendarClock} accent="#fb923c" label="Prochain créneau" value={agendaValue} sub={agendaSub} href="/dashboard/coach/moi/agenda" delay={100} />
         <MiniCard icon={Video} accent="#c084fc" label="Prochain live" value={liveValue} sub={liveSub} href="/dashboard/coach/live" delay={150} />
+        <MiniCard icon={Footprints} accent="#4ade80" label="Pas" value={stepsValue} sub={stepsSub} href="/dashboard/coach/moi/steps" delay={200} />
       </div>
 
       {/* "À prévoir" pour la séance du jour — même logique que
