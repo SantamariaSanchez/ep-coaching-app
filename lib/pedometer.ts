@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { todayInParis } from "@/lib/dates";
 
 // ─────────────────────────────────────────────────────────────────────────
 // Podomètre "logiciel" — il n'existe aucune API web qui donne directement le
@@ -23,8 +24,15 @@ import { useCallback, useEffect, useRef, useState } from "react";
 const STORAGE_PREFIX = "ep-pedometer-";
 export const PEDOMETER_ENABLED_KEY = "ep-pedometer-enabled";
 
+// MASTERCLASS.md Axe L : UTC, pas Paris. Entre minuit et 1h/2h du matin
+// heure de Paris (selon été/hiver), la date UTC n'a pas encore basculé —
+// cette clé restait donc celle d'HIER, et readLocalSeed() réamorçait le
+// compteur en session avec le total de pas déjà fait la veille au lieu de
+// repartir de zéro pour le jour qui vient de commencer. Concret : ouvrir
+// Steps juste après minuit pouvait faire logger d'un coup plusieurs
+// milliers de "pas" du jour, avant le moindre pas réellement fait.
 function todayStorageKey(): string {
-  return STORAGE_PREFIX + new Date().toISOString().split("T")[0];
+  return STORAGE_PREFIX + todayInParis();
 }
 
 function readLocalSeed(): number {
