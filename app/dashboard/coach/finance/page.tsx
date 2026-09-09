@@ -99,6 +99,17 @@ export default async function CoachFinancePage() {
   const TrendIcon = activationsDelta > 0 ? ArrowUp : activationsDelta < 0 ? ArrowDown : Minus;
   const trendColor = activationsDelta > 0 ? "#4ade80" : activationsDelta < 0 ? "#fb923c" : "rgba(245,237,237,0.35)";
 
+  // Nouveau : un essai qui va expirer est un signal d'action (relancer avant
+  // le churn), pas juste une statistique — rien ne le mettait en évidence
+  // jusqu'ici, noyé dans la simple liste "En essai" ci-dessous.
+  const now = Date.now();
+  const expiringTrials = coaches
+    .map((c, i) => ({ coach: c, billing: coachBilling[i] }))
+    .filter((x) => x.billing?.status === "trialing" && x.billing.trialEnd)
+    .map((x) => ({ ...x, daysLeft: Math.ceil((new Date(x.billing!.trialEnd!).getTime() - now) / 86_400_000) }))
+    .filter((x) => x.daysLeft <= 7)
+    .sort((a, b) => a.daysLeft - b.daysLeft);
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
@@ -139,6 +150,39 @@ export default async function CoachFinancePage() {
           {activationsDelta === 0 ? "stable" : `${activationsDelta > 0 ? "+" : ""}${activationsDelta} vs mois dernier`}
         </div>
       </div>
+
+      {/* Nouveau : essais qui expirent dans moins de 7 jours — le moment où
+          relancer un coach avant qu'il churn, pas après. */}
+      {expiringTrials.length > 0 && (
+        <section className="mb-6">
+          <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 mb-3">
+            <Crown size={12} /> Essais qui expirent bientôt
+          </p>
+          <div className="space-y-2">
+            {expiringTrials.map(({ coach, daysLeft }) => (
+              <Link
+                key={coach.id}
+                href="/dashboard/coach/admin"
+                className="ep-card flex items-center justify-between gap-3"
+                style={{ padding: "12px 16px" }}
+              >
+                <div style={{ minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{coach.full_name ?? "Sans nom"}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{coach.email}</p>
+                </div>
+                <span style={{
+                  fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
+                  color: daysLeft <= 2 ? "#E01E1E" : "#facc15",
+                  border: `1px solid ${daysLeft <= 2 ? "#E01E1E" : "#facc15"}55`, borderRadius: 999, padding: "3px 9px",
+                  flexShrink: 0,
+                }}>
+                  {daysLeft <= 0 ? "Aujourd'hui" : daysLeft === 1 ? "Demain" : `${daysLeft} jours`}
+                </span>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Coachs tiers */}
       <section className="mb-6">
