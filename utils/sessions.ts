@@ -99,11 +99,17 @@ export async function getClientSessions(
 export async function getSessionsThisWeekCount(clientId: string): Promise<number> {
   try {
     const supabase = await createServerSupabase();
-    const today = new Date();
-    const dayOfWeek = today.getDay();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-    const weekStartStr = weekStart.toISOString().split("T")[0];
+    // MASTERCLASS.md Axe L : new Date().toISOString()/.getDay() reflètent le
+    // calendrier UTC du serveur, pas celui de Paris — pile au passage
+    // dimanche -> lundi heure de Paris, ça retombait encore sur le lundi de
+    // LA SEMAINE PRÉCÉDENTE, faussant le compteur "X/N séances cette
+    // semaine" juste au moment où la nouvelle semaine commence. Même
+    // correctif que components/ui/VolumeIntensitySection.tsx (même page).
+    const todayStr = todayInParis();
+    const dow = new Date(`${todayStr}T12:00:00Z`).getUTCDay();
+    const daysSinceMonday = dow === 0 ? 6 : dow - 1;
+    const [y, m, d] = todayStr.split("-").map(Number);
+    const weekStartStr = new Date(Date.UTC(y, m - 1, d - daysSinceMonday)).toISOString().split("T")[0];
 
     const { count } = await supabase
       .from("sessions")

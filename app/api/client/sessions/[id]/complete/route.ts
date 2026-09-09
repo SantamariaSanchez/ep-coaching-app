@@ -90,11 +90,20 @@ export async function POST(
   }
 
   // 3. Insert workout_logs for volume tracking
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-  const weekStartStr = weekStart.toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : new Date().toISOString()/.getDay() reflètent le
+  // calendrier UTC du serveur (Vercel), pas celui de Paris — pile au
+  // passage dimanche -> lundi heure de Paris (jour d'entraînement pour lui,
+  // voir schedule_blocks), une séance terminée dans cette fenêtre se serait
+  // vue étiqueter avec le lundi de LA SEMAINE PRÉCÉDENTE de façon
+  // PERMANENTE en base (week_start), invisible du "Volume réalisé cette
+  // semaine" pour toujours. Même correctif que
+  // components/ui/VolumeIntensitySection.tsx et utils/sessions.ts (même
+  // fonctionnalité, trois copies indépendantes du même bug trouvées).
+  const todayStr = todayInParis();
+  const dow = new Date(`${todayStr}T12:00:00Z`).getUTCDay();
+  const daysSinceMonday = dow === 0 ? 6 : dow - 1;
+  const [wy, wm, wd] = todayStr.split("-").map(Number);
+  const weekStartStr = new Date(Date.UTC(wy, wm - 1, wd - daysSinceMonday)).toISOString().split("T")[0];
 
   if (body.workoutData.length > 0) {
     await supabase.from("workout_logs").insert(

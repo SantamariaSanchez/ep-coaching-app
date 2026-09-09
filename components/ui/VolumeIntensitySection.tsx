@@ -2,13 +2,22 @@ import { VOLUME_LANDMARKS } from "@/lib/volume-data";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
+import { todayInParis } from "@/lib/dates";
 
+// MASTERCLASS.md Axe L : new Date().toISOString() (et new Date().getDay())
+// reflètent le calendrier UTC du serveur (Vercel tourne en UTC), pas celui
+// de Paris. Concret pile au passage dimanche -> lundi heure de Paris (entre
+// minuit et 1h/2h du matin selon été/hiver) : ce composant calculait encore
+// le lundi de LA SEMAINE PRÉCÉDENTE, donc "Volume réalisé cette semaine"
+// filtrait sur le mauvais week_start et affichait une semaine vide/périmée
+// pile au moment où la nouvelle semaine vient de commencer. Même astuce
+// (ancre midi UTC) déjà utilisée par parisNow() dans lib/meal-slots.ts.
 function currentWeekStart(): string {
-  const today = new Date();
-  const dayOfWeek = today.getDay();
-  const weekStart = new Date(today);
-  weekStart.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-  return weekStart.toISOString().split("T")[0];
+  const todayStr = todayInParis();
+  const dow = new Date(`${todayStr}T12:00:00Z`).getUTCDay(); // 0=dim...6=sam
+  const daysSinceMonday = dow === 0 ? 6 : dow - 1;
+  const [y, m, d] = todayStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d - daysSinceMonday)).toISOString().split("T")[0];
 }
 
 // ── Volume gauge ──────────────────────────────────────────────────────────────
