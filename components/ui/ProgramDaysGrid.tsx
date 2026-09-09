@@ -5,12 +5,23 @@
 // pour ce rendu plutôt que de le dupliquer à chaque page.
 
 import type { ProgramWithDays } from "@/utils/programs";
+import { accessoriesForSession } from "@/lib/session-accessories";
+import { Backpack, ExternalLink } from "lucide-react";
+
+// "À prévoir" (lib/session-accessories.ts) existait déjà dans la séance en
+// cours (SessionView.tsx, 2026-09-08) mais nulle part en amont — retour
+// direct 2026-09-09 : "dans prog ou logbook toujours aucune trace de quel
+// accessoire je dois prendre pour chaque séance". Le programme (avant même
+// de lancer une séance) est justement le bon moment pour vérifier ce qu'il
+// faut emporter, pas seulement une fois arrivé à la salle.
 
 export default function ProgramDaysGrid({ program }: { program: ProgramWithDays }) {
   return (
     <div style={{ overflowX: "auto", paddingBottom: 8 }}>
       <div style={{ display: "flex", gap: 12, minWidth: `${program.days.length * 280}px` }}>
-        {program.days.map((day, di) => (
+        {program.days.map((day, di) => {
+          const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name));
+          return (
           <div
             key={day.id}
             className="ep-card animate-fade-up"
@@ -22,6 +33,28 @@ export default function ProgramDaysGrid({ program }: { program: ProgramWithDays 
             }}>
               {day.day_label}
             </p>
+
+            {accessories.length > 0 && (
+              <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(137,4,4,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 10 }}>
+                <p style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", margin: "0 0 6px" }}>
+                  <Backpack size={11} /> À prévoir
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                  {accessories.map((a) => (
+                    <a
+                      key={a.accessory}
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+                    >
+                      {a.accessory}
+                      <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {day.exercises.length === 0 ? (
               <p style={{ fontSize: 12, color: "rgba(245,237,237,0.22)", fontStyle: "italic" }}>Aucun exercice</p>
@@ -57,7 +90,8 @@ export default function ProgramDaysGrid({ program }: { program: ProgramWithDays 
               </div>
             )}
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

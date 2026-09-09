@@ -2,7 +2,8 @@ import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
 import VolumeIntensitySection from "./VolumeIntensitySection";
-import { Pencil, Plus } from "lucide-react";
+import { accessoriesForSession } from "@/lib/session-accessories";
+import { Pencil, Plus, Backpack, ExternalLink } from "lucide-react";
 
 export default function ClientProgramView({
   clientId,
@@ -65,7 +66,9 @@ export default function ClientProgramView({
             className="flex gap-4"
             style={{ minWidth: `${program.days.length * 280}px` }}
           >
-            {program.days.map((day) => (
+            {program.days.map((day) => {
+              const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name));
+              return (
               <div
                 key={day.id}
                 className="flex-1 min-w-[260px] bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
@@ -73,6 +76,28 @@ export default function ClientProgramView({
                 <p className="text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4 pb-2 border-b border-[#890404]/20">
                   {day.day_label}
                 </p>
+
+                {accessories.length > 0 && (
+                  <div className="bg-black/30 border border-[#890404]/20 rounded-lg px-3 py-2.5 mb-3">
+                    <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      <Backpack size={11} /> À prévoir
+                    </p>
+                    <div className="flex flex-col gap-1">
+                      {accessories.map((a) => (
+                        <a
+                          key={a.accessory}
+                          href={a.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1 text-[11.5px] font-bold text-white hover:text-[#E01E1E] transition-colors"
+                        >
+                          {a.accessory}
+                          <ExternalLink size={9} className="text-[#F5EDED]/30" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {day.exercises.length === 0 ? (
                   <p className="text-xs text-[#F5EDED]/25 italic">
@@ -118,7 +143,8 @@ export default function ClientProgramView({
                   </div>
                 )}
               </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
