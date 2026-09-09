@@ -2773,6 +2773,32 @@ function DietPlanCard({
   // (au lieu d'une égalité stricte) : robuste au type ET à un éventuel
   // écart d'arrondi flottant, sans risque (personne ne distingue 0.01g).
   const QUANTITY_MATCH_EPSILON = 0.01;
+
+  // Bug réel confirmé en base (retour direct 2026-09-09, "je peux toujours
+  // pas cocher mes aliments" — présent depuis 2+ mois) : le matching
+  // ci-dessous tournait sur TOUT dayMeals, c'est-à-dire les deux options
+  // d'un créneau mélangées (variant_group). Quand un coach réutilise le
+  // même aliment à la même quantité dans l'Option 1 ET l'Option 2 d'un
+  // repas (ex. "riz 100g" présent dans les deux), les deux lignes
+  // diet_plan_meals (deux id différents) se disputaient le même food_log —
+  // le matching greedy n'en attribuait qu'UNE, l'autre restait "jamais
+  // cochée" quel que soit le nombre de taps, chaque tap rajoutant un
+  // nouveau doublon en base au lieu de décocher. Confirmé sur son propre
+  // compte : le même aliment loggué 3 à 5 fois d'affilée sur 30 secondes.
+  // Fix : ne faire matcher que les items de la variante RÉELLEMENT affichée
+  // par créneau (même logique que le calcul de activeVariant plus bas),
+  // jamais toutes les options mélangées.
+  const visibleMeals = useMemo(() => {
+    const out: DietPlanMeal[] = [];
+    for (const slotKey of Object.keys(bySlot)) {
+      const variantKeys = Object.keys(bySlot[slotKey]).map(Number).sort((a, b) => a - b);
+      const chosen = variantChoice[`${viewDow}:${slotKey}`];
+      const activeVariant = chosen !== undefined && variantKeys.includes(chosen) ? chosen : variantKeys[0];
+      out.push(...bySlot[slotKey][activeVariant]);
+    }
+    return out;
+  }, [bySlot, variantChoice, viewDow]);
+
   const checkedMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
     // En dehors d'aujourd'hui, aucun repas n'est jamais "coché" : todayLogs
@@ -2781,7 +2807,7 @@ function DietPlanCard({
     // false dans ce cas, donc rien n'est cliquable de toute façon).
     if (!isViewingToday) return map;
     const used = new Set<string>();
-    for (const m of dayMeals) {
+    for (const m of visibleMeals) {
       const match = todayLogs.find(
         (l) =>
           !used.has(l.id) &&
@@ -2795,7 +2821,7 @@ function DietPlanCard({
       }
     }
     return map;
-  }, [dayMeals, todayLogs, isViewingToday]);
+  }, [visibleMeals, todayLogs, isViewingToday]);
 
   const doneCount = Object.values(checkedMap).filter(Boolean).length;
 
@@ -2812,9 +2838,13 @@ function DietPlanCard({
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#E01E1E]/70 mb-0.5">
             {isOwnPlan ? "Mon plan" : "Plan de ton coach"}
-            {checkable && dayMeals.length > 0 && (
+            {/* Sur le total des items VISIBLES (variante affichée par créneau),
+                pas dayMeals.length qui compte aussi les items des options
+                masquées — sinon "6/12 cochés" alors que les 6 items affichés
+                sont tous cochés, cf. le fix checkedMap ci-dessus. */}
+            {checkable && visibleMeals.length > 0 && (
               <span className="ml-2 text-[#F5EDED]/30 font-normal">
-                {doneCount}/{dayMeals.length} cochés
+                {doneCount}/{visibleMeals.length} cochés
               </span>
             )}
           </p>
