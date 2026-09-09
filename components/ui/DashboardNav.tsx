@@ -264,6 +264,12 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
       { label: "Mindset",        icon: Brain,          segment: "moi/mindset" },
+      // Manquait entièrement côté coach (trouvé en creusant Steps : le
+      // bouton "créer un rappel depuis une habitude de routine" n'apparaît
+      // jamais faute de page/route "Mes rappels" côté coach, alors que
+      // RemindersView est déjà 100% générique — voir
+      // app/dashboard/coach/moi/reminders/page.tsx).
+      { label: "Rappels",        icon: Bell,           segment: "moi/reminders" },
     ],
   },
   {

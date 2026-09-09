@@ -157,8 +157,11 @@ async function notifyCoachIfGoalReached(clientId: string, logDate: string, steps
 
 // Transforme une habitude de routine en rappel push quotidien, en un tap —
 // même table et même cron que "Mes rappels" (app/api/cron/send-reminders),
-// aucune nouvelle infra. Client uniquement : "Mes rappels" n'existe pas côté
-// coach (voir app/dashboard/client/reminders).
+// aucune nouvelle infra. Utilisable par n'importe quel rôle (requireAuth,
+// comme le reste de ce fichier) : "Mes rappels" existe désormais aussi côté
+// coach (app/dashboard/coach/moi/reminders, ajouté après avoir constaté que
+// le bouton de ce fichier ne s'affichait jamais côté coach faute de page —
+// voir components/steps/StepsClient.tsx, createReminderFromRoutine optionnel).
 export async function createReminderFromRoutine(label: string, time: string): Promise<{ error?: string }> {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
@@ -174,6 +177,7 @@ export async function createReminderFromRoutine(label: string, time: string): Pr
     });
     if (error) return { error: "Erreur lors de la création du rappel." };
     revalidatePath("/dashboard/client/reminders");
+    revalidatePath("/dashboard/coach/moi/reminders");
     return {};
   } catch (e) {
     console.error("createReminderFromRoutine error:", e);

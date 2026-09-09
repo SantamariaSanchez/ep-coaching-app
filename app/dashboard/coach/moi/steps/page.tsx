@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getStepSettings, getStepRoutineItems, getStepLogs } from "@/utils/steps";
 import StepsClient from "@/components/steps/StepsClient";
-import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps } from "@/app/dashboard/client/steps/actions";
+import { updateStepGoal, addRoutineItem, deleteRoutineItem, logSteps, createReminderFromRoutine } from "@/app/dashboard/client/steps/actions";
 
 export default async function CoachMoiStepsPage() {
   const supabase = await createServerSupabase();
@@ -43,6 +43,7 @@ export default async function CoachMoiStepsPage() {
         addRoutineItem={addRoutineItem}
         deleteRoutineItem={deleteRoutineItem}
         logSteps={logSteps}
+        createReminderFromRoutine={createReminderFromRoutine}
       />
     </div>
   );
