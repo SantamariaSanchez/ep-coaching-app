@@ -18,6 +18,16 @@ import type {
   DietPlanMeal,
 } from "@/utils/nutrition";
 import type { CommunityRecipe } from "@/utils/community-recipes";
+// Base de recettes de l'appli (lib/recipes-data.ts, ~2000+ recettes triées
+// régime/phase/saison) — importée directement en module, comme le fait déjà
+// RecipesClient.tsx (components/recipes/RecipesClient.tsx), plutôt que
+// transmise en prop serveur (des milliers de lignes recopiées à chaque
+// rendu serveur pour rien, le fichier est déjà dans le bundle client une
+// fois pour toutes). Retour direct 2026-09-09 : "je dois avoir accès à
+// toute la base de recette de l'appli" — jusqu'ici, l'onglet "Recettes" de
+// cette vue ne listait QUE les recettes communauté (recipes en prop),
+// jamais la vraie bibliothèque de l'appli.
+import { RECIPES } from "@/lib/recipes-data";
 import type { SavedMeal } from "@/utils/saved-meals";
 import type { ClientIntake } from "@/utils/client-intake";
 import { buildFoodWatchContext, hasFoodWatchContext, summarizeFoodWatchContext, checkFoodWatch, type FoodWatchContext } from "@/lib/food-watch-keywords";
@@ -25,6 +35,20 @@ import { saveMealPhoto, loadMealPhoto } from "@/components/ui/NutritionBilanQuiz
 import { notifyGateRefresh } from "@/lib/gate-events";
 
 // ── Constants ────────────────────────────────────────────────────────────────
+
+// Champs communs entre une recette communauté (CommunityRecipe) et une
+// recette de la base de l'appli (Recipe, lib/recipes-data.ts) — seuls ceux
+// réellement utilisés pour logger une recette (voir handleAddRecipe plus
+// bas), jamais les ingrédients/étapes détaillés (pas affichés dans cette
+// vue de logging rapide, seulement dans /dashboard/client/recettes).
+interface LoggableRecipe {
+  id: string;
+  name: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+}
 
 const MEAL_SLOTS = [
   { key: "breakfast", label: "Petit-déjeuner" },
@@ -495,12 +519,18 @@ export default function ClientNutritionView({
   const watchContext = useMemo(() => buildFoodWatchContext(intake), [intake]);
   const hasWatch = hasFoodWatchContext(watchContext);
 
+  // Base de recettes de l'appli en premier (LA vraie bibliothèque, ce qui
+  // était demandé), recettes communauté ensuite : sans recherche tapée,
+  // seuls les 40 premiers s'affichent (voir plus bas), la base de l'appli
+  // doit donc passer avant pour rester atteignable sans avoir à chercher.
+  const allRecipes = useMemo<LoggableRecipe[]>(() => [...RECIPES, ...recipes], [recipes]);
+
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchTab, setSearchTab] = useState<"aliments" | "recettes" | "repas">("aliments");
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
-  const [selectedRecipe, setSelectedRecipe] = useState<CommunityRecipe | null>(null);
+  const [selectedRecipe, setSelectedRecipe] = useState<LoggableRecipe | null>(null);
   const [recipeServings, setRecipeServings] = useState("1");
   const [quantityInput, setQuantityInput] = useState("");
   const [addingError, setAddingError] = useState<string | null>(null);
@@ -2183,8 +2213,8 @@ export default function ClientNutritionView({
                 {searchTab === "recettes" && (
                   <div className="flex-1 overflow-y-auto px-2 pb-2">
                     {(searchQuery
-                      ? recipes.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
-                      : recipes
+                      ? allRecipes.filter((r) => r.name.toLowerCase().includes(searchQuery.toLowerCase()))
+                      : allRecipes
                     ).slice(0, 40).map((r) => (
                       <button
                         key={r.id}
@@ -2197,7 +2227,7 @@ export default function ClientNutritionView({
                         </p>
                       </button>
                     ))}
-                    {recipes.length === 0 && (
+                    {allRecipes.length === 0 && (
                       <p className="text-center text-xs text-[#F5EDED]/30 py-8">Aucune recette disponible</p>
                     )}
                   </div>
