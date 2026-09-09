@@ -2327,15 +2327,61 @@ export default function ClientNutritionView({
                   <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
                     Quantité (grammes)
                   </label>
-                  <input
-                    autoFocus
-                    type="number"
-                    min="1"
-                    value={quantityInput}
-                    onChange={(e) => setQuantityInput(e.target.value)}
-                    placeholder="100" aria-label="100"
-                    className={inputCls}
-                  />
+                  {/* Retour direct 2026-09-09 : "très très mal fait pour loger
+                      un aliment" — taper un nombre de grammes à la main à
+                      chaque fois est le plus gros frein. Steppers +/- (pas de
+                      10g) et raccourcis de portions courantes évitent la
+                      saisie manuelle dans le cas courant. */}
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = parseFloat(quantityInput) || 0;
+                        setQuantityInput(String(Math.max(0, current - 10)));
+                      }}
+                      aria-label="Moins 10 grammes"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
+                    >
+                      −
+                    </button>
+                    <input
+                      autoFocus
+                      type="number"
+                      inputMode="decimal"
+                      min="1"
+                      value={quantityInput}
+                      onChange={(e) => setQuantityInput(e.target.value)}
+                      placeholder="100" aria-label="100"
+                      className={`${inputCls} text-center`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const current = parseFloat(quantityInput) || 0;
+                        setQuantityInput(String(current + 10));
+                      }}
+                      aria-label="Plus 10 grammes"
+                      className="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-[#150000] border border-[#890404]/30 text-[#F5EDED]/60 hover:text-white hover:border-[#E01E1E]/40 active:scale-95 transition-all text-lg font-bold"
+                    >
+                      +
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {[50, 100, 150, 200, 250].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setQuantityInput(String(preset))}
+                        className={`text-[11px] font-bold px-3 py-1.5 rounded-full border transition-colors ${
+                          parseFloat(quantityInput) === preset
+                            ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-[#E01E1E]"
+                            : "bg-[#150000] border-[#890404]/25 text-[#F5EDED]/45 hover:text-[#F5EDED]/75 hover:border-[#890404]/50"
+                        }`}
+                      >
+                        {preset}g
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 {quantityInput && parseFloat(quantityInput) > 0 && (
                   <div className="bg-[#1f0101] border border-[#890404]/20 rounded-lg p-3">

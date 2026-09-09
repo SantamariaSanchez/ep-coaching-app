@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Dumbbell,
-  Clock,
+  Sparkles,
   Zap,
   ChevronRight,
   Calendar,
@@ -479,19 +479,32 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
                       </div>
                     )}
                     <div className="flex items-center gap-2">
+                      {/* Retour direct 2026-09-09 : "mieux organiser, plus
+                          simple à comprendre" — energy/pump n'avaient qu'une
+                          icône et un chiffre, sans légende (contrairement à
+                          "feeling" juste à côté) : ambigu au premier coup
+                          d'oeil. Même traitement label pour les 3. L'icône
+                          Horloge (aucun rapport avec la congestion
+                          musculaire) est aussi corrigée en Sparkles. */}
                       {s.energy_level != null && (
                         <div className="flex flex-col items-center gap-0.5">
                           <Zap size={11} className="text-amber-400" />
                           <span className="text-[9px] font-black text-amber-400">
                             {s.energy_level}
                           </span>
+                          <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
+                            energy
+                          </span>
                         </div>
                       )}
                       {s.pump != null && (
                         <div className="flex flex-col items-center gap-0.5">
-                          <Clock size={11} className="text-[#60a5fa]" />
+                          <Sparkles size={11} className="text-[#60a5fa]" />
                           <span className="text-[9px] font-black text-[#60a5fa]">
                             {s.pump}
+                          </span>
+                          <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
+                            pump
                           </span>
                         </div>
                       )}
