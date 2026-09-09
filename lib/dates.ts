@@ -54,6 +54,34 @@ export function nowInParis(): { isoDow: number; hhmm: string } {
   return { isoDow: DOW_MAP[weekdayShort] ?? 1, hhmm: `${hour}:${minute}` };
 }
 
+// MASTERCLASS.md Axe L, variante "limite de débit par jour" plutôt que
+// "quelle date écrire" : utils/insert-notification.ts (alreadyNotifiedToday)
+// calculait sa borne "minuit" avec `new Date().setUTCHours(0,0,0,0)` —
+// minuit UTC, pas minuit Paris. Entre minuit et 1h/2h du matin heure de
+// Paris, cette borne UTC retombe sur la veille (jusqu'à 23h plus tôt que le
+// vrai minuit Paris), donc une notif envoyée tard la veille comptait encore
+// comme "déjà envoyée aujourd'hui" et bloquait à tort la vraie notif du
+// nouveau jour Paris. Dérivé du même Intl.DateTimeFormat que nowInParis
+// ci-dessus (fiable même à cheval sur un changement heure d'été/hiver) :
+// on lit l'heure/minute/seconde Paris actuelles et on les retranche de
+// l'instant présent pour retomber exactement sur minuit Paris, exprimé en
+// UTC.
+export function startOfTodayInParis(): Date {
+  const now = new Date();
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Paris",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(now);
+  const h = Number(parts.find((p) => p.type === "hour")!.value);
+  const m = Number(parts.find((p) => p.type === "minute")!.value);
+  const s = Number(parts.find((p) => p.type === "second")!.value);
+  const msSinceParisMidnight = ((h * 60 + m) * 60 + s) * 1000 + now.getMilliseconds();
+  return new Date(now.getTime() - msSinceParisMidnight);
+}
+
 export function isWithinBilanBackfillWindow(logDate: string, maxDaysBack: number = BILAN_BACKFILL_DAYS): boolean {
   const today = todayInParis();
   if (logDate > today) return false; // jamais dans le futur

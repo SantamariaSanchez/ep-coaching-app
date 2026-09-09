@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { startOfTodayInParis } from "@/lib/dates";
 
 interface NotificationPayload {
   userId: string;
@@ -44,8 +45,9 @@ export async function alreadyNotifiedToday(
   senderId?: string
 ): Promise<boolean> {
   const supabase = createAdminClient();
-  const todayStart = new Date();
-  todayStart.setUTCHours(0, 0, 0, 0);
+  // MASTERCLASS.md Axe L : minuit UTC, pas minuit Paris — voir
+  // lib/dates.ts, startOfTodayInParis().
+  const todayStart = startOfTodayInParis();
 
   let query = supabase
     .from("notifications")
