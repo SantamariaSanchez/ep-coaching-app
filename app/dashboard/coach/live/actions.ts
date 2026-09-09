@@ -450,6 +450,37 @@ export async function getPendingFlashRequests(): Promise<FlashRequest[]> {
   return requests.map((r) => ({ ...r, client_name: nameMap[r.client_id] ?? null }));
 }
 
+// Nouveau (retour direct 2026-09-09, "ajoute des choses auxquelles on n'a
+// pas encore pensé", section Live) : resolved_at existe déjà sur chaque
+// demande de point flash (posé au moment d'accepter ou refuser, voir
+// scheduleFlashCall/declineFlashCall ci-dessous) mais jamais exploité pour
+// mesurer la réactivité réelle du coach — le point flash promet justement
+// une "réponse rapide sur une décision clé", sans jamais vérifier si c'est
+// tenu.
+export async function getFlashResponseStats(): Promise<{ avgMinutes: number | null; count: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { avgMinutes: null, count: 0 };
+
+  const admin = createAdminClient();
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+  const { data } = await admin
+    .from("live_flash_requests")
+    .select("created_at, resolved_at")
+    .eq("coach_id", guard.userId)
+    .not("resolved_at", "is", null)
+    .gte("created_at", thirtyDaysAgo.toISOString());
+
+  const rows = (data ?? []) as { created_at: string; resolved_at: string }[];
+  if (rows.length === 0) return { avgMinutes: null, count: 0 };
+
+  const totalMinutes = rows.reduce(
+    (sum, r) => sum + (new Date(r.resolved_at).getTime() - new Date(r.created_at).getTime()) / 60000,
+    0
+  );
+  return { avgMinutes: Math.round(totalMinutes / rows.length), count: rows.length };
+}
+
 export async function scheduleFlashCall(
   requestId: string,
   startsAt: string

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Calendar, Users2, CalendarClock, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { Calendar, Users2, CalendarClock, ArrowUp, ArrowDown, Minus, Zap } from "lucide-react";
 import { getUser, getProfile, getClients } from "@/utils/auth";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS } from "@/lib/live-types";
@@ -9,8 +9,15 @@ import LiveEventsList from "@/components/live/LiveEventsList";
 import FlashRequestsPanel from "@/components/coach/FlashRequestsPanel";
 import {
   createLiveEvent, cancelLiveEvent, deleteLiveEvent, updateLiveEvent, updateLiveRecap,
-  getPendingFlashRequests,
+  getPendingFlashRequests, getFlashResponseStats,
 } from "./actions";
+
+function formatMinutes(min: number): string {
+  if (min < 60) return `${min} min`;
+  const h = Math.floor(min / 60);
+  const rest = min % 60;
+  return rest === 0 ? `${h}h` : `${h}h${String(rest).padStart(2, "0")}`;
+}
 
 function formatRelativeDate(iso: string): string {
   const target = new Date(iso);
@@ -28,10 +35,11 @@ export default async function CoachLivePage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/live");
 
-  const [events, clients, flashRequests] = await Promise.all([
+  const [events, clients, flashRequests, flashResponseStats] = await Promise.all([
     getAllLiveEventsForCoach(user.id),
     getClients(user.id),
     getPendingFlashRequests(),
+    getFlashResponseStats(),
   ]);
 
   const now = Date.now();
@@ -119,6 +127,20 @@ export default async function CoachLivePage() {
               Points flash
             </p>
             <p style={{ fontSize: 20, fontWeight: 900, color: "#E01E1E", margin: 0 }}>{flashRequests.length}</p>
+          </div>
+        )}
+        {/* Nouveau : resolved_at existait déjà sur chaque demande de point
+            flash (posé à l'acceptation ou au refus) mais jamais exploité —
+            le point flash promet une "réponse rapide", sans jamais vérifier
+            si c'est tenu. */}
+        {flashResponseStats.avgMinutes != null && (
+          <div>
+            <p className="ep-label" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 5 }}>
+              <Zap size={11} /> Réponse moyenne (30j)
+            </p>
+            <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
+              {formatMinutes(flashResponseStats.avgMinutes)}
+            </p>
           </div>
         )}
       </div>
