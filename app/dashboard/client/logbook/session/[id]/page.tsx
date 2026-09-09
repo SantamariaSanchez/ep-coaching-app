@@ -13,7 +13,10 @@ export default async function SessionPage({
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Préserve l'id de séance (app/dashboard/coach/moi/logbook/session/[id]
+  // existe) plutôt que de retomber sur le dashboard générique — même trou
+  // trouvé sur plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect(`/dashboard/coach/moi/logbook/session/${id}`);
 
   return <SessionView sessionId={id} />;
 }

@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getMindsetProfile, getHabitLogs, getJournalEntries } from "@/utils/mindset";
 import MindsetView from "@/components/ui/MindsetView";
 import { saveMindsetQuiz, toggleHabitLog, addJournalEntry, deleteJournalEntry } from "@/app/dashboard/client/mindset/actions";
+import { todayInParis } from "@/lib/dates";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +15,12 @@ export default async function CoachMindsetPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const today = new Date();
-  const thirtyDaysAgo = new Date(today);
-  thirtyDaysAgo.setDate(today.getDate() - 29);
+  // MASTERCLASS.md Axe L : new Date().toISOString() reflète le calendrier
+  // UTC du serveur (Vercel), pas celui de Paris — entre minuit et 1h/2h du
+  // matin heure de Paris, today pointait encore sur hier.
+  const today = todayInParis();
+  const thirtyDaysAgo = new Date(`${today}T12:00:00Z`);
+  thirtyDaysAgo.setUTCDate(thirtyDaysAgo.getUTCDate() - 29);
 
   const [mindsetProfile, habitLogs, journalEntries] = await Promise.all([
     getMindsetProfile(user.id),
@@ -26,7 +30,7 @@ export default async function CoachMindsetPage() {
 
   return (
     <MindsetView
-      today={today.toISOString().split("T")[0]}
+      today={today}
       mindsetProfile={mindsetProfile}
       habitLogs={habitLogs}
       journalEntries={journalEntries}

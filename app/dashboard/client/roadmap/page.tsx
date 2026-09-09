@@ -7,7 +7,10 @@ export default async function ClientRoadmapPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de sa propre road map
+  // (app/dashboard/coach/moi/roadmap existe déjà) — même trou trouvé sur
+  // plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/roadmap");
 
   return <RoadmapView />;
 }

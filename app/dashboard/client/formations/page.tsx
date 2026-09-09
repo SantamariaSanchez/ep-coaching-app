@@ -19,7 +19,10 @@ export default async function FormationsPage() {
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de son propre catalogue de
+  // formations (app/dashboard/coach/moi/formations existe déjà) — même
+  // trou trouvé sur plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/formations");
   // Un membre gratuit parcourt le catalogue complet (structure, titres,
   // durées) pour se donner envie — seules les vidéos restent réservées aux
   // clients coachés, verrouillées plus bas plutôt que la page entière.

@@ -45,7 +45,12 @@ export default async function ClientNutritionPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de sa propre page nutrition
+  // (voir le même garde-fou déjà correct dans bilan/page.tsx et steps/page.tsx,
+  // qui redirigent vers coach/moi/*) — trouvé en auditant public/manifest.json,
+  // le raccourci PWA "Nutrition" du menu d'accueil pointe justement ici et
+  // atterrissait donc au mauvais endroit pour un compte coach.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/nutrition");
 
   const today = todayInParis();
 

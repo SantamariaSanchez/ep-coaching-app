@@ -12,7 +12,10 @@ export default async function LogbookPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de son propre logbook
+  // (app/dashboard/coach/moi/logbook existe déjà) — même trou trouvé sur
+  // plusieurs pages client en auditant public/manifest.json (raccourcis PWA).
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/logbook");
 
   const [program, sessions, records, activeSession, checkins] = await Promise.all([
     getActiveProgram(user.id),

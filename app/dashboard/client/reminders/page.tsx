@@ -7,7 +7,10 @@ export default async function RemindersPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de ses propres rappels
+  // (app/dashboard/coach/moi/reminders existe désormais) — même trou trouvé
+  // sur plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/reminders");
 
   return <RemindersView />;
 }

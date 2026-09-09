@@ -25,7 +25,10 @@ export default async function ClientProgramPage() {
     getSessionsThisWeekCount(user.id),
   ]);
 
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de son propre programme
+  // (app/dashboard/coach/moi/programme existe déjà) — même trou trouvé sur
+  // plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/programme");
 
   // Espace gratuit — programmes prédéfinis au choix, ou création d'un
   // programme sur mesure de zéro via ProgramFromScratchSection.

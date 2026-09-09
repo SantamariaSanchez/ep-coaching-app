@@ -17,7 +17,10 @@ export default async function FormationDetailPage({
   const user = await getUser();
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Préserve la formation ciblée (app/dashboard/coach/moi/formations/[formationId]
+  // existe) plutôt que de retomber sur le dashboard générique — même trou
+  // trouvé sur plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect(`/dashboard/coach/moi/formations/${formationId}`);
   const isFreeTier = !isSubscribed(profile);
 
   const [formation, completed] = await Promise.all([

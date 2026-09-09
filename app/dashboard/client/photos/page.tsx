@@ -17,7 +17,10 @@ export default async function ClientPhotosPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  if (profile?.role === "coach") redirect("/dashboard/coach");
+  // Retombait sur le dashboard générique au lieu de ses propres photos
+  // (app/dashboard/coach/moi/photos existe déjà) — même trou trouvé sur
+  // plusieurs pages client en auditant public/manifest.json.
+  if (profile?.role === "coach") redirect("/dashboard/coach/moi/photos");
 
   // Membres gratuits : pas de coach pour relire ces photos, pas de catégorie
   // de compétition, pas de raison de passer par un lien Drive externe — un
