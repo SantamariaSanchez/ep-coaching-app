@@ -124,6 +124,21 @@ export async function addFoodLog(params: {
   carbs: number;
   fats: number;
   loggedAt: string;
+  // Retour direct 2026-09-10 ("nutrition, corrige pour que ce soit vraiment
+  // utilisable") : doublons confirmés en base espacés de PLUSIEURS HEURES
+  // (15h49, 16h05, 19h54, 21h32, même trio d'aliments à chaque fois) — pas
+  // un double-tap rapide (déjà couvert par pendingToggleKeysRef côté
+  // client), donc un vrai trou serveur. logMealItems ("Valider le repas")
+  // a déjà ce garde-fou depuis le 17/08 (Axe W) ; handleTogglePlanItem
+  // (cocher un item un par un) ne l'avait jamais, alors qu'il partage
+  // exactement le même risque : si l'état "coché" affiché au client rate
+  // ne serait-ce qu'une fois (cache pas encore invalidé, tuile revenue au
+  // premier plan avant un resync complet...), retaper crée un doublon pur
+  // et simple, sans aucun filet. `dedupeIfPlanItem: true` n'est posé QUE
+  // par le cocher-un-item-du-plan — jamais par la recherche libre ou
+  // l'ajout d'une recette, où reloguer deux fois le même aliment/quantité
+  // le même jour est un vrai usage légitime (deux collations identiques).
+  dedupeIfPlanItem?: boolean;
 }): Promise<{ id?: string; error?: string }> {
   try {
     // Bug remonté en direct (2026-08-15) : cocher un aliment du plan (ou en
@@ -144,6 +159,25 @@ export async function addFoodLog(params: {
     if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
+
+    // Même garde-fou que logMealItems (Axe W) : si un item identique de CE
+    // créneau/jour existe déjà, on renvoie son id tel quel au lieu d'en
+    // recréer un — cocher un item du plan est une intention idempotente
+    // ("cet aliment est mangé"), jamais "ajoute-le encore une fois".
+    if (params.dedupeIfPlanItem) {
+      const { data: existing } = await supabase
+        .from("food_logs")
+        .select("id")
+        .eq("client_id", guard.userId)
+        .eq("food_id", params.foodId)
+        .eq("meal_slot", params.mealSlot)
+        .eq("quantity_g", params.quantityG)
+        .eq("logged_at", params.loggedAt)
+        .limit(1)
+        .maybeSingle();
+      if (existing?.id) return { id: existing.id };
+    }
+
     const { data, error } = await supabase
       .from("food_logs")
       .insert({
@@ -643,7 +677,7 @@ export async function logMealItems(
   items: { foodId: string; quantityG: number }[],
   mealSlot: string,
   loggedAt: string
-): Promise<{ error?: string; count?: number }> {
+): Promise<{ error?: string; count?: number; insertedLogs?: { id: string; foodId: string; quantityG: number }[] }> {
   // Même correctif que addFoodLog : pas de clientId externe, écrit
   // uniquement sur guard.userId.
   const guard = await requireAuth();
@@ -672,21 +706,28 @@ export async function logMealItems(
     // non coché.
     const { data: existing } = await admin
       .from("food_logs")
-      .select("food_id, quantity_g")
+      .select("id, food_id, quantity_g")
       .eq("client_id", guard.userId)
       .eq("meal_slot", mealSlot)
       .eq("logged_at", loggedAt);
-    const existingKeys = new Set(
-      ((existing ?? []) as { food_id: string | null; quantity_g: number }[]).map(
-        (l) => `${l.food_id}:${l.quantity_g}`
-      )
-    );
+    const existingRows = (existing ?? []) as { id: string; food_id: string | null; quantity_g: number }[];
+    const existingByKey = new Map(existingRows.map((l) => [`${l.food_id}:${l.quantity_g}`, l.id]));
 
-    const newItems = items.filter((it) => !existingKeys.has(`${it.foodId}:${it.quantityG}`));
+    const newItems = items.filter((it) => !existingByKey.has(`${it.foodId}:${it.quantityG}`));
+
+    // Retour direct 2026-09-10 : l'appelant (handleValidateSlot) a besoin
+    // du VRAI id de chaque item, y compris ceux déjà présents avant cet
+    // appel — sans ça, ses entrées optimistes (id "optimistic-...") ne
+    // sont jamais réconciliées et restent affichées indéfiniment comme
+    // "en vol", contrairement à handleTogglePlanItem qui le fait déjà pour
+    // un item logué seul.
+    const alreadyLogged: { id: string; foodId: string; quantityG: number }[] = items
+      .filter((it) => existingByKey.has(`${it.foodId}:${it.quantityG}`))
+      .map((it) => ({ id: existingByKey.get(`${it.foodId}:${it.quantityG}`)!, foodId: it.foodId, quantityG: it.quantityG }));
 
     // Tout était déjà loggué (doublon évité) : ce n'est pas une erreur, le
     // repas est déjà à l'état voulu, silencieusement.
-    if (newItems.length === 0) return { count: 0 };
+    if (newItems.length === 0) return { count: 0, insertedLogs: alreadyLogged };
 
     const rows = newItems
       .map((it) => {
@@ -711,8 +752,16 @@ export async function logMealItems(
     // être résolu en aliment connu — ça, c'est une vraie erreur de données.
     if (rows.length === 0) return { error: "Aucun aliment valide dans ce repas." };
 
-    const { error } = await admin.from("food_logs").insert(rows);
+    const { data: inserted, error } = await admin.from("food_logs").insert(rows).select("id, food_id, quantity_g");
     if (error) return { error: "Erreur lors de l'ajout." };
+    const insertedLogs: { id: string; foodId: string; quantityG: number }[] = [
+      ...alreadyLogged,
+      ...((inserted ?? []) as { id: string; food_id: string; quantity_g: number }[]).map((r) => ({
+        id: r.id,
+        foodId: r.food_id,
+        quantityG: r.quantity_g,
+      })),
+    ];
 
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
     // MASTERCLASS.md Axe W : contrairement à addFoodLog/removeFoodLog (voir
@@ -727,7 +776,7 @@ export async function logMealItems(
     // les 14-15/08, tous sur le même compte).
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
-    return { count: rows.length };
+    return { count: rows.length, insertedLogs };
   } catch (e) {
     console.error("logMealItems error:", e);
     return { error: "Erreur inattendue." };

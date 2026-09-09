@@ -288,6 +288,7 @@ interface Props {
     carbs: number;
     fats: number;
     loggedAt: string;
+    dedupeIfPlanItem?: boolean;
   }) => Promise<{ id?: string; error?: string }>;
   removeFoodLog: (logId: string) => Promise<{ error?: string }>;
   createCustomFood: (params: {
@@ -305,7 +306,11 @@ interface Props {
   // autant de repas enregistrés — voir le bouton dans l'onglet "Repas" de
   // la recherche. Optionnel : absent si l'appelant n'a pas encore de plan.
   importPlanMealsAsSavedMeals?: (planId: string) => Promise<{ error?: string; imported?: number }>;
-  logMealItems?: (items: { foodId: string; quantityG: number }[], mealSlot: string, loggedAt: string) => Promise<{ error?: string; count?: number }>;
+  logMealItems?: (
+    items: { foodId: string; quantityG: number }[],
+    mealSlot: string,
+    loggedAt: string
+  ) => Promise<{ error?: string; count?: number; insertedLogs?: { id: string; foodId: string; quantityG: number }[] }>;
   // Changer le mode (flexible/fixe/fixe-flexible) du plan actif directement
   // depuis le suivi du jour (demande explicite 2026-08-17 : "je veux pouvoir
   // modifier mon fixe ou variable") — jusqu'ici cette capacité existait déjà
@@ -1076,6 +1081,25 @@ export default function ClientNutritionView({
       setTodayLogs((prev) => prev.filter((l) => !ids.has(l.id)));
       setAddingError(result.error);
     } else {
+      // Retour direct 2026-09-10 : sans réconciliation, ces entrées
+      // optimistes restaient à vie avec un id "optimistic-..." (le resync
+      // depuis le serveur les préserve exprès, voir plus haut) — un
+      // prochain "Valider" sur le même créneau les revoyait donc comme
+      // "en vol", jamais comme déjà loguées, et pouvait recréer un vrai
+      // doublon en base. Remplace chaque entrée optimiste par sa ligne
+      // réelle (insertedLogs couvre aussi bien les items tout juste
+      // insérés que ceux déjà présents, dédupliqués côté serveur), même
+      // principe que handleTogglePlanItem pour un item seul.
+      setTodayLogs((prev) => {
+        const byKey = new Map(
+          (result.insertedLogs ?? []).map((r) => [`${r.foodId}:${r.quantityG}`, r.id])
+        );
+        return prev.map((l) => {
+          if (!l.id.startsWith(`optimistic-`) || l.meal_slot !== slot) return l;
+          const realId = byKey.get(`${l.food_id}:${l.quantity_g}`);
+          return realId ? { ...l, id: realId } : l;
+        });
+      });
       notifyGateRefresh();
     }
     pendingToggleKeysRef.current.delete(pendingKey);
@@ -1194,6 +1218,7 @@ export default function ClientNutritionView({
       carbs: macros.carbs,
       fats: macros.fats,
       loggedAt: today,
+      dedupeIfPlanItem: true,
     });
 
     if (result.error) {
