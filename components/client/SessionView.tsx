@@ -145,6 +145,13 @@ interface RestTimer {
   visible: boolean;
   startedAt: number;
   suggestedSeconds: number;
+  // Le libellé ("1-2 min", "3-5 min"...) correspondant au VRAI RIR de ce
+  // set, pas recalculé au hasard dans l'overlay — bug réel trouvé en
+  // creusant le retour direct 2026-09-09 sur le système de repos :
+  // RestTimerOverlay appelait getSuggestedRest(0) en dur pour l'affichage,
+  // donc affichait toujours "3-5 min" même quand le compte à rebours réel
+  // (suggestedSeconds, lui calculé avec le bon RIR) visait 90s ("1-2 min").
+  suggestedLabel: string;
   mentalStep: "hidden" | "checking" | "no_wait";
   mentalPhysical: boolean | null;
   mentalMental: boolean | null;
@@ -758,7 +765,7 @@ function RestTimerOverlay({
           <>
             <div className="text-center">
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-                Repos : {getSuggestedRest(0).label}
+                Repos : {timer.suggestedLabel}
               </p>
               <p className="text-5xl font-black text-white tabular-nums">
                 {formatTime(elapsed)}
@@ -896,6 +903,7 @@ function SetRow({
   onRemove,
   onUnvalidate,
   onRetrySave,
+  onEnsureSetId,
 }: {
   set: SetState;
   position: number;
@@ -908,6 +916,7 @@ function SetRow({
   onRemove: () => void;
   onUnvalidate: () => void;
   onRetrySave: () => void;
+  onEnsureSetId: () => Promise<string | null>;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
   const isPRCandidate =
@@ -920,7 +929,6 @@ function SetRow({
     suggestedWeight != null && prevWeight?.weight != null && suggestedWeight !== prevWeight.weight;
 
   async function handleVideoSelect(file: File) {
-    if (!set.dbId) return;
     setVideoError(null);
     // MASTERCLASS.md Axe O : le bucket set-videos rejette déjà les fichiers
     // trop lourds ou au mauvais type côté serveur, mais sans ce contrôle
@@ -932,9 +940,17 @@ function SetRow({
     }
     setUploadingVideo(true);
     try {
+      // Filmer AVANT d'avoir loggé poids/reps est le seul ordre qui a du
+      // sens (retour direct 2026-09-09 : "c'est incohérent de filmer après
+      // avoir fini le set") — si le set n'a pas encore de ligne en base,
+      // onEnsureSetId en crée une (sans le marquer validé, voir
+      // handleEnsureSetSaved) juste pour avoir un id à rattacher.
+      const dbId = set.dbId ?? (await onEnsureSetId());
+      if (!dbId) throw new Error("set non enregistré");
+
       const supabase = createClientSupabase();
       const ext = file.name.split(".").pop() || "mp4";
-      const path = `${sessionId}/${set.dbId}-${Date.now()}.${ext}`;
+      const path = `${sessionId}/${dbId}-${Date.now()}.${ext}`;
       const { error: uploadError } = await supabase.storage
         .from("set-videos")
         .upload(path, file, { contentType: file.type || "video/mp4", upsert: false });
@@ -943,10 +959,10 @@ function SetRow({
       const { error: updateError } = await supabase
         .from("session_sets")
         .update({ video_url: path })
-        .eq("id", set.dbId);
+        .eq("id", dbId);
       if (updateError) throw updateError;
 
-      onChange({ hasVideo: true });
+      onChange({ hasVideo: true, dbId });
     } catch (e) {
       console.error("Video upload failed:", e);
       setVideoError("Échec de l'envoi de la vidéo. Réessaie.");
@@ -1162,6 +1178,43 @@ function SetRow({
             </div>
           </div>
 
+          {/* Filmer AVANT de valider, jamais après (retour direct
+              2026-09-09 : "c'est incohérent de filmer après avoir fini le
+              set, c'est juste con") — le seul moment où filmer capture
+              vraiment l'exécution du set, c'est pendant qu'il se fait,
+              donc avant que poids/reps soient forcément déjà remplis. */}
+          <div className="flex items-center justify-between gap-2">
+            {set.hasVideo ? (
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-400">
+                <Video size={11} /> Vidéo envoyée à ton coach
+              </span>
+            ) : (
+              <label className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-dashed border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-2.5 py-1.5 cursor-pointer transition-colors">
+                {uploadingVideo ? (
+                  <>
+                    <Loader2 size={11} className="animate-spin" /> Envoi…
+                  </>
+                ) : (
+                  <>
+                    <Video size={11} /> Filmer ce set
+                  </>
+                )}
+                <input
+                  type="file"
+                  accept="video/*"
+                  className="hidden"
+                  disabled={uploadingVideo}
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleVideoSelect(file);
+                    e.target.value = "";
+                  }}
+                />
+              </label>
+            )}
+          </div>
+          {videoError && <p className="text-[10px] text-red-400">{videoError}</p>}
+
           {/* Validate button — desactive pendant l'enregistrement : un
               double-tap partait sinon en deux requetes et creait deux fois
               la meme serie en base. */}
@@ -1196,6 +1249,7 @@ function ExerciseCard({
   onRetrySaveSet,
   onRemoveExercise,
   onRemoveSet,
+  onEnsureSetId,
   onMoveUp,
   onMoveDown,
   onNotesChange,
@@ -1211,6 +1265,7 @@ function ExerciseCard({
   onRetrySaveSet: (setIdx: number) => void;
   onRemoveExercise: () => void;
   onRemoveSet: (setIdx: number) => void;
+  onEnsureSetId: (setIdx: number) => Promise<string | null>;
   onMoveUp?: () => void;
   onMoveDown?: () => void;
   onNotesChange: (notes: string) => void;
@@ -1469,6 +1524,7 @@ function ExerciseCard({
             onUnvalidate={() => onUnvalidateSet(idx)}
             onRetrySave={() => onRetrySaveSet(idx)}
             onRemove={() => onRemoveSet(idx)}
+            onEnsureSetId={() => onEnsureSetId(idx)}
           />
         ))}
 
@@ -1750,11 +1806,17 @@ export default function SessionView({
   // (seance, exercice, numero de serie) : la rappeler pour un set deja
   // enregistre met a jour la meme ligne, elle n'en cree jamais une seconde.
   const persistSet = useCallback(
-    async (exIdx: number, setIdx: number) => {
+    // markValidated=false : utilisé pour créer la ligne en base juste pour
+    // pouvoir y rattacher une vidéo AVANT que le set soit réellement fini
+    // (voir handleEnsureSetSaved plus bas) — le formulaire poids/reps reste
+    // affiché, jamais basculé sur le récapitulatif comme si le set était
+    // déjà validé alors qu'il ne l'est pas encore.
+    async (exIdx: number, setIdx: number, options?: { markValidated?: boolean }): Promise<string | null> => {
+      const markValidated = options?.markValidated ?? true;
       const exState = exercises[exIdx];
       const set = exState?.sets[setIdx];
-      if (!exState || !set) return;
-      if (savingSetsRef.current.has(set.localId)) return;
+      if (!exState || !set) return null;
+      if (savingSetsRef.current.has(set.localId)) return set.dbId;
       savingSetsRef.current.add(set.localId);
 
       const ex = exState.exercise;
@@ -1832,14 +1894,31 @@ export default function SessionView({
       // bouton "Ajouter un set" doit en créer un, sinon ça apparaît comme
       // un set rajouté tout seul sans que le client ait rien demandé.
       patchSet({
-        validated: true,
+        ...(markValidated ? { validated: true } : {}),
         isPR,
         saving: false,
         saveFailed: failed,
         ...(dbId ? { dbId } : {}),
       });
+
+      return dbId;
     },
     [exercises, initData, sessionId]
+  );
+
+  // Rattacher une vidéo au set exige une ligne en base, mais filmer AVANT
+  // d'avoir logué poids/reps est justement le seul ordre qui a du sens
+  // (retour direct 2026-09-09 : "c'est incohérent de filmer après avoir
+  // fini le set, c'est juste con") — la ligne se crée alors avec ce qui est
+  // déjà rempli (même vide), sans marquer le set comme validé : le
+  // formulaire reste ouvert, la vidéo s'attache simplement en plus.
+  const handleEnsureSetSaved = useCallback(
+    async (exIdx: number, setIdx: number): Promise<string | null> => {
+      const existing = exercises[exIdx]?.sets[setIdx]?.dbId;
+      if (existing) return existing;
+      return persistSet(exIdx, setIdx, { markValidated: false });
+    },
+    [exercises, persistSet]
   );
 
   const handleValidateSet = useCallback(
@@ -1858,6 +1937,7 @@ export default function SessionView({
         visible: true,
         startedAt: Date.now(),
         suggestedSeconds: suggested.seconds,
+        suggestedLabel: suggested.label,
         mentalStep: "hidden",
         mentalPhysical: null,
         mentalMental: null,
@@ -2605,6 +2685,7 @@ export default function SessionView({
             onRetrySaveSet={(setIdx) => handleRetrySaveSet(exIdx, setIdx)}
             onRemoveExercise={() => handleRemoveExercise(exIdx)}
             onRemoveSet={(setIdx) => handleRemoveSet(exIdx, setIdx)}
+            onEnsureSetId={(setIdx) => handleEnsureSetSaved(exIdx, setIdx)}
             onMoveUp={exIdx > 0 ? () => handleMoveExercise(exIdx, -1) : undefined}
             onMoveDown={exIdx < exercises.length - 1 ? () => handleMoveExercise(exIdx, 1) : undefined}
             onNotesChange={(notes) => handleExerciseNotesChange(exIdx, exState.exercise.name, notes)}
