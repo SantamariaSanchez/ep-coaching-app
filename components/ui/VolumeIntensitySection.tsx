@@ -265,8 +265,17 @@ export default function VolumeIntensitySection({
   const hasRealized = realizedEntries.length > 0;
 
   // ── Build weight map from workout logs ──
+  // workoutLogs est trié logged_at décroissant (le plus récent gagne, voir
+  // getRecentWorkoutLogs) — mais /complete insère UNE ligne par exercice DU
+  // PROGRAMME à chaque fin de séance, même pour ceux jamais faits ce jour-là
+  // (sets_completed=0, weight_kg=null). Sans ce filtre, un exercice sauté à
+  // la dernière séance écrasait le "poids actuel" par du vide, même avec un
+  // vrai historique de poids sur une séance plus ancienne (confirmé sur son
+  // compte : plusieurs exercices sautés le 09/09 masquaient un poids déjà
+  // loggué le 07/09).
   const weightMap: Record<string, number | null> = {};
   for (const log of workoutLogs) {
+    if (!log.sets_completed || log.sets_completed <= 0) continue;
     const key = log.exercise_name.toLowerCase();
     if (!(key in weightMap)) {
       weightMap[key] = log.weight_kg ?? null;
