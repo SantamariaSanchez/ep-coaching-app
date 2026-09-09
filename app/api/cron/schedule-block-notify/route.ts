@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 import { parisDateStr, parisTimeStr, parisIsoWeekday } from "@/lib/schedule-time";
 
 // Notifie chaque propriétaire de bloc d'agenda (schedule_blocks) quand
@@ -103,21 +104,48 @@ export async function GET(req: Request) {
     // Un bloc "Réveil" doit vraiment sonner (voir components/ui/AlarmPlayer.tsx),
     // pas juste afficher une notif silencieuse qu'on peut rater en dormant.
     const isAlarm = /r[ée]veil/i.test(block.label);
+    const title = `🕐 ${block.label}`;
+    const body = `C'est l'heure, ${block.label} commence maintenant.`;
     const result = await sendPushToUser(
       block.owner_id,
-      `🕐 ${block.label}`,
-      `C'est l'heure, ${block.label} commence maintenant.`,
+      title,
+      body,
       url,
       isAlarm ? "alarm" : undefined,
       isAlarm ? block.id : undefined
     );
-    if (result.ok) {
-      sent++;
-      await supabase
-        .from("schedule_blocks")
-        .update({ last_notified_at: now.toISOString() })
-        .eq("id", block.id);
+
+    // Retour direct 2026-09-09 ("les notif, corrige, yen a plus la") : ce
+    // cron n'appelait jamais insertNotification, donc AUCUN rappel d'agenda
+    // (repas, seance, steps, bilan...) n'atterrissait jamais dans la cloche
+    // in-app - alors que lib/push.ts documente explicitement que sendPushToUser
+    // gere le push seul et que "la notif in-app (cloche) est enregistree
+    // separement par notifyUser()". Confirme en base : table `notifications`
+    // vide pour ce compte malgre ~15-20 rappels d'agenda envoyes par jour.
+    // Consequence concrete : si le push OS est rate/repousse/coupe par le
+    // telephone (Doze, DND, notif balayee sans etre lue...), il n'existe
+    // AUCUNE trace consultable dans l'appli - la cloche ne peut jamais
+    // servir de filet de secours. Ecrit desormais la ligne in-app des que
+    // le bloc est traite (meme si le push echoue - la cloche est
+    // l'historique complet, meme principe que notifyUser), une seule fois
+    // par jour et par bloc : last_notified_at avance maintenant meme si le
+    // push echoue (sinon, un compte sans abonnement push ou en heures de
+    // silence redeclencherait ce meme bloc, et donc une nouvelle ligne en
+    // cloche, a chaque passage du cron - toutes les 5 min - pour le reste
+    // de la journee). Les reveils gardent leur propre re-essai du push
+    // (isAlarm, base sur alarm_ack_date, jamais sur last_notified_at) mais
+    // n'ecrivent, eux aussi, qu'une seule ligne en cloche par jour.
+    const alreadyNotifiedToday =
+      !!block.last_notified_at && parisDateStr(new Date(block.last_notified_at)) === today;
+    if (!alreadyNotifiedToday) {
+      await insertNotification({ userId: block.owner_id, type: "schedule_block", title, body, url });
     }
+
+    if (result.ok) sent++;
+    await supabase
+      .from("schedule_blocks")
+      .update({ last_notified_at: now.toISOString() })
+      .eq("id", block.id);
   }
 
   return NextResponse.json({ ok: true, checked: due.length, sent });
