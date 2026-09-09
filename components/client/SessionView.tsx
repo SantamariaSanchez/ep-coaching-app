@@ -816,7 +816,18 @@ function RestTimerOverlay({
                   {[true, false].map((v) => (
                     <button
                       key={String(v)}
-                      onClick={() => onUpdate({ mentalPhysical: v })}
+                      onClick={() => {
+                        onUpdate({ mentalPhysical: v });
+                        // Bug réel : ce passage à "no_wait" (l'écran "prends
+                        // encore 30-60s" avec le bouton "Je suis prêt
+                        // maintenant") ne vivait que dans le bouton Mental
+                        // ci-dessous — répondre "Non" ici seul (physique pas
+                        // récupéré, mental prêt) laissait anyNo=true mais
+                        // both=false : ni le bouton "C'est parti" ni cet
+                        // écran de patience ne s'affichaient, l'utilisateur
+                        // restait bloqué sans aucune suite possible.
+                        if (!v) onUpdate({ mentalStep: "no_wait", noWaitStartedAt: Date.now() });
+                      }}
                       className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${
                         timer.mentalPhysical === v
                           ? v
@@ -921,8 +932,13 @@ function SetRow({
   onEnsureSetId: () => Promise<string | null>;
 }) {
   const weight = parseFloat(set.weightKg) || 0;
+  // Même règle que persistSet (isPR sauvegardé) : sans seuil (exercice
+  // jamais fait avant), n'importe quel poids saisi devient le premier
+  // record, donc candidat PR dès qu'il est positif — sinon le badge
+  // n'apparaissait qu'après coup, une fois le set sauvegardé, jamais
+  // pendant la saisie.
   const isPRCandidate =
-    prThreshold != null && weight > prThreshold && weight > 0;
+    weight > 0 && (prThreshold == null || weight > prThreshold);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
 
@@ -1809,7 +1825,32 @@ export default function SessionView({
   // exercice sans historique = PR (c'est littéralement son seul record),
   // et relève la barre pour les sets suivants de la même séance — pas de
   // faux PR répété à chaque set fait à poids identique.
-  const sessionBestWeightRef = useRef<Record<string, number>>({});
+  // State (pas une ref) : la lire pendant le rendu — pour le badge "PR !"
+  // live ci-dessous — est interdit par les règles strictes de ce projet
+  // (react-hooks/refs, "Cannot access refs during render") avec une ref.
+  const [sessionBestWeights, setSessionBestWeights] = useState<Record<string, number>>({});
+
+  // Seuil réel pour un exercice donné : le plus haut entre l'historique déjà
+  // en base (initData.prMap) et ce qui a déjà été battu PENDANT cette séance
+  // (sessionBestWeights, jamais reflété par prMap qui reste figé au
+  // chargement). Partagée entre persistSet (calcul du vrai isPR sauvegardé)
+  // et le badge "🏆 PR !" affiché en direct pendant la saisie, pour que les
+  // deux racontent toujours la même histoire — sans ça, le badge live
+  // n'apparaissait jamais sur un exercice sans historique (prThreshold
+  // toujours null), alors que le premier poids validé devient bien un PR
+  // une fois enregistré : le badge sautait à l'existence après coup au lieu
+  // d'anticiper, au lieu d'avoir été là dès la saisie.
+  const getEffectiveThreshold = useCallback(
+    (exerciseName: string): number | null => {
+      const exKey = exerciseName.toLowerCase();
+      const serverThreshold = initData?.prMap[exKey] ?? null;
+      const sessionBest = sessionBestWeights[exKey] ?? null;
+      return serverThreshold != null && sessionBest != null
+        ? Math.max(serverThreshold, sessionBest)
+        : serverThreshold ?? sessionBest;
+    },
+    [initData, sessionBestWeights]
+  );
 
   // Envois en vol, par set : un double-tap sur "Valider le set" partait en
   // deux requetes a ~1s d'ecart et enregistrait deux fois la meme serie
@@ -1841,18 +1882,10 @@ export default function SessionView({
 
       const weight = parseFloat(set.weightKg) || null;
       const exKey = ex.name.toLowerCase();
-      const serverThreshold = initData?.prMap[exKey] ?? null;
-      // Le seuil réel est le plus haut des deux : l'historique déjà en base
-      // (serverThreshold) ET ce qui a déjà été battu PENDANT cette séance
-      // (serverThreshold ne bouge jamais après le chargement initial).
-      const sessionBest = sessionBestWeightRef.current[exKey] ?? null;
-      const effectiveThreshold =
-        serverThreshold != null && sessionBest != null
-          ? Math.max(serverThreshold, sessionBest)
-          : serverThreshold ?? sessionBest;
+      const effectiveThreshold = getEffectiveThreshold(ex.name);
       const isPR = weight != null && (effectiveThreshold == null || weight > effectiveThreshold);
       if (isPR && weight != null) {
-        sessionBestWeightRef.current[exKey] = weight;
+        setSessionBestWeights((prev) => ({ ...prev, [exKey]: weight }));
       }
 
       // Retrouve le set par son localId plutot que par son index : entre le
@@ -1930,7 +1963,7 @@ export default function SessionView({
 
       return dbId;
     },
-    [exercises, initData, sessionId]
+    [exercises, initData, sessionId, getEffectiveThreshold]
   );
 
   // Rattacher une vidéo au set exige une ligne en base, mais filmer AVANT
@@ -2752,9 +2785,7 @@ export default function SessionView({
             prevWeight={
               initData.prevWeights[exState.exercise.name.toLowerCase()] ?? null
             }
-            prThreshold={
-              initData.prMap[exState.exercise.name.toLowerCase()] ?? null
-            }
+            prThreshold={getEffectiveThreshold(exState.exercise.name)}
             libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
             sessionId={sessionId}
             onUpdate={(patch) =>
