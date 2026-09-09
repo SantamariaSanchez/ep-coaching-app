@@ -7,10 +7,12 @@
 -- exemple) doivent devenir de vrais outils, pas juste de la valeur en
 -- lecture.
 --
--- Même parti pris que client_tasks (20260621) : RLS désactivée, l'accès
--- passe uniquement par les server actions qui vérifient déjà la relation
--- coach/client via requireOwnClient() avant tout appel, jamais interrogée
--- directement depuis le client.
+-- RLS activée séparément dans 20260909d_client_medical_constraints_rls.sql
+-- (policy coach-only via is_own_coach) : la désactiver ici en s'appuyant
+-- sur "l'accès passe uniquement par les server actions" reproduisait
+-- l'erreur déjà corrigée pour client_tasks (20260804c) — un client Supabase
+-- admin (service role) contourne RLS de toute façon, mais RLS désactivée
+-- expose la table en direct à quiconque est connecté via l'API REST.
 create table if not exists public.client_medical_constraints (
   id uuid primary key default gen_random_uuid(),
   client_id uuid not null references auth.users(id) on delete cascade,
