@@ -60,6 +60,16 @@ const MEAL_SLOTS = [
   { key: "dinner", label: "Dîner" },
 ];
 
+// Navigation jour par jour du plan fixe (DietPlanCard) — voir sa
+// définition/usage plus bas.
+const DOW_ORDER = ["lun", "mar", "mer", "jeu", "ven", "sam", "dim"] as const;
+const DOW_LABELS: Record<string, string> = {
+  lun: "Lun", mar: "Mar", mer: "Mer", jeu: "Jeu", ven: "Ven", sam: "Sam", dim: "Dim",
+};
+const DOW_FULL_LABELS: Record<string, string> = {
+  lun: "lundi", mar: "mardi", mer: "mercredi", jeu: "jeudi", ven: "vendredi", sam: "samedi", dim: "dimanche",
+};
+
 const FOOD_CATEGORIES = [
   "Viande blanche",
   "Viande rouge",
@@ -2643,7 +2653,6 @@ function DietPlanCard({
 }) {
   const [validatingSlot, setValidatingSlot] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(true);
-  const checkable = plan.mode === "fixed" || plan.mode === "fixed_flexible";
   const isWeekly = plan.structure === "weekly";
   const hasHighDay = useMemo(() => plan.diet_plan_meals.some((m) => m.day_of_week === "high"), [plan.diet_plan_meals]);
   const [useHighDay, setUseHighDay] = useState(false);
@@ -2653,12 +2662,36 @@ function DietPlanCard({
     return map[new Date().getDay()];
   }, []);
 
-  const activeDay = isWeekly ? (useHighDay ? "high" : todayDow) : null;
+  // Naviguer vers un autre jour de la semaine ("voir demain/hier"), pas
+  // seulement le jour courant — retour direct 2026-09-09 : "il n'y a
+  // toujours que la diète du jour, je veux les diètes de demain, de hier".
+  // Un plan hebdomadaire est un gabarit récurrent (pas un vrai calendrier
+  // multi-semaine, voir la même limite déjà documentée pour WeeklyAgenda) :
+  // "demain" veut dire "le prochain jour de la semaine dans le gabarit",
+  // cochable seulement quand on regarde effectivement AUJOURD'HUI — cocher
+  // un repas "de demain" avant qu'il n'arrive n'aurait aucun sens.
+  const [viewDow, setViewDow] = useState(todayDow);
+  const isViewingToday = viewDow === todayDow;
+  const checkable = (plan.mode === "fixed" || plan.mode === "fixed_flexible") && isViewingToday;
+
+  // "Jour high" ne s'applique qu'à aujourd'hui (c'est une déclaration sur
+  // ce qu'on mange réellement aujourd'hui, pas un attribut d'un autre jour
+  // du gabarit qu'on ne fait que consulter) — sans isViewingToday ici, le
+  // toggle resterait actif même après avoir changé de jour via les chips.
+  const activeDay = isWeekly ? (isViewingToday && useHighDay ? "high" : viewDow) : null;
 
   const dayMeals = useMemo(
     () => (isWeekly ? plan.diet_plan_meals.filter((m) => m.day_of_week === activeDay) : plan.diet_plan_meals),
     [plan.diet_plan_meals, isWeekly, activeDay]
   );
+
+  // Quelle variante est affichée pour chaque créneau ayant plusieurs choix
+  // (pain OU flocons d'avoine...) — un switch, jamais les deux affichées
+  // en même temps (retour direct 2026-09-09 : "je veux pas que y'a les 2
+  // repas d'un coup qui apparaissent mais un petit bouton pour les
+  // switch"). Indexé par jour+créneau : changer de jour ne doit jamais
+  // garder le choix d'un autre jour affiché par erreur.
+  const [variantChoice, setVariantChoice] = useState<Record<string, number>>({});
 
   // Regroupé par créneau PUIS par variante (variant_group, "pain OU flocons
   // d'avoine" pour le même créneau, voir sa définition dans utils/nutrition.ts)
@@ -2696,6 +2729,11 @@ function DietPlanCard({
   const QUANTITY_MATCH_EPSILON = 0.01;
   const checkedMap = useMemo(() => {
     const map: Record<string, string | undefined> = {};
+    // En dehors d'aujourd'hui, aucun repas n'est jamais "coché" : todayLogs
+    // reste toujours le journal du jour réel, un match fortuit sur un autre
+    // jour du gabarit n'aurait aucun sens à afficher (et checkable est déjà
+    // false dans ce cas, donc rien n'est cliquable de toute façon).
+    if (!isViewingToday) return map;
     const used = new Set<string>();
     for (const m of dayMeals) {
       const match = todayLogs.find(
@@ -2711,7 +2749,7 @@ function DietPlanCard({
       }
     }
     return map;
-  }, [dayMeals, todayLogs]);
+  }, [dayMeals, todayLogs, isViewingToday]);
 
   const doneCount = Object.values(checkedMap).filter(Boolean).length;
 
@@ -2743,7 +2781,35 @@ function DietPlanCard({
         )}
       </div>
 
-      {expanded && hasHighDay && (
+      {expanded && isWeekly && (
+        <div className="px-4 pt-3 flex items-center gap-1.5 overflow-x-auto">
+          {DOW_ORDER.map((d) => {
+            const active = d === viewDow;
+            return (
+              <button
+                key={d}
+                onClick={(e) => { e.stopPropagation(); setViewDow(d); }}
+                className={`flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border transition-colors ${
+                  active
+                    ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                    : "border-[#890404]/25 text-[#F5EDED]/35"
+                }`}
+              >
+                {DOW_LABELS[d]}
+                {d === todayDow && <span className="ml-1 text-[#E01E1E]">•</span>}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {expanded && !isViewingToday && (
+        <p className="px-4 pt-2 text-[10px] text-[#F5EDED]/30 italic">
+          Aperçu de {DOW_FULL_LABELS[viewDow]}, lecture seule — reviens sur {DOW_FULL_LABELS[todayDow]} pour cocher.
+        </p>
+      )}
+
+      {expanded && hasHighDay && isViewingToday && (
         <div className="px-4 pt-3 flex items-center gap-2">
           <button
             onClick={(e) => { e.stopPropagation(); setUseHighDay((v) => !v); }}
@@ -2772,6 +2838,17 @@ function DietPlanCard({
             // robuste même si un coach a sauté des numéros en construisant le plan.
             const variantKeys = Object.keys(bySlot[slot.key]).map(Number).sort((a, b) => a - b);
             const hasVariants = variantKeys.length > 1;
+            // Un switch, jamais les deux affichées en même temps (retour
+            // direct 2026-09-09) — état gardé par jour+créneau pour ne
+            // jamais laisser le choix d'un autre jour affiché par erreur.
+            const variantStateKey = `${viewDow}:${slot.key}`;
+            const chosen = variantChoice[variantStateKey];
+            const activeVariant = chosen !== undefined && variantKeys.includes(chosen) ? chosen : variantKeys[0];
+            const activeVariantIndex = variantKeys.indexOf(activeVariant);
+            const items = bySlot[slot.key][activeVariant];
+            const uncheckedMeals = checkable ? items.filter((m) => !checkedMap[m.id]) : [];
+            const validatingKey = `${slot.key}:${activeVariant}`;
+            const isValidating = validatingSlot === validatingKey;
             return (
             <div
               key={slot.key}
@@ -2782,93 +2859,91 @@ function DietPlanCard({
                   : undefined
               }
             >
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5">
-                {slot.label}
-              </p>
-              <div className={hasVariants ? "space-y-3" : undefined}>
-                {variantKeys.map((variant, variantIndex) => {
-                  const items = bySlot[slot.key][variant];
-                  const uncheckedMeals = checkable ? items.filter((m) => !checkedMap[m.id]) : [];
-                  const validatingKey = `${slot.key}:${variant}`;
-                  const isValidating = validatingSlot === validatingKey;
+              <div className="flex items-center justify-between gap-2 mb-1.5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
+                  {slot.label}
+                </p>
+                {/* Bouton unique pour valider tout le repas (ou l'option
+                    affichée) d'un coup (demande explicite 2026-08-16) plutôt
+                    que de forcer à cocher chaque aliment un par un —
+                    n'apparaît que s'il reste au moins un aliment non loggué. */}
+                {onValidateSlot && uncheckedMeals.length > 0 && (
+                  <button
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      setValidatingSlot(validatingKey);
+                      await onValidateSlot(uncheckedMeals);
+                      setValidatingSlot(null);
+                    }}
+                    disabled={isValidating}
+                    className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors"
+                  >
+                    <Check size={11} strokeWidth={3} />
+                    {isValidating ? "Validation…" : "Valider"}
+                  </button>
+                )}
+              </div>
+
+              {hasVariants && (
+                <div className="flex gap-1.5 mb-2">
+                  {variantKeys.map((v, i) => (
+                    <button
+                      key={v}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setVariantChoice((prev) => ({ ...prev, [variantStateKey]: v }));
+                      }}
+                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-full border transition-colors ${
+                        i === activeVariantIndex
+                          ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                          : "border-[#890404]/25 text-[#F5EDED]/35"
+                      }`}
+                    >
+                      {i === 0 ? "Choix habituel" : `Option ${i + 1}`}
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-1">
+                {items.map((m) => {
+                  const matchedLogId = checkedMap[m.id];
+                  const isChecked = !!matchedLogId;
                   return (
                     <div
-                      key={variant}
-                      className={hasVariants ? "rounded-lg border border-[#890404]/15 px-2.5 py-2 -mx-2.5" : undefined}
+                      key={m.id}
+                      className={`flex items-center gap-3 py-1.5 ${
+                        checkable ? "cursor-pointer" : ""
+                      }`}
+                      onClick={
+                        checkable ? () => onToggle(m, matchedLogId) : undefined
+                      }
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        {/* "Option 2", "Option 3"... jamais "Option 1" : le
-                            premier choix reste juste "le" repas, comme
-                            lorsqu'il n'y a qu'une seule variante. */}
-                        {hasVariants && (
-                          <p className="text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30">
-                            {variantIndex === 0 ? "Choix habituel" : `Option ${variantIndex + 1}`}
-                          </p>
-                        )}
-                        {/* Bouton unique pour valider tout le repas (ou cette
-                            option) d'un coup (demande explicite 2026-08-16)
-                            plutôt que de forcer à cocher chaque aliment un par
-                            un — n'apparaît que s'il reste au moins un aliment
-                            non loggué sur cette variante. */}
-                        {onValidateSlot && uncheckedMeals.length > 0 && (
-                          <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              setValidatingSlot(validatingKey);
-                              await onValidateSlot(uncheckedMeals);
-                              setValidatingSlot(null);
-                            }}
-                            disabled={isValidating}
-                            className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#4ade80] hover:text-[#6ee7a0] disabled:opacity-50 transition-colors ml-auto"
-                          >
-                            <Check size={11} strokeWidth={3} />
-                            {isValidating ? "Validation…" : hasVariants ? "Valider" : "Valider le repas"}
-                          </button>
-                        )}
-                      </div>
-                      <div className="space-y-1">
-                        {items.map((m) => {
-                          const matchedLogId = checkedMap[m.id];
-                          const isChecked = !!matchedLogId;
-                          return (
-                            <div
-                              key={m.id}
-                              className={`flex items-center gap-3 py-1.5 ${
-                                checkable ? "cursor-pointer" : ""
-                              }`}
-                              onClick={
-                                checkable ? () => onToggle(m, matchedLogId) : undefined
-                              }
-                            >
-                              {checkable && (
-                                <span
-                                  className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
-                                    isChecked
-                                      ? "bg-[#E01E1E] border-[#E01E1E]"
-                                      : "border-[#890404]/40 bg-transparent"
-                                  }`}
-                                >
-                                  {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
-                                </span>
-                              )}
-                              <div className="flex-1 flex items-center justify-between min-w-0">
-                                <p
-                                  className={`text-xs font-medium truncate ${
-                                    isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
-                                  }`}
-                                >
-                                  {m.foods?.name ?? "Aliment"}
-                                </p>
-                                <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
-                                  {m.quantity_g}g
-                                  {m.foods
-                                    ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
-                                    : ""}
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        })}
+                      {checkable && (
+                        <span
+                          className={`flex-shrink-0 w-5 h-5 rounded-md border flex items-center justify-center transition-colors ${
+                            isChecked
+                              ? "bg-[#E01E1E] border-[#E01E1E]"
+                              : "border-[#890404]/40 bg-transparent"
+                          }`}
+                        >
+                          {isChecked && <Check size={12} className="text-white" strokeWidth={3} />}
+                        </span>
+                      )}
+                      <div className="flex-1 flex items-center justify-between min-w-0">
+                        <p
+                          className={`text-xs font-medium truncate ${
+                            isChecked ? "text-[#F5EDED]/40 line-through" : "text-white"
+                          }`}
+                        >
+                          {m.foods?.name ?? "Aliment"}
+                        </p>
+                        <p className="text-[10px] text-[#F5EDED]/35 flex-shrink-0 ml-2">
+                          {m.quantity_g}g
+                          {m.foods
+                            ? ` · ${fmt(calcMacros(m.foods, m.quantity_g).calories)} kcal`
+                            : ""}
+                        </p>
                       </div>
                     </div>
                   );

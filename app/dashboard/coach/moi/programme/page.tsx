@@ -47,10 +47,15 @@ export default async function CoachMonProgrammePage() {
           (déjà corrigé le 2026-09-01) : programme réel d'abord, formulaire
           d'édition replié en dessous, ouvert par défaut seulement s'il n'y a
           encore rien à montrer. */}
+      {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
+          haut et le reste en bas" — séances réelles d'abord (repliées par
+          défaut, voir ProgramDaysGrid), stats volume/intensité après. */}
       {program && program.days.length > 0 && (
         <>
+          <div style={{ marginBottom: 24 }}>
+            <ProgramDaysGrid program={program} />
+          </div>
           <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-          <ProgramDaysGrid program={program} />
         </>
       )}
 

@@ -1,9 +1,12 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
 import VolumeIntensitySection from "./VolumeIntensitySection";
 import { accessoriesForSession } from "@/lib/session-accessories";
-import { Pencil, Plus, Backpack, ExternalLink } from "lucide-react";
+import { Pencil, Plus, Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function ClientProgramView({
   clientId,
@@ -16,6 +19,11 @@ export default function ClientProgramView({
   workoutLogs: WorkoutLog[];
   sessionsThisWeek: number;
 }) {
+  // Jours repliés par défaut (retour direct 2026-09-09 : "fermer pas
+  // dérouler direct") : le label + les accessoires à prévoir suffisent
+  // pour un coup d'oeil, la liste complète des exercices s'ouvre au clic.
+  const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
+
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-4 flex-wrap">
@@ -47,10 +55,9 @@ export default function ClientProgramView({
         </Link>
       </div>
 
-      {program && program.days.length > 0 && (
-        <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
-      )}
-
+      {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
+          haut et le reste en bas" — séances réelles d'abord, stats volume/
+          intensité après. */}
       {!program || program.days.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <p className="text-sm font-semibold text-[#F5EDED]/40 uppercase tracking-widest">
@@ -68,15 +75,31 @@ export default function ClientProgramView({
           >
             {program.days.map((day) => {
               const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name));
+              const isOpen = !!openDays[day.id];
               return (
               <div
                 key={day.id}
                 className="flex-1 min-w-[260px] bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4"
               >
-                <p className="text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4 pb-2 border-b border-[#890404]/20">
-                  {day.day_label}
-                </p>
+                <button
+                  type="button"
+                  onClick={() => setOpenDays((prev) => ({ ...prev, [day.id]: !prev[day.id] }))}
+                  aria-expanded={isOpen}
+                  className={`flex items-center justify-between w-full text-left ${isOpen ? "mb-4 pb-2 border-b border-[#890404]/20" : ""}`}
+                >
+                  <span className="text-xs font-bold uppercase tracking-widest text-[#E01E1E]">
+                    {day.day_label}
+                  </span>
+                  <span className="flex items-center gap-2 flex-shrink-0">
+                    <span className="text-[10px] text-[#F5EDED]/30 font-semibold">
+                      {day.exercises.length} exercice{day.exercises.length > 1 ? "s" : ""}
+                    </span>
+                    {isOpen ? <ChevronUp size={14} className="text-[#F5EDED]/30" /> : <ChevronDown size={14} className="text-[#F5EDED]/30" />}
+                  </span>
+                </button>
 
+                {isOpen && (
+                <>
                 {accessories.length > 0 && (
                   <div className="bg-black/30 border border-[#890404]/20 rounded-lg px-3 py-2.5 mb-3">
                     <p className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
@@ -142,10 +165,18 @@ export default function ClientProgramView({
                     ))}
                   </div>
                 )}
+                </>
+                )}
               </div>
               );
             })}
           </div>
+        </div>
+      )}
+
+      {program && program.days.length > 0 && (
+        <div className="mt-6">
+          <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </div>
       )}
     </div>

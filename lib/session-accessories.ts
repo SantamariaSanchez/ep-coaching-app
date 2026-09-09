@@ -111,21 +111,31 @@ function normalize(value: string): string {
 export function accessoriesForSession(exerciseNames: string[]): SessionAccessory[] {
   const found = new Map<string, SessionAccessory>();
 
-  for (const rule of RULES) {
-    for (const raw of exerciseNames) {
-      const name = normalize(raw);
-      if (!rule.match.test(name)) continue;
-      const existing = found.get(rule.accessory);
-      if (existing) {
-        if (!existing.forExercises.includes(raw)) existing.forExercises.push(raw);
-      } else {
-        found.set(rule.accessory, {
-          accessory: rule.accessory,
-          reason: rule.reason,
-          url: rule.url,
-          forExercises: [raw],
-        });
-      }
+  // Un exercice ne compte que pour UNE règle : la première qu'il matche
+  // dans l'ordre de priorité (RULES est déjà trié du plus structurant au
+  // plus optionnel). Sans ce garde-fou, un exercice comme "Élévations
+  // latérales poulie basse" matchait à la fois Cuffs (elevation laterale,
+  // la vraie règle qui s'applique à une isolation à poste fixe) ET Lift
+  // Loops (poulie, pensé pour un poste dont la hauteur/l'angle ne convient
+  // pas) — retour direct 2026-09-09, "lift loop pour la séance legs
+  // épaules c'est complètement faux". Deux accessoires suggérés pour le
+  // même exercice, dont un qui n'a pas de sens ici, plutôt qu'un seul
+  // vraiment pertinent.
+  for (const raw of exerciseNames) {
+    const name = normalize(raw);
+    const rule = RULES.find((r) => r.match.test(name));
+    if (!rule) continue;
+
+    const existing = found.get(rule.accessory);
+    if (existing) {
+      if (!existing.forExercises.includes(raw)) existing.forExercises.push(raw);
+    } else {
+      found.set(rule.accessory, {
+        accessory: rule.accessory,
+        reason: rule.reason,
+        url: rule.url,
+        forExercises: [raw],
+      });
     }
   }
 
