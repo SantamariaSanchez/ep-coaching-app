@@ -31,6 +31,11 @@ export interface LibraryExercise {
   // Adaptations/accessoires/installation — distinct des instructions
   // d'exécution du mouvement (voir migration 20260808b).
   setup_notes: string | null;
+  // Bagage d'accessoires choisi explicitement par le coach pour CET
+  // exercice (noms tirés de ACCESSORY_CATALOG, lib/session-accessories.ts)
+  // — voir migration 20260910a. Vide = pas encore renseigné, la devinette
+  // par mots-clés sert alors de filet (accessoriesForSession).
+  accessories: string[];
 }
 
 // 642 lignes, quasi identiques d'un chargement à l'autre (référence
@@ -58,6 +63,15 @@ export const getExerciseLibrary = unstable_cache(
   ["exercise-library"],
   { tags: ["exercise-library"], revalidate: 3600 }
 );
+
+// Carte nom -> bagage d'accessoires choisi, pour accessoriesForSession
+// (lib/session-accessories.ts). Un seul point d'appel plutôt que de refaire
+// le Object.fromEntries à chaque page qui affiche "à prévoir" (Programme,
+// Logbook, séance en cours, aperçu du jour côté coach).
+export async function getAccessoriesByExerciseName(): Promise<Record<string, string[]>> {
+  const library = await getExerciseLibrary();
+  return Object.fromEntries(library.map((ex) => [ex.name, ex.accessories ?? []]));
+}
 
 export interface MissingVideoExercise {
   name: string;

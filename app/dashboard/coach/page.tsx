@@ -12,6 +12,7 @@ import { getScheduleBlocks } from "@/utils/agenda";
 import { getAllLiveEventsForCoach } from "@/utils/live-events";
 import { getActiveProgram } from "@/utils/programs";
 import { accessoriesForSession } from "@/lib/session-accessories";
+import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis, nowInParis } from "@/lib/dates";
@@ -83,7 +84,7 @@ export default async function CoachDashboard() {
   const todayStr = todayInParis();
   const { isoDow, hhmm } = nowInParis();
   const supabase = await createServerSupabase();
-  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, unreadMsgs] = await Promise.all([
+  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, accessoriesByName, unreadMsgs] = await Promise.all([
     getTodayLog(user.id),
     getNutritionProfile(user.id),
     getTodayLogs(user.id, todayStr),
@@ -92,6 +93,7 @@ export default async function CoachDashboard() {
     getActiveProgram(user.id),
     getStepSettings(user.id),
     getTodayStepsActual(user.id),
+    getAccessoriesByExerciseName(),
     supabase
       .from("messages")
       .select("id, conversation_id, content, type, created_at")
@@ -130,7 +132,7 @@ export default async function CoachDashboard() {
     ? todayProgram?.days.find((d) => d.day_label === todaySeanceLabel) ?? null
     : null;
   const todayAccessories = todayProgramDay
-    ? accessoriesForSession(todayProgramDay.exercises.map((ex) => ex.name))
+    ? accessoriesForSession(todayProgramDay.exercises.map((ex) => ex.name), accessoriesByName)
     : [];
 
   const nowMs = Date.now();

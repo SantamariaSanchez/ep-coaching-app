@@ -102,6 +102,7 @@ interface InitData {
   prevWeights: Record<string, PrevWeight>;
   existingSets: SessionSet[];
   libraryByName: Record<string, LibraryTip>;
+  accessoriesByName: Record<string, string[]>;
 }
 
 interface SetState {
@@ -2676,9 +2677,13 @@ export default function SessionView({
   // ── SESSION ──────────────────────────────────────────────────────────────────
   const totalSetsAll = exercises.flatMap((e) => e.sets.filter((s) => s.validated)).length;
   const musclesBeingTrained = Object.keys(volumeByMuscle);
-  // Accessoires à prévoir, déduits des noms d'exercices de la séance (le
-  // matériel n'est pas une donnée saisie, voir lib/session-accessories.ts).
-  const sessionAccessories = accessoriesForSession(exercises.map((e) => e.exercise.name));
+  // Accessoires à prévoir : bagage choisi explicitement par exercice
+  // (exercise_library.accessories), devinette par mots-clés en filet si
+  // pas encore renseigné — voir lib/session-accessories.ts.
+  const sessionAccessories = accessoriesForSession(
+    exercises.map((e) => e.exercise.name),
+    initData?.accessoriesByName
+  );
 
   return (
     <div className="pb-32">

@@ -12,6 +12,7 @@ import ProgramEditor from "@/components/ui/ProgramEditor";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
+import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { saveOwnCoachProgram } from "./actions";
 
 export default async function CoachMonProgrammePage() {
@@ -22,7 +23,7 @@ export default async function CoachMonProgrammePage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks] = await Promise.all([
+  const [program, workoutLogs, sessionsThisWeek, templates, scheduleBlocks, accessoriesByName] = await Promise.all([
     // Le coach est ici sur son propre programme : ses notes de conception
     // sont les siennes, aucune raison de les masquer.
     getActiveProgram(user.id, { includeCoachNotes: true }),
@@ -30,6 +31,7 @@ export default async function CoachMonProgrammePage() {
     getSessionsThisWeekCount(user.id),
     getCoachProgramTemplates(user.id),
     getScheduleBlocks(user.id),
+    getAccessoriesByExerciseName(),
   ]);
 
   return (
@@ -53,7 +55,7 @@ export default async function CoachMonProgrammePage() {
       {program && program.days.length > 0 && (
         <>
           <div style={{ marginBottom: 24 }}>
-            <ProgramDaysGrid program={program} />
+            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
           </div>
           <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </>

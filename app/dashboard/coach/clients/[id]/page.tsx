@@ -1,4 +1,5 @@
 import { todayInParis } from "@/lib/dates";
+import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, getClientById } from "@/utils/auth";
@@ -125,6 +126,7 @@ export default async function ClientDetailPage({
     measurements,
     medicalConstraints,
     recoveryLogs,
+    accessoriesByName,
   ] = await Promise.all([
     getTotalPoints(id),
     getActiveProgram(id),
@@ -164,6 +166,7 @@ export default async function ClientDetailPage({
     getClientMeasurementsAsCoach(id),
     getClientConstraints(id),
     getRecoveryLogs(id),
+    getAccessoriesByExerciseName(),
   ]);
 
   const cycleStats = computeCycleStats(periodLogs);
@@ -238,6 +241,7 @@ export default async function ClientDetailPage({
         program={program}
         workoutLogs={workoutLogs}
         sessionsThisWeek={sessionsThisWeek}
+        accessoriesByName={accessoriesByName}
         logbookSessions={logbookSessions}
         personalRecords={personalRecords}
         tasks={tasks}

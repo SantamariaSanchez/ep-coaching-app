@@ -202,6 +202,7 @@ export default function ClientProfileTabs({
   program,
   workoutLogs,
   sessionsThisWeek,
+  accessoriesByName,
   logbookSessions,
   personalRecords,
   tasks,
@@ -269,6 +270,8 @@ export default function ClientProfileTabs({
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
   sessionsThisWeek: number;
+  /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
+  accessoriesByName?: Record<string, string[]>;
   logbookSessions: SessionWithSets[];
   personalRecords: PersonalRecord[];
   tasks: ClientTask[];
@@ -766,6 +769,7 @@ export default function ClientProfileTabs({
           program={program}
           workoutLogs={workoutLogs}
           sessionsThisWeek={sessionsThisWeek}
+          accessoriesByName={accessoriesByName}
         />
       )}
 

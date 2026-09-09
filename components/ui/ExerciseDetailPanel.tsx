@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, Video, ExternalLink, ClipboardCheck } from "lucide-react";
+import { X, Video, ExternalLink, ClipboardCheck, Backpack } from "lucide-react";
 import type { LibraryExercise } from "@/utils/exercise-library";
 import {
   POSITION_OPTIONS,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/exercise-library-content";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
 import type { TensionFocus } from "@/utils/programs";
+import { ACCESSORY_CATALOG } from "@/lib/session-accessories";
 
 // Les 7 attributs de classification existent en base depuis longtemps mais
 // n'étaient affichés/éditables que dans la bibliothèque (page à part),
@@ -97,6 +98,44 @@ function Pills<T extends string>({
           {labels ? labels[opt] : opt}
         </button>
       ))}
+    </div>
+  );
+}
+
+// Sélection multiple (le bagage d'accessoires n'est jamais un choix
+// exclusif — un exercice peut avoir besoin de plusieurs accessoires à la
+// fois, ex. Lock Belt ET Micro Plates sur un développé machine).
+function MultiPills({
+  options,
+  value,
+  onToggle,
+  disabled,
+}: {
+  options: readonly string[];
+  value: string[];
+  onToggle: (v: string) => void;
+  disabled?: boolean;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {options.map((opt) => {
+        const active = value.includes(opt);
+        return (
+          <button
+            key={opt}
+            type="button"
+            disabled={disabled}
+            onClick={() => onToggle(opt)}
+            className={`px-2.5 py-1 rounded-md text-[10px] font-bold border transition-colors disabled:opacity-50 disabled:cursor-default ${
+              active
+                ? "bg-[#E01E1E]/15 border-[#E01E1E]/50 text-white"
+                : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
+            }`}
+          >
+            {opt}
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -316,6 +355,37 @@ export default function ExerciseDetailPanel({
               </div>
             </div>
           )}
+
+          {/* Bagage d'accessoires — retour direct 2026-09-10 : "c'est moi qui
+              définis et choisis quel accessoire il y a, comme ça je sais
+              qu'il y a quel accessoire dans la séance, et en plus c'est
+              modifiable". Choix explicite par exercice (classification
+              générale, partagée entre coachs) plutôt qu'une devinette par
+              mots-clés sur le nom — voir lib/session-accessories.ts. */}
+          <div className="border-t border-[#890404]/15 pt-4">
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5 flex items-center gap-1.5">
+              <Backpack size={11} /> Bagage d&apos;accessoires{" "}
+              {(ex.accessories ?? []).length === 0 && (
+                <span className="text-amber-400/80 normal-case font-semibold">· non renseigné (devinette par mots-clés en filet)</span>
+              )}
+            </p>
+            <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
+              Ce que tu choisis ici s&apos;affiche pour tous les clients qui font cet exercice, dans &laquo;&nbsp;à prévoir&nbsp;&raquo;
+              (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.
+            </p>
+            <MultiPills
+              options={ACCESSORY_CATALOG.map((a) => a.accessory)}
+              value={ex.accessories ?? []}
+              onToggle={(accessory) => {
+                const current = ex.accessories ?? [];
+                const next = current.includes(accessory)
+                  ? current.filter((a) => a !== accessory)
+                  : [...current, accessory];
+                setField("accessories", next);
+              }}
+              disabled={!onUpdate || pending === "accessories"}
+            />
+          </div>
 
           {/* Position / courbe de résistance — seul repère avec citations directes */}
           <div className="border-t border-[#890404]/15 pt-4">

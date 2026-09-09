@@ -22,14 +22,21 @@ import { Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 // direct") : le label du jour + les accessoires à prévoir suffisent pour un
 // coup d'oeil, la liste complète des exercices ne s'affiche qu'au clic.
 
-export default function ProgramDaysGrid({ program }: { program: ProgramWithDays }) {
+export default function ProgramDaysGrid({
+  program,
+  accessoriesByName,
+}: {
+  program: ProgramWithDays;
+  /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
+  accessoriesByName?: Record<string, string[]>;
+}) {
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
   return (
     <div style={{ overflowX: "auto", paddingBottom: 8 }}>
       <div style={{ display: "flex", gap: 12, minWidth: `${program.days.length * 280}px` }}>
         {program.days.map((day, di) => {
-          const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name));
+          const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name), accessoriesByName);
           const isOpen = !!openDays[day.id];
           return (
           <div

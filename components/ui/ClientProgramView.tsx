@@ -13,11 +13,14 @@ export default function ClientProgramView({
   program,
   workoutLogs,
   sessionsThisWeek,
+  accessoriesByName,
 }: {
   clientId: string;
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
   sessionsThisWeek: number;
+  /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
+  accessoriesByName?: Record<string, string[]>;
 }) {
   // Jours repliés par défaut (retour direct 2026-09-09 : "fermer pas
   // dérouler direct") : le label + les accessoires à prévoir suffisent
@@ -74,7 +77,7 @@ export default function ClientProgramView({
             style={{ minWidth: `${program.days.length * 280}px` }}
           >
             {program.days.map((day) => {
-              const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name));
+              const accessories = accessoriesForSession(day.exercises.map((ex) => ex.name), accessoriesByName);
               const isOpen = !!openDays[day.id];
               return (
               <div

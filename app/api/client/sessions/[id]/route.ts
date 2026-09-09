@@ -16,6 +16,10 @@ interface InitData {
   // bibliothèque d'exercices (exercise_library) plutôt que d'un petit
   // dictionnaire générique — voir lib/execution-tips.ts pour le fallback.
   libraryByName: Record<string, { instructions: string | null; video_url: string | null }>;
+  // "À prévoir" (lib/session-accessories.ts) : bagage choisi explicitement
+  // par exercice (exercise_library.accessories), clé exacte (pas .lower,
+  // accessoriesForSession matche sur le nom affiché tel quel).
+  accessoriesByName: Record<string, string[]>;
 }
 
 export async function GET(
@@ -100,12 +104,14 @@ export async function GET(
   // match par nom (pas de FK entre les exercices d'un programme et la
   // bibliothèque), insensible à la casse.
   const libraryByName: Record<string, { instructions: string | null; video_url: string | null }> = {};
+  const accessoriesByName: Record<string, string[]> = {};
   if (exercises.length > 0) {
     const { data: libraryRows } = await supabase
       .from("exercise_library")
-      .select("name, instructions, video_url");
-    for (const row of (libraryRows as { name: string; instructions: string | null; video_url: string | null }[]) ?? []) {
+      .select("name, instructions, video_url, accessories");
+    for (const row of (libraryRows as { name: string; instructions: string | null; video_url: string | null; accessories: string[] | null }[]) ?? []) {
       libraryByName[row.name.toLowerCase()] = { instructions: row.instructions, video_url: row.video_url };
+      accessoriesByName[row.name] = row.accessories ?? [];
     }
   }
 
@@ -116,6 +122,7 @@ export async function GET(
     prevWeights,
     existingSets: (existingSets as SessionSet[]) ?? [],
     libraryByName,
+    accessoriesByName,
   };
 
   return NextResponse.json(result);

@@ -10,6 +10,7 @@ import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
+import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { saveOwnProgram } from "./actions";
 import { Dumbbell } from "lucide-react";
 
@@ -17,12 +18,13 @@ export default async function ClientProgramPage() {
   const user = await getUser();
   if (!user) redirect("/");
 
-  const [profile, program, corrections, workoutLogs, sessionsThisWeek] = await Promise.all([
+  const [profile, program, corrections, workoutLogs, sessionsThisWeek, accessoriesByName] = await Promise.all([
     getProfile(user.id),
     getActiveProgram(user.id),
     getClientCorrections(user.id),
     getRecentWorkoutLogs(user.id),
     getSessionsThisWeekCount(user.id),
+    getAccessoriesByExerciseName(),
   ]);
 
   // Retombait sur le dashboard générique au lieu de son propre programme
@@ -51,7 +53,7 @@ export default async function ClientProgramPage() {
         {program && program.days.length > 0 && (
           <>
             <div className="mb-6">
-              <ProgramDaysGrid program={program} />
+              <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
             </div>
             <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
           </>
@@ -137,7 +139,7 @@ export default async function ClientProgramPage() {
       ) : (
         <>
           <div style={{ marginBottom: 24 }}>
-            <ProgramDaysGrid program={program} />
+            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
           </div>
           <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </>

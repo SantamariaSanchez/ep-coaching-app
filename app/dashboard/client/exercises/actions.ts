@@ -26,6 +26,8 @@ export interface CreateExerciseInput {
   accessibility?: string | null;
   // Adaptations/accessoires/installation — voir migration 20260808b.
   setup_notes?: string | null;
+  // Bagage d'accessoires choisi explicitement (voir migration 20260910a).
+  accessories?: string[];
 }
 
 // Open to every authenticated member (free or paying client, or coach) —
@@ -107,6 +109,7 @@ export async function updateExercise(
     if (fields.stability_demand !== undefined) updateData.stability_demand = fields.stability_demand;
     if (fields.accessibility !== undefined) updateData.accessibility = fields.accessibility;
     if (fields.setup_notes !== undefined) updateData.setup_notes = fields.setup_notes?.trim() || null;
+    if (fields.accessories !== undefined) updateData.accessories = fields.accessories;
 
     const { error } = await supabase.from("exercise_library").update(updateData).eq("id", id);
     if (error) return { error: "Erreur lors de la mise à jour." };
