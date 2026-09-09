@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
@@ -345,6 +345,19 @@ export default function ClientNutritionView({
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
 
+  // Retour direct 2026-09-09 ("corrige de ptn de tracker d'aliment... vraiment
+  // corrige, fix pas le fix") : un double-tap sur une case aliment (doigt qui
+  // glisse, ou l'utilisateur qui retape en pensant que rien ne s'est passé le
+  // temps que le réseau réponde) partait en deux requêtes addFoodLog en
+  // parallèle pour le même aliment/créneau, créant un vrai doublon en base
+  // (constaté en direct : deux inserts à 7s d'écart pour le même food_id).
+  // Même filet que savingSetsRef dans SessionView.tsx pour "Valider le set",
+  // qui a déjà réglé la même classe de bug là-bas : on retient par clé
+  // (food_id+meal_slot pour une case, meal_slot seul pour "Valider tout le
+  // créneau") ce qui est déjà en vol et on ignore tout nouveau tap tant que
+  // la requête précédente n'est pas résolue.
+  const pendingToggleKeysRef = useRef<Set<string>>(new Set());
+
   // Mode du plan actif (flexible/fixe/fixe-flexible), éditable directement
   // ici (2026-08-17) via updatePlanMode — même piège prop→state que
   // todayLogs plus bas, donc même resynchronisation explicite.
@@ -381,7 +394,24 @@ export default function ClientNutritionView({
   // dans ce fichier (voir plus bas, liste de courses) pour synchroniser un
   // state depuis une source externe.
   useEffect(() => {
-    setTodayLogs(initialTodayLogs);
+    // Retour direct 2026-09-09 ("le tracker d'aliment, corrige, ça
+    // fonctionne toujours pas") : ce resync se déclenche aussi au retour de
+    // visibilité de l'onglet (voir plus bas, "Deuxième filet") — très
+    // fréquent sur mobile (verrouillage d'écran, changement d'appli). S'il
+    // arrive PENDANT qu'un ajout optimiste est encore en vol (le
+    // addFoodLog/logMealItems réseau pas encore résolu), initialTodayLogs
+    // ne contient pas encore la ligne, et l'écraser purement et simplement
+    // faisait "décocher" la case une fraction de seconde — juste assez pour
+    // pousser à retaper, créant un doublon en base à chaque fois. On
+    // préserve donc les entrées optimistes (id "optimistic-...") encore non
+    // résolues au lieu de les perdre ; une fois le vrai id serveur reçu
+    // (voir handleTogglePlanItem/handleValidateSlot), elles ne sont plus
+    // "optimistic-" et le prochain resync les remplace normalement par la
+    // version serveur, sans jamais dupliquer.
+    setTodayLogs((prev) => {
+      const stillPending = prev.filter((l) => l.id.startsWith("optimistic-"));
+      return stillPending.length > 0 ? [...initialTodayLogs, ...stillPending] : initialTodayLogs;
+    });
   }, [initialTodayLogs]);
 
   // Copie locale et modifiable de historyLogs (2026-08-18, demande
@@ -1000,6 +1030,9 @@ export default function ClientNutritionView({
   async function handleValidateSlot(meals: DietPlanMeal[]) {
     if (!logMealItems || meals.length === 0) return;
     const slot = meals[0].meal_slot;
+    const pendingKey = `slot:${slot}`;
+    if (pendingToggleKeysRef.current.has(pendingKey)) return;
+    pendingToggleKeysRef.current.add(pendingKey);
     const items = meals.filter((m) => m.foods);
 
     const optimisticLogs: FoodLogWithFood[] = items.map((m) => {
@@ -1033,6 +1066,7 @@ export default function ClientNutritionView({
     } else {
       notifyGateRefresh();
     }
+    pendingToggleKeysRef.current.delete(pendingKey);
   }
 
   function openSaveMealPrompt(slotKey: string) {
@@ -1090,6 +1124,15 @@ export default function ClientNutritionView({
   }
 
   async function handleTogglePlanItem(meal: DietPlanMeal, matchedLogId: string | undefined) {
+    // Clé stable par aliment+créneau (pas par matchedLogId, qui n'existe pas
+    // encore côté client tant que l'ajout optimiste n'est pas résolu) : un
+    // retap pendant que la requête précédente est encore en vol pour ce
+    // même aliment/créneau est ignoré, qu'il s'agisse d'un ajout ou d'une
+    // suppression.
+    const pendingKey = `item:${meal.meal_slot}:${meal.food_id}`;
+    if (pendingToggleKeysRef.current.has(pendingKey)) return;
+    pendingToggleKeysRef.current.add(pendingKey);
+
     if (matchedLogId) {
       // Même filet de sécurité que handleDelete : sans vérifier le
       // résultat, une coche décochée optimistiquement restait décochée en
@@ -1106,9 +1149,13 @@ export default function ClientNutritionView({
           return next;
         });
       }
+      pendingToggleKeysRef.current.delete(pendingKey);
       return;
     }
-    if (!meal.foods) return;
+    if (!meal.foods) {
+      pendingToggleKeysRef.current.delete(pendingKey);
+      return;
+    }
     const macros = calcMacros(meal.foods, meal.quantity_g);
     const optimisticId = `optimistic-${Date.now()}`;
     const optimisticLog: FoodLogWithFood = {
@@ -1145,6 +1192,7 @@ export default function ClientNutritionView({
       );
       notifyGateRefresh();
     }
+    pendingToggleKeysRef.current.delete(pendingKey);
   }
 
   async function handleDelete(logId: string) {
