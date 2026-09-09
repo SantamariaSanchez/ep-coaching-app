@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, AlertCircle, ChevronRight, Users } from "lucide-react";
+import { AlertTriangle, AlertCircle, ChevronRight, Users, CheckCircle2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { TopAlert } from "@/lib/coach-analytics";
 
@@ -34,7 +34,22 @@ export default function UrgentAlertsSection() {
     );
   }
 
-  if (alerts.length === 0) return null;
+  // Idée #13 (2026-09-09, retour direct "au moins 20 idées") : un écran qui
+  // disparaît complètement quand tout va bien ne dit rien — impossible de
+  // distinguer "rien à signaler" de "la section n'a pas chargé". Un état
+  // positif explicite confirme que le contrôle a bien eu lieu.
+  if (alerts.length === 0) {
+    return (
+      <section className="mb-10">
+        <div className="flex items-center gap-2.5 bg-green-500/5 border border-green-500/15 rounded-xl px-4 py-3.5">
+          <CheckCircle2 size={15} className="text-green-400/70 flex-shrink-0" strokeWidth={1.8} />
+          <p className="text-xs text-[#F5EDED]/45">
+            Rien à signaler. Tous tes clients suivis sont à jour.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="mb-10">

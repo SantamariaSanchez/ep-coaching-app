@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 export const revalidate = 30;
 import { requireCoach } from "@/lib/auth-guards";
-import { getWeeklyCheckinCount, getPendingReplies } from "@/utils/checkins";
+import { getWeeklyCheckinCount, getLastWeekCheckinCount, getPendingReplies } from "@/utils/checkins";
 import { getClients, getTotalMembersCount } from "@/utils/auth";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 
@@ -19,10 +19,13 @@ export async function GET() {
   );
   if (limited) return limited;
 
-  const [clients, weeklyCount, pendingReplies, totalMembers] =
+  const [clients, weeklyCount, lastWeekCount, pendingReplies, totalMembers] =
     await Promise.all([
       getClients(guard.userId),
       getWeeklyCheckinCount(),
+      // Idée "onglet Aujourd'hui" (2026-09-09) : tendance sur Check-ins/sem.,
+      // sans repère un chiffre isolé ne dit rien de la direction.
+      getLastWeekCheckinCount(),
       getPendingReplies(),
       getTotalMembersCount(guard.userId),
     ]);
@@ -32,6 +35,7 @@ export async function GET() {
   return NextResponse.json({
     activeCount,
     weeklyCount,
+    lastWeekCount,
     pendingCount: pendingReplies.length,
     totalMembers,
     pendingReplies,

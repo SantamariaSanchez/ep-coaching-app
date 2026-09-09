@@ -27,6 +27,8 @@ interface ClientCardProps {
   weeklyConsistency?: number | null;
   /** Relance manuelle en un clic ; absent = pas de bouton (ex: page sans l'action câblée). */
   onRelaunch?: () => Promise<{ error?: string }>;
+  /** Idée #11 (2026-09-09) : semaine ronde de coaching (4, 8, 12...) cette semaine. */
+  isAnniversary?: boolean;
 }
 
 export function ClientCard({
@@ -45,6 +47,7 @@ export function ClientCard({
   intakeIncomplete = false,
   weeklyConsistency = null,
   onRelaunch,
+  isAnniversary = false,
 }: ClientCardProps) {
   const [relaunchState, setRelaunchState] = useState<"idle" | "sending" | "sent">("idle");
 
@@ -304,6 +307,27 @@ export function ClientCard({
                 }}
               >
                 Fiche à finir
+              </span>
+            )}
+            {isAnniversary && isActiveStatus && (
+              <span
+                title={`${weekNum} semaines de coaching cette semaine`}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  background: "rgba(250,204,21,0.1)",
+                  border: "1px solid rgba(250,204,21,0.28)",
+                  borderRadius: 20,
+                  padding: "2px 10px",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: "0.07em",
+                  color: "#FACC15",
+                  textTransform: "uppercase",
+                }}
+              >
+                🎉 Semaine {weekNum}
               </span>
             )}
           </div>

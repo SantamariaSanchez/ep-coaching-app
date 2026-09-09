@@ -34,6 +34,26 @@ export function todayInParis(): string {
 // réécrire un historique ancien sans limite.
 export const BILAN_BACKFILL_DAYS = 30;
 
+// Idée "onglet Aujourd'hui" (2026-09-09) : "prochain créneau" de l'agenda a
+// besoin du jour ISO (1=lundi...7=dimanche, même convention que
+// schedule_blocks.day_of_week) et de l'heure courante, tous deux en heure de
+// Paris — même raisonnement que todayInParis ci-dessus, `new Date().getDay()`
+// donnerait le jour du serveur (UTC), pas celui de l'utilisateur.
+export function nowInParis(): { isoDow: number; hhmm: string } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Paris",
+    weekday: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date());
+  const weekdayShort = parts.find((p) => p.type === "weekday")!.value;
+  const hour = parts.find((p) => p.type === "hour")!.value;
+  const minute = parts.find((p) => p.type === "minute")!.value;
+  const DOW_MAP: Record<string, number> = { Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6, Sun: 7 };
+  return { isoDow: DOW_MAP[weekdayShort] ?? 1, hhmm: `${hour}:${minute}` };
+}
+
 export function isWithinBilanBackfillWindow(logDate: string, maxDaysBack: number = BILAN_BACKFILL_DAYS): boolean {
   const today = todayInParis();
   if (logDate > today) return false; // jamais dans le futur

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Users, TrendingUp, CalendarClock, UserPlus, ChevronRight } from "lucide-react";
+import { Users, TrendingUp, CalendarClock, UserPlus, ChevronRight, ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 interface PendingCheckin {
   id: string;
@@ -15,11 +15,15 @@ interface PendingCheckin {
 interface Stats {
   activeCount:  number;
   weeklyCount:  number;
+  lastWeekCount: number;
   pendingCount: number;
   totalMembers: number;
   pendingReplies: PendingCheckin[];
 }
 
+// Idées "onglet Aujourd'hui" (2026-09-09, retour direct "au moins 20 idées") :
+// #14 retour au clic (ep-press, déjà le standard maison), #15 tuiles
+// cliquables vers la page pertinente, #20 aria-label explicite.
 function StatTile({
   label,
   value,
@@ -27,6 +31,9 @@ function StatTile({
   sub,
   urgent = false,
   delay = 0,
+  href,
+  trend,
+  progress,
 }: {
   label: string;
   value: number;
@@ -34,24 +41,18 @@ function StatTile({
   sub: string;
   urgent?: boolean;
   delay?: number;
+  href?: string;
+  /** Idée #16 : tendance vs semaine dernière — undefined = pas de comparaison affichée. */
+  trend?: { direction: "up" | "down" | "flat"; deltaLabel: string } | null;
+  /** Idée #10 : taux de bilans reçus cette semaine (0-100), affiché en barre fine. */
+  progress?: number | null;
 }) {
   const isAlert = urgent && value > 0;
-  return (
-    <div
-      className="animate-scale-in"
-      style={{
-        animationDelay: `${delay}ms`,
-        background: isAlert
-          ? "linear-gradient(160deg, #1c0101 0%, #0e0000 100%)"
-          : "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
-        border: `1px solid ${isAlert ? "rgba(224,30,30,0.28)" : "rgba(224,30,30,0.09)"}`,
-        borderRadius: "var(--radius-lg)",
-        padding: "20px 18px 16px",
-        position: "relative",
-        overflow: "hidden",
-        boxShadow: isAlert ? "0 0 24px rgba(224,30,30,0.08)" : "none",
-      }}
-    >
+  const TrendIcon = trend?.direction === "up" ? ArrowUp : trend?.direction === "down" ? ArrowDown : Minus;
+  const trendColor =
+    trend?.direction === "up" ? "#4ade80" : trend?.direction === "down" ? "#fb923c" : "rgba(245,237,237,0.3)";
+  const content = (
+    <>
       {/* Top accent */}
       <div style={{
         position: "absolute",
@@ -73,17 +74,31 @@ function StatTile({
 
       <p className="ep-label" style={{ marginBottom: 10 }}>{label}</p>
 
-      <p style={{
-        fontSize: 40,
-        fontWeight: 900,
-        letterSpacing: "-0.05em",
-        color: isAlert ? "#E01E1E" : "#F5EDED",
-        margin: 0,
-        lineHeight: 1,
-        marginBottom: 6,
-      }}>
-        {value}
-      </p>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+        <p style={{
+          fontSize: 40,
+          fontWeight: 900,
+          letterSpacing: "-0.05em",
+          color: isAlert ? "#E01E1E" : "#F5EDED",
+          margin: 0,
+          lineHeight: 1,
+          marginBottom: 6,
+        }}>
+          {value}
+        </p>
+        {trend && (
+          <span
+            title={trend.deltaLabel}
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 2,
+              fontSize: 10, fontWeight: 800, color: trendColor, marginBottom: 8,
+            }}
+          >
+            <TrendIcon size={11} strokeWidth={2.5} />
+            {trend.deltaLabel}
+          </span>
+        )}
+      </div>
 
       <p style={{
         fontSize: 11,
@@ -93,6 +108,45 @@ function StatTile({
       }}>
         {sub}
       </p>
+
+      {progress != null && (
+        <div style={{ height: 3, background: "rgba(224,30,30,0.1)", borderRadius: 2, overflow: "hidden", marginTop: 8 }}>
+          <div style={{
+            height: "100%",
+            width: `${Math.min(100, Math.max(0, progress))}%`,
+            background: progress >= 100 ? "#4ade80" : "linear-gradient(90deg, #E01E1E, #B00202)",
+            borderRadius: 2,
+          }} />
+        </div>
+      )}
+    </>
+  );
+  const style: React.CSSProperties = {
+    animationDelay: `${delay}ms`,
+    background: isAlert
+      ? "linear-gradient(160deg, #1c0101 0%, #0e0000 100%)"
+      : "linear-gradient(160deg, #180101 0%, #0d0000 100%)",
+    border: `1px solid ${isAlert ? "rgba(224,30,30,0.28)" : "rgba(224,30,30,0.09)"}`,
+    borderRadius: "var(--radius-lg)",
+    padding: "20px 18px 16px",
+    position: "relative",
+    overflow: "hidden",
+    boxShadow: isAlert ? "0 0 24px rgba(224,30,30,0.08)" : "none",
+    display: "block",
+    textDecoration: "none",
+    cursor: href ? "pointer" : "default",
+  };
+
+  if (href) {
+    return (
+      <Link href={href} className="animate-scale-in ep-press" style={style} aria-label={`${label} : ${value}, ${sub}`}>
+        {content}
+      </Link>
+    );
+  }
+  return (
+    <div className="animate-scale-in" style={style} aria-label={`${label} : ${value}, ${sub}`}>
+      {content}
     </div>
   );
 }
@@ -120,18 +174,31 @@ export default function DashboardStats() {
     );
   }
 
+  const weeklyDelta = stats.weeklyCount - stats.lastWeekCount;
+  const weeklyTrend =
+    stats.lastWeekCount === 0 && stats.weeklyCount === 0
+      ? null
+      : {
+          direction: (weeklyDelta > 0 ? "up" : weeklyDelta < 0 ? "down" : "flat") as "up" | "down" | "flat",
+          deltaLabel: weeklyDelta === 0 ? "stable" : `${weeklyDelta > 0 ? "+" : ""}${weeklyDelta} vs sem. dernière`,
+        };
+
+  // Idée #10 : taux de bilans reçus cette semaine, pas juste un chiffre brut
+  // sans repère — "3" ne dit rien, "3 sur 5 clients actifs" si.
+  const checkinRate = stats.activeCount > 0 ? Math.round((stats.weeklyCount / stats.activeCount) * 100) : null;
+
   const tiles = [
-    { label: "Clients actifs",    value: stats.activeCount,  icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false },
-    { label: "Check-ins / sem.",  value: stats.weeklyCount,  icon: TrendingUp,    sub: stats.weeklyCount === 0 ? "aucun reçu"          : "reçus cette semaine", urgent: false },
-    { label: "Sans réponse",      value: stats.pendingCount, icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true  },
-    { label: "Membres au total",  value: stats.totalMembers, icon: UserPlus,      sub: "inscrits sur l'appli",                                                 urgent: false },
+    { label: "Clients actifs",    value: stats.activeCount,  icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false, href: "/dashboard/coach/clients", trend: undefined, progress: null },
+    { label: "Check-ins / sem.",  value: stats.weeklyCount,  icon: TrendingUp,    sub: stats.activeCount > 0 ? `${stats.weeklyCount} / ${stats.activeCount} clients actifs` : "aucun client actif", urgent: false, href: "/dashboard/coach/clients", trend: weeklyTrend, progress: checkinRate },
+    { label: "Sans réponse",      value: stats.pendingCount, icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true,  href: stats.pendingCount > 0 ? "#pending-replies" : "/dashboard/coach/clients", trend: undefined, progress: null },
+    { label: "Membres au total",  value: stats.totalMembers, icon: UserPlus,      sub: "inscrits sur l'appli",                                                 urgent: false, href: "/dashboard/coach/communaute/membres", trend: undefined, progress: null },
   ];
 
   return (
     <>
       {/* Stats grid — deux colonnes sur mobile, quatre dès qu'il y a la place. */}
       <div className="analytics-stats-grid" style={{ marginBottom: 24 }}>
-        {tiles.map(({ label, value, icon, sub, urgent }, i) => (
+        {tiles.map(({ label, value, icon, sub, urgent, href, trend, progress }, i) => (
           <StatTile
             key={label}
             label={label}
@@ -140,13 +207,16 @@ export default function DashboardStats() {
             sub={sub}
             urgent={urgent}
             delay={i * 60}
+            href={href}
+            trend={trend}
+            progress={progress}
           />
         ))}
       </div>
 
       {/* Pending replies list */}
       {stats.pendingReplies.length > 0 && (
-        <div style={{ marginBottom: 24 }}>
+        <div id="pending-replies" style={{ marginBottom: 24, scrollMarginTop: 80 }}>
           <p className="ep-section-title">En attente de retour</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.pendingReplies.map((c, i) => (

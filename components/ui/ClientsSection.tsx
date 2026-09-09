@@ -39,13 +39,19 @@ function normalize(value: string): string {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
-type FilterKey = "all" | "alerts" | "paused" | "new" | "silent" | "incomplete";
+type FilterKey = "all" | "alerts" | "paused" | "new" | "silent" | "incomplete" | "recent_activity";
 type SortKey = "name" | "recent" | "alerts" | "seniority";
+
+// Idée #12 (2026-09-09, retour direct "au moins 20 idées") : miroir positif
+// du filtre "Inactifs" — actif depuis moins de 2 jours, pour retrouver
+// rapidement qui avance bien, pas seulement qui a besoin d'attention.
+const RECENT_ACTIVITY_THRESHOLD_DAYS = 2;
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: "all", label: "Tous" },
   { key: "alerts", label: "À traiter" },
   { key: "silent", label: "Inactifs" },
+  { key: "recent_activity", label: "Actifs récemment" },
   { key: "incomplete", label: "Fiche à finir" },
   { key: "new", label: "Nouveaux" },
   { key: "paused", label: "En pause" },
@@ -108,12 +114,20 @@ export default function ClientsSection({
     return w != null && w <= 4;
   };
 
+  // Idée #12 : miroir positif de isSilent — voir aussi qui avance bien, pas
+  // seulement qui a besoin d'attention.
+  const isRecentlyActive = (c: Profile) => {
+    const days = activity[c.id]?.daysSinceActivity;
+    return days != null && days < RECENT_ACTIVITY_THRESHOLD_DAYS && (c.status == null || c.status === "active");
+  };
+
   const visible = useMemo(() => {
     const q = normalize(query.trim());
     const filtered = clients.filter((c) => {
       if (q && !normalize(c.full_name ?? "").includes(q)) return false;
       if (filter === "alerts") return alertCount(c.id) > 0;
       if (filter === "silent") return isSilent(activity[c.id]?.daysSinceActivity);
+      if (filter === "recent_activity") return isRecentlyActive(c);
       if (filter === "incomplete") return !intakeComplete[c.id];
       if (filter === "paused") return c.status === "paused" || c.status === "ended";
       if (filter === "new") return isNew(c);
@@ -235,6 +249,7 @@ export default function ClientsSection({
                 f.key === "all" ? clients.length
                 : f.key === "alerts" ? clients.filter((c) => alertCount(c.id) > 0).length
                 : f.key === "silent" ? clients.filter((c) => isSilent(activity[c.id]?.daysSinceActivity)).length
+                : f.key === "recent_activity" ? clients.filter(isRecentlyActive).length
                 : f.key === "incomplete" ? clients.filter((c) => !intakeComplete[c.id]).length
                 : f.key === "paused" ? clients.filter((c) => c.status === "paused" || c.status === "ended").length
                 : clients.filter(isNew).length;
@@ -313,13 +328,17 @@ export default function ClientsSection({
         >
           {visible.map((client, i) => {
             const summary = phaseOverview[client.id];
+            const weekNum = weekNumber(client.start_date);
             return (
               <ClientCard
                 key={client.id}
                 name={client.full_name ?? "Sans nom"}
                 phase={null}
                 weight={client.weight_start}
-                weekNum={weekNumber(client.start_date)}
+                weekNum={weekNum}
+                // Idée #11 (2026-09-09) : semaine ronde de coaching (4, 8,
+                // 12...) — un repère positif à célébrer, pas une alerte.
+                isAnniversary={weekNum != null && weekNum > 0 && weekNum % 4 === 0}
                 delay={Math.min(i, 12) * 45}
                 href={`/dashboard/coach/clients/${client.id}`}
                 onClick={() => router.push(`/dashboard/coach/clients/${client.id}`)}

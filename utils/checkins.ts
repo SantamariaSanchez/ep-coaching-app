@@ -182,6 +182,26 @@ export async function getWeeklyCheckinCount(): Promise<number> {
   }
 }
 
+// Idée "onglet Aujourd'hui, tendance sur Check-ins/sem." (2026-09-09) : même
+// requête que getWeeklyCheckinCount, bornée à la semaine précédente, pour
+// afficher une flèche de tendance plutôt qu'un chiffre isolé sans repère.
+export async function getLastWeekCheckinCount(): Promise<number> {
+  try {
+    const supabase = await createServerSupabase();
+    const thisWeekStart = getWeekStart();
+    const lastWeekStart = new Date(thisWeekStart + "T12:00:00");
+    lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+    const { count } = await supabase
+      .from("check_ins")
+      .select("id", { count: "exact", head: true })
+      .gte("week_start", lastWeekStart.toISOString().split("T")[0])
+      .lt("week_start", thisWeekStart);
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
 export async function getPendingReplies(): Promise<CheckInWithClient[]> {
   try {
     const supabase = await createServerSupabase();
