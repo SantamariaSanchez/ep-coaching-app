@@ -725,7 +725,19 @@ export default function ClientNutritionView({
     weekStart.setDate(todayDate.getDate() + mondayDiff);
     const daysElapsed = Math.round((todayDate.getTime() - weekStart.getTime()) / 86400000);
     if (daysElapsed <= 0) return 0; // lundi : rien à rattraper encore cette semaine
-    const weekStartStr = weekStart.toISOString().split("T")[0];
+    // Bug réel, permanent (pas juste un cas limite de minuit) : weekStart est
+    // construit en heure LOCALE (new Date(str + "T00:00:00"), sans "Z"), mais
+    // .toISOString() convertit en UTC avant d'extraire la date — décale le
+    // lundi calculé d'un jour en arrière (vérifié : mercredi 09/09 calculait
+    // "lundi 07/09" en heure locale mais "2026-09-06" une fois repassé par
+    // toISOString). daysElapsed restait correct (calculé via .getTime(), pas
+    // affecté), mais actualSoFar comptait un jour de logs en trop (le
+    // dimanche de la semaine précédente) sans jour de cible correspondant -
+    // faussait silencieusement le rattrapage hebdo, donc l'objectif calorique
+    // du jour, tous les jours de la semaine sauf le lundi. Extraction en
+    // getters locaux plutôt qu'un aller-retour par toISOString, cohérent
+    // avec la construction de todayDate/weekStart juste au-dessus.
+    const weekStartStr = `${weekStart.getFullYear()}-${String(weekStart.getMonth() + 1).padStart(2, "0")}-${String(weekStart.getDate()).padStart(2, "0")}`;
     const actualSoFar = historyLogsState
       .filter((l) => l.logged_at >= weekStartStr && l.logged_at < today)
       .reduce((s, l) => s + (l.calories ?? 0), 0);
