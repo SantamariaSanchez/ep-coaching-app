@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Camera, Trash2, Lock, Loader2, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 import type { PersonalPhoto } from "@/utils/personal-photos";
+import type { Measurement } from "@/utils/measurements";
 import PhotoCompareSlider from "@/components/ui/PhotoCompareSlider";
+import MeasurementsSection, { type LogMeasurementInput } from "@/components/ui/MeasurementsSection";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { POSING_CATEGORIES } from "@/lib/posing-data";
 
@@ -45,6 +47,10 @@ interface Props {
   /** Nouveau : déjà rempli via Ma Road Map, jamais exploité côté suivi photo perso jusqu'ici. */
   competitionCategory?: string | null;
   competitionDate?: string | null;
+  /** Nouveau : measurements avait toute une infra de lecture (BeforeAfterComparator)
+      mais aucun chemin d'écriture nulle part dans l'appli, voir MeasurementsSection. */
+  measurements?: Measurement[];
+  logMeasurement?: (input: LogMeasurementInput) => Promise<{ error?: string }>;
 }
 
 export default function PersonalPhotosView({
@@ -53,6 +59,8 @@ export default function PersonalPhotosView({
   deletePersonalPhoto,
   competitionCategory = null,
   competitionDate = null,
+  measurements = [],
+  logMeasurement,
 }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -252,6 +260,11 @@ export default function PersonalPhotosView({
           }}
         />
       </div>
+
+      {/* Mensurations */}
+      {logMeasurement && (
+        <MeasurementsSection measurements={measurements} logMeasurement={logMeasurement} />
+      )}
 
       {/* Comparaison avant/après */}
       {showCompare && oldestWithUrl && newestWithUrl && (

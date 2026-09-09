@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getPersonalPhotos } from "@/utils/personal-photos";
+import { getClientMeasurements } from "@/utils/measurements";
 import PersonalPhotosView from "@/components/ui/PersonalPhotosView";
-import { uploadPersonalPhoto, deletePersonalPhoto } from "./personal-actions";
+import { uploadPersonalPhoto, deletePersonalPhoto, logPersonalMeasurement } from "./personal-actions";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 // Masterclass Axe P (2026-08-15) : rendait ClientPhotosView ("envoyer une
@@ -22,7 +23,7 @@ export default async function CoachMonPhotosPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [photos, competitionRow] = await Promise.all([
+  const [photos, competitionRow, measurements] = await Promise.all([
     getPersonalPhotos(user.id).catch(() => []),
     // Nouveau (retour direct 2026-09-09, "moi" — "prends et fais ce que tu
     // veux") : competition_category/competition_date sont déjà remplis via
@@ -36,6 +37,10 @@ export default async function CoachMonPhotosPage() {
       .select("competition_category, competition_date")
       .eq("id", user.id)
       .maybeSingle(),
+    // Nouveau (2026-09-09) : measurements avait toute une infra de lecture
+    // (BeforeAfterComparator) mais aucun chemin d'écriture nulle part dans
+    // l'appli, voir components/ui/MeasurementsSection.tsx.
+    getClientMeasurements(user.id),
   ]);
   const competition = competitionRow.data as { competition_category: string | null; competition_date: string | null } | null;
 
@@ -46,6 +51,8 @@ export default async function CoachMonPhotosPage() {
       deletePersonalPhoto={deletePersonalPhoto}
       competitionCategory={competition?.competition_category ?? null}
       competitionDate={competition?.competition_date ?? null}
+      measurements={measurements}
+      logMeasurement={logPersonalMeasurement}
     />
   );
 }

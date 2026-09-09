@@ -64,6 +64,69 @@ export async function uploadPersonalPhoto(
   }
 }
 
+// Trou trouvé en creusant "Moi" (2026-09-09) : la table measurements
+// (tour de taille, poitrine, bras, cuisse...) a toute une infrastructure de
+// lecture déjà construite — getClientMeasurements, BeforeAfterComparator
+// (curseur photo avant/après + tableau d'écarts par mensuration) — mais
+// AUCUN chemin d'écriture n'existe nulle part dans toute l'appli, sur aucun
+// compte : 0 ligne en base, tous comptes confondus. BeforeAfterComparator
+// ne s'affiche d'ailleurs qu'à partir de 2 mensurations (`if (measurements.
+// length < 2) return null`), donc structurellement jamais vu par personne.
+// Première brique d'écriture, sur son propre suivi (le plus pertinent pour
+// une prépa physique) : mêmes champs que la table, saisie optionnelle
+// (aucun champ obligatoire hors la date), pour ne jamais forcer une mesure
+// qu'on n'a pas sous la main.
+export async function logPersonalMeasurement(input: {
+  measuredAt: string;
+  weight: number | null;
+  waist: number | null;
+  hips: number | null;
+  chest: number | null;
+  shoulders: number | null;
+  armRelaxed: number | null;
+  armFlexed: number | null;
+  forearm: number | null;
+  thigh: number | null;
+  calf: number | null;
+  abdomen: number | null;
+  neck: number | null;
+  notes: string | null;
+}): Promise<{ error?: string }> {
+  try {
+    const guard = await requireCoach();
+    if (!guard.ok) return { error: guard.error };
+    const supabase = await createServerSupabase();
+
+    const { error } = await supabase.from("measurements").insert({
+      client_id: guard.userId,
+      measured_at: input.measuredAt,
+      weight: input.weight,
+      waist: input.waist,
+      hips: input.hips,
+      chest: input.chest,
+      shoulders: input.shoulders,
+      arm_relaxed: input.armRelaxed,
+      arm_flexed: input.armFlexed,
+      forearm: input.forearm,
+      thigh: input.thigh,
+      calf: input.calf,
+      abdomen: input.abdomen,
+      neck: input.neck,
+      notes: input.notes?.trim() || null,
+    });
+    if (error) {
+      console.error("logPersonalMeasurement insert error:", error);
+      return { error: "Échec de l'enregistrement." };
+    }
+
+    revalidatePath("/dashboard/coach/moi/photos");
+    return {};
+  } catch (e) {
+    console.error("logPersonalMeasurement error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
 export async function deletePersonalPhoto(
   id: string,
   storagePath: string
