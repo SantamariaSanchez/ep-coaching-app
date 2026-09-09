@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal, Hash, type LucideIcon } from "lucide-react";
+import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal, Hash, Copy, Check, type LucideIcon } from "lucide-react";
 import { normalizeKeyword, type LeadMagnet, type LeadMagnetFormat } from "@/lib/lead-magnets";
 import { RESOURCE_CATEGORIES, RESOURCE_SUBCATEGORIES, type ResourceCategory } from "@/lib/resource-categories";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
@@ -17,6 +17,15 @@ const RECENT_SEARCHES_KEY = "ep-lead-magnets-recent-searches";
 const LAST_CATEGORY_KEY = "ep-lead-magnets-last-category";
 const MAX_RECENT_SEARCHES = 5;
 const PAGE_SIZE = 24;
+
+// Recherche insensible aux accents ("proteine" doit matcher "protéine") —
+// même idiome que normalize() dans lib/session-accessories.ts.
+function foldAccents(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
 
 function readRecentSearches(): string[] {
   if (typeof window === "undefined") return [];
@@ -40,6 +49,47 @@ function saveRecentSearch(term: string) {
   }
 }
 
+// Retour direct 2026-09-10 : "le lien du leadmagnet pret a copier coller en
+// petit sur chaque leadmagnet pour faciliter le partage" — le CTA existant
+// (cliquer la carte) ouvre la page, mais partager ce lien précis à un
+// prospect (DM Insta, SMS...) obligeait jusqu'ici à ouvrir la page puis
+// copier l'URL depuis la barre d'adresse. Bouton dédié, coach only (même
+// logique que showKeyword) : un lead qui parcourt les ressources n'a aucune
+// raison de voir "copier le lien", il est déjà dessus.
+function CopyLinkButton({ url }: { url: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(url);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 1800);
+        } catch {
+          // Presse-papiers indisponible (permission refusée, contexte non
+          // sécurisé) : le lien reste visible/sélectionnable à la main juste
+          // à côté, donc rien de bloquant.
+        }
+      }}
+      title="Copier le lien de cette ressource"
+      style={{
+        display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 700,
+        color: copied ? "#4ade80" : "rgba(245,237,237,0.3)",
+        background: "none", border: "none", padding: 0, cursor: "pointer",
+        fontFamily: "inherit",
+      }}
+    >
+      {copied ? <Check size={9} /> : <Copy size={9} />}
+      <span style={{ maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {copied ? "Lien copié" : url.replace(/^https?:\/\//, "")}
+      </span>
+    </button>
+  );
+}
+
 // Carte partagée entre la grille normale et le résultat direct par code
 // (voir keywordMatch plus bas) — même rendu, un seul endroit à maintenir.
 // Icon/FormatIcon résolus par l'appelant (pas ici) : sélectionner un
@@ -53,6 +103,7 @@ function MagnetCard({
   formatLabel,
   spotlight = false,
   showKeyword = false,
+  showCopyLink = false,
 }: {
   magnet: LeadMagnet;
   Icon: LucideIcon;
@@ -60,6 +111,7 @@ function MagnetCard({
   formatLabel: string;
   spotlight?: boolean;
   showKeyword?: boolean;
+  showCopyLink?: boolean;
 }) {
   return (
     <Link
@@ -119,6 +171,11 @@ function MagnetCard({
         </span>
         <ChevronRight size={14} className="text-[#F5EDED]/20 group-hover:text-[#E01E1E] transition-colors" />
       </div>
+      {showCopyLink && (
+        <div style={{ borderTop: "1px solid rgba(137,4,4,0.15)", paddingTop: 8, marginTop: -2 }}>
+          <CopyLinkButton url={`${process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app"}/ressources/${magnet.slug}`} />
+        </div>
+      )}
     </Link>
   );
 }
@@ -214,12 +271,25 @@ export default function LeadMagnetsExplorer({
 
   const filtered = useMemo(() => {
     if (keywordMatch) return [keywordMatch];
-    const q = search.trim().toLowerCase();
+    // Retour direct 2026-09-10 ("ameliore et optimise la recherche des
+    // leadmagnet") : deux vrais trous de recall a l'echelle de ~1000
+    // entrees. (1) Pas de pliage d'accents : chercher "proteine" (saisie
+    // sans accent, tres frequent au clavier telephone) ne matchait jamais
+    // "protéine" dans le titre. (2) Un seul gros sous-texte exact : chercher
+    // "perte poids" ne matchait pas un titre "Comment perdre du poids
+    // durablement" (les mots ne se suivent pas dans cet ordre). Fix : chaque
+    // MOT de la recherche doit matcher quelque part (titre, accroche OU
+    // sous-categorie), accents pliés des deux côtés, plutôt qu'une seule
+    // sous-chaîne figée.
+    const words = foldAccents(search.trim()).split(/\s+/).filter(Boolean);
     return magnets.filter((m) => {
       if (category && m.category !== category) return false;
       if (subcategory && m.subcategory !== subcategory) return false;
       if (format && m.format !== format) return false;
-      if (q && !(m.title.toLowerCase().includes(q) || m.hook.toLowerCase().includes(q))) return false;
+      if (words.length > 0) {
+        const haystack = foldAccents(`${m.title} ${m.hook} ${m.subcategory ?? ""}`);
+        if (!words.every((w) => haystack.includes(w))) return false;
+      }
       return true;
     });
   }, [magnets, search, category, subcategory, format, keywordMatch]);
@@ -425,6 +495,7 @@ export default function LeadMagnetsExplorer({
                   formatLabel={fmt.label}
                   spotlight={!!keywordMatch}
                   showKeyword={isCoach}
+                  showCopyLink={isCoach}
                 />
               );
             })}

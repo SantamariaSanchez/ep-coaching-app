@@ -199,11 +199,14 @@ production locale.
 | 2026-08-17 | Vague Y | 4 | Reprise manuelle après la pause du chantier CROISSANCE. Musculation et alimentation végétarienne/végane (anabolisme théorique vs gains réels sur la durée, créatine et récupération), sauna et récupération (cardiovasculaire sur 20 ans de suivi + performance sportive), marche post-repas et glycémie (timing, fractionnement, micro-doses d'escaliers), magnésium et sommeil (association observationnelle réelle mais essais contrôlés mitigés, forme L-thréonate mieux étayée). Referme les 4 derniers thèmes du backlog du 2026-08-15. |
 | **Total vérifié en base au 2026-08-17** | | **159** | Sur 1000 visés, échéance 2026-09-13. Écart de 18 entre 117+20+4=141 (addition manuelle) et 159 (compte réel `select count(*) from lead_magnets`) : la routine cloud a probablement tourné plus d'une fois sans que chaque passage soit individuellement journalisé ici. **À partir de maintenant, se fier au compte SQL réel avant d'écrire un nouveau total, jamais à une addition manuelle des lignes de ce tableau.** |
 | **Total vérifié en base au 2026-08-18** | | **196** | Sur 1000 visés, échéance 2026-09-13 (26 jours restants). +37 en 1 jour via la routine cloud, non journalisé en détail (voir règle ci-dessus). Rythme réel depuis le 08-14 : 75→117→159→196, soit ~30/jour en moyenne sur 4 jours. Il reste 804 entrées à produire sur 26 jours, soit ~31/jour nécessaires : rythme actuel tout juste suffisant, à surveiller plutôt qu'à corriger dans l'immédiat. |
+| **Total vérifié en base au 2026-09-10** | | **638** | Sur 1000 visés, échéance 2026-09-13 (3 jours restants). +442 depuis le 08-18 (23 jours), soit ~19/jour en moyenne sur la période, en dessous du ~31/jour nécessaire calculé le 08-18 — mais routine confirmée `enabled: true`, dernière exécution du 2026-09-09 réussie (`ROUTINE_RUN_STATUS_SUCCEEDED`), tourne bien tous les matins à 6h04 UTC. Rythme nécessaire pour tenir l'échéance : ~121/jour sur les 3 jours restants (362 entrées manquantes), largement au-dessus du rythme de la routine seule (15-30/jour) — l'échéance du 09-13 ne sera vraisemblablement pas tenue au rythme actuel, à signaler au coach plutôt qu'à masquer. |
 
 ## Répartition actuelle par catégorie
 
-Nutrition 24, Entraînement 26, Psychologie 19, Général 11, Récupération 14,
-Entrepreneuriat 14, Steps & activité quotidienne 9.
+Vérifié en base au 2026-09-10 : Entrepreneuriat 103, Nutrition 101,
+Récupération 90, Entraînement 89, Psychologie 88, Général 86, Steps &
+activité quotidienne 81 (total 638) — répartition désormais très équilibrée
+entre catégories, contrairement à l'écart marqué du 08-18.
 
 Les catégories Entrepreneuriat et Steps sont les plus jeunes (0 avant ce
 chantier) : prioritaires pour les prochaines vagues, avec Récupération qui
