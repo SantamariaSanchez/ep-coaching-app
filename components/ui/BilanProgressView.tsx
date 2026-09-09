@@ -3,7 +3,7 @@
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
-import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets } from "lucide-react";
+import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets, AlertTriangle } from "lucide-react";
 import type { DailyLog } from "@/utils/daily-logs";
 import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
 
@@ -250,8 +250,36 @@ export default function BilanProgressView({
   const stepsData = sorted.map((l) => ({ date: l.log_date, value: l.steps }));
   const caloriesData = sorted.map((l) => ({ date: l.log_date, value: l.calories_kcal }));
 
+  // Alerte dette de sommeil, calculée directement sur daily_logs — même
+  // règle que generateInsightsForLatest (lib/biometric-rules.ts, ≥3 nuits
+  // à moins de 6h sur les 4 derniers relevés), mais cette règle "intelligente"
+  // n'existait jusqu'ici que côté biometric_logs (saisie manuelle de Moi >
+  // Sommeil ou sync Oura) : quiconque ne loggue son sommeil QUE via le
+  // bilan quotidien (cas réel confirmé : des nuits à 3,1h et 4,1h déjà
+  // enregistrées) n'était jamais alerté nulle part, malgré des données
+  // réellement alarmantes déjà en base.
+  const last4Sleep = sorted.slice(-4).map((l) => l.sleep_hours);
+  const shortNights = last4Sleep.filter((h) => h != null && h < 6).length;
+  const sleepDebtWarning = last4Sleep.length >= 3 && shortNights >= 3;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+      {sleepDebtWarning && (
+        <div
+          style={{
+            display: "flex", alignItems: "flex-start", gap: 10,
+            background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)",
+            borderRadius: 12, padding: "14px 16px",
+          }}
+        >
+          <AlertTriangle size={15} style={{ color: "#fbbf24", flexShrink: 0, marginTop: 1 }} />
+          <p style={{ fontSize: 12.5, color: "#F5EDED", margin: 0, lineHeight: 1.5 }}>
+            <strong>Dette de sommeil</strong> : {shortNights} nuit{shortNights > 1 ? "s" : ""} à moins de 6h sur tes {last4Sleep.length} derniers bilans.
+            Réduis le volume d&apos;entraînement de 10-20% cette semaine et priorise le sommeil avant tout, la récupération ne suivra pas sinon.
+          </p>
+        </div>
+      )}
+
       {/* Vue d'ensemble */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 12, flexWrap: "wrap" }}>
