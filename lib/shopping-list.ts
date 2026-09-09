@@ -34,7 +34,18 @@ export function buildShoppingList(
 
   if (hasStructuredPlan && activePlan) {
     const multiplier = activePlan.structure === "daily" ? days : 1;
+    // Bug réel confirmé sur son propre plan (82 lignes en variant_group=2,
+    // deux options réelles pour un même créneau, ex. "riz 100g" en Option 1
+    // ET en Option 2) : sans ce filtre, la liste de courses additionnait
+    // LES DEUX options comme si les deux étaient mangées la même semaine,
+    // doublant la quantité de tout aliment présent dans plusieurs options —
+    // alors qu'un seul choix est réellement fait chaque jour (voir le même
+    // raisonnement dans ClientNutritionView, checkedMap/visibleMeals). Sans
+    // connaître le choix réel jour par jour ici (fonction pure, pas de state
+    // client), l'Option 1 ("Choix habituel", même convention que
+    // variant ?? 1 partout ailleurs) sert de référence par défaut.
     for (const meal of activePlan.diet_plan_meals) {
+      if ((meal.variant_group ?? 1) !== 1) continue;
       const food = meal.foods;
       if (!food) continue;
       const existing = totals.get(food.id) ?? { name: food.name, category: food.category ?? "Divers", grams: 0 };
