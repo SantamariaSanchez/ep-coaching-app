@@ -2,10 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Camera, Trash2, Lock, Loader2 } from "lucide-react";
+import { Camera, Trash2, Lock, Loader2, Trophy, ChevronDown, ChevronUp } from "lucide-react";
 import type { PersonalPhoto } from "@/utils/personal-photos";
 import PhotoCompareSlider from "@/components/ui/PhotoCompareSlider";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
+import { POSING_CATEGORIES } from "@/lib/posing-data";
 
 function formatDate(dateStr: string) {
   return new Intl.DateTimeFormat("fr-FR", {
@@ -21,16 +22,37 @@ function formatDateShort(dateStr: string) {
   );
 }
 
+function daysUntil(dateStr: string): number {
+  return Math.ceil((new Date(dateStr).getTime() - Date.now()) / 86_400_000);
+}
+
+// Idée "onglet Moi, section Photos" (2026-09-09) : au-delà de quelques
+// semaines, un décompte en jours ("J-460") n'a plus rien de motivant, un
+// repère en mois est plus lisible — le même repère qu'on utiliserait
+// naturellement en en parlant.
+function formatCountdown(days: number): string {
+  if (days <= 0) return "Jour J";
+  if (days === 1) return "Demain";
+  if (days < 60) return `J-${days}`;
+  const months = Math.round(days / 30.44);
+  return `dans ${months} mois`;
+}
+
 interface Props {
   photos: PersonalPhoto[];
   uploadPersonalPhoto: (formData: FormData) => Promise<{ error?: string }>;
   deletePersonalPhoto: (id: string, storagePath: string) => Promise<{ error?: string }>;
+  /** Nouveau : déjà rempli via Ma Road Map, jamais exploité côté suivi photo perso jusqu'ici. */
+  competitionCategory?: string | null;
+  competitionDate?: string | null;
 }
 
 export default function PersonalPhotosView({
   photos: initialPhotos,
   uploadPersonalPhoto,
   deletePersonalPhoto,
+  competitionCategory = null,
+  competitionDate = null,
 }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -46,7 +68,11 @@ export default function PersonalPhotosView({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showPosing, setShowPosing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const posingData = competitionCategory ? POSING_CATEGORIES[competitionCategory] ?? null : null;
+  const daysLeft = competitionDate ? daysUntil(competitionDate) : null;
 
   // Comparaison avant/après (même composant que ClientPhotosView, item 35) —
   // demande explicite du 2026-08-15 : "les photos ça sert à rien, y'aura
@@ -98,6 +124,83 @@ export default function PersonalPhotosView({
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Photos</h1>
       </div>
+
+      {/* Nouveau : competition_category/competition_date sont déjà remplis
+          (via Ma Road Map) mais n'étaient exploités que côté client, jamais
+          ici — le compte à rebours et le guide de posing correspondants
+          n'apparaissaient donc jamais sur le suivi photo perso. */}
+      {competitionCategory && (
+        <div className="bg-gradient-to-br from-[#E01E1E]/10 to-[#1f0101] border border-[#E01E1E]/25 rounded-xl p-4 mb-6">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <Trophy size={16} className="text-[#E01E1E] flex-shrink-0" />
+              <div>
+                <p className="text-sm font-black text-white">{competitionCategory}</p>
+                <p className="text-[10.5px] text-[#F5EDED]/40 mt-0.5">
+                  {competitionDate ? formatDate(competitionDate) : "Date à définir"}
+                </p>
+              </div>
+            </div>
+            {daysLeft != null && (
+              <span className="text-xs font-black uppercase tracking-widest text-[#E01E1E] bg-[#E01E1E]/10 border border-[#E01E1E]/30 rounded-full px-3 py-1.5 flex-shrink-0">
+                {formatCountdown(daysLeft)}
+              </span>
+            )}
+          </div>
+
+          {posingData && (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowPosing((v) => !v)}
+                className="flex items-center gap-1.5 text-[10.5px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-white transition-colors mt-3.5 pt-3.5 border-t border-[#890404]/15 w-full"
+              >
+                {showPosing ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                Guide de posing {competitionCategory}
+              </button>
+              {showPosing && (
+                <div className="mt-3 space-y-3">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      Poses obligatoires
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {posingData.mandatory_poses.map((pose) => (
+                        <span key={pose} className="text-[10.5px] font-semibold text-[#F5EDED]/65 bg-black/25 border border-[#890404]/20 rounded-full px-2.5 py-1">
+                          {pose}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                      Routine posing · {posingData.posing_routine.duration}
+                    </p>
+                    <p className="text-xs text-[#F5EDED]/55 leading-relaxed">{posingData.posing_routine.instructions}</p>
+                  </div>
+                  {posingData.tips.length > 0 && (
+                    <div>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                        Astuces
+                      </p>
+                      <ul className="space-y-1">
+                        {posingData.tips.map((tip, i) => (
+                          <li key={i} className="text-xs text-[#F5EDED]/55 leading-relaxed flex gap-1.5">
+                            <span className="text-[#E01E1E] flex-shrink-0">·</span> {tip}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {posingData.notes && (
+                    <p className="text-[10.5px] text-[#F5EDED]/35 italic leading-relaxed">{posingData.notes}</p>
+                  )}
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
 
       <div className="flex items-start gap-2.5 bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-3 mb-6">
         <Lock size={14} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />

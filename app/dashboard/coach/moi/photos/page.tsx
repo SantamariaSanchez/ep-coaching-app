@@ -5,6 +5,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getPersonalPhotos } from "@/utils/personal-photos";
 import PersonalPhotosView from "@/components/ui/PersonalPhotosView";
 import { uploadPersonalPhoto, deletePersonalPhoto } from "./personal-actions";
+import { createAdminClient } from "@/lib/supabase-admin";
 
 // Masterclass Axe P (2026-08-15) : rendait ClientPhotosView ("envoyer une
 // mise à jour" à un coach) pour TOUT compte coach, y compris la fondatrice
@@ -21,13 +22,30 @@ export default async function CoachMonPhotosPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const photos = await getPersonalPhotos(user.id).catch(() => []);
+  const [photos, competitionRow] = await Promise.all([
+    getPersonalPhotos(user.id).catch(() => []),
+    // Nouveau (retour direct 2026-09-09, "moi" — "prends et fais ce que tu
+    // veux") : competition_category/competition_date sont déjà remplis via
+    // Ma Road Map (compétition WNBF), mais n'étaient exploités que sur
+    // ClientPhotosView (jamais rendue pour un coach — voir commentaire plus
+    // bas) — PersonalPhotosView n'affichait donc jamais le compte à rebours
+    // ni le guide de posing correspondant. Lecture ciblée (pas dans
+    // PROFILE_FIELDS), même convention que website/accepting_new_clients.
+    createAdminClient()
+      .from("profiles")
+      .select("competition_category, competition_date")
+      .eq("id", user.id)
+      .maybeSingle(),
+  ]);
+  const competition = competitionRow.data as { competition_category: string | null; competition_date: string | null } | null;
 
   return (
     <PersonalPhotosView
       photos={photos}
       uploadPersonalPhoto={uploadPersonalPhoto}
       deletePersonalPhoto={deletePersonalPhoto}
+      competitionCategory={competition?.competition_category ?? null}
+      competitionDate={competition?.competition_date ?? null}
     />
   );
 }
