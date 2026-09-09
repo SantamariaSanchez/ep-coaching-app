@@ -16,6 +16,8 @@ import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
 import MyPlatformSubscriptionCard from "@/components/coach/MyPlatformSubscriptionCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
+import ConnectionsCard from "@/components/settings/ConnectionsCard";
+import { isOuraConfigured } from "@/lib/oura";
 
 export default async function CoachParametresPage() {
   const user = await getUser();
@@ -50,7 +52,7 @@ export default async function CoachParametresPage() {
   // Item 45 : lecture ciblée (pas dans PROFILE_FIELDS), même convention que
   // referral_code/trial_ends_at côté client — évite d'alourdir getProfile()
   // utilisé partout avec des colonnes que seule cette page consulte.
-  const [acceptingRow, waitlist, notifRow] = await Promise.all([
+  const [acceptingRow, waitlist, notifRow, ouraRow] = await Promise.all([
     createAdminClient()
       .from("profiles")
       .select("accepting_new_clients, specializations")
@@ -58,6 +60,9 @@ export default async function CoachParametresPage() {
       .maybeSingle(),
     getCoachWaitlist(user.id),
     supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
+    // Nouveau : carte "Connexions" — statut Oura visible depuis Paramètres,
+    // pas seulement sur Moi > Sommeil.
+    createAdminClient().from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
   ]);
   const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null } | null;
   const accepting = acceptingData?.accepting_new_clients ?? true;
@@ -82,6 +87,12 @@ export default async function CoachParametresPage() {
       />
 
       <NotificationPreferencesCard initialMuted={mutedCategories} />
+
+      <ConnectionsCard
+        ouraConnected={!!ouraRow.data}
+        ouraConfigured={isOuraConfigured()}
+        ouraHref="/dashboard/coach/moi/tracking"
+      />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/coach" />
 

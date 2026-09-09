@@ -25,6 +25,13 @@ export default async function LeadsAdminPage() {
   for (const l of leads) byMagnet.set(l.lead_magnet_slug, (byMagnet.get(l.lead_magnet_slug) ?? 0) + 1);
   const topMagnets = Array.from(byMagnet.entries()).sort((a, b) => b[1] - a[1]).slice(0, 5);
   const qualifiedCount = leads.filter((l) => l.qualification_sent_at).length;
+  // Nouveau (retour direct 2026-09-09, "ajoute des fonctionnalités auxquelles
+  // on n'a pas encore pensé") : le pipeline (20260909b) suit déjà chaque lead
+  // jusqu'à "converti", mais aucun taux de conversion global n'était calculé
+  // — la métrique qui dit vraiment si les lead magnets rapportent des
+  // clients, pas juste des emails captés.
+  const convertedCount = leads.filter((l) => l.status === "converti").length;
+  const conversionRate = leads.length > 0 ? Math.round((convertedCount / leads.length) * 100) : 0;
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -61,6 +68,14 @@ export default async function LeadsAdminPage() {
             Qualifiés par Santiago (IA)
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>{qualifiedCount}</span>
+        </div>
+        <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#4ade80" }}>
+            Taux de conversion
+          </span>
+          <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>
+            {conversionRate}% <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>({convertedCount})</span>
+          </span>
         </div>
         {topMagnets.map(([slug, count]) => {
           const magnet = magnetsBySlug.get(slug);

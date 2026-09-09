@@ -5,7 +5,8 @@ import { getCoachBillingInfo, type CoachBillingInfo } from "@/lib/coach-billing"
 import { createAdminClient } from "@/lib/supabase-admin";
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
-import { ChevronLeft, TrendingUp, Users, Crown, History, ExternalLink } from "lucide-react";
+import { todayInParis } from "@/lib/dates";
+import { ChevronLeft, TrendingUp, Users, Crown, History, ExternalLink, ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 function formatDate(iso: string | null): string | null {
   if (!iso) return null;
@@ -76,6 +77,28 @@ export default async function CoachFinancePage() {
     : { data: [] as { id: string; full_name: string | null }[] };
   const nameById = new Map((eventProfiles ?? []).map((p) => [p.id, p.full_name ?? "Client"]));
 
+  // Nouveau (retour direct 2026-09-09, "ajoute des fonctionnalités auxquelles
+  // on n'a pas encore pensé" sur Finance) : un chiffre de MRR sans repère ne
+  // dit rien de la direction — même logique de tendance déjà utilisée sur
+  // le tableau de bord (DashboardStats, Check-ins/sem.). Stripe ne donne que
+  // l'état ACTUEL d'un abonnement, jamais son historique par mois ; le
+  // journal subscription_events (déjà déclenché à chaque bascule) sert donc
+  // de proxy fiable pour "combien d'activations ce mois vs le mois dernier".
+  const thisMonthPrefix = todayInParis().slice(0, 7);
+  const lastMonthDate = new Date(thisMonthPrefix + "-01T12:00:00");
+  lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
+  const lastMonthPrefix = lastMonthDate.toISOString().slice(0, 7);
+  const { data: activationEvents } = await admin
+    .from("subscription_events")
+    .select("created_at")
+    .eq("status", "active")
+    .gte("created_at", `${lastMonthPrefix}-01`);
+  const activationsThisMonth = (activationEvents ?? []).filter((e) => (e.created_at as string).startsWith(thisMonthPrefix)).length;
+  const activationsLastMonth = (activationEvents ?? []).filter((e) => (e.created_at as string).startsWith(lastMonthPrefix)).length;
+  const activationsDelta = activationsThisMonth - activationsLastMonth;
+  const TrendIcon = activationsDelta > 0 ? ArrowUp : activationsDelta < 0 ? ArrowDown : Minus;
+  const trendColor = activationsDelta > 0 ? "#4ade80" : activationsDelta < 0 ? "#fb923c" : "rgba(245,237,237,0.35)";
+
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
       <Link
@@ -102,6 +125,19 @@ export default async function CoachFinancePage() {
         <StatCard label="Abonnés actifs" value={String(coachesActive + activeClients.length)} sub={`${coachesActive} coachs · ${activeClients.length} clients`} />
         <StatCard label="Revenu mensuel plateforme (coachs)" value={eur(coachMrr)} />
         <StatCard label="Revenu mensuel clients (direct)" value={eur(clientMrr)} />
+      </div>
+
+      {/* Nouveau : tendance d'activations, sans repère un MRR isolé ne dit
+          rien de la direction (croissance ou ralentissement). */}
+      <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 24, display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ flex: 1 }}>
+          <p className="ep-label" style={{ marginBottom: 4 }}>Activations ce mois-ci</p>
+          <p style={{ fontSize: 20, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{activationsThisMonth}</p>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, color: trendColor, fontSize: 12, fontWeight: 800 }}>
+          <TrendIcon size={13} strokeWidth={2.5} />
+          {activationsDelta === 0 ? "stable" : `${activationsDelta > 0 ? "+" : ""}${activationsDelta} vs mois dernier`}
+        </div>
       </div>
 
       {/* Coachs tiers */}

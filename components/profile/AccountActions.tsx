@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download } from "lucide-react";
+import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download, ShieldOff } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { deleteOwnAccount } from "@/app/actions/account";
 
@@ -24,9 +24,23 @@ export default function AccountActions({
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [signingOutEverywhere, setSigningOutEverywhere] = useState(false);
 
   async function signOut() {
     await sb.auth.signOut();
+    router.push(signOutRedirect);
+    router.refresh();
+  }
+
+  // Nouveau (retour direct 2026-09-09, "ajoute des fonctionnalités auxquelles
+  // on n'a pas encore pensé" sur Paramètres) : "Se déconnecter" ne coupait
+  // que la session de l'appareil courant. Un compte oublié connecté sur un
+  // téléphone perdu/prêté, ou un simple doute après avoir changé de mot de
+  // passe, n'avait aucun moyen de tout couper d'un coup — { scope: "global" }
+  // révoque tous les refresh tokens du compte, sur tous les appareils.
+  async function signOutEverywhere() {
+    setSigningOutEverywhere(true);
+    await sb.auth.signOut({ scope: "global" });
     router.push(signOutRedirect);
     router.refresh();
   }
@@ -92,6 +106,18 @@ export default function AccountActions({
         className="flex items-center justify-center gap-2 w-full mt-4 bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
       >
         <LogOut size={13} /> Se déconnecter
+      </button>
+
+      {/* Nouveau : coupe la session sur TOUS les appareils, pas que celui-ci
+          — utile en cas de doute (téléphone perdu/prêté, mot de passe changé
+          par précaution). */}
+      <button
+        onClick={signOutEverywhere}
+        disabled={signingOutEverywhere}
+        className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-[#F5EDED]/25 hover:text-[#E01E1E] disabled:opacity-50 font-bold text-[11px] uppercase tracking-widest transition-colors"
+      >
+        <ShieldOff size={12} />
+        {signingOutEverywhere ? "Déconnexion…" : "Se déconnecter partout"}
       </button>
 
       {confirmingDelete ? (

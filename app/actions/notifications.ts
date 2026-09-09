@@ -4,6 +4,7 @@ import { sendBrevoEmail } from "@/utils/brevo"
 import { getCoachForClient } from "@/utils/insert-notification"
 import { notifyUser } from "@/lib/notify"
 import { requireAuth } from "@/lib/auth-guards"
+import { sendPushToUser } from "@/lib/push"
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
@@ -288,6 +289,23 @@ export async function notifyClientNewLiveEvent(
       </div>
     `,
   })
+}
+
+// Nouveau (retour direct 2026-09-09, "ajoute des fonctionnalités auxquelles
+// on n'a pas encore pensé" sur Paramètres) : aucun moyen de vérifier que les
+// notifications push arrivent VRAIMENT (son, vibration, bannière) sans
+// attendre qu'un vrai événement se déclenche — pertinent en particulier
+// après l'historique "réveil sans son" (voir schedule-block-notify). Un
+// simple aller-retour sur soi-même, jamais vers un autre compte.
+export async function sendTestPush(): Promise<{ ok: boolean; reason?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { ok: false, reason: guard.error };
+  return sendPushToUser(
+    guard.userId,
+    "🔔 Notification de test",
+    "Si tu vois ceci avec un son ou une vibration, tes notifications push fonctionnent.",
+    "/dashboard/coach/parametres"
+  );
 }
 
 export async function notifyClientBilanReady(

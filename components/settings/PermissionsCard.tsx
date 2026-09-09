@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bell, Footprints, ChevronRight, AlertTriangle, Moon, Camera, MapPin, Contact } from "lucide-react";
+import { Bell, Footprints, ChevronRight, AlertTriangle, Moon, Camera, MapPin, Contact, Send } from "lucide-react";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import { PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
 import { setQuietHours } from "@/app/actions/quiet-hours";
+import { sendTestPush } from "@/app/actions/notifications";
 
 // Item 50 : même défaut que lib/quiet-hours.ts côté serveur — affiché tel
 // quel tant que l'utilisateur n'a rien choisi explicitement.
@@ -43,6 +44,16 @@ export default function PermissionsCard({
   const [quietEnd, setQuietEnd] = useState(quietHoursEnd ?? DEFAULT_QUIET_END);
   const [quietSaving, setQuietSaving] = useState(false);
   const [quietSaved, setQuietSaved] = useState(false);
+  const [testPushState, setTestPushState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  // Nouveau : vérifier que le push arrive VRAIMENT (son, vibration) sans
+  // attendre un vrai événement — voir app/actions/notifications.ts.
+  async function handleTestPush() {
+    setTestPushState("sending");
+    const res = await sendTestPush();
+    setTestPushState(res.ok ? "sent" : "error");
+    setTimeout(() => setTestPushState("idle"), 3000);
+  }
 
   // MASTERCLASS.md Axe E : sans ça, un état changé ailleurs (autre appareil,
   // autre onglet) restait invisible tant que le composant ne remontait pas.
@@ -273,6 +284,23 @@ export default function PermissionsCard({
             </select>
             {quietSaved && <span className="text-[10px] text-green-400 font-semibold">✓</span>}
           </div>
+        )}
+
+        {/* Nouveau : aucun moyen jusqu'ici de vérifier que le push arrive
+            VRAIMENT (son, vibration, bannière) sans attendre un vrai
+            événement — pertinent après l'historique "réveil sans son". */}
+        {push && (
+          <button
+            onClick={handleTestPush}
+            disabled={testPushState === "sending"}
+            className="flex items-center gap-1.5 mt-3 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+          >
+            <Send size={11} />
+            {testPushState === "sending" && "Envoi…"}
+            {testPushState === "sent" && "Envoyée — regarde ton appareil"}
+            {testPushState === "error" && "Échec, réessaie"}
+            {testPushState === "idle" && "M'envoyer une notification de test"}
+          </button>
         )}
       </div>
 
