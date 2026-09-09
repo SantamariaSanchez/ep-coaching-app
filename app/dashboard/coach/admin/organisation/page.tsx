@@ -99,6 +99,19 @@ export default async function OrganisationAdminPage() {
     for (const role of pole.roles) roleTitleByKey[role.key] = role.title;
   }
 
+  // Nouveau (retour direct 2026-09-09, "ajoute des fonctionnalités auxquelles
+  // on n'a pas encore pensé") : aucune vue d'ensemble du recrutement — fallait
+  // ouvrir chaque pôle un par un pour savoir où on en est globalement.
+  const totalRoles = POLES.reduce((sum, p) => sum + p.roles.length, 0);
+  const filledRoles = POLES.reduce(
+    (sum, p) => sum + p.roles.filter((r) => initialStatuses[r.key] === "pourvu").length,
+    0
+  );
+  const inRecruitmentRoles = POLES.reduce(
+    (sum, p) => sum + p.roles.filter((r) => initialStatuses[r.key] === "en_recrutement").length,
+    0
+  );
+
   // Coachs IA (retour direct 2026-08-19 : "si c'est des coachs dans ma
   // structure j'suis censé les voir dans organisation") — de vraies lignes
   // profiles (voir lib/ai-coaches.ts), distinctes des 19 agents IA internes
@@ -156,6 +169,30 @@ export default async function OrganisationAdminPage() {
         >
           Voir la page publique de candidature <ExternalLink size={11} />
         </Link>
+      </div>
+
+      {/* Nouveau : vue d'ensemble du recrutement, sans avoir à ouvrir chaque
+          pôle un par un pour savoir où on en est globalement. */}
+      <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
+          <p className="ep-label" style={{ margin: 0 }}>Postes pourvus</p>
+          <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
+            {filledRoles} / {totalRoles}
+            {inRecruitmentRoles > 0 && (
+              <span style={{ fontSize: 11, fontWeight: 600, color: "#facc15", marginLeft: 8 }}>
+                · {inRecruitmentRoles} en recrutement
+              </span>
+            )}
+          </p>
+        </div>
+        <div style={{ height: 5, background: "rgba(224,30,30,0.1)", borderRadius: 3, overflow: "hidden" }}>
+          <div style={{
+            height: "100%",
+            width: `${totalRoles > 0 ? Math.round((filledRoles / totalRoles) * 100) : 0}%`,
+            background: "linear-gradient(90deg, #4ade80, #22c55e)",
+            borderRadius: 3,
+          }} />
+        </div>
       </div>
 
       <OrganisationView

@@ -6,7 +6,8 @@ import { getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import { updateLeadStatus, updateLeadNote } from "./actions";
-import { ChevronLeft } from "lucide-react";
+import { todayInParis } from "@/lib/dates";
+import { ChevronLeft, ArrowUp, ArrowDown, Minus } from "lucide-react";
 
 // Réservé au propriétaire de la plateforme, même garde que
 // app/dashboard/coach/admin — les leads captés sur /ressources sont une
@@ -32,6 +33,19 @@ export default async function LeadsAdminPage() {
   // clients, pas juste des emails captés.
   const convertedCount = leads.filter((l) => l.status === "converti").length;
   const conversionRate = leads.length > 0 ? Math.round((convertedCount / leads.length) * 100) : 0;
+
+  // Nouveau : tendance hebdomadaire — un total cumulé ne dit rien de si le
+  // rythme de captation accélère ou ralentit d'une semaine à l'autre.
+  const todayMs = new Date(todayInParis() + "T12:00:00").getTime();
+  const DAY_MS = 86_400_000;
+  const leadsThisWeek = leads.filter((l) => todayMs - new Date(l.created_at).getTime() < 7 * DAY_MS).length;
+  const leadsLastWeek = leads.filter((l) => {
+    const ageMs = todayMs - new Date(l.created_at).getTime();
+    return ageMs >= 7 * DAY_MS && ageMs < 14 * DAY_MS;
+  }).length;
+  const weeklyDelta = leadsThisWeek - leadsLastWeek;
+  const WeeklyTrendIcon = weeklyDelta > 0 ? ArrowUp : weeklyDelta < 0 ? ArrowDown : Minus;
+  const weeklyTrendColor = weeklyDelta > 0 ? "#4ade80" : weeklyDelta < 0 ? "#fb923c" : "rgba(245,237,237,0.35)";
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
@@ -75,6 +89,18 @@ export default async function LeadsAdminPage() {
           </span>
           <span style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>
             {conversionRate}% <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>({convertedCount})</span>
+          </span>
+        </div>
+        <div className="ep-card" style={{ padding: "10px 16px", display: "flex", flexDirection: "column", flexShrink: 0 }}>
+          <span style={{ fontSize: 8, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+            Cette semaine
+          </span>
+          <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 17, fontWeight: 900, color: "#F5EDED" }}>
+            {leadsThisWeek}
+            <span style={{ display: "flex", alignItems: "center", gap: 1, fontSize: 10, fontWeight: 800, color: weeklyTrendColor }}>
+              <WeeklyTrendIcon size={10} strokeWidth={2.5} />
+              {weeklyDelta !== 0 && Math.abs(weeklyDelta)}
+            </span>
           </span>
         </div>
         {topMagnets.map(([slug, count]) => {
