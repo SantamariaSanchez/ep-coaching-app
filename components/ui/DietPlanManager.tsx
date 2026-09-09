@@ -496,7 +496,12 @@ export function PlanBuilder({
     if (!targets) return;
     setAutoAdjustError(null);
     setAutoAdjustDone(false);
-    const newQuantities = autoAdjustQuantities(dayMeals, foods, targets);
+    // primaryOnly (même convention que planTotals/draftShoppingItems
+    // ci-dessus, ci-dessous) : sans ça, une variante alternative (2e choix
+    // du créneau) entrait dans l'équation macro comme si elle était mangée
+    // EN PLUS de l'option principale le même jour, faussant les facteurs
+    // d'échelle calculés pour atteindre les objectifs.
+    const newQuantities = autoAdjustQuantities(primaryOnly(dayMeals), foods, targets);
     if (!newQuantities) {
       setAutoAdjustError(
         "Pas assez de variété dans ce repas pour ajuster automatiquement (il faut au moins un aliment par macro dominante : protéine, glucide, lipide)."
@@ -512,9 +517,12 @@ export function PlanBuilder({
 
   // Micronutriments projetés du plan en cours de construction — réutilise
   // exactement la même logique que le suivi réel (getMicroDeficiencyOrder),
-  // juste appliquée aux repas PLANIFIÉS plutôt qu'aux logs réels.
+  // juste appliquée aux repas PLANIFIÉS plutôt qu'aux logs réels. primaryOnly
+  // (même convention que planTotals/draftShoppingItems/handleAutoAdjust) :
+  // sans ça, une variante alternative comptait en plus de l'option
+  // principale, gonflant les micronutriments projetés du jour.
   const microLogs = useMemo(
-    () => dayMeals.map((m) => ({ foods: foods.find((f) => f.id === m.foodId) ?? null, quantity_g: m.quantityG })),
+    () => primaryOnly(dayMeals).map((m) => ({ foods: foods.find((f) => f.id === m.foodId) ?? null, quantity_g: m.quantityG })),
     [dayMeals, foods]
   );
 
