@@ -6,6 +6,7 @@ import {
 import { Download, Flame, Scale, Footprints, Moon, Zap, Beef, Wheat, Droplets, AlertTriangle } from "lucide-react";
 import type { DailyLog } from "@/utils/daily-logs";
 import { groupLogsByWeek } from "@/lib/daily-logs-helpers";
+import { todayInParis } from "@/lib/dates";
 
 // Fusion de l'ancien "Bilan" (formulaire + liste brute par semaine) et de
 // l'ancienne "Progression" (moyennes globales + export CSV) : les deux
@@ -221,7 +222,10 @@ export default function BilanProgressView({
   /** Lien de téléchargement CSV, omis si non pertinent (ex. vue lecture seule sans export). */
   exportHref?: string;
 }) {
-  const today = new Date().toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC —
+  // entre minuit et 1h/2h du matin heure de Paris, "today" pointait encore
+  // sur hier et faussait la série (computeLogStreak) juste après minuit.
+  const today = todayInParis();
 
   if (logs.length === 0) {
     return (

@@ -5,6 +5,7 @@ import RoadmapEditor from "@/components/roadmap/RoadmapEditor";
 import { ObjectiveCard, getISOWeek, type RoadmapData } from "@/components/client/RoadmapView";
 import { PHASE_COLORS } from "@/lib/roadmap-colors";
 import { Map, Target } from "lucide-react";
+import { todayInParis } from "@/lib/dates";
 
 // Retour "travaille sur tout, coach client membre" (2026-09-09) : un client
 // coaché voit un vrai résumé de sa Road Map (phase active, objectifs avec
@@ -32,7 +33,10 @@ export default function CoachMoiRoadmapView({ userId }: { userId: string }) {
       });
   }, [userId]);
 
-  const today = new Date().toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : UTC, pas Paris — entre minuit et 1h/2h du matin,
+  // la mauvaise phase (celle d'hier) pouvait rester affichée comme active
+  // pile au moment d'une transition de phase.
+  const today = todayInParis();
   const activePhase = data?.phases.find((p) => p.start_date <= today && p.end_date >= today) ?? null;
   const activePhaseCols = activePhase
     ? PHASE_COLORS[activePhase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom

@@ -13,6 +13,7 @@ import {
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { getAccessType, type Profile } from "@/utils/auth-client";
 import { Target, MapPin } from "lucide-react";
+import { todayInParis } from "@/lib/dates";
 
 // Pure ISO week helper (no server imports) — exportée pour CoachMoiRoadmapView.
 export function getISOWeek(date: Date): number {
@@ -235,7 +236,10 @@ export default function RoadmapView() {
   }
 
   const { roadmap, phases, objectives } = data;
-  const today = new Date().toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : UTC, pas Paris — entre minuit et 1h/2h du matin,
+  // la mauvaise phase (celle d'hier) pouvait rester affichée comme active
+  // pile au moment d'une transition de phase.
+  const today = todayInParis();
 
   // Active phase
   const activePhase = phases.find(

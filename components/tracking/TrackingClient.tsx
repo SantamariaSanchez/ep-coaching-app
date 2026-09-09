@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
 import type { LogBiometricsInput } from "@/app/dashboard/client/tracking/actions";
+import { todayInParis } from "@/lib/dates";
 
 const TOOLTIP_STYLE = {
   contentStyle: { backgroundColor: "#1f0101", border: "1px solid rgba(137,4,4,0.4)", borderRadius: 8, color: "#F5EDED", fontSize: 11 },
@@ -218,7 +219,13 @@ export default function TrackingClient({
   /** ?oura=... au retour de /api/oura/connect ou /callback */
   ouraStatus?: string;
 }) {
-  const today = new Date().toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : new Date().toISOString() rend la date en UTC,
+  // pas celle de Paris — entre minuit et 1h/2h du matin, todayLog matchait
+  // encore la ligne biometric_logs de LA VEILLE (déjà complète), et toute
+  // saisie manuelle dans cette fenêtre écrasait silencieusement le vrai
+  // sommeil/readiness d'hier au lieu de créer la ligne du jour qui vient de
+  // commencer. Voir lib/dates.ts.
+  const today = todayInParis();
   const todayLog = logs.find((l) => l.log_date === today) ?? null;
 
   const [sleepHours, setSleepHours] = useState(todayLog?.sleep_hours?.toString() ?? "");

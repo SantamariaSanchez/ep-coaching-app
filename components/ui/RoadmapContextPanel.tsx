@@ -1,6 +1,7 @@
 "use client";
 
 import type { RoadmapWithData } from "@/utils/roadmap";
+import { todayInParis } from "@/lib/dates";
 
 // Contexte road map partagé entre l'espace de conception programme
 // (ProgramEditor) et diète (DietPlanManager) — ce qu'on construit ne doit
@@ -40,7 +41,8 @@ export default function RoadmapContextPanel({
     );
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  // MASTERCLASS.md Axe L : UTC, pas Paris.
+  const today = todayInParis();
   const currentPhase =
     roadmap.phases.find((p) => p.start_date <= today && today <= p.end_date) ??
     [...roadmap.phases].sort((a, b) => b.end_date.localeCompare(a.end_date))[0] ??

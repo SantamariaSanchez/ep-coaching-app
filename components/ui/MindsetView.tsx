@@ -43,6 +43,7 @@ import {
 } from "@/lib/mindset-content";
 import type { MindsetProfile, MindsetHabitLog, MindsetJournalEntry } from "@/utils/mindset";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
+import { todayInParis } from "@/lib/dates";
 
 const ICONS: Record<string, React.ElementType> = {
   Moon, Smartphone, Target, Utensils, Sparkles, EyeOff, ClipboardList, Wind,
@@ -516,7 +517,11 @@ function JournalTab({
       {
         id: result.id ?? `optimistic-${Date.now()}`,
         client_id: "",
-        entry_date: new Date().toISOString().split("T")[0],
+        // MASTERCLASS.md Axe L : UTC, pas Paris — juste l'echo optimiste
+        // local le temps du resync serveur (voir le vrai entry_date posé
+        // côté action), mais évite quand même d'afficher la mauvaise date
+        // entre minuit et 1h/2h du matin.
+        entry_date: todayInParis(),
         prompt_key: selectedPrompt,
         content: content.trim(),
         mood,

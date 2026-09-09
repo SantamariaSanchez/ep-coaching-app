@@ -5,11 +5,23 @@ import Link from "next/link";
 import { Footprints, Plus, Trash2, Check, Target, Flame, Bell, Watch, X, Activity, AlertTriangle } from "lucide-react";
 import type { StepSettings, StepRoutineItem, StepLog } from "@/utils/steps";
 import { usePedometer, PEDOMETER_ENABLED_KEY } from "@/lib/pedometer";
+import { todayInParis } from "@/lib/dates";
 
 const HEATMAP_WEEKS = 4;
 
+// MASTERCLASS.md Axe L (même bug que côté serveur, jamais corrigé ici) :
+// new Date().toISOString() rend toujours la date en UTC, quel que soit le
+// fuseau de l'appareil qui exécute le code — entre minuit et 1h/2h du matin
+// heure de Paris (selon été/hiver), ça pointait encore sur hier. Concret
+// pour cette page : todayLog matchait alors la ligne step_logs de LA VEILLE
+// (déjà complète) au lieu d'aucune ligne, faisant passer "aujourd'hui" pour
+// déjà terminé (heatmap, série, case à cocher) — et tout logSteps() déclenché
+// dans cette fenêtre (podomètre, coche de routine) écrasait silencieusement
+// les vrais pas d'hier au lieu de démarrer une nouvelle ligne pour le jour
+// qui vient de commencer. todayInParis() utilise déjà Intl avec
+// timeZone: "Europe/Paris", correct côté client comme côté serveur.
 function todayStr(): string {
-  return new Date().toISOString().split("T")[0];
+  return todayInParis();
 }
 
 function shortDate(dateStr: string): string {

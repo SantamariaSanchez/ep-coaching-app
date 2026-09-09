@@ -31,6 +31,7 @@ import { calculateNutrients } from "@/utils/nutrition-utils";
 import AddRecipeForm from "@/components/recipes/AddRecipeForm";
 import MealCreatorWizard from "@/components/recipes/MealCreatorWizard";
 import { MACRO_PROFILE_LABELS, type MacroProfile } from "@/lib/meal-creator";
+import { todayInParis } from "@/lib/dates";
 
 // Le créateur de repas connaît le créneau food_logs (breakfast/lunch/...)
 // alors que les recettes utilisent leur propre typage MealType
@@ -552,7 +553,12 @@ export default function RecipesClient({
   // reste du suivi, qui logue toujours au niveau aliment.
   async function handleLogRecipeToday(recipe: DisplayRecipe): Promise<{ error?: string }> {
     if (!addFoodLog || !recipe.foodsUsed || recipe.foodsUsed.length === 0) return {};
-    const today = new Date().toISOString().split("T")[0];
+    // MASTERCLASS.md Axe L : UTC, pas Paris — entre minuit et 1h/2h du
+    // matin, ça loguait la recette sous la date d'HIER (loggedAt), donc
+    // invisible dans le suivi du jour (ClientNutritionView reçoit son
+    // "today" correctement calculé côté serveur via todayInParis()) — même
+    // classe de bug que les doublons déjà corrigés dans le tracker.
+    const today = todayInParis();
     const slot = MEAL_TO_SLOT[recipe.meal];
     const results = await Promise.all(
       recipe.foodsUsed.map(({ food_id, grams }): Promise<{ id?: string; error?: string }> => {

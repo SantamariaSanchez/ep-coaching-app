@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Ruler, ChevronDown, ChevronUp, AlertTriangle, Check } from "lucide-react";
 import type { Measurement } from "@/utils/measurements";
 import BeforeAfterComparator from "@/components/ui/BeforeAfterComparator";
+import { todayInParis } from "@/lib/dates";
 
 // Trou trouvé en creusant "Moi" (2026-09-09) : measurements avait toute une
 // infrastructure de lecture déjà construite (BeforeAfterComparator, curseur
@@ -67,7 +68,11 @@ export default function MeasurementsSection({
   const [showHistory, setShowHistory] = useState(false);
   const [values, setValues] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
-  const [date, setDate] = useState(() => new Date().toISOString().split("T")[0]);
+  // MASTERCLASS.md Axe L : UTC, pas Paris — entre minuit et 1h/2h du matin
+  // heure de Paris, la date par défaut ET le max ci-dessous (même bug)
+  // pointaient encore sur hier, empêchant purement et simplement de
+  // sélectionner la vraie date du jour dans le champ.
+  const [date, setDate] = useState(() => todayInParis());
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -150,7 +155,7 @@ export default function MeasurementsSection({
               type="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
-              max={new Date().toISOString().split("T")[0]}
+              max={todayInParis()}
               aria-label="Date de la prise"
               className="bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/50"
             />
