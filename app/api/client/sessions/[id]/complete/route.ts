@@ -108,6 +108,12 @@ export async function POST(
         weight_kg: w.weightKg,
         logged_at: new Date().toISOString(),
         week_start: weekStartStr,
+        // Voir supabase/migrations/20260909e_workout_logs_session_id.sql et
+        // app/api/client/sessions/[id]/reopen/route.ts : sans ce lien,
+        // rouvrir une séance terminée par erreur ne pouvait pas retirer
+        // proprement SES lignes de volume (une séance de la même journée
+        // aurait été touchée par erreur avec une correspondance approximative).
+        session_id: sessionId,
       }))
     );
   }

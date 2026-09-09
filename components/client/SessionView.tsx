@@ -24,6 +24,7 @@ import {
   StickyNote,
   Backpack,
   ExternalLink,
+  RotateCcw,
 } from "lucide-react";
 import {
   BarChart,
@@ -51,6 +52,7 @@ import { accessoriesForSession } from "@/lib/session-accessories";
 import type { Exercise } from "@/utils/programs";
 import type { Session, SessionSet } from "@/utils/sessions";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { todayInParis } from "@/lib/dates";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
@@ -2257,6 +2259,38 @@ export default function SessionView({
     returnPath,
   ]);
 
+  const [reopening, setReopening] = useState(false);
+  const [reopenError, setReopenError] = useState<string | null>(null);
+
+  // "Faut un bouton retour en arrière" (note laissée sur une séance "Pull",
+  // 2026-09-09) : jusqu'ici, une fois "Terminer" cliqué par erreur, c'était
+  // définitif — seul moyen de corriger était de contacter le coach. Défait
+  // précisément ce que /complete a produit (PR, volume, points), sans jamais
+  // toucher aux sets déjà tapés (session_sets) : ils restent là, prêts à
+  // être corrigés puis revalidés. Voir app/api/client/sessions/[id]/reopen.
+  const handleReopenSession = useCallback(async () => {
+    if (!(await confirm("Rouvrir cette séance ? Le récap (PR, volume, points) sera annulé, tes sets restent."))) return;
+    setReopening(true);
+    setReopenError(null);
+    try {
+      const res = await fetch(`/api/client/sessions/${sessionId}/reopen`, { method: "POST" });
+      const json = await res.json();
+      if (!res.ok) {
+        setReopenError(json.error ?? "Erreur, réessaie.");
+        setReopening(false);
+        return;
+      }
+      // Rechargement complet plutôt qu'un simple router.refresh() : session,
+      // exercises, existingSets... sont tous chargés une seule fois au
+      // montage dans du state local (pas des Server Components), un refresh
+      // Next.js seul ne les referait pas repasser par le fetch initial.
+      window.location.reload();
+    } catch {
+      setReopenError("Erreur, réessaie.");
+      setReopening(false);
+    }
+  }, [sessionId, confirm]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -2551,6 +2585,31 @@ export default function SessionView({
               {canceling ? "Annulation…" : "Annuler la séance (rien ne sera enregistré)"}
             </button>
           </>
+        )}
+
+        {/* Rouvrir une séance terminée par erreur — uniquement le jour même
+            (voir app/api/client/sessions/[id]/reopen, même borne côté
+            serveur). Ne remplace pas "Annuler" ci-dessus : celui-là supprime
+            une séance jamais terminée, celui-ci rouvre une séance terminée
+            par erreur pour la corriger. */}
+        {session.is_completed && session.session_date === todayInParis() && (
+          <div className="mt-2">
+            {reopenError && (
+              <p className="text-[11px] text-red-400 text-center mb-2">{reopenError}</p>
+            )}
+            <button
+              onClick={handleReopenSession}
+              disabled={reopening}
+              className="w-full py-3 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-amber-400 border border-[#890404]/25 hover:border-amber-500/40 rounded-xl transition-colors disabled:opacity-50"
+            >
+              {reopening ? (
+                <div className="w-3.5 h-3.5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <RotateCcw size={13} />
+              )}
+              {reopening ? "Réouverture…" : "Terminée par erreur ? Rouvrir la séance"}
+            </button>
+          </div>
         )}
       </div>
     );
