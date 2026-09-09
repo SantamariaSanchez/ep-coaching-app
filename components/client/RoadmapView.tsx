@@ -14,8 +14,8 @@ import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import { getAccessType, type Profile } from "@/utils/auth-client";
 import { Target, MapPin } from "lucide-react";
 
-// Pure ISO week helper (no server imports)
-function getISOWeek(date: Date): number {
+// Pure ISO week helper (no server imports) — exportée pour CoachMoiRoadmapView.
+export function getISOWeek(date: Date): number {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
   const dayNum = d.getUTCDay() || 7;
   d.setUTCDate(d.getUTCDate() + 4 - dayNum);
@@ -23,13 +23,16 @@ function getISOWeek(date: Date): number {
   return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
 }
 
-interface RoadmapData {
+export interface RoadmapData {
   roadmap: Roadmap;
   phases: RoadmapPhase[];
   objectives: RoadmapObjective[];
 }
 
-function ObjectiveCard({
+// Exporté pour CoachMoiRoadmapView : un coach sur sa propre Road Map n'a
+// jamais eu ce résumé (phase active + progression des objectifs), voir le
+// commentaire là-bas — même carte, jamais raison de la dupliquer.
+export function ObjectiveCard({
   obj,
   roadmapStart,
 }: {
@@ -39,11 +42,15 @@ function ObjectiveCard({
   const color = OBJECTIVE_TERM_COLORS[obj.term];
   const termLabel = obj.term === "short" ? "Court terme" : obj.term === "medium" ? "Moyen terme" : "Long terme";
 
+  // MASTERCLASS.md Axe E : lazy useState(Date.now()) plutôt que Date.now()
+  // direct au rendu (impur) — une carte d'objectif n'a de toute façon pas
+  // besoin d'être plus fraîche que le rendu initial de l'écran.
+  const [now] = useState(() => Date.now());
+
   // Progress bar if quantifiable
   let progressPct: number | null = null;
   // For date-based progress
   if (!obj.is_achieved) {
-    const now = Date.now();
     const start = new Date(roadmapStart).getTime();
     const target = new Date(obj.target_date).getTime();
     if (target > start) {
@@ -53,9 +60,7 @@ function ObjectiveCard({
 
   const daysLeft = obj.is_achieved
     ? 0
-    : Math.ceil(
-        (new Date(obj.target_date).getTime() - Date.now()) / 86400000
-      );
+    : Math.ceil((new Date(obj.target_date).getTime() - now) / 86400000);
 
   return (
     <div
