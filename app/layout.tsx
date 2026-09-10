@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
+import { MotionConfig } from "framer-motion";
 import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
 import "./globals.css";
 
@@ -77,7 +78,23 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`}>
       <body className="min-h-full">
-        <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+        {/* "Mouvement réduit" (app/globals.css) couvre déjà les animations
+            CSS (classes .animate-*, transitions Tailwind) via
+            @media (prefers-reduced-motion: reduce), mais Framer Motion ne
+            lit jamais cette media query de lui-même : les 5 endroits qui
+            l'utilisent (assistant de création programme/repas, questionnaire
+            + tour d'onboarding, pastille active de la nav) continuaient à
+            faire glisser/translater leur contenu même pour qui a explicitement
+            demandé moins de mouvement au niveau OS (motion sickness, trouble
+            vestibulaire) — un seul point de réglage ici plutôt que 5 fixes
+            dispersés. reducedMotion="user" est l'API native de Framer Motion
+            pour ça : elle respecte la préférence système en temps réel et
+            neutralise transforms/layout animations (translateX, la pastille
+            de nav qui glisse via layoutId) tout en gardant les fondus
+            d'opacité, exactement la même doctrine que le bloc CSS existant. */}
+        <MotionConfig reducedMotion="user">
+          <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
+        </MotionConfig>
       </body>
     </html>
   );
