@@ -284,7 +284,17 @@ export default function TrackingClient({
   async function handleAcknowledge(insightId: string) {
     if (!acknowledgeBiometricInsight) return;
     setDismissedIds((prev) => new Set(prev).add(insightId));
-    await acknowledgeBiometricInsight(insightId);
+    const res = await acknowledgeBiometricInsight(insightId);
+    // MASTERCLASS.md Axe B (repasse 2026-09-10) : la suppression optimiste
+    // n'était jamais annulée en cas d'échec serveur — l'insight disparaissait
+    // de la vue pour de bon (côté client) même si l'action avait échoué.
+    if (res.error) {
+      setDismissedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(insightId);
+        return next;
+      });
+    }
   }
 
   const sleepData = logs.map((l) => ({ date: l.log_date, value: l.sleep_hours }));

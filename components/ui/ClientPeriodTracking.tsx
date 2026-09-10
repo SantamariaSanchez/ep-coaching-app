@@ -94,8 +94,16 @@ export default function ClientPeriodTracking({
   }
 
   async function handleDelete(logId: string) {
+    const removed = logs.find((l) => l.id === logId);
     setLogs((prev) => prev.filter((l) => l.id !== logId));
-    await deletePeriodLog(clientId, logId);
+    const res = await deletePeriodLog(clientId, logId);
+    // MASTERCLASS.md Axe B (repasse 2026-09-10) : la suppression optimiste
+    // n'était jamais annulée en cas d'échec serveur — le cycle réapparaissait
+    // en base mais restait invisible côté client jusqu'au prochain rechargement.
+    if (res.error && removed) {
+      setError(res.error);
+      setLogs((prev) => [...prev, removed].sort((a, b) => b.start_date.localeCompare(a.start_date)));
+    }
   }
 
   return (

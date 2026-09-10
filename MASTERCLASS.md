@@ -3101,3 +3101,90 @@ wrapper `commande ; echo EXIT=$? >> log` renvoie toujours 0 côté bash (le
 `echo` est la dernière commande de la chaîne), seul le contenu du log dit
 la vérité. Rattrapé en relisant systématiquement le log après chaque
 tâche de fond avant d'affirmer qu'une vérification est passée.
+
+## BB — Repasse des axes mécaniques après 136 commits (2026-09-10)
+
+**Statut : livré.** Demande explicite ("masterclass d'audit go") après trois
+semaines sans passe dédiée (dernière entrée : Axe BA, 2026-08-20) — 136
+commits accumulés entre-temps (Axe 2 mailing v2, agents IA client-facing,
+agenda, nutrition, 28 leadmagnets, etc.), largement assez de surface neuve
+pour justifier de relancer les scripts existants plutôt que d'ouvrir un tout
+nouvel axe à l'aveugle.
+
+**Axe A (revalidation après mutation), relancé** : script
+`find-unrevalidated-functions.mjs` reconstruit à l'identique (celui du
+2026-08-14 vivait dans un scratchpad de session, disparu depuis), relancé sur
+les 78 fichiers `"use server"` actuels (contre ~60 le 2026-08-14 — confirme
+le volume de code neuf). **2 candidats, les 2 mêmes faux positifs déjà
+documentés** (`selfSignup`/`signupCoach` — inscriptions neuves, rien à
+invalider). Discipline de revalidation toujours intacte malgré 136 commits.
+
+**Axe D (catch muets), relancé** : 2 fichiers avec un `catch {` sans variable
+liée — `auth/coach/actions.ts` (déjà vérifié sain) et **`app/carrieres/actions.ts`**
+(nouveau depuis le dernier passage), même `callerIp()` copié du même modèle
+que `ressources/actions.ts` — extraction d'IP non critique, fallback
+`"inconnu"`, verdict sain identique.
+
+**Axe F (boutons icône avec `title` mais sans `aria-label`), relancé** : 0
+résultat sur tout le projet — toujours clos.
+
+**Axe B (échecs silencieux / résultat d'action jamais vérifié), relancé** :
+grep élargi (`^\s*await [a-zA-Z]+\(`, mêmes exclusions que 2026-08-14) → 38
+candidats (contre 73 initialement, déjà tous triés à l'époque). Triage des
+candidats situés dans du code écrit après le 2026-08-20 (repérable aux
+commentaires datés dans le code) :
+
+**4 vrais bugs trouvés et corrigés** (même famille que les passes
+précédentes : état optimiste jamais annulé sur échec, ou formulaire vidé
+même en cas d'échec serveur) :
+- `AddItemButton` (`app/dashboard/coach/formations/[formationId]/
+  CoachFormationEditor.tsx`, composant ajouté le 2026-09-08 pour remplacer
+  les `prompt()` natifs) : le champ de saisie (titre de module/section/vidéo)
+  se vidait et se refermait même quand l'ajout échouait côté serveur — le
+  coach perdait le texte tapé à la main sans autre indice que la bannière
+  d'erreur déjà en place. `onAdd` passe de `Promise<unknown>` à
+  `Promise<{error?}>`, `handleAddModule/Section/Lesson` renvoient
+  désormais leur résultat, `commit()` ne vide/ferme que si `!res?.error`.
+- `BusinessGoals.tsx` (`remove()`, Axe 6 business goals, 2026-09-09) :
+  `busy` n'était jamais remis à `false` sur échec de suppression — la carte
+  restait figée à 50% d'opacité indéfiniment (pas de crash, mais l'air d'être
+  à moitié supprimée pour toujours). Corrigé : reset sur `res.error`.
+- `TrackingClient.tsx` (`handleAcknowledge`) : suppression optimiste d'un
+  insight biométrique jamais annulée sur échec — l'insight disparaissait de
+  la vue pour de bon côté client sans jamais avoir été vraiment acquitté en
+  base. Corrigé avec rollback (remet l'id dans le set visible).
+- `ClientPeriodTracking.tsx` (`handleDelete`) : suppression optimiste d'un
+  cycle jamais annulée sur échec — même famille exacte, corrigé avec
+  rollback (réinsertion triée + affichage de l'erreur via l'état `error`
+  déjà présent dans le fichier).
+
+**Vérifié SAIN / laissé de côté** (silencieux mais pas trompeur, cohérent
+avec la priorisation déjà établie à l'Axe B initial) : `CoachLeadMagnetManager.tsx`
+(`handleDelete`/`handleToggle`, déjà en `try/finally` — `busyId` se remet
+toujours à `null`), `FlashRequestsPanel.tsx` (`handleDecline`,
+`useTransition` réinitialise `isPending` de toute façon), `SalesCallsTable.tsx`
+(`patch()`, idem), `ClientMedicalConstraintsPanel.tsx` (`handleToggle`, idem) —
+aucun de ces cas ne laisse un état bloqué ou trompeur, juste une absence de
+message d'erreur, la même catégorie déjà explicitement déclassée en priorité
+lors de l'Axe B d'origine.
+
+**Vérification** : `npx tsc --noEmit` propre (aucune sortie). `npx eslint`
+sur les 4 fichiers touchés → 2 erreurs préexistantes (`set-state-in-effect`
+sur les resyncs Axe E de `TrackingClient.tsx`/`ClientPeriodTracking.tsx`,
+déjà là avant cette passe — confirmé par `git stash`/`git stash pop`,
+mêmes 2 erreurs des deux côtés). `npx next build` lancé en tâche de fond
+pour confirmation finale.
+
+### Reste à faire sur cette repasse
+
+- Axe G (champs sans nom accessible) et Axe C (accessibilité clavier
+  `<div onClick>`) pas encore relancés sur le code neuf — scripts d'origine
+  perdus (vivaient dans un scratchpad de session disparu), à reconstruire si
+  une prochaine passe les cible spécifiquement.
+- La liste des 38 candidats Axe B n'a pas été triée exhaustivement un par un
+  (seuls les candidats situés dans du code visiblement récent ont été
+  vérifiés en priorité) — les ~20 restants sont très probablement dans les
+  fichiers déjà vérifiés sains aux passes précédentes (`ArticleCard.tsx`,
+  `ExerciseLibraryView.tsx`, `StudiesView.tsx`, etc., chemins `onDelete`
+  volontairement déclassés à l'Axe B d'origine), mais pas reconfirmé un par
+  un cette fois.

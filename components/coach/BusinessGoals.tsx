@@ -78,7 +78,14 @@ function GoalCard({
   function remove() {
     setBusy(true);
     startTransition(async () => {
-      await deleteBusinessGoal(goal.id);
+      // MASTERCLASS.md Axe B (repasse 2026-09-10) : `busy` n'était jamais
+      // remis à false en cas d'échec — la carte se retrouvait figée à
+      // moitié transparente indéfiniment (pas de crash, mais elle a l'air
+      // à moitié supprimée sans jamais l'être vraiment). En cas de succès,
+      // le parent démonte de toute façon la carte via la revalidation, donc
+      // ce reset n'a d'effet visible que sur l'échec.
+      const res = await deleteBusinessGoal(goal.id);
+      if (res.error) setBusy(false);
     });
   }
 

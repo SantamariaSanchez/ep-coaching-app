@@ -125,7 +125,10 @@ function AddItemButton({
   className,
 }: {
   label: string;
-  onAdd: (title: string) => Promise<unknown>;
+  // MASTERCLASS.md Axe B (repasse 2026-09-10) : doit renvoyer { error? } pour
+  // que commit() sache si l'ajout a vraiment réussi — sinon impossible de
+  // distinguer un échec d'un succès, et le champ se vidait dans les deux cas.
+  onAdd: (title: string) => Promise<{ error?: string } | void>;
   dashed?: boolean;
   iconSize?: number;
   style?: React.CSSProperties;
@@ -145,10 +148,16 @@ function AddItemButton({
       return;
     }
     setAdding(true);
-    await onAdd(trimmed);
+    const res = await onAdd(trimmed);
     setAdding(false);
-    setText("");
-    setEditing(false);
+    // MASTERCLASS.md Axe B : ne vider/fermer le champ que si l'ajout a
+    // vraiment réussi — sinon le titre tapé à la main était perdu en cas
+    // d'échec (permission, réseau), sans même un message clair puisque le
+    // champ se refermait comme si tout s'était bien passé.
+    if (!res?.error) {
+      setText("");
+      setEditing(false);
+    }
   }
 
   if (editing) {
@@ -305,16 +314,19 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   async function handleAddModule(title: string) {
     const res = await runAction(() => addModule(formation.id, title, formation.modules.length));
     if (!res.error) router.refresh();
+    return res;
   }
 
   async function handleAddSection(moduleId: string, currentCount: number, title: string) {
     const res = await runAction(() => addSection(moduleId, title, currentCount));
     if (!res.error) router.refresh();
+    return res;
   }
 
   async function handleAddLesson(sectionId: string, currentCount: number, title: string) {
     const res = await runAction(() => addLesson(sectionId, title, currentCount));
     if (!res.error) router.refresh();
+    return res;
   }
 
   // handleDeleteModule/handleDeleteSection avaient leurs messages de
