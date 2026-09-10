@@ -212,6 +212,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (nuit, suite 3)** | | **676** | +4 par rapport au comptage précédent. |
 | 2026-09-10 | Vague AE (manuelle, suite "continue de travailler longtemps") | 4 | Vitamine C/E à forte dose (freine l'hypertrophie et la force en essai contrôlé de 10 semaines), créatine avant vs après la séance (aucune différence, design intra-sujet), curcuma/gingembre/ginseng (réduisent courbatures et marqueurs, mais pas la performance), L-carnitine (effet réel mais démontré chez le surpoids/obèse, pas le pratiquant déjà lean). |
 | **Total vérifié en base au 2026-09-10 (nuit, suite 4)** | | **680** | +4 par rapport au comptage précédent. |
+| 2026-09-10 | Vague AF (manuelle, suite "continue de travailler longtemps") | 3 | Oméga-3 et sensibilité anabolique (pas d'effet direct au repos, mais sensibilise le muscle au signal repas), plafond de protéines à 1,6g/kg/jour (méta-analyse de référence Morton/Schoenfeld/Helms/Aragon/Phillips, 49 études), ordre cardio/musculation dans une séance (aucun effet sur l'hypertrophie, contrairement au mythe — c'est le TYPE de cardio, course à pied vs vélo, qui compte). |
+| **Total vérifié en base au 2026-09-10 (nuit, suite 5)** | | **683** | +3 par rapport au comptage précédent. |
 
 ## Répartition actuelle par catégorie
 
@@ -440,7 +442,12 @@ méta-analyse 25 études (DOI 10.1024/0300-9831/a000689), Talebi et al. 2024,
 revue parapluie 53 méta-analyses (DOI 10.1093/nutrit/nuad078). L-carnitine :
 Talenezhad et al. 2020, méta-analyse 37 essais (DOI
 10.1016/j.clnesp.2020.03.008), Askarpour et al. 2019, méta-analyse 43 essais
-(DOI 10.1016/j.phrs.2019.104554).
+(DOI 10.1016/j.phrs.2019.104554). Oméga-3/sensibilité anabolique : Smith
+et al. 2011, traceurs isotopiques (DOI 10.1042/CS20100597). Plafond
+protéines 1,6g/kg : Morton et al. 2018, méta-analyse de référence 49 études
+(DOI 10.1136/bjsports-2017-097608). Ordre cardio/musculation : Lundberg
+et al. 2022, méta-analyse 15 études (DOI 10.1007/s40279-022-01688-x),
+Küüsmaa et al. 2016, matin vs soir (DOI 10.1139/apnm-2016-0271).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
