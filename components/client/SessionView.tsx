@@ -2677,9 +2677,9 @@ export default function SessionView({
   // ── SESSION ──────────────────────────────────────────────────────────────────
   const totalSetsAll = exercises.flatMap((e) => e.sets.filter((s) => s.validated)).length;
   const musclesBeingTrained = Object.keys(volumeByMuscle);
-  // Accessoires à prévoir : bagage choisi explicitement par exercice
-  // (exercise_library.accessories), devinette par mots-clés en filet si
-  // pas encore renseigné — voir lib/session-accessories.ts.
+  // Accessoires à prévoir : UNIQUEMENT le bagage choisi explicitement par
+  // exercice (exercise_library.accessories) — plus aucune devinette par
+  // mots-clés affichée ici depuis le 2026-09-10, voir lib/session-accessories.ts.
   const sessionAccessories = accessoriesForSession(
     exercises.map((e) => e.exercise.name),
     initData?.accessoriesByName

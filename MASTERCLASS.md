@@ -4227,3 +4227,33 @@ enregistrement.
 `tsc --noEmit` propre, `eslint` propre. `next build` de production
 complet, exit 0. Cron `jobid` 37, `active: true`, vérifié après
 enregistrement.
+
+## BO — Accessoires de séance : plus jamais devinés, uniquement le choix explicite (2026-09-10)
+
+Retour direct : *"les accessoires actuellement tu as mis au hasard et
+c'est faux, fait que ce soit moi qui sélectionne les accessoires de la
+séance"*. Investigation : le mécanisme de choix explicite par exercice
+(`exercise_library.accessories`, éditable depuis `ExerciseDetailPanel`)
+existait déjà, construit plus tôt dans la journée — mais **0 exercice sur
+658** n'avait jamais été configuré (vérifié en base), donc `accessoriesForSession`
+retombait systématiquement sur son filet de devinette par mots-clés
+(`RULES`), exactement ce que l'utilisateur vient de qualifier de faux.
+
+- `accessoriesForSession` ne renvoie plus QUE le choix explicite. Un
+  exercice non configuré ne renvoie plus rien (pas d'accessoire deviné
+  affiché) — cohérent avec le principe déjà écrit en tête du fichier
+  ("mieux vaut ne rien suggérer qu'envoyer chercher du matériel inutile"),
+  poussé jusqu'au bout.
+- `RULES` et la devinette par mots-clés ne disparaissent pas : elles
+  deviennent une **suggestion cliquable** dans `ExerciseDetailPanel`
+  (nouveau `guessedAccessoryForExercise`), affichée uniquement pendant la
+  configuration d'un exercice, jamais comme un fait dans une séance —
+  pour ne pas obliger à repartir de zéro sur 658 exercices.
+- Commentaires/libellés obsolètes ("devinette en filet") mis à jour dans
+  `SessionView.tsx` et `utils/exercise-library.ts` pour ne pas induire en
+  erreur une future lecture.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 4 fichiers touchés, `next
+build` de production complet, exit 0.

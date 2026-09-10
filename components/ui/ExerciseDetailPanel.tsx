@@ -13,7 +13,7 @@ import {
 } from "@/lib/exercise-library-content";
 import type { CreateExerciseInput } from "@/app/dashboard/client/exercises/actions";
 import type { TensionFocus } from "@/utils/programs";
-import { ACCESSORY_CATALOG } from "@/lib/session-accessories";
+import { ACCESSORY_CATALOG, guessedAccessoryForExercise } from "@/lib/session-accessories";
 
 // Les 7 attributs de classification existent en base depuis longtemps mais
 // n'étaient affichés/éditables que dans la bibliothèque (page à part),
@@ -366,13 +366,34 @@ export default function ExerciseDetailPanel({
             <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5 flex items-center gap-1.5">
               <Backpack size={11} /> Bagage d&apos;accessoires{" "}
               {(ex.accessories ?? []).length === 0 && (
-                <span className="text-amber-400/80 normal-case font-semibold">· non renseigné (devinette par mots-clés en filet)</span>
+                <span className="text-amber-400/80 normal-case font-semibold">· non renseigné, rien n&apos;est affiché en séance tant que c&apos;est vide</span>
               )}
             </p>
             <p className="text-[10.5px] text-[#F5EDED]/40 leading-relaxed mb-2">
               Ce que tu choisis ici s&apos;affiche pour tous les clients qui font cet exercice, dans &laquo;&nbsp;à prévoir&nbsp;&raquo;
               (programme, logbook, séance en cours). Plusieurs accessoires possibles à la fois.
             </p>
+            {(() => {
+              // Suggestion (jamais auto-appliquée, voir lib/session-accessories.ts)
+              // pour ne pas repartir de zéro sur les 658 exercices de la
+              // bibliothèque : un clic l'ajoute, sinon elle ne sert à rien.
+              const guess = guessedAccessoryForExercise(ex.name);
+              const already = (ex.accessories ?? []).includes(guess?.accessory ?? "");
+              if (!guess || already) return null;
+              return (
+                <button
+                  type="button"
+                  disabled={!onUpdate || pending === "accessories"}
+                  onClick={() => setField("accessories", [...(ex.accessories ?? []), guess.accessory])}
+                  className="w-full text-left mb-2 px-3 py-2 rounded-lg bg-[#150000] border border-dashed border-[#890404]/30 hover:border-[#E01E1E]/50 transition-colors disabled:opacity-50"
+                >
+                  <span className="text-[10.5px] text-[#F5EDED]/45">
+                    Suggestion d&apos;après le nom : <strong className="text-[#F5EDED]/70">{guess.accessory}</strong>
+                    {" "}<span className="text-[#E01E1E] font-bold">+ Ajouter</span>
+                  </span>
+                </button>
+              );
+            })()}
             <MultiPills
               options={ACCESSORY_CATALOG.map((a) => a.accessory)}
               value={ex.accessories ?? []}

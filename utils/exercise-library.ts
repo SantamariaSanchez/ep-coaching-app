@@ -33,8 +33,9 @@ export interface LibraryExercise {
   setup_notes: string | null;
   // Bagage d'accessoires choisi explicitement par le coach pour CET
   // exercice (noms tirés de ACCESSORY_CATALOG, lib/session-accessories.ts)
-  // — voir migration 20260910a. Vide = pas encore renseigné, la devinette
-  // par mots-clés sert alors de filet (accessoriesForSession).
+  // — voir migration 20260910a. Vide = pas encore renseigné : depuis le
+  // 2026-09-10 rien ne s'affiche en séance dans ce cas (plus de devinette
+  // par mots-clés utilisée comme filet, voir accessoriesForSession).
   accessories: string[];
 }
 

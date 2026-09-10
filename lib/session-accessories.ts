@@ -17,6 +17,15 @@
 // principe assumé : ne proposer un accessoire que quand le nom est explicite.
 // Mieux vaut ne rien suggérer qu'envoyer quelqu'un chercher du matériel dont il
 // n'a pas besoin, ce qui décrédibiliserait toute la liste.
+//
+// Retour direct 2026-09-10 ("les accessoires sont encore faux, c'est moi qui
+// choisis") : ce même principe appliqué jusqu'au bout — la devinette par
+// mots-clés (RULES) ne s'affiche plus JAMAIS toute seule comme une vraie
+// recommandation dans une séance ou un programme (accessoriesForSession
+// n'utilise plus que le choix explicite, exercise_library.accessories). Elle
+// ne sert plus que de suggestion cliquable au moment de configurer un
+// exercice (ExerciseDetailPanel, guessedAccessoryForExercise) : un humain
+// valide avant que ça s'affiche à qui que ce soit.
 
 export interface AccessoryRule {
   /** Motif cherché dans le nom de l'exercice, en minuscules sans accent. */
@@ -67,8 +76,17 @@ export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string
   },
 ];
 
-/** Ordre volontaire : du plus structurant au plus optionnel. */
-const RULES: AccessoryRule[] = [
+/** Ordre volontaire : du plus structurant au plus optionnel.
+ * Retour direct 2026-09-10 ("les accessoires sont encore faux, c'est moi qui
+ * choisis") : ce filet par mots-clés n'est PLUS utilisé pour AFFICHER un
+ * accessoire dans une séance/un programme (voir accessoriesForSession
+ * ci-dessous, qui ne renvoie plus que le choix explicite) — une devinette
+ * fausse présentée comme un fait est pire que rien, exactement le principe
+ * déjà écrit en haut de ce fichier. RULES reste exporté uniquement comme
+ * SUGGESTION cliquable dans ExerciseDetailPanel au moment de configurer un
+ * exercice (jamais auto-appliqué), pour ne pas repartir de zéro sur les 658
+ * exercices de la bibliothèque. */
+export const RULES: AccessoryRule[] = [
   {
     // La Lock Belt est le seul accessoire qui change vraiment un exercice
     // machine : elle ancre le bassin au siège au lieu de laisser le corps
@@ -139,6 +157,17 @@ function normalize(value: string): string {
 }
 
 /**
+ * Suggestion par mots-clés pour UN exercice, à utiliser uniquement comme
+ * proposition cliquable dans ExerciseDetailPanel (jamais pour remplir
+ * accessoriesForSession automatiquement, voir RULES ci-dessus). Renvoie
+ * null si aucune règle ne matche : dans ce cas rien à suggérer non plus.
+ */
+export function guessedAccessoryForExercise(exerciseName: string): AccessoryRule | null {
+  const name = normalize(exerciseName);
+  return RULES.find((r) => r.match.test(name)) ?? null;
+}
+
+/**
  * Liste dédupliquée des accessoires à prévoir pour une séance. Renvoie un
  * tableau vide quand aucun exercice ne déclenche de règle : dans ce cas
  * l'appelant n'affiche rien du tout plutôt qu'une carte vide.
@@ -146,14 +175,15 @@ function normalize(value: string): string {
  * Plafonné à 3 : au-delà ce n'est plus une liste de préparation, c'est un
  * catalogue, et plus personne ne la lit.
  *
- * `accessoriesByName` (retour direct 2026-09-10, "c'est moi qui définis et
- * choisis quel accessoire il y a") : le vrai bagage, choisi une fois par
- * exercice dans la bibliothèque partagée (exercise_library.accessories,
- * éditable depuis ExerciseDetailPanel) — prioritaire, jamais devinée. Un
- * exercice sans choix explicite (tableau vide/absent, le cas de tous les
- * exercices existants avant qu'ils soient renseignés à la main) retombe sur
- * l'ancienne devinette par mots-clés (RULES) en filet, plutôt que de
- * n'afficher plus rien du jour au lendemain pour toute la bibliothèque.
+ * `accessoriesByName` (retour direct 2026-09-10, "les accessoires sont
+ * encore faux, c'est moi qui choisis") : UNIQUEMENT le bagage choisi
+ * explicitement par exercice (exercise_library.accessories, éditable
+ * depuis ExerciseDetailPanel). Plus AUCUN filet de devinette par mots-clés
+ * ici (voir RULES/guessedAccessoryForExercise plus haut, réservés à une
+ * suggestion cliquable dans le panneau de configuration, jamais affichés
+ * comme un fait dans une séance) : un exercice sans choix explicite ne
+ * renvoie simplement rien, plutôt qu'un accessoire deviné qui peut être
+ * faux et se faire passer pour une vraie recommandation.
  */
 export function accessoriesForSession(
   exerciseNames: string[],
@@ -178,21 +208,8 @@ export function accessoriesForSession(
 
   for (const raw of exerciseNames) {
     const explicit = accessoriesByName?.[raw];
-    if (explicit && explicit.length > 0) {
-      for (const accessoryName of explicit) add(accessoryName, raw);
-      continue;
-    }
-
-    // Filet : devinette par mots-clés, uniquement tant que cet exercice n'a
-    // pas encore de choix explicite renseigné. Un exercice ne compte que
-    // pour UNE règle (RULES déjà trié du plus structurant au plus
-    // optionnel) — retour direct 2026-09-09, "lift loop pour la séance legs
-    // épaules c'est complètement faux" : deux accessoires suggérés pour le
-    // même exercice, dont un qui n'a pas de sens ici, plutôt qu'un seul
-    // vraiment pertinent.
-    const name = normalize(raw);
-    const rule = RULES.find((r) => r.match.test(name));
-    if (rule) add(rule.accessory, raw);
+    if (!explicit || explicit.length === 0) continue;
+    for (const accessoryName of explicit) add(accessoryName, raw);
   }
 
   return [...found.values()].slice(0, 3);
