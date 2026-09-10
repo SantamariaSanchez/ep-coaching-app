@@ -35,7 +35,7 @@ function TaskRow({
         <p className={`text-[12.5px] font-bold ${task.status === "fait" ? "text-[#F5EDED]/35 line-through" : "text-white"}`}>
           {task.title}
         </p>
-        <button onClick={onDelete} className="flex-shrink-0 text-[#F5EDED]/25 hover:text-red-400 transition-colors">
+        <button onClick={onDelete} aria-label="Supprimer la tâche" className="flex-shrink-0 text-[#F5EDED]/25 hover:text-red-400 transition-colors">
           <X size={13} />
         </button>
       </div>

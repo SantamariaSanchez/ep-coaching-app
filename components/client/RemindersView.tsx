@@ -354,6 +354,7 @@ function ReminderCard({
           ) : (
             <button
               onClick={() => setConfirmDelete(true)}
+              aria-label="Supprimer le rappel"
               style={{
                 width: 36, height: 36, borderRadius: 8,
                 background: "transparent",

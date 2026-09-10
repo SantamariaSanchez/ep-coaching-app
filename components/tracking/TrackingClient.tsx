@@ -96,6 +96,7 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
         <button
           type="button"
           onClick={() => bump(-step)}
+          aria-label={`Diminuer ${label.toLowerCase()}`}
           className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
         >
           −
@@ -112,6 +113,7 @@ function NumberField({ label, value, onChange, step = 1, placeholder }: {
         <button
           type="button"
           onClick={() => bump(step)}
+          aria-label={`Augmenter ${label.toLowerCase()}`}
           className="w-8 h-8 flex-shrink-0 rounded-lg border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors text-sm font-bold"
         >
           +

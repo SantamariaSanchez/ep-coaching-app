@@ -279,6 +279,7 @@ export default function OnboardingTour({
         {step > 0 && (
           <button
             onClick={() => go(step - 1, -1)}
+            aria-label="Étape précédente"
             style={{
               width: 52, height: 52, borderRadius: 14, flexShrink: 0,
               border: "1px solid rgba(245,237,237,0.12)", background: "transparent",

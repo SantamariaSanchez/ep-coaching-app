@@ -254,7 +254,7 @@ export default function ProgramCreatorWizard({
                   </div>
                   <h2 className="text-2xl font-black text-white mb-1">{result.name}</h2>
                   <p className="text-xs text-[#F5EDED]/40 mb-5">
-                    {result.days.length} séances · {totalExercises} exercices au total
+                    {result.days.length} séance{result.days.length !== 1 ? "s" : ""} · {totalExercises} exercice{totalExercises !== 1 ? "s" : ""} au total
                   </p>
 
                   <div className="space-y-3 mb-5 max-h-80 overflow-y-auto pr-1">
@@ -320,6 +320,7 @@ export default function ProgramCreatorWizard({
           {stepIdx > 0 && (
             <button
               onClick={() => go(stepIdx - 1, -1)}
+              aria-label="Étape précédente"
               className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
             >
               <ArrowLeft size={16} />

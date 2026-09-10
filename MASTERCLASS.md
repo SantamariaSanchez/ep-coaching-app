@@ -3739,3 +3739,96 @@ re-livré une deuxième fois.
 build` de production complet terminé sans erreur (table de routes
 complète, exit 0) — la vérification qui a justement permis de détecter
 et corriger le risque de bundle client avant tout commit.
+
+## BH — "Petit détail utile" : boutons icône sans nom accessible + pluriels français (2026-09-10)
+
+Demande explicite : continuer 2h sur de vrais petits détails utiles pour les
+deux avatars, pas de nouvelle grosse fonctionnalité. Deux repasses
+systématiques, chacune avec un scanner écrit pour l'occasion (même
+méthodologie que les Axes G/Q déjà établis), plutôt qu'une correction au
+hasard de ce qui saute aux yeux.
+
+### 1. Boutons icône seule sans nom accessible (extension de l'Axe G)
+
+L'Axe G ne couvrait que `<input>/<textarea>/<select>` — jamais les
+`<button>` dont le SEUL contenu visible est une icône lucide-react (ou un
+symbole nu +/−/×/←) sans `aria-label` ni `title`. Un lecteur d'écran n'a
+alors rien à annoncer d'autre que "bouton". Nouveau scanner
+`find-icon-only-buttons.mjs` (scratchpad) : détecte `<button>` dont le
+contenu, une fois les commentaires JSX retirés, est soit un unique
+composant icône auto-fermant soit un symbole nu sans lettre.
+
+**46 candidats trouvés au premier passage, sur 24 fichiers.** Corrigés un
+par un avec un texte contextuel (jamais générique "bouton") :
+`Trash2`→"Supprimer X" (avec le nom de l'élément quand disponible :
+aliment, tâche, cycle, post, bloc...), `X`→"Fermer" (contextualisé :
+"Fermer la recherche", "Fermer le message d'erreur"...), `Plus`/`Minus`
+→"Augmenter"/"Diminuer" ou l'action précise ("Ajouter la note"),
+`ChevronLeft`/`ChevronRight`/`ArrowLeft`→"Jour précédent" / "Étape
+précédente", `Pencil`→"Modifier X", `Send`→"Envoyer le message", `Star`
+(picker de notation)→"N étoile(s)" + `aria-pressed`. Fichiers touchés :
+RemindersView, AgentChatView, BusinessGoals, CoachDocumentsSpace,
+ConversationView, OnboardingTour, AddRecipeForm, MealCreatorWizard,
+StepsClient, TrackingClient (les 2 boutons +/− de `NumberField`, repérés
+en marge du scanner en relisant le fichier), ClientCorrectionsReplySection,
+ClientCorrectionsSection, ClientNutritionView (6), ClientPeriodTracking,
+CoachClientNutritionTabs, CoachClientTasksView, CoachPostsManager,
+DietPlanManager (3), GymsDirectoryView (2), InstallAppHint, MindsetView,
+NutritionBilanQuiz (3), ProgramCreatorWizard, SupplementsSection,
+WeeklyAgenda (5, dont 2 déjà corrects — le scanner avait un faux positif
+de décalage de ligne, vérifié directement dans le fichier avant de
+"corriger" ce qui l'était déjà).
+
+Re-scan après corrections : **0 candidat restant.**
+
+### 2. Pluriels français codés en dur ("1 semaines", "1 clients"...)
+
+Recherche ciblée (grep sur les noms comptables les plus fréquents de
+l'appli : jour, semaine, séance, client, coach, point, exercice, aliment,
+vidéo...) suivie d'une vérification MANUELLE de chaque candidat avant
+correction — plusieurs se sont révélés être de faux positifs après lecture
+du contexte réel (condition qui exclut déjà la valeur 1, ou grep coupé par
+un retour à la ligne alors que le fichier gérait déjà le pluriel juste
+après) :
+- `ClientCard.tsx` (badge anniversaire) : `weekNum` toujours multiple de 4
+  (condition `% 4 === 0` en amont) — jamais 1, laissé tel quel.
+- `CoachNotesView.tsx` ("Voir tout (N semaines)") : bouton affiché
+  seulement si `pastNotes.length > 5` — jamais 1, laissé tel quel.
+- `app/dashboard/coach/inbox/page.tsx` : le cas `jours === 1` a déjà sa
+  propre branche ("Hier") avant celle testée — jamais 1 à cet endroit,
+  laissé tel quel.
+- `AvailabilityManager.tsx`, `ProgramEditor.tsx` : déjà correctement gérés
+  sur la ligne suivante, juste coupés par le grep.
+
+**Vrais bugs corrigés** (valeur 1 réellement atteignable, notamment côté
+"0 client payant" actuel — voir [[feedback_client_vs_membre]], où
+`activeClients.length` vaut très probablement 0 ou 1 en ce moment même) :
+- `ProgrammationHub.tsx` : durée d'une road map (`N semaines`).
+- `ProgramCreatorWizard.tsx` : résultat généré ("N séances · N exercices").
+- `app/dashboard/coach/finance/page.tsx` : "N coachs · N clients" — la
+  carte "Abonnés actifs" elle-même, visible en ce moment précis avec très
+  peu d'abonnés réels.
+- `RoadmapEditor.tsx` (`durationLabel`) : jours et semaines (mois est
+  invariant en français, laissé tel quel).
+- `app/dashboard/client/profile/page.tsx` : "Semaines de coaching".
+- `NutritionBilanQuiz.tsx` : "aliment(s)" en notation parenthèse
+  remplacée par le vrai conditionnel déjà standard ailleurs dans l'appli.
+- `ClientNutritionView.tsx` : accord du VERBE en plus du nom ("1 repas...
+  n'ont pas pu être copiés" → "n'a pas pu être copié").
+- `HeadCoachAuditButton.tsx` : notation parenthèse "(s)" sur 2 messages,
+  remplacée, plus un accord verbe/participe incohérent dans la même
+  phrase ("client(s) passés" — accordé au pluriel alors que "client(s)"
+  restait en notation parenthèse).
+- `app/dashboard/client/formations/page.tsx` : "N vidéos t'attendent" →
+  accord nom ET verbe ("t'attend" au singulier).
+
+### Validation
+
+`tsc --noEmit` propre. `eslint` sur les fichiers touchés ne remonte que
+des erreurs `react-hooks/set-state-in-effect` **pré-existantes** (vérifié
+explicitement par `git stash` sur `WeeklyAgenda.tsx`/`NutritionBilanQuiz.tsx` :
+mêmes 5 erreurs + 1 warning sur `master` non modifié) — aucune ligne
+touchée par ce chantier ne s'en approche, uniquement des `aria-label` et
+du texte de template literal. Deux `next build` de production complets
+lancés en tâche de fond pendant la suite du travail (un après chaque lot),
+tous deux terminés sans erreur (table de routes complète, exit 0).

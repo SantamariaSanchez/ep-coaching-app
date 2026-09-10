@@ -496,7 +496,7 @@ export default function StepsClient({
                       </button>
                     )}
                     {!readOnly && deleteRoutineItem && (
-                      <button onClick={() => handleDeleteItem(item.id)} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => handleDeleteItem(item.id)} aria-label="Supprimer l'activité" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
                         <Trash2 size={13} />
                       </button>
                     )}
@@ -517,7 +517,7 @@ export default function StepsClient({
                       >
                         {rStatus === "saving" ? "…" : "Rappel chaque jour à cette heure"}
                       </button>
-                      <button onClick={() => setReminderOpenFor(null)} className="text-[#F5EDED]/25 hover:text-white">
+                      <button onClick={() => setReminderOpenFor(null)} aria-label="Fermer" className="text-[#F5EDED]/25 hover:text-white">
                         <X size={13} />
                       </button>
                     </div>

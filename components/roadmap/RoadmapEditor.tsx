@@ -417,7 +417,7 @@ function durationLabel(start: string, end: string): string {
   if (days < 0) return "Dates invalides";
   const weeks = Math.round(days / 7);
   const months = (days / 30.44).toFixed(1);
-  return `${days} jours · ~${weeks} semaines · ~${months} mois`;
+  return `${days} jour${days !== 1 ? "s" : ""} · ~${weeks} semaine${weeks !== 1 ? "s" : ""} · ~${months} mois`;
 }
 
 // Local inline PhaseTimelineBar

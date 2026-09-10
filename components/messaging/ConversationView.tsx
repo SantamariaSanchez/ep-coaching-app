@@ -648,6 +648,7 @@ export default function ConversationView({
               )}
               <button
                 onClick={() => { setSearchOpen(false); setSearchQuery(""); }}
+                aria-label="Fermer la recherche"
                 className="text-[#F5EDED]/40 hover:text-white flex-shrink-0"
               >
                 <X size={14} />
@@ -694,7 +695,7 @@ export default function ConversationView({
       {sendError && (
         <div className="px-3 pb-1 flex items-center justify-between gap-2">
           <p className="text-[11px] text-red-400">{sendError}</p>
-          <button onClick={() => setSendError(null)} className="text-red-400/60 hover:text-red-400">
+          <button onClick={() => setSendError(null)} aria-label="Fermer le message d'erreur" className="text-red-400/60 hover:text-red-400">
             <X size={12} />
           </button>
         </div>

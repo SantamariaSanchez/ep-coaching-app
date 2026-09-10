@@ -143,10 +143,10 @@ function GoalCard({
         </p>
         {editable && (
           <div className="flex items-center gap-1">
-            <button onClick={() => adjust(-1)} disabled={isPending} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(-1)} disabled={isPending} aria-label="Diminuer" className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
               <Minus size={11} />
             </button>
-            <button onClick={() => adjust(1)} disabled={isPending} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(1)} disabled={isPending} aria-label="Augmenter" className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
               <Plus size={11} />
             </button>
           </div>

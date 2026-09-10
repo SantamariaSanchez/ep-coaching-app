@@ -29,7 +29,7 @@ function StarPicker({ value, onChange }: { value: number; onChange: (v: number) 
   return (
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((n) => (
-        <button key={n} onClick={() => onChange(n)} type="button">
+        <button key={n} onClick={() => onChange(n)} type="button" aria-label={`${n} étoile${n > 1 ? "s" : ""}`} aria-pressed={n <= value}>
           <Star size={18} className={n <= value ? "text-amber-400 fill-amber-400" : "text-[#F5EDED]/15"} />
         </button>
       ))}
@@ -365,7 +365,7 @@ function GymCard({
                   <div className="flex items-center gap-2">
                     <span className="text-[9px] text-[#F5EDED]/20">{formatDate(r.created_at)}</span>
                     {r.author_id === currentUserId && (
-                      <button onClick={() => onDeleteReview(r.id)} className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
+                      <button onClick={() => onDeleteReview(r.id)} aria-label="Supprimer ton avis" className="text-[#F5EDED]/20 hover:text-red-400 transition-colors">
                         <Trash2 size={10} />
                       </button>
                     )}

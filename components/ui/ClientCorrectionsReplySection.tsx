@@ -72,6 +72,7 @@ function AnnotatedClientVideo({
                 <button
                   type="button"
                   onClick={() => onRemoveAnnotation?.(i)}
+                  aria-label="Supprimer l'annotation"
                   className="text-[#F5EDED]/25 hover:text-[#F5EDED]/50 flex-shrink-0"
                 >
                   <X size={11} />
@@ -206,6 +207,7 @@ function ReplyForm({
           <button
             type="button"
             onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
+            aria-label="Retirer la vidéo"
             className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <X size={13} />

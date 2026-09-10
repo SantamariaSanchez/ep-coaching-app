@@ -133,7 +133,7 @@ export default async function CoachFinancePage() {
 
       <div className="grid grid-cols-2 gap-3 mb-6">
         <StatCard label="Revenu mensuel total" value={eur(totalMrr)} color="#4ade80" sub="Revenu mensuel récurrent" />
-        <StatCard label="Abonnés actifs" value={String(coachesActive + activeClients.length)} sub={`${coachesActive} coachs · ${activeClients.length} clients`} />
+        <StatCard label="Abonnés actifs" value={String(coachesActive + activeClients.length)} sub={`${coachesActive} coach${coachesActive !== 1 ? "s" : ""} · ${activeClients.length} client${activeClients.length !== 1 ? "s" : ""}`} />
         <StatCard label="Revenu mensuel plateforme (coachs)" value={eur(coachMrr)} />
         <StatCard label="Revenu mensuel clients (direct)" value={eur(clientMrr)} />
       </div>

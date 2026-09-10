@@ -69,7 +69,7 @@ export default async function ClientProfilePage() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             Mon coaching
           </p>
-          {weeks !== null && <InfoRow label="Semaines de coaching" value={`${weeks} semaines`} />}
+          {weeks !== null && <InfoRow label="Semaines de coaching" value={`${weeks} semaine${weeks !== 1 ? "s" : ""}`} />}
           <InfoRow label="Objectif" value={profile.goal} />
           <InfoRow
             label="Poids de départ"

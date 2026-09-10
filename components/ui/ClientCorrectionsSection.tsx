@@ -216,6 +216,7 @@ export default function ClientCorrectionsSection({
                 <button
                   type="button"
                   onClick={() => { setVideoPath(null); setVideoName(null); if (videoInputRef.current) videoInputRef.current.value = ""; }}
+                  aria-label="Retirer la vidéo"
                   className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
                 >
                   <X size={14} />

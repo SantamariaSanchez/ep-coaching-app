@@ -213,7 +213,7 @@ function HistoryView({
             <p className="text-xs font-bold uppercase tracking-widest text-white">
               {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(selectedDate + "T12:00:00"))}
             </p>
-            <button onClick={() => setSelectedDate(null)} className="text-[#F5EDED]/40 hover:text-white">
+            <button onClick={() => setSelectedDate(null)} aria-label="Fermer le détail du jour" className="text-[#F5EDED]/40 hover:text-white">
               <X size={14} />
             </button>
           </div>

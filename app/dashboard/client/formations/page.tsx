@@ -120,7 +120,7 @@ export default async function FormationsPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <Crown size={14} style={{ color: "#E01E1E" }} />
             <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
-              {totalLessons} vidéos t&apos;attendent
+              {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} t&apos;attend{totalLessons !== 1 ? "ent" : ""}
             </p>
           </div>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "0 0 12px", lineHeight: 1.5 }}>

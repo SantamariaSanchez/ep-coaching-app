@@ -18,8 +18,8 @@ export default function HeadCoachAuditButton() {
     startTransition(async () => {
       const res = await triggerHeadCoachAudit();
       if (res.error) setResult(res.error);
-      else if (res.created === 0) setResult(`${res.scanned} client(s) passé(s) en revue, rien à signaler.`);
-      else setResult(`${res.created} tâche(s) créée(s) sur ${res.scanned} client(s) passés en revue.`);
+      else if (res.created === 0) setResult(`${res.scanned} client${res.scanned !== 1 ? "s" : ""} passé${res.scanned !== 1 ? "s" : ""} en revue, rien à signaler.`);
+      else setResult(`${res.created} tâche${res.created !== 1 ? "s" : ""} créée${res.created !== 1 ? "s" : ""} sur ${res.scanned} client${res.scanned !== 1 ? "s" : ""} passé${res.scanned !== 1 ? "s" : ""} en revue.`);
     });
   }
 

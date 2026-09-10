@@ -160,6 +160,7 @@ export default function CoachPostsManager({
                 <div className="flex items-center gap-2 flex-shrink-0">
                   <button
                     onClick={() => { setEditingId(post.id); setShowNew(false); }}
+                    aria-label={`Modifier le post ${post.title}`}
                     className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
                   >
                     <Pencil size={12} />
@@ -174,6 +175,7 @@ export default function CoachPostsManager({
                   ) : (
                     <button
                       onClick={() => setConfirmDeleteId(post.id)}
+                      aria-label={`Supprimer le post ${post.title}`}
                       className="text-[#F5EDED]/25 hover:text-red-400 transition-colors"
                     >
                       <Trash2 size={12} />

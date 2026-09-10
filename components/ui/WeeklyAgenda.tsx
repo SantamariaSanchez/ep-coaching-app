@@ -994,7 +994,7 @@ export default function WeeklyAgenda({
         <div className="space-y-2">
           <DaySwitcher selectedDay={selectedDay} onSelect={setSelectedDay} blocksByDay={blocksByDay} todayDow={todayDow} />
           <div className="flex items-center justify-between">
-            <button onClick={() => shiftDay(-1)} className="text-[#F5EDED]/25 hover:text-white p-1">
+            <button onClick={() => shiftDay(-1)} aria-label="Jour précédent" className="text-[#F5EDED]/25 hover:text-white p-1">
               <ChevronLeft size={16} />
             </button>
             <p className="text-xs font-black uppercase tracking-widest text-white flex items-center gap-2">
@@ -1024,7 +1024,7 @@ export default function WeeklyAgenda({
                   </button>
                 </>
               )}
-              <button onClick={() => shiftDay(1)} className="text-[#F5EDED]/25 hover:text-white p-1">
+              <button onClick={() => shiftDay(1)} aria-label="Jour suivant" className="text-[#F5EDED]/25 hover:text-white p-1">
                 <ChevronRight size={16} />
               </button>
             </div>
@@ -1049,7 +1049,7 @@ export default function WeeklyAgenda({
                 })()}
                 <p className="text-sm font-black uppercase tracking-widest text-white truncate">{viewingBlock.label}</p>
               </div>
-              <button onClick={() => setViewingBlock(null)} className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+              <button onClick={() => setViewingBlock(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
                 <X size={18} />
               </button>
             </div>
@@ -1303,7 +1303,7 @@ export default function WeeklyAgenda({
                   {form.tasks.map((t, i) => (
                     <div key={i} className="flex items-center gap-2 bg-[#0D0000] border border-[#890404]/20 rounded-lg px-3 py-2">
                       <span style={{ fontSize: 12, color: "#F5EDED", flex: 1, wordBreak: "break-word" }}>{t}</span>
-                      <button type="button" onClick={() => removeTaskFromForm(i)} className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
+                      <button type="button" onClick={() => removeTaskFromForm(i)} aria-label="Supprimer la tâche" className="text-[#F5EDED]/25 hover:text-red-400 flex-shrink-0">
                         <X size={13} />
                       </button>
                     </div>
@@ -1362,6 +1362,7 @@ export default function WeeklyAgenda({
               {editingBlockId && (
                 <button
                   onClick={() => handleDelete(editingBlockId)}
+                  aria-label="Supprimer le bloc"
                   className="flex items-center justify-center gap-1.5 border border-red-500/30 text-red-400 rounded-lg px-3 py-2.5"
                 >
                   <Trash2 size={13} />

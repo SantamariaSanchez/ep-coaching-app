@@ -623,6 +623,7 @@ function JournalTab({
                   </div>
                   <button
                     onClick={() => handleDelete(entry.id)}
+                    aria-label="Supprimer cette entrée de journal"
                     className="text-[#F5EDED]/15 hover:text-red-400 transition-colors"
                   >
                     <Trash2 size={12} />

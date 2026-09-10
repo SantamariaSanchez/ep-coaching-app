@@ -1404,7 +1404,7 @@ export default function ClientNutritionView({
       setAddingError(
         failedCount === entries.length
           ? "Impossible de copier les repas d'hier."
-          : `${failedCount} repas sur ${entries.length} n'ont pas pu être copiés.`
+          : `${failedCount} repas sur ${entries.length} n'${failedCount !== 1 ? "ont" : "a"} pas pu être copié${failedCount !== 1 ? "s" : ""}.`
       );
     }
 
@@ -1797,6 +1797,7 @@ export default function ClientNutritionView({
               <p className="text-xs text-red-400 font-semibold">{addingError}</p>
               <button
                 onClick={() => setAddingError(null)}
+                aria-label="Fermer le message d'erreur"
                 className="text-red-400/60 hover:text-red-400 transition-colors text-xs"
               >
                 ✕
@@ -2330,6 +2331,7 @@ export default function ClientNutritionView({
                               </button>
                               <button
                                 onClick={() => handleDeleteSavedMeal(meal.id)}
+                                aria-label={`Supprimer le repas enregistré ${meal.name}`}
                                 className="text-[#F5EDED]/20 hover:text-red-500 transition-colors flex-shrink-0 p-1"
                               >
                                 <Trash2 size={13} />
@@ -2573,7 +2575,7 @@ export default function ClientNutritionView({
               <p className="text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
                 <Bookmark size={13} className="text-[#E01E1E]" /> Enregistrer ce repas
               </p>
-              <button onClick={() => setSavingMealSlot(null)} className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
+              <button onClick={() => setSavingMealSlot(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70">
                 <X size={16} />
               </button>
             </div>
@@ -2620,6 +2622,7 @@ export default function ClientNutritionView({
               </p>
               <button
                 onClick={() => setShowCreateModal(false)}
+                aria-label="Fermer"
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
@@ -2726,6 +2729,7 @@ export default function ClientNutritionView({
               </p>
               <button
                 onClick={() => setShowQuickAddModal(false)}
+                aria-label="Fermer"
                 className="text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
               >
                 <X size={16} />
@@ -3434,6 +3438,7 @@ function MealSlotCard({
               </div>
               <button
                 onClick={() => onDelete(log.id)}
+                aria-label="Supprimer ce repas logué"
                 className="text-[#F5EDED]/20 hover:text-red-500 transition-colors ml-3 flex-shrink-0"
               >
                 <Trash2 size={12} />

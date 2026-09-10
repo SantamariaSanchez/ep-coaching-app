@@ -354,7 +354,7 @@ export default function NutritionBilanQuiz({
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 mb-1">Journée loggée</p>
         <p className="text-3xl font-black text-white mb-1">{summary.cal} kcal</p>
         <p className="text-xs text-[#F5EDED]/40 mb-5">
-          estimé sur {activeMealKeys.length} repas · {entries(mealFoods)} aliment(s)
+          estimé sur {activeMealKeys.length} repas · {entries(mealFoods)} aliment{entries(mealFoods) !== 1 ? "s" : ""}
         </p>
         <div className="grid grid-cols-3 gap-2 mb-5">
           {[
@@ -540,6 +540,7 @@ export default function NutritionBilanQuiz({
                   <p className="text-xs font-bold text-white truncate flex-1">{sf.food.name}</p>
                   <button
                     onClick={() => toggleFood(sf.food)}
+                    aria-label={`Retirer ${sf.food.name}`}
                     className="text-[#F5EDED]/25 hover:text-red-400 ml-2 flex-shrink-0"
                   >
                     <X size={12} />
@@ -613,7 +614,7 @@ export default function NutritionBilanQuiz({
               <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex-1">
                 Rechercher un aliment
               </p>
-              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+              <button onClick={() => { setShowSearch(false); setSearchQ(""); setShowCreateFood(false); }} aria-label="Fermer la recherche" className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
                 <X size={13} />
               </button>
             </div>
@@ -667,7 +668,7 @@ export default function NutritionBilanQuiz({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
                     Nouvel aliment
                   </p>
-                  <button onClick={() => setShowCreateFood(false)} className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
+                  <button onClick={() => setShowCreateFood(false)} aria-label="Fermer" className="text-[#F5EDED]/30 hover:text-[#F5EDED]/60">
                     <X size={13} />
                   </button>
                 </div>

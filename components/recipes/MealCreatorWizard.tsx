@@ -159,6 +159,7 @@ function FoodGroupPicker({
         {search && (
           <button
             onClick={() => { setSearch(""); setShowCreate(false); }}
+            aria-label="Effacer la recherche"
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <X size={13} />
@@ -764,6 +765,7 @@ export default function MealCreatorWizard({
             {stepIdx > 0 && (
               <button
                 onClick={() => go(stepIdx - 1, -1)}
+                aria-label="Étape précédente"
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
               >
                 <ArrowLeft size={16} />

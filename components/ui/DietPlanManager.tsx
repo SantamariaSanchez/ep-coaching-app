@@ -1128,6 +1128,7 @@ export function PlanBuilder({
                                     )}
                                     <button
                                       onClick={() => setMeals((prev) => prev.filter((meal) => meal.localId !== m.localId))}
+                                      aria-label="Supprimer cet aliment"
                                       className="text-[#F5EDED]/20 hover:text-red-500 transition-colors p-0.5"
                                     >
                                       <Trash2 size={12} />
@@ -1344,7 +1345,7 @@ export function PlanBuilder({
                   </p>
                 )}
               </div>
-              <button onClick={() => setAddingToSlot(null)} className="text-[#F5EDED]/40 hover:text-white">
+              <button onClick={() => setAddingToSlot(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white">
                 <X size={16} />
               </button>
             </div>
@@ -1737,6 +1738,7 @@ function PlanDetailRow({
                 await onDelete();
                 setBusy(false);
               }}
+              aria-label="Supprimer le plan"
               className="px-3 py-2 text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-50"
             >
               <Trash2 size={13} />

@@ -444,7 +444,7 @@ function RoadmapTemplateRow({
           <p className="text-sm font-bold text-white truncate">{template.name}</p>
           {template.objective && <p className="text-[11px] text-[#F5EDED]/40 mt-0.5 truncate">{template.objective}</p>}
           <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest flex items-center gap-1.5 flex-wrap mt-0.5">
-            {template.duration_weeks ? `${template.duration_weeks} semaines` : "Durée libre"}
+            {template.duration_weeks ? `${template.duration_weeks} semaine${template.duration_weeks !== 1 ? "s" : ""}` : "Durée libre"}
             · {template.phases.length} phase{template.phases.length !== 1 ? "s" : ""}
             · {template.milestones.length} jalon{template.milestones.length !== 1 ? "s" : ""}
           </p>

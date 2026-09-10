@@ -319,6 +319,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
           type="button"
           onClick={add}
           disabled={isPending || !content.trim()}
+          aria-label="Ajouter la note"
           className="flex items-center gap-1.5 bg-[#E01E1E] text-white px-4 py-2.5 rounded-lg text-[12px] font-bold disabled:opacity-40"
         >
           <Plus size={14} />

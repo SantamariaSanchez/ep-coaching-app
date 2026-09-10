@@ -212,7 +212,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {ingredients.length > 1 && (
-                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setIngredients(ingredients.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'ingrédient ${i + 1}`} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}
@@ -241,7 +241,7 @@ export default function AddRecipeForm({
                 className={inputCls}
               />
               {steps.length > 1 && (
-                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
+                <button type="button" onClick={() => setSteps(steps.filter((_, idx) => idx !== i))} aria-label={`Supprimer l'étape ${i + 1}`} className="text-[#F5EDED]/30 hover:text-red-400 px-1">
                   <Trash2 size={14} />
                 </button>
               )}

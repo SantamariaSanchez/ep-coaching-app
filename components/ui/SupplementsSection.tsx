@@ -193,6 +193,7 @@ export default function SupplementsSection({
                 <button
                   onClick={() => handleDelete(s.id)}
                   disabled={busyId === s.id}
+                  aria-label={`Supprimer ${s.name}`}
                   className="text-[#F5EDED]/20 hover:text-red-400 transition-colors disabled:opacity-30"
                 >
                   <Trash2 size={12} strokeWidth={1.8} />

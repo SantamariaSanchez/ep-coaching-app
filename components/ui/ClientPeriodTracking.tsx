@@ -217,7 +217,7 @@ export default function ClientPeriodTracking({
                 {log.notes && <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">{log.notes}</p>}
               </div>
             </div>
-            <button onClick={() => handleDelete(log.id)} className="text-[#F5EDED]/20 hover:text-red-400 flex-shrink-0">
+            <button onClick={() => handleDelete(log.id)} aria-label="Supprimer ce cycle" className="text-[#F5EDED]/20 hover:text-red-400 flex-shrink-0">
               <Trash2 size={13} />
             </button>
           </div>

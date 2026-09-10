@@ -225,6 +225,7 @@ export default function CoachClientTasksView({
                 </div>
                 <button
                   onClick={() => handleDelete(t.id)}
+                  aria-label={`Supprimer la tâche ${t.label}`}
                   className="text-[#F5EDED]/20 hover:text-red-500 transition-colors"
                 >
                   <Trash2 size={14} />
@@ -287,6 +288,7 @@ export default function CoachClientTasksView({
           <button
             onClick={() => handleSendMotivation(motivationText)}
             disabled={!motivationText.trim() || sendingMotivation}
+            aria-label="Envoyer le message"
             className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg disabled:opacity-40 transition-colors flex-shrink-0"
           >
             <Send size={13} />

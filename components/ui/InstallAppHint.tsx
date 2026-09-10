@@ -100,6 +100,7 @@ export default function InstallAppHint() {
           >
             <button
               onClick={() => setOpen(false)}
+              aria-label="Fermer"
               className="absolute top-3 right-3 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
             >
               <X size={14} />
