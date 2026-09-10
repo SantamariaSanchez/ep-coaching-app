@@ -289,6 +289,7 @@ interface Props {
     fats: number;
     loggedAt: string;
     dedupeIfPlanItem?: boolean;
+    dietPlanMealId?: string | null;
   }) => Promise<{ id?: string; error?: string }>;
   removeFoodLog: (logId: string) => Promise<{ error?: string }>;
   createCustomFood: (params: {
@@ -307,10 +308,14 @@ interface Props {
   // la recherche. Optionnel : absent si l'appelant n'a pas encore de plan.
   importPlanMealsAsSavedMeals?: (planId: string) => Promise<{ error?: string; imported?: number }>;
   logMealItems?: (
-    items: { foodId: string; quantityG: number }[],
+    items: { foodId: string; quantityG: number; dietPlanMealId?: string | null }[],
     mealSlot: string,
     loggedAt: string
-  ) => Promise<{ error?: string; count?: number; insertedLogs?: { id: string; foodId: string; quantityG: number }[] }>;
+  ) => Promise<{
+    error?: string;
+    count?: number;
+    insertedLogs?: { id: string; foodId: string; quantityG: number; dietPlanMealId: string | null }[];
+  }>;
   // Changer le mode (flexible/fixe/fixe-flexible) du plan actif directement
   // depuis le suivi du jour (demande explicite 2026-08-17 : "je veux pouvoir
   // modifier mon fixe ou variable") — jusqu'ici cette capacité existait déjà
@@ -1101,6 +1106,8 @@ export default function ClientNutritionView({
         proteins: macros.proteins,
         carbs: macros.carbs,
         fats: macros.fats,
+        // Même raison que handleTogglePlanItem ci-dessus (Axe BR).
+        diet_plan_meal_id: m.id,
         foods: m.foods!,
       };
     });
@@ -1108,7 +1115,7 @@ export default function ClientNutritionView({
     setTodayLogs((prev) => [...prev, ...optimisticLogs]);
 
     const result = await logMealItems(
-      items.map((m) => ({ foodId: m.food_id, quantityG: m.quantity_g })),
+      items.map((m) => ({ foodId: m.food_id, quantityG: m.quantity_g, dietPlanMealId: m.id })),
       slot,
       today
     );
@@ -1241,6 +1248,12 @@ export default function ClientNutritionView({
       proteins: macros.proteins,
       carbs: macros.carbs,
       fats: macros.fats,
+      // Retour direct 2026-09-10 ("JE COCHE VALIDE JE CHANGE D'ONGLET JE
+      // REVIENS ET Y'A PLUS RIEN DE COCHE") : id exact de la ligne du plan
+      // cochée, connu dès la mise à jour optimiste — checkedMap n'a plus
+      // besoin d'attendre la réconciliation serveur pour matcher sans
+      // ambiguïté. Voir MASTERCLASS.md Axe BR.
+      diet_plan_meal_id: meal.id,
       foods: meal.foods,
     };
     setTodayLogs((prev) => [...prev, optimisticLog]);
@@ -1255,6 +1268,7 @@ export default function ClientNutritionView({
       fats: macros.fats,
       loggedAt: today,
       dedupeIfPlanItem: true,
+      dietPlanMealId: meal.id,
     });
 
     if (result.error) {
@@ -2976,39 +2990,47 @@ function DietPlanCard({
   // jour correspondent aux quantités de l'Option 2, c'est l'Option 2 qu'il
   // faut rouvrir — même sur un autre appareil, ou après un vidage du cache
   // du navigateur, là où le localStorage ci-dessus ne dit plus rien.
+  // Retour direct 2026-09-10 ("JE COCHE VALIDE JE CHANGE D'ONGLET JE
+  // REVIENS ET Y'A PLUS RIEN DE COCHE") : deux correctifs précédents sur ce
+  // même symptôme (le pin explicite chooseVariant, puis une priorité aux
+  // aliments "distinctifs" par food_id+quantité) n'ont chacun fermé qu'UN
+  // cas particulier avant qu'un autre ne le reproduise différemment — le
+  // vrai problème est de DEVINER quelle option est mangée à partir
+  // d'aliments qui peuvent se ressembler entre les 2 options. Fix
+  // définitif (migration 20260910c) : food_logs porte maintenant
+  // `diet_plan_meal_id`, l'id exact de la ligne du plan cochée/validée
+  // (posé par handleTogglePlanItem/handleValidateSlot dès l'écriture,
+  // avant même la réponse serveur). Quelle option est réellement mangée
+  // n'est alors plus une déduction, c'est un fait : compter, PAR OPTION,
+  // combien de ses items ont un log avec CET id exact — sans ambiguïté
+  // possible, contrairement à une comparaison food_id+quantité.
   const loggedVariantBySlot = useMemo(() => {
     const out: Record<string, number> = {};
     if (!isViewingToday) return out;
     for (const slotKey of Object.keys(bySlot)) {
       const variantKeys = Object.keys(bySlot[slotKey]).map(Number).sort((a, b) => a - b);
 
-      // Bug réel confirmé sur son propre plan (retour direct 2026-09-10,
-      // "je coche, j'attends 5s, ça s'enlève, ou je change d'onglet et c'est
-      // enlevé" — TOUJOURS présent après le pin explicite de chooseVariant) :
-      // ce pin ne protège que APRÈS le premier clic, jamais le tout premier
-      // rendu d'un rechargement complet (retour d'arrière-plan sur PWA
-      // iOS, qui décharge et recharge la page — le localStorage n'est relu
-      // que dans un useEffect, donc APRÈS ce calcul). Sur ce rendu-là,
-      // seul ce comptage decide, et son plan réel (postworkout du jeudi)
-      // a 5 aliments STRICTEMENT identiques (même food_id, même quantité)
-      // entre les deux options, seul le 6e diffère (Poulet vs Cabillaud) :
-      // une fois les deux options entièrement loguées un jour donné (ce qui
-      // arrive en pratique dès qu'on valide "Option 2" alors qu'"Option 1"
-      // partageait déjà 5/6 aliments), c'est une VRAIE égalité (6 = 6), et
-      // `>` strict retombe alors sur la variante 1 par défaut — celle qui
-      // n'a PAS le Poulet qu'il vient de valider. Poulet disparaît de
-      // l'écran (plus dans visibleMeals), donnant l'impression que "cocher
-      // ne marche pas", alors que la ligne est bien en base.
-      //
-      // Fix : ne compter, comme preuve de quelle option est réellement
-      // mangée, que les aliments dont le couple food_id+quantité est
-      // PROPRE à cette variante (absent des autres options du même
-      // créneau) — Poulet (propre à l'Option 2) ou Cabillaud (propre à
-      // l'Option 1) tranchent, jamais les 5 aliments communs aux deux qui
-      // ne prouvent rien sur laquelle a été choisie. Le nombre total ne
-      // sert plus que de filet si aucune variante n'a d'aliment distinctif
-      // logué (cas rare : créneau à une seule option, ou aucune preuve
-      // distinctive encore cochée).
+      let bestVariant: number | null = null;
+      let bestDirect = 0;
+      for (const variant of variantKeys) {
+        const direct = bySlot[slotKey][variant].filter((m) =>
+          todayLogs.some((l) => l.diet_plan_meal_id === m.id)
+        ).length;
+        if (direct > bestDirect) {
+          bestDirect = direct;
+          bestVariant = variant;
+        }
+      }
+      if (bestVariant !== null) {
+        out[slotKey] = bestVariant;
+        continue;
+      }
+
+      // Filet : aucune preuve directe (logs d'avant la migration, jamais
+      // rattachés à une ligne de plan) — ancien heuristique par aliment
+      // distinctif (propre à une seule option), toujours plus fiable
+      // qu'un simple total puisqu'il ignore les aliments communs aux 2
+      // options qui ne prouvent rien sur laquelle a été choisie.
       const signatureCounts = new Map<string, number>();
       for (const variant of variantKeys) {
         for (const m of bySlot[slotKey][variant]) {
@@ -3016,8 +3038,6 @@ function DietPlanCard({
           signatureCounts.set(sig, (signatureCounts.get(sig) ?? 0) + 1);
         }
       }
-
-      let bestVariant: number | null = null;
       let bestDistinctive = 0;
       let bestTotal = 0;
       for (const variant of variantKeys) {
@@ -3084,7 +3104,21 @@ function DietPlanCard({
     // false dans ce cas, donc rien n'est cliquable de toute façon).
     if (!isViewingToday) return map;
     const used = new Set<string>();
+    // Priorité 1 (Axe BR) : match direct par diet_plan_meal_id, sans
+    // ambiguïté possible — c'est CET item précis qui a été coché.
     for (const m of visibleMeals) {
+      const direct = todayLogs.find((l) => !used.has(l.id) && l.diet_plan_meal_id === m.id);
+      if (direct) {
+        map[m.id] = direct.id;
+        used.add(direct.id);
+      }
+    }
+    // Priorité 2 (filet) : food_id+quantité pour ce qui n'a pas encore de
+    // match direct — logs d'avant la migration, ou aliment identique déjà
+    // loggué depuis l'AUTRE option du créneau (cas légitime, ne doit
+    // jamais redemander de le cocher deux fois).
+    for (const m of visibleMeals) {
+      if (map[m.id]) continue;
       const match = todayLogs.find(
         (l) =>
           !used.has(l.id) &&

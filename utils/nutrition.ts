@@ -105,6 +105,11 @@ export interface FoodLog {
   meal_slot: string | null;
   quantity_g: number;
   logged_at: string;
+  // Ligne exacte du plan cochée/validée quand ce log en vient (migration
+  // 20260910c) — null pour une recherche libre ou une recette. Sert à
+  // reconnaître sans ambiguïté quel item est déjà mangé quand 2 options
+  // d'un créneau partagent un aliment identique, voir MASTERCLASS.md Axe BR.
+  diet_plan_meal_id?: string | null;
   calories: number | null;
   proteins: number | null;
   carbs: number | null;

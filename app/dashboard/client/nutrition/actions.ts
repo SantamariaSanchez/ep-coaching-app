@@ -139,6 +139,15 @@ export async function addFoodLog(params: {
   // l'ajout d'une recette, où reloguer deux fois le même aliment/quantité
   // le même jour est un vrai usage légitime (deux collations identiques).
   dedupeIfPlanItem?: boolean;
+  // Retour direct 2026-09-10 ("JE COCHE VALIDE JE CHANGE D'ONGLET JE
+  // REVIENS ET Y'A PLUS RIEN DE COCHE") : ligne exacte du plan cochée,
+  // quand cet ajout vient du plan (jamais posé par la recherche libre ou
+  // l'ajout d'une recette). Sans ça, retrouver quel item du plan est
+  // "déjà mangé" ne pouvait que DEVINER via food_id+quantité — deviné
+  // faux dès que 2 options d'un créneau (variant_group) partagent un
+  // aliment identique, voir MASTERCLASS.md Axe BR. Avec l'id exact, plus
+  // aucune devinette n'est nécessaire côté client.
+  dietPlanMealId?: string | null;
 }): Promise<{ id?: string; error?: string }> {
   try {
     // Bug remonté en direct (2026-08-15) : cocher un aliment du plan (ou en
@@ -164,7 +173,25 @@ export async function addFoodLog(params: {
     // créneau/jour existe déjà, on renvoie son id tel quel au lieu d'en
     // recréer un — cocher un item du plan est une intention idempotente
     // ("cet aliment est mangé"), jamais "ajoute-le encore une fois".
+    // Deux façons d'être "déjà mangé" : soit CE MÊME item du plan a déjà
+    // été loggué (diet_plan_meal_id identique — le cas direct), soit un
+    // item d'une AUTRE option du créneau partage le même aliment/quantité
+    // et a déjà été loggué (food_id+quantité — deux options qui se
+    // recouvrent partiellement ne doivent jamais compter comme mangé deux
+    // fois). Cette deuxième branche est volontairement conservée telle
+    // quelle : c'est elle qui évite un vrai doublon en base.
     if (params.dedupeIfPlanItem) {
+      if (params.dietPlanMealId) {
+        const { data: existingByPlanItem } = await supabase
+          .from("food_logs")
+          .select("id")
+          .eq("client_id", guard.userId)
+          .eq("diet_plan_meal_id", params.dietPlanMealId)
+          .eq("logged_at", params.loggedAt)
+          .limit(1)
+          .maybeSingle();
+        if (existingByPlanItem?.id) return { id: existingByPlanItem.id };
+      }
       const { data: existing } = await supabase
         .from("food_logs")
         .select("id")
@@ -190,6 +217,7 @@ export async function addFoodLog(params: {
         proteins: params.proteins,
         carbs: params.carbs,
         fats: params.fats,
+        diet_plan_meal_id: params.dietPlanMealId ?? null,
       })
       .select("id")
       .single();
@@ -674,10 +702,18 @@ export async function deleteSavedMeal(mealId: string): Promise<{ error?: string 
 // partir des données aliment officielles plutôt que de faire confiance à
 // des valeurs recalculées côté client pour un lot entier.
 export async function logMealItems(
-  items: { foodId: string; quantityG: number }[],
+  // dietPlanMealId (retour direct 2026-09-10, "JE COCHE VALIDE JE CHANGE
+  // D'ONGLET JE REVIENS ET Y'A PLUS RIEN DE COCHE") : id exact de la ligne
+  // du plan validée, même raison que sur addFoodLog ci-dessus — voir
+  // MASTERCLASS.md Axe BR.
+  items: { foodId: string; quantityG: number; dietPlanMealId?: string | null }[],
   mealSlot: string,
   loggedAt: string
-): Promise<{ error?: string; count?: number; insertedLogs?: { id: string; foodId: string; quantityG: number }[] }> {
+): Promise<{
+  error?: string;
+  count?: number;
+  insertedLogs?: { id: string; foodId: string; quantityG: number; dietPlanMealId: string | null }[];
+}> {
   // Même correctif que addFoodLog : pas de clientId externe, écrit
   // uniquement sur guard.userId.
   const guard = await requireAuth();
@@ -706,14 +742,35 @@ export async function logMealItems(
     // non coché.
     const { data: existing } = await admin
       .from("food_logs")
-      .select("id, food_id, quantity_g")
+      .select("id, food_id, quantity_g, diet_plan_meal_id")
       .eq("client_id", guard.userId)
       .eq("meal_slot", mealSlot)
       .eq("logged_at", loggedAt);
-    const existingRows = (existing ?? []) as { id: string; food_id: string | null; quantity_g: number }[];
+    const existingRows = (existing ?? []) as {
+      id: string;
+      food_id: string | null;
+      quantity_g: number;
+      diet_plan_meal_id: string | null;
+    }[];
     const existingByKey = new Map(existingRows.map((l) => [`${l.food_id}:${l.quantity_g}`, l.id]));
+    // Retour direct 2026-09-10 ("JE COCHE VALIDE JE CHANGE D'ONGLET JE
+    // REVIENS ET Y'A PLUS RIEN DE COCHE") : un item déjà loggué se
+    // reconnaît maintenant D'ABORD par l'id exact de la ligne du plan
+    // (sans ambiguïté), et seulement à défaut par food_id+quantité (cas
+    // d'un aliment partagé avec l'autre option déjà loggué depuis
+    // celle-ci — cette branche évite un vrai doublon en base, elle reste
+    // volontairement inchangée). Voir MASTERCLASS.md Axe BR.
+    const existingByPlanItemId = new Map(
+      existingRows.filter((l) => l.diet_plan_meal_id).map((l) => [l.diet_plan_meal_id as string, l.id])
+    );
+    function alreadyLoggedId(it: { foodId: string; quantityG: number; dietPlanMealId?: string | null }) {
+      if (it.dietPlanMealId && existingByPlanItemId.has(it.dietPlanMealId)) {
+        return existingByPlanItemId.get(it.dietPlanMealId)!;
+      }
+      return existingByKey.get(`${it.foodId}:${it.quantityG}`);
+    }
 
-    const newItems = items.filter((it) => !existingByKey.has(`${it.foodId}:${it.quantityG}`));
+    const newItems = items.filter((it) => !alreadyLoggedId(it));
 
     // Retour direct 2026-09-10 : l'appelant (handleValidateSlot) a besoin
     // du VRAI id de chaque item, y compris ceux déjà présents avant cet
@@ -721,9 +778,14 @@ export async function logMealItems(
     // sont jamais réconciliées et restent affichées indéfiniment comme
     // "en vol", contrairement à handleTogglePlanItem qui le fait déjà pour
     // un item logué seul.
-    const alreadyLogged: { id: string; foodId: string; quantityG: number }[] = items
-      .filter((it) => existingByKey.has(`${it.foodId}:${it.quantityG}`))
-      .map((it) => ({ id: existingByKey.get(`${it.foodId}:${it.quantityG}`)!, foodId: it.foodId, quantityG: it.quantityG }));
+    const alreadyLogged: { id: string; foodId: string; quantityG: number; dietPlanMealId: string | null }[] = items
+      .filter((it) => alreadyLoggedId(it))
+      .map((it) => ({
+        id: alreadyLoggedId(it)!,
+        foodId: it.foodId,
+        quantityG: it.quantityG,
+        dietPlanMealId: it.dietPlanMealId ?? null,
+      }));
 
     // Tout était déjà loggué (doublon évité) : ce n'est pas une erreur, le
     // repas est déjà à l'état voulu, silencieusement.
@@ -744,6 +806,7 @@ export async function logMealItems(
           proteins: Math.round(food.proteins_per_100 * ratio * 10) / 10,
           carbs: Math.round(food.carbs_per_100 * ratio * 10) / 10,
           fats: Math.round(food.fats_per_100 * ratio * 10) / 10,
+          diet_plan_meal_id: it.dietPlanMealId ?? null,
         };
       })
       .filter((r): r is NonNullable<typeof r> => r !== null);
@@ -752,15 +815,21 @@ export async function logMealItems(
     // être résolu en aliment connu — ça, c'est une vraie erreur de données.
     if (rows.length === 0) return { error: "Aucun aliment valide dans ce repas." };
 
-    const { data: inserted, error } = await admin.from("food_logs").insert(rows).select("id, food_id, quantity_g");
+    const { data: inserted, error } = await admin
+      .from("food_logs")
+      .insert(rows)
+      .select("id, food_id, quantity_g, diet_plan_meal_id");
     if (error) return { error: "Erreur lors de l'ajout." };
-    const insertedLogs: { id: string; foodId: string; quantityG: number }[] = [
+    const insertedLogs: { id: string; foodId: string; quantityG: number; dietPlanMealId: string | null }[] = [
       ...alreadyLogged,
-      ...((inserted ?? []) as { id: string; food_id: string; quantity_g: number }[]).map((r) => ({
-        id: r.id,
-        foodId: r.food_id,
-        quantityG: r.quantity_g,
-      })),
+      ...((inserted ?? []) as { id: string; food_id: string; quantity_g: number; diet_plan_meal_id: string | null }[]).map(
+        (r) => ({
+          id: r.id,
+          foodId: r.food_id,
+          quantityG: r.quantity_g,
+          dietPlanMealId: r.diet_plan_meal_id,
+        })
+      ),
     ];
 
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", loggedAt);
