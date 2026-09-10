@@ -35,27 +35,22 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Perf (repasse masterclass 2026-09-10, retour direct : "changer d'onglet
-  // prend 3s") : toutes les pages du dashboard sont force-dynamic (cookies
-  // de session), donc par défaut Next.js 15+ les traite comme staleTimes
-  // "dynamic" = 0 seconde — chaque navigation, même vers un onglet visité
-  // il y a 2 secondes, refait un aller-retour serveur complet plutôt que de
-  // réutiliser le rendu déjà en cache côté client. Remonter cette fenêtre à
-  // 30s est sûr ICI précisément parce que la discipline `revalidatePath`
-  // après mutation a déjà été auditée en profondeur (MASTERCLASS.md Axe A,
-  // ~78 fichiers d'action passés en revue, 0 lacune trouvée y compris lors
-  // de la repasse du 2026-09-10) : la documentation Next.js confirme que
-  // revalidatePath purge explicitement ce cache client, quelle que soit
-  // staleTimes ("Server Functions: ... causes all previously visited pages
-  // to refresh when navigated to again") — donc aucun retour du bug
-  // "coché puis décoché" déjà corrigé. Seul residual : une donnée modifiée
-  // depuis un AUTRE appareil/session peut rester affichée jusqu'à 30s sur
-  // cet onglet-ci avant refresh manuel — compromis raisonnable pour une
-  // appli de coaching, pas un système transactionnel temps réel.
+  // Retour direct 2026-09-10/11 ("je coche, valide, j'attends, ça se
+  // décoche" — répété de nombreuses fois, y compris après vérification en
+  // base que l'écriture avait bel et bien réussi) : ce `staleTimes.dynamic
+  // = 30` avait été posé plus tôt dans la session pour accélérer la
+  // navigation (~3s), en pariant que `revalidatePath` purge fiablement le
+  // cache client dans TOUTE la fenêtre de 30s, quel que soit le moment de
+  // la mutation. AGENTS.md prévient explicitement que ce projet tourne sur
+  // une version de Next.js "pas celle que tu connais, avec des
+  // changements cassants" — plutôt que de continuer à débugger sur une
+  // hypothèse de comportement standard qui ne tient peut-être pas ici,
+  // retour à la valeur par défaut de Next.js 15+ pour les pages dynamiques
+  // (0 seconde, jamais de cache client) : la fonctionnalité de suivi prime
+  // sur 3 secondes de navigation. Si le symptôme persiste après ce
+  // retrait, ça écarte définitivement cette piste au lieu de la laisser
+  // planer indéfiniment sur chaque futur bug de coche.
   experimental: {
-    staleTimes: {
-      dynamic: 30,
-    },
     // Next.js limite le corps d'une Server Action à 1 Mo par défaut —
     // beaucoup trop bas dès qu'un formulaire envoie une photo (onboarding,
     // photos de progression, check-in...). Une photo de téléphone fait
