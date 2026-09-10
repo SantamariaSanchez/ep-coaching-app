@@ -3178,6 +3178,22 @@ function DietPlanCard({
                   <button
                     onClick={async (e) => {
                       e.stopPropagation();
+                      // Bug trouvé le 2026-09-10 ("5s après avoir coché ça se
+                      // décoche") : quand deux variantes d'un créneau
+                      // partagent une partie de leurs aliments (même
+                      // food_id/quantité pour certains, quantités légèrement
+                      // différentes pour d'autres — cas réel confirmé en
+                      // base), loggedVariantBySlot (comptage de correspondances)
+                      // peut se tromper de variante gagnante une fois le repas
+                      // validé, ce qui fait retomber visibleMeals sur l'AUTRE
+                      // variante — ses aliments ne correspondent plus à
+                      // todayLogs, donc tout redevient "non coché" à l'écran
+                      // alors que les données restent intactes en base (vérifié).
+                      // Fixe explicitement la variante tout juste validée
+                      // AVANT l'appel serveur : chooseVariant (préférence
+                      // explicite) passe toujours avant loggedVariantBySlot
+                      // dans resolveVariant, donc plus jamais d'ambiguïté ici.
+                      chooseVariant(variantStateKey, activeVariant);
                       setValidatingSlot(validatingKey);
                       await onValidateSlot(uncheckedMeals);
                       setValidatingSlot(null);
@@ -3223,7 +3239,19 @@ function DietPlanCard({
                         checkable ? "cursor-pointer" : ""
                       }`}
                       onClick={
-                        checkable ? () => onToggle(m, matchedLogId) : undefined
+                        checkable
+                          ? () => {
+                              // Même correctif que pour "Valider le repas"
+                              // juste au-dessus (retour direct 2026-09-10) :
+                              // fixe la variante affichée AVANT de cocher, pour
+                              // que la résolution de variante ne parte jamais
+                              // sur l'autre variante une fois le todayLogs mis
+                              // à jour, même si les deux partagent des
+                              // aliments identiques.
+                              chooseVariant(variantStateKey, activeVariant);
+                              onToggle(m, matchedLogId);
+                            }
+                          : undefined
                       }
                     >
                       {checkable && (

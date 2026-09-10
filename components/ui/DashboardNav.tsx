@@ -1150,19 +1150,23 @@ export default function DashboardNav({
         {children}
       </main>
 
-      {/* ── Recherche + notifications, mobile (2026-09-08) ───────────────────
-          Les deux vivaient uniquement dans la sidebar desktop jusqu'ici :
-          NotificationBell prévoyait déjà un variant="mobile" jamais branché
-          nulle part, et la recherche n'avait que Ctrl/Cmd+K comme point
-          d'entrée — inexistant au toucher. Sans bouton flottant, il n'y
-          avait tout simplement aucun moyen de voir ses notifications ou de
-          chercher quoi que ce soit depuis un téléphone.
+      {/* ── Recherche, mobile (2026-09-08, cloche retirée le 2026-09-10) ─────
+          La recherche n'avait que Ctrl/Cmd+K comme point d'entrée jusqu'ici
+          — inexistant au toucher. Sans bouton flottant, il n'y avait
+          tout simplement aucun moyen de chercher quoi que ce soit depuis un
+          téléphone.
           Ancré en BAS, pas en haut (comme ActiveSessionBanner juste
           au-dessus de la nav) : un ancrage en haut chevaucherait la bande de
           sous-onglets sticky et les bandeaux (vérification email, compte
           gratuit) qui vivent tout en haut du contenu — voir le commentaire
           plus bas sur mobileSubItems, "plus rien de fixed en haut", déjà
-          un choix assumé qu'il ne fallait pas défaire. */}
+          un choix assumé qu'il ne fallait pas défaire.
+          Retour direct 2026-09-10 ("enleve la cloche de notif qui sert a
+          rien") : la cloche flottante mobile (NotificationBell variant
+          "mobile") est retirée — la cloche reste disponible dans la
+          sidebar desktop uniquement. Les notifications continuent
+          d'arriver en push (voir Paramètres) même sans cloche in-app
+          mobile. */}
       <div
         style={{
           display: isDesktop ? "none" : "flex",
@@ -1190,18 +1194,6 @@ export default function DashboardNav({
         >
           <Search size={17} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
         </button>
-        {/* .ep-btn-icon (déclencheur interne à NotificationBell) porte déjà
-            son propre fond/flou/bordure, cohérents avec le bouton recherche
-            ci-dessus — pas besoin d'un wrapper de plus autour.
-            PAS alignLeft (retour direct 2026-09-10, "le truc est hors
-            écran du tel") : ce bouton vit dans un cluster fixed ancré
-            `right: 14` (voir le div parent ci-dessus), donc déjà collé au
-            bord droit de l'écran. alignLeft forçait le panneau (320px de
-            large) à s'ouvrir vers la DROITE depuis ce bord — largement
-            hors écran sur un téléphone. Le comportement par défaut
-            (alignRight, panneau qui s'ouvre vers la GAUCHE depuis le
-            bouton) est le seul qui reste dans l'écran ici. */}
-        <NotificationBell variant="mobile" openUpward />
       </div>
 
       {/* ── Mobile bottom nav — Oura style ─────────────────────────────────── */}
