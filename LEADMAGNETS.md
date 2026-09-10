@@ -206,6 +206,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (nuit)** | | **662** | +5 par rapport au comptage du soir. |
 | 2026-09-10 | Vague AB (manuelle, suite "continue de travailler longtemps") | 6 | Nitrates/jus de betterave (dose et timing précis, mais pas d'effet sur la progression à long terme), rest-pause et drop-set vs séries classiques (aucun bonus d'hypertrophie à volume égal), mind-muscle connection (quasi doublement de croissance mesurée par échographie, Schoenfeld 2018), cerises acidulées et récupération (force qui revient plus vite, mais pas les courbatures perçues), citrulline malate (+6,4% de répétitions, dose/timing précis), HMB (aucun effet démontré sur masse maigre ou force, jeunes comme séniors). |
 | **Total vérifié en base au 2026-09-10 (nuit, suite)** | | **668** | +6 par rapport au comptage précédent. |
+| 2026-09-10 | Vague AC (manuelle, suite "continue de travailler longtemps") | 4 | Ashwagandha et force (STAR Trial, +19,1kg squat vs +10,0kg placebo sur 12 semaines), cluster sets vs séries traditionnelles (préserve vitesse/puissance mais pas le 1RM), surcharge excentrique flywheel (deux méta-analyses aux résultats différents selon le protocole), manque de sommeil et testostérone (privation partielle sans effet, seule la privation totale ≥24h en a un). Glutamine et glycogène/carb timing explorés mais écartés : littérature trop datée ou trop générale pour un sourcing solide. |
+| **Total vérifié en base au 2026-09-10 (nuit, suite 2)** | | **672** | +4 par rapport au comptage précédent. |
 
 ## Répartition actuelle par catégorie
 
@@ -245,7 +247,8 @@ charges libres), squat profond et genoux, blessures épaule/lombaires
 mouvement), entraînement avec restriction de flux sanguin (BFR, effet selon
 le niveau d'entraînement), rest-pause et drop-set vs séries classiques
 (aucun bonus d'hypertrophie à volume égal), mind-muscle connection (focus
-interne vs externe).
+interne vs externe), cluster sets vs séries traditionnelles (vitesse/
+puissance vs 1RM), surcharge excentrique flywheel.
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -259,7 +262,8 @@ littérature (dose-réponse), alimentation étudiante à petit budget, protéine
 et satiété/poids en sèche, HIIT vs cardio classique (deux marqueurs
 différents), collagène et tendons (structure vs force), nitrates/jus de
 betterave (dose/timing précis, pas d'effet chronique), citrulline malate
-(+6,4% de répétitions), HMB (aucun effet démontré).
+(+6,4% de répétitions), HMB (aucun effet démontré), ashwagandha et force
+(STAR Trial).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -282,7 +286,8 @@ avant/après (effet aigu vs chronique), retour après blessure aux
 ischio-jambiers (comparaison de protocoles), surentraînement/signes
 précoces (consensus ECSS/ACSM), infection ORL après un effort très long
 (marathon, fenêtre de vulnérabilité transitoire), cerises acidulées
-(force qui revient plus vite, mais pas les courbatures perçues).
+(force qui revient plus vite, mais pas les courbatures perçues), manque de
+sommeil et testostérone (privation partielle vs totale).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -406,7 +411,14 @@ méta-analyse 19 essais (DOI 10.1186/s40798-026-00993-3). Citrulline malate :
 Vårvik et al. 2021, méta-analyse (DOI 10.1123/ijsnem.2020-0295). HMB :
 Jakubowski et al. 2020, méta-analyse groupe Phillips (DOI
 10.3390/nu12051523), Courel-Ibáñez et al. 2019, séniors (DOI
-10.3390/nu11092082).
+10.3390/nu11092082). Ashwagandha : Ziegenfuss et al. 2018, STAR Trial (DOI
+10.3390/nu10111807). Cluster sets : Latella et al. 2019, méta-analyse
+(DOI 10.1007/s40279-019-01172-z), Marshall et al. 2021, séquences
+d'entraînement (DOI 10.1007/s40279-021-01430-z). Surcharge excentrique
+flywheel : Vicens-Bordas et al. 2017 (DOI 10.1016/j.jsams.2017.10.006),
+Maroto-Izquierdo et al. 2017 (DOI 10.1016/j.jsams.2017.03.004). Sommeil et
+testostérone : Su et al. 2021, méta-analyse 18 études (DOI
+10.1016/j.sleep.2021.10.031).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
