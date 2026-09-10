@@ -214,6 +214,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (nuit, suite 4)** | | **680** | +4 par rapport au comptage précédent. |
 | 2026-09-10 | Vague AF (manuelle, suite "continue de travailler longtemps") | 3 | Oméga-3 et sensibilité anabolique (pas d'effet direct au repos, mais sensibilise le muscle au signal repas), plafond de protéines à 1,6g/kg/jour (méta-analyse de référence Morton/Schoenfeld/Helms/Aragon/Phillips, 49 études), ordre cardio/musculation dans une séance (aucun effet sur l'hypertrophie, contrairement au mythe — c'est le TYPE de cardio, course à pied vs vélo, qui compte). |
 | **Total vérifié en base au 2026-09-10 (nuit, suite 5)** | | **683** | +3 par rapport au comptage précédent. |
+| 2026-09-10 | Vague AG (manuelle, suite "continue de travailler longtemps") | 2 | Pistolet de massage à percussion (réduit douleur/fatigue perçues, aucun effet sur la performance objective), électrostimulation corps entier (EMS, effet négligeable chez le pratiquant déjà entraîné vs entraînement classique équivalent). |
+| **Total vérifié en base au 2026-09-10 (nuit, suite 6)** | | **685** | +2 par rapport au comptage précédent. Session très longue (26+ entrées manuelles depuis le début de la journée), rythme volontairement ralenti à ce stade pour préserver la qualité du sourcing plutôt que de forcer le volume. |
 
 ## Répartition actuelle par catégorie
 
@@ -447,7 +449,11 @@ et al. 2011, traceurs isotopiques (DOI 10.1042/CS20100597). Plafond
 protéines 1,6g/kg : Morton et al. 2018, méta-analyse de référence 49 études
 (DOI 10.1136/bjsports-2017-097608). Ordre cardio/musculation : Lundberg
 et al. 2022, méta-analyse 15 études (DOI 10.1007/s40279-022-01688-x),
-Küüsmaa et al. 2016, matin vs soir (DOI 10.1139/apnm-2016-0271).
+Küüsmaa et al. 2016, matin vs soir (DOI 10.1139/apnm-2016-0271). Pistolet
+de massage : Buoite Stella et al. 2024 (DOI 10.3390/sports12060167), Alves
+et al. 2025, essai contrôlé 84 coureurs (DOI 10.1097/JSM.0000000000001355).
+EMS corps entier : Wirtz et al. 2019, mini méta-analyse 5 essais homogènes
+(DOI 10.3389/fphys.2019.01336).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
