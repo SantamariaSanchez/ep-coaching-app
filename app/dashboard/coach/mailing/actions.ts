@@ -3,6 +3,7 @@
 import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail } from "@/utils/brevo";
+import { escapeLikePattern } from "@/lib/sanitize";
 import {
   sendCoachCampaign,
   getCoachClientsForMailing,
@@ -172,4 +173,105 @@ export async function sendMailingToClients(
     revalidatePath("/dashboard/coach/mailing");
     return { error: e instanceof Error ? e.message : "Erreur lors de l'envoi." };
   }
+}
+
+// Retour direct 2026-09-10 ("mets-moi des templates prêts à envoyer à qui
+// je veux en un clic") : recherche d'UNE personne précise (nom ou email),
+// pour un envoi 1-1 plutôt qu'un segment entier. Un coach standard ne
+// cherche que parmi SES clients (même périmètre que "mes clients actifs"
+// ailleurs sur cette page) ; le propriétaire de la plateforme cherche
+// parmi tout le monde (membres et coachs confondus).
+export interface MailingContactResult {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export async function searchMailingContacts(query: string): Promise<MailingContactResult[]> {
+  const guard = await requireCoach();
+  if (!guard.ok) return [];
+
+  const q = query.trim();
+  if (q.length < 2) return [];
+
+  const admin = createAdminClient();
+  const { data: profile } = await admin.from("profiles").select("is_platform_owner").eq("id", guard.userId).maybeSingle();
+  const isPlatformOwner = !!(profile as { is_platform_owner: boolean | null } | null)?.is_platform_owner;
+
+  const pattern = `%${escapeLikePattern(q)}%`;
+  let builder = admin
+    .from("profiles")
+    .select("id, full_name, email, role")
+    .not("email", "is", null)
+    .or(`full_name.ilike.${pattern},email.ilike.${pattern}`)
+    .limit(10);
+
+  // Même restriction que le reste du composeur : un coach ne peut cibler
+  // que ses propres clients par ce chemin, jamais un tiers au hasard.
+  if (!isPlatformOwner) builder = builder.eq("coach_id", guard.userId).eq("role", "client");
+
+  const { data } = await builder;
+  return ((data ?? []) as { id: string; full_name: string | null; email: string; role: string }[]).map((r) => ({
+    id: r.id,
+    name: r.full_name ?? r.email,
+    email: r.email,
+    role: r.role,
+  }));
+}
+
+// Envoi 1-1 : jamais via le circuit campagne/liste Brevo (sendCoachCampaign)
+// — un envoi transactionnel direct (même mécanisme que sendTestMailing,
+// déjà éprouvé), instantané, sans créer ni gérer de liste Brevo pour une
+// seule personne.
+export async function sendSingleMailing(
+  subject: string,
+  htmlContent: string,
+  contactId: string
+): Promise<{ error?: string; success?: boolean; recipientCount?: number }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const err = validate(subject, htmlContent);
+  if (err) return { error: err };
+
+  const admin = createAdminClient();
+  const { data: coachProfile } = await admin
+    .from("profiles")
+    .select("is_platform_owner")
+    .eq("id", guard.userId)
+    .maybeSingle();
+  const isPlatformOwner = !!(coachProfile as { is_platform_owner: boolean | null } | null)?.is_platform_owner;
+
+  let contactQuery = admin.from("profiles").select("id, full_name, email, coach_id, role").eq("id", contactId);
+  if (!isPlatformOwner) contactQuery = contactQuery.eq("coach_id", guard.userId).eq("role", "client");
+  const { data: contact } = await contactQuery.maybeSingle();
+  const target = contact as { id: string; full_name: string | null; email: string | null; coach_id: string | null; role: string } | null;
+  if (!target?.email) return { error: "Contact introuvable ou hors de ton périmètre." };
+
+  const ok = await sendBrevoEmail({ to: target.email, subject, htmlContent: wrapBrandedEmail(htmlContent) });
+  if (!ok) {
+    await admin.from("coach_mailings").insert({
+      coach_id: guard.userId,
+      subject,
+      html_content: htmlContent,
+      audience: `contact_${target.id}:${target.full_name ?? target.email}`,
+      recipient_count: 0,
+      status: "failed",
+    });
+    revalidatePath("/dashboard/coach/mailing");
+    return { error: "Échec de l'envoi." };
+  }
+
+  await admin.from("coach_mailings").insert({
+    coach_id: guard.userId,
+    subject,
+    html_content: htmlContent,
+    audience: `contact_${target.id}:${target.full_name ?? target.email}`,
+    recipient_count: 1,
+    status: "sent",
+  });
+
+  revalidatePath("/dashboard/coach/mailing");
+  return { success: true, recipientCount: 1 };
 }

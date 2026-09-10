@@ -10,7 +10,13 @@ export type MailingAudience =
   | { type: "mes_clients_actifs" }
   | { type: "tous_les_membres" }
   | { type: "coachs" }
-  | { type: "liste_existante"; listId: number; listName: string };
+  | { type: "liste_existante"; listId: number; listName: string }
+  // Retour direct 2026-09-10 ("mets-moi des templates prêts à envoyer à
+  // qui je veux en un clic") : une personne précise plutôt qu'un segment.
+  // Ne passe jamais par le circuit campagne/liste Brevo (voir
+  // sendSingleMailing dans actions.ts) — envoi transactionnel direct comme
+  // le test, instantané, pas de liste à créer/gérer pour un envoi 1-1.
+  | { type: "contact_specifique"; contactId: string; contactName: string };
 
 // Vit ici (pas dans app/dashboard/coach/mailing/actions.ts) pour la même
 // raison que tout ce fichier : un fichier "use server" ne peut exporter que
@@ -24,6 +30,7 @@ export const MAX_RECIPIENTS_PER_SEND = 200;
 // sur toutes les lignes déjà en base avant ce jour.
 export function audienceToStorageKey(audience: MailingAudience): string {
   if (audience.type === "liste_existante") return `liste_${audience.listId}:${audience.listName}`;
+  if (audience.type === "contact_specifique") return `contact_${audience.contactId}:${audience.contactName}`;
   if (audience.type === "mes_clients_actifs") return "clients_actifs";
   return audience.type;
 }
@@ -34,6 +41,11 @@ export function storageKeyToAudience(key: string): MailingAudience {
     const [idPart, ...nameParts] = rest.split(":");
     const listId = parseInt(idPart, 10);
     return { type: "liste_existante", listId: isNaN(listId) ? 0 : listId, listName: nameParts.join(":") || "Liste Brevo" };
+  }
+  if (key.startsWith("contact_")) {
+    const rest = key.slice("contact_".length);
+    const [contactId, ...nameParts] = rest.split(":");
+    return { type: "contact_specifique", contactId, contactName: nameParts.join(":") || "Contact" };
   }
   if (key === "tous_les_membres") return { type: "tous_les_membres" };
   if (key === "coachs") return { type: "coachs" };
@@ -51,6 +63,11 @@ export function describeAudience(audience: string): string {
     const [, ...nameParts] = audience.slice("liste_".length).split(":");
     const name = nameParts.join(":");
     return name || "Liste Brevo existante";
+  }
+  if (audience.startsWith("contact_")) {
+    const [, ...nameParts] = audience.slice("contact_".length).split(":");
+    const name = nameParts.join(":");
+    return name ? `À ${name}` : "Une personne";
   }
   return AUDIENCE_LABELS[audience] ?? audience;
 }

@@ -200,6 +200,8 @@ production locale.
 | **Total vérifié en base au 2026-08-17** | | **159** | Sur 1000 visés, échéance 2026-09-13. Écart de 18 entre 117+20+4=141 (addition manuelle) et 159 (compte réel `select count(*) from lead_magnets`) : la routine cloud a probablement tourné plus d'une fois sans que chaque passage soit individuellement journalisé ici. **À partir de maintenant, se fier au compte SQL réel avant d'écrire un nouveau total, jamais à une addition manuelle des lignes de ce tableau.** |
 | **Total vérifié en base au 2026-08-18** | | **196** | Sur 1000 visés, échéance 2026-09-13 (26 jours restants). +37 en 1 jour via la routine cloud, non journalisé en détail (voir règle ci-dessus). Rythme réel depuis le 08-14 : 75→117→159→196, soit ~30/jour en moyenne sur 4 jours. Il reste 804 entrées à produire sur 26 jours, soit ~31/jour nécessaires : rythme actuel tout juste suffisant, à surveiller plutôt qu'à corriger dans l'immédiat. |
 | **Total vérifié en base au 2026-09-10** | | **638** | Sur 1000 visés, échéance 2026-09-13 (3 jours restants). +442 depuis le 08-18 (23 jours), soit ~19/jour en moyenne sur la période, en dessous du ~31/jour nécessaire calculé le 08-18 — mais routine confirmée `enabled: true`, dernière exécution du 2026-09-09 réussie (`ROUTINE_RUN_STATUS_SUCCEEDED`), tourne bien tous les matins à 6h04 UTC. Rythme nécessaire pour tenir l'échéance : ~121/jour sur les 3 jours restants (362 entrées manquantes), largement au-dessus du rythme de la routine seule (15-30/jour) — l'échéance du 09-13 ne sera vraisemblablement pas tenue au rythme actuel, à signaler au coach plutôt qu'à masquer. |
+| 2026-09-10 | Vague Z (manuelle, session "alimente le contenu") | 3 | Protéine avant le coucher (caséine, timing), combien de séries par semaine (relation dose-réponse volume/hypertrophie), aller à l'échec : décisif pour l'hypertrophie mais pas pour la force (méta-régression RIR 2024) — 3 sujets neufs cherchés directement sur PubMed (pas depuis la banque de sources déjà vérifiées, entièrement réexploitée par les sujets déjà publiés), voir la banque mise à jour ci-dessous. Rythme manuel volontairement modeste : chaque nouvelle entrée demande une vraie recherche PubMed pour rester sourcée, pas un simple remplissage de chiffre. |
+| **Total vérifié en base au 2026-09-10 (soir)** | | **657** | +3 par rapport au comptage du matin. L'échéance du 09-13 reste hors de portée au rythme actuel (routine + production manuelle combinées), toujours à signaler honnêtement plutôt qu'à masquer par un rythme de production qui sacrifierait le sourcing. |
 
 ## Répartition actuelle par catégorie
 
@@ -367,7 +369,12 @@ et al. 2013, consensus ECSS/ACSM (DOI 10.1249/MSS.0b013e318279a10a). Stress
 pré-compétition : Li et al. 2025, 2056 athlètes (DOI
 10.1038/s41598-025-19213-1), Tharawadeepimuk et al. 2026, essai contrôlé
 (DOI 10.1186/s40359-026-04814-w). Force/endurance : Berryman, Mujika &
-Bosquet 2019, revue (DOI 10.1123/ijspp.2018-0103).
+Bosquet 2019, revue (DOI 10.1123/ijspp.2018-0103). Protéine avant le coucher :
+Snijders et al. 2019, revue (DOI 10.3389/fnut.2019.00017), Dela Cruz & Kahan
+2021, revue systématique (DOI 10.3390/nu13061872). Volume hebdomadaire et
+hypertrophie : Schoenfeld/Ogborn/Krieger 2016, méta-analyse 15 études (DOI
+10.1080/02640414.2016.1210197). Proximité de l'échec (RIR), hypertrophie vs
+force : Robinson et al. 2024, méta-régressions (DOI 10.1007/s40279-024-02069-2).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 

@@ -4,11 +4,15 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Send, FlaskConical, Users, CheckCircle2, XCircle, Clock3, Eye, EyeOff,
   Copy, CalendarClock, Globe2, UserCog, List as ListIcon, ChevronDown,
+  LayoutTemplate, Search, X,
 } from "lucide-react";
 import {
   sendTestMailing,
   sendMailingToClients,
+  sendSingleMailing,
+  searchMailingContacts,
   getMailingRecipientCount,
+  type MailingContactResult,
 } from "@/app/dashboard/coach/mailing/actions";
 import type { CoachMailing } from "@/lib/coach-mailings";
 import type { BrevoListSummary } from "@/lib/brevo-mailing";
@@ -19,6 +23,7 @@ import {
   wrapBrandedEmail,
   MAX_RECIPIENTS_PER_SEND,
 } from "@/lib/mailing-audience";
+import { getMailTemplatesByCategory, MAIL_TEMPLATES, type MailTemplate } from "@/lib/mail-templates";
 
 // Axe 2 (VISION.md) : mailing par coach — segmentation par tag/liste sous
 // le compte Brevo unique (décision prise avec l'utilisateur, 2026-08-14).
@@ -32,10 +37,15 @@ import {
 // dupliquer un envoi précédent, programmer un envoi, aperçu avant envoi
 // réel avec la bannière de marque appliquée, refonte visuelle complète.
 
-type AudienceType = "clients_actifs" | "tous_les_membres" | "coachs" | "liste_existante";
+type AudienceType = "clients_actifs" | "tous_les_membres" | "coachs" | "liste_existante" | "contact_specifique";
 
 const AUDIENCE_OPTIONS: { type: AudienceType; label: string; icon: React.ElementType; ownerOnly?: boolean }[] = [
   { type: "clients_actifs", label: "Mes clients actifs", icon: Users },
+  // Retour direct 2026-09-10 ("à qui je veux en un clic") : disponible à
+  // tout coach (recherche restreinte à ses propres clients côté serveur,
+  // voir searchMailingContacts), pas réservé au propriétaire comme les
+  // audiences larges ci-dessous.
+  { type: "contact_specifique", label: "Une personne", icon: Search },
   { type: "tous_les_membres", label: "Tous les membres", icon: Globe2, ownerOnly: true },
   { type: "coachs", label: "Coachs", icon: UserCog, ownerOnly: true },
   { type: "liste_existante", label: "Liste Brevo existante", icon: ListIcon, ownerOnly: true },
@@ -83,23 +93,81 @@ export default function CoachMailingComposer({
   const [success, setSuccess] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
+  // Bibliothèque de modèles (retour direct 2026-09-10 : "améliore l'onglet,
+  // mets une centaine de templates") — ~100 modèles prêts, groupés par
+  // catégorie (voir lib/mail-templates.ts), filtrables par recherche. Choisir
+  // un modèle préremplit juste le sujet/corps du composeur existant, rien de
+  // plus : les destinataires et l'envoi restent exactement le même circuit
+  // qu'avant (test, confirmation, historique).
+  const [showTemplates, setShowTemplates] = useState(false);
+  const [templateSearch, setTemplateSearch] = useState("");
+  const templateGroups = useMemo(() => getMailTemplatesByCategory(), []);
+  const filteredTemplateGroups = useMemo(() => {
+    const q = templateSearch.trim().toLowerCase();
+    if (!q) return templateGroups;
+    return templateGroups
+      .map((g) => ({ ...g, templates: g.templates.filter((t) => t.name.toLowerCase().includes(q) || t.subject.toLowerCase().includes(q)) }))
+      .filter((g) => g.templates.length > 0);
+  }, [templateGroups, templateSearch]);
+
+  function applyTemplate(t: MailTemplate) {
+    setSubject(t.subject);
+    setBody(t.body);
+    setTestSent(false);
+    setShowTemplates(false);
+    setTemplateSearch("");
+  }
+
   const selectedList = brevoLists.find((l) => l.id === selectedListId) ?? null;
 
+  // Recherche "Une personne" (retour direct 2026-09-10) : un contact
+  // sélectionné vaut 1 destinataire, aucun sélectionné vaut 0 — jamais
+  // d'appel à getMailingRecipientCount pour ce type (il ne connaît que les
+  // audiences par segment, pas la recherche libre).
+  const [contactQuery, setContactQuery] = useState("");
+  const [contactResults, setContactResults] = useState<MailingContactResult[]>([]);
+  const [contactSearching, setContactSearching] = useState(false);
+  const [selectedContact, setSelectedContact] = useState<MailingContactResult | null>(null);
+
   useEffect(() => {
+    if (audienceType !== "contact_specifique") return;
+    const q = contactQuery.trim();
+    if (q.length < 2) {
+      setContactResults([]);
+      return;
+    }
+    setContactSearching(true);
+    const handle = setTimeout(() => {
+      searchMailingContacts(q).then((r) => {
+        setContactResults(r);
+        setContactSearching(false);
+      });
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [contactQuery, audienceType]);
+
+  useEffect(() => {
+    if (audienceType === "contact_specifique") {
+      setRecipientCount(selectedContact ? 1 : 0);
+      return;
+    }
     if (audienceType === "liste_existante") {
       setRecipientCount(selectedList?.totalSubscribers ?? 0);
       return;
     }
     setRecipientCount(null);
     getMailingRecipientCount(audienceType).then((r) => setRecipientCount(r.count));
-  }, [audienceType, selectedList]);
+  }, [audienceType, selectedList, selectedContact]);
 
   const audienceKey = useMemo(() => {
     if (audienceType === "liste_existante" && selectedList) {
       return audienceToStorageKey({ type: "liste_existante", listId: selectedList.id, listName: selectedList.name });
     }
+    if (audienceType === "contact_specifique" && selectedContact) {
+      return audienceToStorageKey({ type: "contact_specifique", contactId: selectedContact.id, contactName: selectedContact.name });
+    }
     return audienceToStorageKey(storageKeyToAudience(audienceType));
-  }, [audienceType, selectedList]);
+  }, [audienceType, selectedList, selectedContact]);
 
   const previewHtml = useMemo(() => wrapBrandedEmail(body || "<p><em>Ton message apparaîtra ici…</em></p>"), [body]);
 
@@ -112,6 +180,9 @@ export default function CoachMailingComposer({
     setScheduleLater(false);
     setScheduledAtLocal("");
     setShowPreview(false);
+    setSelectedContact(null);
+    setContactQuery("");
+    setContactResults([]);
   }
 
   function duplicateFromHistory(item: CoachMailing) {
@@ -148,6 +219,38 @@ export default function CoachMailingComposer({
 
   function confirmSend() {
     setError(null);
+
+    // Envoi 1-1 (retour direct 2026-09-10) : circuit transactionnel direct,
+    // jamais de programmation (pas de notion de "scheduledAt" côté
+    // sendBrevoEmail, voir sendSingleMailing) — envoyé immédiatement.
+    if (audienceType === "contact_specifique") {
+      if (!selectedContact) return;
+      startTransition(async () => {
+        const result = await sendSingleMailing(subject, body, selectedContact.id);
+        if (result.error) {
+          setError(result.error);
+          setConfirming(false);
+          return;
+        }
+        setSuccess(`Envoyé à ${selectedContact.name}.`);
+        setHistory((prev) => [
+          {
+            id: `tmp-${Date.now()}`,
+            subject,
+            html_content: body,
+            audience: audienceKey,
+            scheduled_at: null,
+            recipient_count: 1,
+            status: "sent",
+            created_at: new Date().toISOString(),
+          },
+          ...prev,
+        ]);
+        resetComposer();
+      });
+      return;
+    }
+
     const scheduledIso = scheduleLater && scheduledAtLocal ? new Date(scheduledAtLocal).toISOString() : undefined;
     startTransition(async () => {
       const result = await sendMailingToClients(subject, body, audienceKey, scheduledIso);
@@ -183,7 +286,8 @@ export default function CoachMailingComposer({
   const overLimit = recipientCount != null && recipientCount > MAX_RECIPIENTS_PER_SEND;
   const canSend = !isPending && !!subject.trim() && !!body.trim() && !overLimit && !!recipientCount &&
     (audienceType !== "liste_existante" || !!selectedList) &&
-    (!scheduleLater || !!scheduledAtLocal);
+    (audienceType !== "contact_specifique" || !!selectedContact) &&
+    (audienceType === "contact_specifique" || !scheduleLater || !!scheduledAtLocal);
 
   return (
     <div>
@@ -235,6 +339,59 @@ export default function CoachMailingComposer({
           </div>
         )}
 
+        {audienceType === "contact_specifique" && (
+          <div className="mb-3">
+            {selectedContact ? (
+              <div className="flex items-center justify-between gap-2 bg-[#150000] border border-[#E01E1E]/40 rounded-lg px-3.5 py-2.5">
+                <div className="min-w-0">
+                  <p className="text-[12.5px] font-bold text-white truncate">{selectedContact.name}</p>
+                  <p className="text-[10.5px] text-[#F5EDED]/35 truncate">{selectedContact.email}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedContact(null); setContactQuery(""); }}
+                  aria-label="Changer de destinataire"
+                  className="flex-shrink-0 text-[#F5EDED]/30 hover:text-white transition-colors"
+                >
+                  <X size={15} />
+                </button>
+              </div>
+            ) : (
+              <div className="relative">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+                <input
+                  value={contactQuery}
+                  onChange={(e) => setContactQuery(e.target.value)}
+                  placeholder="Nom ou email de la personne"
+                  aria-label="Chercher un destinataire"
+                  className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg pl-8 pr-3 py-2.5 text-[12.5px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+                />
+                {contactQuery.trim().length >= 2 && (
+                  <div className="mt-1.5 bg-[#150000] border border-[#890404]/25 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+                    {contactSearching ? (
+                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30">Recherche…</p>
+                    ) : contactResults.length === 0 ? (
+                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30 italic">Aucune correspondance pour ce nom/email.</p>
+                    ) : (
+                      contactResults.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => { setSelectedContact(c); setContactQuery(""); setContactResults([]); }}
+                          className="w-full text-left px-3.5 py-2.5 hover:bg-[#890404]/10 transition-colors border-b border-[#890404]/10 last:border-b-0"
+                        >
+                          <p className="text-[12px] font-bold text-white truncate">{c.name}</p>
+                          <p className="text-[10.5px] text-[#F5EDED]/35 truncate">{c.email}</p>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="flex items-center gap-1.5 mb-3 text-[11px] text-[#F5EDED]/40">
           <Users size={13} />
           {recipientCount == null
@@ -243,6 +400,13 @@ export default function CoachMailingComposer({
         </div>
 
         {/* Sujet / message */}
+        <button
+          type="button"
+          onClick={() => setShowTemplates(true)}
+          className="w-full mb-2 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/55 hover:text-[#E01E1E] border border-dashed border-[#890404]/35 hover:border-[#E01E1E]/50 rounded-lg py-2.5 transition-colors"
+        >
+          <LayoutTemplate size={13} /> Choisir un modèle ({MAIL_TEMPLATES.length} prêts)
+        </button>
         <input
           value={subject}
           onChange={(e) => { setSubject(e.target.value); setTestSent(false); }}
@@ -280,7 +444,9 @@ export default function CoachMailingComposer({
           </div>
         )}
 
-        {/* Programmation */}
+        {/* Programmation — pas de notion de programmation pour un envoi 1-1
+            (transactionnel, toujours immédiat, voir sendSingleMailing) */}
+        {audienceType !== "contact_specifique" && (
         <div className="flex items-center gap-3 mt-3 pt-3 border-t border-dashed border-[#890404]/15">
           <button
             type="button"
@@ -301,6 +467,7 @@ export default function CoachMailingComposer({
             />
           )}
         </div>
+        )}
 
         {error && <p className="text-[12px] text-red-400 mt-2.5">{error}</p>}
         {success && <p className="text-[12px] text-green-400 mt-2.5">{success}</p>}
@@ -400,6 +567,76 @@ export default function CoachMailingComposer({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Bibliothèque de modèles ── */}
+      {showTemplates && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm px-0 sm:px-4"
+          onClick={() => setShowTemplates(false)}
+        >
+          <div
+            className="ep-modal-panel relative w-full sm:max-w-2xl bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 border-b border-[#890404]/15 flex-shrink-0">
+              <p className="text-sm font-black uppercase tracking-tight text-white">
+                Modèles ({MAIL_TEMPLATES.length})
+              </p>
+              <button
+                type="button"
+                onClick={() => setShowTemplates(false)}
+                aria-label="Fermer"
+                className="text-[#F5EDED]/40 hover:text-white transition-colors"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="px-5 py-3 border-b border-[#890404]/15 flex-shrink-0">
+              <div className="relative">
+                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30" />
+                <input
+                  value={templateSearch}
+                  onChange={(e) => setTemplateSearch(e.target.value)}
+                  placeholder="Chercher un modèle (bienvenue, relance, anniversaire...)"
+                  aria-label="Chercher un modèle"
+                  autoFocus
+                  className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg pl-8 pr-3 py-2.5 text-[12.5px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-y-auto flex-1 px-5 py-4">
+              {filteredTemplateGroups.length === 0 ? (
+                <p className="text-[12px] text-[#F5EDED]/30 italic text-center py-8">Aucun modèle ne correspond à cette recherche.</p>
+              ) : (
+                <div className="flex flex-col gap-5">
+                  {filteredTemplateGroups.map((g) => (
+                    <div key={g.category}>
+                      <p className="text-[9.5px] font-bold uppercase tracking-widest text-[#E01E1E]/70 mb-2">
+                        {g.label} · {g.templates.length}
+                      </p>
+                      <div className="flex flex-col gap-1.5">
+                        {g.templates.map((t) => (
+                          <button
+                            key={t.key}
+                            type="button"
+                            onClick={() => applyTemplate(t)}
+                            className="text-left bg-[#1f0101] hover:bg-[#2a0202] border border-[#890404]/20 hover:border-[#E01E1E]/40 rounded-lg px-3.5 py-2.5 transition-colors"
+                          >
+                            <p className="text-[12px] font-bold text-white truncate">{t.name}</p>
+                            <p className="text-[10.5px] text-[#F5EDED]/40 truncate mt-0.5">{t.subject}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
