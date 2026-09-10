@@ -4,6 +4,12 @@ import {
   LayoutTemplate, CalendarDays, ArrowRight, Mail, Backpack, ExternalLink, Footprints,
 } from "lucide-react";
 import type { SessionAccessory } from "@/lib/session-accessories";
+// Réexporté pour compatibilité : app/dashboard/coach/page.tsx importe
+// encore timeAwareGreeting depuis ce fichier. La logique vit désormais
+// dans lib/dates.ts (repasse masterclass 2026-09-10, brainstorm "onglet
+// Aujourd'hui, version membre") pour être réutilisable côté client sans
+// entraîner ce composant (dashboard coach) dans son bundle.
+export { timeAwareGreeting } from "@/lib/dates";
 
 // Section "Ma journée" — idées #1 à #8 de la passe "onglet Aujourd'hui"
 // (2026-09-09, retour direct "au moins 20 idées") : jusqu'ici, le tableau de
@@ -37,15 +43,6 @@ export interface MyDayCardProps {
   todayAccessories: SessionAccessory[];
   /** Pas du jour — actual = null tant qu'aucune source (Oura, manuel) n'a rien remonté. */
   steps: { actual: number | null; goal: number };
-}
-
-// Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" fixe toute la
-// journée. Exportée pour être réutilisée par le header de la page.
-export function timeAwareGreeting(hour: number): string {
-  if (hour < 5) return "Bonne nuit";
-  if (hour < 12) return "Bonjour";
-  if (hour < 18) return "Bon après-midi";
-  return "Bonsoir";
 }
 
 function MiniCard({

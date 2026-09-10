@@ -12,6 +12,7 @@ import type { CoachingPhaseSummary } from "@/lib/coaching-phase";
 // Module pur (aucun import serveur) : sûr depuis un Client Component.
 import { PHASE_LABELS } from "@/lib/coaching-phase-helpers";
 import type { ClientActivity } from "@/lib/client-activity";
+import { weekNumber } from "@/lib/dates";
 import { ClientCard } from "./ClientCard";
 
 // Silencieux depuis 5 jours ou plus (ou jamais vu sur la fenêtre regardée) —
@@ -20,17 +21,6 @@ import { ClientCard } from "./ClientCard";
 const SILENT_THRESHOLD_DAYS = 5;
 function isSilent(days: number | null | undefined): boolean {
   return days == null || days >= SILENT_THRESHOLD_DAYS;
-}
-
-// Semaine de coaching en cours, calculée depuis start_date (déjà chargé avec
-// le profil, aucune requête supplémentaire) — même logique que le calcul
-// utilisé sur la page de profil client (weeksSince).
-function weekNumber(startDate: string | null): number | null {
-  if (!startDate) return null;
-  const weeks = Math.floor(
-    (Date.now() - new Date(startDate + "T12:00:00").getTime()) / (7 * 24 * 60 * 60 * 1000)
-  );
-  return weeks >= 0 ? weeks + 1 : null;
 }
 
 // Recherche insensible à la casse ET aux accents : taper "jerome" doit

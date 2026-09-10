@@ -82,6 +82,35 @@ export function startOfTodayInParis(): Date {
   return new Date(now.getTime() - msSinceParisMidnight);
 }
 
+// Semaine de coaching en cours depuis start_date (Idée #11, 2026-09-09,
+// "semaine ronde de coaching" côté coach — voir ClientsSection.tsx). Vit
+// ici plutôt que dupliquée localement : module pur, sans import serveur,
+// donc réutilisable tel quel côté client ("use client") comme côté serveur —
+// nécessaire pour l'afficher aussi sur l'espace du membre lui-même
+// (brainstorm "onglet Aujourd'hui, version membre", 2026-09-10), sans
+// risquer d'entraîner du code serveur dans le bundle client.
+export function weekNumber(startDate: string | null): number | null {
+  if (!startDate) return null;
+  const weeks = Math.floor(
+    (Date.now() - new Date(startDate + "T12:00:00").getTime()) / (7 * 24 * 60 * 60 * 1000)
+  );
+  return weeks >= 0 ? weeks + 1 : null;
+}
+
+// Salutation adaptée à l'heure plutôt qu'un "Bonjour" figé toute la
+// journée (Idée #1, 2026-09-09, côté coach — voir MyDayCard.tsx). Vit ici
+// plutôt qu'exportée depuis MyDayCard.tsx pour la même raison que
+// weekNumber ci-dessus : réutilisée aussi côté membre (brainstorm
+// "onglet Aujourd'hui, version membre", 2026-09-10) sans entraîner tout
+// le module MyDayCard (composant du dashboard coach) dans le bundle
+// client de l'espace membre.
+export function timeAwareGreeting(hour: number): string {
+  if (hour < 5) return "Bonne nuit";
+  if (hour < 12) return "Bonjour";
+  if (hour < 18) return "Bon après-midi";
+  return "Bonsoir";
+}
+
 export function isWithinBilanBackfillWindow(logDate: string, maxDaysBack: number = BILAN_BACKFILL_DAYS): boolean {
   const today = todayInParis();
   if (logDate > today) return false; // jamais dans le futur

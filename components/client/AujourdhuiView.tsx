@@ -6,10 +6,11 @@ import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
   ClipboardList, Wind, GlassWater, Activity, Backpack, Flag, Check,
   BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight, Scale,
-  Pill,
+  Pill, Footprints,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
+import { timeAwareGreeting } from "@/lib/dates";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
@@ -44,6 +45,8 @@ function SectionLabel({ icon: Icon, children }: { icon: React.ElementType; child
 
 export default function AujourdhuiView({
   firstName,
+  hour,
+  weekNum,
   todayBlocks,
   habitLogs,
   isSubscribedClient,
@@ -57,8 +60,15 @@ export default function AujourdhuiView({
   todayWeight,
   logWeight,
   supplements,
+  nutrition,
+  steps,
+  weeklyConsistency,
 }: {
   firstName: string;
+  /** Heure locale Paris (0-23), pour la salutation adaptée. */
+  hour: number;
+  /** Semaine de coaching en cours (depuis start_date), null si non défini. */
+  weekNum: number | null;
   todayBlocks: ScheduleBlock[];
   habitLogs: MindsetHabitLog[];
   isSubscribedClient: boolean;
@@ -71,6 +81,12 @@ export default function AujourdhuiView({
   addJournalEntry: (params: { promptKey: string | null; content: string; mood: number | null }) => Promise<{ error?: string; id?: string }>;
   todayWeight: number | null;
   logWeight: (prev: { error?: string; success?: boolean } | null, formData: FormData) => Promise<{ error?: string; success?: boolean }>;
+  /** Nutrition loguée aujourd'hui — null tant qu'aucun repas n'a été loggé ET aucun objectif défini. */
+  nutrition: { logged: number; target: number | null } | null;
+  /** Pas du jour — actual = null tant qu'aucune source (Oura, manuel) n'a rien remonté. */
+  steps: { actual: number | null; goal: number };
+  /** % de jours actifs cette semaine (entraînement/nutrition/bilan confondus), null si non calculable. */
+  weeklyConsistency: number | null;
   supplements: ClientSupplement[];
 }) {
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
@@ -121,14 +137,55 @@ export default function AujourdhuiView({
 
   const doneCount = HABITS.filter((h) => loggedKeys.has(h.key)).length;
 
+  // Même formulation que MyDayCard.tsx côté coach (voir plus haut) — un
+  // membre qui suit aussi son coach personnellement doit reconnaître les
+  // mêmes repères d'un espace à l'autre.
+  const nutritionValue =
+    nutrition && nutrition.target
+      ? `${Math.round(nutrition.logged)} / ${nutrition.target} kcal`
+      : nutrition && nutrition.logged > 0
+        ? `${Math.round(nutrition.logged)} kcal`
+        : "Rien loggé";
+  const nutritionSub =
+    nutrition && nutrition.target
+      ? nutrition.logged >= nutrition.target
+        ? "objectif atteint"
+        : `${Math.max(0, Math.round(nutrition.target - nutrition.logged))} kcal restants`
+      : "voir Nutrition";
+
+  const stepsValue = steps.actual != null ? steps.actual.toLocaleString("fr-FR") : "···";
+  const stepsSub =
+    steps.actual == null
+      ? "pas encore remonté"
+      : steps.actual >= steps.goal
+        ? "objectif atteint"
+        : `sur ${steps.goal.toLocaleString("fr-FR")}`;
+
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>
+        <p className="ep-section-title" style={{ marginBottom: 4, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           {new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date())}
+          {/* Semaine de coaching (brainstorm "onglet Aujourd'hui, version
+              membre", 2026-09-10, en écho à l'idée #11 côté coach) : un
+              repère de progression positif, célébré un peu plus sur les
+              semaines rondes (4, 8, 12...) — même seuil que côté coach. */}
+          {weekNum != null && weekNum > 0 && (
+            <span style={{
+              fontSize: 9.5, fontWeight: 800, letterSpacing: "0.06em",
+              padding: "2px 7px", borderRadius: 999,
+              color: weekNum % 4 === 0 ? "#E01E1E" : "rgba(245,237,237,0.35)",
+              background: weekNum % 4 === 0 ? "rgba(224,30,30,0.12)" : "rgba(245,237,237,0.06)",
+              border: `1px solid ${weekNum % 4 === 0 ? "rgba(224,30,30,0.3)" : "rgba(245,237,237,0.1)"}`,
+            }}>
+              Semaine {weekNum}
+            </span>
+          )}
         </p>
-        <h1 className="ep-h1">Salut {firstName}</h1>
+        {/* Idée #1 côté coach, reprise ici : salutation adaptée à l'heure
+            plutôt que "Salut" figé toute la journée. */}
+        <h1 className="ep-h1">{timeAwareGreeting(hour)} {firstName}</h1>
         <div className="ep-card" style={{ padding: "14px 16px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
           <Quote size={14} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 2 }} />
           <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, fontStyle: "italic" }}>
@@ -181,6 +238,58 @@ export default function AujourdhuiView({
             </div>
           )}
           {weightError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
+        </div>
+      </section>
+
+      {/* Nutrition & pas du jour (brainstorm "onglet Aujourd'hui, version
+          membre", 2026-09-10, en écho à l'idée #1-8 côté coach) : ce membre
+          voyait son poids, son agenda, son sommeil, ses habitudes et son
+          journal ici, mais rien sur sa nutrition ni ses pas — pourtant les
+          deux métriques suivies au quotidien ailleurs dans l'appli. Ouvert
+          à tout membre, gratuit comme coaché (même logique que le poids et
+          les compléments ci-dessus), même formulation de valeur/sous-texte
+          que MyDayCard côté coach pour rester cohérent d'un espace à l'autre. */}
+      <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+        <SectionLabel icon={Utensils}>Nutrition &amp; activité</SectionLabel>
+        <div className="ep-card" style={{ padding: 0, overflow: "hidden" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
+            <Link
+              href="/dashboard/client/nutrition"
+              aria-label={`Nutrition : ${nutritionValue}, ${nutritionSub}`}
+              style={{ padding: "14px 16px", borderRight: "1px solid rgba(224,30,30,0.08)", textDecoration: "none" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#E01E1E", marginBottom: 6 }}>
+                <Utensils size={12} strokeWidth={2} />
+                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+                  Nutrition
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+                {nutritionValue}
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
+                {nutritionSub}
+              </p>
+            </Link>
+            <Link
+              href="/dashboard/client/steps"
+              aria-label={`Pas : ${stepsValue}, ${stepsSub}`}
+              style={{ padding: "14px 16px", textDecoration: "none" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#4ade80", marginBottom: 6 }}>
+                <Footprints size={12} strokeWidth={2} />
+                <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
+                  Pas
+                </span>
+              </div>
+              <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
+                {stepsValue}
+              </p>
+              <p style={{ margin: "3px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
+                {stepsSub}
+              </p>
+            </Link>
+          </div>
         </div>
       </section>
 
@@ -293,6 +402,17 @@ export default function AujourdhuiView({
             {doneCount}/{HABITS.length}
           </span>
         </div>
+        {/* Constance hebdomadaire (brainstorm "onglet Aujourd'hui, version
+            membre", 2026-09-10) : même métrique que le coach voit déjà sur
+            chaque client (jours actifs cette semaine, entraînement/
+            nutrition/bilan confondus), jamais montrée au membre lui-même
+            jusqu'ici. Discrète, sous le compteur du jour plutôt qu'un
+            nouvel encart séparé — un complément, pas une nouvelle section. */}
+        {weeklyConsistency != null && (
+          <p style={{ margin: "-4px 0 10px", fontSize: 10.5, color: "rgba(245,237,237,0.3)" }}>
+            Cette semaine : {weeklyConsistency}% de jours actifs
+          </p>
+        )}
         <div className="ep-card" style={{ padding: "8px 16px" }}>
           {HABITS.map((h, i) => {
             const Icon = ICONS[h.icon] ?? Check;

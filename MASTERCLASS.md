@@ -3536,3 +3536,75 @@ autre pipeline), à surveiller après le push comme filet final.
 - Adoption de Cache Components — pas commencée, voir ci-dessus. Si jamais
   entreprise, le faire route par route avec le validateur intégré au dev
   overlay (`instant-navigation.md`), jamais d'un coup sur toute l'app.
+
+## BF — Brainstorm "onglet Aujourd'hui, version membre" + bug UTC/Paris trouvé au passage (2026-09-10)
+
+Suite de la passe "20 idées" du 2026-09-09 (Axe... voir `MyDayCard.tsx`, côté
+coach). Ce jour-là, seul le dashboard du coach avait reçu ce traitement — le
+propre "Aujourd'hui" du membre (`app/dashboard/client/aujourdhui/page.tsx`)
+restait figé depuis sa création : poids/agenda/sommeil/habitudes/journal,
+mais rien sur sa nutrition ni ses pas du jour, alors que ces deux métriques
+sont suivies quotidiennement ailleurs dans l'appli (onglets Nutrition et
+Pas), une salutation statique ("Salut {prénom}") toute la journée, et aucune
+idée de sa semaine de coaching en cours ni de sa constance récente — trois
+informations que le coach voit déjà sur CHAQUE client mais jamais montrées
+au client lui-même.
+
+### Bug trouvé en lisant le fichier avant de le modifier
+
+`isoWeekday` locale du fichier calculait le jour de la semaine avec
+`today.getUTCDay()` — jour UTC, pas jour Paris. Même classe de bug que
+l'Axe L déjà documenté ailleurs dans ce fichier (`todayInParis`), jamais
+corrigé ICI spécifiquement : entre minuit et 1h/2h du matin heure de Paris,
+l'agenda du jour affichait encore les créneaux d'hier. Remplacé par
+`nowInParis()` (déjà le motif établi, `lib/dates.ts`) — plus de fonction
+locale dupliquée.
+
+### Ajouts (mêmes patterns que le dashboard coach, dupliqués côté membre)
+
+- **Salutation adaptée à l'heure** — `timeAwareGreeting()`, déjà écrite pour
+  `MyDayCard.tsx` le 2026-09-09, extraite dans `lib/dates.ts` pour être
+  réutilisable des deux côtés sans entraîner le composant coach (et ses
+  imports serveur potentiels) dans le bundle client du membre.
+- **Badge "Semaine N" de coaching** — `weekNumber(profile.start_date)`, même
+  raisonnement de partage que ci-dessus (déjà en place côté
+  `ClientsSection.tsx`). Accentué en rouge (identité red-brume) tous les 4
+  semaines (jalon mensuel), discret sinon.
+- **Carte "Nutrition & activité du jour"** — deux tuiles (calories loggées
+  vs objectif, pas du jour vs objectif) en lien direct vers les onglets
+  Nutrition/Pas, visuellement alignées sur les `MiniCard` déjà utilisées
+  côté coach.
+- **Ligne "constance hebdomadaire"** — `getClientsWeeklyConsistency([user.id])`
+  (déjà écrite pour le coach, accepte un tableau d'ids, donc zéro nouveau
+  calcul) affichée sous "Habitudes du jour" : "Cette semaine : N% de jours
+  actifs".
+
+Tout est ouvert aux membres gratuits comme aux clients coachés (même
+logique que le poids et les compléments déjà présents sur cette page) —
+voir [[feedback_client_vs_membre]], jamais déduit du statut d'abonnement
+pour les fonctionnalités qui n'ont pas de raison de dépendre du paiement.
+
+### Fichiers touchés
+
+`app/dashboard/client/aujourdhui/page.tsx` (bug UTC/Paris corrigé, 3 requêtes
+Supabase de plus dans le `Promise.all` déjà en place, donc toujours un seul
+aller-retour parallèle), `components/client/AujourdhuiView.tsx` (nouvelles
+props + rendu), `lib/dates.ts` (`weekNumber`, `timeAwareGreeting` — module
+volontairement sans aucun import, donc sûr à consommer d'un composant
+`"use client"` comme d'un Server Component), `components/coach/MyDayCard.tsx`
+(export ré-exporté depuis `lib/dates.ts` pour compat ascendante),
+`components/ui/ClientsSection.tsx` (import depuis `lib/dates.ts` au lieu
+d'une fonction locale dupliquée).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 5 fichiers touchés, `next
+build` de production terminé sans erreur (table de routes complète, exit
+0) — aucune des trois vérifications n'a rien remonté.
+
+### Reste à faire
+
+La passe "20 idées" côté coach du 2026-09-09 comptait des numéros jamais
+retrouvés dans une implémentation (#3, #4, #6, #8, #17, #19) — à reprendre
+si l'utilisateur relance un brainstorm, plutôt que de les re-générer de
+zéro sans savoir ce qu'ils étaient.
