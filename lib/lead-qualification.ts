@@ -48,7 +48,7 @@ export async function maybeSendLeadQualification(
 
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await anthropic.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 400,
       system: setter.systemPrompt,
       messages: [

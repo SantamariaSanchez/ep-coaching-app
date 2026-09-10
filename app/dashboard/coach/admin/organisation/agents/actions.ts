@@ -11,7 +11,7 @@ import { revalidatePath } from "next/cache";
 // Chat avec un agent IA (demande explicite 2026-08-17 : "mets moi vraiment
 // ces agents IA dans l'appli que je puisse discuter avec eux directement").
 // Même intégration Anthropic que le reste de l'appli (analyze-meal-photo),
-// modèle claude-haiku-4-5. Le prompt système de l'agent (lib/ai-agents.ts)
+// modèle claude-haiku-4-5-20251001. Le prompt système de l'agent (lib/ai-agents.ts)
 // est statique, jamais modifiable côté client.
 //
 // requirePlatformOwner() et non requireCoach() (corrigé 2026-08-17) :
@@ -71,7 +71,7 @@ export async function sendAgentMessage(
 
     const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await client.messages.create({
-      model: "claude-haiku-4-5",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 1500,
       system: agent.systemPrompt,
       messages,
