@@ -413,9 +413,33 @@ export default function ClientNutritionView({
     // (voir handleTogglePlanItem/handleValidateSlot), elles ne sont plus
     // "optimistic-" et le prochain resync les remplace normalement par la
     // version serveur, sans jamais dupliquer.
+    // Retour direct 2026-09-10 ("je viens de valider Repas 1, ça marche
+    // pas") : l'insertion serveur avait bel et bien réussi (confirmé en
+    // base), mais l'écran affichait quand même le repas comme non validé —
+    // la vraie case manquante du filet ci-dessus. Une fois qu'un item
+    // optimiste est réconcilié (son id ne commence plus par "optimistic-",
+    // voir handleValidateSlot/handleTogglePlanItem), stillPending devient
+    // vide et ce resync REMPLAÇAIT todayLogs par initialTodayLogs en entier
+    // — or ce prop vient d'un `router.refresh()` (voir "Deuxième filet" plus
+    // bas, déclenché à CHAQUE changement de visibilité de l'onglet, très
+    // fréquent sur mobile : écran qui s'éteint, notification, changement
+    // d'appli) qui peut retourner un rendu légèrement en retard sur
+    // l'écriture qui vient tout juste de se produire (cache de
+    // revalidation, lecture pas encore cohérente). Le repas qu'on venait de
+    // valider disparaissait alors de l'écran une fraction de seconde après
+    // avoir semblé réussir, donnant exactement l'impression que "valider"
+    // ne fait rien. Fusionne désormais au lieu de remplacer : toute entrée
+    // réelle (id non "optimistic-") déjà connue du client est conservée
+    // même si initialTodayLogs ne l'a pas encore, le serveur reste
+    // prioritaire pour tout id qu'il connaît (édition/suppression faite
+    // ailleurs prise en compte normalement).
     setTodayLogs((prev) => {
+      const byId = new Map(initialTodayLogs.map((l) => [l.id, l]));
+      for (const l of prev) {
+        if (!l.id.startsWith("optimistic-") && !byId.has(l.id)) byId.set(l.id, l);
+      }
       const stillPending = prev.filter((l) => l.id.startsWith("optimistic-"));
-      return stillPending.length > 0 ? [...initialTodayLogs, ...stillPending] : initialTodayLogs;
+      return [...byId.values(), ...stillPending];
     });
   }, [initialTodayLogs]);
 
@@ -426,8 +450,20 @@ export default function ClientNutritionView({
   // jour passé (onglet Historique) sans recharger toute la page, et garde
   // le calendrier (calsByDate) à jour immédiatement après.
   const [historyLogsState, setHistoryLogsState] = useState<FoodLogWithFood[]>(historyLogs);
+  // Même course critique que todayLogs ci-dessus (voir son commentaire) :
+  // un item de l'Historique tout juste loggué/réconcilié pouvait
+  // disparaître si `historyLogs` se rafraîchissait (même "Deuxième filet"
+  // sur la visibilité de l'onglet) avant que le serveur ne le reflète.
+  // Fusion au lieu de remplacement, même logique.
   useEffect(() => {
-    setHistoryLogsState(historyLogs);
+    setHistoryLogsState((prev) => {
+      const byId = new Map(historyLogs.map((l) => [l.id, l]));
+      for (const l of prev) {
+        if (!l.id.startsWith("optimistic-") && !byId.has(l.id)) byId.set(l.id, l);
+      }
+      const stillPending = prev.filter((l) => l.id.startsWith("optimistic-"));
+      return [...byId.values(), ...stillPending];
+    });
   }, [historyLogs]);
 
   // Date ciblée par la modale de recherche/ajout d'aliment — "aujourd'hui"
