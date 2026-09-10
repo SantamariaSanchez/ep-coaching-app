@@ -4203,3 +4203,27 @@ avec 5 reels + 1 YouTube produits chaque jour (Axe BJ).
 erreur `set-state-in-effect` pré-existante déjà documentée (Axe BH/BJ/BK),
 toujours sans rapport avec ce changement. `next build` de production
 complet, exit 0.
+
+## BN — Rappel automatique des scripts en attente de tournage (2026-09-10)
+
+Dernier point du retour direct : "les notifs, les rappels, les
+suggestions autour de tout ça". Depuis les Axes BJ/BM, jusqu'à 6
+scripts/jour tombent en `a_tourner` (5 reels + 1 YouTube, routines cloud)
+sans aucun signal si le coach ne pense pas à ouvrir Studio créatif —
+risque réel d'accumulation silencieuse.
+
+Nouvelle route `app/api/cron/scripts-to-shoot-reminder`, même patron que
+les crons existants (auth `Bearer CRON_SECRET`, `notifyUser`). Critère
+volontairement simple (pas de logique par script) : notifie un coach
+seulement si **5 scripts ou plus** attendent en `a_tourner`, avec l'âge du
+plus ancien dans le message si ≥ 1 jour. Enregistré directement dans
+`cron.job` via Supabase (même mécanisme que les ~20 crons déjà en place,
+pas une migration commitée — voir PROGRESS.md), quotidien à 10h UTC
+(12h Paris), créneau vérifié libre parmi les jobs existants avant
+enregistrement.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre. `next build` de production
+complet, exit 0. Cron `jobid` 37, `active: true`, vérifié après
+enregistrement.
