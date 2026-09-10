@@ -141,7 +141,15 @@ export async function GET(req: Request) {
       await insertNotification({ userId: block.owner_id, type: "schedule_block", title, body, url });
     }
 
-    if (result.ok) sent++;
+    if (result.ok) {
+      sent++;
+    } else if (result.reason && result.reason !== "no subscription" && result.reason !== "quiet hours") {
+      // "no subscription" et "quiet hours" sont des cas normaux (push
+      // jamais activé, ou volontairement coupé) — tout le reste est une
+      // vraie panne de remise (voir lib/push.ts) qui mérite une trace,
+      // au lieu d'être avalée ici comme avant.
+      console.error(`schedule-block-notify: push non délivré pour bloc ${block.id} (${block.label}):`, result.reason);
+    }
     await supabase
       .from("schedule_blocks")
       .update({ last_notified_at: now.toISOString() })

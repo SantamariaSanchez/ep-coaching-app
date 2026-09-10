@@ -94,6 +94,29 @@ export async function sendPushToUser(
 
     return { ok: true };
   } catch (e) {
-    return { ok: false, reason: e instanceof Error ? e.message : "unknown" };
+    // Retour direct 2026-09-10 ("le réveil n'a pas sonné, aucune notif de
+    // toute la journée") : cette erreur était avalée ici SANS AUCUNE trace
+    // (ni log, ni champ consulté par l'appelant), impossible à diagnostiquer
+    // après coup. web-push répond 404/410 quand l'endpoint est mort côté
+    // navigateur/OS (désinstallation, OS réinitialisé, abonnement expiré) —
+    // dans ce cas précis, la ligne push_subscriptions est definitivement
+    // inutile et redemandera à chaque envoi : on la supprime pour que
+    // PushPermission / PermissionsCard détectent l'absence d'abonnement et
+    // proposent une réactivation, plutôt que d'échouer en boucle en silence.
+    const statusCode = (e as { statusCode?: number })?.statusCode;
+    const reason = e instanceof Error ? e.message : "unknown";
+    console.error(`sendPushToUser failed for user ${userId} (type=${type ?? "normal"}):`, statusCode ?? "", reason);
+
+    if (statusCode === 404 || statusCode === 410) {
+      try {
+        const supabase = createAdminClient();
+        await supabase.from("push_subscriptions").delete().eq("user_id", userId);
+      } catch {
+        // best-effort, l'échec initial reste la priorité à faire remonter
+      }
+      return { ok: false, reason: "subscription expired, removed" };
+    }
+
+    return { ok: false, reason };
   }
 }

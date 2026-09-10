@@ -1588,6 +1588,7 @@ export default function ClientNutritionView({
         <DietPlanCard
           plan={activePlan}
           todayLogs={todayLogs}
+          today={today}
           onToggle={handleTogglePlanItem}
           onValidateSlot={logMealItems ? handleValidateSlot : undefined}
           isOwnPlan={isOwnPlan}
@@ -2770,6 +2771,7 @@ export default function ClientNutritionView({
 function DietPlanCard({
   plan,
   todayLogs,
+  today,
   onToggle,
   onValidateSlot,
   isOwnPlan = false,
@@ -2777,6 +2779,9 @@ function DietPlanCard({
 }: {
   plan: DietPlanWithMeals;
   todayLogs: FoodLogWithFood[];
+  /** Date du jour ("YYYY-MM-DD"), calculée côté serveur en heure de Paris
+   * (voir todayInParis()) — jamais l'horloge du navigateur, voir todayDow. */
+  today: string;
   onToggle: (meal: DietPlanMeal, matchedLogId: string | undefined) => void;
   onValidateSlot?: (meals: DietPlanMeal[]) => void | Promise<void>;
   isOwnPlan?: boolean;
@@ -2788,10 +2793,23 @@ function DietPlanCard({
   const hasHighDay = useMemo(() => plan.diet_plan_meals.some((m) => m.day_of_week === "high"), [plan.diet_plan_meals]);
   const [useHighDay, setUseHighDay] = useState(false);
 
+  // Bug trouvé le 2026-09-10 ("je suis en diète fixe, j'ai juste à cocher,
+  // ça ne marche pas") : todayDow venait de `new Date().getDay()`, l'heure
+  // LOCALE DU NAVIGATEUR — pas celle de Paris, contrairement à `today` (prop
+  // calculée serveur, voir todayInParis()) déjà utilisé plus haut dans ce
+  // même fichier pour weeklyBank (même pattern `new Date(today + "T00:00:00")`
+  // ligne ~726). Avec un appareil dont le fuseau/l'horloge diverge de Paris
+  // (fréquent en pratique : détection auto de fuseau ratée, app PWA restée
+  // ouverte depuis la veille sans recharger — cette valeur était de toute
+  // façon figée au montage via useMemo([]), jamais recalculée), todayDow ne
+  // correspondait plus au jour réel : isViewingToday devenait faux, donc
+  // `checkable` aussi — la case à cocher n'était alors même plus RENDUE
+  // (voir plus bas, `{checkable && (...)}`), pas juste désactivée. Dérivé
+  // maintenant de la même source que tout le reste du tracker.
   const todayDow = useMemo(() => {
     const map = ["dim", "lun", "mar", "mer", "jeu", "ven", "sam"] as const;
-    return map[new Date().getDay()];
-  }, []);
+    return map[new Date(today + "T00:00:00").getDay()];
+  }, [today]);
 
   // Naviguer vers un autre jour de la semaine ("voir demain/hier"), pas
   // seulement le jour courant — retour direct 2026-09-09 : "il n'y a
@@ -2802,6 +2820,13 @@ function DietPlanCard({
   // cochable seulement quand on regarde effectivement AUJOURD'HUI — cocher
   // un repas "de demain" avant qu'il n'arrive n'aurait aucun sens.
   const [viewDow, setViewDow] = useState(todayDow);
+  // Si l'app reste ouverte à cheval sur minuit (PWA jamais rechargée), le
+  // prop `today` finit par changer sans que ce composant ne remonte —
+  // sans ce resync, viewDow resterait bloqué sur l'ancien jour et
+  // isViewingToday resterait vrai à tort (ou faux à tort) pour toujours.
+  useEffect(() => {
+    setViewDow(todayDow);
+  }, [todayDow]);
   const isViewingToday = viewDow === todayDow;
   const checkable = (plan.mode === "fixed" || plan.mode === "fixed_flexible") && isViewingToday;
 
