@@ -3930,3 +3930,130 @@ volontairement laissés tels quels.
 `next build` de production complets (un après les 2 premiers correctifs,
 un après les 4), tous deux terminés sans erreur (table de routes
 complète, exit 0).
+
+## BJ — Production de contenu : Instagram réduit, YouTube ouvert, prompts coachs personnalisés (2026-09-10)
+
+Refus explicite en amont de la partie "scraper des emails partout sur le
+web pour nourrir Brevo" de la demande : collecte non consentie de données
+personnelles pour de la prospection commerciale, contraire au RGPD/CNIL et
+aux conditions Brevo (bannissement de compte), voir échange avec
+l'utilisateur. Reformulé en objectif légitime : synchroniser les leads déjà
+consentis (à faire), optimiser le formulaire d'inscription (à faire), et
+surtout traiter le vrai levier nommé explicitement par l'utilisateur : plus
+de trafic via du contenu, YouTube en priorité.
+
+### Routine Instagram (Studio créatif) : 20 → 5 scripts/jour
+
+`trig_015b99vqWhJxcFnWkFjYZ2i1` ("Production quotidienne de scripts Studio
+creatif", cron `0 2 * * *`) écrivait 20 scripts reels/jour dans
+`coach_scripts`. Mise à jour du prompt de la routine : 5/jour, avec
+instruction explicite de mettre le temps gagné dans la qualité (hook plus
+travaillé, vérification honnête "est-ce que ce hook arrêterait vraiment
+quelqu'un qui scrolle ?"). Découverte en creusant le contexte Notion : le
+webinaire Matis Clouet (déjà synthétisé le 2026-08-30, 📚 Synthèse
+Webinaire Matis Clouet) avait DÉJÀ flaggé 20/jour comme au-delà de ce qui
+est démontré (5/jour + 2 "caviar" chez Matis pour un démarrage de zéro) —
+confirme que la baisse demandée va dans le sens d'une piste déjà identifiée,
+pas une simple préférence arbitraire. Pages Notion mises à jour en
+cohérence pour éviter une dérive doc/réalité : 📊 Stratégie Contenu
+Instagram — Funnel 50/25/25 (rythme + note de vigilance) et 🎬 Guide
+production scripts reels (pour Claude) (répartition des piliers ramenée de
+/20 à /5).
+
+### Nouvelle routine YouTube : 1 script/jour, très exigeant
+
+Aucune routine YouTube n'existait. Créée `trig_01CLkVPsUaB2rEja1dXQd14G`
+("Production quotidienne de script YouTube", cron `0 3 * * *`, 5h Paris,
+entre les reels à 4h et LinkedIn à 6h). Avant d'écrire le prompt, lu en
+entier le contexte Notion existant (🧠 Giga Cerveau, 📚 Synthèse Webinaire
+Matis Clouet, 📊 Stratégie Contenu Instagram, 🎬 Guide reels, page
+"YouTube — Scripts vidéo" et son historique de scripts retirés pour
+violation de la règle d'identité) plutôt que d'inventer une méthodologie
+à l'aveugle — le webinaire Matis Clouet nomme explicitement l'absence de
+chaîne YouTube comme LE point de vigilance le plus direct à corriger
+(dépendance à un seul canal Instagram).
+
+Nouvelle page Notion créée : 🎥 Guide production scripts YouTube (pour
+Claude) (id `3d77c035d8f081e39b56ea851edb34d3`), miroir du guide Reels
+mais pensé pour le format long : structure de rétention en chapitres
+(`[CHAPITRE N : titre]`), rappel du bénéfice toutes les 2-3 minutes,
+longueur cible 10-14 min (~2,3 mots/seconde, plus lent qu'un reel), titre
++ idée de miniature (texte qui crée une tension avec le titre plutôt que
+de le répéter), description avec timestamps de chapitres calculés depuis
+la position réelle dans le script, CTA numéroté identique aux reels
+(cohérence de marque) complété par la mention native du lien en
+description. Fenêtre anti-répétition élargie à 30 jours (vs 7 pour les
+reels) car 1 script/jour épuise moins vite le stock de sujets, mais
+YouTube pardonne encore moins la répétition qu'Instagram.
+
+**Sécurité, repéré et corrigé avant tout run réel** : la création de
+routine sans `mcp_connections` explicite attache PAR DÉFAUT tous les
+connecteurs du compte (Stripe, Gmail, Google Drive, Shopify, Calendly...),
+alors que cette routine n'a besoin que de Supabase (lire/écrire
+`coach_scripts`, lire `lead_magnets`/`science_articles`) et Notion (lire
+le guide). Corrigé immédiatement par un `update` qui restreint aux 2
+connecteurs réellement nécessaires — pas découvert a posteriori, vérifié
+en relisant la réponse de création avant de considérer la tâche finie.
+
+### Studio créatif (app) : la plateforme YouTube existait dans le modèle de données mais pas dans l'UI
+
+`coach_scripts.platform` (défaut `'instagram'`) et `SCRIPT_FORMATS`
+("court"/"long") anticipaient déjà le multi-plateforme, mais
+`IdeationScripts.tsx` (onglet "Mes scripts") n'affichait aucun badge de
+plateforme — un script YouTube produit par la nouvelle routine aurait été
+visuellement indiscernable d'un reel dans la liste. Ajout d'un badge
+plateforme coloré (Instagram/YouTube/LinkedIn) à côté du badge format, et
+le libellé "Description Instagram" devient "Description {Plateforme}"
+(la colonne `instagram_caption` reste réutilisée telle quelle pour toute
+plateforme, nom historique, pas de migration nécessaire).
+
+### Bibliothèque de prompts pour les coachs : élargie et personnalisée automatiquement
+
+Retour direct : *"plein plein de prompts Claude tout prêts, vraiment de la
+valeur, hyper personnalisé à eux, leur business, leur niche, leur client"*.
+`lib/content-library.ts` (`CONTENT_PROMPTS`, onglet Studio créatif >
+Prompts) ne comptait que 8 prompts génériques. Étendu à 25, nouvelles
+catégories (`YouTube`, `Business`, `Repurposing`, `Planification`) :
+scripts storytelling/objection/duo/test-X-jours, titres+miniatures
+YouTube, plans de vidéo longue, séries YouTube multi-épisodes, contenu
+destiné aux coachs (pas aux clients finaux), nommer sa propre méthode
+(écho direct à une piste du webinaire Matis Clouet : "Value Assets"),
+semaine de contenu à partir d'une idée, méthode des 30 idées en 10 minutes
+par colonnes (Goûts/Échecs/Pourquoi/Points communs/Message, directement
+inspirée du webinaire), analyse de ce qui a mieux marché (relié à la
+demande de tracking ci-dessous), repurposing long→court/carousel↔reel/
+Instagram→LinkedIn.
+
+**Personnalisation automatique** (plutôt que dupliquer les infos business
+dans chacun des 25 prompts, impossible à tenir à jour) : le Business Model
+Canvas du coach (`lib/coach-business-canvas.ts`, déjà rempli par certains
+coachs dans "Développer mon business") est désormais lu par
+`app/dashboard/coach/studio/page.tsx` et transmis à `PromptLibrary`. Un
+paragraphe de contexte (client cible, proposition de valeur, relation
+client) est automatiquement préfixé au texte copié quand le coach clique
+"Copier" sur n'importe quel prompt — colle directement dans Claude/ChatGPT
+avec le contexte business déjà dedans. Bandeau visible qui explique le
+mécanisme si le canvas est rempli, ou qui invite à le remplir (avec lien
+direct) sinon — jamais une personnalisation silencieuse que le coach ne
+comprendrait pas.
+
+### Validation
+
+`tsc --noEmit` propre. `eslint` : une seule erreur `set-state-in-effect`
+pré-existante dans `IdeationScripts.tsx` (vérifiée par lecture du diff :
+aucune ligne touchée par ce chantier ne s'en approche, le hook concerné
+existait avant). `next build` de production complet, exit 0.
+
+### Reste à faire (noté explicitement, pas oublié)
+
+- Synchroniser les leads déjà consentis vers Brevo (app + formulaire de
+  préqualification), optimiser le formulaire d'inscription newsletter.
+- Tracking de performance de contenu **dans l'app** (pas seulement la page
+  Notion "Suivi Performance" existante, jamais alimentée) — pour "savoir
+  réitérer", demande explicite pas encore traitée dans ce lot.
+- Onboarding coach complet avec beaucoup de paramètres de personnalisation
+  (l'onboarding membre/client existe, celui du coach existant est
+  incomplet) — pas encore traité dans ce lot.
+- Génération de vraie miniature YouTube (Canva disponible, notée comme
+  amélioration future dans le guide Notion lui-même, pas bloquante pour
+  la V1 de la routine).

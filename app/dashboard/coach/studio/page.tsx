@@ -3,6 +3,7 @@ import { getUser, getProfile } from "@/utils/auth";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getAllLeadMagnets, type GuideMagnet } from "@/lib/lead-magnets";
+import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import IdeationHub from "@/components/coach/IdeationHub";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
@@ -20,12 +21,17 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, leadMagnets] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, leadMagnets, canvas] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
     getCoachScripts(user.id),
     getAllLeadMagnets(),
+    // Personnalisation de l'onglet Prompts (retour direct 2026-09-10) : le
+    // Business Model Canvas du coach (déjà rempli dans "Développer mon
+    // business" pour qui l'a fait) sert de contexte auto-injecté devant
+    // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
+    getBusinessCanvas(user.id),
   ]);
   const guides = leadMagnets.filter((m): m is GuideMagnet => m.format === "guide");
 
@@ -48,6 +54,7 @@ export default async function CoachStudioPage() {
         initialInspirations={inspirations}
         initialScripts={scripts}
         guides={guides}
+        canvas={canvas}
       />
     </div>
   );

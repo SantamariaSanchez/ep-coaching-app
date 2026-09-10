@@ -5,6 +5,8 @@ import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Cl
 import { createScript, updateScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
+import type { BusinessCanvas } from "@/lib/coach-business-canvas";
+import Link from "next/link";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   a_tourner: { label: "À tourner", color: "#facc15" },
@@ -20,6 +22,17 @@ function formatDuration(seconds: number | null): string | null {
   const rest = seconds % 60;
   return rest ? `${min}min${rest}` : `${min}min`;
 }
+
+// Plateformes affichables — objet plutôt qu'un simple texte brut, pour que
+// "youtube" (et tout futur "linkedin"/"tiktok") ait son propre badge visible
+// au lieu de se fondre dans le badge "format" (voir Axe BJ, MASTERCLASS.md :
+// les scripts YouTube produits par la routine quotidienne étaient jusque-là
+// visuellement identiques à des scripts Instagram dans cette liste).
+const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
+  instagram: { label: "Instagram", color: "#E1306C" },
+  youtube: { label: "YouTube", color: "#FF0000" },
+  linkedin: { label: "LinkedIn", color: "#0A66C2" },
+};
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
@@ -37,7 +50,7 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 // travail (CRUD, propre à chaque coach), le reste (Prompts/Hooks/CTA/
 // Montage) est une bibliothèque de référence statique (lib/content-library.ts)
 // partagée par tous, à copier-coller plutôt qu'à modifier.
-export default function IdeationScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
+export default function IdeationScripts({ initialScripts, canvas }: { initialScripts: CoachScript[]; canvas: BusinessCanvas | null }) {
   const [subTab, setSubTab] = useState<Tab>("mes-scripts");
 
   return (
@@ -64,7 +77,7 @@ export default function IdeationScripts({ initialScripts }: { initialScripts: Co
       </div>
 
       {subTab === "mes-scripts" && <MyScripts initialScripts={initialScripts} />}
-      {subTab === "prompts" && <PromptLibrary />}
+      {subTab === "prompts" && <PromptLibrary canvas={canvas} />}
       {subTab === "hooks" && <HookLibrary />}
       {subTab === "cta" && <CTALibrary />}
       {subTab === "technique" && <TechnicalLibrary />}
@@ -286,9 +299,22 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
           {scripts.map((script) => {
             const statusInfo = STATUS_LABELS[script.status] ?? STATUS_LABELS.a_tourner;
             const duration = formatDuration(script.duration_seconds);
+            const platformInfo = PLATFORM_LABELS[script.platform] ?? null;
             return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                {platformInfo && (
+                  <span
+                    style={{
+                      fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                      padding: "3px 8px", borderRadius: 999,
+                      background: `${platformInfo.color}22`, color: platformInfo.color,
+                      border: `1px solid ${platformInfo.color}44`,
+                    }}
+                  >
+                    {platformInfo.label}
+                  </span>
+                )}
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
@@ -407,13 +433,15 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </div>
               )}
 
-              {/* Description Instagram à poster avec le reel — distincte du
-                  script parlé ci-dessus. */}
+              {/* Description à poster avec la vidéo — distincte du script
+                  parlé ci-dessus. Même colonne "instagram_caption" réutilisée
+                  pour toute plateforme (YouTube inclus) : le libellé
+                  s'adapte, la donnée reste une seule colonne texte libre. */}
               {script.instagram_caption && (
                 <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
-                      Description Instagram
+                      Description {platformInfo?.label ?? ""}
                     </span>
                     <CopyButton text={script.instagram_caption} />
                   </div>
@@ -450,8 +478,27 @@ function LibrarySearch({ query, onChange, placeholder }: { query: string; onChan
 
 // ── Bibliothèque de prompts ───────────────────────────────────────────────
 
-function PromptLibrary() {
+// Personnalisation automatique (retour direct 2026-09-10 : "hyper
+// personnalisé à eux, leur business, leur niche, leur client") — plutôt que
+// de dupliquer les infos du Business Model Canvas dans chacun des ~25
+// prompts (impossible à tenir à jour), un seul paragraphe de contexte est
+// composé ici à partir du canvas déjà rempli par le coach (lib/coach-
+// business-canvas.ts) et préfixé devant CHAQUE prompt au moment de la
+// copie. Le prompt copié colle dans Claude/ChatGPT avec le contexte déjà
+// dedans, sans que le coach ait à le retaper à chaque fois.
+function buildCoachContext(canvas: BusinessCanvas | null): string | null {
+  if (!canvas) return null;
+  const parts: string[] = [];
+  if (canvas.customer_segments) parts.push(`Mon client cible : ${canvas.customer_segments}`);
+  if (canvas.value_proposition) parts.push(`Ma proposition de valeur, ce qui me différencie : ${canvas.value_proposition}`);
+  if (canvas.customer_relationships) parts.push(`Comment je suis mes clients : ${canvas.customer_relationships}`);
+  if (parts.length === 0) return null;
+  return `Contexte sur mon activité de coach (garde-le en tête pour toute la suite de cette conversation) :\n${parts.join("\n")}\n\n---\n\n`;
+}
+
+function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
   const [query, setQuery] = useState("");
+  const context = useMemo(() => buildCoachContext(canvas), [canvas]);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return CONTENT_PROMPTS;
@@ -460,6 +507,27 @@ function PromptLibrary() {
 
   return (
     <div>
+      {context ? (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+          <Sparkles size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5 }}>
+            Ces prompts sont personnalisés avec ton Business Model Canvas : le contexte sur ton activité est
+            automatiquement ajouté quand tu cliques Copier.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.18)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
+          <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
+          <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, flex: 1 }}>
+            Remplis ton{" "}
+            <Link href="/dashboard/coach/business" style={{ color: "#E01E1E", fontWeight: 700, textDecoration: "underline" }}>
+              Business Model Canvas
+            </Link>{" "}
+            (au moins ta clientèle cible et ta proposition de valeur) pour que ces prompts se personnalisent
+            automatiquement à ta situation au lieu de rester génériques.
+          </p>
+        </div>
+      )}
       <LibrarySearch query={query} onChange={setQuery} placeholder="Chercher un prompt..." />
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {filtered.map((p, i) => (
@@ -469,7 +537,7 @@ function PromptLibrary() {
                 {p.category}
               </span>
               <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED", flex: 1 }}>{p.title}</p>
-              <CopyButton text={p.prompt} />
+              <CopyButton text={context ? context + p.prompt : p.prompt} />
             </div>
             <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>{p.prompt}</p>
           </div>

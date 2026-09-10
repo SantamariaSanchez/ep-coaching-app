@@ -7,10 +7,18 @@
 
 export interface ContentPrompt {
   title: string;
-  category: "Hook" | "Script" | "Concept" | "Description" | "CTA";
+  category: "Hook" | "Script" | "Concept" | "Description" | "CTA" | "YouTube" | "Business" | "Repurposing" | "Planification";
   prompt: string;
 }
 
+// Bibliothèque étendue (2026-09-10, retour direct : "je veux plein plein
+// de prompts, vraiment de la valeur, hyper personnalisé"). Chaque prompt
+// copié depuis l'onglet Prompts est automatiquement précédé du contexte
+// business du coach (Business Model Canvas, voir IdeationScripts.tsx/
+// buildCoachContext) quand il l'a rempli — ces textes ci-dessous restent
+// donc volontairement génériques avec des [CROCHETS] à remplir, le
+// contexte business fait le reste du travail de personnalisation sans
+// dupliquer 9 blocs de canvas dans chaque prompt individuellement.
 export const CONTENT_PROMPTS: ContentPrompt[] = [
   {
     title: "10 hooks pour un sujet donné",
@@ -23,12 +31,6 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     category: "Script",
     prompt:
       "Écris-moi le script complet d'un Reel/Short de 30 à 45 secondes sur : [SUJET]. Structure imposée : hook (1 phrase, 0-2s), problème/tension (2-3 phrases), le point clé à retenir (le cœur du contenu, avec un exemple concret si possible), CTA final court. Ton : coach direct, tutoiement, jamais de tiret. Indique aussi entre crochets ce qui doit être filmé/montré à chaque étape (ex. [face caméra], [démo geste technique], [texte à l'écran]).",
-  },
-  {
-    title: "Script vidéo YouTube longue (8-12 min)",
-    category: "Script",
-    prompt:
-      "Écris-moi un plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 8 à 12 minutes sur : [SUJET]. Structure : accroche (30s, pourquoi regarder jusqu'au bout), contexte/problème (1-2 min), 3 à 5 parties principales avec pour chacune le point clé + un exemple concret + une transition vers la suivante, récap final + CTA. Public : pratiquants de musculation qui veulent des réponses fiables, pas du contenu marketing creux.",
   },
   {
     title: "10 variantes de concept vidéo sur un thème",
@@ -59,6 +61,114 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     category: "Script",
     prompt:
       "Écris-moi un script court (30-40s) format \"mythe / réalité\" sur cette croyance répandue : [CROYANCE]. Structure : énonce le mythe tel qu'on l'entend souvent (2-3s, ton neutre voire complice \"toi aussi t'as déjà entendu ça\"), puis \"en réalité\" et la vraie explication simple, puis ce que ça change concrètement dans la pratique. Termine par une phrase de CTA courte.",
+  },
+  {
+    title: "Script storytelling personnel",
+    category: "Script",
+    prompt:
+      "Écris-moi un script de 45-60s en storytelling personnel sur ce vécu réel : [SITUATION VÉCUE]. Structure : accroche qui plante la scène sans tout révéler (\"il y a [X], je [situation]\"), le moment où ça a basculé ou la leçon apprise, ce que ça change concrètement dans ma façon de coacher/m'entraîner aujourd'hui, chute qui relie l'histoire au spectateur (\"toi aussi si...\"). Jamais d'exagération ni de détail inventé, uniquement ce que je te donne comme vécu réel.",
+  },
+  {
+    title: "Script \"j'ai testé pendant X jours\"",
+    category: "Script",
+    prompt:
+      "Écris-moi le script d'un format \"j'ai testé [PRATIQUE/MÉTHODE] pendant [X] jours\" sur : [SUJET]. Structure : hook qui annonce le test et le enjeu (pas encore le résultat), le protocole exact suivi (2-3 phrases factuelles, pas de blabla), ce qui a réellement changé (mesurable si possible, honnête si le résultat est mitigé), la conclusion pratique pour quelqu'un qui voudrait tester pareil. Ne jamais inventer un résultat chiffré que je ne t'ai pas donné, demande-le-moi si je ne l'ai pas précisé.",
+  },
+  {
+    title: "Script réponse à une objection",
+    category: "Script",
+    prompt:
+      "Voici une objection fréquente que j'entends : [OBJECTION, ex. 'je n'ai pas le temps', 'c'est trop cher', 'j'ai déjà essayé et ça n'a pas marché']. Écris-moi un script court (30-45s) qui la déconstruit sans être sur la défensive : reformule l'objection pour montrer que je la comprends vraiment, explique la croyance ou le raisonnement caché derrière, apporte un contre-argument concret et vérifiable (pas juste rassurant), termine sur une ouverture (pas une vente forcée).",
+  },
+  {
+    title: "Script duo/débat (2 points de vue)",
+    category: "Script",
+    prompt:
+      "Écris-moi un script de 30-40s en format duo/débat (voir fiche technique montage \"clone\") sur ce sujet qui divise : [SUJET]. Deux voix distinctes qui s'interrompent et se répondent rapidement (pas deux monologues), l'une défendant [POSITION A], l'autre [POSITION B]. Termine par une synthèse courte qui ne tranche pas artificiellement si le sujet est vraiment nuancé, ou qui tranche clairement si un camp a raison sur le fond.",
+  },
+  {
+    title: "5 idées de vidéo à partir d'un DM ou message reçu",
+    category: "Concept",
+    prompt:
+      "Voici un message ou une situation reçue en DM/en séance : [MESSAGE/SITUATION]. Sans jamais citer ni décrire la personne de façon identifiable, propose-moi 5 idées de contenu différentes qui partent de ce déclencheur réel mais restent 100% anonymisées et généralisables à n'importe qui dans la même situation.",
+  },
+  {
+    title: "Titre + miniature YouTube (SEO et CTR)",
+    category: "YouTube",
+    prompt:
+      "Pour cette vidéo YouTube : [RÉSUMÉ DE LA VIDÉO], propose-moi 8 titres différents (moins de 60 caractères chacun, sans clickbait mensonger, une vraie promesse tenue dans la vidéo) et pour chacun une idée de texte de miniature en 2-4 mots maximum qui crée une tension visuelle avec le titre plutôt que de le répéter. Varie les angles : chiffre, question, contradiction, promesse de résultat, urgence.",
+  },
+  {
+    title: "Plan de vidéo YouTube longue (8-15 min)",
+    category: "YouTube",
+    prompt:
+      "Écris-moi un plan détaillé (pas le script mot à mot) d'une vidéo YouTube de 8 à 15 minutes sur : [SUJET]. Structure : accroche (20-30s, ce que la vidéo va vraiment apporter, sans sur-promettre), contexte/problème (1-2 min), 3 à 5 parties principales avec pour chacune le point clé + un exemple concret + une transition, un rappel du bénéfice toutes les 2-3 minutes pour garder l'attention, récap final + CTA. Ajoute des timestamps de chapitres YouTube correspondant exactement à cette structure. Public : pratiquants de musculation qui veulent des réponses fiables, pas du contenu marketing creux.",
+  },
+  {
+    title: "Script vidéo YouTube \"vlog/dans les coulisses\"",
+    category: "YouTube",
+    prompt:
+      "Écris-moi la trame (pas mot à mot, les moments clés à filmer et ce qu'il faut dire à chacun) d'une vidéo YouTube format vlog/dans les coulisses de [X] minutes sur : [JOURNÉE OU SITUATION, ex. 'une journée de prep compétition', 'comment je construis un programme client']. Structure : accroche qui pose l'enjeu du jour, 3-4 moments filmés avec pour chacun ce qui est montré ET ce qui est expliqué en voix off, un ou deux ratés/difficultés réels assumés (pas que du positif lissé, ça retient plus), conclusion qui relie la journée à une leçon transférable au spectateur.",
+  },
+  {
+    title: "Série YouTube en plusieurs épisodes",
+    category: "YouTube",
+    prompt:
+      "À partir de ce grand sujet : [SUJET LARGE, ex. 'la prise de masse de A à Z', 'monter une activité de coach'], découpe-le en une série de [X] épisodes YouTube cohérents (ni trop redondants, ni des sauts d'écart). Pour chaque épisode : titre, ce qu'il couvre précisément, ce qu'il NE couvre PAS (renvoyé à un épisode suivant), et le fil qui donne envie d'enchaîner sur le suivant sans que chaque épisode soit dépendant des autres pour être compris seul.",
+  },
+  {
+    title: "Nommer ma méthode/mon mécanisme",
+    category: "Business",
+    prompt:
+      "Voici comment je travaille avec mes clients au quotidien : [DÉCRIS TA MÉTHODE/TON PROCESS RÉEL, ex. l'app + le suivi hebdo + les ajustements]. Aide-moi à trouver 8 noms courts et mémorables (2-4 mots) pour désigner cette méthode comme un concept propre à moi (pas un terme générique comme \"accompagnement personnalisé\"), que je pourrais réutiliser dans tout mon contenu pour créer une reconnaissance de marque. Explique en une phrase pourquoi chaque nom fonctionne ou pas.",
+  },
+  {
+    title: "Contenu qui s'adresse aux coachs (pas aux clients finaux)",
+    category: "Business",
+    prompt:
+      "Écris-moi un script court (30-45s) qui s'adresse spécifiquement à des coachs sportifs qui veulent scaler leur activité (pas à mes clients finaux en musculation), sur ce sujet : [SUJET, ex. un outil, une erreur de business, un chiffre à suivre]. Ton toujours direct et concret, jamais de langage \"business coach\" générique, un vrai retour d'expérience ou un vrai raisonnement, jamais de statistique ou de résultat client inventé.",
+  },
+  {
+    title: "Transformer une leçon business en contenu",
+    category: "Business",
+    prompt:
+      "Voici une vraie leçon ou erreur que j'ai vécue dans la construction de mon activité : [LEÇON/ERREUR RÉELLE]. Transforme-la en script court destiné aux coachs qui me suivent : le contexte en une phrase, l'erreur ou la mauvaise hypothèse de départ, ce qui a changé quand j'ai corrigé, la leçon généralisable pour quelqu'un dans la même situation. Jamais de chiffre inventé, demande-le-moi si utile et que je ne te l'ai pas donné.",
+  },
+  {
+    title: "Semaine de contenu à partir d'une seule idée",
+    category: "Planification",
+    prompt:
+      "Voici une idée de fond : [IDÉE CENTRALE]. Décline-la en un calendrier de 5-7 contenus pour la semaine, chacun avec un angle et un format différents (ne jamais répéter deux fois le même angle) : par exemple un reel qui pose le problème, une story qui creuse un détail, un reel qui donne la solution, un carousel qui résume en étapes, un reel storytelling personnel lié au même thème. Une ligne par jour : jour, format, angle, hook.",
+  },
+  {
+    title: "30 idées de contenu en 10 minutes (méthode colonnes)",
+    category: "Planification",
+    prompt:
+      "Aide-moi à remplir 5 colonnes d'idées de contenu à partir de ce que je te donne, méthode par catégories (pas de mélange entre colonnes) : GOÛTS (ce que j'aime, mes intérêts persos liés ou pas au fitness : [LISTE]), ÉCHECS (mes erreurs ou galères passées : [LISTE]), POURQUOI (pourquoi je fais ce métier : [PHRASE]), POINTS COMMUNS AVEC MON AUDIENCE (ce qu'on vit pareil : [LISTE]), MESSAGE (ce qui différencie ma méthode : [PHRASE]). Pour chaque colonne, propose-moi 6 idées de contenu concrètes qui en découlent (30 au total), une ligne par idée, sans blabla.",
+  },
+  {
+    title: "Repérer le pattern qui marche (analyse de performance)",
+    category: "Planification",
+    prompt:
+      "Voici plusieurs contenus récents avec leurs résultats (vues, likes, commentaires, ou juste \"a mieux marché que la moyenne\"/\"a fait un flop\") : [LISTE DES CONTENUS + RÉSULTATS]. Analyse ce qui différencie ceux qui ont bien marché de ceux qui n'ont pas marché : le sujet, l'angle, le hook, le format, l'heure de publication si connue. Donne-moi 3 hypothèses concrètes sur ce qui explique l'écart, et pour chacune un prochain contenu à tester pour la confirmer ou l'infirmer.",
+  },
+  {
+    title: "Repurposer une vidéo longue en plusieurs formats courts",
+    category: "Repurposing",
+    prompt:
+      "Voici le script ou le résumé d'une vidéo longue : [SCRIPT/RÉSUMÉ]. Découpe-la en 4-5 extraits distincts qui pourraient chacun devenir un Reel/Short autonome (pas juste un bout coupé au hasard : chaque extrait doit avoir son propre hook, sa propre chute, se comprendre seul sans avoir vu la vidéo complète). Pour chaque extrait : le passage concerné, le hook à ajouter en ouverture (souvent absent du contenu long), la durée approximative.",
+  },
+  {
+    title: "Transformer un reel en carousel (et inversement)",
+    category: "Repurposing",
+    prompt:
+      "Voici le contenu d'un [REEL ou CAROUSEL] : [CONTENU]. Transforme-le dans l'autre format ([CAROUSEL ou REEL], l'inverse de ce que je viens de donner) en gardant le même message central mais en adaptant vraiment la structure au nouveau format (un carousel a besoin d'un titre de slide 1 qui donne envie de swiper, un reel a besoin d'un rythme parlé et d'un hook filmable), pas juste couper-coller le texte.",
+  },
+  {
+    title: "Adapter un contenu Instagram en post LinkedIn",
+    category: "Repurposing",
+    prompt:
+      "Voici le script ou le sujet d'un contenu Instagram : [CONTENU/SUJET]. Réécris-le en post LinkedIn texte (pas de vidéo), destiné à des coachs sportifs ou entrepreneurs qui suivent mon activité de scaling via l'app. Structure LinkedIn classique : accroche courte en une ligne qui donne envie de cliquer \"voir plus\", corps en paragraphes courts et aérés (pas un pavé), la leçon ou l'angle business qui en ressort, question ouverte en fin de post pour lancer la discussion en commentaire.",
   },
 ];
 
