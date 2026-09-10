@@ -4168,3 +4168,38 @@ succès, variante compacte) — le vrai levier était la découvrabilité
 
 `tsc --noEmit` propre, `eslint` propre sur les 9 fichiers touchés, `next
 build` de production complet, exit 0.
+
+## BM — Studio créatif : les scripts publiés sont terminés, séparés des scripts actifs (2026-09-10)
+
+Retour direct : le cycle réel est écrire → tourner → poster, et une fois
+posté le script est FINI. Le cycle de statuts (`a_tourner` → `tourne` →
+`publie`) existait déjà exactement dans cet ordre (`IdeationScripts.tsx`,
+`STATUS_CYCLE`) — le vrai manque était visuel : tous les scripts (actifs
+et publiés) se mélangeaient dans une seule liste plate, qui grossit vite
+avec 5 reels + 1 YouTube produits chaque jour (Axe BJ).
+
+- Liste scindée en deux : scripts actifs (`a_tourner`/`tourne`) affichés
+  en premier comme avant, scripts `publie` regroupés dans une section
+  "Publiés, terminés (N)" repliée par défaut (`showPublished`), avec un
+  message "Tout ce qui était à produire est posté 🎉" quand la liste active
+  est vide.
+- Le tracking de performance (Axe BK) reste consultable normalement à
+  l'intérieur de cette section repliée : rien n'est perdu, juste rangé.
+- Bouton de statut conservé tel quel (reclic possible même sur "Publié",
+  pour rouvrir en cas d'erreur de manipulation) mais avec un `title`
+  contextuel par statut plutôt qu'un générique "changer le statut"
+  ("Cliquer une fois tourné" / "Cliquer une fois posté" / "Terminé,
+  cliquer pour rouvrir si erreur").
+- Refactor technique : le rendu d'une carte de script (~150 lignes,
+  contenu/hook/CTA/description/tracking) était dupliqué deux fois dans le
+  fichier source avant ce changement risquait une vraie divergence —
+  extrait en fonction interne `renderScript()`, appelée par les deux
+  listes (`activeScripts.map`, `publishedScripts.map`), une seule source
+  de vérité pour le markup.
+
+### Validation
+
+`tsc --noEmit` propre (aucune erreur après le refactor). `eslint` : même
+erreur `set-state-in-effect` pré-existante déjà documentée (Axe BH/BJ/BK),
+toujours sans rapport avec ce changement. `next build` de production
+complet, exit 0.

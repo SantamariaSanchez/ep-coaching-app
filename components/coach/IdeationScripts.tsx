@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search } from "lucide-react";
+import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown } from "lucide-react";
 import { createScript, updateScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
@@ -13,7 +13,17 @@ const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
   tourne: { label: "Tourné", color: "#60a5fa" },
   publie: { label: "Publié", color: "#4ade80" },
 };
+// Cycle de vie confirmé le 2026-09-10 : écrire (déjà géré par le formulaire/
+// les routines) → tourner → poster, et une fois posté le script est FINI
+// (voir plus bas, section "Publiés" repliée, séparée des scripts encore à
+// produire). Le retour publie -> a_tourner reste volontairement possible en
+// reclicant, comme un "rouvrir si je me suis trompé", pas un vrai 4e état.
 const STATUS_CYCLE: Record<ScriptStatus, ScriptStatus> = { a_tourner: "tourne", tourne: "publie", publie: "a_tourner" };
+const STATUS_TITLES: Record<ScriptStatus, string> = {
+  a_tourner: "Cliquer une fois tourné",
+  tourne: "Cliquer une fois posté",
+  publie: "Terminé — cliquer pour rouvrir si erreur",
+};
 
 function formatDuration(seconds: number | null): string | null {
   if (!seconds) return null;
@@ -189,6 +199,14 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     });
   }
 
+  // Cycle de vie à tourner → tourné → publié (retour direct 2026-09-10) :
+  // une fois publié, le script est terminé, replié par défaut plutôt que de
+  // rester mélangé aux scripts encore à produire (voir avgViews plus haut,
+  // qui s'appuie déjà sur ce même statut).
+  const [showPublished, setShowPublished] = useState(false);
+  const activeScripts = scripts.filter((s) => s.status !== "publie");
+  const publishedScripts = scripts.filter((s) => s.status === "publie");
+
   function submitNew() {
     setError(null);
     const t = title.trim();
@@ -342,12 +360,61 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
           <p className="text-sm text-[#F5EDED]/35">Aucun script pour l&apos;instant. Pioche un prompt ou un hook dans les onglets à côté pour démarrer.</p>
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-          {scripts.map((script) => {
-            const statusInfo = STATUS_LABELS[script.status] ?? STATUS_LABELS.a_tourner;
-            const duration = formatDuration(script.duration_seconds);
-            const platformInfo = PLATFORM_LABELS[script.platform] ?? null;
-            return (
+        <>
+          {/* Cycle de vie (retour direct 2026-09-10) : écrire → tourner →
+              poster, et une fois posté le script est FINI — il ne doit plus
+              se mélanger visuellement avec ceux encore à produire. Séparés
+              en deux groupes plutôt qu'une seule liste plate qui grossit vite
+              (5 reels/jour + 1 YouTube/jour, voir Axe BJ) : "publiés" replié
+              par défaut, pas supprimé (le tracking de performance juste en
+              dessous reste consultable dedans). */}
+          {activeScripts.length === 0 && publishedScripts.length > 0 ? (
+            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
+              <p className="text-sm text-[#F5EDED]/35">Tout ce qui était à produire est posté. 🎉</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {activeScripts.map(renderScript)}
+            </div>
+          )}
+
+          {publishedScripts.length > 0 && (
+            <div style={{ marginTop: 18 }}>
+              <button
+                type="button"
+                onClick={() => setShowPublished((v) => !v)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 6, width: "100%",
+                  background: "none", border: "none", cursor: "pointer", padding: "8px 0",
+                  borderTop: "1px solid rgba(245,237,237,0.08)",
+                }}
+              >
+                <Check size={12} style={{ color: "#4ade80" }} strokeWidth={3} />
+                <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(245,237,237,0.4)" }}>
+                  Publiés, terminés ({publishedScripts.length})
+                </span>
+                <ChevronDown
+                  size={13}
+                  style={{ color: "rgba(245,237,237,0.3)", marginLeft: "auto", transform: showPublished ? "rotate(180deg)" : "none", transition: "transform 160ms ease" }}
+                />
+              </button>
+              {showPublished && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 10 }}>
+                  {publishedScripts.map(renderScript)}
+                </div>
+              )}
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+
+  function renderScript(script: CoachScript) {
+    const statusInfo = STATUS_LABELS[script.status] ?? STATUS_LABELS.a_tourner;
+    const duration = formatDuration(script.duration_seconds);
+    const platformInfo = PLATFORM_LABELS[script.platform] ?? null;
+    return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {platformInfo && (
@@ -382,7 +449,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 <button
                   type="button"
                   onClick={() => cycleStatus(script.id, script.status)}
-                  title="Cliquer pour changer le statut"
+                  title={STATUS_TITLES[script.status]}
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
                     padding: "3px 8px", borderRadius: 999, cursor: "pointer", border: `1px solid ${statusInfo.color}55`,
@@ -571,12 +638,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </div>
               )}
             </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+    );
+  }
 }
 
 // ── Recherche générique pour les bibliothèques ──────────────────────────
