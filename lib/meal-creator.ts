@@ -140,14 +140,25 @@ export interface MealCreatorAnswers {
   temp: Temp;
   prepTime: PrepTime;
   choices: Partial<Record<FoodGroupKey, string[]>>; // food names per group, multi-select
+  // Retour direct 2026-09-10 ("le generateur, encore plus de parametres,
+  // complet") : meal prep, cuisiner une fois pour plusieurs jours. 1 par
+  // defaut (comportement identique a avant). Les grammages par aliment
+  // restent calcules pour UNE portion realiste (respecte les bornes min/max
+  // de distributeGrams) puis multiplies par ce nombre a la fin, plutot que
+  // de gonfler la cible calorique en amont - sinon un aliment plafonnerait
+  // a son max (ex. 300g de proteine) au lieu de vraiment scaler x3.
+  portions?: number;
 }
 
 export interface GeneratedRecipe {
   name: string;
+  /** Toujours par portion (voir portions ci-dessous pour le nombre préparé). */
   kcal: number;
   protein: number;
   carbs: number;
   fat: number;
+  /** Nombre de portions couvertes par `ingredients` (meal prep) — 1 par défaut. */
+  portions: number;
   ingredients: string[];
   steps: string[];
   tip: string;
@@ -278,7 +289,19 @@ export function generateRecipe(
     };
   }
 
-  const allEntries = [...proteinEntries, ...glucideEntries, ...legumeEntries, ...fatEntries];
+  const singlePortionEntries = [...proteinEntries, ...glucideEntries, ...legumeEntries, ...fatEntries];
+
+  // Meal prep : les grammages ci-dessus sont calculés pour UNE portion
+  // réaliste (bornes min/max de distributeGrams respectées) — on les
+  // multiplie seulement maintenant, une fois la portion validée, pour
+  // vraiment obtenir "3x plus" plutôt que de plafonner un aliment à son max
+  // en gonflant la cible calorique en amont.
+  const portions = Math.max(1, Math.round(answers.portions ?? 1));
+  const allEntries =
+    portions > 1
+      ? singlePortionEntries.map(({ food, grams }) => ({ food, grams: Math.round((grams * portions) / 5) * 5 }))
+      : singlePortionEntries;
+
   const totals = allEntries.reduce(
     (acc, { food, grams }) => {
       const m = macrosOf(food, grams);
@@ -291,10 +314,17 @@ export function generateRecipe(
     },
     { kcal: 0, protein: 0, carbs: 0, fat: 0 }
   );
+  // Rappel explicite dans les totaux affichés : sans ça, un client qui
+  // logue "sa recette" en un clic (voir foodsUsed) logue toute la
+  // production de 3 jours d'un coup, pas la portion réellement mangée là.
+  const perPortionTotals = portions > 1 ? { kcal: Math.round(totals.kcal / portions), protein: Math.round(totals.protein / portions), carbs: Math.round(totals.carbs / portions), fat: Math.round(totals.fat / portions) } : totals;
 
   // ── Ingredients list ──
   const ingredients: string[] = allEntries.map(({ food, grams }) => `${grams}g de ${food.name.toLowerCase()}`);
   ingredients.push("Sel, poivre, épices au choix");
+  if (portions > 1) {
+    ingredients.unshift(`Quantités pour ${portions} portions (${perPortionTotals.kcal} kcal par portion) : divise en ${portions} contenants après cuisson.`);
+  }
 
   // ── Steps (templated) ──
   const steps: string[] = [];
@@ -345,15 +375,23 @@ export function generateRecipe(
 
   return {
     name,
-    kcal: totals.kcal,
-    protein: totals.protein,
-    carbs: totals.carbs,
-    fat: totals.fat,
+    // Toujours PAR PORTION, jamais le total du batch : c'est ce qui est
+    // affiché, sauvegardé comme profil nutritionnel de la recette, et
+    // reste cohérent même quand ingredients (achats) reflète les X
+    // portions préparées d'un coup.
+    kcal: perPortionTotals.kcal,
+    protein: perPortionTotals.protein,
+    carbs: perPortionTotals.carbs,
+    fat: perPortionTotals.fat,
+    portions,
     ingredients,
     steps,
     tip: pickTip(answers.phase),
     prepMinutes: answers.prepTime === "rapide" ? 15 : answers.prepTime === "moyen" ? 25 : 40,
     allergens: [...allergenSet],
-    foodsUsed: allEntries.map(({ food, grams }) => ({ foodId: food.id, grams })),
+    // Grammes d'UNE portion (pas le batch) : "loguer aujourd'hui" doit
+    // enregistrer ce qui est réellement mangé maintenant, pas les 3 jours
+    // de préparation d'un coup.
+    foodsUsed: singlePortionEntries.map(({ food, grams }) => ({ foodId: food.id, grams })),
   };
 }

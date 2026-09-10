@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  ArrowRight, ArrowLeft, Sparkles, Check, Loader2, Search, X,
+  ArrowRight, ArrowLeft, Sparkles, Check, Loader2, Search, X, Minus, Plus,
 } from "lucide-react";
 import {
   MEAL_LABELS, DIET_LABELS, PHASE_LABELS, TEMP_LABELS, ALLERGEN_LABELS,
@@ -308,6 +308,11 @@ export default function MealCreatorWizard({
   });
   const [temp, setTemp] = useState<Temp | null>(null);
   const [prepTime, setPrepTime] = useState<PrepTime | null>(null);
+  // Meal prep (retour direct 2026-09-10, "encore plus de parametres pour
+  // le generateur") : cuisiner une fois pour plusieurs jours. 1 a 6, comme
+  // les bornes deja utilisees ailleurs pour un choix borne sans avoir a
+  // ouvrir un clavier numerique.
+  const [portions, setPortions] = useState(1);
 
   const [result, setResult] = useState<GeneratedRecipe | null>(null);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -400,6 +405,7 @@ export default function MealCreatorWizard({
           legume: [...choices.legume],
           matiere_grasse: [...choices.matiere_grasse],
         },
+        portions,
       };
       setResult(generateRecipe(answers, foods));
     }
@@ -417,6 +423,7 @@ export default function MealCreatorWizard({
     setFoodSearch({ proteine: "", glucide: "", legume: "", matiere_grasse: "" });
     setTemp(null);
     setPrepTime(null);
+    setPortions(1);
     setResult(null);
     setSaveStatus("idle");
     setQuotaError("");
@@ -604,6 +611,38 @@ export default function MealCreatorWizard({
                   </button>
                 ))}
               </div>
+
+              {/* Meal prep : cuisiner une fois pour plusieurs jours. */}
+              <div className="mt-5 pt-5 border-t border-[#890404]/15">
+                <p className="text-xs font-bold text-white mb-1">Tu prépares pour combien de portions ?</p>
+                <p className="text-[10.5px] text-[#F5EDED]/35 mb-3">
+                  Les quantités s&apos;ajustent, la valeur nutritionnelle affichée reste toujours pour UNE portion.
+                </p>
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setPortions((p) => Math.max(1, p - 1))}
+                    disabled={portions <= 1}
+                    aria-label="Moins de portions"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
+                  >
+                    <Minus size={14} />
+                  </button>
+                  <span className="text-lg font-black text-white w-10 text-center tabular-nums">{portions}</span>
+                  <button
+                    type="button"
+                    onClick={() => setPortions((p) => Math.min(6, p + 1))}
+                    disabled={portions >= 6}
+                    aria-label="Plus de portions"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
+                  >
+                    <Plus size={14} />
+                  </button>
+                  <span className="text-[10.5px] text-[#F5EDED]/30">
+                    {portions === 1 ? "juste pour maintenant" : `de quoi manger ${portions} fois`}
+                  </span>
+                </div>
+              </div>
             </div>
           )}
 
@@ -627,13 +666,18 @@ export default function MealCreatorWizard({
                     </p>
                   </div>
                   <h2 className="text-2xl font-black text-white mb-3">{result.name}</h2>
-                  <div className="flex items-center gap-3 flex-wrap mb-4">
+                  <div className="flex items-center gap-3 flex-wrap mb-1">
                     <span className="text-xs font-bold text-[#E01E1E]">{result.kcal} kcal</span>
                     <span className="text-xs text-[#F5EDED]/50">P {result.protein}g</span>
                     <span className="text-xs text-[#F5EDED]/50">G {result.carbs}g</span>
                     <span className="text-xs text-[#F5EDED]/50">L {result.fat}g</span>
                     <span className="text-xs text-[#F5EDED]/40">· {result.prepMinutes} min</span>
                   </div>
+                  <p className="text-[10.5px] text-[#F5EDED]/30 mb-4">
+                    {result.portions > 1
+                      ? `Valeurs pour 1 portion · ingrédients ci-dessous pour ${result.portions} portions au total`
+                      : "Pour 1 portion"}
+                  </p>
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>

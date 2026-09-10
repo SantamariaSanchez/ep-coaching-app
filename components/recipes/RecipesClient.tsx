@@ -48,6 +48,31 @@ const MEAL_TO_SLOT: Record<MealType, string> = {
   dessert: "dinner",
 };
 
+// Retour direct 2026-09-10 ("ameliore encore plus l'onglet [recettes]") :
+// prepMinutes/price étaient déjà affichés sur chaque carte mais jamais
+// filtrables, alors que "j'ai 10 minutes" ou "petit budget" sont des
+// contraintes réelles aussi fréquentes que le régime ou la saison. Même
+// principe de bucket que PrepTime dans le générateur (lib/meal-creator.ts),
+// pour rester cohérent entre les deux écrans.
+type PrepBucket = "rapide" | "moyen" | "long";
+const PREP_BUCKET_LABELS: Record<PrepBucket, string> = {
+  rapide: "Rapide (≤ 15 min)",
+  moyen: "Moyen (≤ 30 min)",
+  long: "Long (> 30 min)",
+};
+function prepBucketOf(minutes: number): PrepBucket {
+  if (minutes <= 15) return "rapide";
+  if (minutes <= 30) return "moyen";
+  return "long";
+}
+// FilterGroup n'accepte que des options string ; le budget de la recette
+// (Recipe.price: 1|2|3) est donc converti en clé "1"|"2"|"3" pour l'UI.
+const BUDGET_LABELS: Record<string, string> = {
+  "1": PRICE_LABELS[1],
+  "2": PRICE_LABELS[2],
+  "3": PRICE_LABELS[3],
+};
+
 // Classe une recette par profil macro à partir de ses totaux kcal/P/G/L —
 // calculé à la volée plutôt que d'exiger un tag manuel supplémentaire à la
 // création, donc toujours cohérent avec les vrais chiffres de la recette.
@@ -493,6 +518,12 @@ export default function RecipesClient({
   const [temps, setTemps] = useState<Set<Temp>>(new Set());
   const [macroProfiles, setMacroProfiles] = useState<Set<MacroProfile>>(new Set());
   const [excludedAllergens, setExcludedAllergens] = useState<Set<Allergen>>(new Set());
+  const [prepBuckets, setPrepBuckets] = useState<Set<PrepBucket>>(new Set());
+  // FilterGroup est générique sur T extends string (les chips affichent
+  // labels[opt]) — le budget de la recette est un nombre (1|2|3), donc
+  // stocké ici comme string ("1"|"2"|"3") et reconverti au moment du
+  // filtre plutôt que d'élargir la contrainte du composant partagé.
+  const [budgets, setBudgets] = useState<Set<"1" | "2" | "3">>(new Set());
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -516,6 +547,8 @@ export default function RecipesClient({
       if (temps.size && !temps.has(r.temp)) return false;
       if (macroProfiles.size && !classifyMacroProfiles(r).some((p) => macroProfiles.has(p))) return false;
       if (excludedAllergens.size && r.allergens.some((a) => excludedAllergens.has(a))) return false;
+      if (prepBuckets.size && !prepBuckets.has(prepBucketOf(r.prepMinutes))) return false;
+      if (budgets.size && !budgets.has(String(r.price) as "1" | "2" | "3")) return false;
       return true;
     }).sort((a, b) => {
       const ra = isRecommended(a) ? 0 : 1;
@@ -523,12 +556,12 @@ export default function RecipesClient({
       if (ra !== rb) return ra - rb;
       return a.name.localeCompare(b.name, "fr");
     });
-  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens, isRecommended]);
+  }, [recipes, search, meals, diets, phases, seasons, temps, macroProfiles, excludedAllergens, prepBuckets, budgets, isRecommended]);
 
   const recommendedCount = isCoach ? 0 : filtered.filter(isRecommended).length;
 
   const activeFilterCount =
-    meals.size + diets.size + phases.size + seasons.size + temps.size + macroProfiles.size + excludedAllergens.size;
+    meals.size + diets.size + phases.size + seasons.size + temps.size + macroProfiles.size + excludedAllergens.size + prepBuckets.size + budgets.size;
 
   function resetFilters() {
     setMeals(new Set());
@@ -538,6 +571,8 @@ export default function RecipesClient({
     setTemps(new Set());
     setMacroProfiles(new Set());
     setExcludedAllergens(new Set());
+    setPrepBuckets(new Set());
+    setBudgets(new Set());
   }
 
   async function handleDelete(id: string) {
@@ -734,6 +769,8 @@ export default function RecipesClient({
               <FilterGroup label="Température" options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} selected={temps} toggle={(v) => toggleSet(setTemps, v)} />
               <FilterGroup label="Profil macro" options={Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]} labels={MACRO_PROFILE_LABELS} selected={macroProfiles} toggle={(v) => toggleSet(setMacroProfiles, v)} />
               <FilterGroup label="Exclure allergènes" options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={excludedAllergens} toggle={(v) => toggleSet(setExcludedAllergens, v)} />
+              <FilterGroup label="Temps de préparation" options={["rapide", "moyen", "long"] as PrepBucket[]} labels={PREP_BUCKET_LABELS} selected={prepBuckets} toggle={(v) => toggleSet(setPrepBuckets, v)} />
+              <FilterGroup label="Budget" options={["1", "2", "3"] as ("1" | "2" | "3")[]} labels={BUDGET_LABELS} selected={budgets} toggle={(v) => toggleSet(setBudgets, v)} />
             </div>
           )}
 
