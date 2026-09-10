@@ -302,6 +302,28 @@ export default function PermissionsCard({
             {testPushState === "idle" && "M'envoyer une notification de test"}
           </button>
         )}
+
+        {/* Retour direct 2026-09-10 ("les notifs, corrige, j'en reçois
+            toujours pas") : le badge "Activées" ci-dessus reste vert tant
+            qu'une ligne push_subscriptions existe côté serveur, même si
+            l'abonnement est en réalité mort côté téléphone (OS qui a
+            silencieusement révoqué la permission, appli réinstallée,
+            abonnement resté sur un ancien appareil...) — jusqu'ici, dans ce
+            cas précis, il n'y avait AUCUN moyen de se réabonner soi-même :
+            le bouton "Activer" n'était rendu QUE quand push=false. Ce lien
+            relance exactement le même enablePush() qui écrase l'ancien
+            abonnement par un nouveau (voir /api/push/subscribe), sans
+            attendre une intervention manuelle en base à chaque fois. */}
+        {push && (
+          <button
+            onClick={enablePush}
+            disabled={pushLoading}
+            className="flex items-center gap-1.5 mt-2 text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-50 transition-colors"
+          >
+            <Bell size={11} />
+            {pushLoading ? "Réactivation…" : "Le test n'arrive pas ? Réactiver les notifications"}
+          </button>
+        )}
       </div>
 
       <Link
