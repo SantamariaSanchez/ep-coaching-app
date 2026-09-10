@@ -208,6 +208,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (nuit, suite)** | | **668** | +6 par rapport au comptage précédent. |
 | 2026-09-10 | Vague AC (manuelle, suite "continue de travailler longtemps") | 4 | Ashwagandha et force (STAR Trial, +19,1kg squat vs +10,0kg placebo sur 12 semaines), cluster sets vs séries traditionnelles (préserve vitesse/puissance mais pas le 1RM), surcharge excentrique flywheel (deux méta-analyses aux résultats différents selon le protocole), manque de sommeil et testostérone (privation partielle sans effet, seule la privation totale ≥24h en a un). Glutamine et glycogène/carb timing explorés mais écartés : littérature trop datée ou trop générale pour un sourcing solide. |
 | **Total vérifié en base au 2026-09-10 (nuit, suite 2)** | | **672** | +4 par rapport au comptage précédent. |
+| 2026-09-10 | Vague AD (manuelle, suite "continue de travailler longtemps") | 4 | Bétaïne (aucun effet sur la composition corporelle malgré sa présence quasi systématique en pre-workout), taurine (relation dose-réponse, pas un effet linéaire simple), seuil de leucine (vrai chez les seniors, pas chez le jeune pratiquant), œuf entier vs blanc d'œuf (l'œuf entier stimule plus la synthèse protéique à protéines égales). Bicarbonate de sodium et fréquence/répartition des repas explorés mais écartés : premier moins pertinent pour l'audience musculation (surtout utile en sports à efforts répétés), second déjà couvert (3 entrées existantes). |
+| **Total vérifié en base au 2026-09-10 (nuit, suite 3)** | | **676** | +4 par rapport au comptage précédent. |
 
 ## Répartition actuelle par catégorie
 
@@ -263,7 +265,9 @@ et satiété/poids en sèche, HIIT vs cardio classique (deux marqueurs
 différents), collagène et tendons (structure vs force), nitrates/jus de
 betterave (dose/timing précis, pas d'effet chronique), citrulline malate
 (+6,4% de répétitions), HMB (aucun effet démontré), ashwagandha et force
-(STAR Trial).
+(STAR Trial), bétaïne (aucun effet composition corporelle), taurine
+(dose-réponse), seuil de leucine (vrai chez les seniors, pas les jeunes),
+œuf entier vs blanc d'œuf (synthèse protéique).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -418,7 +422,12 @@ d'entraînement (DOI 10.1007/s40279-021-01430-z). Surcharge excentrique
 flywheel : Vicens-Bordas et al. 2017 (DOI 10.1016/j.jsams.2017.10.006),
 Maroto-Izquierdo et al. 2017 (DOI 10.1016/j.jsams.2017.03.004). Sommeil et
 testostérone : Su et al. 2021, méta-analyse 18 études (DOI
-10.1016/j.sleep.2021.10.031).
+10.1016/j.sleep.2021.10.031). Bétaïne : Ashtary-Larky et al. 2021,
+méta-analyse (DOI 10.1017/S0007114521004062). Taurine : Chen et al. 2021,
+revue dose-réponse (DOI 10.3389/fphys.2021.700352). Seuil de leucine :
+Wilkinson et al. 2023, revue systématique (DOI 10.14814/phy2.15775). Œuf
+entier vs blanc : van Vliet et al. 2017, biopsies/traceurs isotopiques
+(DOI 10.3945/ajcn.117.159855).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
