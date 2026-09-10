@@ -3517,12 +3517,13 @@ autre pipeline), à surveiller après le push comme filet final.
 
 ### Reste à faire sur cet axe
 
-- **Vérifier le déploiement Vercel après le push** (voir `list_deployments`
-  côté MCP Vercel) : le build local échouant pour une raison d'outillage
-  indépendante de ce code (voir ci-dessus), c'est ce déploiement réel qui
-  fait foi. En cas d'échec Vercel avec un message DIFFÉRENT de la
-  `TurbopackInternalError` locale, reconsidérer — ce serait alors un signe
-  que l'hypothèse "outillage local" était fausse.
+- ~~Vérifier le déploiement Vercel après le push~~ — **fait** : commit
+  `b96f698` déployé en production (`dpl_9jwZg8b99K4t2NNcNEgewrXrjxyR`),
+  `readyState: READY`, alias `ep-coaching.vercel.app` mis à jour, en ~68s
+  (build Vercel normal, aucune trace de la `TurbopackInternalError`
+  rencontrée localement). Confirme définitivement l'hypothèse "outillage
+  local Windows capricieux, sans lien avec ce code" — le vrai build de
+  production n'a jamais été à risque.
 - Aucune mesure de latence réelle en production (RUM, Vercel Analytics)
   n'a été consultée pour CONFIRMER l'ampleur du gain — le diagnostic
   repose sur une analyse structurelle du nombre d'allers-retours
