@@ -2980,12 +2980,50 @@ function DietPlanCard({
     const out: Record<string, number> = {};
     if (!isViewingToday) return out;
     for (const slotKey of Object.keys(bySlot)) {
-      let bestVariant: number | null = null;
-      let bestCount = 0;
       const variantKeys = Object.keys(bySlot[slotKey]).map(Number).sort((a, b) => a - b);
+
+      // Bug réel confirmé sur son propre plan (retour direct 2026-09-10,
+      // "je coche, j'attends 5s, ça s'enlève, ou je change d'onglet et c'est
+      // enlevé" — TOUJOURS présent après le pin explicite de chooseVariant) :
+      // ce pin ne protège que APRÈS le premier clic, jamais le tout premier
+      // rendu d'un rechargement complet (retour d'arrière-plan sur PWA
+      // iOS, qui décharge et recharge la page — le localStorage n'est relu
+      // que dans un useEffect, donc APRÈS ce calcul). Sur ce rendu-là,
+      // seul ce comptage decide, et son plan réel (postworkout du jeudi)
+      // a 5 aliments STRICTEMENT identiques (même food_id, même quantité)
+      // entre les deux options, seul le 6e diffère (Poulet vs Cabillaud) :
+      // une fois les deux options entièrement loguées un jour donné (ce qui
+      // arrive en pratique dès qu'on valide "Option 2" alors qu'"Option 1"
+      // partageait déjà 5/6 aliments), c'est une VRAIE égalité (6 = 6), et
+      // `>` strict retombe alors sur la variante 1 par défaut — celle qui
+      // n'a PAS le Poulet qu'il vient de valider. Poulet disparaît de
+      // l'écran (plus dans visibleMeals), donnant l'impression que "cocher
+      // ne marche pas", alors que la ligne est bien en base.
+      //
+      // Fix : ne compter, comme preuve de quelle option est réellement
+      // mangée, que les aliments dont le couple food_id+quantité est
+      // PROPRE à cette variante (absent des autres options du même
+      // créneau) — Poulet (propre à l'Option 2) ou Cabillaud (propre à
+      // l'Option 1) tranchent, jamais les 5 aliments communs aux deux qui
+      // ne prouvent rien sur laquelle a été choisie. Le nombre total ne
+      // sert plus que de filet si aucune variante n'a d'aliment distinctif
+      // logué (cas rare : créneau à une seule option, ou aucune preuve
+      // distinctive encore cochée).
+      const signatureCounts = new Map<string, number>();
+      for (const variant of variantKeys) {
+        for (const m of bySlot[slotKey][variant]) {
+          const sig = `${m.food_id}:${Number(m.quantity_g)}`;
+          signatureCounts.set(sig, (signatureCounts.get(sig) ?? 0) + 1);
+        }
+      }
+
+      let bestVariant: number | null = null;
+      let bestDistinctive = 0;
+      let bestTotal = 0;
       for (const variant of variantKeys) {
         const used = new Set<string>();
-        let count = 0;
+        let total = 0;
+        let distinctive = 0;
         for (const m of bySlot[slotKey][variant]) {
           const match = todayLogs.find(
             (l) =>
@@ -2996,15 +3034,21 @@ function DietPlanCard({
           );
           if (match) {
             used.add(match.id);
-            count++;
+            total++;
+            const sig = `${m.food_id}:${Number(m.quantity_g)}`;
+            if ((signatureCounts.get(sig) ?? 0) === 1) distinctive++;
           }
         }
-        if (count > bestCount) {
-          bestCount = count;
+        if (
+          distinctive > bestDistinctive ||
+          (distinctive === bestDistinctive && distinctive === 0 && total > bestTotal)
+        ) {
+          bestDistinctive = distinctive;
+          bestTotal = total;
           bestVariant = variant;
         }
       }
-      if (bestVariant !== null) out[slotKey] = bestVariant;
+      if (bestVariant !== null && (bestDistinctive > 0 || bestTotal > 0)) out[slotKey] = bestVariant;
     }
     return out;
   }, [bySlot, todayLogs, isViewingToday]);
