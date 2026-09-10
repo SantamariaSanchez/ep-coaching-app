@@ -158,7 +158,12 @@ export default function NotificationBell({
             // le centre — sinon l'échelle d'entrée "grandit" visuellement
             // depuis un point qui n'a aucun rapport avec le déclencheur.
             transformOrigin: `${openUpward ? "bottom" : "top"} ${alignLeft ? "left" : "right"}`,
+            // maxWidth (pas juste width) : même bien ancré du bon côté, un
+            // panneau de 320px fixe peut encore mordre sur le bord opposé
+            // d'un petit écran de téléphone (~360-375px) une fois la marge
+            // du cluster fixed retranchée — retour direct 2026-09-10.
             width: 320,
+            maxWidth: "calc(100vw - 24px)",
             maxHeight: 420,
             overflowY: "auto",
             background: "rgba(8,0,0,0.97)",

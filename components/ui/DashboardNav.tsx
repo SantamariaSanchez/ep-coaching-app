@@ -518,6 +518,30 @@ export default function DashboardNav({
   const pathname = usePathname();
   const [isDesktop, setIsDesktop] = useState(false);
 
+  // Retour direct 2026-09-10 ("ça a rien à faire là tout le temps sur
+  // l'écran, instagram y'a pas de bouton comme ça qui reste tout le
+  // temps") : le cluster flottant recherche+notifications (mobile) restait
+  // figé en permanence par-dessus le contenu, même en pleine lecture/
+  // défilement — jamais le cas dans une appli soignée (Instagram, entre
+  // autres, masque sa propre barre du haut au scroll vers le bas et ne la
+  // réaffiche qu'au scroll vers le haut ou à l'arrêt). Même principe ici :
+  // visible au repos et en scrollant vers le haut (on veut y accéder), masqué
+  // en scrollant vers le bas (on lit, on n'a pas besoin qu'il traîne dessus).
+  const [floatingClusterVisible, setFloatingClusterVisible] = useState(true);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    let lastY = window.scrollY;
+    function handleScroll() {
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (y < 40 || delta < -4) setFloatingClusterVisible(true);
+      else if (delta > 4) setFloatingClusterVisible(false);
+      lastY = y;
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   // Reprise automatique d'une séance active après relance à froid de l'app —
   // sur mobile, verrouiller l'écran pendant une séance peut faire évincer le
   // processus par l'OS ; à la réouverture (icône ré-appuyée), l'app repart de
@@ -1147,6 +1171,14 @@ export default function DashboardNav({
           right: 14,
           zIndex: 45,
           gap: 8,
+          // Masqué en scrollant vers le bas, réaffiché au repos ou en
+          // scrollant vers le haut (voir floatingClusterVisible) — jamais
+          // planté en permanence par-dessus le contenu qu'on est en train
+          // de lire.
+          opacity: floatingClusterVisible ? 1 : 0,
+          transform: floatingClusterVisible ? "translateY(0)" : "translateY(12px)",
+          pointerEvents: floatingClusterVisible ? "auto" : "none",
+          transition: "opacity 200ms ease, transform 200ms ease",
         }}
       >
         <button
@@ -1160,8 +1192,16 @@ export default function DashboardNav({
         </button>
         {/* .ep-btn-icon (déclencheur interne à NotificationBell) porte déjà
             son propre fond/flou/bordure, cohérents avec le bouton recherche
-            ci-dessus — pas besoin d'un wrapper de plus autour. */}
-        <NotificationBell variant="mobile" alignLeft openUpward />
+            ci-dessus — pas besoin d'un wrapper de plus autour.
+            PAS alignLeft (retour direct 2026-09-10, "le truc est hors
+            écran du tel") : ce bouton vit dans un cluster fixed ancré
+            `right: 14` (voir le div parent ci-dessus), donc déjà collé au
+            bord droit de l'écran. alignLeft forçait le panneau (320px de
+            large) à s'ouvrir vers la DROITE depuis ce bord — largement
+            hors écran sur un téléphone. Le comportement par défaut
+            (alignRight, panneau qui s'ouvre vers la GAUCHE depuis le
+            bouton) est le seul qui reste dans l'écran ici. */}
+        <NotificationBell variant="mobile" openUpward />
       </div>
 
       {/* ── Mobile bottom nav — Oura style ─────────────────────────────────── */}
