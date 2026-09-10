@@ -683,9 +683,23 @@ export default function WeeklyAgenda({
             </div>
           );
         })}
-        {dayBlocks.map((block) => {
+        {dayBlocks.map((block, i) => {
           const top = blockTop(block.start_time, offsets);
-          const height = blockHeight(block.start_time, block.end_time, offsets);
+          // Retour direct 2026-09-10 ("ya quelque petit chevauchement") :
+          // blockHeight impose un plancher de 18px pour qu'un bloc très
+          // court (ex. "Trajet retour", 5 min) reste visible/cliquable —
+          // mais rien ne l'empêchait jusqu'ici de déborder visuellement
+          // par-dessus le DÉBUT du bloc suivant quand les deux sont
+          // contigus (aucun trou entre eux, ce qui est désormais TOUJOURS
+          // le cas depuis que l'agenda n'a plus de trou). Les blocs
+          // eux-mêmes ne se chevauchent jamais en base (vérifié), seul le
+          // rendu débordait. Plafonne donc la hauteur affichée à l'espace
+          // réellement disponible avant le bloc suivant (ou la fin de la
+          // grille pour le dernier bloc du jour) — le plancher de 18px ne
+          // s'applique que s'il reste vraiment la place.
+          const naturalHeight = blockHeight(block.start_time, block.end_time, offsets);
+          const nextTop = i + 1 < dayBlocks.length ? blockTop(dayBlocks[i + 1].start_time, offsets) : offsets[END_HOUR];
+          const height = Math.min(naturalHeight, Math.max(1, nextTop - top));
           const Icon = block.icon ? AGENDA_ICON_MAP[block.icon] : null;
           const showIcon = !!Icon && height >= 30;
           return (
