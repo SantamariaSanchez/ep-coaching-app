@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
-import NotificationBell from "@/components/ui/NotificationBell";
 import ActiveSessionBanner from "@/components/ui/ActiveSessionBanner";
 import CommandPalette from "@/components/ui/CommandPalette";
 
@@ -764,9 +763,6 @@ export default function DashboardNav({
         {/* Logo */}
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", paddingTop: 28, paddingBottom: 24, position: "relative" }}>
           <EPLogo size="md" showCoaching />
-          <div style={{ position: "absolute", right: 14, top: 24 }}>
-            <NotificationBell />
-          </div>
         </div>
 
         {/* Bouton de recherche visible (2026-09-08) : la palette de commande
