@@ -202,6 +202,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10** | | **638** | Sur 1000 visés, échéance 2026-09-13 (3 jours restants). +442 depuis le 08-18 (23 jours), soit ~19/jour en moyenne sur la période, en dessous du ~31/jour nécessaire calculé le 08-18 — mais routine confirmée `enabled: true`, dernière exécution du 2026-09-09 réussie (`ROUTINE_RUN_STATUS_SUCCEEDED`), tourne bien tous les matins à 6h04 UTC. Rythme nécessaire pour tenir l'échéance : ~121/jour sur les 3 jours restants (362 entrées manquantes), largement au-dessus du rythme de la routine seule (15-30/jour) — l'échéance du 09-13 ne sera vraisemblablement pas tenue au rythme actuel, à signaler au coach plutôt qu'à masquer. |
 | 2026-09-10 | Vague Z (manuelle, session "alimente le contenu") | 3 | Protéine avant le coucher (caséine, timing), combien de séries par semaine (relation dose-réponse volume/hypertrophie), aller à l'échec : décisif pour l'hypertrophie mais pas pour la force (méta-régression RIR 2024) — 3 sujets neufs cherchés directement sur PubMed (pas depuis la banque de sources déjà vérifiées, entièrement réexploitée par les sujets déjà publiés), voir la banque mise à jour ci-dessous. Rythme manuel volontairement modeste : chaque nouvelle entrée demande une vraie recherche PubMed pour rester sourcée, pas un simple remplissage de chiffre. |
 | **Total vérifié en base au 2026-09-10 (soir)** | | **657** | +3 par rapport au comptage du matin. L'échéance du 09-13 reste hors de portée au rythme actuel (routine + production manuelle combinées), toujours à signaler honnêtement plutôt qu'à masquer par un rythme de production qui sacrifierait le sourcing. |
+| 2026-09-10 | Vague AA (manuelle, suite de "continue les leadmagnet") | 5 | Protéines et satiété en sèche (méta-analyse 43 essais, -1,6kg vs témoin), HIIT vs cardio classique pour la perte de gras (méta-analyse en réseau, deux gagnants différents selon le marqueur suivi), risque d'infection ORL après un effort très long (méta-analyse marathon, +18% chiffré), BFR utile ou gadget (deux méta-analyses, l'effet dépend du niveau d'entraînement), collagène et tendons (revue 2026, effet réel sur la structure du tendon mais pas sur la force). Beta-alanine et sodium/hydratation écartés en cours de route : déjà couverts pour le premier, littérature trop faible/hors-sujet (dentaire) pour le second. |
+| **Total vérifié en base au 2026-09-10 (nuit)** | | **662** | +5 par rapport au comptage du soir. |
 
 ## Répartition actuelle par catégorie
 
@@ -238,7 +240,8 @@ vs linéaire), entraînement à domicile matériel limité (élastiques vs
 charges libres), squat profond et genoux, blessures épaule/lombaires
 (powerlifters, facteurs de risque), fréquence d'entraînement par muscle
 (c'est le volume qui compte), la force améliore l'endurance (économie de
-mouvement).
+mouvement), entraînement avec restriction de flux sanguin (BFR, effet selon
+le niveau d'entraînement).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -248,7 +251,9 @@ sèche, jeûne intermittent, diet breaks, adaptation métabolique, répartition
 des glucides autour de l'entraînement, gestion des fringales,
 végétarien/végétalien en musculation, alcool et objectifs physiques,
 créatine et cerveau (fatigue cognitive), caféine soutenue par la
-littérature (dose-réponse), alimentation étudiante à petit budget.
+littérature (dose-réponse), alimentation étudiante à petit budget, protéines
+et satiété/poids en sèche, HIIT vs cardio classique (deux marqueurs
+différents), collagène et tendons (structure vs force).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -269,7 +274,8 @@ fascia), respiration et système nerveux (effet réel mais limité), jet lag
 pour athlètes qui voyagent (asymétrie est/ouest), stretching statique
 avant/après (effet aigu vs chronique), retour après blessure aux
 ischio-jambiers (comparaison de protocoles), surentraînement/signes
-précoces (consensus ECSS/ACSM).
+précoces (consensus ECSS/ACSM), infection ORL après un effort très long
+(marathon, fenêtre de vulnérabilité transitoire).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -375,6 +381,15 @@ Snijders et al. 2019, revue (DOI 10.3389/fnut.2019.00017), Dela Cruz & Kahan
 hypertrophie : Schoenfeld/Ogborn/Krieger 2016, méta-analyse 15 études (DOI
 10.1080/02640414.2016.1210197). Proximité de l'échec (RIR), hypertrophie vs
 force : Robinson et al. 2024, méta-régressions (DOI 10.1007/s40279-024-02069-2).
+Protéines et satiété/poids : Hansen et al. 2021, méta-analyse 43 essais (DOI
+10.3390/nu13093193). HIIT vs cardio classique : Wang et al. 2024,
+méta-analyse en réseau 28 essais (DOI 10.3389/fendo.2023.1294362). Infection
+ORL post-effort long : Sardeli et al. 2024, méta-analyse marathon (PMID
+39094181, pas de DOI indexé). BFR (restriction de flux sanguin) : Lixandrão
+et al. 2018, méta-analyse de référence (DOI 10.1007/s40279-017-0795-y), Geng
+et al. 2024, modérateur statut d'entraînement (DOI 10.1186/s40798-024-00719-3).
+Collagène et tendons : Buchalski et al. 2026, revue systématique Stanford
+(DOI 10.3390/jfmk11010130).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
