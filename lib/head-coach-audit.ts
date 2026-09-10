@@ -108,7 +108,7 @@ export async function runHeadCoachAudit(
               owner_id: ownerId,
               agent_key: "head-coach",
               title,
-              description: "Un programme existe pour ce client mais ne contient aucune séance configurée — probablement laissé inachevé, à reprendre ou supprimer.",
+              description: "Un programme existe pour ce client mais ne contient aucune séance configurée, probablement laissé inachevé, à reprendre ou supprimer.",
               status: "a_faire",
             });
             existingTitles.add(title);

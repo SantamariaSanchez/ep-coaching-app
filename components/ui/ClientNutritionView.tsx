@@ -3110,7 +3110,7 @@ function DietPlanCard({
 
       {expanded && !isViewingToday && (
         <p className="px-4 pt-2 text-[10px] text-[#F5EDED]/30 italic">
-          Aperçu de {DOW_FULL_LABELS[viewDow]}, lecture seule — reviens sur {DOW_FULL_LABELS[todayDow]} pour cocher.
+          Aperçu de {DOW_FULL_LABELS[viewDow]}, lecture seule, reviens sur {DOW_FULL_LABELS[todayDow]} pour cocher.
         </p>
       )}
 

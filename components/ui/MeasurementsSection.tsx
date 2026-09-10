@@ -172,7 +172,7 @@ export default function MeasurementsSection({
                   step="0.1"
                   value={values[key] ?? ""}
                   onChange={(e) => setValues((prev) => ({ ...prev, [key]: e.target.value }))}
-                  placeholder="—"
+                  placeholder="N/A"
                   aria-label={label}
                   className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm text-white placeholder:text-[#F5EDED]/15 focus:outline-none focus:border-[#E01E1E]/50"
                 />
@@ -241,7 +241,7 @@ export default function MeasurementsSection({
                       m.weight != null ? `${m.weight}kg` : null,
                       m.waist != null ? `taille ${m.waist}` : null,
                       m.arm_flexed != null ? `bras ${m.arm_flexed}` : null,
-                    ].filter(Boolean).join(" · ") || "—"}
+                    ].filter(Boolean).join(" · ") || "N/A"}
                   </span>
                 </div>
               ))}

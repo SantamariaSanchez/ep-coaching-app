@@ -297,7 +297,7 @@ export default function PermissionsCard({
           >
             <Send size={11} />
             {testPushState === "sending" && "Envoi…"}
-            {testPushState === "sent" && "Envoyée — regarde ton appareil"}
+            {testPushState === "sent" && "Envoyée, regarde ton appareil"}
             {testPushState === "error" && "Échec, réessaie"}
             {testPushState === "idle" && "M'envoyer une notification de test"}
           </button>

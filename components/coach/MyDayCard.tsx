@@ -246,7 +246,7 @@ export default function MyDayCard({
                 <MessageCircle size={13} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
                 <p style={{ margin: 0, fontSize: 11.5, color: "#F5EDED", flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                   <strong style={{ fontWeight: 800 }}>{m.senderName}</strong>
-                  {" — "}
+                  {" · "}
                   <span style={{ color: "rgba(245,237,237,0.5)" }}>{m.content}</span>
                 </p>
               </Link>

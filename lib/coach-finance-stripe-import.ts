@@ -29,7 +29,7 @@ export async function logStripeCoachingPayment(params: {
   await insertCoachRevenueEntry({
     coachId: params.coachId,
     amountCents: params.amountTotalCents,
-    label: `Abonnement ${params.clientName ?? "client"} — premier paiement`,
+    label: `Abonnement ${params.clientName ?? "client"} · premier paiement`,
     stripeEventId: params.stripeSessionId,
   });
 }
@@ -49,7 +49,7 @@ export async function logStripeRenewalPayment(params: {
   await insertCoachRevenueEntry({
     coachId: params.coachId,
     amountCents: params.amountPaidCents,
-    label: `Abonnement ${params.clientName ?? "client"} — renouvellement`,
+    label: `Abonnement ${params.clientName ?? "client"} · renouvellement`,
     stripeEventId: params.stripeInvoiceId,
   });
 }

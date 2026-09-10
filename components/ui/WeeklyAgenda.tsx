@@ -965,7 +965,7 @@ export default function WeeklyAgenda({
                     <button
                       type="button"
                       onClick={() => editable && openEdit(reveilBlockFor(day)!)}
-                      title={editable ? `Réveil à ${reveilTime} — cliquer pour changer` : `Réveil à ${reveilTime}`}
+                      title={editable ? `Réveil à ${reveilTime}, cliquer pour changer` : `Réveil à ${reveilTime}`}
                       className="flex items-center gap-0.5 text-[8px] font-bold text-[#a78bfa]/70"
                       style={{ cursor: editable ? "pointer" : "default" }}
                     >
@@ -1004,7 +1004,7 @@ export default function WeeklyAgenda({
                 <button
                   type="button"
                   onClick={() => editable && openEdit(reveilBlockFor(selectedDay)!)}
-                  title={editable ? "Heure de réveil — cliquer pour la changer (alarme réelle, pas un simple rappel)" : "Heure de réveil (alarme réelle, pas un simple rappel)"}
+                  title={editable ? "Heure de réveil, cliquer pour la changer (alarme réelle, pas un simple rappel)" : "Heure de réveil (alarme réelle, pas un simple rappel)"}
                   className="flex items-center gap-1 text-[10px] font-bold normal-case tracking-normal text-[#a78bfa] bg-[#a78bfa]/10 border border-[#a78bfa]/25 rounded-full px-2 py-0.5"
                   style={{ cursor: editable ? "pointer" : "default" }}
                 >

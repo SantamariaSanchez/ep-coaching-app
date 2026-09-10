@@ -36,7 +36,7 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
     overview:
       "Une blessure ne signifie pas l'arrêt total de l'entraînement, mais un changement de priorité : la zone touchée demande une reprise progressive et encadrée, pendant que le reste du corps peut souvent continuer à s'entraîner normalement. Le principe directeur est la charge relative à la douleur (\"pain-guided loading\") : une gêne légère et stable pendant l'exercice est généralement acceptable, une douleur qui augmente pendant ou après la séance ne l'est pas.",
     adaptationPrinciples: [
-      "Ne jamais reprendre un mouvement douloureux sans validation du kinésithérapeute ou du médecin qui suit la blessure — le coach adapte le programme autour de ce cadre, il ne le remplace pas.",
+      "Ne jamais reprendre un mouvement douloureux sans validation du kinésithérapeute ou du médecin qui suit la blessure. Le coach adapte le programme autour de ce cadre, il ne le remplace pas.",
       "Entraînement autour de la blessure (\"train around it\") : maintenir le volume sur les groupes musculaires non concernés pendant la phase de repos relatif de la zone touchée.",
       "Réintroduction progressive par paliers d'amplitude et de charge, jamais un retour direct au niveau pré-blessure.",
       "Privilégier les variantes d'exercice qui déchargent l'articulation concernée (machine guidée plutôt que charge libre, amplitude partielle avant amplitude complète).",
@@ -65,10 +65,10 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
       "Diabète : anticiper le risque d'hypoglycémie à l'effort (collation avant/pendant si besoin), éviter les efforts très intenses non planifiés.",
       "Hypertension : privilégier des charges permettant de respirer normalement pendant l'effort (éviter le blocage respiratoire/Valsalva prolongé sur les efforts maximaux), progression très graduelle de l'intensité.",
       "Pathologies cardiovasculaires stabilisées : suivre strictement le cadre de fréquence cardiaque et d'intensité donné par le cardiologue plutôt qu'un pourcentage générique de FC max.",
-      "Prioriser la régularité (constance sur plusieurs semaines) plutôt que l'intensité ponctuelle — c'est ce qui a l'effet le plus documenté sur ces pathologies.",
+      "Prioriser la régularité (constance sur plusieurs semaines) plutôt que l'intensité ponctuelle : c'est ce qui a l'effet le plus documenté sur ces pathologies.",
     ],
     redFlags: [
-      "Douleur thoracique, essoufflement anormal, palpitations ou vertiges pendant l'effort — arrêt immédiat de la séance.",
+      "Douleur thoracique, essoufflement anormal, palpitations ou vertiges pendant l'effort : arrêt immédiat de la séance.",
       "Symptômes d'hypoglycémie chez un client diabétique (tremblements, sueurs froides, confusion).",
       "Le client n'a pas d'autorisation médicale récente pour l'activité physique alors que sa pathologie est encore mal contrôlée.",
       "Toute aggravation rapportée entre deux séances qui n'a pas encore été vue par le médecin traitant.",
@@ -84,9 +84,9 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
     shortLabel: "Handicap",
     summary: "Adapter l'accessibilité du programme et des exercices à la situation réelle du client, jamais un programme générique retouché à la marge.",
     overview:
-      "Le handicap recouvre des situations extrêmement variées (moteur, sensoriel, cognitif) : il n'existe pas de \"programme handicap\" unique, seulement des principes d'adaptation à appliquer à la situation précise du client. La première étape est toujours de comprendre concrètement ce que le client peut faire, veut faire, et dans quelles conditions — jamais de présumer des limites à sa place.",
+      "Le handicap recouvre des situations extrêmement variées (moteur, sensoriel, cognitif) : il n'existe pas de \"programme handicap\" unique, seulement des principes d'adaptation à appliquer à la situation précise du client. La première étape est toujours de comprendre concrètement ce que le client peut faire, veut faire, et dans quelles conditions, jamais de présumer des limites à sa place.",
     adaptationPrinciples: [
-      "Partir des capacités réelles du client (testées ensemble) plutôt que d'un diagnostic générique — deux personnes avec le même diagnostic peuvent avoir des capacités très différentes.",
+      "Partir des capacités réelles du client (testées ensemble) plutôt que d'un diagnostic générique : deux personnes avec le même diagnostic peuvent avoir des capacités très différentes.",
       "Handicap moteur : privilégier les machines guidées et les positions stables (assis, appuyé) qui isolent le mouvement voulu sans exiger un équilibre ou une posture que le client ne maîtrise pas encore.",
       "Handicap sensoriel (visuel, auditif) : structurer la communication autrement (démonstration tactile, repères physiques dans la salle, supports écrits) plutôt que de réduire le contenu de l'entraînement.",
       "Handicap cognitif : simplifier la structure de la séance (moins d'exercices différents, répétés plus longtemps) plutôt que de réduire l'intensité ou le volume.",
@@ -114,10 +114,10 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
       "1er trimestre : peu de changements nécessaires pour une grossesse sans complication, en restant attentif à la fatigue et aux nausées.",
       "2e-3e trimestre : éviter les exercices en décubitus dorsal prolongé après le 1er trimestre, réduire les mouvements à fort risque de chute ou d'impact, adapter l'intensité au ressenti (\"talk test\" plutôt qu'un pourcentage de FC max).",
       "Post-partum : reprise très progressive, dépistage du diastasis des grands droits et du plancher pelvien avant de réintroduire les exercices à forte pression abdominale (gainage classique, charges lourdes), généralement après le feu vert de la visite post-natale.",
-      "Zéro restriction calorique volontaire pendant la grossesse et l'allaitement — la nutrition sert la santé de la mère et de l'enfant, jamais un objectif esthétique sur cette période.",
+      "Zéro restriction calorique volontaire pendant la grossesse et l'allaitement : la nutrition sert la santé de la mère et de l'enfant, jamais un objectif esthétique sur cette période.",
     ],
     redFlags: [
-      "Saignement, contractions douloureuses, perte de liquide, essoufflement anormal ou douleur thoracique pendant l'effort — arrêt immédiat et contact avec la sage-femme/le gynécologue.",
+      "Saignement, contractions douloureuses, perte de liquide, essoufflement anormal ou douleur thoracique pendant l'effort : arrêt immédiat et contact avec la sage-femme/le gynécologue.",
       "Diastasis abdominal visible (bombement le long de la ligne médiane) non encore évalué par un professionnel.",
       "Douleur pelvienne ou fuites urinaires pendant l'effort en post-partum, signe d'un plancher pelvien pas encore prêt pour la charge prévue.",
     ],
@@ -134,14 +134,14 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
     overview:
       "La chute des œstrogènes à la ménopause accélère la perte de masse musculaire et de densité osseuse, et modifie souvent la répartition des graisses. L'entraînement en résistance devient un levier particulièrement important sur cette période, pas un simple complément au cardio.",
     adaptationPrinciples: [
-      "Prioriser l'entraînement en résistance à charge progressive (2-3 séances/semaine minimum) plutôt qu'un focus cardio seul — c'est ce qui a l'effet le plus direct sur la préservation de la masse musculaire et osseuse.",
+      "Prioriser l'entraînement en résistance à charge progressive (2-3 séances/semaine minimum) plutôt qu'un focus cardio seul : c'est ce qui a l'effet le plus direct sur la préservation de la masse musculaire et osseuse.",
       "Intégrer des exercices porteurs de charge (mise en charge du squelette : squat, fentes, montées de charge) pour la santé osseuse, en particulier en l'absence de contre-indication ostéoarticulaire.",
       "Attention accrue à la récupération : le sommeil et le stress sont souvent perturbés sur cette période (bouffées de chaleur, insomnies), ce qui peut réduire la tolérance au volume d'entraînement habituel.",
       "Apport protéique à réévaluer à la hausse (la synthèse protéique musculaire devient moins efficace avec l'âge) plutôt que de garder un objectif calorique/protéique calé sur un profil plus jeune.",
       "Ne pas présumer d'une baisse de capacité générale : l'ajustement porte sur la récupération et la structure, pas nécessairement sur l'intensité absolue.",
     ],
     redFlags: [
-      "Douleur osseuse inhabituelle ou fracture pour un traumatisme mineur — évoquer une évaluation de densité osseuse avec le médecin.",
+      "Douleur osseuse inhabituelle ou fracture pour un traumatisme mineur : évoquer une évaluation de densité osseuse avec le médecin.",
       "Palpitations, bouffées de chaleur sévères ou vertiges qui perturbent réellement la sécurité de la séance.",
       "Aucun suivi gynécologique/médical récent alors que la cliente rapporte des symptômes marqués (à orienter, pas à gérer côté coaching).",
     ],
@@ -156,11 +156,11 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
     shortLabel: "TCA",
     summary: "Reconnaître les signaux, ne jamais tenter de \"gérer\" un TCA soi-même, orienter systématiquement vers un professionnel spécialisé.",
     overview:
-      "Un trouble du comportement alimentaire (restriction, hyperphagie, purge) n'est pas un simple excès de rigueur nutritionnelle : c'est une pathologie qui nécessite une prise en charge spécialisée (médecin, psychiatre, diététicien spécialisé). Le rôle du coach ici est avant tout la détection précoce et l'orientation, jamais le traitement — un programme nutritionnel classique peut aggraver un TCA existant.",
+      "Un trouble du comportement alimentaire (restriction, hyperphagie, purge) n'est pas un simple excès de rigueur nutritionnelle : c'est une pathologie qui nécessite une prise en charge spécialisée (médecin, psychiatre, diététicien spécialisé). Le rôle du coach ici est avant tout la détection précoce et l'orientation, jamais le traitement. Un programme nutritionnel classique peut aggraver un TCA existant.",
     adaptationPrinciples: [
       "Ne jamais fixer d'objectif de poids ou de composition corporelle chiffré tant qu'un TCA est suspecté ou en cours de prise en charge.",
       "Retirer la pression de performance/apparence du discours (\"progrès\", \"objectif physique\") pour recentrer sur le fonctionnement (force, énergie, sommeil) le temps de la prise en charge.",
-      "Ne jamais proposer de plan restrictif à un client qui montre des signaux de TCA, même à sa demande explicite — orienter plutôt vers un professionnel spécialisé avant de continuer le suivi nutrition.",
+      "Ne jamais proposer de plan restrictif à un client qui montre des signaux de TCA, même à sa demande explicite : orienter plutôt vers un professionnel spécialisé avant de continuer le suivi nutrition.",
       "Rester dans le rôle du coach sportif (entraînement, régularité, écoute) pendant qu'un professionnel spécialisé gère le volet nutritionnel/psychologique.",
     ],
     redFlags: [

@@ -3317,3 +3317,69 @@ plus haut dans ce même fichier, axe BA).
 - Axe C (`<div onClick>` sans vrai bouton) déjà relancé lors de BB (clos, 0
   nouveau cas) — ne pas le re-relancer inutilement à la prochaine passe
   sauf nouveau code touchant des éléments cliquables.
+
+## BD — Repasse Axe Q (tirets em/en dans le texte utilisateur) après 136 commits (2026-09-10)
+
+**Statut : livré.** Suite directe de BC ("continue go") — même scanner que
+l'axe d'origine du 2026-08-15 (isoler la partie de chaque ligne avant `//`,
+retirer les blocs de commentaires, chercher `—`/`–` dans ce qui reste),
+reconstruit (`find-user-facing-dashes.mjs`, scratchpad) faute de l'avoir
+sous la main.
+
+**Résultat : 23 lignes candidates, triées une par une** (contre ~40 lors
+de la première passe — cohérent, l'essentiel avait déjà été nettoyé) :
+
+**Trouvaille principale : `lib/medical-constraints.ts` (11 occurrences),
+un fichier de contenu entier créé après la dernière passe** (Axe 8
+VISION.md, "Contraintes & populations spécifiques", livré le 2026-08-19 —
+voir plus haut dans ce document) — jamais balayé depuis, confirmé rendu
+directement à l'écran (`/dashboard/coach/contraintes/[slug]`,
+`ClientMedicalConstraintsPanel.tsx`). Toutes les phrases utilisent le tiret
+comme connecteur ("X — Y") : remplacées au cas par cas par une virgule, un
+point (nouvelle phrase) ou un deux-points selon ce que demandait la
+grammaire de chaque passage, jamais un remplacement mécanique uniforme —
+même discipline que l'axe d'origine.
+
+**Autres fichiers corrigés** (11 occurrences) :
+- `MeasurementsSection.tsx` (×2) : même motif déjà traité à l'axe d'origine
+  (`placeholder="—"` et un fallback `|| "—"` pour une donnée manquante) —
+  remplacés par `"N/A"`, du code neuf qui avait réintroduit exactement le
+  motif déjà proscrit.
+- `MyDayCard.tsx` : séparateur `{" — "}` entre le nom de l'expéditeur et le
+  contenu d'un message — remplacé par `{" · "}`, le séparateur déjà
+  standard ailleurs dans l'appli (`MeasurementsSection.tsx`, notamment).
+- `coach-finance-stripe-import.ts` (×2) : labels d'entrées de revenus
+  générées automatiquement depuis Stripe (Axe AZ, import auto compta coach),
+  visibles dans la compta perso du coach — remplacés par `" · "` également,
+  même raison.
+- `PermissionsCard.tsx`, `ClientNutritionView.tsx`, `WeeklyAgenda.tsx`
+  (×2, des `title=` de tooltip, donc bien exposés — dupliqués en
+  `aria-label` par l'Axe F), `head-coach-audit.ts` (description d'une
+  tâche d'audit visible par le fondateur dans son fil de tâches IA) :
+  tirets connecteurs de phrase, remplacés par une virgule selon le même
+  principe.
+
+**Vérifié SAIN, volontairement laissé** : `SocialGenerator.tsx:27` et
+`lib/ai-agents.ts:274` — deux prompts envoyés à une IA qui **expliquent la
+règle elle-même** ("jamais de tiret em/en (—) nulle part... virgule ou
+point à la place") : le tiret y apparaît une seule fois, entre
+parenthèses, comme référence du caractère à proscrire, pas comme violation
+de la règle dans du texte réellement affiché à l'utilisateur. Même
+motif déjà rencontré et laissé tel quel implicitement à l'axe d'origine.
+
+**Vérification** : `npx tsc --noEmit` propre. `npx eslint` sur les 8
+fichiers touchés → 14 erreurs préexistantes (même famille `set-state-in-
+effect`, Axe E, confirmées identiques avant/après par `git stash`/`git
+stash pop`). `npx next build` vérifié propre (contenu réel du log lu,
+pas seulement le code de sortie).
+
+### Reste à faire sur cette repasse
+
+- Rien d'identifié — la liste des 23 candidats a été entièrement triée
+  (21 corrigés, 2 vérifiés sains et volontairement laissés). Si une
+  prochaine passe trouve à nouveau des tirets dans `medical-constraints.ts`
+  ou un fichier de contenu similaire, envisager d'ajouter une vérification
+  automatique (lint custom ou test) plutôt que de compter sur des passes
+  manuelles répétées pour un type de fichier qui semble particulièrement
+  exposé (contenu long, rédigé par blocs, la règle moins présente à
+  l'esprit que dans du JSX classique).
