@@ -94,7 +94,7 @@ export default function NewsletterSignupForm({
         <input
           type="email"
           required
-          placeholder="ton@email.com"
+          placeholder="ton@email.com" aria-label="ton@email.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="ep-input"

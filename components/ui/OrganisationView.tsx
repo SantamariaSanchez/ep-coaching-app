@@ -442,7 +442,7 @@ function ApplicationRow({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={() => onSaveNotes(notes)}
-          placeholder="Notes d'entretien, impressions, points à vérifier…"
+          placeholder="Notes d'entretien, impressions, points à vérifier…" aria-label="Notes d'entretien, impressions, points à vérifier…"
           rows={2}
           className="w-full mt-2.5 bg-[#150000] border border-[#890404]/25 rounded-lg px-2.5 py-2 text-[11px] text-[#F5EDED]/70 placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
         />

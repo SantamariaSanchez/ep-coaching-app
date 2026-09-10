@@ -79,21 +79,21 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
       <input
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
-        placeholder="Nom complet"
+        placeholder="Nom complet" aria-label="Nom complet"
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
       />
       <input
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         type="email"
-        placeholder="Email"
+        placeholder="Email" aria-label="Email"
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
       />
       <input
         value={phone}
         onChange={(e) => setPhone(e.target.value)}
         type="tel"
-        placeholder="Téléphone (optionnel)"
+        placeholder="Téléphone (optionnel)" aria-label="Téléphone (optionnel)"
         className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
       />
 
@@ -115,6 +115,7 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
             value={answers[q.key] ?? ""}
             onChange={(e) => setAnswer(q.key, e.target.value)}
             placeholder={q.placeholder}
+            aria-label={q.label}
             rows={q.key === "motivation" ? 3 : 2}
             className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
           />

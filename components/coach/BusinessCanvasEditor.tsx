@@ -52,6 +52,7 @@ function CanvasBlockField({
         onChange={(e) => setValue(e.target.value)}
         onBlur={handleBlur}
         disabled={isPending}
+        aria-label={label}
         rows={4}
         maxLength={20000}
         className="w-full flex-1 bg-[#150000] border border-[#890404]/25 rounded-lg px-3 py-2.5 text-[12.5px] text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none leading-relaxed"

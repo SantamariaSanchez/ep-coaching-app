@@ -82,6 +82,7 @@ export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
         <select
           value={slug}
           onChange={(e) => setSlug(e.target.value)}
+          aria-label="Guide déjà publié"
           className={inputCls}
         >
           {guides.map((g) => (
@@ -94,13 +95,13 @@ export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
           <input
             value={sujet}
             onChange={(e) => setSujet(e.target.value)}
-            placeholder="Sujet (optionnel, ex : la créatine chez les végétariens)"
+            placeholder="Sujet (optionnel, ex : la créatine chez les végétariens)" aria-label="Sujet (optionnel, ex : la créatine chez les végétariens)"
             className={inputCls}
           />
           <input
             value={angle}
             onChange={(e) => setAngle(e.target.value)}
-            placeholder="Angle (optionnel, ex : mythe vs réalité)"
+            placeholder="Angle (optionnel, ex : mythe vs réalité)" aria-label="Angle (optionnel, ex : mythe vs réalité)"
             className={inputCls}
           />
         </div>

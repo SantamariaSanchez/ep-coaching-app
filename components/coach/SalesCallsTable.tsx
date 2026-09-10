@@ -62,7 +62,7 @@ function CallRow({ call }: { call: SalesCall }) {
       <input
         type="number"
         inputMode="decimal"
-        placeholder="CA €"
+        placeholder="CA €" aria-label="CA €"
         value={revenue}
         onChange={(e) => setRevenue(e.target.value)}
         onBlur={() => patch({ revenue_amount: revenue.trim() ? Number(revenue) : null })}
@@ -107,7 +107,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
       <form onSubmit={handleAdd} className="flex items-center gap-2 mb-4 flex-wrap">
         <input
           type="text"
-          placeholder="Nom du lead"
+          placeholder="Nom du lead" aria-label="Nom du lead"
           value={leadName}
           onChange={(e) => setLeadName(e.target.value)}
           className="ep-input"
@@ -117,6 +117,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
           type="date"
           value={callDate}
           onChange={(e) => setCallDate(e.target.value)}
+          aria-label="Date de l'appel"
           className="ep-input"
           style={{ width: 140 }}
         />

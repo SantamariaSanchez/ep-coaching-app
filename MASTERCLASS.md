@@ -3233,3 +3233,87 @@ via le MCP Supabase, mentionné ici par transparence comme l'exige
 AGENTS.md) : `harden_notifications_sync_search_path`,
 `harden_prequalification_responses_grants`,
 `perf_fix_sales_calls_rls_initplan_and_fk_indexes`.
+
+## BC — Repasse Axe G (champs sans nom accessible) après 136 commits (2026-09-10)
+
+**Statut : livré.** Suite directe de BB ("continue go") — Axe G marqué
+"scripts d'origine perdus" dans le reste-à-faire de BB, reconstruit de
+zéro plutôt que réextrait d'un vieux scratchpad disparu.
+
+**Scanner reconstruit** (`find-unlabeled-inputs.mjs`, même logique que
+l'axe d'origine du 2026-08-14 : pour chaque `<input>`/`<textarea>`/
+`<select>`, vérifie l'absence d'`aria-label(ledby)`, d'un `<label
+htmlFor>` référencé ailleurs, et d'un `<label>` englobant implicite).
+Deux bugs trouvés et corrigés PENDANT la construction du scanner, avant
+tout résultat exploité :
+- Un motif `<Field label="...">{children}</Field>` (`ClientIntakeForm.tsx`,
+  `RoadmapEditor.tsx`) injecte `aria-label` via `cloneElement` côté React,
+  invisible à une regex sur le texte source du `<input>` — 46 + 10 faux
+  positifs le temps de l'ajouter à la détection (repère les fonctions
+  locales combinant `cloneElement` et `aria-label` dans leur corps, puis
+  vérifie si le tag est un enfant direct non refermé de ce wrapper).
+- Bug de calcul du corps de fonction (même famille que celui déjà corrigé
+  dans le scanner de l'Axe A cette session) : `src.indexOf("{", ...)`
+  trouvait le `{` du **paramètre déstructuré** (`function Field({ label,
+  children }: {...})`) au lieu du `{` du **corps** de la fonction — corrigé
+  en prenant la fin du match complet de la regex plutôt qu'une recherche
+  naïve du prochain `{`.
+- `type="hidden"` exclu (jamais exposé à un lecteur d'écran, aucun nom
+  accessible nécessaire) — expliquait à lui seul la quasi-totalité des faux
+  positifs de `DailyBilanForm.tsx`, `CheckinCard.tsx`, `CheckinForm.tsx`,
+  `ClientCorrectionsReplySection.tsx`, `ClientCorrectionsSection.tsx`.
+
+**Résultat après ces corrections : 30 candidats** (contre 392 lors de la
+toute première passe du 2026-08-14 — signe que l'essentiel avait déjà été
+traité, cohérent avec l'historique de l'axe) :
+- **12 avec `placeholder` réutilisable tel quel** : appliqués
+  mécaniquement (`apply-input-aria-labels.mjs`, même script que l'axe
+  d'origine) sur `CareersClient.tsx` (×3, formulaire de candidature),
+  `AgentChatView.tsx` (×2, chat avec un agent IA), `RoadmapPlanner.tsx`,
+  `SalesCallsTable.tsx` (×2), `SocialGenerator.tsx` (×2),
+  `NewsletterSignupForm.tsx`, `OrganisationView.tsx`.
+- **18 sans placeholder**, triés un par un : **8 vrais gaps corrigés à la
+  main** (`aria-label` statique ou dynamique selon le contexte —
+  `CareersClient.tsx` textarea de question dynamique (`aria-label={q.label}`),
+  `AgentChatView.tsx` textarea de chat (`` `Message à ${agent.name}` ``),
+  `BusinessCanvasEditor.tsx` textarea de bloc canvas (`aria-label={label}`,
+  la prop existait déjà), `CoachMailingComposer.tsx` (×2 — select liste
+  Brevo, input datetime-local de programmation), `RoadmapPlanner.tsx`
+  textarea de vision (`aria-label={info.prompt}`), `SalesCallsTable.tsx`
+  input date d'appel, `SocialGenerator.tsx` select de guide,
+  `ClientIntakeForm.tsx` input objectif de pas imposé). **10 faux positifs**
+  confirmés à la lecture : `LiveScheduler.tsx` et `TrackingClient.tsx`
+  (le motif `<select>`/`<input type="number">` matché À L'INTÉRIEUR D'UN
+  COMMENTAIRE, pas du vrai JSX — limite connue et assumée du scanner, ne
+  parse pas les commentaires), `NewsletterSignupForm.tsx` (champ honeypot
+  anti-bot déjà `aria-hidden="true"`, correctement invisible aux lecteurs
+  d'écran par conception), `ClientOnboardingIntake.tsx` (radio bien
+  encapsulé dans un vrai `<label>` avec le texte de l'option en enfant —
+  implicite mais correct, juste au-delà de la fenêtre de recherche de 900
+  caractères utilisée par le scanner à cause d'un bloc `style={{}}` très
+  long).
+
+**Vérification** : `npx tsc --noEmit` propre. `npx eslint` sur les 10
+fichiers touchés → 3 erreurs préexistantes (`set-state-in-effect`, motif
+Axe E déjà accepté, confirmées identiques avant/après par `git stash`/
+`git stash pop`). `npx next build` lancé en tâche de fond pour
+confirmation finale, résultat à vérifier avant de conclure — voir le
+contenu réel du log, pas seulement le code de sortie (leçon déjà tirée
+plus haut dans ce même fichier, axe BA).
+
+### Reste à faire sur cette repasse
+
+- La fenêtre de recherche de 900 caractères reste une limite arbitraire —
+  un `style={{}}` inline encore plus long pourrait produire un nouveau faux
+  positif. Augmenter encore la fenêtre a un coût de performance négligeable
+  vu la taille du projet ; pas fait ici faute de nouveau cas concret à
+  couvrir.
+- Le scanner ne strip pas les commentaires JS avant de chercher des tags —
+  deux faux positifs rencontrés cette passe venaient de `<select>`/`<input>`
+  mentionnés dans un commentaire explicatif. Cosmétique (juste du bruit à
+  trier manuellement), pas corrigé faute d'un vrai gain pour l'effort
+  (retirer les commentaires proprement demanderait de gérer `//` et `/* */`
+  sans casser les chaînes, un tokenizer minimal plutôt qu'une regex).
+- Axe C (`<div onClick>` sans vrai bouton) déjà relancé lors de BB (clos, 0
+  nouveau cas) — ne pas le re-relancer inutilement à la prochaine passe
+  sauf nouveau code touchant des éléments cliquables.

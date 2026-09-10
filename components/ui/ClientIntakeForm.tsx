@@ -244,6 +244,7 @@ export default function ClientIntakeForm({
               min={1}
               value={goalInput}
               onChange={(e) => setGoalInput(e.target.value)}
+              aria-label="Objectif de pas quotidien"
               className={`${inputClass} w-32`}
             />
             <span className="text-[10px] text-[#F5EDED]/30">pas / jour</span>

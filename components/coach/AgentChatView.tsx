@@ -196,13 +196,13 @@ export default function AgentChatView({
             <input
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder="Titre de la tâche"
+              placeholder="Titre de la tâche" aria-label="Titre de la tâche"
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
             />
             <textarea
               value={taskDesc}
               onChange={(e) => setTaskDesc(e.target.value)}
-              placeholder="Détails (optionnel)"
+              placeholder="Détails (optionnel)" aria-label="Détails (optionnel)"
               rows={2}
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[12px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
             />
@@ -283,6 +283,7 @@ export default function AgentChatView({
               }
             }}
             placeholder={`Écris à ${agent.name}…`}
+            aria-label={`Message à ${agent.name}`}
             rows={2}
             className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
           />

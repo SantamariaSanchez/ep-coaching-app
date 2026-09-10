@@ -325,6 +325,7 @@ export default function CoachMailingComposer({
                 <select
                   value={selectedListId ?? ""}
                   onChange={(e) => setSelectedListId(parseInt(e.target.value, 10))}
+                  aria-label="Liste Brevo"
                   className="w-full appearance-none bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-[12.5px] text-white focus:outline-none focus:border-[#E01E1E]/60"
                 >
                   {brevoLists.map((l) => (
@@ -462,6 +463,7 @@ export default function CoachMailingComposer({
               type="datetime-local"
               value={scheduledAtLocal}
               min={minScheduleAt}
+              aria-label="Date et heure d'envoi programmé"
               onChange={(e) => setScheduledAtLocal(e.target.value)}
               className="bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-[12px] text-white focus:outline-none focus:border-[#E01E1E]/60"
             />

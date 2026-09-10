@@ -112,6 +112,7 @@ export default function RoadmapPlanner({
           onChange={(e) => setVisions((prev) => ({ ...prev, [horizon]: e.target.value }))}
           onBlur={saveVision}
           placeholder={info.placeholder}
+          aria-label={info.prompt}
           rows={4}
           maxLength={20000}
           className="w-full mt-2 bg-[#150000] border border-[#890404]/25 rounded-lg px-3.5 py-3 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50 resize-none leading-relaxed"
@@ -180,7 +181,7 @@ export default function RoadmapPlanner({
             value={newMilestone}
             onChange={(e) => setNewMilestone(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMilestone()}
-            placeholder="Ajouter un jalon pour cet horizon..."
+            placeholder="Ajouter un jalon pour cet horizon..." aria-label="Ajouter un jalon pour cet horizon..."
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/25 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
           />
           <button
