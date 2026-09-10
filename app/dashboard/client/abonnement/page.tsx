@@ -1,8 +1,11 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getTotalPoints } from "@/lib/gamification";
+import { POINTS } from "@/lib/gamification-types";
 import { isCoachAcceptingNewClients, isOnWaitlist } from "@/utils/waitlist";
+import { getReferralStats } from "@/utils/referrals";
 import WaitlistJoinButton from "@/components/client/WaitlistJoinButton";
+import ReferralCard from "@/components/client/ReferralCard";
 import {
   PhoneCall,
   Dumbbell,
@@ -54,12 +57,18 @@ export default async function AbonnementPage() {
   if (profile?.role === "coach") redirect("/dashboard/coach");
 
   const alreadySubscribed = isSubscribed(profile);
-  const [points, coachAccepting, onWaitlist] = await Promise.all([
+  const [points, coachAccepting, onWaitlist, referralStats] = await Promise.all([
     getTotalPoints(user.id),
     // Item 45 : le coach du membre est-il à capacité ? Non pertinent si
     // déjà client (alreadySubscribed) ou pas encore de coach assigné.
     !alreadySubscribed && profile?.coach_id ? isCoachAcceptingNewClients(profile.coach_id) : Promise.resolve(true),
     !alreadySubscribed && profile?.coach_id ? isOnWaitlist(profile.coach_id, user.id) : Promise.resolve(false),
+    // Brainstorm "2 avatars" (2026-09-10) : le parrainage (ReferralCard,
+    // Item 41) n'existait jusqu'ici que sur la page Profil, jamais mentionné
+    // au moment précis où un membre gratuit se demande s'il peut se
+    // permettre de payer — un mois offert par ami parrainé devenu client
+    // est une alternative crédible, pas un simple gadget social.
+    !alreadySubscribed ? getReferralStats(user.id) : Promise.resolve(null),
   ]);
   const showWaitlist = !alreadySubscribed && !coachAccepting;
 
@@ -425,6 +434,19 @@ export default async function AbonnementPage() {
             </a>
           </div>
         </section>
+      )}
+
+      {/* Parrainage — alternative crédible à payer soi-même pour qui hésite
+          (brainstorm "2 avatars", 2026-09-10). Composant déjà construit
+          pour la page Profil (Item 41), même props, aucun nouveau code de
+          fetch ni de rendu. */}
+      {!alreadySubscribed && referralStats && (
+        <ReferralCard
+          referralCode={referralStats.code}
+          referredCount={referralStats.referredCount}
+          rewardedCount={referralStats.rewardedCount}
+          pointsPerReferral={POINTS.referral}
+        />
       )}
 
       {/* Points / gamification */}

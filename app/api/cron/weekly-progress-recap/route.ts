@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
+import { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
 
 // Item 23 (récap hebdo personnalisé) : déclenché chaque dimanche soir par
 // Supabase pg_cron (enregistré directement en base, même mécanisme que
@@ -8,6 +9,14 @@ import { notifyUser } from "@/lib/notify";
 // enregistrement direct plutôt qu'une migration commitée). Ferme la boucle
 // sur séances + nutrition + poids en un seul message plutôt que trois
 // notifications séparées dans la même soirée.
+//
+// La formulation du message (formatWeeklyRecapLine) vit maintenant dans
+// lib/weekly-recap.ts, partagée avec l'affichage direct en page (Aujourd'hui,
+// brainstorm "2 avatars" 2026-09-10) — un seul texte, que le membre le voie
+// en push ou en page. Le calcul en masse ci-dessous (tous les clients en 3
+// requêtes groupées) reste ici tel quel : le réécrire client par client
+// via lib/weekly-recap.ts transformerait 3 requêtes en 3×N, inadapté à un
+// cron qui traite toute la base d'un coup.
 function avg(vals: (number | null)[]): number | null {
   const v = vals.filter((x): x is number => x != null);
   return v.length > 0 ? v.reduce((a, b) => a + b, 0) / v.length : null;
@@ -37,9 +46,15 @@ export async function GET(req: Request) {
     admin.from("profiles").select("id, role, subscription_status"),
   ]);
 
+  // Brainstorm "2 avatars" (2026-09-10) : ce filtre excluait les membres
+  // gratuits alors que tout ce dont ce récap a besoin (séances, nutrition,
+  // poids) est déjà loggé par eux comme par les clients coachés — seul le
+  // bilan revu PAR le coach leur est fermé, pas leurs propres logs. Un
+  // membre gratuit régulier n'avait donc jusqu'ici aucun retour automatique
+  // sur sa propre semaine. Ouvert à tout profil client (gratuit ou coaché) ;
+  // seuls les coachs restent filtrés explicitement par rôle, comme avant.
   const eligibleIds = new Set(
     ((profiles ?? []) as { id: string; role: string; subscription_status: string | null }[])
-      .filter((p) => p.role === "coach" || p.subscription_status === "active")
       .map((p) => p.id)
   );
 
@@ -86,13 +101,12 @@ export async function GET(req: Request) {
     const avgWeightPrev = avg(lastWeekWeights);
     const weightDelta = avgWeight != null && avgWeightPrev != null ? avgWeight - avgWeightPrev : null;
 
-    const parts: string[] = [`${sessions} séance${sessions !== 1 ? "s" : ""}`];
-    parts.push(`nutrition loguée ${foodDays}/7 jours`);
-    if (weightDelta != null && Math.abs(weightDelta) >= 0.1) {
-      parts.push(`poids ${weightDelta > 0 ? "+" : ""}${weightDelta.toFixed(1)}kg sur la semaine`);
-    } else if (avgWeight != null) {
-      parts.push("poids stable");
-    }
+    const body = formatWeeklyRecapLine({
+      sessions,
+      foodDays,
+      weightDeltaKg: weightDelta != null ? Math.round(weightDelta * 10) / 10 : null,
+      avgWeight,
+    });
 
     const isCoachSelf = (profiles as { id: string; role: string }[] | null)?.find((p) => p.id === clientId)?.role === "coach";
     const url = isCoachSelf ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan";
@@ -100,7 +114,7 @@ export async function GET(req: Request) {
     await notifyUser(clientId, {
       type: "weekly_progress_recap",
       title: "📊 Ta semaine en un coup d'œil",
-      body: parts.join(", ") + ".",
+      body,
       url,
     });
     notified++;

@@ -3626,3 +3626,116 @@ implémentation en gardent une trace partielle (#1, #2, #10, #11, #12,
 #13, #16, #18 retrouvés). Les numéros manquants ne peuvent pas être
 reconstruits de façon fiable : mieux vaut lancer un nouveau brainstorm
 que d'inventer ce qu'ils étaient.
+
+## BG — Brainstorm "2 avatars" (membre gratuit vs client coaché), angles morts (2026-09-10)
+
+Demande explicite : chercher ce qui manquait pour les deux profils non-coach
+de l'appli, "membre" gratuit (`isSubscribed(profile) === false`) et "client"
+coaché payant, sans se limiter à des idées SaaS génériques. Cartographie
+complète faite d'abord (agent d'exploration en tâche de fond, lecture
+réelle du code, pas juste des greps) avant toute implémentation — plusieurs
+pistes envisagées se sont révélées déjà construites (parrainage en
+libre-service, comparateur avant/après photos+mensurations avec deltas par
+ligne, checklist d'onboarding, bandeau de compte à rebours des 60 jours
+d'essai gratuit `FreeTierBanner.tsx`) : vérifié avant de dupliquer, pas
+re-livré une deuxième fois.
+
+### Ce qui a été livré
+
+1. **`CoachOnlyGate.tsx`** — la modale de verrou (affichée sur tout onglet
+   réservé aux coachés : tâches, check-in, coaching live...) ne proposait
+   jusqu'ici QUE l'appel externe de préqualification, jamais la page
+   `/dashboard/client/abonnement` qui explique pourtant déjà concrètement
+   ce que ça change (`COACHING_PILLARS`). Ajout d'un lien secondaire "Voir
+   ce que ça change concrètement", palier intermédiaire moins engageant
+   qu'un appel tout de suite.
+
+2. **`app/dashboard/client/abonnement/page.tsx`** — le système de
+   parrainage (`ReferralCard`, Item 41, un mois offert par ami parrainé
+   devenu client payant) existait déjà et fonctionnait, mais vivait
+   uniquement sur la page Profil, jamais mentionné au moment précis où un
+   membre gratuit hésite à payer. Carte réutilisée telle quelle (mêmes
+   props que sur Profil), affichée pour tout non-abonné juste avant la
+   section points.
+
+3. **Récap hebdo (séances/nutrition/poids) ouvert aux membres gratuits +
+   rendu visible en page, pas seulement en push.**
+   `app/api/cron/weekly-progress-recap/route.ts` calculait déjà tout mais
+   excluait explicitement `subscription_status !== "active"` de
+   `eligibleIds` — un membre gratuit actif (vraies séances, vraie
+   nutrition loguée) n'avait donc jusqu'ici aucun retour automatique sur
+   sa propre semaine. Filtre retiré (tout profil client, gratuit ou
+   coaché, reste éligible ; seul le rôle coach était de toute façon déjà
+   inclus avant). En plus de ça : une notification push se manque ou se
+   désactive facilement, donc le même calcul est maintenant aussi
+   affiché en permanence dans une carte "Ta semaine" sur l'onglet
+   Aujourd'hui (`AujourdhuiView.tsx`), pas à la place de la notif, en
+   complément.
+   - `lib/weekly-recap.ts` : le calcul, requêtes ciblées sur un seul
+     client (`createServerSupabase`, respecte RLS) plutôt que le batch
+     "toute la base" du cron (gardé tel quel côté cron : le réécrire
+     client par client transformerait 3 requêtes groupées en 3×N).
+   - `lib/weekly-recap-format.ts` : **module volontairement sans aucun
+     import** (même discipline que `lib/dates.ts`, déjà établie cette
+     session) contenant uniquement `WeeklyRecapStats` et
+     `formatWeeklyRecapLine` — j'ai d'abord écrit ce code directement
+     dans `lib/weekly-recap.ts` (qui importe `createServerSupabase`,
+     `next/headers`) puis tenté de l'importer tel quel depuis
+     `AujourdhuiView.tsx` (`"use client"`) : `tsc` ne l'aurait jamais
+     attrapé (les deux fichiers compilent très bien séparément), seul un
+     vrai `next build` du bundle navigateur l'aurait révélé. Repéré et
+     corrigé AVANT de lancer ce build, par vigilance sur la même classe
+     d'erreur déjà rencontrée cette session (weekNumber/timeAwareGreeting).
+     Le cron importe aussi ce module pur désormais : une seule formulation
+     du message, qu'il soit vu en push ou en page.
+
+### Ce qui a été tenté puis explicitement arrêté
+
+- **Signal de satisfaction (NPS léger, 1-5 + commentaire libre).** Seule
+  idée du brainstorm nécessitant une vraie nouvelle table (aucun signal
+  produit n'existe nulle part ailleurs dans le repo). Migration écrite
+  (`supabase/migrations/20260910a_app_satisfaction_ratings.sql` — RLS
+  insert+select strictement sur `client_id = auth.uid()`, pas de
+  update/delete par le client, une note reste un instantané). Tentative
+  d'application directe via `mcp__Supabase__apply_migration` (comme les 3
+  migrations de l'Axe I) : **refusée deux fois par le classificateur de
+  permissions auto mode**, sans raison plus précise que "Blocked by
+  classifier". Pas de contournement tenté (execute_sql aurait la même
+  intention DDL). Volontairement **aucun code applicatif écrit** pour
+  cette fonctionnalité tant que la table n'existe pas réellement en base —
+  un `getLatestSatisfactionRating()` planté en boucle sur une page aussi
+  fréquentée que Aujourd'hui aurait été pire que ne rien livrer. Migration
+  laissée en l'état dans `supabase/migrations/`, à appliquer manuellement
+  dans le SQL Editor Supabase (signalé explicitement à l'utilisateur, par
+  ailleurs déjà obligatoire pour toute nouvelle migration par AGENTS.md).
+
+- **Insight textuel sur `BeforeAfterComparator.tsx`** ("−3.2kg, −4cm de
+  tour de taille en 8 semaines" en résumé au-dessus du tableau) —
+  envisagé, puis déprioritisé après relecture du composant : chaque ligne
+  affiche déjà Avant/Après/Écart avec flèche colorée, la valeur ajoutée
+  d'une phrase de synthèse est réelle mais marginale par rapport aux
+  autres pistes de ce brainstorm. Pas fait cette fois-ci.
+
+- **Recouper `getOnboardingChecklist()` avec `lib/reengagement.ts`**
+  (message de relance ciblé sur la case précise non cochée plutôt qu'un
+  guide générique par objectif) — la séquence de relance actuelle
+  (5 étapes) a un arc narratif volontairement construit (intro → philosophie
+  → liste de fonctionnalités → question directe → au revoir), pas de simples
+  templates interchangeables. Retravailler cette prose déjà soignée sans
+  direction plus précise de l'utilisateur était plus risqué que la valeur
+  attendue ne le justifiait. Pas fait cette fois-ci.
+
+- **Deuxième point d'entrée parrainage** (après une victoire postée ou un
+  rang débloqué, `communaute/victoires`) — la page victoires est un simple
+  flux communautaire, pas un point de déclenchement événementiel ; ajouter
+  le parrainage y aurait demandé plus de plomberie que sa valeur ne le
+  justifiait une fois qu'il est déjà placé au moment de plus forte intention
+  (la page abonnement elle-même, point 2 ci-dessus). Un deuxième
+  emplacement risquait surtout de paraître redondant/spammy.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 7 fichiers touchés, `next
+build` de production complet terminé sans erreur (table de routes
+complète, exit 0) — la vérification qui a justement permis de détecter
+et corriger le risque de bundle client avant tout commit.

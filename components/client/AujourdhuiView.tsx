@@ -6,11 +6,14 @@ import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
   ClipboardList, Wind, GlassWater, Activity, Backpack, Flag, Check,
   BedDouble, HeartPulse, AlertTriangle, PenLine, Lock, ChevronRight, Scale,
-  Pill, Footprints,
+  Pill, Footprints, TrendingUp,
 } from "lucide-react";
 import { HABITS, type JournalPrompt } from "@/lib/mindset-content";
 import { AGENDA_ICON_MAP } from "@/lib/agenda-presets";
 import { timeAwareGreeting } from "@/lib/dates";
+// Module sans aucun import (voir son en-tête) — jamais lib/weekly-recap.ts,
+// qui importe createServerSupabase et casserait le bundle navigateur.
+import { formatWeeklyRecapLine, type WeeklyRecapStats } from "@/lib/weekly-recap-format";
 import type { ScheduleBlock } from "@/utils/agenda";
 import type { MindsetHabitLog } from "@/utils/mindset";
 import type { BiometricLog, BiometricInsight } from "@/utils/biometrics";
@@ -63,6 +66,7 @@ export default function AujourdhuiView({
   nutrition,
   steps,
   weeklyConsistency,
+  weeklyRecap,
 }: {
   firstName: string;
   /** Heure locale Paris (0-23), pour la salutation adaptée. */
@@ -87,6 +91,8 @@ export default function AujourdhuiView({
   steps: { actual: number | null; goal: number };
   /** % de jours actifs cette semaine (entraînement/nutrition/bilan confondus), null si non calculable. */
   weeklyConsistency: number | null;
+  /** Même récap que la notification push hebdo (séances/nutrition/poids), null si la requête a échoué. */
+  weeklyRecap: WeeklyRecapStats | null;
   supplements: ClientSupplement[];
 }) {
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
@@ -209,6 +215,23 @@ export default function AujourdhuiView({
           </p>
         </div>
       </div>
+
+      {/* Ta semaine (brainstorm "2 avatars", 2026-09-10) : même récap que la
+          notification push hebdo (app/api/cron/weekly-progress-recap),
+          désormais aussi visible directement ici — une notif se manque ou
+          se désactive, une carte en page reste consultable. Ouvert à tout
+          membre depuis ce même chantier (le cron excluait les membres
+          gratuits jusque-là). */}
+      {weeklyRecap && (weeklyRecap.sessions > 0 || weeklyRecap.foodDays > 0 || weeklyRecap.avgWeight != null) && (
+        <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
+          <SectionLabel icon={TrendingUp}>Ta semaine</SectionLabel>
+          <div className="ep-card" style={{ padding: "14px 16px" }}>
+            <p style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6, fontWeight: 600 }}>
+              {formatWeeklyRecapLine(weeklyRecap)}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Poids du matin — accès direct, sans passer par le bilan complet */}
       <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>

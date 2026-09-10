@@ -67,6 +67,18 @@ export default function CoachOnlyGate({
             <PhoneCall size={16} />
             Réserve ton appel découverte
           </a>
+          {/* Brainstorm "2 avatars" (2026-09-10) : avant ce lien, cette
+              modale ne proposait que l'appel externe, sans jamais montrer
+              /dashboard/client/abonnement — la page qui explique pourtant
+              déjà concrètement ce que ça change (COACHING_PILLARS) et
+              affiche l'alternative parrainage. Un palier intermédiaire,
+              moins engageant qu'un appel tout de suite. */}
+          <Link
+            href="/dashboard/client/abonnement"
+            style={{ display: "block", marginTop: 12, fontSize: 12, color: "rgba(245,237,237,0.45)", fontWeight: 700, textDecoration: "underline", textUnderlineOffset: 2 }}
+          >
+            Voir ce que ça change concrètement
+          </Link>
           <Link
             href="/dashboard/client"
             style={{ display: "block", marginTop: 14, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 600, textDecoration: "none" }}

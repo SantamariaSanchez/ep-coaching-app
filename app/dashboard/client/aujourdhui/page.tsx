@@ -8,6 +8,7 @@ import { getClientSupplements } from "@/utils/supplements";
 import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
 import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
 import { getClientsWeeklyConsistency } from "@/lib/client-activity";
+import { getMyWeeklyRecap } from "@/lib/weekly-recap";
 import { getDailyQuote, getPromptOfDay } from "@/lib/mindset-content";
 import { todayInParis, nowInParis, weekNumber } from "@/lib/dates";
 import { toggleHabitLog, addJournalEntry } from "@/app/dashboard/client/mindset/actions";
@@ -37,7 +38,7 @@ export default async function AujourdhuiPage() {
 
   const [
     allBlocks, habitLogs, biometricLogs, insights, todayLog, allSupplements,
-    nutritionProfile, todayFoodLogs, stepSettings, todaySteps, weeklyConsistencyMap,
+    nutritionProfile, todayFoodLogs, stepSettings, todaySteps, weeklyConsistencyMap, weeklyRecap,
   ] = await Promise.all([
     subscribed ? getScheduleBlocks(user.id) : Promise.resolve([]),
     getHabitLogs(user.id, todayStr),
@@ -66,6 +67,12 @@ export default async function AujourdhuiPage() {
     // au client lui-même jusqu'ici. Accepte déjà un tableau d'ids, donc
     // aucun nouveau code de calcul, juste un appel avec un seul id.
     getClientsWeeklyConsistency([user.id]),
+    // Brainstorm "2 avatars" (2026-09-10) : ce même récap n'existait qu'en
+    // notification push hebdo (app/api/cron/weekly-progress-recap), facile
+    // à manquer ou désactiver — et jusqu'ici réservé aux clients coachés,
+    // corrigé dans ce même chantier. Affiché ici en plus, pas à la place :
+    // toujours consultable, pas juste vu en passant dans les notifs.
+    getMyWeeklyRecap(user.id),
   ]);
   const activeSupplements = allSupplements.filter((s) => s.status === "active");
 
@@ -102,6 +109,7 @@ export default async function AujourdhuiPage() {
       nutrition={nutrition}
       steps={{ actual: todaySteps, goal: stepSettings.daily_goal }}
       weeklyConsistency={weeklyConsistencyMap[user.id] ?? null}
+      weeklyRecap={weeklyRecap}
     />
   );
 }
