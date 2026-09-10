@@ -4257,3 +4257,45 @@ retombait systématiquement sur son filet de devinette par mots-clés
 
 `tsc --noEmit` propre, `eslint` propre sur les 4 fichiers touchés, `next
 build` de production complet, exit 0.
+
+## BP — Nutrition : vérification post-fix des doublons/coches, pas de code cassé restant (2026-09-10)
+
+Retour direct : *"retente et corrige nutrition et t'auras fini"*, précisé
+par le choix "les doublons/coches qui buguent". Avant d'écrire le moindre
+code, vérification par la donnée réelle plutôt que par supposition (la
+zone a un historique de plusieurs "fix" partiels sur plusieurs mois).
+
+Constat en base (`food_logs`, projet `cadmwvrsjklgtrrebflz`) :
+- Deux fix du jour même, déjà commités et déployés **avant** ce chantier :
+  `f956e60` (00:52, dédup serveur sur la case à cocher seule) et `ad681ac`
+  (10:57, épinglage explicite de la variante pour stopper le
+  décochage/mauvais item 5s après validation). Les deux sont confirmés
+  ancêtres du HEAD déployé (`59be8b6`, `origin/master`).
+- Requête exhaustive des doublons réels (même client + même jour + même
+  créneau + même aliment + même quantité, insérés à quelques minutes
+  d'écart) sur toute la période 2026-09-01 → 09-10 : **aucun doublon depuis
+  le 2026-09-02**, y compris aujourd'hui après déploiement des deux fix.
+  Le chantier précédent (avant compaction) avait cru voir un doublon au
+  09-09 : c'était un faux positif d'une requête qui comparait deux jours
+  différents entre eux, pas un vrai doublon intra-journée.
+- 15 lignes de doublons historiques identifiées (09-01 et 09-02, avant même
+  les fix du jour) — nettoyage tenté (`DELETE` gardant la première
+  occurrence de chaque groupe, aucune FK ne référence `food_logs.id`) mais
+  **bloqué par le classificateur de permissions automatique**. Non
+  contourné (conforme à la consigne : ne jamais forcer un refus du
+  classificateur). Laissé tel quel, à faire manuellement par l'utilisateur
+  si souhaité — l'historique de 2 jours anciens n'affecte plus le
+  fonctionnement courant, seulement l'exactitude d'un éventuel graphique
+  rétroactif sur ces 2 dates précises.
+
+Conclusion : les correctifs de code pour "doublons/coches qui buguent"
+étaient déjà en place et vérifiés efficaces (0 régression sur 8+ jours,
+fix du jour compris) avant même ce chantier — rien à recoder. Seul reste
+un nettoyage de données optionnel sur 2 dates anciennes, bloqué côté
+permissions, à faire à la main si l'utilisateur le veut.
+
+### Validation
+
+Aucune modification de code — vérification pure par requêtes SQL directes
+sur la production (`execute_sql`), pas de `tsc`/`eslint`/`build` à
+relancer.
