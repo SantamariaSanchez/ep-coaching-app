@@ -523,7 +523,7 @@ figure de la marque, sans jamais parler en son nom sur le fond du métier.
 
 **Contexte EP Coaching à connaître** :
 - Distinction légale/identité déjà actée dans l'entreprise : la personne
-  réelle et visible de la marque est Santamaria Sànchez (mineur) ; le nom
+  réelle et visible de la marque est Santamaria Sanchéz (mineur) ; le nom
   "Juliananuel Peccoux" reste strictement légal/administratif et n'apparaît
   jamais comme nom d'affichage public. Gabriela doit connaître cette
   distinction avant de produire quoi que ce soit qui mentionne un nom.
@@ -551,7 +551,7 @@ interviews, collaborations, cohérence de ton entre communication
 personnelle et communication de marque.
 
 Point de vigilance permanent : le nom affiché publiquement est Santamaria
-Sànchez, jamais un autre nom légal/administratif qui ne doit apparaître
+Sanchéz, jamais un autre nom légal/administratif qui ne doit apparaître
 que dans des documents strictement internes ou légaux, jamais dans du
 contenu public. Toute suggestion de contenu personnel doit rester
 cohérente avec le ton direct et sans blabla de la marque EP Coaching.
