@@ -4299,3 +4299,54 @@ permissions, à faire à la main si l'utilisateur le veut.
 Aucune modification de code — vérification pure par requêtes SQL directes
 sur la production (`execute_sql`), pas de `tsc`/`eslint`/`build` à
 relancer.
+
+## BQ — Nutrition : la vraie égalité non tranchée derrière "ça se décoche" (2026-09-10)
+
+Retour direct après l'Axe BP : *"corrige nutrition, ça marche toujours
+pas"*, précisé par *"je coche ou valide, j'attends 5s ça s'enlève, ou je
+change d'onglet et c'est enlevé"* — le symptôme exact que `ad681ac` (voir
+plus haut) était censé avoir déjà fermé. Plutôt que de repartir sur une
+troisième resupposition, lecture du VRAI plan de Santamaria en base
+(`diet_plan_meals`, créneau postworkout du jeudi) : les 2 options du
+créneau partagent **5 aliments strictement identiques** (même `food_id`,
+même quantité), seul le 6e diffère (Poulet vs Cabillaud) — même schéma
+sur le petit-déjeuner et le déjeuner.
+
+Le pin explicite (`chooseVariant`, appelé avant chaque clic) protège bien
+les CLICS eux-mêmes, mais pas le tout premier rendu d'un rechargement
+complet — très fréquent en pratique en PWA iOS, qui décharge la page en
+arrière-plan et la recharge entièrement au retour, contrairement à un
+simple `visibilitychange` sur une page restée en mémoire. Le pin vit en
+`localStorage`, relu seulement dans un `useEffect` (donc APRÈS le premier
+calcul de `loggedVariantBySlot`). Sur ce rendu-là, seul le compte total
+d'aliments correspondants tranche — et dès que les 2 options finissent
+par être entièrement loguées le même jour (ex. après avoir goûté l'option
+2 un jour où l'option 1 était déjà validée), ce compte devient une VRAIE
+égalité (6 = 6). Le `>` strict retombe alors sur l'option 1 par défaut,
+faisant disparaître de l'écran les aliments propres à l'option 2 — donnant
+exactement l'impression que "cocher ne marche plus", sans aucune perte de
+donnée en base.
+
+**Fix à la racine plutôt qu'un rafistolage du pin** : `loggedVariantBySlot`
+ne compte plus tous les aliments à égalité. Il calcule d'abord, pour
+chaque créneau, la signature (`food_id:quantité`) des aliments PROPRES à
+une seule option (absents de l'autre) — Poulet ou Cabillaud, dans cet
+exemple — et ne les utilise QUE si l'un des deux est effectivement logué
+aujourd'hui : eux seuls prouvent quelle option a réellement été mangée,
+contrairement aux aliments communs aux deux qui ne prouvent rien. Le
+compte total (logique précédente) ne sert plus que de filet si aucune des
+deux options n'a encore d'aliment distinctif logué (créneau à une seule
+option, ou vraiment rien de mangé identifiable pour l'instant).
+
+Un bug de qualité de données annexe repéré au passage sur ce même plan
+(non corrigé, hors périmètre de ce retour) : les lignes de l'option 2
+(`variant_group = 2`) ont toutes `position = 0`, contrairement à l'option
+1 correctement numérotée 0 à 5 — n'affecte que l'ordre d'affichage au sein
+d'une option, jamais le calcul des coches ci-dessus, mais explique un
+ordre parfois arbitraire dans certains créneaux à 2 options.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur le fichier touché (6 erreurs
+préexistantes confirmées sans lien via `git stash`), `next build` de
+production complet, exit 0.
