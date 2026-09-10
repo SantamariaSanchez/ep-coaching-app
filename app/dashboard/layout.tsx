@@ -2,6 +2,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
@@ -78,6 +79,42 @@ async function requireStrongSessionIfNeeded(
   if (!strong) redirect("/auth/2fa");
 }
 
+// Perf (repasse masterclass 2026-09-10, retour direct : "le chargement au
+// logo est trop long, changer d'onglet prend 3s") : ce composant fait son
+// propre aller-retour Supabase (getDailyGateStatus, qui en enchaîne
+// lui-même jusqu'à 3 en série dans le pire cas — voir lib/daily-gate.ts)
+// et est rendu dans une <Suspense> dédiée plus bas. Avant cette passe,
+// cet appel était awaited AU NIVEAU DU LAYOUT LUI-MÊME (Promise.all avec
+// requireStrongSessionIfNeeded) : comme DashboardLayout est une async
+// function qui n'avait encore rien retourné à ce stade, TOUTE la réponse
+// HTTP — y compris {children}, donc la vraie page demandée — restait
+// bloquée derrière cette chaîne de requêtes, sur CHAQUE navigation, alors
+// que la carte de rappel elle-même est déjà non bloquante côté UX (voir
+// DailyGateOverlay.tsx, "carte de rappel compacte, non bloquante"). La
+// isoler dans sa propre Suspense laisse le layout retourner dès que
+// user/profile sont connus, donc {children} peut commencer à streamer
+// immédiatement : la carte de rappel, elle, apparaît quelques centaines de
+// ms plus tard sans rien bloquer, exactement comme son propre design le
+// prévoyait déjà.
+async function DailyGateLoader({
+  userId,
+  isCoach,
+}: {
+  userId: string;
+  isCoach: boolean;
+}) {
+  const gate = await getDailyGateStatus(userId);
+  return (
+    <DailyGateOverlay
+      initialActive={gate.active}
+      initialPendingMeal={gate.pendingMeal}
+      today={todayInParis()}
+      mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
+      bilanHref={isCoach ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan"}
+    />
+  );
+}
+
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   // Résolu côté serveur pour éviter le flash "mauvais onglet actif" au chargement :
   // DashboardNav défaillait un instant sur les onglets/segments du compte payant
@@ -86,27 +123,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const user = await getUser();
   const profile = user ? await getProfile(user.id) : null;
 
-  // Perf (retour direct 2026-09-01, "j'ouvre l'appli c'est censé être
-  // instantané au lieu de ça il y a un chargement de 10s") : ces deux appels
-  // ne dépendent que de user/profile déjà résolus, pas l'un de l'autre —
-  // ils tournaient avant en série (deux allers-retours Supabase de plus,
-  // à chaque ouverture ET chaque rendu serveur de ce layout). En parallèle
-  // ici économise un aller-retour complet sans rien changer au résultat :
-  // requireStrongSessionIfNeeded ne fait que rediriger (throw) si besoin,
-  // Promise.all propage ce throw normalement.
-  const [, gate] = await Promise.all([
-    requireStrongSessionIfNeeded(profile),
-    // Rappel de bilan (demande explicite 2026-08-15, refondu 2026-08-19 —
-    // voir lib/daily-gate.ts et components/ui/DailyGateOverlay.tsx pour
-    // l'historique complet). Calculé pour TOUT compte connecté, client ou
-    // coach (chacun a son propre bilan quotidien, via client_id = son propre
-    // id dans les deux cas) — coût minimal, un seul appel à
-    // getDailyGateStatus, plus aucune donnée lourde à charger ici : la carte
-    // de rappel ne fait plus que renvoyer vers le bilan complet
-    // (/dashboard/client/bilan ou /dashboard/coach/moi/bilan), elle
-    // n'affiche plus les cartes elles-mêmes.
-    user && profile ? getDailyGateStatus(user.id) : Promise.resolve({ active: null, pendingMeal: undefined }),
-  ]);
+  // Garde de sécurité dure (redirige si besoin) : doit rester bloquante,
+  // mais ne coûte rien pour l'immense majorité des comptes (sans MFA
+  // active, retourne immédiatement sans aucun aller-retour réseau — voir
+  // la fonction plus haut).
+  await requireStrongSessionIfNeeded(profile);
 
   const initialIsFreeTier = profile?.role === "client" && !isSubscribed(profile);
 
@@ -121,15 +142,15 @@ export default async function DashboardLayout({ children }: { children: React.Re
   // vérifiés, seules les nouvelles inscriptions le voient.
   const showEmailBanner = !!profile && !isEmailVerified(profile);
   const isCoach = profile?.role === "coach";
+  // Suspense fallback={null} : rien ne s'affiche tant que le calcul n'est
+  // pas prêt (la carte n'apparaissait déjà qu'après coup dans l'ancien
+  // comportement bloquant, ce n'est donc pas une régression visuelle,
+  // seulement un déblocage du reste de la page pendant ce temps-là).
   const gateOverlay: React.ReactNode =
     user && profile ? (
-      <DailyGateOverlay
-        initialActive={gate.active}
-        initialPendingMeal={gate.pendingMeal}
-        today={todayInParis()}
-        mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
-        bilanHref={isCoach ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan"}
-      />
+      <Suspense fallback={null}>
+        <DailyGateLoader userId={user.id} isCoach={isCoach} />
+      </Suspense>
     ) : null;
 
   return (

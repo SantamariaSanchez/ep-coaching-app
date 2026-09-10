@@ -21,6 +21,16 @@ export const dynamic = "force-dynamic";
 // visiteur qui clique un lien externe ou tape l'URL directement continue
 // d'y arriver normalement, avec tout son SEO/cache intact. Seul le lancement
 // depuis l'icône PWA installée passe par ici.
+//
+// Perf (repasse masterclass 2026-09-10, même retour direct persistant :
+// "l'écran de chargement avec mon logo est encore trop long") : cette page
+// elle-même ajoutait un aller-retour Supabase de plus (getUser + getProfile)
+// AVANT même le redirect vers /dashboard/*, qui refait sa propre
+// vérification en arrivant — deux vérifications complètes en série pour un
+// seul lancement d'appli. proxy.ts fait maintenant exactement cette même
+// redirection AU NIVEAU DU MIDDLEWARE (voir "/launch" dans son matcher),
+// donc AVANT que cette page ne s'exécute — cette page ne devrait plus
+// jamais tourner en pratique, gardée seulement comme filet de sécurité.
 export default async function LaunchPage() {
   const user = await getUser();
   if (!user) redirect("/");

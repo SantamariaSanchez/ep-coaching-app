@@ -3383,3 +3383,155 @@ pas seulement le code de sortie).
   manuelles répétées pour un type de fichier qui semble particulièrement
   exposé (contenu long, rédigé par blocs, la règle moins présente à
   l'esprit que dans du JSX classique).
+
+## BE — Perf réelle : écran de chargement PWA long + navigation ~3s (2026-09-10)
+
+**Statut : livré.** Demande explicite, distincte du reste du masterclass
+("le chargement avec mon logo au début c'est bcp trop long... changer
+d'onglet c'est 3s... optimise réfléchis et corrige"). Contrairement aux
+axes précédents (grep mécanique sur une classe de bug), cet axe part d'un
+diagnostic structurel du modèle de rendu App Router — lecture de
+`node_modules/next/dist/docs/` obligatoire ici (Next 16.3.1, un modèle de
+cache/streaming très différent de ce que les versions plus anciennes
+laissent supposer, voir `01-app/02-guides/instant-navigation.md` et
+`01-app/03-api-reference/05-config/01-next-config-js/staleTimes.md`).
+
+**Diagnostic (3 causes structurelles cumulées, chacune retrouvée sur CHAQUE
+navigation dans le dashboard)** :
+
+1. **`app/dashboard/layout.tsx` bloquait toute la réponse HTTP sur une
+   chaîne de requêtes qui ne concernait pas la page demandée.** Ce layout
+   est une `async function` : tant qu'elle n'a pas `return`é son JSX, RIEN
+   (y compris `{children}`, donc la vraie page) ne peut commencer à
+   streamer vers le client. Or `getDailyGateStatus` (le rappel de bilan,
+   voir Axe AK) enchaîne jusqu'à 3 requêtes Supabase EN SÉRIE dans le cas
+   courant (logs+profil en parallèle, PUIS `diet_plans`, PUIS
+   `food_logs`) — et ce calcul était `await`é directement dans le corps du
+   layout, avant le `return`. Pourtant `DailyGateOverlay` est déjà conçue
+   comme "une carte de rappel compacte, non bloquante" (refonte du
+   2026-08-19) : le code ne respectait pas ce que le design avait déjà
+   décidé.
+2. **`proxy.ts` (middleware Next 16, renommé depuis `middleware.ts`) fait
+   sa propre vérification d'auth ET de rôle sur CHAQUE navigation
+   dashboard, avant même que `app/dashboard/layout.tsx` ne s'exécute** — et
+   ce dernier refait ENSUITE sa propre vérification (`getUser`+`getProfile`,
+   défense en profondeur légitime, jamais retirée). Concrètement :
+   `auth.getUser()` (middleware) + `profiles` role/coach_id (middleware) +
+   `auth.getUser()` (layout) + `profiles` complet (layout) = 4 allers-
+   retours Supabase séquentiels avant même que la page ne commence SA
+   propre récupération de données.
+3. **`app/launch/page.tsx`** (point d'entrée `start_url` de la PWA, voir
+   `public/manifest.json`) refaisait ENCORE sa propre vérification
+   (`getUser`+`getProfile`, 2 allers-retours) avant de rediriger vers
+   `/dashboard/*` — qui redéclenche alors TOUT le point 2 ci-dessus. Au
+   lancement à froid de l'app : jusqu'à 6 allers-retours Supabase en série
+   rien que pour l'auth/routage, avant que la moindre donnée utile ne soit
+   demandée. Le splash natif du téléphone (logo, généré depuis le
+   manifest) reste affiché tout ce temps, puisqu'il ne disparaît qu'au
+   premier octet de contenu réel.
+
+**Corrigé** :
+- `app/dashboard/layout.tsx` : `getDailyGateStatus` extrait dans un
+  composant serveur dédié (`DailyGateLoader`), rendu dans sa propre
+  `<Suspense fallback={null}>`. Le layout ne bloque plus que sur
+  `getUser`+`getProfile`+`requireStrongSessionIfNeeded` (rapide, sans coût
+  réseau pour l'immense majorité des comptes sans MFA) avant de retourner
+  `{children}`, qui peut donc commencer à streamer immédiatement — la carte
+  de rappel, déjà non bloquante par design, apparaît juste un peu après
+  sans plus rien retarder.
+- `proxy.ts` : cache mémoire de 15s pour le couple rôle/coach_id (même
+  mécanisme que le verrou anti-course `pendingAuthChecks` déjà présent dans
+  ce fichier pour `auth.getUser()`) — extrait dans un helper `resolveRole()`
+  réutilisé par les DEUX branches qui en avaient besoin (garde dashboard +
+  redirection depuis une page d'auth), qui dupliquaient chacune leur propre
+  requête `profiles` avant cette passe. Justifié explicitement dans le code
+  : ce contrôle n'est qu'un garde-fou de redirection UX, jamais le
+  contrôle d'accès réel aux données (imposé par les policies RLS), donc une
+  fraîcheur de quelques secondes ne crée aucune faille.
+- `/launch` ajoutée au `matcher` de `proxy.ts`, qui gère désormais sa
+  redirection (authentifié → bon dashboard selon le rôle, avec le cache
+  ci-dessus ; non authentifié → `/`) au même endroit et avec la même
+  logique que la redirection déjà existante pour `/` (`isAuthPage`) —
+  AVANT tout rendu React, donc sans les 2 allers-retours Supabase que
+  `app/launch/page.tsx` faisait lui-même. Cette page reste en place comme
+  filet de sécurité (documentée comme telle) mais ne devrait plus
+  s'exécuter en pratique.
+- `next.config.ts` : `experimental.staleTimes.dynamic` remonté de 0
+  (défaut Next 15+) à 30 secondes — **vérifié sûr avant d'y toucher** en
+  lisant `revalidatePath.md` : "Server Functions: ... causes all
+  previously visited pages to refresh when navigated to again", donc la
+  discipline `revalidatePath` après mutation (Axe A, ~78 fichiers audités,
+  0 lacune y compris lors de la repasse du 2026-09-10) purge ce cache
+  explicitement, quelle que soit `staleTimes` — aucun retour du bug
+  "coché puis décoché" que l'Axe A avait justement corrigé en premier.
+  Sans ce changement, même les deux fixes ci-dessus n'empêchaient pas un
+  aller-retour serveur complet à CHAQUE clic, y compris vers un onglet
+  visité 2 secondes plus tôt.
+  **Bug trouvé et corrigé en l'ajoutant** : `next.config.ts` avait déjà une
+  clé `experimental` (pour `serverActions.bodySizeLimit`) — une seconde
+  clé `experimental` aurait silencieusement écrasé la première en JS
+  (objet littéral, la dernière clé gagne), désactivant la limite de 15 Mo
+  déjà posée pour l'upload de photos. Fusionnées en un seul objet.
+
+**Non touché, décision explicite** :
+- Aucune adoption de Cache Components / `"use cache"` (le nouveau modèle
+  recommandé par Next 16 pour des navigations "instantanées" avec shell
+  statique) : changement de paradigme bien plus large, demande d'activer
+  `cacheComponents: true` (flag expérimental qui change le comportement de
+  caching de TOUTE l'app) et de qualifier chaque route individuellement —
+  disproportionné pour cette passe, alors que les 4 fixes ci-dessus
+  attaquent directement la cause structurelle identifiée sans changer de
+  modèle.
+- `public/sw.js` (service worker) n'a AUCUNE stratégie de cache réseau
+  (juste les notifications push, pas de `fetch` listener, pas de
+  précache d'assets JS/CSS) — un vrai gain de perf potentiel sur les
+  ouvertures répétées, mais l'ajouter correctement (éviter de servir un
+  bundle JS périmé après un déploiement, cohérence avec le RSC payload —
+  voir "cross-deployment skew" dans `how-revalidation-works.md`) est un
+  chantier à part entière qui mérite son propre test dédié, pas un ajout
+  hâtif dans une passe déjà large.
+- Pages individuelles (`aujourdhui/page.tsx`, `dashboard/coach/page.tsx`)
+  vérifiées : déjà bien parallélisées (`Promise.all` systématique sur
+  leurs propres requêtes, aucune chaîne sérielle interne trouvée) — la
+  cause dominante était structurelle (layout/middleware/launch), pas les
+  pages elles-mêmes.
+
+**Vérification** : `npx tsc --noEmit` propre. `npx eslint` sur les 4
+fichiers touchés (`proxy.ts`, `app/dashboard/layout.tsx`, `next.config.ts`,
+`app/launch/page.tsx`) sans erreur.
+**`npx next build` local non concluant, pour une raison sans lien avec ce
+correctif** : plusieurs tentatives (cache vidé, une seule à la fois, pas de
+commande concurrente) échouent avec la même `TurbopackInternalError` sur
+`app/globals.css` ("Parsing glob pattern... unopened alternate group"), au
+moment où Turbopack construit le bundle du middleware. Testé explicitement
+par élimination : `git stash` + cache vidé + build sur `master` NON modifié
+reproduit l'EXACTE même erreur — donc un problème d'outillage local
+(Turbopack/Windows, probablement lié au chemin ou au cache), préexistant et
+sans rapport avec ce commit, pas une régression introduite ici. Un essai a
+même réussi une fois sur 4 (comportement instable typique d'une race
+condition interne à Turbopack), confirmant la piste "outillage local
+capricieux" plutôt qu'une vraie erreur de build. `tsc`+`eslint` propres sur
+tous les fichiers touchés restent la garantie de correction de ce
+correctif ; le déploiement réel se fera par le build Vercel (autre OS,
+autre pipeline), à surveiller après le push comme filet final.
+
+### Reste à faire sur cet axe
+
+- **Vérifier le déploiement Vercel après le push** (voir `list_deployments`
+  côté MCP Vercel) : le build local échouant pour une raison d'outillage
+  indépendante de ce code (voir ci-dessus), c'est ce déploiement réel qui
+  fait foi. En cas d'échec Vercel avec un message DIFFÉRENT de la
+  `TurbopackInternalError` locale, reconsidérer — ce serait alors un signe
+  que l'hypothèse "outillage local" était fausse.
+- Aucune mesure de latence réelle en production (RUM, Vercel Analytics)
+  n'a été consultée pour CONFIRMER l'ampleur du gain — le diagnostic
+  repose sur une analyse structurelle du nombre d'allers-retours
+  séquentiels retirés du chemin critique, pas sur un avant/après chiffré.
+  Si le ressenti ne s'améliore pas nettement, la prochaine étape serait
+  d'instrumenter (`console.time`/Vercel Observability) plutôt que de
+  deviner un autre correctif.
+- Service worker sans stratégie de cache réseau (voir ci-dessus) — chantier
+  distinct, volontairement pas commencé ici.
+- Adoption de Cache Components — pas commencée, voir ci-dessus. Si jamais
+  entreprise, le faire route par route avec le validateur intégré au dev
+  overlay (`instant-navigation.md`), jamais d'un coup sur toute l'app.

@@ -35,17 +35,38 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Next.js limite le corps d'une Server Action à 1 Mo par défaut — beaucoup
-  // trop bas dès qu'un formulaire envoie une photo (onboarding, photos de
-  // progression, check-in...). Une photo de téléphone fait souvent 3 à 10 Mo :
-  // au-dessus de la bague, la requête est rejetée après avoir uploadé tout le
-  // payload sur une connexion mobile, ce qui se traduit par une longue
-  // attente puis un échec silencieux côté utilisateur (bug remonté sur
-  // l'onboarding, mais qui touchait potentiellement tous les envois de
-  // plusieurs photos à la fois). Complété côté client par une compression
-  // des photos avant envoi (voir lib/image-compress.ts), cette limite plus
-  // haute sert surtout de filet pour les cas où la compression échoue.
+  // Perf (repasse masterclass 2026-09-10, retour direct : "changer d'onglet
+  // prend 3s") : toutes les pages du dashboard sont force-dynamic (cookies
+  // de session), donc par défaut Next.js 15+ les traite comme staleTimes
+  // "dynamic" = 0 seconde — chaque navigation, même vers un onglet visité
+  // il y a 2 secondes, refait un aller-retour serveur complet plutôt que de
+  // réutiliser le rendu déjà en cache côté client. Remonter cette fenêtre à
+  // 30s est sûr ICI précisément parce que la discipline `revalidatePath`
+  // après mutation a déjà été auditée en profondeur (MASTERCLASS.md Axe A,
+  // ~78 fichiers d'action passés en revue, 0 lacune trouvée y compris lors
+  // de la repasse du 2026-09-10) : la documentation Next.js confirme que
+  // revalidatePath purge explicitement ce cache client, quelle que soit
+  // staleTimes ("Server Functions: ... causes all previously visited pages
+  // to refresh when navigated to again") — donc aucun retour du bug
+  // "coché puis décoché" déjà corrigé. Seul residual : une donnée modifiée
+  // depuis un AUTRE appareil/session peut rester affichée jusqu'à 30s sur
+  // cet onglet-ci avant refresh manuel — compromis raisonnable pour une
+  // appli de coaching, pas un système transactionnel temps réel.
   experimental: {
+    staleTimes: {
+      dynamic: 30,
+    },
+    // Next.js limite le corps d'une Server Action à 1 Mo par défaut —
+    // beaucoup trop bas dès qu'un formulaire envoie une photo (onboarding,
+    // photos de progression, check-in...). Une photo de téléphone fait
+    // souvent 3 à 10 Mo : au-dessus de la bague, la requête est rejetée
+    // après avoir uploadé tout le payload sur une connexion mobile, ce qui
+    // se traduit par une longue attente puis un échec silencieux côté
+    // utilisateur (bug remonté sur l'onboarding, mais qui touchait
+    // potentiellement tous les envois de plusieurs photos à la fois).
+    // Complété côté client par une compression des photos avant envoi (voir
+    // lib/image-compress.ts), cette limite plus haute sert surtout de filet
+    // pour les cas où la compression échoue.
     serverActions: {
       bodySizeLimit: "15mb",
     },
