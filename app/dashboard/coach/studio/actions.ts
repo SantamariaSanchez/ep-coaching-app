@@ -294,12 +294,22 @@ export async function createScript(input: {
 
 export async function updateScript(
   id: string,
-  updates: { title?: string; format?: ScriptFormat; content?: string; status?: ScriptStatus }
+  updates: {
+    title?: string;
+    format?: ScriptFormat;
+    content?: string;
+    status?: ScriptStatus;
+    // Tracking de performance (2026-09-10) — un entier positif ou null
+    // pour effacer une valeur saisie par erreur.
+    views?: number | null;
+    likes?: number | null;
+    commentsCount?: number | null;
+  }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
 
-  const patch: Record<string, string | null> = { updated_at: new Date().toISOString() };
+  const patch: Record<string, string | number | null> = { updated_at: new Date().toISOString() };
   if (updates.title !== undefined) {
     const title = updates.title.trim();
     if (!title) return { error: "Titre requis." };
@@ -314,6 +324,12 @@ export async function updateScript(
   if (updates.status !== undefined) {
     if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;
+  }
+  for (const [key, col] of [["views", "views"], ["likes", "likes"], ["commentsCount", "comments_count"]] as const) {
+    const val = updates[key];
+    if (val === undefined) continue;
+    if (val !== null && (!Number.isFinite(val) || val < 0)) return { error: "Chiffre invalide." };
+    patch[col] = val;
   }
 
   const admin = createAdminClient();

@@ -144,6 +144,50 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // Tracking de performance (2026-09-10) — édition d'un seul script à la
+  // fois, même schéma que openId/draft ci-dessus pour le contenu.
+  const [perfEditId, setPerfEditId] = useState<string | null>(null);
+  const [perfViews, setPerfViews] = useState("");
+  const [perfLikes, setPerfLikes] = useState("");
+  const [perfComments, setPerfComments] = useState("");
+
+  // Moyenne des vues sur les scripts déjà loggés, pour repérer "au-dessus
+  // de la moyenne" automatiquement plutôt que de demander au coach de le
+  // signaler lui-même à part (ce que faisait la page Notion "Suivi
+  // Performance", jamais alimentée en pratique — voir MASTERCLASS.md Axe BJ).
+  const avgViews = useMemo(() => {
+    const withViews = scripts.filter((s): s is CoachScript & { views: number } => s.views != null);
+    if (withViews.length < 2) return null; // pas assez de données pour qu'une "moyenne" veuille dire quelque chose
+    return withViews.reduce((sum, s) => sum + s.views, 0) / withViews.length;
+  }, [scripts]);
+
+  function openPerfEdit(script: CoachScript) {
+    setPerfEditId(script.id);
+    setPerfViews(script.views != null ? String(script.views) : "");
+    setPerfLikes(script.likes != null ? String(script.likes) : "");
+    setPerfComments(script.comments_count != null ? String(script.comments_count) : "");
+  }
+
+  function savePerf(id: string) {
+    const views = perfViews.trim() ? Number(perfViews) : null;
+    const likes = perfLikes.trim() ? Number(perfLikes) : null;
+    const commentsCount = perfComments.trim() ? Number(perfComments) : null;
+    if ([views, likes, commentsCount].some((v) => v != null && (!Number.isFinite(v) || v < 0))) {
+      setError("Chiffres invalides.");
+      return;
+    }
+    setError(null);
+    const backup = scripts;
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, views, likes, comments_count: commentsCount } : s)));
+    setPerfEditId(null);
+    startTransition(async () => {
+      const result = await updateScript(id, { views, likes, commentsCount });
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
 
   function submitNew() {
     setError(null);
@@ -174,6 +218,9 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         instagram_caption: null,
         platform: "instagram",
         status: "a_tourner",
+        views: null,
+        likes: null,
+        comments_count: null,
       };
       setScripts((prev) => [newScript, ...prev]);
       setTitle("");
@@ -448,6 +495,79 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
                     {script.instagram_caption}
                   </p>
+                </div>
+              )}
+
+              {/* Tracking de performance (2026-09-10) — seulement une fois
+                  publié, jamais avant : loguer des vues sur un script pas
+                  encore posté n'a pas de sens. Un seul champ obligatoire
+                  (vues) pour rester rapide au quotidien, likes/commentaires
+                  repliés en options plutôt qu'imposés. */}
+              {script.status === "publie" && (
+                <div style={{ marginTop: 10, background: "rgba(74,222,128,0.05)", border: "1px solid rgba(74,222,128,0.15)", borderRadius: 10, padding: "10px 12px" }}>
+                  {perfEditId === script.id ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <input
+                          type="number" min="0" inputMode="numeric"
+                          value={perfViews} onChange={(e) => setPerfViews(e.target.value)}
+                          placeholder="Vues" aria-label="Vues"
+                          style={{ ...inputStyle, width: 90, padding: "8px 10px" }}
+                          autoFocus
+                        />
+                        <input
+                          type="number" min="0" inputMode="numeric"
+                          value={perfLikes} onChange={(e) => setPerfLikes(e.target.value)}
+                          placeholder="Likes (optionnel)" aria-label="Likes"
+                          style={{ ...inputStyle, width: 130, padding: "8px 10px" }}
+                        />
+                        <input
+                          type="number" min="0" inputMode="numeric"
+                          value={perfComments} onChange={(e) => setPerfComments(e.target.value)}
+                          placeholder="Commentaires (optionnel)" aria-label="Commentaires"
+                          style={{ ...inputStyle, width: 150, padding: "8px 10px" }}
+                        />
+                      </div>
+                      <div style={{ display: "flex", gap: 8 }}>
+                        <button
+                          type="button" onClick={() => savePerf(script.id)}
+                          style={{ background: "#4ade80", color: "#0a1f0a", padding: "7px 14px", borderRadius: 8, fontWeight: 800, fontSize: 11.5, border: "none", cursor: "pointer" }}
+                        >
+                          Enregistrer
+                        </button>
+                        <button
+                          type="button" onClick={() => setPerfEditId(null)}
+                          style={{ background: "transparent", color: "rgba(245,237,237,0.4)", padding: "7px 14px", borderRadius: 8, fontWeight: 700, fontSize: 11.5, border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer" }}
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  ) : script.views != null ? (
+                    <button
+                      type="button"
+                      onClick={() => openPerfEdit(script)}
+                      style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer", width: "100%", textAlign: "left" }}
+                    >
+                      <span style={{ fontSize: 12, fontWeight: 800, color: "#4ade80" }}>{script.views.toLocaleString("fr-FR")} vues</span>
+                      {script.likes != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.likes.toLocaleString("fr-FR")} likes</span>}
+                      {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.comments_count.toLocaleString("fr-FR")} commentaires</span>}
+                      {avgViews != null && script.views > avgViews && (
+                        <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#facc15", background: "rgba(250,204,21,0.12)", padding: "2px 7px", borderRadius: 999 }}>
+                          🔥 Au-dessus de la moyenne
+                        </span>
+                      )}
+                      <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 700 }}>Modifier</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => openPerfEdit(script)}
+                      style={{ fontSize: 11.5, fontWeight: 700, color: "#4ade80", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                    >
+                      + Loguer les résultats (vues)
+                    </button>
+                  )}
                 </div>
               )}
             </div>

@@ -4057,3 +4057,58 @@ existait avant). `next build` de production complet, exit 0.
 - Génération de vraie miniature YouTube (Canva disponible, notée comme
   amélioration future dans le guide Notion lui-même, pas bloquante pour
   la V1 de la routine).
+
+## BK — Tracking de performance de contenu + étape "business" dans l'onboarding coach (2026-09-10)
+
+Suite directe de l'Axe BJ, deux items de son "Reste à faire" traités.
+
+### Tracking de performance dans l'app (pas seulement Notion)
+
+Migration `20260910b_coach_scripts_performance_tracking` (appliquée
+directement) : `views`, `likes`, `comments_count` (entiers, nullables) sur
+`coach_scripts`. La page Notion "Reels & Carousels — Suivi Performance"
+existait déjà mais dépendait d'un signalement manuel à une session Claude,
+jamais alimentée en pratique (contenu de la page : "rien de loggé pour
+l'instant, en attente du premier retour"). Nouveau bloc dans
+`IdeationScripts.tsx`, visible uniquement sur un script `status='publie'` :
+un champ obligatoire (vues) + deux optionnels (likes, commentaires),
+`updateScript` étendu en conséquence (`app/dashboard/coach/studio/
+actions.ts`). Badge "🔥 Au-dessus de la moyenne" calculé automatiquement
+(moyenne des vues des scripts déjà loggés du coach, dès qu'il y en a au
+moins 2) plutôt que de demander un signalement manuel séparé — ferme la
+boucle "savoir réitérer" citée dans la demande directement dans le flux
+de travail existant, sans écran ni étape supplémentaire.
+
+### Onboarding coach : étape "business" ajoutée
+
+Découverte en investiguant : un onboarding coach existe déjà
+(`app/onboarding/coach/page.tsx`, Axe 9 VISION.md, 2026-08-19) — mais
+scopé entièrement à la fiche PUBLIQUE (annuaire `/coachs` : profil,
+spécialités, capacité, lien d'invitation), jamais au modèle business qui
+personnalise l'app en retour. C'est exactement l'écart entre ce que
+l'utilisateur vient de redemander ("beaucoup de paramètres derrière pour
+réellement personnaliser l'appli à leur situation") et ce qui existait
+déjà. Nouvelle étape "business" insérée entre "spécialités" et
+"capacité" dans `CoachOnboardingFlow.tsx` : réutilise `BusinessCanvasEditor`
+tel quel (même composant que "Développer mon business", déjà auto-
+sauvegardant bloc par bloc, aucune nouvelle logique de sauvegarde) — les
+9 blocs du Business Model Canvas, avec une note qui priorise les 2 qui
+alimentent directement la personnalisation des prompts (proposition de
+valeur, segments de clientèle) sans rien rendre obligatoire.
+
+Referme une vraie boucle produit : un nouveau coach qui fait son
+onboarding a maintenant, dès le premier jour, des prompts de contenu déjà
+personnalisés à sa situation dans Studio créatif (Axe BJ), sans avoir eu
+besoin de découvrir "Développer mon business" par hasard.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 5 fichiers touchés, `next
+build` de production complet, exit 0.
+
+### Reste à faire (toujours pas traité, noté explicitement)
+
+- Synchroniser les leads déjà consentis vers Brevo, optimiser le
+  formulaire d'inscription newsletter.
+- Notifications/rappels/suggestions "autour de tout ça" (demande large,
+  pas encore scopée en tâches concrètes).

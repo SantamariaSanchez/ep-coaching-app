@@ -90,6 +90,15 @@ export interface CoachScript {
   instagram_caption: string | null;
   platform: string;
   status: ScriptStatus;
+  // Tracking de performance (2026-09-10, retour direct : "quasi 0
+  // tracking de data pour savoir réitérer") — loggé à la main par le
+  // coach une fois le script publié, jamais rempli automatiquement (pas
+  // d'accès direct aux stats Instagram/YouTube depuis l'app). `views`
+  // seul suffit à calculer "au-dessus de la moyenne" ; likes/commentaires
+  // restent optionnels, pour ne pas transformer un log en corvée.
+  views: number | null;
+  likes: number | null;
+  comments_count: number | null;
 }
 
 export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
@@ -97,7 +106,7 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("coach_scripts")
-      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status")
+      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count")
       .eq("coach_id", coachId)
       .order("updated_at", { ascending: false });
     return (data as CoachScript[]) ?? [];

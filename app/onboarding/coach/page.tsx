@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachWaitlist } from "@/utils/waitlist";
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import CoachOnboardingFlow from "@/components/onboarding/CoachOnboardingFlow";
 
 // Onboarding coach (Axe 9, VISION.md — gap confirmé 2026-08-19, retour
@@ -23,9 +24,10 @@ export default async function CoachOnboardingPage() {
   if (profile.onboarding_completed_at) redirect("/dashboard/coach");
 
   const supabase = await createServerSupabase();
-  const [{ data: extraRow }, waitlist] = await Promise.all([
+  const [{ data: extraRow }, waitlist, canvas] = await Promise.all([
     supabase.from("profiles").select("specializations, accepting_new_clients").eq("id", user.id).maybeSingle(),
     getCoachWaitlist(user.id),
+    getBusinessCanvas(user.id),
   ]);
 
   return (
@@ -38,6 +40,7 @@ export default async function CoachOnboardingPage() {
       accepting={(extraRow?.accepting_new_clients as boolean | null) ?? true}
       waitlist={waitlist}
       inviteCode={profile.invite_code}
+      canvas={canvas}
     />
   );
 }
