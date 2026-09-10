@@ -35,6 +35,9 @@ export default function CoachSignupFlow() {
   const [password, setPassword] = useState("");
   const [planId, setPlanId] = useState<string>(COACH_PLATFORM_PLANS[0].id);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  // Consentement newsletter SÉPARÉ (2026-09-10), jamais pré-coché — même
+  // principe que app/auth/client/SignupFlow.tsx.
+  const [wantsNewsletter, setWantsNewsletter] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -51,7 +54,7 @@ export default function CoachSignupFlow() {
     }
     setSubmitting(true);
     try {
-      const result = await signupCoach({ fullName, email, password, planId, acceptedTerms });
+      const result = await signupCoach({ fullName, email, password, planId, acceptedTerms, wantsNewsletter });
       if ("error" in result) {
         setError(result.error);
         setSubmitting(false);
@@ -153,6 +156,20 @@ export default function CoachSignupFlow() {
           </Link>{" "}
           d&apos;EP Coaching, y compris l&apos;essai gratuit de 2 mois et la facturation automatique
           à son terme sauf résiliation.
+        </span>
+      </label>
+
+      {/* Newsletter — consentement SÉPARÉ, jamais pré-coché. */}
+      <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+        <input
+          type="checkbox"
+          checked={wantsNewsletter}
+          onChange={(e) => setWantsNewsletter(e.target.checked)}
+          style={{ marginTop: 3, flexShrink: 0, width: 15, height: 15, accentColor: "#E01E1E" }}
+        />
+        <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.5 }}>
+          Je veux aussi recevoir la newsletter EP Coaching. Optionnel, désinscription en un clic à
+          tout moment.
         </span>
       </label>
 

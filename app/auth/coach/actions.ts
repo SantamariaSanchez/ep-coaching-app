@@ -12,6 +12,7 @@ import { sendVerificationEmail } from "@/lib/email-verification";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
+import { addBrevoContactToList, NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { headers } from "next/headers";
 
 // Adresse IP de l'appelant, pour les quotas des actions publiques.
@@ -31,6 +32,9 @@ export interface CoachSignupInput {
   password: string;
   planId: string;
   acceptedTerms: boolean;
+  // Consentement newsletter SÉPARÉ (2026-09-10, même principe que
+  // app/auth/client/actions.ts) — jamais déduit de acceptedTerms.
+  wantsNewsletter?: boolean;
 }
 
 export type CoachSignupResult = { error: string } | { success: true; checkoutUrl: string };
@@ -147,6 +151,10 @@ export async function signupCoach(input: CoachSignupInput): Promise<CoachSignupR
     `<strong>${escapeHtml(fullName)}</strong> (${escapeHtml(email)})`,
     `Formule choisie : ${escapeHtml(plan.label)} (${escapeHtml(plan.priceLabel)})`,
   ]).catch(() => {});
+
+  if (input.wantsNewsletter === true) {
+    addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});
+  }
 
   const checkoutUrl = `${plan.url}?client_reference_id=${authData.user.id}`;
   return { success: true, checkoutUrl };

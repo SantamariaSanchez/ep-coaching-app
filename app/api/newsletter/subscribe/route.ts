@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { NEWSLETTER_LIST_ID } from "@/utils/brevo";
 
 // Point d'entrée public unique pour l'inscription à la newsletter Brevo
 // (liste "Newsletter EP Coaching", id 6, déjà existante et déjà utilisée
@@ -17,7 +18,6 @@ const ALLOWED_ORIGINS = new Set([
   "https://ep-coaching.vercel.app",
 ]);
 
-const NEWSLETTER_LIST_ID = 6;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function corsHeaders(origin: string | null) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { sendBrevoEmail, addBrevoContactToList } from "@/utils/brevo";
+import { sendBrevoEmail, addBrevoContactToList, NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { getLeadMagnet } from "@/lib/lead-magnets";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
@@ -14,8 +14,8 @@ import { headers } from "next/headers";
 // n'était jusqu'ici jamais ajouté à aucune liste : il recevait le mail de
 // livraison, une éventuelle qualification par l'agent Setter, puis plus
 // jamais rien. Demande explicite 2026-08-31 : dès qu'un email est laissé, la
-// personne doit rejoindre le marketing en cours.
-const NEWSLETTER_LIST_ID = 6;
+// personne doit rejoindre le marketing en cours. NEWSLETTER_LIST_ID vit
+// maintenant dans utils/brevo.ts (2026-09-10, était dupliqué ici).
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

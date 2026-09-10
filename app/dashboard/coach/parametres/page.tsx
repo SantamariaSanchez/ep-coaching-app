@@ -9,7 +9,9 @@ import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
 import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
+import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
 import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
+import { getNewsletterSubscriptionStatus } from "@/app/actions/newsletter";
 import InviteLinkCard from "@/components/coach/InviteLinkCard";
 import PersonalCoachCard from "@/components/coach/PersonalCoachCard";
 import PaymentLinkCard from "@/components/coach/PaymentLinkCard";
@@ -52,7 +54,7 @@ export default async function CoachParametresPage() {
   // Item 45 : lecture ciblée (pas dans PROFILE_FIELDS), même convention que
   // referral_code/trial_ends_at côté client — évite d'alourdir getProfile()
   // utilisé partout avec des colonnes que seule cette page consulte.
-  const [acceptingRow, waitlist, notifRow, ouraRow] = await Promise.all([
+  const [acceptingRow, waitlist, notifRow, ouraRow, newsletterSubscribed] = await Promise.all([
     createAdminClient()
       .from("profiles")
       .select("accepting_new_clients, specializations")
@@ -63,6 +65,7 @@ export default async function CoachParametresPage() {
     // Nouveau : carte "Connexions" — statut Oura visible depuis Paramètres,
     // pas seulement sur Moi > Sommeil.
     createAdminClient().from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
+    getNewsletterSubscriptionStatus(),
   ]);
   const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null } | null;
   const accepting = acceptingData?.accepting_new_clients ?? true;
@@ -87,6 +90,8 @@ export default async function CoachParametresPage() {
       />
 
       <NotificationPreferencesCard initialMuted={mutedCategories} />
+
+      <NewsletterPreferenceCard initialSubscribed={newsletterSubscribed} />
 
       <ConnectionsCard
         ouraConnected={!!ouraRow.data}

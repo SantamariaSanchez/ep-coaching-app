@@ -3,7 +3,7 @@
 import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { sendBrevoEmail } from "@/utils/brevo";
+import { sendBrevoEmail, addBrevoContactToList, NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { getLoginLock, registerFailedLogin, clearLoginAttempts } from "@/lib/login-throttle";
@@ -53,6 +53,12 @@ export interface SelfSignupInput {
   // case côté navigateur, et c'est justement cette acceptation qu'on doit
   // pouvoir prouver plus tard (profiles.cgu_accepted_at).
   acceptedTerms?: boolean;
+  // Consentement SÉPARÉ et explicite à la newsletter (2026-09-10) — jamais
+  // déduit de acceptedTerms ci-dessus : la politique de confidentialité
+  // (/legal/confidentialite) promet explicitement "sur consentement séparé"
+  // pour la newsletter, distinct de l'acceptation des CGU/CGV. Case jamais
+  // pré-cochée côté formulaire (voir SignupFlow.tsx).
+  wantsNewsletter?: boolean;
 }
 
 // Résout un éventuel parrain — n'importe quel profil (coach ou pas), pas
@@ -294,6 +300,16 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
       body: `${fullName} vient de rejoindre grâce à toi, +${POINTS.referral} points.`,
       url: "/dashboard/client/profile",
     }).catch(() => {});
+  }
+
+  // Newsletter (2026-09-10) : consentement séparé et explicite, coché par
+  // la personne elle-même au formulaire (jamais pré-coché, voir
+  // wantsNewsletter ci-dessus) — jamais un ajout silencieux déduit de
+  // l'acceptation des CGU. Fire-and-forget comme les autres effets de bord
+  // de cette fonction : un échec Brevo ne doit jamais faire échouer la
+  // création de compte.
+  if (input.wantsNewsletter === true) {
+    addBrevoContactToList(email, NEWSLETTER_LIST_ID, fullName.split(" ")[0]).catch(() => {});
   }
 
   return { success: true, userId: authData.user.id };

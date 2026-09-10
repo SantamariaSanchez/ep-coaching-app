@@ -4112,3 +4112,59 @@ build` de production complet, exit 0.
   formulaire d'inscription newsletter.
 - Notifications/rappels/suggestions "autour de tout ça" (demande large,
   pas encore scopée en tâches concrètes).
+
+## BL — Croissance de la liste Brevo, sans jamais toucher au consentement (2026-09-10)
+
+Investigation avant tout code : le connecteur MCP Brevo disponible pour moi
+ne propose AUCUN outil de création/ajout de contact (seulement lecture :
+`contacts_get_contacts`, `lists_get_lists`...) — impossible de "synchroniser
+des leads" via ce connecteur. En revanche l'appli a déjà sa propre
+intégration Brevo directe (`utils/brevo.ts`, clé API serveur) avec
+`addBrevoContactToList`, déjà appelée à un seul endroit
+(`app/ressources/actions.ts`, téléchargement d'un leadmagnet). Un seul
+appelant sur toute l'appli — c'est là qu'était le vrai gisement, pas sur le
+web.
+
+**Point de vigilance décisif, trouvé en lisant `/legal/confidentialite`
+avant d'agir** : la page promet explicitement *"sur consentement séparé"*
+et *"la newsletter que vous avez explicitement acceptée"* — impossible
+d'ajouter automatiquement tout nouvel inscrit à l'appli à la newsletter
+sans contredire cette promesse écrite (et sans risque RGPD réel : accepter
+les CGU n'est pas un consentement marketing valable). Confirme que la
+prudence de l'Axe BJ (refus du scraping) n'était pas un excès de zèle
+isolé : la même appli a déjà, de son propre chef, posé cette règle avant
+moi.
+
+### Ce qui a été ajouté (uniquement du consentement neuf et réel)
+
+1. **Case newsletter au signup**, membre ET coach (`SignupFlow.tsx`,
+   `CoachSignupFlow.tsx`) — case SÉPARÉE de la case CGU obligatoire,
+   jamais pré-cochée (une case pré-cochée n'est pas un consentement RGPD
+   valable). Si cochée, `selfSignup`/`signupCoach` appelle
+   `addBrevoContactToList` en fire-and-forget après la création du compte
+   réussie (jamais avant, jamais bloquant).
+2. **Carte "Newsletter" dans Paramètres**, membre ET coach
+   (`NewsletterPreferenceCard.tsx`) — pour les comptes déjà existants
+   (créés avant cette case, ou qui l'avaient décochée) : un bouton
+   "S'inscrire", état réel vérifié auprès de Brevo au chargement de la
+   page (nouveau `isBrevoContactSubscribed`, `GET /v3/contacts/{email}`),
+   pas un simple booléen local qui pourrait mentir. Volontairement à sens
+   unique : pas de bouton "se désinscrire" ici, ce lien existe déjà en
+   pied de chaque email Brevo (mécanisme standard, déjà conforme).
+3. `NEWSLETTER_LIST_ID` centralisé dans `utils/brevo.ts` (était dupliqué
+   en constante locale dans 2 fichiers).
+
+### Reste explicitement pas fait
+
+Aucune tentative de deviner ou reconstituer un "consentement implicite"
+pour les ~15 membres déjà inscrits sans avoir vu la nouvelle case : la
+carte Paramètres (point 2) est LE mécanisme de rattrapage légitime, pas un
+ajout silencieux en base. Optimisation du formulaire `NewsletterSignupForm.tsx`
+lui-même jugée déjà correcte à la lecture (honeypot, états loading/erreur/
+succès, variante compacte) — le vrai levier était la découvrabilité
+(nouveaux points d'entrée ci-dessus), pas le formulaire lui-même.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 9 fichiers touchés, `next
+build` de production complet, exit 0.

@@ -4,9 +4,11 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import AccountActions from "@/components/profile/AccountActions";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
+import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
+import { getNewsletterSubscriptionStatus } from "@/app/actions/newsletter";
 
 export default async function ClientParametresPage() {
   const user = await getUser();
@@ -17,7 +19,7 @@ export default async function ClientParametresPage() {
   if (profile.role === "coach") redirect("/dashboard/coach/parametres");
 
   const supabase = await createServerSupabase();
-  const [{ data: pushSub }, { data: notifRow }] = await Promise.all([
+  const [{ data: pushSub }, { data: notifRow }, newsletterSubscribed] = await Promise.all([
     supabase
       .from("push_subscriptions")
       .select("id, quiet_hours_start, quiet_hours_end")
@@ -27,6 +29,7 @@ export default async function ClientParametresPage() {
     // convention que accepting_new_clients côté coach) : lecture ciblée
     // plutôt que d'alourdir getProfile() utilisé partout dans l'appli.
     supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
+    getNewsletterSubscriptionStatus(),
   ]);
   const notifPrefs = (notifRow?.notification_preferences as NotificationPreferences | null) ?? {};
   const mutedCategories = MUTABLE_CATEGORIES.filter((c) => notifPrefs[c] === true) as NotificationCategory[];
@@ -48,6 +51,8 @@ export default async function ClientParametresPage() {
       />
 
       <NotificationPreferencesCard initialMuted={mutedCategories} />
+
+      <NewsletterPreferenceCard initialSubscribed={newsletterSubscribed} />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/client" />
 
