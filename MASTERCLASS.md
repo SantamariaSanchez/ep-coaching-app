@@ -3864,3 +3864,69 @@ pour argent comptant) plutôt qu'une supposition :
 - Bornes `min`/`max` sur les champs numériques de santé (poids...) :
   spot-check sur le champ le plus sensible (poids du matin,
   `DailyBilanForm.tsx`) — déjà borné `min="30" max="300"`.
+
+## BI — Échecs réseau silencieux qui affichaient un état trompeur (2026-09-10)
+
+En relisant `UrgentAlertsSection.tsx` (coach) pour une raison sans rapport,
+repéré que son `.catch(() => setLoading(false))` amenait exactement au même
+rendu que "rien à signaler" — alors que le commentaire du code juste en
+dessous (Idée #13) explique que cet état positif a été ajouté PRÉCISÉMENT
+pour distinguer "contrôle fait, tout va bien" de "la section n'a pas
+chargé". Le `.catch()` défaisait sa propre raison d'être. Grep élargi à
+tout le repo (`\.catch\(...setLoading(false)...\)` et variantes) pour voir
+si c'était isolé ou systémique, puis lecture manuelle de chaque résultat
+avant de corriger — plusieurs se sont avérés déjà sûrs par construction et
+volontairement laissés tels quels.
+
+### Corrigés (l'échec réseau produisait un état FAUX, pas juste vide)
+
+- **`UrgentAlertsSection.tsx`** — nouvel état `loadError`, rendu distinct
+  ("Impossible de vérifier les alertes...") au lieu du faux "tout va bien".
+- **`RoadmapEditor.tsx`** — le plus sérieux des quatre : sur échec réseau,
+  `existingRoadmap` restait `null` exactement comme "ce client n'a pas
+  encore de road map", affichant le formulaire de CRÉATION à un coach dont
+  le client a peut-être déjà une road map — risque réel de doublon. Nouvel
+  état `loadError` avec message explicite ("recharge la page... ne pas
+  risquer d'en créer une deuxième en double").
+- **`ClientProfileTabs.tsx`** (onglet Road Map d'un client, vue coach) —
+  même défaut en amont du composant précédent : bouton "Configurer" et
+  résumé "Clique sur Configurer pour créer..." affichés sur échec réseau
+  comme sur vraie absence de road map. `RoadmapEditor.tsx` (ouvert derrière
+  ce bouton) protège déjà contre la vraie conséquence depuis le correctif
+  ci-dessus, mais ce résumé restait trompeur en lui-même — corrigé avec le
+  même principe (état `roadmapError` distinct).
+- **`DashboardStats.tsx`** (stats principales du dashboard coach, très
+  visible) — sur échec réseau, `stats` restait `null` pour toujours et le
+  squelette de chargement (pensé pour quelques centaines de ms) restait
+  affiché indéfiniment, donnant l'impression que l'appli est figée. Nouvel
+  état `statsError` avec message explicite au lieu du squelette éternel.
+
+### Vérifiés et volontairement laissés tels quels (déjà sûrs par construction)
+
+- `CoachMoiRoadmapView.tsx` — résumé "bonus" au-dessus de `RoadmapEditor.tsx`
+  lui-même ; son propre commentaire dit déjà explicitement déléguer la
+  gestion d'erreur à l'éditeur en dessous. Vrai depuis le correctif
+  ci-dessus, pas avant.
+- `StagnationBanner.tsx` — sur échec, la bannière ne s'affiche simplement
+  pas (`if (!status?.active...) return null`), un dégradé silencieux et
+  non trompeur, identique à l'état "avant chargement". Rien à corriger.
+- `RoadmapCalendar.tsx` (stats hebdo par semaine, superposées sur un
+  calendrier déjà affiché) — un échec masque juste les puces de stats,
+  aucune décision erronée possible derrière. Laissé tel quel.
+- `SessionView.tsx` (chargement d'une séance) — `initData` reste `null`
+  sur échec, ce qui tombe déjà correctement sur la branche existante
+  "Séance introuvable" plutôt qu'un écran cassé ou trompeur. Le libellé
+  n'est pas parfait (confond "n'existe pas" et "erreur de chargement")
+  mais ne trompe sur aucune décision, contrairement aux quatre corrigés.
+  Pas retouché — hors scope d'une passe "petit détail", pas un vrai risque.
+- Le reste des `.catch(() => {})` du repo (son d'alarme, service worker,
+  badge PWA, compteurs de notifications, bibliothèque d'exercices en
+  cache...) sont des effets secondaires "best effort" assumés, sans état
+  affiché qui pourrait induire en erreur.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 4 fichiers touchés. Deux
+`next build` de production complets (un après les 2 premiers correctifs,
+un après les 4), tous deux terminés sans erreur (table de routes
+complète, exit 0).

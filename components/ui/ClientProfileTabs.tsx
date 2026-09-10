@@ -363,12 +363,25 @@ export default function ClientProfileTabs({
   const [activeTab, setActiveTab] = useState<TabKey>("profil");
   const [roadmapData, setRoadmapData] = useState<RoadmapData | null>(null);
   const [roadmapLoading, setRoadmapLoading] = useState(true);
+  // Repasse "petit détail utile" (2026-09-10) : `roadmapData === null`
+  // servait aussi bien "pas encore de road map" que "échec réseau" — le
+  // bouton affichait "Configurer" et le résumé "Clique sur Configurer pour
+  // créer..." dans les deux cas. RoadmapEditor.tsx (ouvert derrière ce
+  // lien) protège déjà contre la vraie conséquence (créer une deuxième
+  // road map en double), mais ce résumé restait trompeur en soi.
+  const [roadmapError, setRoadmapError] = useState(false);
 
   useEffect(() => {
     fetch(`/api/roadmap/${client.id}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("bad status");
+        return r.json();
+      })
       .then((data) => setRoadmapData(data.roadmap ? data : null))
-      .catch(() => setRoadmapData(null))
+      .catch(() => {
+        setRoadmapData(null);
+        setRoadmapError(true);
+      })
       .finally(() => setRoadmapLoading(false));
   }, [client.id]);
 
@@ -681,6 +694,15 @@ export default function ClientProfileTabs({
             <Card>
               <div className="flex items-center justify-center py-8">
                 <p className="text-xs text-[#F5EDED]/40">Chargement…</p>
+              </div>
+            </Card>
+          ) : roadmapError ? (
+            <Card>
+              <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
+                <p className="text-xs text-[#F5EDED]/40">
+                  Impossible de vérifier si ce client a déjà une road map. Recharge la page avant de
+                  cliquer sur « Configurer », pour ne pas risquer d&apos;en créer une en double.
+                </p>
               </div>
             </Card>
           ) : !roadmapData ? (

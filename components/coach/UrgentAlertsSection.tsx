@@ -2,22 +2,35 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, AlertCircle, ChevronRight, Users, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, AlertCircle, ChevronRight, Users, CheckCircle2, WifiOff } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import type { TopAlert } from "@/lib/coach-analytics";
 
 export default function UrgentAlertsSection() {
   const [alerts, setAlerts] = useState<TopAlert[]>([]);
   const [loading, setLoading] = useState(true);
+  // Repasse "petit détail utile" (2026-09-10) : le `.catch()` d'origine
+  // amenait au même `alerts.length === 0` qu'un vrai "rien à signaler" —
+  // contredisant le commentaire de l'Idée #13 juste en dessous, écrit
+  // pour EXACTEMENT distinguer ces deux cas. Un coach dont la requête
+  // échoue (réseau, session expirée...) voyait "Tous tes clients suivis
+  // sont à jour" alors que le contrôle n'avait jamais eu lieu.
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     fetch("/api/coach/urgent-alerts")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("bad status");
+        return r.json();
+      })
       .then((data) => {
         setAlerts(data.alerts ?? []);
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoadError(true);
+        setLoading(false);
+      });
   }, []);
 
   if (loading) {
@@ -34,10 +47,25 @@ export default function UrgentAlertsSection() {
     );
   }
 
+  if (loadError) {
+    return (
+      <section className="mb-10">
+        <div className="flex items-center gap-2.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5">
+          <WifiOff size={15} className="text-[#F5EDED]/35 flex-shrink-0" strokeWidth={1.8} />
+          <p className="text-xs text-[#F5EDED]/40">
+            Impossible de vérifier les alertes pour l&apos;instant. Réessaie en rechargeant la page.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
   // Idée #13 (2026-09-09, retour direct "au moins 20 idées") : un écran qui
   // disparaît complètement quand tout va bien ne dit rien — impossible de
   // distinguer "rien à signaler" de "la section n'a pas chargé". Un état
-  // positif explicite confirme que le contrôle a bien eu lieu.
+  // positif explicite confirme que le contrôle a bien eu lieu (voir aussi
+  // le cas loadError ci-dessus, pour le troisième cas : le contrôle a
+  // échoué au lieu de ne rien trouver).
   if (alerts.length === 0) {
     return (
       <section className="mb-10">

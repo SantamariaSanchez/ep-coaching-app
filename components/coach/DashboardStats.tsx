@@ -153,13 +153,32 @@ function StatTile({
 
 export default function DashboardStats() {
   const [stats, setStats] = useState<Stats | null>(null);
+  // Repasse "petit détail utile" (2026-09-10) : sans distinction, un échec
+  // réseau laissait `stats` à null pour toujours — le bloc squelette
+  // ci-dessous (pensé pour un chargement de quelques centaines de ms)
+  // restait affiché indéfiniment, donnant l'impression que l'appli est
+  // figée plutôt que de dire clairement que ça a échoué.
+  const [statsError, setStatsError] = useState(false);
 
   useEffect(() => {
     fetch("/api/coach/dashboard-stats")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("bad status");
+        return r.json();
+      })
       .then((d) => setStats(d))
-      .catch(() => {});
+      .catch(() => setStatsError(true));
   }, []);
+
+  if (statsError) {
+    return (
+      <div className="ep-card" style={{ padding: "16px 20px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
+        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>
+          Impossible de charger tes statistiques pour l&apos;instant. Recharge la page.
+        </p>
+      </div>
+    );
+  }
 
   if (!stats) {
     return (

@@ -487,6 +487,12 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
 
 export default function RoadmapEditor({ clientId }: { clientId: string }) {
   const [loading, setLoading] = useState(true);
+  // Repasse "petit détail utile" (2026-09-10) : sans ça, un échec réseau au
+  // chargement laissait existingRoadmap à null exactement comme "pas encore
+  // de roadmap" — affichant le formulaire de CRÉATION à un coach dont le
+  // client a pourtant déjà une roadmap, avec le risque d'en créer une
+  // deuxième en double sans s'en rendre compte.
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -526,7 +532,10 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setLoadError(true);
+        setLoading(false);
+      });
   }, [clientId]);
 
   function addPhase() {
@@ -608,6 +617,19 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
       <div>
         <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 40, marginBottom: 16 }} />
         <div style={{ animation: "shimmer 1.5s ease infinite", background: "#1A0101", borderRadius: 12, height: 200 }} />
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="ep-card" style={{ padding: "20px", display: "flex", alignItems: "center", gap: 12 }}>
+        <AlertCircle size={18} style={{ color: "rgba(245,237,237,0.35)", flexShrink: 0 }} />
+        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, margin: 0 }}>
+          Impossible de charger la road map de ce client pour l&apos;instant. Recharge la page avant de
+          continuer — une road map existe peut-être déjà, mieux vaut ne pas risquer d&apos;en créer une
+          deuxième en double.
+        </p>
       </div>
     );
   }
