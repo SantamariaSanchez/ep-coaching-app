@@ -3832,3 +3832,35 @@ touchée par ce chantier ne s'en approche, uniquement des `aria-label` et
 du texte de template literal. Deux `next build` de production complets
 lancés en tâche de fond pendant la suite du travail (un après chaque lot),
 tous deux terminés sans erreur (table de routes complète, exit 0).
+
+### Autres catégories de "petit détail" vérifiées, déjà propres (rien à corriger)
+
+Passes ciblées après les deux volets ci-dessus, chacune avec une vérification
+réelle (grep + lecture du contexte, jamais juste "grep = 0 résultat" pris
+pour argent comptant) plutôt qu'une supposition :
+- Dates formatées sans locale explicite (`.toLocaleDateString()` sans
+  `"fr-FR"`, qui suivrait la langue du navigateur plutôt que celle de
+  l'appli) : **0 occurrence**, tous les appels de tout le repo passent déjà
+  `"fr-FR"` explicitement.
+- `alert()`/`confirm()`/`prompt()` natifs du navigateur restants : **0**,
+  tous les points de confirmation utilisent déjà le `confirm()` maison
+  (promisifié, remplace le natif depuis un commit antérieur à ce chantier).
+- Couverture `loading.tsx` sur les routes `/dashboard/client/*` et
+  `/dashboard/coach/*` : les 2 "trous" apparents (`communaute/`,
+  `science/`) sont des pages de redirection pure sans fetch de données —
+  toutes leurs sous-routes réelles ont déjà leur `loading.tsx`. Couverture
+  complète.
+- Feedback de pression (`:active`) sur les éléments cliquables : déjà géré
+  globalement par un système de classes existant
+  (`ep-btn-primary`/`ep-btn-secondary`/`ep-btn-icon`/`ep-card`/`ep-press`...
+  dans `app/globals.css`), avec sa propre exception `prefers-reduced-motion`
+  déjà en place. Rien à ajouter.
+- `key={i}`/`key={idx}` utilisé sur une liste d'objets qui a pourtant un
+  `.id` disponible (anti-pattern React classique, perte d'identité de
+  réconciliation) : script Node ciblé, **0 candidat** trouvé sur tout
+  `app/`+`components/`. Les seuls `key={i}` restants (ex. `AddRecipeForm.tsx`,
+  listes de chaînes `string[]` sans identifiant propre) sont un choix
+  cohérent pour ce cas précis, pas un oubli.
+- Bornes `min`/`max` sur les champs numériques de santé (poids...) :
+  spot-check sur le champ le plus sensible (poids du matin,
+  `DailyBilanForm.tsx`) — déjà borné `min="30" max="300"`.
