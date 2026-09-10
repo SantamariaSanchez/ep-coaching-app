@@ -4350,3 +4350,57 @@ ordre parfois arbitraire dans certains créneaux à 2 options.
 `tsc --noEmit` propre, `eslint` propre sur le fichier touché (6 erreurs
 préexistantes confirmées sans lien via `git stash`), `next build` de
 production complet, exit 0.
+
+## BR — Nutrition : fin des devinettes, la coche se rattache à l'id exact du plan (2026-09-10)
+
+Troisième signalement du même symptôme dans la même journée, en
+majuscules : *"JE COCHE VALIDE JE CHANGE D'ONGLET JE REVIENS ET Y'A PLU
+RIEN DE COCHE"*. L'Axe BQ juste au-dessus avait déjà fermé UN cas
+(l'égalité 6=6 sur le postworkout) en priorisant les aliments
+"distinctifs" (propres à une seule option). Test en direct de
+l'utilisateur, capturé en base en temps réel : il valide l'Option 1 du
+petit-déjeuner (Oeuf 150g, Pain complet, Miel 30g — les 3 aliments qui ne
+sont PAS déjà couverts par l'Option 2 loguée plus tôt) — et pourtant
+l'écran affiche de nouveau tout décoché. Cause : l'Option 2, loguée plus
+tôt dans la journée, a PLUS d'aliments distinctifs qu'Option 1
+(Flocons d'avoine, Whey, Oeuf 100g, Miel 25g — 4 contre 3), donc
+l'heuristique de l'Axe BQ retombe sur Option 2 par comptage, alors qu'il
+vient justement de valider Option 1. Un deuxième correctif indépendant
+sur le MÊME symptôme, contourné par un angle différent du MÊME problème
+de fond.
+
+**Constat** : deviner quelle option est réellement mangée à partir
+d'aliments qui peuvent se ressembler entre 2 options — que ce soit par
+compte total (Axe BQ v1) ou par aliment distinctif (Axe BQ v2) — n'est
+JAMAIS fiable à 100 %. Chaque heuristique ferme un cas et en laisse un
+autre ouvert. Plutôt qu'un troisième rafistolage de la même famille,
+correctif structurel : remplacer la déduction par un fait.
+
+**Migration `food_logs_diet_plan_meal_id`** (appliquée directement,
+FK nullable vers `diet_plan_meals`, `on delete set null`, index partiel) :
+chaque ligne de `food_logs` peut désormais porter l'id EXACT de la ligne
+du plan qu'elle satisfait, posé dès l'écriture — y compris la mise à
+jour optimiste côté client, avant même la réponse serveur.
+
+- `addFoodLog`/`logMealItems` (actions.ts) : nouveau paramètre
+  `dietPlanMealId`, prioritaire dans le garde-fou anti-doublon existant
+  (le filet food_id+quantité reste actif en dessous, pour le cas
+  légitime d'un aliment partagé entre 2 options déjà loggué depuis
+  l'autre — ne redemande jamais de le cocher deux fois).
+- `ClientNutritionView.tsx` (`checkedMap`, `loggedVariantBySlot`) :
+  matchent D'ABORD par `diet_plan_meal_id` — un fait, plus une
+  déduction, zéro ambiguïté possible même quand 2 options partagent des
+  aliments identiques. L'ancien heuristique de l'Axe BQ (aliment
+  distinctif) ne sert plus que de filet pour les logs antérieurs à cette
+  migration, jamais rattachés à une ligne de plan.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 3 fichiers touchés (6
+erreurs préexistantes confirmées sans lien via `git stash`), `next
+build` de production complet, exit 0.
+
+**Migration SQL à signaler** : `food_logs_diet_plan_meal_id` — appliquée
+directement via le connecteur Supabase (`apply_migration`), pas besoin
+d'action manuelle côté utilisateur, mentionnée ici par prudence
+conformément à AGENTS.md.
