@@ -204,6 +204,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (soir)** | | **657** | +3 par rapport au comptage du matin. L'échéance du 09-13 reste hors de portée au rythme actuel (routine + production manuelle combinées), toujours à signaler honnêtement plutôt qu'à masquer par un rythme de production qui sacrifierait le sourcing. |
 | 2026-09-10 | Vague AA (manuelle, suite de "continue les leadmagnet") | 5 | Protéines et satiété en sèche (méta-analyse 43 essais, -1,6kg vs témoin), HIIT vs cardio classique pour la perte de gras (méta-analyse en réseau, deux gagnants différents selon le marqueur suivi), risque d'infection ORL après un effort très long (méta-analyse marathon, +18% chiffré), BFR utile ou gadget (deux méta-analyses, l'effet dépend du niveau d'entraînement), collagène et tendons (revue 2026, effet réel sur la structure du tendon mais pas sur la force). Beta-alanine et sodium/hydratation écartés en cours de route : déjà couverts pour le premier, littérature trop faible/hors-sujet (dentaire) pour le second. |
 | **Total vérifié en base au 2026-09-10 (nuit)** | | **662** | +5 par rapport au comptage du soir. |
+| 2026-09-10 | Vague AB (manuelle, suite "continue de travailler longtemps") | 6 | Nitrates/jus de betterave (dose et timing précis, mais pas d'effet sur la progression à long terme), rest-pause et drop-set vs séries classiques (aucun bonus d'hypertrophie à volume égal), mind-muscle connection (quasi doublement de croissance mesurée par échographie, Schoenfeld 2018), cerises acidulées et récupération (force qui revient plus vite, mais pas les courbatures perçues), citrulline malate (+6,4% de répétitions, dose/timing précis), HMB (aucun effet démontré sur masse maigre ou force, jeunes comme séniors). |
+| **Total vérifié en base au 2026-09-10 (nuit, suite)** | | **668** | +6 par rapport au comptage précédent. |
 
 ## Répartition actuelle par catégorie
 
@@ -241,7 +243,9 @@ charges libres), squat profond et genoux, blessures épaule/lombaires
 (powerlifters, facteurs de risque), fréquence d'entraînement par muscle
 (c'est le volume qui compte), la force améliore l'endurance (économie de
 mouvement), entraînement avec restriction de flux sanguin (BFR, effet selon
-le niveau d'entraînement).
+le niveau d'entraînement), rest-pause et drop-set vs séries classiques
+(aucun bonus d'hypertrophie à volume égal), mind-muscle connection (focus
+interne vs externe).
 
 **Nutrition** : macros, signaux d'abandon de diète, mode de diète (flexible/
 fixe), timing des repas, repas à l'extérieur, compléments alimentaires,
@@ -253,7 +257,9 @@ végétarien/végétalien en musculation, alcool et objectifs physiques,
 créatine et cerveau (fatigue cognitive), caféine soutenue par la
 littérature (dose-réponse), alimentation étudiante à petit budget, protéines
 et satiété/poids en sèche, HIIT vs cardio classique (deux marqueurs
-différents), collagène et tendons (structure vs force).
+différents), collagène et tendons (structure vs force), nitrates/jus de
+betterave (dose/timing précis, pas d'effet chronique), citrulline malate
+(+6,4% de répétitions), HMB (aucun effet démontré).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -275,7 +281,8 @@ pour athlètes qui voyagent (asymétrie est/ouest), stretching statique
 avant/après (effet aigu vs chronique), retour après blessure aux
 ischio-jambiers (comparaison de protocoles), surentraînement/signes
 précoces (consensus ECSS/ACSM), infection ORL après un effort très long
-(marathon, fenêtre de vulnérabilité transitoire).
+(marathon, fenêtre de vulnérabilité transitoire), cerises acidulées
+(force qui revient plus vite, mais pas les courbatures perçues).
 
 **Général** : 7 erreurs de transformation, prêt pour le coaching, phase
 actuelle (masse/sèche/maintenance), lire sa progression, 40 ans et plus,
@@ -389,7 +396,17 @@ ORL post-effort long : Sardeli et al. 2024, méta-analyse marathon (PMID
 et al. 2018, méta-analyse de référence (DOI 10.1007/s40279-017-0795-y), Geng
 et al. 2024, modérateur statut d'entraînement (DOI 10.1186/s40798-024-00719-3).
 Collagène et tendons : Buchalski et al. 2026, revue systématique Stanford
-(DOI 10.3390/jfmk11010130).
+(DOI 10.3390/jfmk11010130). Nitrates/betterave : Silva et al. 2022,
+méta-analyse 123 études (DOI 10.1093/advances/nmac054), Hogwood et al. 2023,
+absence d'effet chronique (DOI 10.1186/s40798-023-00632-1). Rest-pause/
+drop-set : Enes et al. 2021, essai contrôlé avec Schoenfeld (DOI
+10.1139/apnm-2021-0278). Mind-muscle connection : Schoenfeld et al. 2018
+(DOI 10.1080/17461391.2018.1447020). Cerises acidulées : Daab et al. 2026,
+méta-analyse 19 essais (DOI 10.1186/s40798-026-00993-3). Citrulline malate :
+Vårvik et al. 2021, méta-analyse (DOI 10.1123/ijsnem.2020-0295). HMB :
+Jakubowski et al. 2020, méta-analyse groupe Phillips (DOI
+10.3390/nu12051523), Courel-Ibáñez et al. 2019, séniors (DOI
+10.3390/nu11092082).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
