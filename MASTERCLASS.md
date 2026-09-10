@@ -4404,3 +4404,55 @@ build` de production complet, exit 0.
 directement via le connecteur Supabase (`apply_migration`), pas besoin
 d'action manuelle côté utilisateur, mentionnée ici par prudence
 conformément à AGENTS.md.
+
+## BS — Nutrition : le vrai coupable était un cache client posé plus tôt dans la même session (2026-09-10/11)
+
+Après l'Axe BR (structurellement correct, vérifié : diet_plan_meal_id
+bien posé, écriture réussie), le symptôme persistait à l'identique :
+*"je coche, valide, j'attends, ça se décoche"*, répété de nombreuses
+fois. Deux fausses pistes écartées une à une avec preuve à l'appui avant
+de trouver la vraie cause :
+
+1. **Onglet resté ouvert sur un ancien build** : confirmé en partie — un
+   redémarrage complet du navigateur a fait passer l'état de "l'écriture
+   n'atteint même pas le serveur" (0 ligne en base, 0 erreur nulle part)
+   à "l'écriture réussit" (5 lignes confirmées en base, `diet_plan_meal_id`
+   correctement posé, capture d'écran du navigateur à l'appui).
+2. **Un bug de matching restant** : écarté par la donnée elle-même — le
+   créneau testé n'a qu'une seule option (pas d'ambiguïté possible), et
+   les 5 lignes en base pointent exactement vers les bonnes lignes du
+   plan. Le calcul des coches n'avait donc rien à deviner.
+
+**Cause réelle**, trouvée en relisant `next.config.ts` plutôt que de
+retoucher une quatrième fois la logique de matching : `staleTimes.dynamic
+= 30`, ajouté PLUS TÔT DANS CETTE MÊME SESSION (repasse perf, "changer
+d'onglet prend 3s") pour mettre en cache le rendu côté client des pages
+dynamiques 30 secondes, en pariant — avec un raisonnement documenté dans
+le commentaire du réglage lui-même — que `revalidatePath` purge de façon
+fiable ce cache après chaque mutation. AGENTS.md prévient explicitement
+dès la première ligne que ce projet tourne sur une version de Next.js
+avec des changements cassants par rapport au comportement standard :
+exactement le genre d'hypothèse ("ça devrait marcher comme d'habitude")
+que ce fichier demande de ne jamais faire sans vérifier. Le pari ne
+tenait pas ici : l'écran resservait un rendu client vieux de quelques
+secondes à quelques dizaines de secondes, sans la coche fraîchement
+enregistrée.
+
+**Fix** : `staleTimes.dynamic` retiré, retour au défaut Next.js 15+ (0
+seconde, aucun cache client sur une page dynamique). La fonctionnalité de
+suivi (le cœur de l'appli) prime sur les 3 secondes de navigation gagnées
+par ce réglage — un compromis qui n'aurait jamais dû être fait dans une
+appli où l'utilisateur voit un état "coché" avant de refermer l'onglet.
+
+**Leçon** : un réglage ajouté dans la même session, avec un raisonnement
+qui semblait solide sur le moment (documentation Next.js standard citée
+à l'appui), peut devenir la cause d'un bug signalé des heures plus tard
+sans lien apparent — vérifier les changements RÉCENTS de la session
+elle-même, pas seulement le code touché par le correctif en cours, fait
+partie du diagnostic.
+
+### Validation
+
+`tsc --noEmit` propre, `next build` de production complet, exit 0 (pas
+de fichier applicatif touché, juste la config — pas de nouvelle passe
+`eslint` nécessaire).
