@@ -3188,3 +3188,48 @@ pour confirmation finale.
   `ExerciseLibraryView.tsx`, `StudiesView.tsx`, etc., chemins `onDelete`
   volontairement déclassés à l'Axe B d'origine), mais pas reconfirmé un par
   un cette fois.
+
+**Axe I (advisors Supabase), relancé** : `get_advisors` sécurité + performance
+repassés (dernière fois : 2026-08-14, avant les 136 commits). Deux vraies
+trouvailles neuves, corrigées **directement en base (migrations SQL, à
+signaler explicitement, voir AGENTS.md)** :
+- **Sécurité** : `sync_notifications_recipient_user_id` (le trigger créé
+  plus tôt dans cette même session pour le fix notifications) n'avait pas de
+  `search_path` fixe — même durcissement que `set_lead_magnets_updated_at`
+  le 2026-08-14 (`alter function ... set search_path = public`). Et
+  **`prequalification_responses`** (table créée le 2026-08-23 dans le repo
+  séparé `ep-coaching-formulaires`, pas dans ce repo — vérifié directement
+  dans ce repo cousin sur disque) : RLS activé sans policy comme prévu par
+  sa propre migration d'origine (déjà commentée "aucune policy publique,
+  insert exclusivement via Server Action + clé service role"), mais
+  contrairement à ses tables soeurs de CE repo (`auth_login_attempts`,
+  `oura_connections`, `rate_limit_counters`), les GRANTs par défaut
+  (SELECT/INSERT/UPDATE/DELETE pour `anon` ET `authenticated`) n'avaient
+  jamais été révoqués — sans risque actif aujourd'hui (RLS bloque déjà
+  tout), mais un vrai filet de sécurité en moins si une policy était un
+  jour ajoutée par erreur. `revoke all ... from anon, authenticated` posé en
+  migration séparée (`harden_prequalification_responses_grants`),
+  cohérent avec le motif déjà en place sur les 3 tables soeurs.
+- **Performance** : `sales_calls` (table du module Axe 6 business,
+  2026-09-09) avait 1 policy RLS avec `auth.uid()` nu (`auth_rls_initplan`),
+  même transformation syntaxique déjà appliquée aux 124 policies le
+  2026-08-14 (`alter policy ... using (coach_id = (select auth.uid()))`).
+  Et 2 clés étrangères sans index couvrant (`client_medical_constraints.
+  coach_id`, `client_recovery_logs.coach_id`, tables du module contraintes
+  médicales) — 2 `create index if not exists`, ajout pur. Les 2 advisors
+  confirment 0 issue restante sur ces deux points après coup.
+- **Vérifié SAIN, inchangé** : `pg_net` toujours dans `public` (laissé, même
+  raison qu'avant), `auth_leaked_password_protection` toujours désactivé
+  (réglage dashboard), les 11 fonctions `SECURITY DEFINER` toujours le
+  motif idiomatique RLS attendu, `rls_enabled_no_policy` toujours 4 tables
+  (les 3 d'origine + `prequalification_responses` maintenant confirmée
+  saine elle aussi), `unused_index` à 34 (variation normale, toujours
+  informationnel, pas de trafic réel pour en juger).
+
+**4 migrations SQL appliquées cette repasse** (toutes des durcissements/
+ajouts purs, aucun changement de comportement fonctionnel, donc pas
+d'exécution manuelle requise côté SQL Editor — déjà appliquées en direct
+via le MCP Supabase, mentionné ici par transparence comme l'exige
+AGENTS.md) : `harden_notifications_sync_search_path`,
+`harden_prequalification_responses_grants`,
+`perf_fix_sales_calls_rls_initplan_and_fk_indexes`.
