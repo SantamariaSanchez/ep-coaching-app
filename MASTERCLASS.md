@@ -3602,9 +3602,27 @@ d'une fonction locale dupliquée).
 build` de production terminé sans erreur (table de routes complète, exit
 0) — aucune des trois vérifications n'a rien remonté.
 
+### Repasse immédiate : échec silencieux trouvé dans ce même fichier
+
+En relisant `AujourdhuiView.tsx` juste après l'avoir livré, `handleToggleHabit`
+(coche des habitudes ET des compléments, même fonction) cochait/décochait
+l'état de façon optimiste sans jamais revenir en arrière si `toggleHabitLog`
+échouait réellement côté serveur — exactement la même classe de bug que
+les 4 déjà corrigés dans la repasse Axe B de cette session (commit
+`3f54be4`), simplement pas encore repassée sur ce fichier au moment de sa
+création puisqu'il n'existait pas encore. Comparé au composant `MindsetView.tsx`
+(l'onglet Mindset principal, `handleToggle`) qui gère déjà ce rollback +
+affichage d'erreur correctement — confirme que c'était bien l'écart, pas
+un nouveau pattern à inventer. Corrigé à l'identique : rollback du `Set`
+optimiste + message d'erreur affiché sous la carte si `res.error`. `tsc`/
+`eslint` revérifiés propres après ce correctif.
+
 ### Reste à faire
 
-La passe "20 idées" côté coach du 2026-09-09 comptait des numéros jamais
-retrouvés dans une implémentation (#3, #4, #6, #8, #17, #19) — à reprendre
-si l'utilisateur relance un brainstorm, plutôt que de les re-générer de
-zéro sans savoir ce qu'ils étaient.
+La liste complète des "20 idées" côté coach du 2026-09-09 n'a jamais été
+consignée nulle part dans ce repo (ni MASTERCLASS.md, ni PROGRESS.md) —
+seuls les commentaires `Idée #N` laissés dans le code au fil de leur
+implémentation en gardent une trace partielle (#1, #2, #10, #11, #12,
+#13, #16, #18 retrouvés). Les numéros manquants ne peuvent pas être
+reconstruits de façon fiable : mieux vaut lancer un nouveau brainstorm
+que d'inventer ce qu'ils étaient.

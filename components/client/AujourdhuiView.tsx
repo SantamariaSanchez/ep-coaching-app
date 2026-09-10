@@ -99,6 +99,7 @@ export default function AujourdhuiView({
   const [weightSaved, setWeightSaved] = useState(false);
   const [weightSaving, setWeightSaving] = useState(false);
   const [weightError, setWeightError] = useState<string | null>(null);
+  const [habitError, setHabitError] = useState<string | null>(null);
 
   async function handleSaveWeight() {
     if (!weightValue.trim()) return;
@@ -114,13 +115,28 @@ export default function AujourdhuiView({
     else setWeightSaved(true);
   }
 
+  // Repasse masterclass (Axe B, échecs silencieux) : cette coche était
+  // optimiste sans jamais revenir en arrière si toggleHabitLog échouait
+  // réellement côté serveur (RLS, réseau...) — même classe de bug déjà
+  // corrigée ailleurs dans le repo (TrackingClient.tsx, BusinessGoals.tsx...)
+  // pendant cette même session, juste pas encore repassée sur ce fichier
+  // au moment de sa création.
   function handleToggleHabit(key: string) {
     const wasChecked = loggedKeys.has(key);
     const next = new Set(loggedKeys);
     if (wasChecked) next.delete(key); else next.add(key);
     setLoggedKeys(next);
-    startTransition(() => {
-      toggleHabitLog(key, todayStr, !wasChecked);
+    setHabitError(null);
+    startTransition(async () => {
+      const res = await toggleHabitLog(key, todayStr, !wasChecked);
+      if (res.error) {
+        setLoggedKeys((current) => {
+          const reverted = new Set(current);
+          if (wasChecked) reverted.add(key); else reverted.delete(key);
+          return reverted;
+        });
+        setHabitError(res.error);
+      }
     });
   }
 
@@ -445,6 +461,7 @@ export default function AujourdhuiView({
             );
           })}
         </div>
+        {habitError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{habitError}</p>}
       </section>
 
       {/* Compléments du jour (item 34) — uniquement s'il y a une liste
