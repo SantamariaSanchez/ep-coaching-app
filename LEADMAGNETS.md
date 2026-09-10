@@ -210,6 +210,8 @@ production locale.
 | **Total vérifié en base au 2026-09-10 (nuit, suite 2)** | | **672** | +4 par rapport au comptage précédent. |
 | 2026-09-10 | Vague AD (manuelle, suite "continue de travailler longtemps") | 4 | Bétaïne (aucun effet sur la composition corporelle malgré sa présence quasi systématique en pre-workout), taurine (relation dose-réponse, pas un effet linéaire simple), seuil de leucine (vrai chez les seniors, pas chez le jeune pratiquant), œuf entier vs blanc d'œuf (l'œuf entier stimule plus la synthèse protéique à protéines égales). Bicarbonate de sodium et fréquence/répartition des repas explorés mais écartés : premier moins pertinent pour l'audience musculation (surtout utile en sports à efforts répétés), second déjà couvert (3 entrées existantes). |
 | **Total vérifié en base au 2026-09-10 (nuit, suite 3)** | | **676** | +4 par rapport au comptage précédent. |
+| 2026-09-10 | Vague AE (manuelle, suite "continue de travailler longtemps") | 4 | Vitamine C/E à forte dose (freine l'hypertrophie et la force en essai contrôlé de 10 semaines), créatine avant vs après la séance (aucune différence, design intra-sujet), curcuma/gingembre/ginseng (réduisent courbatures et marqueurs, mais pas la performance), L-carnitine (effet réel mais démontré chez le surpoids/obèse, pas le pratiquant déjà lean). |
+| **Total vérifié en base au 2026-09-10 (nuit, suite 4)** | | **680** | +4 par rapport au comptage précédent. |
 
 ## Répartition actuelle par catégorie
 
@@ -267,7 +269,10 @@ betterave (dose/timing précis, pas d'effet chronique), citrulline malate
 (+6,4% de répétitions), HMB (aucun effet démontré), ashwagandha et force
 (STAR Trial), bétaïne (aucun effet composition corporelle), taurine
 (dose-réponse), seuil de leucine (vrai chez les seniors, pas les jeunes),
-œuf entier vs blanc d'œuf (synthèse protéique).
+œuf entier vs blanc d'œuf (synthèse protéique), vitamine C/E à forte dose
+(freine l'hypertrophie), créatine avant vs après séance (aucune différence),
+curcuma/gingembre/ginseng (courbatures oui, performance non), L-carnitine
+(effet réel mais chez le surpoids, pas le lean).
 
 **Psychologie** : motivation, routine du soir, obstacle mental,
 comparaison réseaux sociaux, accountability, syndrome de l'imposteur,
@@ -427,7 +432,15 @@ méta-analyse (DOI 10.1017/S0007114521004062). Taurine : Chen et al. 2021,
 revue dose-réponse (DOI 10.3389/fphys.2021.700352). Seuil de leucine :
 Wilkinson et al. 2023, revue systématique (DOI 10.14814/phy2.15775). Œuf
 entier vs blanc : van Vliet et al. 2017, biopsies/traceurs isotopiques
-(DOI 10.3945/ajcn.117.159855).
+(DOI 10.3945/ajcn.117.159855). Vitamine C/E forte dose : Martínez-Ferrán
+et al. 2022, essai contrôlé (DOI 10.1016/j.nut.2022.111848). Créatine
+timing : Forbes/Krentz/Candow 2021, design intra-sujet (DOI
+10.23736/S0022-4707.20.11668-2). Curcuma/racines : Doma et al. 2020,
+méta-analyse 25 études (DOI 10.1024/0300-9831/a000689), Talebi et al. 2024,
+revue parapluie 53 méta-analyses (DOI 10.1093/nutrit/nuad078). L-carnitine :
+Talenezhad et al. 2020, méta-analyse 37 essais (DOI
+10.1016/j.clnesp.2020.03.008), Askarpour et al. 2019, méta-analyse 43 essais
+(DOI 10.1016/j.phrs.2019.104554).
 
 ## Prochaines vagues (backlog de thèmes, non exhaustif)
 
