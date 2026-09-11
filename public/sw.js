@@ -33,6 +33,18 @@ self.addEventListener("push", (event) => {
         actions: isAlarm ? [{ action: "stop-alarm", title: "Arrêter" }] : undefined,
         silent: false,
         tag: isAlarm ? "ep-coaching-alarm" : undefined,
+        // Retour direct 2026-09-11 ("j'ai eu QUE la notif du reveil") : le
+        // cron (schedule-block-notify) relance cette meme notif toutes les
+        // 5 min pendant 30 min tant qu'elle n'est pas acquittee (escalade
+        // deja en place cote serveur) - mais sans `renotify`, reutiliser le
+        // MEME tag ("ep-coaching-alarm") remplace la notif EN SILENCE d'un
+        // envoi a l'autre (pas de nouvelle vibration, pas de nouvelle
+        // alerte), navigateur par navigateur. Vu de l'utilisateur endormi :
+        // une seule vraie alerte au tout premier envoi, puis plus rien de
+        // perceptible malgre l'escalade qui tourne bien cote serveur.
+        // `renotify: true` force chaque relance a re-alerter (revibrer)
+        // comme une notif neuve, essentiel pour un reveil qui doit reveiller.
+        renotify: isAlarm,
       });
 
       // Le son "silent: false" d'une Notification reste un bip système
