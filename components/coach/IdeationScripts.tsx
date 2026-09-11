@@ -141,6 +141,18 @@ const inputStyle: React.CSSProperties = {
   outline: "none",
 };
 
+const selectStyle: React.CSSProperties = {
+  background: "rgba(0,0,0,0.4)",
+  border: "1px solid rgba(224,30,30,0.2)",
+  borderRadius: 999,
+  color: "#F5EDED",
+  padding: "6px 10px",
+  fontSize: 11.5,
+  fontWeight: 700,
+  outline: "none",
+  cursor: "pointer",
+};
+
 function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   const [scripts, setScripts] = useState(initialScripts);
   useEffect(() => {
@@ -226,6 +238,26 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     return searchWords.every((w) => haystack.includes(w));
   }
 
+  // Retour direct 2026-09-11 ("améliore le triage, qu'on puisse filtrer
+  // genre posté/pas posté, youtube/insta, et le pilier") : trois filtres
+  // combinables avec la recherche, "tous" par défaut (aucun filtrage tant
+  // que rien n'est choisi). Le pilier est une liste ouverte (texte libre
+  // en base), donc calculée depuis les scripts réellement présents plutôt
+  // qu'une liste figée qui se périmerait.
+  const [statusFilter, setStatusFilter] = useState<ScriptStatus | "all">("all");
+  const [platformFilter, setPlatformFilter] = useState<string | "all">("all");
+  const [pillarFilter, setPillarFilter] = useState<string | "all">("all");
+  const pillarOptions = useMemo(
+    () => Array.from(new Set(scripts.map((s) => s.pillar).filter((p): p is string => !!p))).sort(),
+    [scripts]
+  );
+  function matchesFilters(script: CoachScript): boolean {
+    if (statusFilter !== "all" && script.status !== statusFilter) return false;
+    if (platformFilter !== "all" && script.platform !== platformFilter) return false;
+    if (pillarFilter !== "all" && script.pillar !== pillarFilter) return false;
+    return true;
+  }
+
   // Retour direct 2026-09-11 ("si un script est là depuis trop longtemps
   // faut le faire remonter pour que je le tourne et post, ou si un
   // tournage est toujours pas posté") : un script qui traîne dans une
@@ -245,11 +277,15 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   function daysInStage(script: CoachScript): number {
     return (now - new Date(script.updated_at).getTime()) / 86400000;
   }
-  const activeScripts = scripts
-    .filter((s) => s.status !== "publie")
-    .filter(matchesSearch)
+  // Un filtre de statut explicite (ex. "publié" pour ne voir QUE le
+  // posté) n'a plus de sens avec le repli "publiés" — dans ce cas, une
+  // seule liste plate qui respecte le filtre, sans repli.
+  const filtered = scripts.filter(matchesSearch).filter(matchesFilters);
+  const activeScripts = (statusFilter === "all" ? filtered.filter((s) => s.status !== "publie") : filtered)
+    .slice()
     .sort((a, b) => daysInStage(b) - daysInStage(a));
-  const publishedScripts = scripts.filter((s) => s.status === "publie").filter(matchesSearch);
+  const publishedScripts =
+    statusFilter === "all" ? filtered.filter((s) => s.status === "publie") : [];
 
   function submitNew() {
     setError(null);
@@ -405,7 +441,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         </div>
       ) : (
         <>
-          <div style={{ position: "relative", marginBottom: 14 }}>
+          <div style={{ position: "relative", marginBottom: 10 }}>
             <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
             <input
               value={searchQuery}
@@ -416,9 +452,65 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
             />
           </div>
 
-          {searchWords.length > 0 && activeScripts.length === 0 && publishedScripts.length === 0 ? (
+          {/* Retour direct 2026-09-11 : filtres combinables statut/
+              plateforme/pilier, en plus de la recherche — trois listes
+              déroulantes plutôt que des rangées de pills (le pilier est une
+              liste ouverte qui peut grossir, des pills deviendraient vite
+              illisibles). */}
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as ScriptStatus | "all")}
+              aria-label="Filtrer par statut"
+              style={selectStyle}
+            >
+              <option value="all">Tous les statuts</option>
+              <option value="a_tourner">À tourner</option>
+              <option value="tourne">Tourné</option>
+              <option value="publie">Publié</option>
+            </select>
+            <select
+              value={platformFilter}
+              onChange={(e) => setPlatformFilter(e.target.value)}
+              aria-label="Filtrer par plateforme"
+              style={selectStyle}
+            >
+              <option value="all">Toutes plateformes</option>
+              <option value="instagram">Instagram</option>
+              <option value="youtube">YouTube</option>
+              <option value="linkedin">LinkedIn</option>
+            </select>
+            {pillarOptions.length > 0 && (
+              <select
+                value={pillarFilter}
+                onChange={(e) => setPillarFilter(e.target.value)}
+                aria-label="Filtrer par pilier"
+                style={selectStyle}
+              >
+                <option value="all">Tous les piliers</option>
+                {pillarOptions.map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            )}
+            {(statusFilter !== "all" || platformFilter !== "all" || pillarFilter !== "all") && (
+              <button
+                type="button"
+                onClick={() => { setStatusFilter("all"); setPlatformFilter("all"); setPillarFilter("all"); }}
+                style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+
+          {activeScripts.length === 0 && publishedScripts.length === 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
-              <p className="text-sm text-[#F5EDED]/35">Aucun script ne correspond à &quot;{searchQuery}&quot;.</p>
+              <p className="text-sm text-[#F5EDED]/35">
+                {searchWords.length > 0
+                  ? <>Aucun script ne correspond à &quot;{searchQuery}&quot;.</>
+                  : "Aucun script ne correspond à ces filtres."}
+              </p>
             </div>
           ) : (
           <>
