@@ -298,6 +298,11 @@ export async function updateScript(
     title?: string;
     format?: ScriptFormat;
     content?: string;
+    // Retour direct 2026-09-11 ("on peut copier mais je veux pouvoir
+    // modifier") : la description (colonne instagram_caption, réutilisée
+    // pour la description YouTube aussi) n'était modifiable pour aucune
+    // plateforme, seulement copiable — même correctif que `content`.
+    caption?: string;
     status?: ScriptStatus;
     // Tracking de performance (2026-09-10) — un entier positif ou null
     // pour effacer une valeur saisie par erreur.
@@ -321,6 +326,7 @@ export async function updateScript(
     patch.format = updates.format;
   }
   if (updates.content !== undefined) patch.content = updates.content.trim() || null;
+  if (updates.caption !== undefined) patch.instagram_caption = updates.caption.trim() || null;
   if (updates.status !== undefined) {
     if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;

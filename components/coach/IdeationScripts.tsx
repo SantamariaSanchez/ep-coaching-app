@@ -166,6 +166,11 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
   const [draft, setDraft] = useState("");
+  // Retour direct 2026-09-11 ("on peut copier mais je veux pouvoir
+  // modifier") : même schéma openId/draft que pour le script, appliqué à
+  // la description (instagram_caption) — jusque-là copiable seulement.
+  const [captionOpenId, setCaptionOpenId] = useState<string | null>(null);
+  const [captionDraft, setCaptionDraft] = useState("");
   // Tracking de performance (2026-09-10) — édition d'un seul script à la
   // fois, même schéma que openId/draft ci-dessus pour le contenu.
   const [perfEditId, setPerfEditId] = useState<string | null>(null);
@@ -337,6 +342,19 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     setOpenId(null);
     startTransition(async () => {
       const result = await updateScript(id, { content: draft });
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
+
+  function saveCaption(id: string) {
+    const backup = scripts;
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, instagram_caption: captionDraft || null } : s)));
+    setCaptionOpenId(null);
+    startTransition(async () => {
+      const result = await updateScript(id, { caption: captionDraft });
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -728,18 +746,72 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   parlé ci-dessus. Même colonne "instagram_caption" réutilisée
                   pour toute plateforme (YouTube inclus) : le libellé
                   s'adapte, la donnée reste une seule colonne texte libre. */}
-              {script.instagram_caption && (
+              {(script.instagram_caption || captionOpenId === script.id) && (
                 <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
                       Description {platformInfo?.label ?? ""}
                     </span>
-                    <CopyButton text={script.instagram_caption} />
+                    {script.instagram_caption && <CopyButton text={script.instagram_caption} />}
                   </div>
-                  <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", whiteSpace: "pre-wrap", lineHeight: 1.5 }}>
-                    {script.instagram_caption}
-                  </p>
+                  {captionOpenId === script.id ? (
+                    <div>
+                      <textarea
+                        value={captionDraft}
+                        onChange={(e) => setCaptionDraft(e.target.value)}
+                        rows={8}
+                        aria-label="Description du script"
+                        style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
+                        autoFocus
+                      />
+                      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                        <button
+                          type="button"
+                          onClick={() => saveCaption(script.id)}
+                          style={{
+                            background: "#60a5fa", color: "#000", padding: "9px 18px", borderRadius: "var(--radius-lg)",
+                            fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
+                          }}
+                        >
+                          Enregistrer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setCaptionOpenId(null)}
+                          style={{
+                            background: "transparent", color: "rgba(245,237,237,0.5)", padding: "9px 18px",
+                            borderRadius: "var(--radius-lg)", fontWeight: 700, fontSize: 12.5,
+                            border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
+                          }}
+                        >
+                          Annuler
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p
+                      onClick={() => {
+                        setCaptionOpenId(script.id);
+                        setCaptionDraft(script.instagram_caption ?? "");
+                      }}
+                      style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", whiteSpace: "pre-wrap", lineHeight: 1.5, cursor: "text" }}
+                    >
+                      {script.instagram_caption}
+                    </p>
+                  )}
                 </div>
+              )}
+              {!script.instagram_caption && captionOpenId !== script.id && (
+                <button
+                  type="button"
+                  onClick={() => { setCaptionOpenId(script.id); setCaptionDraft(""); }}
+                  style={{
+                    marginTop: 10, fontSize: 11, fontWeight: 700, color: "#60a5fa", background: "none",
+                    border: "1px dashed rgba(96,165,250,0.3)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", width: "100%",
+                  }}
+                >
+                  + Ajouter une description {platformInfo?.label ?? ""}
+                </button>
               )}
 
               {/* Tracking de performance (2026-09-10) — seulement une fois
