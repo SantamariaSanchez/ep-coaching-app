@@ -204,8 +204,52 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   // rester mélangé aux scripts encore à produire (voir avgViews plus haut,
   // qui s'appuie déjà sur ce même statut).
   const [showPublished, setShowPublished] = useState(false);
-  const activeScripts = scripts.filter((s) => s.status !== "publie");
-  const publishedScripts = scripts.filter((s) => s.status === "publie");
+
+  // Retour direct 2026-09-11 ("faut une utilité de tracking derrière pour
+  // prendre des décisions, rajoute une barre de recherche... pas au mot
+  // près") : recherche multi-mots, insensible à la casse/aux accents, sur
+  // titre+script+hook+pilier — pas une simple sous-chaîne exacte qui rate
+  // "poulet riz" si le texte dit "riz et poulet".
+  const [searchQuery, setSearchQuery] = useState("");
+  function normalizeSearch(s: string): string {
+    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+  const searchWords = useMemo(
+    () => normalizeSearch(searchQuery).split(/\s+/).filter(Boolean),
+    [searchQuery]
+  );
+  function matchesSearch(script: CoachScript): boolean {
+    if (searchWords.length === 0) return true;
+    const haystack = normalizeSearch(
+      [script.title, script.content, script.hook, script.pillar].filter(Boolean).join(" ")
+    );
+    return searchWords.every((w) => haystack.includes(w));
+  }
+
+  // Retour direct 2026-09-11 ("si un script est là depuis trop longtemps
+  // faut le faire remonter pour que je le tourne et post, ou si un
+  // tournage est toujours pas posté") : un script qui traîne dans une
+  // étape est un vrai problème de production (le pipeline s'engorge), pas
+  // juste une info secondaire — donc remonté en premier dans la liste, pas
+  // seulement signalé par une couleur. `updated_at` avance à chaque
+  // changement de statut (cycleStatus), donc c'est bien "depuis combien de
+  // temps dans CETTE étape", pas depuis la création du script.
+  const STALE_DAYS: Record<ScriptStatus, number> = { a_tourner: 3, tourne: 2, publie: Infinity };
+  // Initialiseur paresseux (calculé une seule fois, au montage) plutôt que
+  // Date.now() directement pendant le rendu : appel impur, fait échouer
+  // react-hooks/purity (même correctif déjà utilisé ailleurs dans ce
+  // projet, voir CoachMailingComposer.tsx) — une photo figée au chargement
+  // suffit très largement ici, une dérive de quelques minutes sur un
+  // décompte en jours ne change rien.
+  const [now] = useState(() => Date.now());
+  function daysInStage(script: CoachScript): number {
+    return (now - new Date(script.updated_at).getTime()) / 86400000;
+  }
+  const activeScripts = scripts
+    .filter((s) => s.status !== "publie")
+    .filter(matchesSearch)
+    .sort((a, b) => daysInStage(b) - daysInStage(a));
+  const publishedScripts = scripts.filter((s) => s.status === "publie").filter(matchesSearch);
 
   function submitNew() {
     setError(null);
@@ -361,13 +405,33 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         </div>
       ) : (
         <>
+          <div style={{ position: "relative", marginBottom: 14 }}>
+            <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Rechercher un script (titre, texte, hook, pilier)"
+              aria-label="Rechercher un script"
+              style={{ ...inputStyle, paddingLeft: 34 }}
+            />
+          </div>
+
+          {searchWords.length > 0 && activeScripts.length === 0 && publishedScripts.length === 0 ? (
+            <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
+              <p className="text-sm text-[#F5EDED]/35">Aucun script ne correspond à &quot;{searchQuery}&quot;.</p>
+            </div>
+          ) : (
+          <>
           {/* Cycle de vie (retour direct 2026-09-10) : écrire → tourner →
               poster, et une fois posté le script est FINI — il ne doit plus
               se mélanger visuellement avec ceux encore à produire. Séparés
               en deux groupes plutôt qu'une seule liste plate qui grossit vite
               (5 reels/jour + 1 YouTube/jour, voir Axe BJ) : "publiés" replié
               par défaut, pas supprimé (le tracking de performance juste en
-              dessous reste consultable dedans). */}
+              dessous reste consultable dedans). Retour direct 2026-09-11 :
+              triés par ancienneté dans l'étape actuelle (le plus en retard
+              en premier), pas par date de création — pour vraiment faire
+              remonter ce qui traîne et débloquer le pipeline. */}
           {activeScripts.length === 0 && publishedScripts.length > 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
               <p className="text-sm text-[#F5EDED]/35">Tout ce qui était à produire est posté. 🎉</p>
@@ -405,6 +469,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
               )}
             </div>
           )}
+          </>
+          )}
         </>
       )}
     </div>
@@ -414,6 +480,12 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     const statusInfo = STATUS_LABELS[script.status] ?? STATUS_LABELS.a_tourner;
     const duration = formatDuration(script.duration_seconds);
     const platformInfo = PLATFORM_LABELS[script.platform] ?? null;
+    // Retour direct 2026-09-11 : combien de jours dans l'étape actuelle,
+    // affiché seulement passé le seuil de retard (STALE_DAYS) — sous ce
+    // seuil c'est un délai normal, pas la peine de le signaler.
+    const stageDays = daysInStage(script);
+    const isStale = stageDays >= STALE_DAYS[script.status];
+    const isVeryStale = stageDays >= STALE_DAYS[script.status] * 2;
     return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
@@ -446,6 +518,19 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                   </span>
                 )}
                 <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120 }}>{script.title}</p>
+                {isStale && (
+                  <span
+                    title={`Dans cette étape depuis ${Math.floor(stageDays)} jour${Math.floor(stageDays) > 1 ? "s" : ""} — au-delà du délai normal`}
+                    style={{
+                      fontSize: 9, fontWeight: 800, padding: "3px 7px", borderRadius: 999,
+                      background: isVeryStale ? "rgba(248,113,113,0.18)" : "rgba(250,204,21,0.15)",
+                      color: isVeryStale ? "#f87171" : "#facc15",
+                      border: `1px solid ${isVeryStale ? "#f87171" : "#facc15"}55`,
+                    }}
+                  >
+                    ⏳ {Math.floor(stageDays)}j
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => cycleStatus(script.id, script.status)}
