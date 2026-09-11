@@ -4502,3 +4502,69 @@ l'utilisateur restait identique d'une passe à l'autre.
 `tsc --noEmit` propre, `eslint` propre sur le fichier touché (6 erreurs
 préexistantes confirmées sans lien via `git stash`), `next build` de
 production complet, exit 0.
+
+## BU — Nutrition : filet de cache final, no-store forcé sur toutes les lectures serveur (2026-09-10/11)
+
+Retour direct après 4 correctifs de fond déjà livrés dans la même
+journée sur le même symptôme (Axes BP à BT) : *"arrête de fix le fix mais
+réfléchis vraiment et trouve la solution"*. Plutôt qu'un cinquième
+correctif ciblé sur un nouveau cas particulier, recherche d'une cause
+plus structurelle encore.
+
+Trouvé en inspectant directement le code source de `@supabase/postgrest-js`
+(node_modules) : le client ne pose JAMAIS `cache: "no-store"` sur ses
+propres appels `fetch`. `export const dynamic = "force-dynamic"` sur la
+page est censé, selon la documentation standard de Next.js, convertir
+tous les `fetch` de la route en non-cachés — mais AGENTS.md prévient
+explicitement, dès sa première ligne, que ce projet tourne sur une
+version de Next.js avec des changements cassants par rapport au
+comportement documenté. Plutôt que de faire encore confiance à un
+comportement en cascade non vérifiable directement dans le code source
+de CETTE version précise, filet explicite au niveau le plus bas :
+`createServerSupabase` (`lib/supabase-server.ts`) passe désormais un
+`fetch` enveloppé qui force `cache: "no-store"` sur CHAQUE requête,
+quoi qu'il arrive plus haut dans la chaîne. Effet systémique : toutes
+les pages qui lisent Supabase côté serveur en bénéficient, pas
+seulement Nutrition.
+
+### Validation
+
+`tsc --noEmit` propre, `next build` de production complet, exit 0.
+
+## BV — Réveil : la vraie raison d'une seule alerte malgré l'escalade (2026-09-11)
+
+Retour direct, dans la foulée : *"j'ai eu que la notif du réveil, hors
+moi je veux que le réveil soit un vrai réveil que je dois appuyer sur un
+bouton pour arrêter que ça sonne"*. Investigation avant tout correctif :
+le mécanisme complet existait déjà — `AlarmPlayer.tsx` (overlay plein
+écran, son en boucle, bouton "Arrêter" obligatoire) et l'escalade côté
+cron (`schedule-block-notify`, relance toutes les 5 min pendant 30 min
+tant que non acquitté) sont tous les deux vérifiés actifs et corrects en
+base (`alarm_ack_date` bien posé chaque matin où le réveil a été arrêté).
+Vérifié aussi : les notifs tournent bien sur les 7 jours de la semaine
+(progression normale de `last_notified_at` sur les 4 jours déjà écoulés,
+samedi/dimanche à `null` car pas encore atteints cette semaine — pas un
+bug, juste pas encore arrivé).
+
+**Vraie cause trouvée** dans `public/sw.js` : chaque relance de
+l'escalade réutilise le MÊME tag de notification (`"ep-coaching-alarm"`)
+sans `renotify: true`. Par défaut, un navigateur qui reçoit une nouvelle
+notification avec un tag déjà affiché REMPLACE l'ancienne EN SILENCE
+(pas de nouvelle vibration, pas de nouvelle alerte perceptible) — seule
+la toute première notification (05h59) a réellement alerté, les
+relances suivantes de l'escalade se sont succédé sans que rien de
+perceptible ne se passe, malgré un serveur qui faisait pourtant bien son
+travail. `renotify: isAlarm` corrige ça : chaque relance revibre
+désormais comme une notification neuve.
+
+**Limite honnête, non contournable depuis le code** : si l'appli est
+complètement fermée (aucun onglet ouvert, même en arrière-plan) au
+moment du réveil, ni iOS ni Android n'autorisent un service worker à
+jouer du son — seule la notification système (vibration + action
+"Arrêter") reste disponible dans ce cas, c'était déjà documenté avant ce
+correctif et reste une contrainte de plateforme, pas un bug.
+
+### Validation
+
+Fichier statique (`public/sw.js`), aucun `tsc`/`build` nécessaire —
+changement vérifié par lecture directe du diff.
