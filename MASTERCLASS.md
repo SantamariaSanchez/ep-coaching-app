@@ -4613,3 +4613,26 @@ horodatage), jamais comme "le même bug qu'avant, encore raté".
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production
 complet, exit 0.
+
+## BY — Studio créatif : positionnement YouTube + recherche/remontée des scripts qui traînent (2026-09-11)
+
+Retour direct : script YouTube tourné jugé trop technique/centré sur
+l'appli au lieu de parler à l'audience, et pas d'outil de décision sur
+les scripts en attente. Deux corrections, budget tokens limité (routines
+à préserver jusqu'à mardi 14h) donc traité de façon ciblée :
+
+- **Notion** (guide production scripts YouTube) : nouveau bloc
+  positionnement (qui est Santamaria/EP Coaching, niche, qui il aide,
+  comment — repris du site vitrine), règle explicite "l'appli n'est
+  jamais le sujet d'une vidéo", et un test de pertinence avant de choisir
+  un sujet.
+- **`IdeationScripts.tsx`** : barre de recherche (multi-mots, insensible
+  casse/accents) sur titre+script+hook+pilier ; les scripts actifs sont
+  désormais triés par ancienneté dans leur étape (pas par création), avec
+  un seuil par statut (3j à tourner / 2j tourné) et un badge ⏳ — pour
+  vraiment débloquer le pipeline, pas juste le signaler.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
+sans lien via `git stash`), `next build` de production complet, exit 0.
