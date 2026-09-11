@@ -4662,3 +4662,19 @@ leadmagnet juste mentionné "en description", plus de mot-clé à commenter.
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production
 complet, exit 0.
+
+## CA — Studio créatif : description modifiable + "abonne-toi" recorrigé (2026-09-11)
+
+Retour direct : "on peut copier mais je veux pouvoir modifier" (la
+description, `instagram_caption`) + "abonne-toi pour un nouveau script"
+n'a pas de sens pour un spectateur. Description dotée du même mécanisme
+d'édition que le script (`content`) : clic pour ouvrir, Enregistrer/
+Annuler, bouton "+ Ajouter" si vide plutôt qu'un bloc qui disparaît.
+`updateScript` accepte un nouveau paramètre `caption`. Texte "nouveau
+script" → "nouvelles vidéos" corrigé sur le script déjà en base et dans
+le guide Notion pour les prochains.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre (1 erreur préexistante, sans
+lien), `next build` de production complet, exit 0.
