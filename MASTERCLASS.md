@@ -4568,3 +4568,48 @@ correctif et reste une contrainte de plateforme, pas un bug.
 
 Fichier statique (`public/sw.js`), aucun `tsc`/`build` nécessaire —
 changement vérifié par lecture directe du diff.
+
+## BW — Nutrition : le vrai dernier bug, un démontage React sur changement d'onglet interne (2026-09-11)
+
+Retour direct, après 6 correctifs déjà livrés sur la nutrition côté
+serveur/cache : *"ça reste seulement si je reste sur la page, je veux que
+ça se sauvegarde et que ça reste"*. Formulation clé qui a changé
+l'angle de recherche : pas "ça se décoche après un délai" ou "au retour
+d'onglet navigateur", mais littéralement "seulement si je reste sur LA
+PAGE" — jamais examiné sous cet angle précis jusqu'ici.
+
+Cause trouvée dans `CoachMoiNutritionTabs.tsx` (page "Ma nutrition" côté
+coach — Santamaria l'utilise pour son propre suivi, en tant que coach,
+pas client) : ses 2 onglets internes ("Suivi du jour" / "Mes objectifs &
+plan") étaient rendus par une condition ternaire classique
+(`tab === "suivi" ? <ClientNutritionView/> : <CoachClientNutritionTabs/>`)
+— un pattern React banal, mais qui DÉMONTE entièrement le composant côté
+non actif. Un simple coup d'œil sur "Mes objectifs & plan" puis retour
+sur "Suivi du jour" recréait `ClientNutritionView` de zéro, réinitialisant
+tout son état local (`todayLogs`, `variantChoice`...) depuis les props
+figées au dernier vrai chargement de page — perdant l'affichage de toute
+coche faite entre-temps, même déjà bien sauvegardée en base (vérifiable
+à chaque fois par requête directe, comme documenté aux Axes précédents).
+Complètement indépendant des 6 correctifs précédents (dédoublonnage,
+ambiguïté variante, `staleTimes`, filet `visibilitychange`, cache fetch
+`no-store`) : ceux-là concernaient tous un aller-retour serveur, celui-ci
+ne touche jamais le réseau.
+
+**Fix** : les deux onglets restent désormais montés en permanence
+(`<div hidden={...}>` au lieu du rendu conditionnel) — seule la
+visibilité CSS change, l'état de `ClientNutritionView` survit maintenant
+à un aller-retour entre les deux onglets.
+
+**Leçon de cette journée entière sur un seul bug** (Axes BP à BW, 7
+correctifs) : chaque reformulation du symptôme par l'utilisateur portait
+une information réellement nouvelle et exploitable ("j'attends 5s" →
+"je change d'onglet" → "je teste maintenant, regarde" → "ça reste
+*seulement si je reste sur la page*") — jamais une simple répétition.
+Le bon réflexe a été de retraiter chaque reformulation comme un nouvel
+indice à suivre avec une preuve concrète (requête SQL, capture d'écran,
+horodatage), jamais comme "le même bug qu'avant, encore raté".
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production
+complet, exit 0.
