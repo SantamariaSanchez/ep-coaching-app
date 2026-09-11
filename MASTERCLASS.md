@@ -4631,6 +4631,10 @@ les scripts en attente. Deux corrections, budget tokens limité (routines
   désormais triés par ancienneté dans leur étape (pas par création), avec
   un seuil par statut (3j à tourner / 2j tourné) et un badge ⏳ — pour
   vraiment débloquer le pipeline, pas juste le signaler.
+- Suite du même retour ("filtrer poste/pas poste, youtube/insta, pilier") :
+  trois filtres déroulants combinables (statut/plateforme/pilier) + un
+  filtre de statut explicite désactive le repli "publiés" (sinon le
+  filtre choisi finirait caché dans une section repliée par défaut).
 
 ### Validation
 
