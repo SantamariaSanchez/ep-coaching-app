@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { onKeyActivate } from "@/lib/a11y";
@@ -350,7 +350,6 @@ export default function ClientNutritionView({
   updatePlanMode,
 }: Props) {
   // ── State ──────────────────────────────────────────────────────────────────
-  const router = useRouter();
   const [activeTab, setActiveTab] = useState<"today" | "history" | "courses">("today");
   const [todayLogs, setTodayLogs] = useState<FoodLogWithFood[]>(initialTodayLogs);
   const [foods, setFoods] = useState<Food[]>(initialFoods);
@@ -508,17 +507,20 @@ export default function ClientNutritionView({
     else setHistoryLogsState(apply);
   }
 
-  // Deuxième filet : forcer un vrai aller-retour serveur (pas juste une
-  // resynchronisation du state existant) quand l'onglet/l'appli redevient
-  // visible — couvre le cas d'une appli PWA reprise en arrière-plan sans
-  // rechargement complet, où sinon rien ne redéclenche le rendu serveur.
-  useEffect(() => {
-    function handleVisibility() {
-      if (document.visibilityState === "visible") router.refresh();
-    }
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () => document.removeEventListener("visibilitychange", handleVisibility);
-  }, [router]);
+  // Retour direct 2026-09-10/11, répété de nombreuses fois malgré 2
+  // correctifs de fond déjà livrés (diet_plan_meal_id, retrait de
+  // staleTimes) : "j'ai changé d'onglet, je suis revenu, je vois plus
+  // rien de coché" — alors même que la base était vérifiée à 100 % (22/22
+  // aliments correctement rattachés juste avant ce test précis). Ce
+  // "deuxième filet" était le SEUL code de ce fichier qui se déclenche
+  // spécifiquement au changement de visibilité de l'onglet — exactement
+  // le déclencheur du bug à chaque signalement. Retiré : l'état local, une
+  // fois confirmé correct par un vrai aller-retour serveur au moment du
+  // cochage, n'a plus de raison d'être écrasé par un forçage de
+  // rafraîchissement supplémentaire au retour sur l'onglet. Le cas qu'il
+  // couvrait (PWA reprise en arrière-plan après très longtemps, ex.
+  // changement de jour) reste géré par le rendu serveur normal au
+  // prochain vrai rechargement de page.
 
   // Arrivée depuis une notif de rappel de repas (cron meal-reminders) :
   // ?meal=<slot> — on saute direct au repas concerné dans le plan, en
