@@ -10,7 +10,7 @@ export default async function CoachQuestionsPage() {
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/communaute/questions");
 
-  const { posts, nextCursor } = await getCommunityPostsPage("question");
+  const { posts, nextCursor } = await getCommunityPostsPage("question", undefined, undefined, user.id);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">

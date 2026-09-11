@@ -15,7 +15,7 @@ export default async function CoachVictoriesPage({
   if (profile?.role === "client") redirect("/dashboard/client/communaute/victoires");
 
   const [{ posts, nextCursor }, { share }] = await Promise.all([
-    getCommunityPostsPage("victory"),
+    getCommunityPostsPage("victory", undefined, undefined, user.id),
     searchParams,
   ]);
 

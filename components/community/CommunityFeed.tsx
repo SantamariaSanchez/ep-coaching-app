@@ -12,6 +12,7 @@ import {
   HelpCircle,
   Trash2,
   Sparkles,
+  ThumbsUp,
 } from "lucide-react";
 import type { CommunityComment, CommunityPost, CommunityPostType } from "@/utils/community";
 import RankBadge from "@/components/ui/RankBadge";
@@ -375,6 +376,7 @@ function PostCard({
   onCommentAdded,
   onStatusChanged,
   onDeleted,
+  onReactionToggled,
 }: {
   post: CommunityPost;
   basePath: string;
@@ -388,12 +390,14 @@ function PostCard({
   onCommentAdded: (comment: CommunityComment) => void;
   onStatusChanged: (status: "open" | "answered") => void;
   onDeleted: () => void;
+  onReactionToggled: (reacted: boolean, count: number) => void;
 }) {
   const confirm = useConfirm();
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [ideaSaved, setIdeaSaved] = useState(false);
   const [savingIdea, setSavingIdea] = useState(false);
+  const [reacting, setReacting] = useState(false);
 
   // Modération (suppression) réservée au fondateur, même dans le mur
   // partagé — un coach tiers peut toujours supprimer SES PROPRES posts.
@@ -435,6 +439,30 @@ function PostCard({
       if (!result.error) setIdeaSaved(true);
     } finally {
       setSavingIdea(false);
+    }
+  }
+
+  // Optimiste : l'utilisateur voit le changement tout de suite, corrigé
+  // silencieusement si l'appel réseau échoue (même doctrine que le reste du
+  // fil — jamais bloquer un geste aussi léger sur un aller-retour serveur).
+  async function toggleReaction() {
+    if (reacting) return;
+    setReacting(true);
+    const prevReacted = post.reacted_by_me;
+    const prevCount = post.reaction_count;
+    onReactionToggled(!prevReacted, prevCount + (prevReacted ? -1 : 1));
+    try {
+      const res = await fetch(`/api/community/posts/${post.id}/reactions`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        onReactionToggled(data.reacted, data.count);
+      } else {
+        onReactionToggled(prevReacted, prevCount);
+      }
+    } catch {
+      onReactionToggled(prevReacted, prevCount);
+    } finally {
+      setReacting(false);
     }
   }
 
@@ -505,6 +533,16 @@ function PostCard({
           )}
 
           <div className="flex items-center gap-3 mt-3">
+            <button
+              onClick={toggleReaction}
+              disabled={reacting}
+              aria-pressed={post.reacted_by_me}
+              className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors disabled:opacity-60"
+              style={{ color: post.reacted_by_me ? "#E01E1E" : "rgba(245,237,237,0.35)" }}
+            >
+              <ThumbsUp size={12} strokeWidth={1.8} fill={post.reacted_by_me ? "#E01E1E" : "none"} />
+              {post.reaction_count > 0 ? post.reaction_count : "Bravo"}
+            </button>
             <button
               onClick={onToggleExpand}
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
@@ -642,6 +680,12 @@ export default function CommunityFeed({
     setPosts((prev) => prev.filter((p) => p.id !== postId));
   }
 
+  function handleReactionToggled(postId: string, reacted: boolean, count: number) {
+    setPosts((prev) =>
+      prev.map((p) => (p.id === postId ? { ...p, reacted_by_me: reacted, reaction_count: count } : p))
+    );
+  }
+
   const Icon = type === "victory" ? Trophy : HelpCircle;
   const emptyPoints = type === "victory" ? POINTS.community_victory : POINTS.community_question;
 
@@ -688,6 +732,7 @@ export default function CommunityFeed({
               onCommentAdded={(c) => handleCommentAdded(post.id, c)}
               onStatusChanged={(s) => handleStatusChanged(post.id, s)}
               onDeleted={() => handlePostDeleted(post.id)}
+              onReactionToggled={(reacted, count) => handleReactionToggled(post.id, reacted, count)}
             />
           ))}
           <div ref={sentinelRef} className="h-1" />

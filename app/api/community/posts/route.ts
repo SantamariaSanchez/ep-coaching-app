@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Type invalide." }, { status: 400 });
   }
 
-  const page = await getCommunityPostsPage(type as CommunityPostType, cursor);
+  const page = await getCommunityPostsPage(type as CommunityPostType, cursor, undefined, guard.userId);
   return NextResponse.json(page);
 }
 

@@ -19,6 +19,8 @@ export interface CommunityPost {
   status: "open" | "answered";
   created_at: string;
   comment_count: number;
+  reaction_count: number;
+  reacted_by_me: boolean;
 }
 
 export interface CommunityComment {
@@ -44,7 +46,8 @@ export interface CommunityPostsPage {
 export async function getCommunityPostsPage(
   type: CommunityPostType,
   cursor?: string | null,
-  limit: number = COMMUNITY_PAGE_SIZE
+  limit: number = COMMUNITY_PAGE_SIZE,
+  viewerId?: string | null
 ): Promise<CommunityPostsPage> {
   try {
     const supabase = await createServerSupabase();
@@ -64,12 +67,13 @@ export async function getCommunityPostsPage(
     const authorIds = [...new Set(posts.map((p) => p.author_id as string))];
     const postIds = posts.map((p) => p.id as string);
 
-    const [{ data: authors }, { data: comments }] = await Promise.all([
+    const [{ data: authors }, { data: comments }, { data: reactions }] = await Promise.all([
       supabase
         .from("profiles")
         .select("id, full_name, role, subscription_status, avatar_url")
         .in("id", authorIds),
       supabase.from("community_comments").select("post_id").in("post_id", postIds),
+      supabase.from("community_post_reactions").select("post_id, author_id").in("post_id", postIds),
     ]);
 
     type AuthorRow = {
@@ -102,6 +106,13 @@ export async function getCommunityPostsPage(
       countMap[pid] = (countMap[pid] ?? 0) + 1;
     }
 
+    const reactionCountMap: Record<string, number> = {};
+    const reactedByMeSet = new Set<string>();
+    for (const r of (reactions ?? []) as { post_id: string; author_id: string }[]) {
+      reactionCountMap[r.post_id] = (reactionCountMap[r.post_id] ?? 0) + 1;
+      if (viewerId && r.author_id === viewerId) reactedByMeSet.add(r.post_id);
+    }
+
     const mapped: CommunityPost[] = posts.map((p) => {
       const author = authorMap[p.author_id];
       return {
@@ -118,6 +129,8 @@ export async function getCommunityPostsPage(
         status: p.status,
         created_at: p.created_at,
         comment_count: countMap[p.id] ?? 0,
+        reaction_count: reactionCountMap[p.id] ?? 0,
+        reacted_by_me: reactedByMeSet.has(p.id),
       };
     });
 
