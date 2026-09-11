@@ -56,6 +56,18 @@ export default async function CoachMonNutritionPage() {
     getSavedMeals(user.id),
   ]);
 
+  // Diagnostic temporaire (retour direct 2026-09-11, "les autres onglets et
+  // refresh, ça reste plus coché") : le seul moyen de savoir depuis ici si
+  // le SERVEUR renvoie vraiment les bonnes lignes (no-store) ou si le
+  // problème est ailleurs (affichage) est de le journaliser au moment
+  // exact où quelqu'un charge la page. À retirer une fois le diagnostic
+  // terminé — voir MASTERCLASS.md Axe BX.
+  console.log(
+    `[diag nutrition] user=${user.id} today=${today} todayLogs=${todayLogs.length} tagged=${
+      todayLogs.filter((l) => (l as { diet_plan_meal_id?: string | null }).diet_plan_meal_id).length
+    }`
+  );
+
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
       <div className="mb-6">
