@@ -107,10 +107,13 @@ export async function getDoneCorrectionsWithClient(): Promise<ExerciseCorrection
 export async function getPendingCorrectionsCount(): Promise<number> {
   try {
     const supabase = await createServerSupabase();
-    const { count } = await supabase
-      .from("exercise_corrections")
-      .select("id", { count: "exact", head: true })
-      .eq("status", "pending");
+    // Retour direct 2026-09-11 : même correctif que getPendingPhotoUpdatesCount
+    // (utils/photos.ts) — la propre donnée du coach (is_own_coach de
+    // lui-même) ne doit jamais compter comme un signal client en attente.
+    const { data: { user } } = await supabase.auth.getUser();
+    let query = supabase.from("exercise_corrections").select("id", { count: "exact", head: true }).eq("status", "pending");
+    if (user) query = query.neq("client_id", user.id);
+    const { count } = await query;
     return count ?? 0;
   } catch {
     return 0;

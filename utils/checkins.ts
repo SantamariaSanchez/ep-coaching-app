@@ -229,10 +229,13 @@ export async function getPendingBilansCount(): Promise<number> {
     // client_id = auth.uid() ou is_own_coach(client_id), donc un coach ne
     // voit jamais que les bilans de ses propres clients.
     const supabase = await createServerSupabase();
-    const { count } = await supabase
-      .from("check_ins")
-      .select("id", { count: "exact", head: true })
-      .is("coach_replied_at", null);
+    // Retour direct 2026-09-11 : même correctif que getPendingPhotoUpdatesCount
+    // (utils/photos.ts) — la propre donnée du coach (is_own_coach de
+    // lui-même) ne doit jamais compter comme un signal client en attente.
+    const { data: { user } } = await supabase.auth.getUser();
+    let query = supabase.from("check_ins").select("id", { count: "exact", head: true }).is("coach_replied_at", null);
+    if (user) query = query.neq("client_id", user.id);
+    const { count } = await query;
     return count ?? 0;
   } catch {
     return 0;

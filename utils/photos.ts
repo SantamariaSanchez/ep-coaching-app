@@ -144,10 +144,15 @@ export async function getPendingPhotoUpdates(): Promise<PhotoUpdateWithClient[]>
 export async function getPendingPhotoUpdatesCount(): Promise<number> {
   try {
     const supabase = await createServerSupabase();
-    const { count } = await supabase
-      .from("photo_updates")
-      .select("*", { count: "exact", head: true })
-      .is("coach_replied_at", null);
+    // Retour direct 2026-09-11 ("y'a un rond rouge de notif alors qu'y'a
+    // personne encore comme client") : un coach qui suit sa PROPRE
+    // physique (Santamaria) reste is_own_coach(son propre id) pour la RLS,
+    // donc sa propre photo non "répondue" comptait comme un signal client
+    // en attente — exclue explicitement, ce n'est jamais un vrai client.
+    const { data: { user } } = await supabase.auth.getUser();
+    let query = supabase.from("photo_updates").select("*", { count: "exact", head: true }).is("coach_replied_at", null);
+    if (user) query = query.neq("client_id", user.id);
+    const { count } = await query;
     return count ?? 0;
   } catch {
     return 0;
