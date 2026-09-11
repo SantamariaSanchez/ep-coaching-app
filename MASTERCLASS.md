@@ -4456,3 +4456,49 @@ partie du diagnostic.
 `tsc --noEmit` propre, `next build` de production complet, exit 0 (pas
 de fichier applicatif touché, juste la config — pas de nouvelle passe
 `eslint` nécessaire).
+
+## BT — Nutrition : le vrai dernier déclencheur, le "deuxième filet" lui-même (2026-09-10/11)
+
+Après l'Axe BS (retrait de `staleTimes`), même symptôme reformulé
+précisément : *"j'ai changé d'onglet, je suis revenu, je vois plus rien
+de coché"* — alors que la base venait d'être vérifiée à 100 % juste avant
+(22/22 aliments du jour correctement rattachés à leur ligne de plan,
+confirmé en base au moment exact du test). Deux correctifs de fond déjà
+livrés dans la même journée (Axe BR, Axe BS) n'ont donc pas suffi sur CE
+symptôme précis — la donnée était bonne, l'affichage la perdait quand
+même, uniquement au retour sur l'onglet.
+
+Repéré en cherchant, dans tout le fichier, le SEUL code qui se déclenche
+spécifiquement au changement de visibilité de l'onglet (pas à un simple
+re-render, pas à une mutation) : le "deuxième filet"
+(`document.addEventListener("visibilitychange", ...)` → `router.refresh()`),
+ajouté à l'origine (Axe W) pour couvrir le cas d'une PWA reprise en
+arrière-plan sans rechargement complet. Exactement le déclencheur signalé
+à chaque nouveau test.
+
+**Fix** : ce filet est retiré. Argument principal, pas seulement
+circonstanciel — une fois l'état local confirmé correct par un vrai
+aller-retour serveur au moment du cochage (ce qui était déjà le cas ici,
+vérifié), il n'y a plus de raison de le faire écraser par un forçage de
+rafraîchissement supplémentaire simplement parce que l'onglet reprend le
+focus. Le cas rare qu'il couvrait (app rouverte après très longtemps,
+ex. changement de jour pendant que l'onglet dormait en arrière-plan)
+reste couvert par le rendu serveur normal au prochain vrai chargement de
+page — mécanisme qui n'a jamais dépendu de ce filet. `useRouter`/`router`
+retirés du fichier (plus aucun autre usage).
+
+**Bilan de la journée sur ce seul bug** (Axes BP à BT) : 5 passes
+successives, chacune vérifiée par une preuve concrète (requête SQL
+directe, capture d'écran, horodatage exact) avant de conclure et de
+passer à la suivante, plutôt que de répéter la même hypothèse. Chaque
+passe a réellement fermé un angle distinct du problème (dédoublonnage
+serveur, égalité de comptage entre options, ambiguïté food_id+quantité,
+cache client `staleTimes`, puis ce filet de rafraîchissement) — aucune
+n'était un rafistolage redondant, même si le symptôme visible à
+l'utilisateur restait identique d'une passe à l'autre.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur le fichier touché (6 erreurs
+préexistantes confirmées sans lien via `git stash`), `next build` de
+production complet, exit 0.
