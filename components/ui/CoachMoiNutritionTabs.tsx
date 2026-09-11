@@ -38,11 +38,26 @@ export default function CoachMoiNutritionTabs({
         ))}
       </div>
 
-      {tab === "suivi" ? (
+      {/*
+        Retour direct 2026-09-11 ("ça reste coché seulement si je reste sur
+        la page") : rendu conditionnel avant ce correctif — passer sur
+        "Mes objectifs & plan" puis revenir sur "Suivi du jour" DÉMONTAIT
+        entièrement ClientNutritionView, puis le REMONTAIT en réinitialisant
+        tout son état local (todayLogs, variantChoice...) depuis les props
+        initiales figées au dernier vrai chargement de page — perdant ainsi
+        toute coche faite entre-temps, même déjà sauvegardée en base.
+        Aucun lien avec les correctifs précédents (cache/refresh) : un pur
+        bug de démontage React, indépendant. Les deux onglets restent
+        maintenant montés en permanence, seule la visibilité change — l'état
+        de ClientNutritionView survit désormais à un aller-retour entre les
+        deux onglets.
+      */}
+      <div hidden={tab !== "suivi"}>
         <ClientNutritionView {...clientView} />
-      ) : (
+      </div>
+      <div hidden={tab !== "gerer"}>
         <CoachClientNutritionTabs {...manageProps} />
-      )}
+      </div>
     </div>
   );
 }
