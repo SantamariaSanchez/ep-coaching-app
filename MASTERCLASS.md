@@ -4640,3 +4640,25 @@ les scripts en attente. Deux corrections, budget tokens limité (routines
 
 `tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
 sans lien via `git stash`), `next build` de production complet, exit 0.
+
+## BZ — Notif fantôme "Clients" (self-tracking compté comme signal client) + CTA YouTube copié d'Instagram (2026-09-11)
+
+Retour direct : badge rouge "1" sur Clients alors qu'il n'y a encore
+aucun client. Cause : `is_own_coach(client_id)` de la RLS rend vrai pour
+le coach sur SES PROPRES données (Santamaria suit sa propre physique via
+son compte coach) — 1 ligne `photo_updates` à lui, non "répondue",
+comptait comme signal client en attente. `getPendingPhotoUpdatesCount`/
+`getPendingBilansCount`/`getPendingCorrectionsCount` excluent désormais
+`client_id = l'id du coach connecté`.
+
+Suite du retour direct sur le script YouTube (Axe BY) : le `cta` copiait
+le mécanisme "commente [numéro]" d'Instagram (utile là-bas car pas de
+lien cliquable en description) — inutile sur YouTube où le lien natif en
+description rend le mot-clé sans fonction. Guide Notion et script déjà
+en base corrigés : CTA YouTube redirige vers Instagram ou vers l'appel,
+leadmagnet juste mentionné "en description", plus de mot-clé à commenter.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production
+complet, exit 0.
