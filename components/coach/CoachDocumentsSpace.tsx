@@ -58,9 +58,22 @@ export default function CoachDocumentsSpace({
         ))}
       </div>
 
-      {tab === "modeles" && <TemplatesTab />}
-      {tab === "fichiers" && <FilesTab initialFiles={initialFiles} />}
-      {tab === "notes" && <NotesTab initialNotes={initialNotes} />}
+      {/*
+        Repasse 2026-09-15 : même piège de démontage déjà trouvé et corrigé
+        ailleurs ce jour-là (MASTERCLASS.md Axe BW, IdeationHub.tsx,
+        MindsetView.tsx) — perdait une note en cours de frappe dès qu'on
+        quittait l'onglet "Notes". Les 3 onglets restent désormais montés
+        en permanence, seule la visibilité change.
+      */}
+      <div hidden={tab !== "modeles"}>
+        <TemplatesTab />
+      </div>
+      <div hidden={tab !== "fichiers"}>
+        <FilesTab initialFiles={initialFiles} />
+      </div>
+      <div hidden={tab !== "notes"}>
+        <NotesTab initialNotes={initialNotes} />
+      </div>
     </div>
   );
 }

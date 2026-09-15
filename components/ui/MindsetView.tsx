@@ -704,30 +704,40 @@ export default function MindsetView({
         ))}
       </div>
 
-      {tab === "profil" && (
+      {/*
+        Repasse 2026-09-15 : même piège de démontage déjà trouvé et corrigé
+        sur CoachMoiNutritionTabs.tsx (MASTERCLASS.md Axe BW) et
+        IdeationHub.tsx/IdeationScripts.tsx — un rendu conditionnel ici
+        perdait tout texte de journal en cours de frappe dès qu'on quittait
+        l'onglet "Journal" ne serait-ce qu'un instant. Les 4 onglets
+        restent désormais montés en permanence, seule la visibilité change.
+      */}
+      <div hidden={tab !== "profil"}>
         <ProfileTab
           profile={mindsetProfile}
           onSave={(result) => saveMindsetQuiz(result)}
         />
-      )}
+      </div>
 
-      {tab === "habitudes" && (
+      <div hidden={tab !== "habitudes"}>
         <HabitsTab
           today={today}
           habitLogs={habitLogs}
           onToggle={(habitKey, checked) => toggleHabitLog(habitKey, today, checked)}
         />
-      )}
+      </div>
 
-      {tab === "conseils" && <TipsTab profile={mindsetProfile} />}
+      <div hidden={tab !== "conseils"}>
+        <TipsTab profile={mindsetProfile} />
+      </div>
 
-      {tab === "journal" && (
+      <div hidden={tab !== "journal"}>
         <JournalTab
           entries={journalEntries}
           onAdd={(promptKey, content, mood) => addJournalEntry({ promptKey, content, mood })}
           onDelete={(id) => deleteJournalEntry(id)}
         />
-      )}
+      </div>
     </div>
   );
 }

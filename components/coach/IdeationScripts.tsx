@@ -86,11 +86,34 @@ export default function IdeationScripts({ initialScripts, canvas }: { initialScr
         ))}
       </div>
 
-      {subTab === "mes-scripts" && <MyScripts initialScripts={initialScripts} />}
-      {subTab === "prompts" && <PromptLibrary canvas={canvas} />}
-      {subTab === "hooks" && <HookLibrary />}
-      {subTab === "cta" && <CTALibrary />}
-      {subTab === "technique" && <TechnicalLibrary />}
+      {/*
+        Repasse 2026-09-15 (retour à froid sur le code livré en rafale les
+        jours précédents) : rendu conditionnel avant ce correctif — exactement
+        le même piège déjà trouvé et corrigé sur CoachMoiNutritionTabs.tsx
+        (MASTERCLASS.md Axe BW, "ça reste seulement si je reste sur la page").
+        Changer d'onglet ici (ex. aller voir un Hook) puis revenir sur "Mes
+        scripts" DÉMONTAIT MyScripts, perdant la recherche tapée, les filtres
+        choisis, et surtout un brouillon de script/description ouvert en
+        édition mais pas encore enregistré. Les bibliothèques (Prompts/Hooks/
+        CTA/Montage) sont de simples vues de lib/content-library.ts (aucun
+        fetch réseau, filtrage local) : les garder montées en permanence ne
+        coûte rien. Seule la visibilité change désormais.
+      */}
+      <div hidden={subTab !== "mes-scripts"}>
+        <MyScripts initialScripts={initialScripts} />
+      </div>
+      <div hidden={subTab !== "prompts"}>
+        <PromptLibrary canvas={canvas} />
+      </div>
+      <div hidden={subTab !== "hooks"}>
+        <HookLibrary />
+      </div>
+      <div hidden={subTab !== "cta"}>
+        <CTALibrary />
+      </div>
+      <div hidden={subTab !== "technique"}>
+        <TechnicalLibrary />
+      </div>
     </div>
   );
 }

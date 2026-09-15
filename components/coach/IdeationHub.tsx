@@ -84,11 +84,31 @@ export default function IdeationHub({
         })}
       </div>
 
-      {tab === "idees" && <ContentStudio initialIdeas={initialIdeas} />}
-      {tab === "generateur" && <SocialGenerator guides={guides} />}
-      {tab === "scripts" && <IdeationScripts initialScripts={initialScripts} canvas={canvas} />}
-      {tab === "notes" && <IdeationNotes initialNotes={initialNotes} />}
-      {tab === "inspirations" && <IdeationInspirations initialInspirations={initialInspirations} />}
+      {/*
+        Repasse 2026-09-15 : même piège que CoachMoiNutritionTabs.tsx
+        (MASTERCLASS.md Axe BW) et IdeationScripts.tsx (repasse du même
+        jour) — un rendu conditionnel ici démonte ENTIÈREMENT l'onglet
+        actif dès qu'on va voir un autre onglet, perdant tout brouillon en
+        cours (script/description ouverts en édition dans "Scripts", une
+        idée à moitié tapée dans "Idées", une note dans "Notes"...) même si
+        rien n'est encore enregistré. Les 5 sous-espaces restent désormais
+        montés en permanence, seule la visibilité change.
+      */}
+      <div hidden={tab !== "idees"}>
+        <ContentStudio initialIdeas={initialIdeas} />
+      </div>
+      <div hidden={tab !== "generateur"}>
+        <SocialGenerator guides={guides} />
+      </div>
+      <div hidden={tab !== "scripts"}>
+        <IdeationScripts initialScripts={initialScripts} canvas={canvas} />
+      </div>
+      <div hidden={tab !== "notes"}>
+        <IdeationNotes initialNotes={initialNotes} />
+      </div>
+      <div hidden={tab !== "inspirations"}>
+        <IdeationInspirations initialInspirations={initialInspirations} />
+      </div>
     </div>
   );
 }

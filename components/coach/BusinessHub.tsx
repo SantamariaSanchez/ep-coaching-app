@@ -91,7 +91,16 @@ export default function BusinessHub({
         ))}
       </div>
 
-      {activeTab === "dashboard" && (
+      {/*
+        Repasse 2026-09-15 : même piège de démontage déjà trouvé et corrigé
+        ailleurs ce jour-là (MASTERCLASS.md Axe BW) — le canvas business
+        annonce lui-même "s'enregistre tout seul quand tu cliques ailleurs"
+        (autosave sur blur), un démontage en plein milieu d'une saisie
+        pourrait couper cet autosave avant qu'il ne se déclenche. Les 7
+        onglets restent désormais montés en permanence, seule la
+        visibilité change.
+      */}
+      <div hidden={activeTab !== "dashboard"}>
         <BusinessDashboard
           activeClientsCount={activeClientsCount}
           newClientsThisMonth={newClientsThisMonth}
@@ -105,62 +114,60 @@ export default function BusinessHub({
           networkTotalCount={networkContacts.length}
           onNavigate={(tab) => setActiveTab(tab as TabKey)}
         />
-      )}
+      </div>
 
-      {activeTab === "objectifs" && <BusinessGoals goalsWithProgress={goalsWithProgress} />}
+      <div hidden={activeTab !== "objectifs"}>
+        <BusinessGoals goalsWithProgress={goalsWithProgress} />
+      </div>
 
-      {activeTab === "roadmap" && (
-        <div>
-          <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
-            Un horizon différent appelle une question différente : dans 1 an c&apos;est l&apos;exécution,
-            dans 20 c&apos;est ce qui reste si tu t&apos;arrêtes. Écris, coche des jalons, révise régulièrement.
+      <div hidden={activeTab !== "roadmap"}>
+        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
+          Un horizon différent appelle une question différente : dans 1 an c&apos;est l&apos;exécution,
+          dans 20 c&apos;est ce qui reste si tu t&apos;arrêtes. Écris, coche des jalons, révise régulièrement.
+        </p>
+        <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
+      </div>
+
+      <div hidden={activeTab !== "canvas"}>
+        <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
+          Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel.
+          Chaque bloc s&apos;enregistre tout seul quand tu cliques ailleurs.
+        </p>
+        <BusinessCanvasEditor canvas={canvas} />
+      </div>
+
+      <div hidden={activeTab !== "funnel"}>
+        <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+          <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
+            Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.
           </p>
-          <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
+          <Link
+            href="/dashboard/coach/studio"
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
+          >
+            <Sparkles size={12} /> Ouvrir le Studio <ArrowRight size={11} />
+          </Link>
         </div>
-      )}
-
-      {activeTab === "canvas" && (
-        <div>
-          <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
-            Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel.
-            Chaque bloc s&apos;enregistre tout seul quand tu cliques ailleurs.
-          </p>
-          <BusinessCanvasEditor canvas={canvas} />
-        </div>
-      )}
-
-      {activeTab === "funnel" && (
-        <div>
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
-              Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.
-            </p>
-            <Link
-              href="/dashboard/coach/studio"
-              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
-            >
-              <Sparkles size={12} /> Ouvrir le Studio <ArrowRight size={11} />
-            </Link>
-          </div>
-          <div className="space-y-3">
-            {FUNNEL_STAGES.map((stage) => (
-              <div key={stage.key} className="ep-card" style={{ padding: "18px 20px" }}>
-                <p className="text-sm font-black text-white mb-1">{stage.label}</p>
-                <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-3">{stage.goal}</p>
-                <div className="grid sm:grid-cols-3 gap-2">
-                  {stage.formats.map((f, i) => (
-                    <FunnelIdeaCard key={i} stage={stage.key} platform={f.platform} format={f.format} idea={f.idea} />
-                  ))}
-                </div>
+        <div className="space-y-3">
+          {FUNNEL_STAGES.map((stage) => (
+            <div key={stage.key} className="ep-card" style={{ padding: "18px 20px" }}>
+              <p className="text-sm font-black text-white mb-1">{stage.label}</p>
+              <p className="text-[11.5px] text-[#F5EDED]/45 leading-relaxed mb-3">{stage.goal}</p>
+              <div className="grid sm:grid-cols-3 gap-2">
+                {stage.formats.map((f, i) => (
+                  <FunnelIdeaCard key={i} stage={stage.key} platform={f.platform} format={f.format} idea={f.idea} />
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          ))}
         </div>
-      )}
+      </div>
 
-      {activeTab === "reseau" && <NetworkTracker contacts={networkContacts} />}
+      <div hidden={activeTab !== "reseau"}>
+        <NetworkTracker contacts={networkContacts} />
+      </div>
 
-      {activeTab === "checklist" && (
+      <div hidden={activeTab !== "checklist"}>
         <div>
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
@@ -175,7 +182,7 @@ export default function BusinessHub({
           </div>
           <BusinessChecklist initialDone={checklistDone} />
         </div>
-      )}
+      </div>
     </div>
   );
 }
