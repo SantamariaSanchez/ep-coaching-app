@@ -4678,3 +4678,50 @@ le guide Notion pour les prochains.
 
 `tsc --noEmit` propre, `eslint` propre (1 erreur préexistante, sans
 lien), `next build` de production complet, exit 0.
+
+## CB — Repasse systémique : le démontage sur onglet trouvé à 5 autres endroits (2026-09-15/16)
+
+Retour direct après quelques jours sans travail dessus : "tu as pris du
+retard, rattrape ton retard, travaille bien, ne bâcle pas, prends ton
+temps, réfléchis". Supabase/Notion/Vercel déconnectés cette session
+(aucune vérification live possible) — travail concentré sur une vraie
+relecture du code livré en rafale les jours précédents, plutôt que
+d'attendre une nouvelle donnée à corriger au coup par coup.
+
+En vérifiant que le correctif `CoachMoiNutritionTabs.tsx` (Axe BW, "ça
+reste seulement si je reste sur la page") tenait toujours, le même motif
+a été retrouvé à **5 autres endroits** : un rendu conditionnel entre
+onglets internes (`{tab === "x" && <Composant/>}`) démonte ENTIÈREMENT le
+sous-composant actif dès qu'on va voir un autre onglet — perdant tout
+brouillon en cours (recherche/filtres, script ou description ouverts en
+édition, note en train d'être tapée, bloc du Business Model Canvas en
+cours de saisie avant son autosave sur blur) sans jamais toucher
+directement à ce contenu.
+
+Corrigés par le même principe partout (`<div hidden={...}>` au lieu du
+rendu conditionnel — tous vérifiés sans fetch réseau au montage, coût nul
+à rester montés) :
+- `IdeationScripts.tsx` — les 5 sous-onglets (Mes scripts/Prompts/Hooks/
+  CTA/Montage), repassé le même jour que sa dernière modif (Axe CA).
+- `IdeationHub.tsx` — les 5 espaces du Studio créatif, démontage AU-DESSUS
+  de `IdeationScripts.tsx` : rendait le correctif précédent inutile dès
+  qu'on quittait le Studio créatif entier, pas seulement l'onglet Scripts.
+- `MindsetView.tsx` — les 4 onglets (Profil/Habitudes/Conseils/Journal).
+- `CoachDocumentsSpace.tsx` — les 3 onglets (Modèles/Fichiers/Notes).
+- `BusinessHub.tsx` — les 7 onglets (Dashboard/Objectifs/Roadmap/Canvas/
+  Funnel/Réseau/Checklist).
+
+Recherche élargie à d'autres noms de variable de tab (`section`/`mode`/
+`screen`/`panel`) et à la forme ternaire (`... ? <X/> : null`) : aucune
+autre occurrence trouvée dans `components/`.
+
+**Leçon** : un bug de pattern React (pas de logique métier) trouvé une
+fois vaut la peine d'être cherché ailleurs dans le même style de code —
+il s'était répété silencieusement 5 fois avant d'être remarqué, à chaque
+fois avec le même correctif possible en quelques minutes.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 5 fichiers (2 erreurs
+préexistantes sur `CoachDocumentsSpace.tsx`, sans lien, confirmées via
+`git stash`), `next build` de production complet, exit 0.
