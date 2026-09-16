@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 import { MEAL_SLOT_TIMES as DEFAULT_SLOT_TIMES, MEAL_SLOT_LABELS as SLOT_LABELS, timeToMinutes, parisNow as parisNowBase } from "@/lib/meal-slots";
 import { todayInParis } from "@/lib/dates";
 
@@ -94,12 +95,17 @@ export async function GET(req: Request) {
   for (const { clientId, slot } of targets) {
     if (alreadyLogged.has(`${clientId}:${slot}`)) continue;
     const label = SLOT_LABELS[slot] ?? slot;
-    const result = await sendPushToUser(
-      clientId,
-      `🍽️ C'est l'heure du ${label}`,
-      "Ton repas est déjà prêt dans ton plan, un tap pour le valider.",
-      `/dashboard/client/nutrition?meal=${slot}`
-    );
+    const title = `🍽️ C'est l'heure du ${label}`;
+    const body = "Ton repas est déjà prêt dans ton plan, un tap pour le valider.";
+    const url = `/dashboard/client/nutrition?meal=${slot}`;
+
+    // Cloche in-app en plus du push (même défaut que schedule-block-notify/
+    // nutrition-reminder) : chaque créneau n'est dû qu'une fois par jour ici
+    // (fenêtre alignée sur le pas du cron, plus haut), donc aucun risque de
+    // dupliquer la ligne.
+    await insertNotification({ userId: clientId, type: "meal_reminder", title, body, url }).catch(() => {});
+
+    const result = await sendPushToUser(clientId, title, body, url);
     if (result.ok) notified++;
   }
 

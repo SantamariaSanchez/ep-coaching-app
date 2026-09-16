@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 import { sendBrevoEmail } from "@/utils/brevo";
 import {
   REENGAGEMENT_STEPS,
@@ -177,6 +178,20 @@ export async function GET(req: Request) {
     }
 
     if (notified) {
+      // Cloche in-app en plus du push/email (même défaut que
+      // schedule-block-notify et les autres crons de rappel) : sans ça, un
+      // membre dont le push a échoué et qui ne consulte pas ses mails n'a
+      // absolument aucune trace de cette relance dans l'appli. Le cooldown
+      // de MIN_DAYS_BETWEEN_MESSAGES (6 jours) garantit qu'une seule ligne
+      // peut être écrite par passage de cette séquence.
+      await insertNotification({
+        userId: client.id,
+        type: "reengagement",
+        title: message.pushTitle,
+        body: message.pushBody,
+        url: message.pushUrl,
+      }).catch(() => {});
+
       await supabase
         .from("profiles")
         .update({

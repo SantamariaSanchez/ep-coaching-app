@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 import type { ClientTask } from "@/utils/tasks";
 
 // Re-notifies clients about pending tasks every `nag_minutes`, until checked
@@ -51,6 +52,21 @@ export async function GET(req: Request) {
     );
     if (result.ok) {
       sent++;
+      // Cloche in-app en plus du push (même défaut que schedule-block-notify/
+      // send-reminders). Gardée strictement alignée sur le même succès de
+      // push que last_notified_at ci-dessous, jamais écrite indépendamment :
+      // ce cron nage toutes les 10 min tant que la tâche n'est pas cochée,
+      // écrire la cloche sans cette garde la dupliquerait indéfiniment pour
+      // un client sans abonnement push (le push échouerait en boucle, donc
+      // last_notified_at n'avancerait jamais, et la condition "jamais
+      // notifié" resterait vraie à chaque passage).
+      await insertNotification({
+        userId: task.client_id,
+        type: "task_reminder",
+        title: `${task.icon} Rappel`,
+        body: task.label,
+        url: "/dashboard/client/tasks",
+      }).catch(() => {});
       await supabase
         .from("client_tasks")
         .update({ last_notified_at: new Date().toISOString() })

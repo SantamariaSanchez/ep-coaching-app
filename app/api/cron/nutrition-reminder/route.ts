@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 import { todayInParis, nowInParis, addMinutesToHhmm } from "@/lib/dates";
 
 // Cible 20h00 (Europe/Paris). Ancien fonctionnement : cron pg_cron déclenché
@@ -64,6 +65,19 @@ export async function GET(req: Request) {
 
     // Envoie seulement si < 30% de l'objectif logué (= journée non trackée)
     if (logged / target < 0.30) {
+      // Écrit aussi la cloche in-app (voir schedule-block-notify/
+      // send-reminders, même défaut) : sans ça, si le push OS est raté,
+      // repoussé ou coupé, ce rappel ne laisse absolument aucune trace
+      // consultable dans l'appli. Cette route ne tourne qu'une fois par
+      // jour par client (fenêtre 20h00-20h15 Paris plus haut), pas de
+      // risque de dupliquer la ligne en cloche.
+      await insertNotification({
+        userId: profile.client_id,
+        type: "nutrition_reminder",
+        title: "⚡ Bilan nutrition du jour",
+        body: "Trop la flemme de logger ? Choisis juste tes repas habituels, l'appli calcule tout.",
+        url: "/dashboard/client/nutrition/bilan-rapide",
+      }).catch(() => {});
       await sendPushToUser(
         profile.client_id,
         "⚡ Bilan nutrition du jour",
