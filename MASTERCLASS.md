@@ -5530,3 +5530,29 @@ avant la capture).
 ### Validation
 
 `tsc --noEmit` et `eslint` sur le fichier modifié, tous deux propres.
+
+## DA — Canonical + OG/Twitter dédiés sur toutes les pages publiques fixes (2026-09-16)
+
+Même audit étendu à tout `app/**/page.tsx` public : `/`, `/ressources`,
+`/reussites`, `/coachs`, `/outils`, `/carrieres`, `/bio` (page "lien en
+bio" partagée directement depuis Instagram) et les 3 pages légales +
+`/support` n'avaient aucun `alternates.canonical`, et les 7 premières
+n'avaient pas non plus d'`openGraph`/`twitter` dédiés — même bug que
+l'Axe CZ, à l'échelle de tout le site cette fois. Chaque partage de
+l'accueil ou de `/bio` retombait donc sur l'aperçu générique du layout
+racine plutôt que le titre/description propres à la page.
+
+Corrigé sur les 11 pages : `alternates.canonical` partout, `openGraph`/
+`twitter` dédiés sur les 7 pages avec un vrai intérêt de partage
+(marketing/contenu), canonical seul sur les 4 pages légales/assistance
+(jamais partagées pour un aperçu riche). `/ressources` en profite aussi
+pour clarifier que son URL canonique reste la version nue même avec
+`?guide=xxx` en query string.
+
+### Validation
+
+`tsc --noEmit`, `eslint` sur les 11 fichiers, et `next build` de
+production complet : tous propres. Seul message notable au build, une
+route API dynamique (`/api/coach/dashboard-stats`) qui logue l'usage de
+`cookies()` pendant l'optimisation statique, comportement normal et
+préexistant pour une route dynamique, sans rapport avec ce changement.
