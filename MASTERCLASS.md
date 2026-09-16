@@ -5122,3 +5122,37 @@ Une seule fois par membre et par action.
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0. Aucune migration nécessaire (tables et colonnes déjà existantes).
+
+## CN — Routine cloud carrousel Instagram créée et testée avec succès (2026-09-16)
+
+Retour direct après le rappel "audit ok mais aussi agis" : le carrousel
+Instagram n'avait toujours aucune routine de production quotidienne
+(contrairement aux reels, à YouTube, et aux séquences story qui existaient
+déjà — vérifié via `RemoteTrigger list_runs` avant d'agir, pas supposé).
+Créée `EP Coaching - Production quotidienne de carrousel Instagram`
+(`trig_01NoBBHCKsRN7iRUVgzTbbRs`, 2h45 UTC/4h45 Paris, entre le créneau reels
+et YouTube), même pipeline que les reels/YouTube : écrit directement dans
+`coach_scripts` (`platform='instagram_carrousel'`), lit d'abord le guide
+reels et la stratégie de contenu (piliers 2/comprendre_pour_decider et
+4/le_apres prioritaires pour ce format), vérifie les 30 derniers carrousels
+et les 50 derniers reels/YouTube pour ne jamais répéter un sujet/angle.
+
+Lancée manuellement une première fois pour valider avant d'attendre demain
+matin : succès complet en 149s. Carrousel de 7 slides sur la surcharge
+progressive, sourcé sur 3 études réelles avec DOI (dont une citée dans le
+lead magnet 376 déjà en base), numéro de leadmagnet identique entre
+CTA/description/source, inséré avec `status='a_tourner'`. Confirme au
+passage que les écritures Supabase fonctionnent normalement en ce moment
+(la routine a explicitement vérifié `ACTIVE_HEALTHY` avant d'insérer).
+
+En vérifiant l'historique des routines existantes au passage : la routine
+Séquences Story (déjà en place) a échoué sur sa dernière exécution
+(2026-09-15) pour la même limite de session Claude rencontrée par mes
+propres agents ce soir (`rate_limit`), pas un bug côté routine — repassera
+normalement à la prochaine exécution planifiée, rien à corriger.
+
+### Validation
+
+Test réel en production (pas de tsc/eslint/build applicable, aucun code
+modifié — action de configuration cloud uniquement). Vérifié directement en
+base : ligne insérée avec succès dans `coach_scripts`.
