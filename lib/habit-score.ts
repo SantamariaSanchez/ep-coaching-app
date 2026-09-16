@@ -82,12 +82,30 @@ export async function getWeeklyHabitScores(
 // d'erreur, ou 100 par manque de composants) n'est volontairement pas un
 // cas particulier ici : le calcul reste celui du score déjà produit plus
 // haut, cohérent avec ce que HabitScoreCard affiche pour ce jour-là.
+//
+// "Aujourd'hui" est traité à part (2026-09-16, retour direct : "améliore
+// la rétention") : le dernier point de `points` est TOUJOURS la journée en
+// cours (voir getWeeklyHabitScores/isoDatesBack), dont le score démarre à
+// 0% chaque matin avant que le client ait fait son bilan/repas/pas — la
+// journée n'est simplement pas terminée, ce n'est pas un échec. Avant ce
+// correctif, le badge "🔥 Nj de suite" (HabitScoreTrend.tsx) retombait
+// donc à 0 tous les matins pour TOUT client, même avec un streak réel de
+// plusieurs semaines derrière lui, jusqu'à ce qu'il ait rempli assez de
+// choses dans la journée pour repasser au-dessus du seuil — exactement
+// l'inverse de l'effet recherché par un streak. Le calcul se base
+// désormais sur les jours déjà clos (hier et avant), et aujourd'hui ne
+// peut plus que PROLONGER ce streak (s'il est déjà au-dessus du seuil),
+// jamais le casser avant la fin de la journée.
 export function currentStreak(points: DailyHabitPoint[], threshold = 70): number {
+  if (points.length === 0) return 0;
+  const closedDays = points.slice(0, -1);
   let streak = 0;
-  for (let i = points.length - 1; i >= 0; i--) {
-    if (points[i].score >= threshold) streak++;
+  for (let i = closedDays.length - 1; i >= 0; i--) {
+    if (closedDays[i].score >= threshold) streak++;
     else break;
   }
+  const today = points[points.length - 1];
+  if (today.score >= threshold) streak++;
   return streak;
 }
 
