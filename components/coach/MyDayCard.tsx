@@ -25,6 +25,8 @@ export { timeAwareGreeting } from "@/lib/dates";
 
 interface UnreadPreview {
   id: string;
+  /** Id du client (= id de conversation, une conversation par membre) — pour lier directement vers sa fiche de messages. */
+  clientId: string;
   senderName: string;
   content: string;
   createdAt: string;
@@ -37,6 +39,8 @@ export interface MyDayCardProps {
   nextBlock: { label: string; startTime: string } | null;
   nextLive: { title: string; startsAt: string } | null;
   unreadPreview: UnreadPreview[];
+  /** Nombre total de messages non lus (unreadPreview n'en montre que 3 au plus). */
+  unreadTotal: number;
   /** Nom de la séance du jour, déduit de l'agenda ("Push", "Legs / Biceps"...), null si jour off. */
   todaySeanceLabel: string | null;
   /** Accessoires à prévoir pour la séance du jour (lib/session-accessories.ts). */
@@ -103,6 +107,7 @@ export default function MyDayCard({
   nextBlock,
   nextLive,
   unreadPreview,
+  unreadTotal,
   todaySeanceLabel,
   todayAccessories,
   steps,
@@ -222,6 +227,15 @@ export default function MyDayCard({
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
             <p style={{ margin: 0, fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", display: "flex", alignItems: "center", gap: 6 }}>
               <Mail size={11} /> Messages non lus
+              {/* Audit friction coach (2026-09-16) : au-delà des 3 aperçus
+                  affichés, rien n'indiquait qu'il y en avait davantage — le
+                  coach pouvait croire l'aperçu complet et laisser des
+                  messages non lus de côté. */}
+              {unreadTotal > unreadPreview.length && (
+                <span style={{ color: "rgba(245,237,237,0.3)", fontWeight: 700, textTransform: "none", letterSpacing: 0 }}>
+                  ({unreadTotal})
+                </span>
+              )}
             </p>
             <Link href="/dashboard/coach/messages" style={{ fontSize: 10, fontWeight: 700, color: "#E01E1E", textDecoration: "none", display: "flex", alignItems: "center", gap: 3 }}>
               Tout voir <ArrowRight size={10} />
@@ -231,7 +245,12 @@ export default function MyDayCard({
             {unreadPreview.map((m) => (
               <Link
                 key={m.id}
-                href="/dashboard/coach/messages"
+                // Audit friction coach (2026-09-16) : avant, ce lien pointait
+                // vers la liste générale des conversations, alors que le nom
+                // du membre est déjà connu ici — un clic de plus pour le
+                // retrouver. Renvoie maintenant directement sur sa
+                // conversation (/dashboard/coach/messages/[clientId]).
+                href={`/dashboard/coach/messages/${m.clientId}`}
                 className="ep-press"
                 style={{
                   display: "flex", alignItems: "center", gap: 10,

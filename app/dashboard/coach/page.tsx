@@ -94,13 +94,17 @@ export default async function CoachDashboard() {
     getStepSettings(user.id),
     getTodayStepsActual(user.id),
     getAccessoriesByExerciseName(),
+    // Audit friction coach (2026-09-16) : pas de `.limit(3)` ici, pour
+    // pouvoir distinguer "3 messages non lus" de "3 affichés sur 12" —
+    // voir unreadPreview / unreadTotal plus bas. Le volume réaliste (messages
+    // non lus reçus par le coach) reste faible, la requête n'a pas besoin
+    // d'être limitée côté base pour rester rapide.
     supabase
       .from("messages")
       .select("id, conversation_id, content, type, created_at")
       .eq("receiver_id", user.id)
       .eq("is_read", false)
-      .order("created_at", { ascending: false })
-      .limit(3),
+      .order("created_at", { ascending: false }),
   ]);
 
   const nutritionLogged = todayFoodLogs.reduce((s, l) => s + (l.calories ?? 0), 0);
@@ -141,13 +145,21 @@ export default async function CoachDashboard() {
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
 
   const clientNameById = new Map(clients.map((c) => [c.id, c.full_name ?? "Client"]));
-  const unreadPreview = ((unreadMsgs.data ?? []) as { id: string; conversation_id: string; content: string | null; type: string; created_at: string }[])
-    .map((m) => ({
-      id: m.id,
-      senderName: clientNameById.get(m.conversation_id) ?? "Membre",
-      content: m.type === "voice" ? "🎤 Message vocal" : (m.content ?? "").slice(0, 60),
-      createdAt: m.created_at,
-    }));
+  // Audit friction coach (2026-09-16) : chaque ligne pointait vers la liste
+  // générale des conversations (/dashboard/coach/messages) au lieu de la
+  // conversation déjà identifiée par son nom sur la carte — un clic de plus
+  // pour retrouver le bon membre. `conversation_id` correspond ici à l'id du
+  // client (une conversation par membre, voir CoachConversationsList), donc
+  // au segment [clientId] de /dashboard/coach/messages/[clientId].
+  const unreadMsgsData = (unreadMsgs.data ?? []) as { id: string; conversation_id: string; content: string | null; type: string; created_at: string }[];
+  const unreadTotal = unreadMsgsData.length;
+  const unreadPreview = unreadMsgsData.slice(0, 3).map((m) => ({
+    id: m.id,
+    clientId: m.conversation_id,
+    senderName: clientNameById.get(m.conversation_id) ?? "Membre",
+    content: m.type === "voice" ? "🎤 Message vocal" : (m.content ?? "").slice(0, 60),
+    createdAt: m.created_at,
+  }));
 
   return (
     <div
@@ -164,9 +176,18 @@ export default async function CoachDashboard() {
         <h1 className="ep-h1">{timeAwareGreeting(Number(hhmm.split(":")[0]))}, {firstName}</h1>
       </div>
 
+      {/* ── Urgent alerts ─────────────────────────────────────────────────────
+          Audit friction coach (2026-09-16) : remonté avant "Ma journée" et les
+          stats. Un signal client urgent (décrochage, silence prolongé...) est
+          l'information la plus critique du tableau de bord d'un coach qui a
+          peu de temps — elle ne doit pas attendre après ses propres infos
+          personnelles (nutrition, sommeil) pour apparaître. */}
+      <UrgentAlertsSection />
+
       {/* ── Ma journée ───────────────────────────────────────────────────────
-          Idée #18 : en premier, avant la gestion clients — c'est ce qui est
-          le plus pertinent au quotidien pour un coach qui se suit lui-même. */}
+          Idée #18 : juste après les alertes, avant la gestion clients — c'est
+          ce qui est le plus pertinent au quotidien pour un coach qui se suit
+          lui-même. */}
       <MyDayCard
         tip={getTipOfTheDay(today)}
         nutrition={nutrition}
@@ -174,6 +195,7 @@ export default async function CoachDashboard() {
         nextBlock={nextBlock ? { label: nextBlock.label, startTime: nextBlock.start_time } : null}
         nextLive={nextLive ? { title: nextLive.title, startsAt: nextLive.starts_at } : null}
         unreadPreview={unreadPreview}
+        unreadTotal={unreadTotal}
         todaySeanceLabel={todaySeanceLabel}
         todayAccessories={todayAccessories}
         steps={{ actual: todaySteps, goal: stepSettings.daily_goal }}
@@ -181,9 +203,6 @@ export default async function CoachDashboard() {
 
       {/* ── Stats (client-side fetch) ────────────────────────────────────────── */}
       <DashboardStats />
-
-      {/* ── Urgent alerts ───────────────────────────────────────────────────── */}
-      <UrgentAlertsSection />
 
       {/* ── Clients ─────────────────────────────────────────────────────────── */}
       <section>

@@ -125,6 +125,11 @@ export default function UrgentAlertsSection() {
             }`}>
               {item.alert.severity === "high" ? "Critique" : "Attention"}
             </span>
+            {/* Audit friction coach (2026-09-16) : chevron ajouté pour
+                l'affordance "ceci mène ailleurs", déjà présent sur les lignes
+                visuellement identiques d'"En attente de retour" juste en
+                dessous (DashboardStats) mais absent ici. */}
+            <ChevronRight size={13} className="text-[#F5EDED]/20 flex-shrink-0" />
           </Link>
         ))}
       </div>
