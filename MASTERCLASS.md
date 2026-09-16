@@ -5499,3 +5499,34 @@ routine cloud quotidienne n'oublie plus l'identité dans les prochains lots.
 (`instagram_caption ilike 'Coach en musculation%'` = 46 a_tourner + 9
 tourné, total attendu). Aucun code applicatif modifié, uniquement contenu
 en base et Notion.
+
+## CZ — OG/Twitter/canonical dédiés + JSON-LD sur les lead magnets (2026-09-16)
+
+Suite SEO app (Axe CQ) : `generateMetadata` de `/ressources/[slug]`
+n'écrasait que `title`/`description`, jamais `openGraph`/`twitter`. Next
+ne fusionne pas ces objets champ par champ avec le layout racine : un
+enfant qui ne les redéclare pas hérite de l'objet générique complet
+("EP Coaching" / description générique), donc chaque partage (WhatsApp,
+réseaux, SMS) d'un des ~700+ guides affichait un aperçu générique au lieu
+du titre/accroche réel du guide partagé — perte de clic potentielle sur
+le canal de partage direct, le plus proche d'une recommandation.
+
+Ajouté : `alternates.canonical`, `openGraph`/`twitter` dédiés par guide, et
+un JSON-LD `Article` minimal (headline/description/articleSection/
+publisher). Uniquement des champs déjà visibles sans capture email
+(Header dans `LeadMagnetLanding` rendu hors du bloc `unlocked`) : aucun
+risque de cloaking.
+
+En auditant cette page, trouvé un point SEO plus lourd et volontairement
+**laissé tel quel** (décision du fondateur, pas un oubli) : le texte
+complet (sections/items) n'est jamais rendu tant qu'un visiteur n'a pas
+laissé email/téléphone, donc Googlebot ne voit jamais que titre + accroche
++ intitulés de section sur ces ~700+ pages. Le fondateur a choisi de
+garder le formulaire de capture prioritaire sur l'indexation complète.
+Repenser cette page si la stratégie d'acquisition change (ex. contenu
+visible aux robots via `isAccessibleForFree`, ou plus de texte gratuit
+avant la capture).
+
+### Validation
+
+`tsc --noEmit` et `eslint` sur le fichier modifié, tous deux propres.
