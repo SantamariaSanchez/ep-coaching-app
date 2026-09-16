@@ -39,6 +39,16 @@ import {
 
 const DORMANT_DAYS = 10;
 const MIN_DAYS_BETWEEN_MESSAGES = 6;
+// Sans ce délai, un membre inscrit quelques heures avant le passage
+// quotidien du cron (passé de hebdomadaire à quotidien le 2026-09-08, voir
+// plus haut) n'a par définition encore aucun check-in/repas/séance dans les
+// derniers DORMANT_DAYS jours — pas parce qu'il a décroché, mais parce
+// qu'il vient littéralement de créer son compte. Il serait donc considéré
+// "inactif" et recevrait un message de relance en pleine première session.
+// 1 jour préserve l'esprit du fix du 2026-09-08 (contact rapide, plus
+// besoin d'attendre jusqu'à 6 jours) sans jamais relancer quelqu'un le jour
+// même de son inscription.
+const MIN_ACCOUNT_AGE_DAYS = 1;
 
 interface ClientRow {
   id: string;
@@ -58,15 +68,24 @@ export async function GET(req: Request) {
   const now = Date.now();
   const cooldown = new Date(now - MIN_DAYS_BETWEEN_MESSAGES * 24 * 60 * 60 * 1000).toISOString();
   const dormantSince = new Date(now - DORMANT_DAYS * 24 * 60 * 60 * 1000).toISOString();
+  const minAccountAge = new Date(now - MIN_ACCOUNT_AGE_DAYS * 24 * 60 * 60 * 1000).toISOString();
 
-  // Tous les clients pas encore arrivés au bout de la séquence et hors période
-  // de refroidissement. Volontairement sans filtre sur l'onboarding : c'est le
-  // bug qui privait de relance ceux qui abandonnent dès la première session.
+  // Tous les clients pas encore arrivés au bout de la séquence, hors période
+  // de refroidissement, et inscrits depuis au moins MIN_ACCOUNT_AGE_DAYS.
+  // Volontairement sans filtre sur l'onboarding : c'est le bug qui privait de
+  // relance ceux qui abandonnent dès la première session.
+  // `free_tier_started_at` est toujours renseigné à l'inscription (voir
+  // app/auth/client/actions.ts), mais un profil créé par un autre chemin
+  // (import, création manuelle par un coach) pourrait ne pas l'avoir : NULL
+  // est traité comme "assez ancien" plutôt qu'exclu silencieusement, pour ne
+  // jamais faire disparaître une partie des membres de la séquence de
+  // relance (même défaut que celui corrigé sur coach_mailings le même jour).
   const { data: clients } = await supabase
     .from("profiles")
     .select("id, full_name, email, reengagement_step")
     .eq("role", "client")
     .lt("reengagement_step", REENGAGEMENT_STEPS)
+    .or(`free_tier_started_at.is.null,free_tier_started_at.lt.${minAccountAge}`)
     .or(`last_reengagement_notified_at.is.null,last_reengagement_notified_at.lt.${cooldown}`);
 
   const rows = (clients as ClientRow[] | null) ?? [];
