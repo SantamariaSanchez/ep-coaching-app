@@ -63,8 +63,25 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!fullName.trim() || !email.trim() || !phone.trim() || password.length < 8) {
-      setError("Prénom, email, téléphone et mot de passe (8 caractères min.) requis.");
+    // Retour direct 2026-09-16 (repasse UX inscription) : un seul message
+    // générique quel que soit le champ en cause forçait à relire tout le
+    // formulaire pour deviner lequel corriger. Dit maintenant précisément
+    // quel champ manque/est invalide, un à la fois (le plus utile en
+    // premier).
+    if (!fullName.trim()) {
+      setError("Ton prénom et nom sont requis.");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Ton email est requis.");
+      return;
+    }
+    if (!phone.trim()) {
+      setError("Ton numéro de téléphone est requis.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Le mot de passe doit faire au moins 8 caractères.");
       return;
     }
     if (!acceptedTerms) {
@@ -132,6 +149,13 @@ export default function SignupFlow({ onLoginClick }: { onLoginClick: () => void 
               inputStyle={inputStyle}
               autoComplete="new-password"
             />
+            {/* Retour direct 2026-09-16 : le seuil de 8 caractères n'était
+                visible qu'après un premier échec de soumission. Le dire
+                avant évite cet aller-retour, surtout ici où la promesse
+                affichée juste au-dessus est "en 30 secondes". */}
+            <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
+              8 caractères minimum.
+            </p>
           </div>
 
           {/* Acceptation des conditions. Le compte gratuit est borné à 60 jours

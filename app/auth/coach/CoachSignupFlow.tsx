@@ -44,8 +44,20 @@ export default function CoachSignupFlow() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (!fullName.trim() || !email.trim() || password.length < 8) {
-      setError("Nom, email et mot de passe (8 caractères min.) requis.");
+    // Retour direct 2026-09-16 (repasse UX inscription) : dit maintenant
+    // précisément quel champ manque plutôt qu'un seul message générique
+    // quel que soit le champ en cause (même correctif que SignupFlow.tsx
+    // côté client).
+    if (!fullName.trim()) {
+      setError("Ton nom complet est requis.");
+      return;
+    }
+    if (!email.trim()) {
+      setError("Ton email est requis.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("Le mot de passe doit faire au moins 8 caractères.");
       return;
     }
     if (!acceptedTerms) {
@@ -136,6 +148,9 @@ export default function CoachSignupFlow() {
           placeholder="••••••••"
           inputStyle={inputStyle}
         />
+        <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.3)", margin: "6px 0 0" }}>
+          8 caractères minimum.
+        </p>
       </div>
 
       <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
