@@ -5757,3 +5757,37 @@ Statut : un seul fait, format minimal).
 ### Validation
 
 Mêmes contrôles que les Axes DD/DE/DF.
+
+## DH — Garde-fou d'âge de compte manquant sur la relance des membres dormants (2026-09-16)
+
+En auditant `app/api/cron/weekly-reengagement/route.ts` (déjà corrigé une
+fois le 2026-09-08, voir son historique en tête de fichier), trouvé un
+angle mort laissé par ce fix précédent : il a fait passer le cron d'un
+rythme hebdomadaire à quotidien pour raccourcir le délai avant le premier
+contact, mais sans jamais vérifier l'âge du compte lui-même. Un membre
+inscrit quelques heures avant le passage quotidien du job n'a, par
+définition, aucun check-in/repas/séance dans les `DORMANT_DAYS` (10)
+derniers jours, pas parce qu'il a décroché, mais parce qu'il vient
+littéralement de créer son compte. Il serait donc éligible à un message
+"reviens" en pleine première session.
+
+`profiles` n'a pas de `created_at` du tout (vérifié par
+`information_schema.columns`), mais `free_tier_started_at` est renseigné
+sans condition à chaque inscription (`app/auth/client/actions.ts`) : bon
+proxy pour l'âge du compte. Ajouté `MIN_ACCOUNT_AGE_DAYS = 1`, en traitant
+NULL comme "assez ancien" plutôt que d'exclure silencieusement un profil
+qui n'aurait pas ce champ (import, création manuelle par un coach) — même
+défaut que celui corrigé sur `coach_mailings` plus haut le même jour
+(Axe DC), pas la première fois que ce piège apparaît. Vérifié que
+l'idiome `.or().or()` (deux appels chaînés, chacun devenant un groupe OR
+distinct ANDé avec le reste) est déjà utilisé ailleurs dans ce repo
+(`utils/live-events.ts`) avant de l'utiliser ici, plutôt que de supposer
+son comportement.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres.
+Actuellement seulement 3 profils clients en base, tous avec
+`free_tier_started_at` renseigné (vérifié par requête), donc aucun impact
+visible tout de suite, mais un vrai correctif structurel avant que les
+inscriptions reprennent.
