@@ -96,7 +96,15 @@ export default function AujourdhuiView({
   supplements: ClientSupplement[];
 }) {
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
-  const [isPending, startTransition] = useTransition();
+  // Repasse détail (audit onglet Aujourd'hui, 2026-09-16) : un seul flag
+  // `isPending` partagé par TOUTES les habitudes + tous les compléments
+  // désactivait chaque bouton dès qu'UN SEUL toggle était en vol, donc
+  // impossible de cocher 2 habitudes coup sur coup sans attendre l'aller-
+  // retour réseau du premier clic — sur l'action la plus fréquente de
+  // l'écran le plus vu de l'appli. Un Set de clés en attente permet de ne
+  // désactiver que le bouton concerné, les autres restent cliquables.
+  const [pendingKeys, setPendingKeys] = useState<Set<string>>(new Set());
+  const [, startTransition] = useTransition();
   const [journalText, setJournalText] = useState("");
   const [journalMood, setJournalMood] = useState<number | null>(null);
   const [journalSaved, setJournalSaved] = useState(false);
@@ -133,8 +141,14 @@ export default function AujourdhuiView({
     if (wasChecked) next.delete(key); else next.add(key);
     setLoggedKeys(next);
     setHabitError(null);
+    setPendingKeys((current) => new Set(current).add(key));
     startTransition(async () => {
       const res = await toggleHabitLog(key, todayStr, !wasChecked);
+      setPendingKeys((current) => {
+        const cleared = new Set(current);
+        cleared.delete(key);
+        return cleared;
+      });
       if (res.error) {
         setLoggedKeys((current) => {
           const reverted = new Set(current);
@@ -207,7 +221,7 @@ export default function AujourdhuiView({
         </p>
         {/* Idée #1 côté coach, reprise ici : salutation adaptée à l'heure
             plutôt que "Salut" figé toute la journée. */}
-        <h1 className="ep-h1">{timeAwareGreeting(hour)} {firstName}</h1>
+        <h1 className="ep-h1">{timeAwareGreeting(hour)}, {firstName}</h1>
         <div className="ep-card" style={{ padding: "14px 16px", marginTop: 14, display: "flex", gap: 10, alignItems: "flex-start" }}>
           <Quote size={14} style={{ color: "#E01E1E", flexShrink: 0, marginTop: 2 }} />
           <p style={{ margin: 0, fontSize: 12.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, fontStyle: "italic" }}>
@@ -252,7 +266,18 @@ export default function AujourdhuiView({
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            // Repasse détail (audit onglet Aujourd'hui, 2026-09-16) : ce champ
+            // n'était pas dans un <form>, donc taper le poids puis appuyer sur
+            // Entrée ne faisait rien — il fallait forcément aller chercher le
+            // bouton "Enregistrer" du doigt. Incohérent avec le même champ
+            // poids côté Bilan (DailyBilanForm.tsx), qui lui est dans un vrai
+            // <form> et valide au clavier. Ce quick-card existe justement
+            // pour loguer le poids "en 5 secondes" (voir page.tsx) : Entrée
+            // doit marcher ici en priorité.
+            <form
+              onSubmit={(e) => { e.preventDefault(); handleSaveWeight(); }}
+              style={{ display: "flex", gap: 8, alignItems: "center" }}
+            >
               <input
                 type="number"
                 step="0.1"
@@ -266,15 +291,14 @@ export default function AujourdhuiView({
                 autoFocus={todayWeight == null}
               />
               <button
-                type="button"
-                onClick={handleSaveWeight}
+                type="submit"
                 disabled={weightSaving || !weightValue.trim()}
                 className="ep-btn-primary"
                 style={{ fontSize: 11, padding: "10px 16px", whiteSpace: "nowrap" }}
               >
                 {weightSaving ? "…" : "Enregistrer"}
               </button>
-            </div>
+            </form>
           )}
           {weightError && <p style={{ color: "#FDC4C4", fontSize: 11, margin: "8px 0 0" }}>{weightError}</p>}
         </div>
@@ -302,6 +326,11 @@ export default function AujourdhuiView({
                 <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
                   Nutrition
                 </span>
+                {/* Repasse détail (audit onglet Aujourd'hui, 2026-09-16) :
+                    seule carte-lien de l'écran sans chevron, alors que
+                    l'agenda vide et le sommeil (deux sections plus bas)
+                    en affichent un pour signaler "ceci mène ailleurs". */}
+                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(245,237,237,0.2)" }} />
               </div>
               <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
                 {nutritionValue}
@@ -320,6 +349,7 @@ export default function AujourdhuiView({
                 <span style={{ fontSize: 9.5, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>
                   Pas
                 </span>
+                <ChevronRight size={12} style={{ marginLeft: "auto", color: "rgba(245,237,237,0.2)" }} />
               </div>
               <p style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "#F5EDED", letterSpacing: "-0.02em" }}>
                 {stepsValue}
@@ -461,7 +491,7 @@ export default function AujourdhuiView({
                 key={h.key}
                 type="button"
                 onClick={() => handleToggleHabit(h.key)}
-                disabled={isPending}
+                disabled={pendingKeys.has(h.key)}
                 style={{
                   width: "100%", display: "flex", alignItems: "center", gap: 10,
                   padding: "10px 0", background: "none", border: "none", cursor: "pointer",
@@ -501,7 +531,7 @@ export default function AujourdhuiView({
                   key={s.id}
                   type="button"
                   onClick={() => handleToggleHabit(key)}
-                  disabled={isPending}
+                  disabled={pendingKeys.has(key)}
                   style={{
                     width: "100%", display: "flex", alignItems: "center", gap: 10,
                     padding: "10px 0", background: "none", border: "none", cursor: "pointer",
