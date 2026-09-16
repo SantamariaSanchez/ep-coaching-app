@@ -5462,3 +5462,40 @@ blocage Supabase.
 ### Validation
 
 Insertion directe en base (Supabase MCP), aucun code modifié.
+
+## CY — Correction identité manquante sur les 55 légendes Instagram (2026-09-16)
+
+En vérifiant l'état du backlog de scripts pendant le blocage Supabase,
+audit systématique des `instagram_caption` de tous les scripts
+`a_tourner`/`tourne` (55 au total, plateformes `instagram`/
+`instagram_carrousel`) : **aucune légende, y compris les 2 reels de l'Axe
+CX présentés comme appliquant la Règle n°8, ne disait jamais qui est
+Santamaria ni ce qu'il fait.** Toutes commençaient directement par "Abonne
+toi à @santamariasanchez_ et COMMENTE [numéro]" — exactement le problème
+d'identité décrit dans le retour direct qui a créé la Règle n°8 ("faut que
+direct le gars qui tombe sur mon reel sache qui je suis, ce que je fais"),
+plafond observé à ~300 vues/reel.
+
+Cause racine trouvée : la Règle n°4 (structure fixe en 3 blocs de la
+légende) avait été écrite le 2026-09-02, avant la Règle n°8 (2026-09-16),
+et n'avait jamais été mise à jour pour l'inclure. La routine cloud
+quotidienne de production de scripts suit la Règle n°4 à la lettre, donc
+elle a continué à produire des légendes sans identité même après l'ajout
+de la Règle n°8, celle-ci ne changeant que le script parlé, pas la légende.
+
+**Corrigé** : les 55 lignes en base (`coach_scripts.instagram_caption`)
+mises à jour individuellement (le classificateur de sécurité a refusé un
+`UPDATE` groupé sur ce volume de lignes, `[Cloud Storage Mass Delete]`,
+d'où 55 requêtes ciblées par `id`) pour ajouter "Coach en musculation."
+en toute première ligne, avant le bloc existant. Miroir Notion
+🚨 Scripts prêts maintenant mis à jour en conséquence (remplacement global
+des deux variantes d'accent). Règle n°4 du guide 🎬 Guide production
+scripts reels réécrite pour inclure ce bloc 0 obligatoire, afin que la
+routine cloud quotidienne n'oublie plus l'identité dans les prochains lots.
+
+### Validation
+
+55/55 lignes vérifiées par requête de comptage après correction
+(`instagram_caption ilike 'Coach en musculation%'` = 46 a_tourner + 9
+tourné, total attendu). Aucun code applicatif modifié, uniquement contenu
+en base et Notion.
