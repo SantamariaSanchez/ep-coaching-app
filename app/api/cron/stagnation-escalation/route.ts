@@ -54,6 +54,7 @@ interface ClientRow {
   coach_id: string | null;
   checkin_day: number | null;
   last_stagnation_escalation_at: string | null;
+  onboarding_completed_at: string;
 }
 
 export async function GET(req: Request) {
@@ -74,7 +75,7 @@ export async function GET(req: Request) {
 
   const { data: clients } = await supabase
     .from("profiles")
-    .select("id, full_name, coach_id, checkin_day, last_stagnation_escalation_at")
+    .select("id, full_name, coach_id, checkin_day, last_stagnation_escalation_at, onboarding_completed_at")
     .eq("role", "client")
     .not("onboarding_completed_at", "is", null)
     .or(`last_stagnation_escalation_at.is.null,last_stagnation_escalation_at.lt.${cooldownCutoff}`);
@@ -84,21 +85,35 @@ export async function GET(req: Request) {
 
   for (const client of checked) {
     const reasons: string[] = [];
+    // "0 occurrence dans les N derniers jours" n'est un vrai signal de
+    // stagnation que si le compte a lui-même au moins N jours depuis la fin
+    // de l'onboarding — sinon un client onboardé il y a 2h a par définition
+    // 0 session et 0 repas loggé dans les 3/7 derniers jours, pas parce
+    // qu'il décroche mais parce qu'il vient d'arriver. Sans cette garde, ce
+    // cron escaladait vers le coach ("⚠️ décroche") des clients en pleine
+    // première journée (même classe de bug que weekly-reengagement, Axe DH,
+    // corrigé le même jour).
+    const daysSinceOnboarding =
+      (now.getTime() - new Date(client.onboarding_completed_at).getTime()) / (24 * 60 * 60 * 1000);
 
-    const { count: recentSessions } = await supabase
-      .from("sessions")
-      .select("id", { count: "exact", head: true })
-      .eq("client_id", client.id)
-      .eq("is_completed", true)
-      .gte("session_date", daysAgo(LOGBOOK_STALE_DAYS).split("T")[0]);
-    if ((recentSessions ?? 0) === 0) reasons.push("logbook");
+    if (daysSinceOnboarding >= LOGBOOK_STALE_DAYS) {
+      const { count: recentSessions } = await supabase
+        .from("sessions")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", client.id)
+        .eq("is_completed", true)
+        .gte("session_date", daysAgo(LOGBOOK_STALE_DAYS).split("T")[0]);
+      if ((recentSessions ?? 0) === 0) reasons.push("logbook");
+    }
 
-    const { count: recentFoodLogs } = await supabase
-      .from("food_logs")
-      .select("id", { count: "exact", head: true })
-      .eq("client_id", client.id)
-      .gte("logged_at", daysAgo(NUTRITION_STALE_DAYS).split("T")[0]);
-    if ((recentFoodLogs ?? 0) === 0) reasons.push("nutrition");
+    if (daysSinceOnboarding >= NUTRITION_STALE_DAYS) {
+      const { count: recentFoodLogs } = await supabase
+        .from("food_logs")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", client.id)
+        .gte("logged_at", daysAgo(NUTRITION_STALE_DAYS).split("T")[0]);
+      if ((recentFoodLogs ?? 0) === 0) reasons.push("nutrition");
+    }
 
     const { count: staleTasks } = await supabase
       .from("client_tasks")
