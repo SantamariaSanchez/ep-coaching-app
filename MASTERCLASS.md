@@ -5850,3 +5850,42 @@ ligne qui violerait un check en silence.
 `tsc --noEmit`, `eslint`, `next build` de production : tous propres.
 Contrainte SQL de la table `notifications` vérifiée directement en base
 avant d'écrire le nouveau type de notification.
+
+## DK — Le même défaut "cloche manquante" existait sur 4 autres crons (2026-09-16)
+
+En listant tous les crons qui appellent `sendPushToUser` directement
+(`send-reminders`, `weekly-reengagement`, `nutrition-reminder`,
+`schedule-block-notify`, `coach-upsell`, `meal-reminders`, `nag-tasks`),
+trouvé que le correctif du 2026-09-09 sur `schedule-block-notify`
+("les notif, corrige, yen a plus la") n'avait jamais été reporté sur ses
+4 cousins qui ont exactement le même défaut : `nutrition-reminder`,
+`meal-reminders`, `nag-tasks` et `weekly-reengagement` (déjà corrigé une
+fois ce jour pour l'âge de compte, Axe DH) n'écrivaient jamais de ligne
+dans `notifications`, seulement le push (et l'email pour
+weekly-reengagement). Un push raté, repoussé ou coupé (pas d'abonnement,
+heures de silence, permission révoquée) ne laissait alors absolument
+aucune trace consultable dans la cloche de l'appli. `send-digest-email`,
+`coach-upsell` et `schedule-block-notify` n'avaient pas ce défaut
+(les deux premiers appellent déjà `insertNotification`/`notifyUser`, le
+troisième l'a eu ajouté le 2026-09-09).
+
+Traitement différent selon la cadence réelle de chaque cron, pas un
+copier-coller uniforme :
+- **nutrition-reminder**, **meal-reminders** : écriture inconditionnelle,
+  chacun ne peut être dû qu'une fois par jour (ou par créneau repas) par
+  construction, aucun risque de doublon.
+- **weekly-reengagement** : écriture inconditionnelle dans le bloc déjà
+  gardé par le cooldown de 6 jours (`MIN_DAYS_BETWEEN_MESSAGES`).
+- **nag-tasks** : cas différent, ce cron renage toutes les 10 minutes
+  tant que la tâche n'est pas cochée. Écrire la cloche sans garde
+  l'aurait dupliquée indéfiniment pour un client sans abonnement push
+  (le push échouerait en boucle, `last_notified_at` n'avancerait jamais,
+  et "jamais notifié" resterait vrai à chaque passage). Gardée donc
+  strictement alignée sur le même succès de push que `last_notified_at`,
+  jamais écrite indépendamment de lui.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production sur les 4 fichiers :
+tous propres. Le cas `nag-tasks` a été pensé avant d'écrire le code
+(risque de duplication identifié et évité), pas corrigé après coup.
