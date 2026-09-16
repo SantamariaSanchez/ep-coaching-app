@@ -5343,3 +5343,32 @@ revalidation déjà correctement configuré (`staleTimes.dynamic = 0`).
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0.
+
+## CU — 4 frictions corrigées sur l'écran d'accueil coach (2026-09-16)
+
+Suite directe de l'Axe CT, même méthode appliquée à l'écran d'accueil coach
+(`app/dashboard/coach/page.tsx`, ouvert plusieurs fois par jour) :
+
+1. `UrgentAlertsSection` remonté juste après le header, avant `MyDayCard` :
+   un signal de décrochage client arrivait en 3e position, après les infos
+   personnelles du coach.
+2. L'aperçu des messages non lus (`MyDayCard.tsx`) pointait vers la liste
+   générale au lieu de la conversation déjà identifiée par son nom, alors
+   que `/dashboard/coach/messages/[clientId]` existe déjà.
+3. Chevron ajouté sur les lignes d'alertes urgentes, absentes alors que les
+   lignes "en attente de retour" juste en dessous en ont déjà un
+   (incohérence d'affordance sur des lignes visuellement identiques).
+4. Le compteur de messages non lus était tronqué à 3 (`.limit(3)`) sans le
+   dire : un coach pouvait croire l'inbox à jour après avoir traité les 3
+   visibles. Limite retirée côté requête, total affiché entre parenthèses
+   quand il dépasse les 3 aperçus.
+
+Vérifié puis écarté : le piège des boutons désactivés en masse (trouvé côté
+client, Axe CT) est absent ici, chaque `ClientCard` a déjà son propre état
+de bouton indépendant.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
+sans lien via `git stash`/`stash pop`), `next build` de production
+complet, exit 0.
