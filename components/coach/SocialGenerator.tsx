@@ -125,7 +125,7 @@ function buildPrompt(guide: GuideMagnet, sujet: string, angle: string, platformI
   const demandes = selected.length > 0 ? selected : PLATFORM_SPECS.filter((p) => p.defaultOn);
   const liste = demandes.map((p, i) => `${i + 1}. ${p.instruction}`).join("\n");
 
-  return `Tu es le community manager d'EP Coaching, coaching bodybuilding et nutrition en ligne. Identité de marque : direct, concret, orienté action, jamais putaclic, jamais de superlatif vide ("incroyable", "révolutionnaire"), jamais de tiret em/en (—) nulle part dans ce que tu écris (virgule ou point à la place).
+  return `Tu es le community manager d'EP Coaching, coaching bodybuilding et nutrition en ligne. Identité de marque : direct, concret, orienté action, jamais putaclic, jamais de superlatif vide ("incroyable", "révolutionnaire"), jamais de tiret em/en (—) nulle part dans ce que tu écris (virgule ou point à la place). Règle non négociable (retour direct 2026-09-16) : sur Instagram, zéro ton "étude"/jargon, simple au point qu'un enfant de 5 ans comprenne du premier coup, et qui parle/ce qu'il fait doit être clair dans les 3 premières secondes ou en légende, sans exception.
 
 Voici un guide déjà publié sur le site, sers-t'en comme matière première :
 
