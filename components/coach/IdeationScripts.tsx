@@ -234,6 +234,35 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     return withViews.reduce((sum, s) => sum + s.views, 0) / withViews.length;
   }, [scripts]);
 
+  // Retour direct 2026-09-16 ("pas juste tracker pour tracker mais analyser
+  // et réitérer") : jusqu'ici les vues/likes se logguent script par script
+  // sans jamais de vue d'ensemble semaine par semaine. Approximation
+  // assumée : `updated_at` sert de proxy pour "quand publié/mesuré" (pas de
+  // colonne `published_at` dédiée) — imprécis si un vieux script publié est
+  // retouché plus tard, mais reste le meilleur signal disponible sans
+  // migration pour une v1 de ce résumé.
+  const [weeklyPerfNow] = useState(() => Date.now());
+  const weeklyPerf = useMemo(() => {
+    const now = weeklyPerfNow;
+    const weekMs = 7 * 24 * 60 * 60 * 1000;
+    const published = scripts.filter((s) => s.status === "publie");
+    const inWindow = (s: CoachScript, start: number, end: number) => {
+      const t = new Date(s.updated_at).getTime();
+      return t >= start && t < end;
+    };
+    const thisWeek = published.filter((s) => inWindow(s, now - weekMs, now));
+    const lastWeek = published.filter((s) => inWindow(s, now - 2 * weekMs, now - weekMs));
+    if (thisWeek.length === 0 && lastWeek.length === 0) return null;
+
+    const sumViews = (list: CoachScript[]) => list.reduce((sum, s) => sum + (s.views ?? 0), 0);
+    const thisWeekViews = sumViews(thisWeek);
+    const lastWeekViews = sumViews(lastWeek);
+    const missingViews = thisWeek.filter((s) => s.views == null).length;
+    const best = [...thisWeek].filter((s) => s.views != null).sort((a, b) => b.views! - a.views!)[0] ?? null;
+
+    return { publishedCount: thisWeek.length, views: thisWeekViews, lastWeekViews, missingViews, best };
+  }, [scripts, weeklyPerfNow]);
+
   function openPerfEdit(script: CoachScript) {
     setPerfEditId(script.id);
     setPerfViews(script.views != null ? String(script.views) : "");
@@ -534,6 +563,47 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         </div>
       ) : (
         <>
+          {weeklyPerf && (
+            <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
+              <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.4)", marginBottom: 10 }}>
+                Performance de la semaine
+              </p>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>{weeklyPerf.publishedCount}</p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>publié{weeklyPerf.publishedCount > 1 ? "s" : ""} cette semaine</p>
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>
+                    {weeklyPerf.views.toLocaleString("fr-FR")}
+                    {weeklyPerf.lastWeekViews > 0 && (
+                      <span style={{ fontSize: 12, fontWeight: 700, marginLeft: 6, color: weeklyPerf.views >= weeklyPerf.lastWeekViews ? "#4ade80" : "#f87171" }}>
+                        {weeklyPerf.views >= weeklyPerf.lastWeekViews ? "▲" : "▼"}{" "}
+                        {Math.abs(Math.round(((weeklyPerf.views - weeklyPerf.lastWeekViews) / weeklyPerf.lastWeekViews) * 100))}%
+                      </span>
+                    )}
+                  </p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>
+                    vues loguées {weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : "cette semaine"}
+                  </p>
+                </div>
+                {weeklyPerf.best && (
+                  <div style={{ minWidth: 0 }}>
+                    <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#4ade80" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
+                    <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
+                      🔥 meilleur : {weeklyPerf.best.title}
+                    </p>
+                  </div>
+                )}
+              </div>
+              {weeklyPerf.missingViews > 0 && (
+                <p style={{ margin: 0, fontSize: 11, color: "#facc15" }}>
+                  {weeklyPerf.missingViews} script{weeklyPerf.missingViews > 1 ? "s" : ""} publié{weeklyPerf.missingViews > 1 ? "s" : ""} cette semaine sans vues loguées, ces chiffres restent incomplets tant qu&apos;ils ne sont pas remplis (bouton &laquo;&nbsp;Loguer les résultats&nbsp;&raquo; sur chaque script publié).
+                </p>
+              )}
+            </div>
+          )}
+
           <div style={{ position: "relative", marginBottom: 10 }}>
             <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
             <input
