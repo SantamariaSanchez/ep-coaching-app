@@ -5311,3 +5311,35 @@ prochaine fois.
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0. Aucune nouvelle migration (réutilise `signed_url_cache`).
+
+## CT — 4 frictions corrigées sur l'écran d'accueil client (2026-09-16)
+
+Retour direct : "corrige tout ce qui est dans chaque onglet, améliore les
+petits détails qui faciliteraient la navigation et le taux de clic". Premier
+vrai passage de détail sur l'écran le plus vu de l'appli
+(`AujourdhuiView.tsx`, accueil membre), 4 corrections avec preuve, pas une
+liste vague :
+
+1. Un seul `isPending` désactivait TOUS les boutons habitudes/compléments
+   dès qu'un seul toggle était en vol côté serveur, empêchant de cocher deux
+   habitudes coup sur coup, l'action la plus fréquente de cet écran. Corrigé
+   avec un `Set<string>` de clés en attente, seul le bouton concerné se
+   désactive.
+2. Le quick-card poids du matin n'était pas dans un `<form>` (contrairement
+   au même champ dans `DailyBilanForm.tsx`) : taper le chiffre puis Entrée
+   ne validait rien, alors que cette carte existe précisément pour loguer
+   "en 5 secondes". Corrigé.
+3. Les cartes Nutrition/Pas n'avaient pas le `ChevronRight` que toutes les
+   autres cartes-liens du même écran affichent déjà (incohérence
+   d'affordance "ceci mène ailleurs"). Ajouté.
+4. Salutation alignée sur la virgule déjà utilisée côté coach (même fonction
+   `timeAwareGreeting`).
+
+Pistes vérifiées puis écartées à raison : salutation nocturne déjà voulue,
+sévérité biométrique "critical" jamais générée en pratique, cache de
+revalidation déjà correctement configuré (`staleTimes.dynamic = 0`).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
