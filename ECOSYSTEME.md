@@ -103,33 +103,40 @@ campagne envoyée, à côté de l'historique déjà existant dans `CoachMailingC
 ### 7. Audit usage Supabase — en cours
 Agent `supabase-usage-audit`, lancé le 2026-09-16, voir Priorité 0.
 
-## Reste à faire (non démarré à la fin de la session du 2026-09-16)
+## État au soir du 2026-09-16 (mis à jour au fil de la session, pas seulement à l'ouverture)
 
-- **Outils externes pour coach** (ManyChat, Calendly, Notion, etc. hors de l'app) :
-  demande de l'utilisateur à clarifier — l'app a déjà des liens Calendly (prise de RDV)
-  et Notion (contenu) en usage interne côté fondateur, mais rien d'exposé comme une
-  vraie page de référence/checklist pour un coach qui rejoindrait la plateforme. À
-  cadrer : une page "Boîte à outils" (liens + bonnes pratiques), pas une intégration
-  API (trop lourd sans compte par coach à ce stade, un seul coach actif).
-- **SEO** : pas audité cette session, à reprendre (voir `MASTERCLASS.md` pour les
-  audits SEO précédents, notamment celui du 2026-08-16 sur `app/outils/page.tsx`).
-- **Recherche approximative/tolérante aux fautes** sur toutes les barres de recherche :
-  la recherche de `IdeationScripts.tsx` normalise déjà accents/casse mais reste une
-  correspondance exacte par sous-chaîne (pas de tolérance aux fautes de frappe/lettres
-  manquantes). Un utilitaire de recherche floue partagé (`lib/fuzzy-search.ts`,
-  distance de Levenshtein tolérante) appliqué aux recherches à fort trafic (recettes,
-  aliments, `CommandPalette`) serait la bonne prochaine étape, pas fait cette session
-  par prudence (risque de régression sur plusieurs fichiers sans budget de vérification
-  suffisant en fin de session).
-- **Rétention des nouveaux inscrits** ("faire en sorte que les nouveaux inscrits
-  reviennent") : pas traité cette session, à cadrer (onboarding déjà riche —
-  `OnboardingTour.tsx`, `ClientOnboardingIntake.tsx`, quiz de personnalisation — mais
-  pas de mesure du taux de retour J+1/J+7 ni de relance ciblée au-delà de ce qui existe
-  déjà, `weekly-reengagement`/`free-tier-inactivity` cron).
-- **Suivi data business coach** : `BusinessHub.tsx`/`BusinessDashboard.tsx` couvrent
-  déjà Dashboard/Objectifs/Roadmap/Canvas/Funnel/Réseau/Checklist. Le mailing (axe 6)
-  et la pub (axe 5) ci-dessus complètent ce suivi avec deux métriques qui manquaient
-  réellement (email et pub). Pas identifié d'autre trou évident cette session.
+Tout ce qui suit était listé "reste à faire" plus tôt dans la journée — clôturé depuis :
+
+- **Outils externes pour coach** : livré comme 4e guide Masterclass (Axe CL,
+  `MASTERCLASS.md`) plutôt qu'une page séparée — ManyChat/Calendly/Canva/CapCut/
+  planification multi-plateformes + Trello/Bitwarden ajoutés de l'agent lui-même.
+- **SEO** : audité — un vrai trou trouvé et corrigé (page d'accueil sans metadata,
+  Axe CK), le reste des pages publiques déjà couvert.
+- **Recherche approximative** : livrée (Axe CK, `lib/fuzzy-search.ts`), appliquée à
+  `/api/library-search`, `CommandPalette`, `IdeationScripts`.
+- **Rétention nouveaux inscrits** : auditée puis corrigée (Axe CM) — le J+1 et le
+  signal coach existaient déjà, le vrai trou (le membre jamais félicité pour son
+  propre premier geste, seul le coach était notifié) est corrigé.
+- **Suivi data business coach** : toujours rien d'autre identifié au-delà du mailing
+  et de la pub déjà livrés.
+
+## Vrai reste à faire
+
+- **Cadence carrousel/story** (routines cloud à créer, voir section 4 ci-dessus) :
+  toujours en attente, la prudence sur le quota Supabase reste de mise même si des
+  lectures/écritures ponctuelles ont réussi en cours de session (pas une preuve que
+  le quota du mois est levé, à confirmer par l'utilisateur avant de créer de
+  nouvelles routines qui écrivent en base).
+- **Compte fondateur / connexion** : compte confirmé existant (`profiles`,
+  `is_platform_owner: true`, aucune ligne dans `auth_login_attempts` donc pas un
+  verrouillage) — reste un problème de mot de passe côté Supabase Auth, hors de
+  portée directe (lecture/écriture d'`auth.users` bloquée par le classificateur de
+  sécurité). Chemin self-service : "mot de passe oublié" sur la page de connexion.
+- **Formation vidéo self-service par coach** : identifié mais volontairement pas
+  construit — `formations`/`formation_sections` sont un catalogue plateforme, aucun
+  `coach_id`, aucun précédent de CRUD par coach pour du contenu vidéo structuré.
+  Construire cette infra pour un seul coach actif serait de la sur-ingénierie ; à
+  reprendre si/quand un 2e coach humain rejoint réellement la plateforme.
 
 ## Vague 2 (même journée, 2026-09-16) : production, notifications, Masterclass
 
