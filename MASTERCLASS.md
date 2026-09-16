@@ -5556,3 +5556,59 @@ production complet : tous propres. Seul message notable au build, une
 route API dynamique (`/api/coach/dashboard-stats`) qui logue l'usage de
 `cookies()` pendant l'optimisation statique, comportement normal et
 préexistant pour une route dynamique, sans rapport avec ce changement.
+
+## DB — Audit advisors Supabase + intégrité du backlog de scripts (2026-09-16)
+
+Retour direct : "continue encore, explore d'autres idées et opti". Passage
+systématique de `get_advisors` (jamais fait cette session), des logs
+Postgres/edge des dernières 24h, du manifest PWA, et d'un contrôle
+d'intégrité des codes CTA reels.
+
+**Corrigé** : `community_post_reactions.author_id` (clé étrangère vers
+`profiles`) n'avait aucun index couvrant — la clé primaire composite
+`(post_id, author_id)` ne peut pas servir de substitut, `author_id` n'en
+étant pas la colonne de tête. Ajouté `idx_community_post_reactions_author`
+(migration `20260916f`, appliquée directement en prod).
+
+**Vérifié sain, pas un bug** :
+- Les 5 tables "RLS activé sans policy" (`auth_login_attempts`,
+  `oura_connections`, `prequalification_responses`, `rate_limit_counters`,
+  `signed_url_cache`) sont toutes conçues pour être accessibles
+  uniquement via `service_role` (`createAdminClient()`), jamais depuis le
+  navigateur. Vérifié dans le code (10 fichiers, chaque appel à
+  `oura_connections` passe par `createAdminClient()`) plutôt que supposé.
+  `prequalification_responses` appartient même à un autre service
+  (`ep-coaching-formulaires.vercel.app`, repo séparé).
+- Les 11 fonctions `SECURITY DEFINER` exécutables par `anon`/
+  `authenticated` (`is_coach()`, `is_platform_owner()`, etc.) sont les
+  fonctions utilisées à l'intérieur des policies RLS elles-mêmes :
+  révoquer `EXECUTE` casserait ces policies (une policy a besoin que le
+  rôle appelant ait `EXECUTE` sur les fonctions qu'elle appelle). Pattern
+  attendu, pas un bug à corriger.
+- `pg_net` en schéma public (WARN) : déplacer une extension active dont
+  dépendent les crons de notification est un changement à fort risque de
+  casse pour un bénéfice cosmétique, volontairement pas touché.
+- 39 index "jamais utilisés" (INFO) : normal pour une appli avec quasiment
+  aucun trafic réel encore, pas un signal pour les supprimer maintenant.
+- Logs Postgres/edge des dernières 24h : une seule erreur, une faute de
+  frappe SQL transitoire de la routine lead magnets à 06h17 (déjà
+  auto-corrigée dans la même exécution, voir le run log). Aucune erreur
+  edge.
+- Manifest PWA (`public/manifest.json`) et les 3 icônes qu'il référence :
+  tous présents et cohérents, rien à corriger.
+- **Intégrité des 55 codes CTA** (`lead_magnets:NNN` cité dans chaque
+  script `a_tourner`/`tourné`) : les 55 numéros résolvent tous vers un
+  lead magnet réel et publié, aucun lien mort. Si quelqu'un commente un
+  numéro sous un de ces reels, la ressource existe.
+
+**Signalé au fondateur, nécessite une action manuelle (dashboard, pas de
+code)** : la protection "mot de passe compromis" (vérification HaveIBeenPwned)
+est désactivée côté Supabase Auth — à activer dans Authentication >
+Policies, aucun outil MCP ne l'expose, changement sans risque (bloque
+seulement les nouveaux mots de passe déjà fuités ailleurs).
+
+### Validation
+
+Migration appliquée directement en prod (`apply_migration`, `CREATE INDEX`
+non destructif). Toutes les autres vérifications sont des lectures
+(SQL, logs, fichiers), aucun autre changement de code.
