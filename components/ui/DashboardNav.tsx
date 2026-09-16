@@ -12,7 +12,7 @@ import {
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
-  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall,
+  AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -193,6 +193,14 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Mon business",
     items: [
       { label: "Développer mon business", icon: Rocket, segment: "business" },
+      // Outil de pilotage manuel de la pub payante (Google/Meta/TikTok
+      // Ads) — demande directe du fondateur, aucun outil de ce type
+      // n'existait. Pas d'intégration API régie, juste une saisie manuelle
+      // des chiffres avec les métriques de décision calculées (voir
+      // lib/ad-campaigns.ts). Segment "business/ads" comme "Appels de
+      // vente" (admin/ventes) : sa propre page, rattachée au groupe par le
+      // chemin plutôt que par une section dans BusinessHub.
+      { label: "Publicité", icon: Megaphone, segment: "business/ads" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
       // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
       // fichiers perso, notes — jamais précisé jusqu'ici.
@@ -588,51 +596,23 @@ export default function DashboardNav({
     return () => mq.removeEventListener("change", h);
   }, []);
 
-  // Prefetch de toute la nav visible, pas seulement de 3 ou 4 routes fixes :
-  // au clic sur un onglet, le RSC payload est déjà en cache et la page
-  // s'affiche sans le temps d'attente perceptible qu'il y avait avant.
-  // Les onglets du bas (ou du haut sur desktop) partent tout de suite, le
-  // reste de la sidebar est étalé ensuite pour ne pas déclencher une rafale
-  // de requêtes pendant le rendu initial de la page courante.
-  // Sérialisés en chaîne : `tabs`/`sidebar` sont recalculés à chaque rendu
-  // (nouvelles références), les passer tels quels en dépendances relancerait
-  // le prefetch en boucle. La chaîne, elle, ne change que si la nav change.
+  // Retour direct 2026-09-16 (Supabase passé en dépassement de quota,
+  // "ça repart le 27 septembre") : ce prefetch chauffait TOUTE la nav (81
+  // segments coach+client confondus, ~30-50 pour un rôle donné) à chaque
+  // montage du dashboard, `router.prefetch` déclenchant le rendu SERVEUR
+  // complet de chaque page (donc ses requêtes Supabase) même pour des
+  // sections jamais visitées dans la session. Avec un tableau bord composé
+  // de dizaines de segments, la quasi-totalité de ces lectures étaient
+  // perdues. Seuls les onglets toujours visibles (tabs, 4-6 items) restent
+  // préchauffés d'office ; le reste de la sidebar est déjà des <Link>
+  // (préchauffés par Next.js lui-même quand ils entrent dans le viewport,
+  // ou au survol) donc rien à ajouter à la main pour rester réactif.
   const tabHrefsKey = tabs.map((t) => t.href).join("|");
-  const sidebarHrefsKey = sidebar
-    .flatMap((g) => g.items.map(({ segment, href }) => href ?? (segment ? `${base}/${segment}` : base)))
-    .join("|");
 
   useEffect(() => {
     const tabHrefs = tabHrefsKey ? tabHrefsKey.split("|") : [];
-    const sidebarHrefs = sidebarHrefsKey ? sidebarHrefsKey.split("|") : [];
-    const seen = new Set<string>();
-    const rest: string[] = [];
-
-    tabHrefs.forEach((href) => {
-      if (seen.has(href)) return;
-      seen.add(href);
-      router.prefetch(href);
-    });
-    sidebarHrefs.forEach((href) => {
-      if (seen.has(href)) return;
-      seen.add(href);
-      rest.push(href);
-    });
-
-    let i = 0;
-    // Une route toutes les ~120 ms : la nav entière est chaude en quelques
-    // secondes sans jamais saturer la connexion au chargement initial.
-    const timer = setInterval(() => {
-      if (i >= rest.length) {
-        clearInterval(timer);
-        return;
-      }
-      router.prefetch(rest[i]);
-      i += 1;
-    }, 120);
-
-    return () => clearInterval(timer);
-  }, [tabHrefsKey, sidebarHrefsKey, router]);
+    tabHrefs.forEach((href) => router.prefetch(href));
+  }, [tabHrefsKey, router]);
 
   useEffect(() => {
     if (isCoach) {
