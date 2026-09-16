@@ -5824,3 +5824,29 @@ déclencher, ce qui exclut structurellement un compte neuf sans historique.
 ### Validation
 
 `tsc --noEmit`, `eslint`, `next build` de production : tous propres.
+
+## DJ — Le coach n'était jamais notifié du changement de phase roadmap d'un client (2026-09-16)
+
+Suite de l'audit des crons (retour direct : "continue de travailler sur
+l'appli"). Le commentaire d'en-tête de
+`app/api/cron/roadmap-phase-start/route.ts` promettait explicitement
+"prévient le client (et son coach)", mais le code n'appelait
+`notifyUser` qu'une seule fois, pour le propriétaire de la roadmap.
+Concrètement : un client qui entre en semaine de deload ou change de
+bloc d'intensification aujourd'hui ne générait aucun signal pour son
+coach, qui pouvait continuer à programmer les séances comme si la phase
+n'avait pas changé.
+
+Corrigé en notifiant aussi `profiles.coach_id` quand le propriétaire de
+la roadmap a le rôle `client`, même principe déjà utilisé par
+`stagnation-escalation` (Axe DI) plutôt qu'un mécanisme séparé. Vérifié
+avant d'écrire que `notifications.type` n'a aucune contrainte
+d'énumération (seulement une limite de longueur) et que l'URL générée
+respecte bien la contrainte `url ~ '^/[^/]'`, pour ne pas insérer une
+ligne qui violerait un check en silence.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres.
+Contrainte SQL de la table `notifications` vérifiée directement en base
+avant d'écrire le nouveau type de notification.
