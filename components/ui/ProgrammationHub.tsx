@@ -188,7 +188,18 @@ export default function ProgrammationHub({
         </div>
       )}
 
-      {tab === "diet" && (
+      {/*
+        `hidden` plutôt qu'un rendu conditionnel `{tab === "x" && ...}` :
+        même bug de démontage React que MASTERCLASS.md Axe CB. PlanBuilder
+        (ouvert ici via "Nouveau modèle") est un vrai formulaire de
+        construction de diète, parfois des dizaines de repas saisis à la
+        main (voir son propre commentaire dans DietPlanManager.tsx, Axe B).
+        Cliquer par réflexe sur l'onglet "Programmes" ou "Road Map" pendant
+        la construction démontait tout le sous-arbre "diet", donc perdait
+        le modèle en cours même si showDietBuilder restait true. Pas de
+        fetch réseau au montage de cet onglet.
+      */}
+      <div hidden={tab !== "diet"}>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
@@ -245,8 +256,14 @@ export default function ProgrammationHub({
             </div>
           )}
         </div>
-      )}
+      </div>
 
+      {/*
+        Pas de `hidden` ici : ni "programmes" (juste des liens + un bouton
+        supprimer) ni "roadmap" (accordéon + un simple input date par ligne,
+        vite resaisi) n'ont de saisie longue à protéger. Le risque réel de
+        ce fichier était le PlanBuilder ci-dessus.
+      */}
       {tab === "roadmap" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">

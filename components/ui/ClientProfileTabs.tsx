@@ -451,7 +451,18 @@ export default function ClientProfileTabs({
         })}
       </div>
 
-      {activeTab === "profil" && (
+      {/*
+        `hidden` plutôt qu'un rendu conditionnel `{activeTab === "x" && ...}` :
+        même motif que l'onglet nutrition plus bas (audit complet des 14
+        autres onglets, 2026-09-16). Ce bloc contient trois formulaires à
+        vrai risque de perte : la note de transition de phase dans
+        CoachingPhasePanel, le plan/date de facturation/note dans
+        SubscriptionToggle, et le formulaire de log de récup (zone, douleur,
+        note) dans ClientMedicalConstraintsPanel. Aucun de ces composants ne
+        fait de fetch réseau au montage (vérifié), donc rien ne justifiait de
+        garder le démontage.
+      */}
+      <div hidden={activeTab !== "profil"}>
         <div className="space-y-4">
           {/* Coach exclusivement — jamais rendu sur /dashboard/client/**,
               et jamais pour un membre gratuit (pas de coaching à calibrer). */}
@@ -598,10 +609,18 @@ export default function ClientProfileTabs({
             )}
           </Card>
         </div>
-      )}
+      </div>
 
-      {activeTab === "intake" && (
-        intake ? (
+      {/*
+        `hidden` : ClientIntakeForm est un gros formulaire multi-champs que
+        le coach peut corriger manuellement (voir commentaire plus haut sur
+        IntakeWaitingState). Aucun fetch réseau au montage. Les deux branches
+        de la ternaire (formulaire vs état d'attente) restent gérées à
+        l'intérieur du wrapper : `intake` ne change pas en cours de session
+        (prop serveur), donc pas de risque à garder la ternaire dedans.
+      */}
+      <div hidden={activeTab !== "intake"}>
+        {intake ? (
           <div>
             <AutoGeneratePlanButton clientId={client.id} hasIntake={!!intake} generatePlanSuggestions={generatePlanSuggestions} />
             <ClientIntakeForm
@@ -619,19 +638,36 @@ export default function ClientProfileTabs({
             isClientSubscribed={client.subscription_status === "active"}
             sendIntakeReminder={sendIntakeReminder}
           />
-        )
+        )}
+      </div>
+
+      {/*
+        `hidden` : le formulaire d'ajout de cycle (dates, flux, symptômes,
+        notes) dans ClientPeriodTracking a le même risque. Le garde de genre
+        reste un vrai rendu conditionnel (structurel, ne change pas en cours
+        de session, cet onglet est de toute façon absent du menu sinon).
+      */}
+      {intake?.gender === "Femme" && (
+        <div hidden={activeTab !== "cycle"}>
+          <ClientPeriodTracking
+            clientId={client.id}
+            logs={periodLogs}
+            stats={cycleStats}
+            addPeriodLog={addPeriodLog}
+            deletePeriodLog={deletePeriodLog}
+          />
+        </div>
       )}
 
-      {activeTab === "cycle" && intake?.gender === "Femme" && (
-        <ClientPeriodTracking
-          clientId={client.id}
-          logs={periodLogs}
-          stats={cycleStats}
-          addPeriodLog={addPeriodLog}
-          deletePeriodLog={deletePeriodLog}
-        />
-      )}
-
+      {/*
+        Pas de `hidden` ici : WeeklyAgenda est utilisé en editable={false}
+        (lecture seule du planning du client) et aucun `saveTaskCompletion`
+        n'est passé. Chaque contrôle avec état (modale d'édition, minuteur,
+        cases à cocher) est déjà gardé par `if (!editable) return` ou
+        `disabled={!saveTaskCompletion}` côté WeeklyAgenda.tsx, donc rien
+        n'est réellement saisissable ici. Le seul état qui survit est le
+        mode jour/semaine affiché, purement cosmétique. Démontage sans risque.
+      */}
       {activeTab === "agenda" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
@@ -641,6 +677,12 @@ export default function ClientProfileTabs({
         </div>
       )}
 
+      {/*
+        Pas de `hidden` ici : StepsClient est en readOnly, tous ses
+        formulaires (nouvel item, objectif, rappel) sont gardés par
+        `!readOnly` côté StepsClient.tsx. Rien de saisissable, démontage
+        sans risque.
+      */}
       {activeTab === "pas" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
@@ -657,6 +699,12 @@ export default function ClientProfileTabs({
         </div>
       )}
 
+      {/*
+        Pas de `hidden` ici : TrackingClient est en readOnly, le formulaire
+        de log biométrique est gardé par `!readOnly` côté TrackingClient.tsx.
+        Le seul état restant (insights masqués localement) est cosmétique et
+        réapparaît sans casser quoi que ce soit au remontage.
+      */}
       {activeTab === "sommeil" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
@@ -667,6 +715,12 @@ export default function ClientProfileTabs({
         </div>
       )}
 
+      {/*
+        Pas de `hidden` ici : CoachClientMindsetView n'a aucun état local
+        (aucun useState/useEffect dans le composant), c'est un affichage pur
+        du profil et des logs d'habitudes du client. Rien à perdre au
+        démontage.
+      */}
       {activeTab === "mindset" && (
         <div>
           <p className="text-xs text-[#F5EDED]/40 leading-relaxed mb-4">
@@ -677,6 +731,13 @@ export default function ClientProfileTabs({
         </div>
       )}
 
+      {/*
+        Pas de `hidden` ici : cet onglet n'a aucun état local propre (tout
+        vient de roadmapData/roadmapLoading/roadmapError, gérés par le
+        useEffect en haut de ce composant parent, pas remonté par ce bloc).
+        Rien à perdre au démontage, et le fetch de la road map n'est de toute
+        façon pas refait puisqu'il vit au-dessus de ce bloc.
+      */}
       {activeTab === "roadmap" && (
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -775,6 +836,12 @@ export default function ClientProfileTabs({
         </div>
       )}
 
+      {/*
+        Pas de `hidden` ici : CoachLogbookClient n'a aucun formulaire, ses
+        deux seuls useState sont un accordéon (expanded) et un sous-onglet
+        d'affichage (semaine/progression/qualité/historique), tous les deux
+        purement cosmétiques et re-dérivables sans perte réelle au remontage.
+      */}
       {activeTab === "logbook" && (
         <CoachLogbookClient
           clientId={client.id}
@@ -785,6 +852,11 @@ export default function ClientProfileTabs({
         />
       )}
 
+      {/*
+        Pas de `hidden` ici : ClientProgramView n'a qu'un seul useState
+        (openDays, accordéon des jours de programme ouverts/fermés) et aucun
+        formulaire. Cosmétique, sans risque au démontage.
+      */}
       {activeTab === "programme" && (
         <ClientProgramView
           clientId={client.id}
@@ -804,10 +876,9 @@ export default function ClientProfileTabs({
         n'importe quel autre onglet de cette fiche client démontait
         entièrement CoachClientNutritionTabs, donc perdait de la même façon
         tout plan de diète en cours de construction dans son PlanBuilder.
-        Seul cet onglet est corrigé ici (périmètre nutrition) : les autres
-        onglets de cette page suivent le même motif `{activeTab === "x" &&
-        ...}` et pourraient avoir le même risque, mais restent hors
-        périmètre de cet audit.
+        Repasse du 2026-09-16 : les 14 autres onglets de cette page ont
+        maintenant été vérifiés individuellement (voir les commentaires sur
+        chacun) et corrigés là où un vrai risque de perte existait.
       */}
       <div hidden={activeTab !== "nutrition"}>
         <CoachClientNutritionTabs
@@ -837,6 +908,11 @@ export default function ClientProfileTabs({
         />
       </div>
 
+      {/*
+        Pas de `hidden` ici : BeforeAfterComparator et ClientBilanView n'ont
+        aucun useState (ni aucun formulaire), affichage pur. Rien à perdre
+        au démontage.
+      */}
       {activeTab === "bilans" && (
         <>
           <BeforeAfterComparator
@@ -847,16 +923,32 @@ export default function ClientProfileTabs({
         </>
       )}
 
-      {activeTab === "photos" && (
+      {/*
+        `hidden` : PhotoFeedbackForm (dans CoachClientPhotosView) a un
+        textarea "coach_feedback" non contrôlé où le coach tape son retour
+        sur une photo avant envoi. Quitter l'onglet perdait ce texte en
+        cours de frappe. Pas de fetch réseau au montage.
+      */}
+      <div hidden={activeTab !== "photos"}>
         <CoachClientPhotosView
           client={client}
           photos={photos}
           saveCompetitionSettings={saveCompetitionSettings}
           sendPhotoFeedback={sendPhotoFeedback}
         />
-      )}
+      </div>
 
-      {activeTab === "checkins" && (
+      {/*
+        `hidden` : deux formulaires à vrai risque ici. CoachReplyForm (dans
+        chaque CheckinCard) a un textarea de réponse au client, et
+        ReplyForm (dans ClientCorrectionsReplySection) cumule un upload
+        vidéo en cours + des annotations horodatées ajoutées une à une
+        avant l'envoi. Changer d'onglet en pleine rédaction d'une réponse
+        démontait toutes les CheckinCard (donc toutes les réponses en cours,
+        pas seulement celle visible) et perdait tout ce qui n'était pas
+        encore envoyé côté corrections. Pas de fetch réseau au montage.
+      */}
+      <div hidden={activeTab !== "checkins"}>
         <div>
           <div className="flex items-start justify-between mb-4">
             <p className="text-xs text-[#F5EDED]/40 uppercase tracking-widest font-semibold">
@@ -894,9 +986,15 @@ export default function ClientProfileTabs({
             sendCorrectionFeedback={sendCorrectionFeedback}
           />
         </div>
-      )}
+      </div>
 
-      {activeTab === "rappels" && (
+      {/*
+        `hidden` : CoachClientTasksView a le champ texte du nouveau rappel
+        (label) et le textarea du message de motivation (motivationText).
+        Taper l'un ou l'autre puis changer d'onglet par réflexe perdait la
+        saisie. Pas de fetch réseau au montage.
+      */}
+      <div hidden={activeTab !== "rappels"}>
         <CoachClientTasksView
           clientId={client.id}
           initialTasks={tasks}
@@ -904,7 +1002,7 @@ export default function ClientProfileTabs({
           deleteClientTask={deleteClientTask}
           sendMotivationMessage={sendMotivationMessage}
         />
-      )}
+      </div>
     </div>
   );
 }

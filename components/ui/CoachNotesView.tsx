@@ -665,8 +665,17 @@ export default function CoachNotesView({
         ))}
       </div>
 
+      {/*
+        `hidden` plutôt qu'un rendu conditionnel `{activeTab === "x" && ...}`
+        sur les deux onglets ci-dessous : même bug de démontage React que
+        MASTERCLASS.md Axe CB. WeeklyNoteForm et KeyDecisionForm sont des
+        formulaires multi-champs (texte libre inclus) qu'on peut remplir en
+        cours de rédaction ; basculer entre "Journal" et "Décisions"
+        démontait celui resté ouvert et perdait la saisie. Pas de fetch
+        réseau au montage de ces deux composants.
+      */}
       {/* ── JOURNAL TAB ────────────────────────────────────────────────── */}
-      {activeTab === "journal" && (
+      <div hidden={activeTab !== "journal"}>
         <div className="space-y-6">
           {/* Current week form */}
           <WeeklyNoteForm
@@ -704,10 +713,10 @@ export default function CoachNotesView({
             </div>
           )}
         </div>
-      )}
+      </div>
 
       {/* ── DECISIONS TAB ──────────────────────────────────────────────── */}
-      {activeTab === "decisions" && (
+      <div hidden={activeTab !== "decisions"}>
         <div className="space-y-4">
           <KeyDecisionForm
             clientId={clientId}
@@ -740,7 +749,7 @@ export default function CoachNotesView({
             </div>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
