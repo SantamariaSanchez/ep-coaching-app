@@ -5294,3 +5294,20 @@ retouché plus tard mais le meilleur signal disponible sans migration.
 
 `tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
 sans lien), `next build` de production complet, exit 0.
+
+## CS — Cache des URLs signées, tour 2 : checkins et vidéos coach (2026-09-16)
+
+Suite de l'Axe CQ, fermeture du point laissé hors scope : `utils/checkins.ts`
+avait le même motif (signed URL régénérée à chaque lecture, buckets
+`checkin-media` et `coach-videos`). Même correctif appliqué
+(`getCachedOrCreateSignedUrl`, TTL 1h → 24h). Aucun chemin de suppression/
+remplacement trouvé pour ces médias après grep exhaustif (`submitCheckin`
+n'écrit qu'en insert, `attachCoachVideo` upload toujours un nouveau chemin
+horodaté) : pas d'invalidation à brancher, documenté en commentaire.
+`utils/corrections.ts` a le même motif, encore hors scope, signalé pour une
+prochaine fois.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0. Aucune nouvelle migration (réutilise `signed_url_cache`).
