@@ -218,6 +218,21 @@ d'espace non retiré du mot de passe (seul l'email est `.trim()` dans
 min expliqué, et le lien "mot de passe oublié" identifié comme le vrai chemin de
 déblocage self-service.
 
+## Vague 3 (même journée) : clarté de marque sur les reels
+
+Retour direct très frustré : reels plafonnés à ~300 vues, cause identifiée par
+l'utilisateur lui-même comme un problème de clarté de marque, pas de volume ("un
+enfant doit comprendre qui je suis et ce que je fais direct sur un reel", "pas de
+gnagnagna étude sur Instagram, ça c'est YouTube"). Corrigé directement dans le guide
+Notion qui pilote la routine reels : bloc d'identité explicite ajouté (il manquait
+côté reels alors qu'il existait déjà côté YouTube) + nouvelle Règle n°8 (identité
+claire en 3 secondes, zéro ton étude sur Instagram, test "un enfant comprendrait-il").
+Recherche web réelle (pas mémoire) menée sur Hormozi/Matis Clouet/Marvin Ndiaye/Ethan
+business/Hanskadss, synthétisée dans une nouvelle page Notion 🔍 Références créateurs,
+12 règles actionnables identifiées (à intégrer aux guides dans un prochain passage).
+Résumé hebdomadaire de performance (vues/likes) ajouté dans Studio créatif pour que le
+tracking serve vraiment à analyser, pas juste à stocker un chiffre.
+
 ## Session log
 
 - **2026-09-16** — Ouverture du chantier, lancement en parallèle des agents
