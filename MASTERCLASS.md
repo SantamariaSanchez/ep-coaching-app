@@ -4802,3 +4802,110 @@ et l'audit plus large lancé sur d'autres sources de surconsommation.
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0.
+
+## CE — Audit nutrition : tracking/log/coche/validation aliments/repas/recettes (2026-09-16)
+
+Retour direct : "il faut que dans nutrition on puisse tracker loguer cocher
+valider les aliments repas et recette, que tout fonctionne et se sauvegarde
+et reste bien". Vérification en profondeur plutôt que suppositions.
+
+**Vérification ciblée d'abord** : `ClientNutritionView.tsx` a bien 3 onglets
+internes en rendu conditionnel (`today`/`history`/`courses`), mais **sain** —
+tout l'état qui compte (logs du jour, modales, formulaires) vit dans le
+composant parent, jamais démonté au changement d'onglet. Seul `MealSlotCard`
+se démonte, avec un état purement cosmétique (accordéon ouvert, photo
+affichée) sans conséquence.
+
+**5 vrais bugs trouvés et corrigés** :
+1. `CoachClientNutritionTabs.tsx` — même bug de démontage que l'Axe CB, oublié
+   à l'époque car côté nutrition : quitter l'onglet "Plan & objectifs" pendant
+   la construction d'un plan de diète (`PlanBuilder`) effaçait tout le
+   brouillon en cours. Corrigé (`hidden` au lieu du rendu conditionnel).
+2. `ClientProfileTabs.tsx` — un niveau au-dessus, enveloppait déjà
+   `CoachClientNutritionTabs` dans un rendu conditionnel sur l'onglet
+   "Nutrition" de la fiche client, rendant le correctif n°1 inutile dès qu'on
+   change d'onglet de fiche. Corrigé uniquement sur cet onglet (les 11 autres
+   onglets de cette fiche ont potentiellement le même risque, signalé mais
+   hors périmètre nutrition, à reprendre dans une repasse dédiée).
+3. `ClientNutritionView.tsx`, `handleLogSavedMeal` — seule fonction de log à
+   ne jamais réconcilier son entrée optimiste avec l'id serveur réel après
+   succès (contrairement à `handleAddFood`/`handleAddRecipe`/`handleQuickAdd`/
+   `handleValidateSlot`) : loguer un repas enregistré puis changer d'onglet
+   faisait apparaître ce repas en double à l'écran (aucun doublon réel en
+   base). Corrigé avec le même mécanisme de réconciliation que les autres.
+4. `app/dashboard/client/nutrition/actions.ts` — `removeFoodLog`,
+   `deleteSavedMeal`, `activateOwnDietPlan`, `deactivateOwnDietPlan`
+   n'avaient jamais leur résultat Supabase vérifié : un échec serveur
+   renvoyait quand même un faux succès à l'écran.
+5. Même correctif côté coach dans
+   `app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions.ts`
+   (`activateDietPlan`, `deactivateDietPlan`).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur 4 fichiers sur 5 (6 erreurs
+`react-hooks/set-state-in-effect` préexistantes sur `ClientNutritionView.tsx`,
+confirmées sans lien via `git stash`), `next build` de production complet
+(79/79 pages), exit 0.
+
+## CF — Mailing : taux d'ouverture/clic par campagne (2026-09-16)
+
+Retour direct : "travaille encore plus sur le mailing et derrière le
+tracking des données, taux d'ouverture, de clic etc, dans l'appli en tant
+que coach". Rien n'existait jusqu'ici pour lire les statistiques Brevo après
+l'envoi d'une campagne (seul `brevo_campaign_id` était stocké).
+
+`lib/brevo-stats.ts` (nouveau, lecture, séparé de `lib/brevo-mailing.ts` qui
+reste dédié à l'écriture) : `getCampaignStats` lit
+`GET /v3/emailCampaigns/{id}?statistics=globalStats` — format de réponse
+vérifié en direct contre le vrai compte Brevo de production (pas seulement la
+doc). `coach_mailings` gagne `stats_json`/`stats_fetched_at` (cache, migration
+`20260916b`, **à appliquer manuellement dans le Supabase SQL Editor**) pour
+éviter de re-fetch l'API Brevo à chaque rendu. Bouton "Rafraîchir les stats"
+par campagne et global dans `CoachMailingComposer.tsx`, avec un résumé agrégé
+(moyenne des 5 derniers envois) et un repère de lecture (taux d'ouverture
+correct ~20-30%, bon taux de clic ~2-5%, un coach seul n'a pas cette
+référence sous la main). Amélioration ajoutée de son propre chef : badge
+d'alerte quand une campagne tombe sous 50% de la moyenne des autres envois du
+coach, et mise en évidence des hard bounces à nettoyer de la liste.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 6 fichiers touchés (aucun
+warning), `next build` de production complet, exit 0.
+
+**Migration à appliquer manuellement** : `20260916b_mailing_stats_cache.sql`
+dans le Supabase SQL Editor avant que les statistiques ne soient utilisables
+en prod (en plus de `20260916c` de l'Axe CC, voir plus haut).
+
+## CG — Outil de suivi des campagnes publicitaires (2026-09-16)
+
+Retour direct : "construis dans l'appli les ads (Google Ads, Meta Ads),
+vraiment un bon outil utile et surtout optimisé et efficace, rapide, réfléchi
+et bien travaillé". Rien n'existait avant (aucune table, aucune page liée à
+la publicité).
+
+Nouvelle entrée **Mon business > Publicité** (`app/dashboard/coach/business/
+ads/`, `components/coach/AdsTracker.tsx`) : pilotage MANUEL, volontairement
+sans intégration API Google/Meta (aucun credential disponible, hors scope).
+Table `ad_campaigns` (migration `20260916a`, **à appliquer manuellement**),
+`platform`/`objective` en texte libre (comme `coach_scripts.format`),
+`status` avec contrainte car il pilote un vrai comportement applicatif.
+`lib/ad-campaigns.ts` centralise les calculs purs (CPM, CPC, CTR, coût par
+lead, ROAS), jugés relativement à la moyenne des campagnes du coach plutôt
+que sur un seuil absolu universel (l'économie de chaque coach diffère).
+
+Deux ajouts non demandés explicitement : alerte visuelle quand une campagne
+dépense depuis 3 jours sans le moindre lead, et une raison d'arrêt demandée
+automatiquement au passage en statut "Terminée" (même esprit que les
+suppressions de script de l'Axe CC : capitaliser sur pourquoi ça n'a pas
+marché plutôt que juste archiver).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 5 fichiers touchés, `next
+build` de production complet (route `/dashboard/coach/business/ads`
+générée), exit 0.
+
+**Migration à appliquer manuellement** : `20260916a_ad_campaigns.sql` dans le
+Supabase SQL Editor (en plus de `20260916b`/`20260916c` ci-dessus).
