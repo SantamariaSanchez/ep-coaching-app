@@ -5612,3 +5612,41 @@ seulement les nouveaux mots de passe déjà fuités ailleurs).
 Migration appliquée directement en prod (`apply_migration`, `CREATE INDEX`
 non destructif). Toutes les autres vérifications sont des lectures
 (SQL, logs, fichiers), aucun autre changement de code.
+
+## DC — Historique mailing vide silencieusement, migration stats toujours bloquée (2026-09-16)
+
+Retour direct : "continue de travailler et d'implémenter". En auditant
+`getCoachMailingHistory` (`lib/coach-mailings.ts`), trouvé un vrai bug
+latent en prod : le `select` inclut `stats_json`/`stats_fetched_at`, deux
+colonnes de la migration `20260916b` (`ALTER TABLE`, toujours refusée par
+le classificateur de sécurité, réessayée cette session, refusée à
+nouveau, "Modify Shared Resources"). Vérifié directement en base
+(`information_schema.columns`, puis un `select` réel qui renvoie
+`column "stats_json" does not exist`) : le select entier échoue, et le
+`catch` renvoyait `[]`. **Résultat concret : dès qu'un coach envoie un
+mailing, il disparaîtrait silencieusement de son propre historique**, pas
+seulement les statistiques d'ouverture/clic. 0 ligne dans
+`coach_mailings` actuellement (personne ne peut se connecter, quota
+Supabase), donc aucun impact réel encore, mais le bug est réel et
+frapperait dès la reprise de l'accès si la migration n'est toujours pas
+passée.
+
+Corrigé côté code sans dépendre de la migration : `getCoachMailingHistory`
+tente d'abord le select complet, puis se replie sur les colonnes qui
+existent déjà si ça échoue. L'historique s'affiche dès maintenant (sans
+les stats), et les stats réapparaîtront seules, sans autre changement de
+code, une fois la migration appliquée manuellement.
+
+**Toujours en attente d'action manuelle** : `20260916b_mailing_stats_cache.sql`
+dans le Supabase SQL Editor (ALTER TABLE, ajout de 2 colonnes nullables,
+sans risque). Sans elle, "Rafraîchir les stats" refonctionne (elle relit
+Brevo et affiche des chiffres corrects) mais ne les met jamais en cache
+(l'`update` échoue silencieusement, pas vérifié dans le code actuel), donc
+chaque rafraîchissement recoûte un appel API Brevo au lieu de servir le
+cache.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres.
+Vérifié en base que le bug était réel avant de le corriger (jamais de
+correctif sur une simple supposition).
