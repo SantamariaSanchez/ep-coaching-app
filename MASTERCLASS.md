@@ -5683,3 +5683,31 @@ Comptage de mots réel avant insertion (60s : 130-155 mots selon script,
 requête SQL qu'aucun tiret cadratin/demi-cadratin ne s'est glissé dans
 `content`/`hook`/`cta`/`instagram_caption` des 3 scripts avant de les
 considérer terminés.
+
+## DE — Premiers scripts hors Instagram : X et Reddit (2026-09-16)
+
+Chantier d'origine ("X/Reddit/WhatsApp/Discord/Telegram") jusqu'ici jamais
+concrétisé par un vrai script inséré sur une de ces plateformes (toutes
+les 55+ précédentes étaient `instagram`/`instagram_carrousel`/`youtube`).
+Deux premiers, avec une différence volontaire de traitement par
+plateforme plutôt qu'un copier-coller adapté :
+
+- **X** ("Charge lourde ou légère pour la force") : garde le CTA vers
+  l'app (le lectorat X pour du contenu fitness/science tolère et
+  recherche même ce format), sourcé (Schoenfeld et al. 2017, Carvalho et
+  al. 2022).
+- **Reddit** ("Avant d'ajouter du poids sur la barre, ces 8 points") :
+  **aucun CTA commercial, aucun lien**. Les subs fitness (r/fitness,
+  r/bodyweightfitness...) suppriment ou pénalisent lourdement
+  l'auto-promotion déguisée en post de valeur — retour direct implicite
+  du chantier multi-plateformes ("il faut aussi penser à la culture de
+  chaque plateforme, pas juste réadapter le même message"). Le post est
+  fait pour apporter une vraie valeur seule, sans rien demander en
+  retour ; c'est la présence elle-même (pas un clic) qui construit la
+  crédibilité sur ce type de plateforme.
+
+### Validation
+
+Mêmes contrôles que l'Axe DD (mots-clés anti-doublon, absence de tiret
+cadratin/demi-cadratin vérifiée par requête SQL). Insertion directe en
+base, aucun changement de code.
