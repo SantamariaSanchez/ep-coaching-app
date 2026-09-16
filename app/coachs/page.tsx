@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCoachDirectory } from "@/lib/coach-directory";
@@ -5,9 +6,15 @@ import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Ton coach | EP Coaching",
-  description: "Qui t'accompagne chez EP Coaching, et sur quoi.",
+const TITLE = "Ton coach | EP Coaching";
+const DESCRIPTION = "Qui t'accompagne chez EP Coaching, et sur quoi.";
+
+export const metadata: Metadata = {
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/coachs" },
+  openGraph: { url: "/coachs", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 // Axe 5 (VISION.md) : annuaire public, accessible sans compte, pour qu'un

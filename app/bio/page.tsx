@@ -13,9 +13,15 @@ import { getPublicVictories } from "@/utils/community";
 
 export const dynamic = "force-dynamic";
 
+const TITLE = "EP Coaching";
+const DESCRIPTION = "Tous les liens EP Coaching au même endroit.";
+
 export const metadata: Metadata = {
-  title: "EP Coaching",
-  description: "Tous les liens EP Coaching au même endroit.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/bio" },
+  openGraph: { url: "/bio", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 // Page "lien en bio" (demande explicite du 2026-08-16) : le goulot

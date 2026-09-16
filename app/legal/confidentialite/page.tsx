@@ -3,6 +3,7 @@ import { LegalPage, P, Ul, Strong, type LegalSection } from "@/components/legal/
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité · EP Coaching",
+  alternates: { canonical: "/legal/confidentialite" },
 };
 
 const sections: LegalSection[] = [

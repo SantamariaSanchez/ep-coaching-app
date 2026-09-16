@@ -8,9 +8,15 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import type { RoleStatus } from "@/components/ui/OrganisationView";
 import CareersClient from "@/components/careers/CareersClient";
 
+const TITLE = "Carrières | EP Coaching";
+const DESCRIPTION = "Rejoins l'équipe EP Coaching : coaching, sales, marketing, produit, opérations.";
+
 export const metadata: Metadata = {
-  title: "Carrières | EP Coaching",
-  description: "Rejoins l'équipe EP Coaching : coaching, sales, marketing, produit, opérations.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/carrieres" },
+  openGraph: { url: "/carrieres", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 // Page publique de candidature (demande explicite 2026-08-16 : "recrutement

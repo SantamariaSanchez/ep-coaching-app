@@ -11,10 +11,19 @@ import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 // canal d'acquisition confirmé explicitement le 2026-08-16) et n'avait
 // aucun titre/description dédié, elle retombait sur le fallback générique
 // "EP Coaching" du layout racine.
+const TITLE = "Ressources gratuites : guides et fiches | EP Coaching";
+const DESCRIPTION =
+  "Guides et fiches gratuits sur l'entraînement, la nutrition et la psychologie du sport, sans inscription. Basés sur la littérature scientifique quand elle existe.";
+
+// canonical explicite : la page accepte ?guide=xxx pour préremplir la
+// recherche (voir plus bas), sans quoi ces variantes pourraient être vues
+// comme du contenu dupliqué distinct de l'URL nue.
 export const metadata: Metadata = {
-  title: "Ressources gratuites : guides et fiches | EP Coaching",
-  description:
-    "Guides et fiches gratuits sur l'entraînement, la nutrition et la psychologie du sport, sans inscription. Basés sur la littérature scientifique quand elle existe.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/ressources" },
+  openGraph: { url: "/ressources", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 export default async function PublicRessourcesPage({

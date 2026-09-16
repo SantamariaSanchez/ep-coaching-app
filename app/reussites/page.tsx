@@ -7,9 +7,15 @@ export const dynamic = "force-dynamic";
 
 // MASTERCLASS (audit métadonnées SEO, 2026-08-16) : page de preuve sociale
 // publique, aucun titre/description dédié jusqu'ici.
+const TITLE = "Réussites des membres | EP Coaching";
+const DESCRIPTION = "De vraies transformations partagées par des membres EP Coaching, publiées avec leur accord explicite.";
+
 export const metadata: Metadata = {
-  title: "Réussites des membres | EP Coaching",
-  description: "De vraies transformations partagées par des membres EP Coaching, publiées avec leur accord explicite.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/reussites" },
+  openGraph: { url: "/reussites", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 function fmtDate(d: string): string {

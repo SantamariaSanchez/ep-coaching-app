@@ -3,6 +3,7 @@ import { LegalPage, P, Strong, type LegalSection } from "@/components/legal/Lega
 
 export const metadata: Metadata = {
   title: "Assistance · EP Coaching",
+  alternates: { canonical: "/support" },
 };
 
 // L'assistance n'est PAS un document contractuel : elle se tutoie comme le

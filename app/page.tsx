@@ -31,10 +31,21 @@ import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import { ALL_LIVE_TYPES } from "@/lib/live-types";
 
+const TITLE = "EP Coaching : coaching bodybuilding et performance en ligne";
+const DESCRIPTION =
+  "Coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, formations, suivi quotidien et communauté. Programme adapté à ton niveau.";
+
+// Sans openGraph/twitter dédiés ici, un partage de la page d'accueil (lien
+// en bio Instagram, la destination la plus partagée du site) retombait sur
+// l'aperçu générique du layout racine plutôt que ce titre/description
+// spécifiques, faute de fusion champ par champ par Next (voir le même
+// correctif sur app/ressources/[slug]/page.tsx, 2026-09-16).
 export const metadata: Metadata = {
-  title: "EP Coaching : coaching bodybuilding et performance en ligne",
-  description:
-    "Coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, formations, suivi quotidien et communauté. Programme adapté à ton niveau.",
+  title: TITLE,
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: { url: "/", title: TITLE, description: DESCRIPTION },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
 };
 
 // Ordre pensé comme un argumentaire, pas une simple liste alphabétique de

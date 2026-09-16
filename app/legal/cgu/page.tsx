@@ -5,6 +5,7 @@ import { LEGAL_LAST_UPDATED } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Conditions Générales d'Utilisation · EP Coaching",
+  alternates: { canonical: "/legal/cgu" },
 };
 
 const sections: LegalSection[] = [
