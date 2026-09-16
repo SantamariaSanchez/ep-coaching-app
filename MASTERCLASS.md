@@ -5223,3 +5223,28 @@ suivre.
 ### Validation
 
 Modification Notion uniquement, aucun code touché.
+
+## CQ — Cache des URLs signées photos (2026-09-16)
+
+Suite de l'audit egress (Axe CH) qui avait documenté sans corriger :
+`utils/photos.ts`/`personal-photos.ts`/`avatar.ts` généraient une nouvelle
+signed URL à chaque chargement de page pour la même photo, empêchant tout
+cache navigateur. Nouvelle table `signed_url_cache` (migration `20260916e`,
+**à appliquer manuellement**, même pattern RLS que `auth_login_attempts` :
+aucune policy, service_role uniquement). `utils/signed-url-cache.ts`
+réutilise l'URL en cache si elle n'expire pas dans les 10 prochaines
+minutes, sinon régénère. TTL porté de 1h à 24h (raisonnable pour des photos
+privées, c'est le cache qui absorbe le renouvellement désormais).
+Invalidation immédiate à la suppression d'une photo perso
+(`deletePersonalPhoto`, client et coach). Aucun nouveau chemin d'accès :
+les permissions restent entièrement portées par l'appelant (RLS, guard de
+rôle) avant même d'atteindre ce cache. `checkins.ts` a le même motif
+(buckets `checkin-media`/`coach-videos`), hors scope, documenté pour une
+prochaine fois.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 6 fichiers touchés, `next
+build` de production complet, exit 0.
+
+**Migration à appliquer manuellement** : `20260916e_signed_url_cache.sql`.
