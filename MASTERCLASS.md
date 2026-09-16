@@ -5443,3 +5443,22 @@ statique), relecture manuelle de l'équilibre des balises et validité JSON-LD.
 
 **Migration à appliquer manuellement** : `20260916b_mailing_stats_cache.sql`
 (la seule des 5 pas encore passée).
+
+## CX — 2 nouveaux reels appliquant la Règle n°8 (2026-09-16)
+
+Retour direct : "faut des clients, améliore-toi sur les scripts". Deux
+reels écrits et insérés directement dans `coach_scripts`
+(`status='a_tourner'`), sources déjà vetted (DOI réels tirés des lead
+magnets 573 et 717, jamais inventés) : "Compter tes repas ne change presque
+rien" (fréquence des repas, Schoenfeld/Aragon/Krieger 2015) et "La
+glutamine, garde ton argent" (Falk et al. 2003). Les deux appliquent
+explicitement la Règle n°8 ajoutée le même jour (Axe CP) : identité claire
+("moi je suis coach en musculation") intégrée naturellement dans le CTA
+parlé, ton simple sans jargon d'étude dans le corps du script (le détail
+scientifique reste seulement dans `source_reference`). Ajoutés aussi à
+🚨 Scripts prêts maintenant (Notion) pour un usage immédiat pendant le
+blocage Supabase.
+
+### Validation
+
+Insertion directe en base (Supabase MCP), aucun code modifié.
