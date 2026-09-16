@@ -5711,3 +5711,21 @@ plateforme plutôt qu'un copier-coller adapté :
 Mêmes contrôles que l'Axe DD (mots-clés anti-doublon, absence de tiret
 cadratin/demi-cadratin vérifiée par requête SQL). Insertion directe en
 base, aucun changement de code.
+
+## DF — Premier script Discord, registre "discussion" plutôt que "broadcast" (2026-09-16)
+
+Troisième plateforme hors Instagram/YouTube en une session ("Le
+vélocimètre peut-il remplacer votre ressenti de RIR ?", sourcé Chen et
+al. 2026 + Martínez-Rubio et al. 2025). Différence de traitement
+volontaire par rapport à X et Reddit (Axe DE) : Discord est une
+communauté déjà opt-in (les membres ont rejoint volontairement), donc le
+format qui marche n'est ni un broadcast one-way ni un post de valeur pur,
+mais une vraie question ouverte qui invite à répondre ("vous utilisez un
+vélocimètre vous ? sur quel exercice ?"). Aucun CTA commercial non plus
+ici, la valeur du canal Discord vient de la conversation qu'il génère,
+pas d'un clic.
+
+### Validation
+
+Mêmes contrôles que les Axes DD/DE (anti-doublon, absence de tiret
+cadratin/demi-cadratin par requête SQL).
