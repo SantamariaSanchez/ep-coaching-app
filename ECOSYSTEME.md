@@ -150,7 +150,19 @@ heures) — une session cloud qui a fini par se figer en pleine recherche de suj
 pas une conséquence du quota Supabase (ses lectures Supabase dans le run figé
 réussissaient toutes). Relancée manuellement (`RemoteTrigger run`).
 
-### Notification qui n'arrivent pas à la bonne heure : cause probable identifiée
+### Notification qui n'arrivent pas à la bonne heure : résolu et vérifié en base
+Clôturé (Axe CI, `MASTERCLASS.md`) : 5 cron corrigés (nutrition-reminder,
+missed-session-check, stagnation-escalation, weekly-progress-recap,
+weekly-sleep-recap), les 18 autres vérifiés sains ou sans impact utilisateur
+direct (cadence interne/admin où une dérive d'une heure ne change rien). Les
+deux autres pistes (secret jamais configuré, rattrapage côté client) sont
+écartées avec preuve directe (requête sur `cron.job`/`net._http_response` en
+base : les 23 jobs répondent 200, aucun `REPLACE_WITH_CRON_SECRET` en prod).
+Trouvaille annexe à surveiller un jour : un 24e cron (`scripts-to-shoot-reminder`,
+jobid 37) existe en prod sans migration commitée, pas urgent (rappel perso
+du fondateur, pas un engagement envers un client).
+
+### Ancienne section (détail, avant clôture)
 `supabase/migrations/20260701_nutrition_reminder_cron.sql` programme un rappel à
 `'0 19 * * *'` (19h UTC fixe) censé sonner à 20h Paris. **pg_cron ne s'ajuste jamais
 au changement d'heure** : en heure d'été (CEST, UTC+2, la situation actuelle jusqu'au
