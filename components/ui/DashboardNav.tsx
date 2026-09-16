@@ -13,6 +13,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
+  BookOpenCheck,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -133,7 +134,7 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass"],
   },
   {
     label: "Communauté",
@@ -201,6 +202,14 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // vente" (admin/ventes) : sa propre page, rattachée au groupe par le
       // chemin plutôt que par une section dans BusinessHub.
       { label: "Publicité", icon: Megaphone, segment: "business/ads" },
+      // Tutoriels texte pas à pas sur un outil/système business (Notion,
+      // Stripe, Claude...), avec de vraies étapes à suivre pour repartir
+      // avec un résultat réel, pas juste avoir lu — demande directe du
+      // fondateur (2026-09-16). Contenu statique partagé par tous les
+      // coachs (lib/masterclass-guides.ts), seule la progression par
+      // étape vit en base et par coach. GraduationCap déjà pris par
+      // Formations (destiné aux clients) : BookOpenCheck reste distinct.
+      { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
       // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
       // fichiers perso, notes — jamais précisé jusqu'ici.
