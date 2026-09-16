@@ -4725,3 +4725,80 @@ fois avec le même correctif possible en quelques minutes.
 `tsc --noEmit` propre, `eslint` propre sur les 5 fichiers (2 erreurs
 préexistantes sur `CoachDocumentsSpace.tsx`, sans lien, confirmées via
 `git stash`), `next build` de production complet, exit 0.
+
+## CC — Studio créatif : confirmation + raison avant suppression de script, plateformes de contenu élargies (2026-09-16)
+
+Retour direct, deux demandes traitées ensemble (même écran) : "les scripts que
+je supprime, tu peux encore optimiser en demandant avant de juste cliquer sur
+la poubelle, un truc du genre pourquoi supprimer, car faux ou car sujet nul
+etc" et "je veux être une référence pour tout sujet dans ma niche... mets en
+place mon contenu pour X, Reddit, WhatsApp, Discord, Telegram, YouTube en
+texte, carrousels et stories Insta".
+
+**Suppression avec raison** : un clic sur la corbeille (`IdeationScripts.tsx`)
+ouvre désormais un petit choix (information fausse/dépassée, sujet qui
+n'intéresse pas, autre avec détail libre) avant toute suppression réelle.
+`deleteScript` (studio/actions.ts) journalise la raison dans une nouvelle
+table `coach_script_deletion_reasons` (migration `20260916c`, best effort :
+un échec d'écriture du journal n'annule jamais la suppression déjà faite) —
+objectif secondaire assumé : repérer plus tard quels piliers/angles se font
+le plus souvent rejeter, un vrai signal pour la stratégie de contenu, pas
+seulement une confirmation UI.
+
+**Plateformes élargies** : `coach_scripts.platform` était déjà du texte libre
+(pas de contrainte CHECK, voir migration `20260901d`), seul `PLATFORM_LABELS`
+(affichage) et les formulaires ignoraient tout ce qui n'était pas
+instagram/youtube/linkedin. Ajout des badges + options pour Carrousel/Story
+Instagram, TikTok, Facebook, Threads, YouTube Communauté, X, Reddit, Statut/
+Chaîne WhatsApp, Discord, Telegram, Pinterest, Twitch. Un script existant est
+désormais retaggable directement (le badge devient un sélecteur), et le
+formulaire de création propose la plateforme dès l'écriture au lieu de
+toujours défaut à Instagram. `content_ideas` (pipeline d'idées) volontairement
+laissé à son enum actuel : la granularité fine par plateforme vit dans
+`coach_scripts`, pas dans le brouillon de plus haut niveau.
+
+Le Générateur de prompts (`SocialGenerator.tsx`, Studio créatif > Générateur)
+gagne une case à cocher par plateforme (au lieu du seul trio fixe carrousel/
+légende Insta/LinkedIn), chacune avec sa propre consigne adaptée au format
+(thread numéroté sur X, ton non commercial sur Reddit, texte très court sur
+Statut WhatsApp...). Toujours le même paradigme sans appel IA (voir Axe du
+2026-08-17) : un prompt prêt à coller dans Claude, jamais un appel serveur.
+Guide de référence complet ajouté dans Notion le même jour (🌐 Guide
+production contenu multi-plateformes, sous 📱 Contenu), qui documente pour
+quel pilier/segment chaque nouvelle plateforme sert et pourquoi, sans changer
+l'offre ni le client idéal.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les fichiers touchés, `next build`
+de production complet, exit 0.
+
+## CD — Incident quota Supabase : prefetch intégral de la nav supprimé (2026-09-16)
+
+Retour direct : "Supabase me dit que j'ai atteint mon quota d'utilisation,
+ça repart le 27 septembre" avec effet constaté sur la prod (connexions
+refusées). En cherchant une cause plausible avec seulement 14 comptes actifs
+(un dépassement de quota gratuit à ce volume est anormal, pas un simple effet
+du nombre d'utilisateurs) : `DashboardNav.tsx` faisait `router.prefetch()` de
+la TOTALITÉ des segments de navigation (81 au total coach+client confondus,
+30 à 50 pour un rôle donné) dès le montage du tableau de bord, à chaque
+connexion. Chaque `router.prefetch()` d'une route App Router force le rendu
+serveur complet de la page ciblée, donc toutes ses requêtes Supabase, même
+pour des sections jamais visitées de la session. Avec un dashboard qui compte
+des dizaines d'entrées de nav, l'immense majorité de ces lectures étaient
+gaspillées.
+
+Corrigé : seuls les 4 à 6 onglets toujours visibles (`tabs`, la barre du bas
+sur mobile / du haut sur desktop) restent préchauffés au montage. Le reste de
+la sidebar était déjà rendu en `<Link>` (Next.js les préchauffe lui-même à
+l'affichage dans le viewport ou au survol) — rien à ajouter à la main pour
+rester réactif, juste arrêter de tout précharger d'office. Ne résout pas le
+quota déjà consommé ce mois-ci (reset le 27/09 ou passage en plan payant,
+décision qui revient à l'utilisateur), mais devrait fortement réduire le
+risque de récidive. Voir `ECOSYSTEME.md` (Priorité 0) pour le suivi complet
+et l'audit plus large lancé sur d'autres sources de surconsommation.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
