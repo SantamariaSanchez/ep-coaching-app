@@ -5372,3 +5372,23 @@ de bouton indépendant.
 `tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
 sans lien via `git stash`/`stash pop`), `next build` de production
 complet, exit 0.
+
+## CV — Inscription client/coach : erreurs précises, indice mot de passe (2026-09-16)
+
+Suite des Axes CT/CU, cette fois le moment le plus fragile de toute l'app
+(un nouveau visiteur qui bute ici ne revient jamais, contrairement à un
+membre déjà acquis). Un agent lancé sur ce périmètre a échoué avant de
+produire quoi que ce soit (limite de session), corrigé directement à la
+place. `SignupFlow.tsx` (client) et `CoachSignupFlow.tsx` (coach) : un seul
+message générique ("Nom, email... requis") s'affichait quel que soit le
+champ en cause, remplacé par un message précis par champ. Seuil de 8
+caractères du mot de passe désormais visible sous le champ avant l'échec,
+pas seulement après un premier essai raté, cohérent avec la promesse
+affichée "en 30 secondes". Le reste du flow (double-soumission déjà
+bloquée, consentement newsletter séparé RGPD, réparation de compte
+fantôme côté serveur) déjà solide, non retouché.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
