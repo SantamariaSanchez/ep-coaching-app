@@ -1,5 +1,13 @@
-"use client";
-
+// Retour direct 2026-09-16 (audit SEO) : cette page (l'accueil, destination
+// du lien en bio Instagram depuis le 2026-08-17, voir CROISSANCE.md) était
+// en "use client" sans la moindre raison (aucun hook, aucun état, aucun
+// gestionnaire d'événement dans tout le fichier) — juste assez pour
+// empêcher tout `export const metadata`, donc aucun titre/description pour
+// LA page la plus importante du site côté SEO. Même bug déjà corrigé une
+// fois sur app/outils/page.tsx (2026-08-16). InstallAppHint et
+// NewsletterSignupForm restent "use client" eux-mêmes, un parent serveur
+// peut les rendre sans problème.
+import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Shield,
@@ -22,6 +30,12 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import { ALL_LIVE_TYPES } from "@/lib/live-types";
+
+export const metadata: Metadata = {
+  title: "EP Coaching : coaching bodybuilding et performance en ligne",
+  description:
+    "Coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, formations, suivi quotidien et communauté. Programme adapté à ton niveau.",
+};
 
 // Ordre pensé comme un argumentaire, pas une simple liste alphabétique de
 // modules (retour direct du 2026-08-15 : "le gars qui vient veut une
