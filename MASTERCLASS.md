@@ -5944,3 +5944,33 @@ de ce qui a été vérifié.
 call sites de `getClientAlerts` retrouvés par recherche exhaustive
 (`getPrioritizedCoachView`, `getCoachDashboardData`, `getTopUrgentAlerts`)
 et mis à jour ensemble, pas un seul corrigé en oubliant les autres.
+
+## DM — Le badge streak retombait à zéro tous les matins, pour tout le monde (2026-09-16)
+
+En vérifiant la chaîne `getWeeklyHabitScores`/`currentStreak`
+(`lib/habit-score.ts`) pour la rétention, trouvé un bug qui touche
+littéralement chaque client et chaque coach en auto-suivi, tous les
+jours : le dernier point de `points` est toujours "aujourd'hui" (voir
+`isoDatesBack`), dont le score démarre à 0% chaque matin avant que le
+morning bilan/repas/pas ne soit rempli — la journée n'est simplement pas
+terminée. `currentStreak` bouclait depuis la fin et s'arrêtait au premier
+score sous le seuil (70) : concrètement, le badge "🔥 Nj de suite"
+(`HabitScoreTrend.tsx`, `/dashboard/client/agenda` ET
+`/dashboard/coach/moi/agenda`, source de vérité partagée) disparaissait
+ou retombait à 0 tous les matins pour absolument tout le monde, même
+quelqu'un avec un vrai streak de plusieurs semaines, jusqu'à ce que la
+journée soit assez avancée pour repasser au-dessus du seuil. L'exact
+inverse de l'effet recherché par un mécanisme de streak (retour direct
+explicite sur la rétention ce jour).
+
+Corrigé en séparant les jours "clos" (hier et avant, qui seuls peuvent
+casser le streak) du jour en cours (qui ne peut que le prolonger, jamais
+le casser avant la fin de la journée). Un seul point de correction
+profite aux deux pages (client et coach), grâce à la fonction partagée.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres.
+Aucun test existant sur `currentStreak` à mettre à jour (vérifié avant
+d'affirmer). Logique revérifiée à la main sur les cas limites (0 point,
+1 seul point le jour de l'inscription, une vraie coupure la veille).
