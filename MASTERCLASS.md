@@ -5093,3 +5093,32 @@ des comptes outils).
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0.
+
+## CM — Rétention nouveaux inscrits : le membre encouragé à son premier geste (2026-09-16)
+
+Retour direct : "fais en sorte que les nouveaux inscrits reviennent
+réellement". Audit d'abord, pas de reconstruction : `weekly-reengagement`
+tourne déjà quotidiennement depuis le 2026-09-08 (le J+1 était déjà
+couvert), et `MembresView.tsx`/`getCommunityMembersWithActivity` affichent
+déjà un badge "Nouveau, à accueillir" + un bouton "Relancer" pour les
+membres gratuits, distinctement des clients payants. `lib/onboarding-
+checklist.ts` suit déjà 4 actions clés (séance/repas/bilan/post communauté).
+
+**Le vrai trou** : sur les 3 premières actions, points et notification
+étaient déjà déclenchés mais UNIQUEMENT vers le coach (`notifyUser(coach.id,
+...)` dans `sessions/[id]/complete/route.ts`, `nutrition/actions.ts`,
+`bilan/actions.ts`), jamais vers le membre lui-même. Pour un membre gratuit
+sans coach (l'écrasante majorité des comptes), ça veut dire que personne ne
+reconnaît son tout premier vrai geste, exactement l'instant où un
+renforcement positif compte le plus.
+
+Corrigé : `lib/first-action-celebration.ts` (`isFirstEverAction`, vérifié
+AVANT l'écriture pour gérer un insert multi-lignes comme une séance à
+plusieurs exercices ; `celebrateFirstAction`, notif in-app + push
+fire-and-forget), branché aux 3 mêmes actions déjà suivies par la checklist.
+Une seule fois par membre et par action.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0. Aucune migration nécessaire (tables et colonnes déjà existantes).
