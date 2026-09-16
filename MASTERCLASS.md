@@ -5889,3 +5889,58 @@ copier-coller uniforme :
 `tsc --noEmit`, `eslint`, `next build` de production sur les 4 fichiers :
 tous propres. Le cas `nag-tasks` a été pensé avant d'écrire le code
 (risque de duplication identifié et évité), pas corrigé après coup.
+
+## DL — 3e et 4e instances du même bug, cette fois dans le moteur d'alertes coach (2026-09-16)
+
+En remontant la chaîne de `coach-assistant-sweep` (Axe 10, VISION.md) pour
+vérifier son étape "relance des clients silencieux", trouvé la même classe
+de bug (Axes DH/DI) à deux endroits de `lib/coach-analytics.ts`, module
+central des alertes coach :
+
+1. **`getPrioritizedCoachView`** (source de `/dashboard/coach/prioritaires`
+   ET de `relanceQuietClients`) : un client `lastContactDays === null`
+   ("jamais eu de call, ni passé ni programmé") était classé "quiet"
+   (silencieux depuis 30j+) sans jamais vérifier depuis quand ce client
+   existe. Un client arrivé le jour même a par construction
+   `lastContactDays === null`, et se serait vu envoyer "Ça fait un
+   moment !" avec, en plus, une alerte à son coach ("n'a pas eu de call
+   depuis longtemps").
+2. **`getClientAlerts`**, plus large encore : ses alertes "Check-in
+   manquant" (severity `high`, la plus visible) et "Nutrition non loggée
+   depuis 2+ jours" (severity `high` aussi) se déclenchaient dès qu'un
+   client n'avait tout simplement pas encore eu le temps d'avoir un
+   check-in ou un repas loggé. Cette fonction alimente TROIS écrans
+   coach différents (`getPrioritizedCoachView`/`/prioritaires`,
+   `getCoachDashboardData`, la vue d'ensemble coach, et
+   `getTopUrgentAlerts`, les alertes urgentes du jour) : un client tout
+   juste inscrit apparaissait comme cas "high severity" sur les trois en
+   même temps, dès la première minute.
+
+Corrigé en n'appliquant chaque classification "jamais eu de X" que si le
+client est lui-même là depuis au moins le seuil que l'alerte mentionne
+(30 jours pour "quiet", 7 jours pour le check-in, 2 jours pour la
+nutrition), via un nouveau paramètre requis `accountAgeDays` sur
+`getClientAlerts` (délibérément non optionnel : un appelant qui ne
+connaît pas cette valeur doit l'assumer explicitement plutôt que retomber
+sur un défaut qui reproduirait le bug). Calculé une seule fois
+(`accountAgeDaysOf`, nouvelle fonction de module) via `free_tier_started_at`
+— même proxy que l'Axe DH, vérifié à nouveau qu'il n'est jamais réinitialisé
+au passage en payant avant de le réutiliser ici. Un correctif à la racine
+profite aux 4 écrans/crons consommateurs sans les toucher individuellement.
+
+**Non corrigé, identifié et noté pour plus tard** : l'alerte
+`training_missed` ("Séances insuffisantes") a la même fragilité en théorie
+(un programme assigné le jour même avec 0 séance complétée déclencherait
+l'alerte), mais nécessite qu'un programme actif existe ET ait été assigné
+le jour même pour se manifester — fenêtre plus étroite et severity
+`medium`, pas `high`. Nécessiterait de récupérer la date de
+création/début du programme (non sélectionnée actuellement) pour un
+correctif propre ; laissé de côté pour ne pas complexifier ce lot au-delà
+de ce qui a été vérifié.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres. Les 3
+call sites de `getClientAlerts` retrouvés par recherche exhaustive
+(`getPrioritizedCoachView`, `getCoachDashboardData`, `getTopUrgentAlerts`)
+et mis à jour ensemble, pas un seul corrigé en oubliant les autres.
