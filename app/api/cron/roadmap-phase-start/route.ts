@@ -51,10 +51,11 @@ export async function GET(req: Request) {
 
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, coach_id, full_name")
       .eq("id", clientId)
       .maybeSingle();
-    const url = (profile as { role: string } | null)?.role === "coach" ? "/dashboard/coach/moi/roadmap" : "/dashboard/client/roadmap";
+    const owner = profile as { role: string; coach_id: string | null; full_name: string | null } | null;
+    const url = owner?.role === "coach" ? "/dashboard/coach/moi/roadmap" : "/dashboard/client/roadmap";
 
     const icon = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS]?.icon ?? "📍";
 
@@ -65,6 +66,21 @@ export async function GET(req: Request) {
       url,
     });
     sent++;
+
+    // Le commentaire d'en-tête promet "le client (et son coach)", mais
+    // seul le propriétaire de la roadmap était notifié jusqu'ici : le coach
+    // n'apprenait jamais qu'un client venait de changer de phase (deload,
+    // intensification...), donc rien ne l'invitait à ajuster sa
+    // programmation en conséquence. Même principe que
+    // stagnation-escalation (client.coach_id) plutôt qu'un mécanisme séparé.
+    if (owner?.role === "client" && owner.coach_id) {
+      await notifyUser(owner.coach_id, {
+        type: "roadmap_phase_started_coach",
+        title: `${icon} ${owner.full_name ?? "Un client"} entre en ${phase.label}`,
+        body: `Sa road map démarre aujourd'hui la phase "${phase.label}".`,
+        url: `/dashboard/coach/clients/${clientId}`,
+      });
+    }
   }
 
   return NextResponse.json({ ok: true, checked: todaysPhases.length, sent });
