@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Calculator, ChevronRight, Trophy, Users } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import type { LeadMagnet } from "@/lib/lead-magnets";
+import type { LeadMagnetSummary } from "@/lib/lead-magnets";
 import SignupGateModal from "@/components/ressources/SignupGateModal";
 import LeadMagnetsExplorer from "@/components/ressources/LeadMagnetsExplorer";
 
@@ -16,7 +16,7 @@ export default function PublicRessourcesClient({
   isCoach = false,
   hasVictories = false,
 }: {
-  leadMagnets: LeadMagnet[];
+  leadMagnets: LeadMagnetSummary[];
   initialQuery: string;
   isCoach?: boolean;
   /** Au moins une victoire publiée publiquement : sinon la carte

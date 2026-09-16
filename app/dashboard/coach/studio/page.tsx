@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
-import { getAllLeadMagnets, type GuideMagnet } from "@/lib/lead-magnets";
+import { getAllGuidesWithContent } from "@/lib/lead-magnets";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import IdeationHub from "@/components/coach/IdeationHub";
 
@@ -21,19 +21,22 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, leadMagnets, canvas] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, guides, canvas] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
     getCoachScripts(user.id),
-    getAllLeadMagnets(),
+    // Audit egress 2026-09-16 : seul endroit qui a réellement besoin du
+    // texte intégral des guides (générateur de prompts SocialGenerator),
+    // donc seul appelant de getAllGuidesWithContent plutôt que
+    // getAllLeadMagnets (version liste, sans intro/sections/conclusion).
+    getAllGuidesWithContent(),
     // Personnalisation de l'onglet Prompts (retour direct 2026-09-10) : le
     // Business Model Canvas du coach (déjà rempli dans "Développer mon
     // business" pour qui l'a fait) sert de contexte auto-injecté devant
     // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
     getBusinessCanvas(user.id),
   ]);
-  const guides = leadMagnets.filter((m): m is GuideMagnet => m.format === "guide");
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">

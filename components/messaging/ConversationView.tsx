@@ -348,9 +348,16 @@ export default function ConversationView({
     let cancelled = false;
 
     async function load() {
+      // Audit egress 2026-09-16 : select("*") ramenait des colonnes jamais
+      // lues ici (sender_id/receiver_id mis à part, tout le reste sert déjà
+      // à l'affichage, voir l'interface Message ci-dessus) — liste explicite
+      // pour ne plus dépendre d'un futur ALTER TABLE messages qui ajouterait
+      // une colonne lourde et la ferait remonter ici sans raison.
       const { data } = await supabase
         .from("messages")
-        .select("*")
+        .select(
+          "id, conversation_id, sender_id, receiver_id, type, content, voice_url, voice_duration_seconds, image_url, video_url, is_read, expires_at, created_at"
+        )
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true })
         .limit(100);

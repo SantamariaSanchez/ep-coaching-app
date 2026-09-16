@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal, Hash, Copy, Check, type LucideIcon } from "lucide-react";
-import { normalizeKeyword, type LeadMagnet, type LeadMagnetFormat } from "@/lib/lead-magnets";
+import { normalizeKeyword, type LeadMagnetSummary, type LeadMagnetFormat } from "@/lib/lead-magnets";
 import { RESOURCE_CATEGORIES, RESOURCE_SUBCATEGORIES, type ResourceCategory } from "@/lib/resource-categories";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
@@ -105,7 +105,7 @@ function MagnetCard({
   showKeyword = false,
   showCopyLink = false,
 }: {
-  magnet: LeadMagnet;
+  magnet: LeadMagnetSummary;
   Icon: LucideIcon;
   FormatIcon: LucideIcon;
   formatLabel: string;
@@ -194,7 +194,7 @@ export default function LeadMagnetsExplorer({
   isCoach = false,
   initialQuery = "",
 }: {
-  magnets: LeadMagnet[];
+  magnets: LeadMagnetSummary[];
   // Préremplit la recherche depuis un lien de campagne (/ressources?guide=xxx,
   // voir lib/guide-keywords.ts) : auparavant reçu par PublicRessourcesClient
   // mais jamais transmis jusqu'ici, donc sans effet réel.

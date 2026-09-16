@@ -96,6 +96,20 @@ export interface QuizMagnet extends LeadMagnetBase {
 
 export type LeadMagnet = GuideMagnet | ChecklistMagnet | QuizMagnet;
 
+// Version "carte/liste" sans le contenu (intro/sections/groups/questions...)
+// — audit egress 2026-09-16 (quota Supabase gratuit dépassé avec ~14
+// comptes) : la quasi-totalité des écrans qui listent les lead magnets
+// (page publique /ressources, onglets dashboard coach/client, page admin
+// leads) n'affichent que titre/accroche/catégorie/format pour filtrer et
+// naviguer vers le détail — jamais le texte complet. Seuls le générateur de
+// prompts du Studio (guides entiers) et la page de détail /ressources/[slug]
+// ont réellement besoin du contenu. À l'échelle visée de ~1000 lead
+// magnets, retélécharger `content` (potentiellement plusieurs Ko de texte
+// chacun) pour CHAQUE entrée juste pour afficher une liste de cartes est le
+// genre de sur-fetch qui épuise un quota gratuit sans que le trafic ne le
+// justifie.
+export type LeadMagnetSummary = LeadMagnetBase;
+
 // Une source citée (PubMed ou autre littérature scientifique) pour un lead
 // magnet — traçabilité de la règle "jamais de décision non vérifiée".
 export interface LeadMagnetSource {
@@ -104,7 +118,7 @@ export interface LeadMagnetSource {
   url: string | null;
 }
 
-interface LeadMagnetRow {
+interface LeadMagnetSummaryRow {
   slug: string;
   title: string;
   hook: string;
@@ -114,13 +128,16 @@ interface LeadMagnetRow {
   read_time: string;
   icon: string;
   keyword: string;
+}
+
+interface LeadMagnetRow extends LeadMagnetSummaryRow {
   content: Record<string, unknown>;
   sources: LeadMagnetSource[] | null;
   created_at: string;
 }
 
-function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
-  const base = {
+function rowToSummary(row: LeadMagnetSummaryRow): LeadMagnetSummary {
+  return {
     slug: row.slug,
     title: row.title,
     hook: row.hook,
@@ -131,6 +148,10 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
     icon: row.icon,
     keyword: row.keyword,
   };
+}
+
+function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
+  const base = rowToSummary(row);
   // content contient exactement les champs spécifiques au format (mêmes
   // noms que l'ancien littéral TS : intro/sections/conclusion pour guide,
   // intro/groups/conclusion pour checklist, intro/questions/outcomes pour
@@ -138,8 +159,9 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
   return { ...base, ...row.content } as LeadMagnet;
 }
 
-const SELECT_FIELDS =
-  "slug, title, hook, category, subcategory, format, read_time, icon, keyword, content, sources, created_at";
+const SELECT_FIELDS_LIST =
+  "slug, title, hook, category, subcategory, format, read_time, icon, keyword";
+const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, content, sources`;
 
 // Contenu marketing public, pas scopé par coach ni par utilisateur — lu via
 // le client admin comme les autres références partagées (gyms, exercices).
@@ -147,13 +169,42 @@ const SELECT_FIELDS =
 // revalidateTag (pas de contexte Next.js), donc on s'appuie sur le TTL
 // plutôt que sur la purge par tag pour que le nouveau contenu apparaisse
 // automatiquement.
-const getAllLeadMagnetsCached = unstable_cache(
+//
+// Cache "liste" (léger, sans `content`/`sources`) : c'est celui que la
+// quasi-totalité des écrans doivent utiliser (voir getAllLeadMagnets
+// ci-dessous). Séparé du cache "complet" pour que visiter /ressources (page
+// la plus visitée, confirmée comme canal d'acquisition organique) ne
+// déclenche plus le téléchargement du texte intégral de chaque lead magnet.
+const getAllLeadMagnetSummariesCached = unstable_cache(
+  async (): Promise<LeadMagnetSummary[]> => {
+    try {
+      const supabase = createAdminClient();
+      const { data } = await supabase
+        .from("lead_magnets")
+        .select(SELECT_FIELDS_LIST)
+        .eq("published", true)
+        .order("created_at", { ascending: false });
+      return ((data as unknown as LeadMagnetSummaryRow[]) ?? []).map(rowToSummary);
+    } catch {
+      return [];
+    }
+  },
+  ["lead-magnets-summaries"],
+  { tags: ["lead-magnets"], revalidate: 3600 }
+);
+
+// Cache "complet" (avec `content`/`sources`) : réservé aux deux seuls
+// usages qui ont vraiment besoin du texte intégral — la page de détail
+// /ressources/[slug] (un seul lead magnet) et le générateur de prompts du
+// Studio (guides.tsx / SocialGenerator, qui a besoin du texte de tous les
+// guides pour en tirer des idées de reels).
+const getAllLeadMagnetsFullCached = unstable_cache(
   async (): Promise<LeadMagnet[]> => {
     try {
       const supabase = createAdminClient();
       const { data } = await supabase
         .from("lead_magnets")
-        .select(SELECT_FIELDS)
+        .select(SELECT_FIELDS_FULL)
         .eq("published", true)
         .order("created_at", { ascending: false });
       return ((data as unknown as LeadMagnetRow[]) ?? []).map(rowToMagnet);
@@ -165,12 +216,27 @@ const getAllLeadMagnetsCached = unstable_cache(
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 
-export async function getAllLeadMagnets(): Promise<LeadMagnet[]> {
-  return getAllLeadMagnetsCached();
+// Utilisé par tous les écrans de liste (/ressources public, onglets
+// Ressources coach/client, page admin Leads) : titre/accroche/catégorie
+// suffisent pour filtrer et naviguer vers le détail, jamais le contenu
+// complet. Pour le contenu complet, voir getAllGuidesWithContent (Studio)
+// et getLeadMagnet/getLeadMagnetByKeyword (détail).
+export async function getAllLeadMagnets(): Promise<LeadMagnetSummary[]> {
+  return getAllLeadMagnetSummariesCached();
+}
+
+// Seul appelant : app/dashboard/coach/studio/page.tsx (générateur de
+// prompts de reels à partir du texte intégral des guides publiés). Ne PAS
+// remplacer par getAllLeadMagnets() ci-dessus : ça casserait silencieusement
+// SocialGenerator (guide.intro/sections/conclusion absents de la version
+// liste).
+export async function getAllGuidesWithContent(): Promise<GuideMagnet[]> {
+  const all = await getAllLeadMagnetsFullCached();
+  return all.filter((m): m is GuideMagnet => m.format === "guide");
 }
 
 export async function getLeadMagnet(slug: string): Promise<LeadMagnet | undefined> {
-  const all = await getAllLeadMagnetsCached();
+  const all = await getAllLeadMagnetsFullCached();
   return all.find((m) => m.slug === slug);
 }
 
@@ -188,12 +254,12 @@ export function normalizeKeyword(raw: string): string | null {
 export async function getLeadMagnetByKeyword(raw: string): Promise<LeadMagnet | undefined> {
   const keyword = normalizeKeyword(raw);
   if (!keyword) return undefined;
-  const all = await getAllLeadMagnetsCached();
+  const all = await getAllLeadMagnetsFullCached();
   return all.find((m) => m.keyword === keyword);
 }
 
 export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategory, LeadMagnet[]>> {
-  const all = await getAllLeadMagnetsCached();
+  const all = await getAllLeadMagnetsFullCached();
   const map = {} as Record<ResourceCategory, LeadMagnet[]>;
   for (const m of all) {
     if (!map[m.category]) map[m.category] = [];
@@ -202,10 +268,10 @@ export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategor
   return map;
 }
 
-// Juste les slugs — utilisé par generateStaticParams, pas besoin de
-// resélectionner tout le contenu pour ça.
+// Juste les slugs — utilisé par generateStaticParams, pas besoin du cache
+// "complet" pour ça.
 export async function getLeadMagnetSlugs(): Promise<string[]> {
-  const all = await getAllLeadMagnetsCached();
+  const all = await getAllLeadMagnetSummariesCached();
   return all.map((m) => m.slug);
 }
 
@@ -219,7 +285,7 @@ export interface LeadMagnetSearchParams {
 }
 
 export interface LeadMagnetSearchResult {
-  items: LeadMagnet[];
+  items: LeadMagnetSummary[];
   total: number;
 }
 
@@ -256,10 +322,13 @@ export async function getCoachLeadMagnets(coachId: string): Promise<CoachLeadMag
   }
 }
 
-// Recherche/filtre côté serveur pour l'onglet Ressources : pas de cache ici
-// (dépend d'une saisie utilisateur arbitraire), la recherche plein texte
-// Postgres (colonne search_text, config 'french') est largement assez
-// rapide à l'échelle visée. Utilisée par la nouvelle UX de /ressources.
+// Recherche/filtre côté serveur (utilisée par la palette de commande, voir
+// app/api/library-search/route.ts, qui n'affiche que slug+titre) : pas de
+// cache ici (dépend d'une saisie utilisateur arbitraire), la recherche plein
+// texte Postgres (colonne search_text, config 'french') est largement assez
+// rapide à l'échelle visée. SELECT_FIELDS_LIST (pas FULL) : appelée
+// potentiellement à chaque frappe, `content`/`sources` n'y sont jamais
+// affichés.
 export async function searchLeadMagnets(params: LeadMagnetSearchParams): Promise<LeadMagnetSearchResult> {
   try {
     const supabase = createAdminClient();
@@ -267,7 +336,7 @@ export async function searchLeadMagnets(params: LeadMagnetSearchParams): Promise
     const offset = params.offset ?? 0;
     let q = supabase
       .from("lead_magnets")
-      .select(SELECT_FIELDS, { count: "exact" })
+      .select(SELECT_FIELDS_LIST, { count: "exact" })
       .eq("published", true);
 
     if (params.query?.trim()) {
@@ -288,7 +357,7 @@ export async function searchLeadMagnets(params: LeadMagnetSearchParams): Promise
       .range(offset, offset + limit - 1);
 
     return {
-      items: ((data as unknown as LeadMagnetRow[]) ?? []).map(rowToMagnet),
+      items: ((data as unknown as LeadMagnetSummaryRow[]) ?? []).map(rowToSummary),
       total: count ?? 0,
     };
   } catch {
