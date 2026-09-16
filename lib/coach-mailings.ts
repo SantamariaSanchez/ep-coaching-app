@@ -57,31 +57,58 @@ interface RawCoachMailingRow {
   stats_fetched_at: string | null;
 }
 
+const BASE_FIELDS =
+  "id, subject, html_content, audience, scheduled_at, recipient_count, status, created_at, brevo_campaign_id";
+const FULL_FIELDS = `${BASE_FIELDS}, stats_json, stats_fetched_at`;
+
+function rowToMailing(r: RawCoachMailingRow): CoachMailing {
+  return {
+    id: r.id,
+    subject: r.subject,
+    html_content: r.html_content,
+    audience: r.audience,
+    scheduled_at: r.scheduled_at,
+    recipient_count: r.recipient_count,
+    status: r.status,
+    created_at: r.created_at,
+    brevo_campaign_id: r.brevo_campaign_id,
+    stats: r.stats_json ?? null,
+    stats_fetched_at: r.stats_fetched_at ?? null,
+  };
+}
+
 export async function getCoachMailingHistory(coachId: string): Promise<CoachMailing[]> {
+  const admin = createAdminClient();
   try {
-    const admin = createAdminClient();
-    const { data } = await admin
+    const { data, error } = await admin
       .from("coach_mailings")
-      .select(
-        "id, subject, html_content, audience, scheduled_at, recipient_count, status, created_at, brevo_campaign_id, stats_json, stats_fetched_at"
-      )
+      .select(FULL_FIELDS)
       .eq("coach_id", coachId)
       .order("created_at", { ascending: false })
       .limit(50);
-    return ((data ?? []) as RawCoachMailingRow[]).map((r) => ({
-      id: r.id,
-      subject: r.subject,
-      html_content: r.html_content,
-      audience: r.audience,
-      scheduled_at: r.scheduled_at,
-      recipient_count: r.recipient_count,
-      status: r.status,
-      created_at: r.created_at,
-      brevo_campaign_id: r.brevo_campaign_id,
-      stats: r.stats_json ?? null,
-      stats_fetched_at: r.stats_fetched_at,
-    }));
+    // La migration 20260916b (ajout de stats_json/stats_fetched_at) est en
+    // attente d'exécution manuelle (Supabase SQL Editor, ALTER TABLE refusé
+    // par le classificateur de sécurité de l'environnement Claude). Tant
+    // qu'elle n'est pas passée, ce select échouait entièrement ("column
+    // does not exist") et le catch plus bas renvoyait [] : tout
+    // l'historique d'envoi disparaissait silencieusement pour chaque coach,
+    // pas seulement les stats. Repli sur les colonnes qui existent déjà
+    // pour au moins restaurer l'historique dès maintenant ; les stats
+    // réapparaîtront automatiquement, sans autre changement de code, une
+    // fois la migration appliquée.
+    if (error) throw error;
+    return ((data ?? []) as RawCoachMailingRow[]).map(rowToMailing);
   } catch {
-    return [];
+    try {
+      const { data } = await admin
+        .from("coach_mailings")
+        .select(BASE_FIELDS)
+        .eq("coach_id", coachId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      return ((data ?? []) as RawCoachMailingRow[]).map(rowToMailing);
+    } catch {
+      return [];
+    }
   }
 }
