@@ -5072,3 +5072,24 @@ manque réel.
 
 `tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
 exit 0.
+
+## CL — Masterclass : 4e guide, outils externes recommandés (2026-09-16)
+
+Retour direct : "tous les outils qu'un coach a besoin, pas encore dans
+l'appli, ManyChat, Notion, Calendly etc". Plutôt qu'une page séparée, ajouté
+comme 4e guide dans `MASTERCLASS_GUIDES` (`lib/masterclass-guides.ts`) :
+même infra que les 3 guides précédents (steps/checkbox/deliverables/
+progression par coach), rien de nouveau à construire côté composants ou
+migration. Couvre ManyChat (lié au CTA `coach_scripts.cta`/`instagram_caption`),
+Calendly, un renvoi court vers le guide Notion déjà existant (pas de
+redondance), Canva, CapCut, une planification multi-plateformes (Later/
+Metricool, pertinent maintenant que l'app couvre X/Reddit/WhatsApp/Discord/
+Telegram/YouTube Communauté en plus d'Insta/YouTube/LinkedIn). Deux ajouts
+de l'agent lui-même, justifiés : Trello (tâches admin ponctuelles) et
+Bitwarden (gestion des mots de passe, risque concret avec la multiplication
+des comptes outils).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
