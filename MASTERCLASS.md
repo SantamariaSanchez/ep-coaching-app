@@ -5791,3 +5791,36 @@ Actuellement seulement 3 profils clients en base, tous avec
 `free_tier_started_at` renseigné (vérifié par requête), donc aucun impact
 visible tout de suite, mais un vrai correctif structurel avant que les
 inscriptions reprennent.
+
+## DI — Même bug, cette fois avec fausse alerte envoyée au coach (2026-09-16)
+
+En vérifiant si l'Axe DH (garde-fou d'âge de compte manquant) touchait
+d'autres crons du même genre, trouvé la même classe de bug dans
+`app/api/cron/stagnation-escalation/route.ts`, en pire : "0 session
+complétée" ou "0 repas loggé" dans les `LOGBOOK_STALE_DAYS`/
+`NUTRITION_STALE_DAYS` (7/3) derniers jours était traité comme un vrai
+signal de stagnation, même pour un client dont l'onboarding venait de se
+terminer il y a quelques heures — trivialement vrai puisqu'il n'a pas
+encore eu le temps de logger quoi que ce soit. Le client recevait "On
+fait le point ?" avec une proposition d'appel, ET son coach recevait une
+alerte "⚠️ décroche" avec l'instruction de le contacter directement,
+pour quelqu'un qui vient littéralement de rejoindre l'appli.
+
+Les deux autres signaux du même cron (`tasks`, basé sur l'ancienneté
+réelle d'une tâche créée il y a au moins `TASK_STALE_DAYS` jours, et
+`checkin`, basé sur le jour de check-in désigné du client) n'ont pas ce
+défaut : ils dépendent d'un événement réel déjà survenu, pas d'une simple
+absence qui serait trivialement vraie pour un compte neuf. Corrigé en
+n'évaluant `logbook`/`nutrition` que si `now - onboarding_completed_at`
+dépasse déjà le seuil correspondant (7 et 3 jours), plutôt qu'un seuil
+unique arbitraire pour tout le cron.
+
+Les deux autres crons de relance vérifiés (`coach-upsell`,
+`free-tier-inactivity`/`free-tier-expiring`, à explorer plus tard si le
+temps le permet) n'ont pas le même défaut structurel : `coach-upsell`
+exige une activité positive récente (pas juste une absence) pour
+déclencher, ce qui exclut structurellement un compte neuf sans historique.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres.
