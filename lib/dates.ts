@@ -39,6 +39,23 @@ export const BILAN_BACKFILL_DAYS = 30;
 // schedule_blocks.day_of_week) et de l'heure courante, tous deux en heure de
 // Paris — même raisonnement que todayInParis ci-dessus, `new Date().getDay()`
 // donnerait le jour du serveur (UTC), pas celui de l'utilisateur.
+// Ajoute des minutes à une heure "HH:MM" (borne sur 24h). Sert à construire
+// une fenêtre de tolérance ["HH:MM", "HH:MM" + N] pour les crons qui
+// tournent désormais toutes les 15 min et décident eux-mêmes, en heure de
+// Paris, s'ils sont dans leur créneau cible (voir MASTERCLASS.md — bug DST
+// des crons pg_net à décalage UTC figé, corrigé le 2026-09-16 : un cron
+// pg_cron déclenché une seule fois par jour à une heure UTC fixe sonnait à
+// la bonne heure Paris seulement la moitié de l'année, pg_cron ne suivant
+// aucun fuseau horaire et ne s'ajustant jamais seul au changement heure
+// d'été/hiver).
+export function addMinutesToHhmm(hhmm: string, minutesToAdd: number): string {
+  const [h, m] = hhmm.split(":").map(Number);
+  const total = h * 60 + m + minutesToAdd;
+  const hh = Math.floor(total / 60) % 24;
+  const mm = total % 60;
+  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+}
+
 export function nowInParis(): { isoDow: number; hhmm: string } {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Europe/Paris",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { getWeekStart } from "@/utils/checkins";
+import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
 
 // Lutte active contre la stagnation : contrairement aux rappels existants
 // (nutrition-reminder, missed-session-check, nag-tasks...) qui relancent le
@@ -24,6 +25,20 @@ const TASK_STALE_DAYS = 7;
 const CHECKIN_GRACE_DAYS = 2; // laisse 2 jours après le jour de check-in avant de considérer que c'est raté
 const ESCALATION_COOLDOWN_DAYS = 7;
 
+// Cible 19h00 (Europe/Paris), volontairement avant le rappel nutrition du
+// soir (nutrition-reminder, 20h Paris) pour ne pas noyer le client sous
+// deux notifications coup sur coup. Ancien fonctionnement : cron pg_cron
+// déclenché une seule fois par jour à un décalage UTC fixe ('0 17 * * *'),
+// qui ne tombait sur 19h Paris qu'en heure d'été (UTC+2) — en heure
+// d'hiver (UTC+1) ça sonnait à 18h Paris, pg_cron ne suivant aucun fuseau
+// horaire et ne s'ajustant jamais seul au changement d'heure. Correctif
+// structurel (voir migration 20260916_fix_dst_drift_notification_crons.sql) :
+// le cron tourne désormais toutes les 15 min, toute la journée, et c'est
+// cette route qui décide dynamiquement si on est dans le bon créneau, en
+// heure de Paris réelle (Intl, gère automatiquement l'heure d'été/hiver).
+const TARGET_HHMM = "19:00";
+const WINDOW_MINUTES = 15;
+
 function daysAgo(n: number): string {
   return new Date(Date.now() - n * 24 * 60 * 60 * 1000).toISOString();
 }
@@ -45,6 +60,12 @@ export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { hhmm } = nowInParis();
+  const windowEnd = addMinutesToHhmm(TARGET_HHMM, WINDOW_MINUTES);
+  if (hhmm < TARGET_HHMM || hhmm >= windowEnd) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "hors créneau", hhmm });
   }
 
   const supabase = createAdminClient();

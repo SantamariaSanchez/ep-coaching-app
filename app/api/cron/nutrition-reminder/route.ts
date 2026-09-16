@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
-import { todayInParis } from "@/lib/dates";
+import { todayInParis, nowInParis, addMinutesToHhmm } from "@/lib/dates";
 
-// Déclenché par Supabase pg_cron chaque jour à 20h00 (Europe/Paris).
-// Envoie une notif "Bilan rapide" aux clients qui ont un objectif nutritionnel
-// mais ont logué moins de 30% de leurs calories cibles aujourd'hui.
-// → Réduit le fardeau mental : pas besoin de se souvenir de logger, l'appli
-//   prévient au bon moment et propose le quiz 4-questions.
+// Cible 20h00 (Europe/Paris). Ancien fonctionnement : cron pg_cron déclenché
+// une seule fois par jour à un décalage UTC fixe ('0 19 * * *', "19h UTC =
+// 20h Paris"), qui n'était vrai qu'en heure d'été (UTC+2) — en heure d'hiver
+// (UTC+1) ça sonnait à 19h Paris, et même en été le calcul d'origine était
+// déjà faux (19h UTC + 2h = 21h, pas 20h). Comme pg_cron ne suit aucun fuseau
+// horaire et ne s'ajuste jamais seul au changement d'heure, ce décalage
+// figé redérivait de faux à chaque passage été/hiver.
+// Correctif structurel (voir migration 20260916_fix_dst_drift_notification_crons.sql) :
+// le cron tourne désormais toutes les 15 min, toute la journée (même
+// principe que app/api/cron/meal-reminders), et c'est cette route qui
+// décide dynamiquement si on est dans le bon créneau, en heure de Paris
+// réelle (Intl, gère automatiquement l'heure d'été/hiver) plutôt qu'un
+// calcul UTC figé.
+const TARGET_HHMM = "20:00";
+const WINDOW_MINUTES = 15;
+
 export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { hhmm } = nowInParis();
+  const windowEnd = addMinutesToHhmm(TARGET_HHMM, WINDOW_MINUTES);
+  if (hhmm < TARGET_HHMM || hhmm >= windowEnd) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "hors créneau", hhmm });
   }
 
   const supabase = createAdminClient();

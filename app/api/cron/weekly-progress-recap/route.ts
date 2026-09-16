@@ -2,13 +2,23 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
+import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
 
-// Item 23 (récap hebdo personnalisé) : déclenché chaque dimanche soir par
-// Supabase pg_cron (enregistré directement en base, même mécanisme que
-// weekly-sleep-recap — voir PROGRESS.md pour la note sur cette
-// enregistrement direct plutôt qu'une migration commitée). Ferme la boucle
-// sur séances + nutrition + poids en un seul message plutôt que trois
-// notifications séparées dans la même soirée.
+// Item 23 (récap hebdo personnalisé) : cible chaque dimanche 18h00
+// (Europe/Paris). Ferme la boucle sur séances + nutrition + poids en un
+// seul message plutôt que trois notifications séparées dans la même
+// soirée.
+// Ancien fonctionnement : cron pg_cron déclenché une seule fois par
+// semaine à un décalage UTC fixe ('0 18 * * 0'), qui ne tombait sur 18h
+// Paris qu'en heure d'hiver (UTC+1) — en heure d'été (UTC+2) ça sonnait à
+// 20h Paris, pg_cron ne suivant aucun fuseau horaire et ne s'ajustant
+// jamais seul au changement d'heure. Correctif structurel (voir migration
+// 20260916_fix_dst_drift_notification_crons.sql) : le cron tourne
+// désormais toutes les heures, uniquement le dimanche (UTC — sans risque
+// de décalage de jour vu que la fenêtre cible tombe en soirée, loin de
+// minuit), et c'est cette route qui décide dynamiquement si on est dans
+// le bon créneau, en heure de Paris réelle (Intl, gère automatiquement
+// l'heure d'été/hiver).
 //
 // La formulation du message (formatWeeklyRecapLine) vit maintenant dans
 // lib/weekly-recap.ts, partagée avec l'affichage direct en page (Aujourd'hui,
@@ -17,6 +27,10 @@ import { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
 // requêtes groupées) reste ici tel quel : le réécrire client par client
 // via lib/weekly-recap.ts transformerait 3 requêtes en 3×N, inadapté à un
 // cron qui traite toute la base d'un coup.
+const TARGET_DOW = 7; // dimanche, convention isoDow de nowInParis (1=lundi...7=dimanche)
+const TARGET_HHMM = "18:00";
+const WINDOW_MINUTES = 60;
+
 function avg(vals: (number | null)[]): number | null {
   const v = vals.filter((x): x is number => x != null);
   return v.length > 0 ? v.reduce((a, b) => a + b, 0) / v.length : null;
@@ -26,6 +40,12 @@ export async function GET(req: Request) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { isoDow, hhmm } = nowInParis();
+  const windowEnd = addMinutesToHhmm(TARGET_HHMM, WINDOW_MINUTES);
+  if (isoDow !== TARGET_DOW || hhmm < TARGET_HHMM || hhmm >= windowEnd) {
+    return NextResponse.json({ ok: true, skipped: true, reason: "hors créneau", isoDow, hhmm });
   }
 
   const admin = createAdminClient();
