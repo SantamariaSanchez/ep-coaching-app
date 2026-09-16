@@ -1,4 +1,31 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
+
+const CHECKIN_MEDIA_BUCKET = "checkin-media";
+const COACH_VIDEOS_BUCKET = "coach-videos";
+// Allongée de 1h à 24h (2026-09-16, chantier egress Supabase, voir
+// MASTERCLASS.md Axe CH) : même raisonnement que utils/photos.ts,
+// utils/personal-photos.ts et utils/avatar.ts — grâce au cache d'URL signée
+// (utils/signed-url-cache.ts), un média de check-in déjà affiché garde la
+// même URL pendant toute sa durée de vie en cache, ce qui permet au
+// navigateur de le mettre en cache HTTP au lieu de le retélécharger à chaque
+// affichage. Rien dans check_ins.photo_paths/video_path/coach_video_path
+// n'a de raison de garder une durée différente de 24h : la vérification des
+// permissions (RLS + requireOwnClient côté coach) a déjà eu lieu avant
+// l'appel, exactement comme pour un appel direct à createSignedUrl.
+//
+// Pas de chemin d'invalidation nécessaire ici : submitCheckin (insert
+// uniquement) ne réécrit jamais photo_paths/video_path d'un check-in
+// existant, et attachCoachVideo (app/dashboard/coach/clients/[id]/checkins/actions.ts)
+// écrit toujours un NOUVEAU chemin de stockage (`${client_id}/${checkin.id}-${Date.now()}.webm`,
+// voir CheckinCard.tsx) plutôt que d'écraser l'ancien — jamais le même
+// storage_path réutilisé avec un contenu différent. Aucun .delete() sur
+// check_ins ni .remove() sur les buckets checkin-media/coach-videos n'existe
+// dans le code à ce jour. Si une suppression ou un remplacement en place est
+// ajouté un jour, il faudra alors appeler
+// invalidateSignedUrlCache(CHECKIN_MEDIA_BUCKET, [...]) et/ou
+// invalidateSignedUrlCache(COACH_VIDEOS_BUCKET, [...]) à ce moment-là.
+const CHECKIN_SIGNED_URL_TTL = 60 * 60 * 24;
 
 export interface CheckIn {
   id: string;
@@ -88,17 +115,17 @@ async function withSignedMedia<
       const photo_urls = row.photo_paths?.length
         ? (
             await Promise.all(
-              row.photo_paths.map((p) => supabase.storage.from("checkin-media").createSignedUrl(p, 3600))
+              row.photo_paths.map((p) =>
+                getCachedOrCreateSignedUrl(supabase, CHECKIN_MEDIA_BUCKET, p, CHECKIN_SIGNED_URL_TTL)
+              )
             )
-          )
-            .map((r) => r.data?.signedUrl ?? null)
-            .filter((u): u is string => !!u)
+          ).filter((u): u is string => !!u)
         : [];
       const video_url = row.video_path
-        ? (await supabase.storage.from("checkin-media").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
+        ? await getCachedOrCreateSignedUrl(supabase, CHECKIN_MEDIA_BUCKET, row.video_path, CHECKIN_SIGNED_URL_TTL)
         : null;
       const coach_video_url = row.coach_video_path
-        ? (await supabase.storage.from("coach-videos").createSignedUrl(row.coach_video_path, 3600)).data?.signedUrl ?? null
+        ? await getCachedOrCreateSignedUrl(supabase, COACH_VIDEOS_BUCKET, row.coach_video_path, CHECKIN_SIGNED_URL_TTL)
         : null;
       return { ...row, photo_urls, video_url, coach_video_url };
     })
