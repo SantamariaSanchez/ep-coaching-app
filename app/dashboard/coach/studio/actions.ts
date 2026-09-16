@@ -268,6 +268,7 @@ export async function createScript(input: {
   title: string;
   format: ScriptFormat;
   content?: string;
+  platform?: string;
 }): Promise<{ error?: string; success?: boolean; id?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -279,11 +280,19 @@ export async function createScript(input: {
   if (!title) return { error: "Titre requis." };
   if (title.length > 200) return { error: "Titre trop long (200 caractères max)." };
   if (!(SCRIPT_FORMATS as readonly string[]).includes(input.format)) return { error: "Format invalide." };
+  const platform = input.platform?.trim();
+  if (platform !== undefined && platform.length > 40) return { error: "Plateforme invalide." };
 
   const admin = createAdminClient();
   const { data, error } = await admin
     .from("coach_scripts")
-    .insert({ coach_id: guard.userId, title, format: input.format, content: input.content?.trim() || null })
+    .insert({
+      coach_id: guard.userId,
+      title,
+      format: input.format,
+      content: input.content?.trim() || null,
+      ...(platform ? { platform } : {}),
+    })
     .select("id")
     .single();
   if (error) return { error: error.message };
@@ -309,6 +318,11 @@ export async function updateScript(
     views?: number | null;
     likes?: number | null;
     commentsCount?: number | null;
+    // Retour direct 2026-09-16 : élargi à toutes les plateformes de contenu
+    // (voir PLATFORM_LABELS côté client) — texte libre, pas de liste fermée
+    // ici pour rester tolérant si une nouvelle plateforme apparaît avant
+    // d'y penser côté serveur (même choix que `pillar`/`source_reference`).
+    platform?: string;
   }
 ): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
@@ -327,6 +341,12 @@ export async function updateScript(
   }
   if (updates.content !== undefined) patch.content = updates.content.trim() || null;
   if (updates.caption !== undefined) patch.instagram_caption = updates.caption.trim() || null;
+  if (updates.platform !== undefined) {
+    const platform = updates.platform.trim();
+    if (!platform) return { error: "Plateforme requise." };
+    if (platform.length > 40) return { error: "Plateforme invalide." };
+    patch.platform = platform;
+  }
   if (updates.status !== undefined) {
     if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;
@@ -346,13 +366,47 @@ export async function updateScript(
   return { success: true };
 }
 
-export async function deleteScript(id: string): Promise<{ error?: string; success?: boolean }> {
+const SCRIPT_DELETION_REASONS = ["info_fausse", "sujet_nul", "autre"] as const;
+export type ScriptDeletionReason = (typeof SCRIPT_DELETION_REASONS)[number];
+
+// Retour direct 2026-09-16 : demander pourquoi avant de supprimer, plutôt
+// que de laisser la poubelle agir en un clic. La raison est journalisée
+// (best effort, ne bloque jamais la suppression si l'écriture échoue) pour
+// repérer plus tard quels piliers/angles finissent le plus souvent rejetés.
+export async function deleteScript(
+  id: string,
+  reason: ScriptDeletionReason,
+  detail?: string
+): Promise<{ error?: string; success?: boolean }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
+  if (!SCRIPT_DELETION_REASONS.includes(reason)) return { error: "Raison invalide." };
 
   const admin = createAdminClient();
+
+  const { data: script } = await admin
+    .from("coach_scripts")
+    .select("title, pillar, platform, format")
+    .eq("id", id)
+    .eq("coach_id", guard.userId)
+    .maybeSingle();
+
   const { error } = await admin.from("coach_scripts").delete().eq("id", id).eq("coach_id", guard.userId);
   if (error) return { error: error.message };
+
+  if (script) {
+    await admin.from("coach_script_deletion_reasons").insert({
+      coach_id: guard.userId,
+      script_title: script.title,
+      pillar: script.pillar,
+      platform: script.platform,
+      format: script.format,
+      reason,
+      detail: detail?.trim() || null,
+    });
+    // Best effort : une erreur d'écriture ici n'annule jamais la
+    // suppression déjà effectuée, ce journal n'est qu'un signal secondaire.
+  }
 
   revalidatePath("/dashboard/coach/studio");
   return { success: true };

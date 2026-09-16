@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown } from "lucide-react";
-import { createScript, updateScript, deleteScript } from "@/app/dashboard/coach/studio/actions";
+import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
@@ -38,10 +38,31 @@ function formatDuration(seconds: number | null): string | null {
 // au lieu de se fondre dans le badge "format" (voir Axe BJ, MASTERCLASS.md :
 // les scripts YouTube produits par la routine quotidienne étaient jusque-là
 // visuellement identiques à des scripts Instagram dans cette liste).
-const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
-  instagram: { label: "Instagram", color: "#E1306C" },
+// Élargi le 2026-09-16 (retour direct : "je veux être une référence pour
+// tout sujet dans ma niche... met en place mon contenu pour X, Reddit,
+// WhatsApp, Discord, Telegram, YouTube en format texte, les carrousels et
+// stories Insta") : `platform` reste du texte libre en base (pas de CHECK
+// sur coach_scripts, voir migration 20260901d), ces nouvelles valeurs sont
+// juste reconnues ici pour un badge propre au lieu de retomber sur aucun
+// badge (voir `platformInfo ?? null` plus bas).
+export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
+  instagram: { label: "Instagram Reel", color: "#E1306C" },
+  instagram_carrousel: { label: "Carrousel Insta", color: "#E1306C" },
+  instagram_story: { label: "Story Insta", color: "#E1306C" },
+  tiktok: { label: "TikTok", color: "#F5EDED" },
+  facebook: { label: "Facebook", color: "#1877F2" },
+  threads: { label: "Threads", color: "#F5EDED" },
   youtube: { label: "YouTube", color: "#FF0000" },
+  youtube_communaute: { label: "YouTube Communauté", color: "#FF0000" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
+  x: { label: "X (Twitter)", color: "#F5EDED" },
+  reddit: { label: "Reddit", color: "#FF4500" },
+  whatsapp_statut: { label: "Statut WhatsApp", color: "#25D366" },
+  whatsapp_diffusion: { label: "Chaîne WhatsApp", color: "#25D366" },
+  discord: { label: "Discord", color: "#5865F2" },
+  telegram: { label: "Telegram", color: "#26A5E4" },
+  pinterest: { label: "Pinterest", color: "#E60023" },
+  twitch: { label: "Twitch", color: "#9146FF" },
 };
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
@@ -185,6 +206,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [format, setFormat] = useState<ScriptFormat>("court");
+  const [newPlatform, setNewPlatform] = useState("instagram");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -323,7 +345,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
       return;
     }
     startTransition(async () => {
-      const result = await createScript({ title: t, format });
+      const result = await createScript({ title: t, format, platform: newPlatform });
       if (result.error) {
         setError(result.error);
         return;
@@ -333,6 +355,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         coach_id: "",
         title: t,
         format,
+        platform: newPlatform,
         content: null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -342,7 +365,6 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         source_reference: null,
         cta: null,
         instagram_caption: null,
-        platform: "instagram",
         status: "a_tourner",
         views: null,
         likes: null,
@@ -385,6 +407,22 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     });
   }
 
+  // Retour direct 2026-09-16 : élargir les plateformes disponibles ne sert
+  // à rien si un script déjà écrit reste coincé sur "instagram" (valeur par
+  // défaut à la création) sans façon de le retagger. Même mécanisme
+  // optimiste que cycleStatus.
+  function updatePlatform(id: string, platform: string) {
+    const backup = scripts;
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, platform } : s)));
+    startTransition(async () => {
+      const result = await updateScript(id, { platform });
+      if (result.error) {
+        setScripts(backup);
+        setError(result.error);
+      }
+    });
+  }
+
   function cycleStatus(id: string, current: ScriptStatus) {
     const next = STATUS_CYCLE[current];
     const backup = scripts;
@@ -398,13 +436,15 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     });
   }
 
-  function remove(id: string) {
+  function remove(id: string, reason: ScriptDeletionReason, detail?: string) {
     const idx = scripts.findIndex((s) => s.id === id);
     const backup = scripts[idx];
     setScripts((prev) => prev.filter((s) => s.id !== id));
     if (openId === id) setOpenId(null);
+    setDeleteTarget(null);
+    setDeleteDetail("");
     startTransition(async () => {
-      const result = await deleteScript(id);
+      const result = await deleteScript(id, reason, detail);
       if (result.error && backup) {
         setScripts((prev) => {
           const next = [...prev];
@@ -415,6 +455,16 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
       }
     });
   }
+
+  // Retour direct 2026-09-16 : "demande avant de juste cliquer sur la
+  // poubelle, pourquoi supprimer, car faux ou car sujet nul etc" — un clic
+  // sur la corbeille n'efface plus rien directement, il ouvre ce petit choix
+  // de raison. La raison choisie est journalisée côté serveur (voir
+  // deleteScript) pour repérer plus tard les piliers/angles les plus
+  // souvent rejetés, un vrai signal pour la stratégie de contenu.
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
+  const [deleteDetail, setDeleteDetail] = useState("");
+  const [showDeleteDetailInput, setShowDeleteDetailInput] = useState(false);
 
   return (
     <div>
@@ -458,6 +508,16 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 Format {f}
               </button>
             ))}
+            <select
+              value={newPlatform}
+              onChange={(e) => setNewPlatform(e.target.value)}
+              aria-label="Plateforme du script"
+              style={{ ...inputStyle, width: "auto", padding: "7px 10px" }}
+            >
+              {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
+            </select>
           </div>
           {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
           <button
@@ -517,9 +577,9 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
               style={selectStyle}
             >
               <option value="all">Toutes plateformes</option>
-              <option value="instagram">Instagram</option>
-              <option value="youtube">YouTube</option>
-              <option value="linkedin">LinkedIn</option>
+              {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
+                <option key={id} value={id}>{label}</option>
+              ))}
             </select>
             {pillarOptions.length > 0 && (
               <select
@@ -606,6 +666,73 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
           )}
         </>
       )}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-[999] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div
+            className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+            onClick={() => setDeleteTarget(null)}
+          />
+          <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
+            <p style={{ fontSize: 13.5, color: "#fff", lineHeight: 1.5, marginBottom: 4 }}>
+              Supprimer « {deleteTarget.title} » ?
+            </p>
+            <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", marginBottom: 16 }}>
+              Pourquoi ce script ne sert plus ? Ça aide à repérer les piliers/angles qui marchent le moins.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => remove(deleteTarget.id, "info_fausse")}
+                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+              >
+                Information fausse ou dépassée
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(deleteTarget.id, "sujet_nul")}
+                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+              >
+                Sujet qui n&apos;intéresse pas / angle raté
+              </button>
+              {!showDeleteDetailInput ? (
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteDetailInput(true)}
+                  style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
+                >
+                  Autre raison
+                </button>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <textarea
+                    value={deleteDetail}
+                    onChange={(e) => setDeleteDetail(e.target.value)}
+                    placeholder="Précise en une phrase (optionnel)"
+                    aria-label="Autre raison"
+                    rows={2}
+                    style={{ ...inputStyle, resize: "none" }}
+                    autoFocus
+                  />
+                  <button
+                    type="button"
+                    onClick={() => remove(deleteTarget.id, "autre", deleteDetail)}
+                    style={{ padding: "10px 12px", borderRadius: 10, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
+                  >
+                    Confirmer la suppression
+                  </button>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                style={{ textAlign: "center", padding: "8px 12px", background: "none", border: "none", color: "rgba(245,237,237,0.4)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 
@@ -622,18 +749,24 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                {platformInfo && (
-                  <span
-                    style={{
-                      fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
-                      padding: "3px 8px", borderRadius: 999,
-                      background: `${platformInfo.color}22`, color: platformInfo.color,
-                      border: `1px solid ${platformInfo.color}44`,
-                    }}
-                  >
-                    {platformInfo.label}
-                  </span>
-                )}
+                <select
+                  value={script.platform}
+                  onChange={(e) => updatePlatform(script.id, e.target.value)}
+                  aria-label="Plateforme du script"
+                  title="Changer la plateforme"
+                  style={{
+                    fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
+                    padding: "3px 6px", borderRadius: 999, cursor: "pointer",
+                    background: `${(platformInfo ?? { color: "#F5EDED" }).color}22`,
+                    color: (platformInfo ?? { color: "#F5EDED" }).color,
+                    border: `1px solid ${(platformInfo ?? { color: "#F5EDED" }).color}44`,
+                  }}
+                >
+                  {!platformInfo && <option value={script.platform}>{script.platform}</option>}
+                  {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
+                    <option key={id} value={id}>{label}</option>
+                  ))}
+                </select>
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
@@ -678,7 +811,11 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                 </button>
                 <button
                   type="button"
-                  onClick={() => remove(script.id)}
+                  onClick={() => {
+                    setDeleteTarget({ id: script.id, title: script.title });
+                    setDeleteDetail("");
+                    setShowDeleteDetailInput(false);
+                  }}
                   aria-label="Supprimer"
                   style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
                 >
