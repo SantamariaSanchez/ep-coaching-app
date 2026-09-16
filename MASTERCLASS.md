@@ -5041,3 +5041,34 @@ des `deliverables` à chaque étape) :
 exit 0.
 
 **Migration à appliquer manuellement** : `20260916d_masterclass_progress.sql`.
+
+## CK — Recherche approximative + page d'accueil sans SEO (2026-09-16)
+
+Retour direct : "améliore toutes les barres de recherche pour qu'on trouve
+même si c'est mal écrit ou approximatif". `lib/fuzzy-search.ts` : tolérance
+de Levenshtein par mot (0 faute sous 4 lettres, 1 sous 7, 2 au-delà), en
+plus de la sous-chaîne exacte déjà en place partout. Appliqué à
+`/api/library-search` (aliments/exercices/salles/science, ce qui alimente
+la palette de commande), aux filtres client de `CommandPalette.tsx`
+(clients, navigation), et à `IdeationScripts.tsx` (remplace sa propre
+normalisation locale, accents seulement). `searchLeadMagnets` (recherche
+plein texte Postgres, `websearch_to_tsquery` config français) volontairement
+laissé tel quel : déjà tolérant aux accents/pluriels via le dictionnaire
+français, une vraie tolérance aux fautes de frappe demanderait `pg_trgm` et
+un index dédié, un chantier à part plutôt qu'un correctif de ce soir.
+
+En vérifiant les métadonnées SEO des pages publiques (`grep` sur tout
+`app/*/page.tsx`) : **`app/page.tsx`, la page d'accueil, destination du lien
+en bio Instagram**, n'avait aucun titre ni description. Cause : en
+`"use client"` sans la moindre raison (zéro hook, zéro état, zéro
+gestionnaire d'événement dans les 378 lignes du fichier) — juste assez pour
+empêcher tout `export const metadata`. Même bug déjà rencontré une fois sur
+`app/outils/page.tsx` (2026-08-16). Redevenue un composant serveur,
+métadonnées ajoutées. `/launch` et `/onboarding` (les deux seules autres
+pages sans metadata) vérifiées : redirections pures sans contenu, pas un
+manque réel.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
