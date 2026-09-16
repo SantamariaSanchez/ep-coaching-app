@@ -1,6 +1,18 @@
 import { createAdminClient } from "@/lib/supabase-admin";
+import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
 
-const AVATAR_EXPIRY = 3600; // 1 heure
+const AVATARS_BUCKET = "avatars";
+// Allongée de 1h à 24h (2026-09-16, chantier egress Supabase, voir
+// MASTERCLASS.md Axe CH) : grâce au cache d'URL signée
+// (utils/signed-url-cache.ts), un avatar déjà affiché garde la même URL
+// pendant toute sa durée de vie en cache, ce qui permet au navigateur de le
+// mettre en cache HTTP au lieu de le retélécharger à chaque page. Pas
+// d'invalidation nécessaire ici : chaque nouvel upload d'avatar écrit sur un
+// chemin different (`${user.id}/${Date.now()}.${ext}`, voir uploadAvatar dans
+// utils/profile-actions.ts), jamais le même chemin qu'avant — l'ancienne
+// entrée de cache devient simplement inutilisée, sans jamais pointer vers un
+// fichier qui n'existe plus tant que l'ancien fichier reste en storage.
+const AVATAR_EXPIRY = 60 * 60 * 24;
 
 // Résout un avatar_url qui peut être soit un ancien chemin stocké en bucket
 // Supabase, soit une URL HTTPS externe (gravatar, etc.). Retourne une signed
@@ -31,10 +43,7 @@ export async function resolveAvatarUrl(avatarUrl: string | null | undefined): Pr
   // C'est un chemin bucket — on génère une signed URL.
   try {
     const admin = createAdminClient();
-    const { data } = await admin.storage
-      .from("avatars")
-      .createSignedUrl(avatarUrl, AVATAR_EXPIRY);
-    return data?.signedUrl ?? null;
+    return await getCachedOrCreateSignedUrl(admin, AVATARS_BUCKET, avatarUrl, AVATAR_EXPIRY);
   } catch {
     return null;
   }

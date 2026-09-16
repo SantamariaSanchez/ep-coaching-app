@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { todayInParis } from "@/lib/dates";
+import { invalidateSignedUrlCache } from "@/utils/signed-url-cache";
 
 // Miroir de app/dashboard/client/photos/personal-actions.ts pour le coach
 // qui suit ses propres photos (aucun coach au-dessus de lui pour les
@@ -151,6 +152,10 @@ export async function deletePersonalPhoto(
       .eq("id", id)
       .eq("client_id", guard.userId);
     if (error) return { error: "Échec de la suppression." };
+
+    // Ne jamais laisser une URL signée en cache pointer vers un fichier
+    // désormais supprimé (chantier egress, voir utils/signed-url-cache.ts).
+    await invalidateSignedUrlCache("progress-photos", [storagePath]);
 
     revalidatePath("/dashboard/coach/moi/photos");
     return {};

@@ -1,4 +1,14 @@
 import { createServerSupabase } from "@/lib/supabase-server";
+import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
+
+const PERSONAL_PHOTOS_BUCKET = "progress-photos";
+// Même durée et même raisonnement que utils/photos.ts (chantier egress
+// Supabase, MASTERCLASS.md Axe CH) : 24h au lieu de 1h, rendu possible par le
+// cache d'URL signée qui garde la même URL tant qu'elle reste valide.
+// Invalidation à la suppression : voir deletePersonalPhoto dans
+// app/dashboard/client/photos/personal-actions.ts et
+// app/dashboard/coach/moi/photos/personal-actions.ts.
+const PERSONAL_PHOTOS_SIGNED_URL_TTL = 60 * 60 * 24;
 
 export interface PersonalPhoto {
   id: string;
@@ -23,13 +33,13 @@ export async function getPersonalPhotos(clientId: string): Promise<PersonalPhoto
     const rows = (data as Omit<PersonalPhoto, "url">[]) ?? [];
     if (rows.length === 0) return [];
 
-    const signed = await Promise.all(
+    const urls = await Promise.all(
       rows.map((r) =>
-        supabase.storage.from("progress-photos").createSignedUrl(r.storage_path, 3600)
+        getCachedOrCreateSignedUrl(supabase, PERSONAL_PHOTOS_BUCKET, r.storage_path, PERSONAL_PHOTOS_SIGNED_URL_TTL)
       )
     );
 
-    return rows.map((r, i) => ({ ...r, url: signed[i].data?.signedUrl ?? null }));
+    return rows.map((r, i) => ({ ...r, url: urls[i] ?? null }));
   } catch {
     return [];
   }

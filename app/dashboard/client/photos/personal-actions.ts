@@ -4,6 +4,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
 import { todayInParis } from "@/lib/dates";
+import { invalidateSignedUrlCache } from "@/utils/signed-url-cache";
 
 // Suivi photo perso (membres gratuits) : upload direct, aucune notification
 // coach, aucun lien Drive à gérer soi-même — juste une photo pour se
@@ -76,6 +77,10 @@ export async function deletePersonalPhoto(
       .eq("id", id)
       .eq("client_id", guard.userId);
     if (error) return { error: "Échec de la suppression." };
+
+    // Ne jamais laisser une URL signée en cache pointer vers un fichier
+    // désormais supprimé (chantier egress, voir utils/signed-url-cache.ts).
+    await invalidateSignedUrlCache("progress-photos", [storagePath]);
 
     revalidatePath("/dashboard/client/photos");
     return {};

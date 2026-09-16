@@ -1,6 +1,26 @@
 import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { SubmissionType } from "@/lib/posing-data";
+import { getCachedOrCreateSignedUrl } from "@/utils/signed-url-cache";
+
+const PHOTO_UPDATES_BUCKET = "photo-updates-media";
+// Durée des URLs signées pour ces photos privées (suivi physique/posing).
+// Allongée de 1h à 24h (2026-09-16, chantier egress Supabase, voir
+// MASTERCLASS.md Axe CH) : grâce au cache d'URL signée (utils/signed-url-cache.ts),
+// une même photo garde la même URL pendant toute sa durée de vie en cache, ce
+// qui permet enfin au navigateur de la mettre en cache HTTP au lieu de la
+// retélécharger à chaque affichage. 24h reste raisonnable pour une photo
+// privée de progression : le pire cas si un onglet reste ouvert plus
+// longtemps est une regénération transparente (même fonction), jamais une
+// fuite au-delà de la fenêtre prévue.
+//
+// Pas de chemin d'invalidation ici (contrairement à personal_photos) : à ce
+// jour, aucune action de l'appli ne supprime ni ne remplace une ligne
+// photo_updates (seulement submitPhotoUpdate, qui insère) — rien à invalider.
+// Si une suppression de photo_updates est ajoutée un jour, il faudra alors
+// appeler invalidateSignedUrlCache(PHOTO_UPDATES_BUCKET, [...photo_paths, video_path])
+// à ce moment-là.
+const PHOTO_UPDATES_SIGNED_URL_TTL = 60 * 60 * 24;
 
 export interface PhotoUpdate {
   id: string;
@@ -40,14 +60,14 @@ async function withSignedMedia<T extends { photo_paths: string[] | null; video_p
       const photo_urls = row.photo_paths?.length
         ? (
             await Promise.all(
-              row.photo_paths.map((p) => supabase.storage.from("photo-updates-media").createSignedUrl(p, 3600))
+              row.photo_paths.map((p) =>
+                getCachedOrCreateSignedUrl(supabase, PHOTO_UPDATES_BUCKET, p, PHOTO_UPDATES_SIGNED_URL_TTL)
+              )
             )
-          )
-            .map((r) => r.data?.signedUrl ?? null)
-            .filter((u): u is string => !!u)
+          ).filter((u): u is string => !!u)
         : [];
       const video_url = row.video_path
-        ? (await supabase.storage.from("photo-updates-media").createSignedUrl(row.video_path, 3600)).data?.signedUrl ?? null
+        ? await getCachedOrCreateSignedUrl(supabase, PHOTO_UPDATES_BUCKET, row.video_path, PHOTO_UPDATES_SIGNED_URL_TTL)
         : null;
       return { ...row, photo_urls, video_url };
     })
