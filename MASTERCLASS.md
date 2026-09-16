@@ -5156,3 +5156,32 @@ normalement à la prochaine exécution planifiée, rien à corriger.
 Test réel en production (pas de tsc/eslint/build applicable, aucun code
 modifié — action de configuration cloud uniquement). Vérifié directement en
 base : ligne insérée avec succès dans `coach_scripts`.
+
+## CO — Repasse systémique du démontage sur onglet, tour 2 : fiche client complète (2026-09-16)
+
+Suite de l'Axe CB (5 fichiers) et de l'audit nutrition (Axe CE, 2 fichiers
+supplémentaires) : la fiche client complète (`ClientProfileTabs.tsx`, 15
+onglets) n'avait été vérifiée que pour son onglet nutrition. Vérification
+individuelle des 14 autres, pas en bloc :
+
+**Corrigés (`hidden`)** : profil (CoachingPhasePanel, SubscriptionToggle,
+ClientMedicalConstraintsPanel — 3 formulaires réels), intake
+(ClientIntakeForm), cycle (ClientPeriodTracking), photos
+(PhotoFeedbackForm), checkins (CoachReplyForm + upload vidéo annoté en
+cours), rappels (CoachClientTasksView).
+
+**Vérifiés sains, non touchés** : agenda/pas/sommeil (déjà gardés par
+`readOnly`/`editable={false}` côté composant), mindset/roadmap/logbook/
+programme/bilans (aucun état local à risque, juste du cosmétique
+re-dérivable).
+
+**Même motif trouvé ailleurs et corrigé** : `ProgrammationHub.tsx` (onglet
+diète, `PlanBuilder`) et `CoachNotesView.tsx` (journal et décisions,
+formulaires multi-champs). `OrganisationView.tsx` et
+`CoachOnboardingFlow.tsx` vérifiés sains (sauvegarde `onBlur` déjà avant le
+changement d'onglet, ou composants déjà auto-sauvegardants).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 3 fichiers modifiés, `next
+build` de production complet, exit 0. Aucun `git stash` nécessaire.
