@@ -52,6 +52,18 @@ function isoDate(d: Date): string {
   return d.toISOString().split("T")[0];
 }
 
+// Ancienneté d'un client depuis son inscription — voir le paramètre
+// `accountAgeDays` de getClientAlerts pour pourquoi c'est nécessaire.
+// `free_tier_started_at` est renseigné sans condition à l'inscription
+// (app/auth/client/actions.ts) et jamais réinitialisé au passage en payant
+// (vérifié, aucune occurrence dans app/dashboard/coach/clients/actions.ts) :
+// fiable aussi bien pour un membre gratuit que pour un client coaché.
+function accountAgeDaysOf(c: { free_tier_started_at: string | null }): number {
+  return c.free_tier_started_at
+    ? Math.floor((Date.now() - new Date(c.free_tier_started_at).getTime()) / 86400000)
+    : Infinity; // pas de date connue : ne jamais bloquer une alerte sur cette seule base
+}
+
 // 1 = lundi … 7 = dimanche (même convention que profiles.checkin_day et
 // CheckinDaySettings.tsx) — Date.getDay() renvoie 0 = dimanche … 6 = samedi.
 function isoWeekday(d: Date): number {
@@ -85,6 +97,17 @@ function checkinCutoff(checkinDay: number | null | undefined, now: Date): Date {
 
 export async function getClientAlerts(
   clientId: string,
+  // Ancienneté du client lui-même (jours depuis free_tier_started_at) —
+  // requis pour éviter qu'un client tout juste arrivé, qui n'a par
+  // définition encore aucun check-in, ne déclenche l'alerte la plus sévère
+  // ("Check-in manquant", severity high, affichée sur /dashboard/coach/
+  // prioritaires, la vue d'ensemble coach ET les alertes urgentes du jour)
+  // dès son premier jour. Même classe de bug que stagnation-escalation/
+  // weekly-reengagement/quiet-client-relance (2026-09-16) : "jamais eu de
+  // X" n'est un vrai signal que si le client a eu le temps d'en avoir un.
+  // Chaque appelant doit explicitement l'assumer plutôt que la retrouver
+  // par défaut ici — d'où un paramètre requis, pas optionnel.
+  accountAgeDays: number,
   checkinDay?: number | null
 ): Promise<ClientAlert[]> {
   const supabase = createAdminClient();
@@ -108,7 +131,8 @@ export async function getClientAlerts(
     ? new Date(lastCheckin.week_start + "T12:00:00")
     : null;
   const cutoff = checkinCutoff(checkinDay, now);
-  if (!lastCheckinDate || lastCheckinDate < cutoff) {
+  const neverCheckedInButTooNew = !lastCheckinDate && accountAgeDays < 7;
+  if (!neverCheckedInButTooNew && (!lastCheckinDate || lastCheckinDate < cutoff)) {
     alerts.push({
       type: "checkin_missing",
       severity: "high",
@@ -154,7 +178,10 @@ export async function getClientAlerts(
     )
   ).size;
 
-  if (loggedDays < 2) {
+  // Même garde que le check-in ci-dessus : un client tout juste arrivé a
+  // par définition 0 jour loggé, ce n'est un signal qu'à partir du moment
+  // où il a eu au moins les 2 jours que l'alerte elle-même mentionne.
+  if (loggedDays < 2 && accountAgeDays >= 2) {
     alerts.push({
       type: "nutrition_adherence",
       severity: "high",
@@ -553,7 +580,7 @@ export async function getCoachDashboardData(): Promise<CoachDashboardData> {
   const { data: clients } = await supabase
     .from("profiles")
     .select(
-      "id, full_name, status, competition_date, competition_category, checkin_day"
+      "id, full_name, status, competition_date, competition_category, checkin_day, free_tier_started_at"
     )
     .eq("role", "client")
     .eq("status", "active")
@@ -584,10 +611,11 @@ export async function getCoachDashboardData(): Promise<CoachDashboardData> {
         competition_date: string | null;
         competition_category: string | null;
         checkin_day: number | null;
+        free_tier_started_at: string | null;
       }[]
     ).map(async (client) => {
       const [alerts, highlights, summary] = await Promise.all([
-        getClientAlerts(client.id, client.checkin_day),
+        getClientAlerts(client.id, accountAgeDaysOf(client), client.checkin_day),
         getClientHighlights(client.id),
         getClientSummaryStats(client.id),
       ]);
@@ -650,7 +678,7 @@ export async function getTopUrgentAlerts(coachId: string, limit = 3): Promise<To
   const supabase = createAdminClient();
   const { data: clients } = await supabase
     .from("profiles")
-    .select("id, full_name, checkin_day")
+    .select("id, full_name, checkin_day, free_tier_started_at")
     .eq("role", "client")
     .eq("status", "active")
     .eq("subscription_status", "active")
@@ -660,8 +688,15 @@ export async function getTopUrgentAlerts(coachId: string, limit = 3): Promise<To
 
   const allAlerts: TopAlert[] = [];
   await Promise.all(
-    (clients as { id: string; full_name: string | null; checkin_day: number | null }[]).map(async (c) => {
-      const alerts = await getClientAlerts(c.id, c.checkin_day);
+    (
+      clients as {
+        id: string;
+        full_name: string | null;
+        checkin_day: number | null;
+        free_tier_started_at: string | null;
+      }[]
+    ).map(async (c) => {
+      const alerts = await getClientAlerts(c.id, accountAgeDaysOf(c), c.checkin_day);
       for (const alert of alerts) {
         allAlerts.push({ clientId: c.id, clientName: c.full_name, alert });
       }
@@ -705,7 +740,7 @@ export async function getPrioritizedCoachView(
   const supabase = createAdminClient();
   const { data: clients } = await supabase
     .from("profiles")
-    .select("id, full_name, checkin_day")
+    .select("id, full_name, checkin_day, free_tier_started_at")
     .eq("role", "client")
     .eq("status", "active")
     .eq("subscription_status", "active")
@@ -713,10 +748,20 @@ export async function getPrioritizedCoachView(
 
   if (!clients || clients.length === 0) return { flagged: [], quiet: [] };
 
-  const rows = clients as { id: string; full_name: string | null; checkin_day: number | null }[];
+  const rows = clients as {
+    id: string;
+    full_name: string | null;
+    checkin_day: number | null;
+    free_tier_started_at: string | null;
+  }[];
 
   const [perClientAlerts, liveEventsRes] = await Promise.all([
-    Promise.all(rows.map(async (c) => ({ client: c, alerts: await getClientAlerts(c.id, c.checkin_day) }))),
+    Promise.all(
+      rows.map(async (c) => ({
+        client: c,
+        alerts: await getClientAlerts(c.id, accountAgeDaysOf(c), c.checkin_day),
+      }))
+    ),
     supabase
       .from("live_events")
       .select("invited_client_id, starts_at, status")
@@ -759,7 +804,16 @@ export async function getPrioritizedCoachView(
 
     const last = lastPastCall.get(client.id);
     const lastContactDays = last != null ? Math.floor((now - last) / 86400000) : null;
-    if (lastContactDays === null || lastContactDays >= QUIET_THRESHOLD_DAYS) {
+    // "Jamais eu de call" (lastContactDays null) est vrai par construction
+    // pour n'importe quel client tout juste arrivé chez ce coach — ce n'est
+    // un signal de négligence que si le client est lui-même là depuis au
+    // moins QUIET_THRESHOLD_DAYS. Sans cette garde, relanceQuietClients
+    // (lib/quiet-client-relance.ts) enverrait "ça fait un moment !" et
+    // alerterait le coach ("n'a pas eu de call depuis longtemps") pour un
+    // client arrivé le jour même — même classe de bug que
+    // stagnation-escalation et weekly-reengagement (2026-09-16).
+    const neverContactedButTooNew = lastContactDays === null && accountAgeDaysOf(client) < QUIET_THRESHOLD_DAYS;
+    if (!neverContactedButTooNew && (lastContactDays === null || lastContactDays >= QUIET_THRESHOLD_DAYS)) {
       quiet.push({ clientId: client.id, clientName: client.full_name, lastContactDays });
     }
   }
