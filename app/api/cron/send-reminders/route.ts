@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendPushToUser } from "@/lib/push";
+import { insertNotification } from "@/utils/insert-notification";
 
 // The "Mes rappels" feature (app/dashboard/client/reminders) let users create
 // time/day reminders, but nothing ever fired them — there was no cron job
@@ -63,19 +64,37 @@ export async function GET(req: Request) {
 
   let sent = 0;
   for (const reminder of due) {
+    // Même défaut que celui corrigé sur schedule-block-notify (Axe BR,
+    // "les notif, corrige, yen a plus la") : ce cron n'écrivait jamais en
+    // base la notif "cloche" in-app, seulement le push. Si le push OS est
+    // raté, repoussé ou coupé (pas de souscription, heures de silence,
+    // permission refusée...), aucune trace de ce rappel n'existe nulle part
+    // dans l'appli — la cloche ne peut jamais servir de filet de secours.
+    // Écrit désormais la ligne in-app dès que le rappel est traité, une
+    // seule fois par jour, que le push réussisse ou non.
+    await insertNotification({
+      userId: reminder.client_id,
+      type: "reminder",
+      title: "⏰ Rappel",
+      body: reminder.label,
+      url: "/dashboard/client/reminders",
+    });
+
     const result = await sendPushToUser(
       reminder.client_id,
       "⏰ Rappel",
       reminder.label,
       "/dashboard/client/reminders"
     );
-    if (result.ok) {
-      sent++;
-      await supabase
-        .from("reminders")
-        .update({ last_sent_at: now.toISOString() })
-        .eq("id", reminder.id);
-    }
+    if (result.ok) sent++;
+
+    // Avance même si le push échoue (voir schedule-block-notify) : sinon un
+    // client sans abonnement push retenterait, et réécrirait une ligne en
+    // cloche, toutes les 10 min pour le reste de la journée.
+    await supabase
+      .from("reminders")
+      .update({ last_sent_at: now.toISOString() })
+      .eq("id", reminder.id);
   }
 
   return NextResponse.json({ ok: true, checked: due.length, sent });
