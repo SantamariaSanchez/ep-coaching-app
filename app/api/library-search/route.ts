@@ -7,6 +7,7 @@ import { getScienceArticles } from "@/utils/science";
 import { searchLeadMagnets } from "@/lib/lead-magnets";
 import { cleanText, LIMITS } from "@/lib/sanitize";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
+import { fuzzyMatch } from "@/lib/fuzzy-search";
 
 // Item 38 (chantier 50 idées) : recherche unique à travers les bibliothèques
 // de contenu déjà existantes mais séparées (aliments, exercices, salles,
@@ -47,21 +48,24 @@ export async function GET(req: Request) {
     searchLeadMagnets({ query: q, limit: 5 }),
   ]);
 
+  // Retour direct 2026-09-16 : "qu'on trouve même si c'est mal écrit ou
+  // approximatif" — fuzzyMatch tolère une faute de frappe/lettre manquante
+  // en plus de la sous-chaîne exacte déjà en place (voir lib/fuzzy-search.ts).
   const results: LibrarySearchResult[] = [
     ...foods
-      .filter((f) => f.name.toLowerCase().includes(q))
+      .filter((f) => fuzzyMatch(f.name, q))
       .slice(0, 5)
       .map((f) => ({ key: `food-${f.id}`, label: f.name, category: "Aliment" as const })),
     ...exercises
-      .filter((e) => e.name.toLowerCase().includes(q))
+      .filter((e) => fuzzyMatch(e.name, q))
       .slice(0, 5)
       .map((e) => ({ key: `ex-${e.id}`, label: e.name, category: "Exercice" as const })),
     ...gyms
-      .filter((g) => g.name.toLowerCase().includes(q))
+      .filter((g) => fuzzyMatch(g.name, q))
       .slice(0, 5)
       .map((g) => ({ key: `gym-${g.id}`, label: g.name, category: "Salle" as const })),
     ...articles
-      .filter((a) => (a.title_fr ?? a.title).toLowerCase().includes(q))
+      .filter((a) => fuzzyMatch(a.title_fr ?? a.title, q))
       .slice(0, 5)
       .map((a) => ({ key: `sci-${a.id}`, label: a.title_fr ?? a.title, category: "Science" as const })),
     ...leadMagnets.items.map((m) => ({ key: `lm-${m.slug}`, label: m.title, category: "Ressource" as const })),

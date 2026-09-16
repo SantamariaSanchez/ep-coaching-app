@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
+import { fuzzyMatch } from "@/lib/fuzzy-search";
 
 export interface NavShortcut {
   label: string;
@@ -153,10 +154,12 @@ export default function CommandPalette({
   if (!open) return null;
 
   const q = query.trim().toLowerCase();
+  // Retour direct 2026-09-16 : tolère une faute de frappe/lettre manquante
+  // (voir lib/fuzzy-search.ts), pas seulement une sous-chaîne exacte.
   const matchedClients: ClientResult[] =
-    q && clients ? clients.filter((c) => c.full_name?.toLowerCase().includes(q)).slice(0, 6) : [];
+    q && clients ? clients.filter((c) => c.full_name && fuzzyMatch(c.full_name, q)).slice(0, 6) : [];
   const matchedNav = q
-    ? navItems.filter((n) => n.label.toLowerCase().includes(q)).slice(0, 6)
+    ? navItems.filter((n) => fuzzyMatch(n.label, q)).slice(0, 6)
     : navItems.slice(0, 8);
   // En dessous de 2 caractères, on ignore ce qui reste éventuellement de la
   // dernière recherche (voir l'effet ci-dessus) plutôt que de le vider via

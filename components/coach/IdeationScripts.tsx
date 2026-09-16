@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown } from "lucide-react";
 import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
@@ -271,21 +272,12 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   // prendre des décisions, rajoute une barre de recherche... pas au mot
   // près") : recherche multi-mots, insensible à la casse/aux accents, sur
   // titre+script+hook+pilier — pas une simple sous-chaîne exacte qui rate
-  // "poulet riz" si le texte dit "riz et poulet".
+  // "poulet riz" si le texte dit "riz et poulet". Élargie le 2026-09-16
+  // (fuzzyMatchAny, lib/fuzzy-search.ts) pour tolérer aussi une faute de
+  // frappe/lettre manquante, pas seulement les accents/la casse.
   const [searchQuery, setSearchQuery] = useState("");
-  function normalizeSearch(s: string): string {
-    return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
-  }
-  const searchWords = useMemo(
-    () => normalizeSearch(searchQuery).split(/\s+/).filter(Boolean),
-    [searchQuery]
-  );
   function matchesSearch(script: CoachScript): boolean {
-    if (searchWords.length === 0) return true;
-    const haystack = normalizeSearch(
-      [script.title, script.content, script.hook, script.pillar].filter(Boolean).join(" ")
-    );
-    return searchWords.every((w) => haystack.includes(w));
+    return fuzzyMatchAny([script.title, script.content, script.hook, script.pillar], searchQuery);
   }
 
   // Retour direct 2026-09-11 ("améliore le triage, qu'on puisse filtrer
@@ -608,7 +600,7 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
           {activeScripts.length === 0 && publishedScripts.length === 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
               <p className="text-sm text-[#F5EDED]/35">
-                {searchWords.length > 0
+                {searchQuery.trim().length > 0
                   ? <>Aucun script ne correspond à &quot;{searchQuery}&quot;.</>
                   : "Aucun script ne correspond à ces filtres."}
               </p>
