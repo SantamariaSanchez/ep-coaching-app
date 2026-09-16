@@ -4955,3 +4955,89 @@ YouTube (`youtube_id`), aucun risque Supabase Storage de ce côté.
 préexistantes confirmées sans lien via `git stash`/`stash pop`), `next build`
 de production complet (79/79 pages, y compris `/ressources/[slug]` en SSG),
 exit 0.
+
+## CI — Notifications qui dérivaient d'une heure selon été/hiver (2026-09-16)
+
+Retour direct, deuxième vague de la même journée : "les notifs de l'appli,
+il faut qu'elles arrivent réellement à la bonne heure, pas 2 ou 5 min après,
+ou même bien après, juste car j'ai ouvert l'appli". Vérifié plutôt que
+supposé, via une lecture directe des tables `cron.job`/`net.http_request`
+en base (pas juste le code des migrations) : les 23 jobs pg_cron du projet
+répondaient tous en 200, l'hypothèse d'un secret jamais configuré
+(`REPLACE_WITH_CRON_SECRET` resté littéral dans un fichier de migration) est
+écartée, et aucun mécanisme côté client ne rattrape quoi que ce soit à
+l'ouverture de l'appli (toutes les notifs sont 100% server side).
+
+**Cause réelle confirmée** : `nutrition-reminder`, `missed-session-check`,
+`stagnation-escalation`, `weekly-progress-recap` et `weekly-sleep-recap`
+étaient programmés une seule fois par jour à un décalage UTC fixe (ex.
+`'0 19 * * *'` commenté "19h UTC = 20h Paris") pour viser une heure Paris
+précise. `pg_cron` ne connaît aucun fuseau horaire et ne s'ajuste jamais
+seul au changement d'heure été/hiver (2 fois par an) : un décalage figé qui
+donne la bonne heure Paris à une saison donne automatiquement une heure
+fausse à l'autre. Pire, le calcul de `nutrition-reminder` était déjà faux à
+l'écriture (19h UTC + 2h CEST = 21h, pas 20h comme commenté). Résultat :
+ces notifications dérivaient silencieusement d'une heure, sans qu'aucune
+erreur ne remonte nulle part (`pg_net` ne fait rien remonter côté appli).
+`weekly-sleep-recap` s'est révélé être un job jamais accompagné d'une
+migration commitée (enregistré directement en base à l'époque), comblé au
+passage.
+
+**Correctif structurel** (migration `20260916_fix_dst_drift_notification_crons.sql`,
+**à appliquer manuellement**, en remplaçant `REPLACE_WITH_CRON_SECRET` par le
+vrai secret) : chaque job tourne désormais toutes les 15 minutes (toutes les
+heures le dimanche pour les jobs hebdomadaires), et c'est la route Next.js
+elle-même qui décide dynamiquement si on est dans le bon créneau, calculé en
+heure de Paris réelle via `nowInParis()` (`lib/dates.ts`, `Intl`/`timeZone`,
+gère le DST automatiquement, jamais un décalage figé à recalculer deux fois
+par an). `meal-reminders` et `send-reminders` faisaient déjà ça correctement,
+non touchés.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
+
+**Migration à appliquer manuellement** : `20260916_fix_dst_drift_notification_crons.sql`
+(remplacer `REPLACE_WITH_CRON_SECRET` par le vrai `CRON_SECRET` avant
+exécution).
+
+## CJ — Onglet Masterclass : tutoriels business A à Z (2026-09-16)
+
+Retour direct : un onglet de tutoriels texte complets, avec de vraies étapes
+concrètes menant à un résultat réel produit, pas juste de la lecture.
+Citation retenue comme fil rouge de tout le contenu : "prends l'idée de base
+et simplifie-la, même un enfant de 5 ans doit pouvoir la comprendre".
+
+Nouvel espace **Mon business > Masterclass**. Contenu de référence en dur
+dans le code (`lib/masterclass-guides.ts`, même logique que
+`lib/content-library.ts` : partagé par tous les coachs, édité uniquement
+par le code, pas de CRUD par coach pour le contenu lui-même). Seule la
+progression (case cochée par étape) vit en base, par coach
+(`coach_masterclass_progress`, migration `20260916d`, RLS `coach_id =
+auth.uid()`).
+
+Trois premiers guides (5 à 8 étapes chacun, un `finalOutcome` explicite et
+des `deliverables` à chaque étape) :
+- **Notion** : structure Business/3 sous-pages, méthode en 3 questions pour
+  définir ses piliers de contenu, rituel hebdomadaire de 15-20 min avec le
+  tableau exact à créer, connexion du Notion au compte Claude.
+- **Stripe** : produit/service, lien de paiement en un clic, facturation
+  automatique, et une trame structurelle de CGV/contrat avec un
+  avertissement explicite en tête de section : ce n'est pas un conseil
+  juridique, à faire relire par un professionnel du droit avant tout usage
+  commercial réel.
+- **Claude/Claude Code pour un coach** : contrainte respectée à la lettre
+  ("je ne veux pas que Claude soit dans l'appli, sinon c'est payant pour
+  moi") — le coach utilise SON PROPRE compte Claude, jamais celui de la
+  plateforme, connecté à son propre Notion (guide 1), avec un template de
+  prompt repris directement de `SocialGenerator.tsx` (même paradigme déjà
+  établi dans l'app) et un mapping explicite vers où coller le résultat
+  produit (Studio créatif > Mes scripts, Mailing...).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre, `next build` de production complet,
+exit 0.
+
+**Migration à appliquer manuellement** : `20260916d_masterclass_progress.sql`.
