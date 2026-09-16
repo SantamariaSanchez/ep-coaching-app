@@ -131,6 +131,68 @@ Agent `supabase-usage-audit`, lancé le 2026-09-16, voir Priorité 0.
   et la pub (axe 5) ci-dessus complètent ce suivi avec deux métriques qui manquaient
   réellement (email et pub). Pas identifié d'autre trou évident cette session.
 
+## Vague 2 (même journée, 2026-09-16) : production, notifications, Masterclass
+
+Deuxième retour direct le même jour : rattraper la production (lead magnets, scripts,
+séquences story, mails), corriger le timing des notifications ("pas 2 à 5 min après,
+ou bien après, juste car j'ai ouvert l'appli"), un nouvel onglet **Masterclass**
+(tutoriels texte de A à Z, avec un vrai résultat produit à la fin, pas juste de la
+lecture — premiers guides : Notion, Stripe, Claude/Claude Code pour un coach), et
+confirmation que le système "un coach ajoute son propre contenu sans toucher au code"
+existe déjà largement (voir plus bas).
+
+### Diagnostic production : un seul vrai blocage, pas un problème systémique
+Vérifié via les routines cloud (`RemoteTrigger list_runs`) plutôt que supposé : les
+routines scripts/stories/YouTube/newsletter du 2026-09-16 étaient toutes `idle`
+(terminées normalement). Seule **"Production quotidienne de lead magnets"** était
+bloquée depuis 06h10 (`worker_status: running` sans nouvel événement pendant des
+heures) — une session cloud qui a fini par se figer en pleine recherche de sujets,
+pas une conséquence du quota Supabase (ses lectures Supabase dans le run figé
+réussissaient toutes). Relancée manuellement (`RemoteTrigger run`).
+
+### Notification qui n'arrivent pas à la bonne heure : cause probable identifiée
+`supabase/migrations/20260701_nutrition_reminder_cron.sql` programme un rappel à
+`'0 19 * * *'` (19h UTC fixe) censé sonner à 20h Paris. **pg_cron ne s'ajuste jamais
+au changement d'heure** : en heure d'été (CEST, UTC+2, la situation actuelle jusqu'au
+dernier dimanche d'octobre), 19h UTC tombe à 21h Paris, une heure de retard
+silencieuse qui se reproduit à chaque changement d'heure. `supabase/migrations/
+20260703_send_reminders_cron.sql` contient en plus un `REPLACE_WITH_CRON_SECRET`
+littéral jamais remplacé, potentiel 401 systématique. Agent `notif-timing-audit`
+lancé pour auditer les 23 migrations `cron.schedule` du repo et corriger
+structurellement (calcul de l'heure Paris dynamique côté route plutôt qu'un décalage
+UTC figé qui redevient faux deux fois par an).
+
+### Masterclass : nouvel onglet tutoriels A à Z — en cours
+Agent `masterclass-tab` lancé : contenu de référence en dur dans le code (comme
+`lib/content-library.ts`, partagé par tous les coachs), progression par coach en
+base. Trois premiers guides écrits avec un vrai niveau d'exigence (étapes concrètes,
+livrable attendu à la fin de chaque étape) : Notion (système hebdomadaire simple),
+Stripe (produit, lien de paiement en un clic, facturation auto, trame de CGV/contrat
+avec avertissement clair "à faire relire par un professionnel du droit"), Claude/
+Claude Code (compte personnel du coach, jamais payé par la plateforme, connecté à son
+propre Notion, template de prompt repris de `SocialGenerator.tsx`, mapping explicite
+vers les espaces déjà existants de l'appli pour coller le résultat).
+
+### Coach ajoute son propre contenu sans toucher au code : déjà largement en place
+Vérifié plutôt que supposé : `coach_scripts` (Studio créatif), la composition mailing
+et les lead magnets (`coach_id` nullable, non NULL = ajouté par un coach lui-même
+depuis l'app, distinct du catalogue officiel produit par les routines) ont déjà tous
+un vrai CRUD par coach dans l'UI, sans code. Le vrai manque identifié était l'onglet
+Masterclass ci-dessus (aucun équivalent existant pour des tutoriels), pas l'ensemble
+du système que le retour direct laissait supposer.
+
+### Compte/connexion (peccoux.manu@gmail.com) : pas quelque chose que je peux faire à
+la place de l'utilisateur
+Je n'ai aucune capacité pour "reconnecter" un compte à sa place (pas d'accès à sa
+session navigateur) ni pour lever un blocage de quota Supabase (décision de plan
+payant, côté utilisateur). Lecture directe de `auth.users` bloquée par le
+classificateur de sécurité de l'environnement (lecture de données de production
+sensibles), confirmé volontairement non contourné. Ce qui a été fait : le bug
+d'espace non retiré du mot de passe (seul l'email est `.trim()` dans
+`app/auth/coach/actions.ts`) signalé, le mécanisme de verrouillage après 5 échecs/15
+min expliqué, et le lien "mot de passe oublié" identifié comme le vrai chemin de
+déblocage self-service.
+
 ## Session log
 
 - **2026-09-16** — Ouverture du chantier, lancement en parallèle des agents
@@ -138,3 +200,7 @@ Agent `supabase-usage-audit`, lancé le 2026-09-16, voir Priorité 0.
   avec raison et de l'élargissement des plateformes de contenu + guide Notion associé.
   Découverte en cours de route de l'incident quota Supabase, correctif DashboardNav
   livré, audit plus large lancé (`supabase-usage-audit`).
+- **2026-09-16 (suite)** — Vague 2 : diagnostic production (1 routine bloquée,
+  relancée), cause probable du décalage de notifications trouvée (DST sur pg_cron),
+  agents `notif-timing-audit` et `masterclass-tab` lancés, mise à jour de la stratégie
+  Notion (nuance Instagram/YouTube).
