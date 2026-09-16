@@ -5248,3 +5248,49 @@ prochaine fois.
 build` de production complet, exit 0.
 
 **Migration à appliquer manuellement** : `20260916e_signed_url_cache.sql`.
+
+## CR — Recherche réelle sur 5 créateurs de référence + résumé hebdo de performance (2026-09-16)
+
+Suite directe de l'Axe CP. Demande explicite : ne pas se contenter de noms
+en mémoire, faire une vraie recherche web sur Hormozi, Matis Clouet, Marvin
+Ndiaye, "Ethan business" et "Hanskadss" pour un vrai référentiel de ton/
+positionnement/conversion/closing. Deux agents lancés en parallèle
+(`recherche-hormozi-ethan`, `recherche-createurs-fr`) ont chacun créé leur
+propre page Notion au lieu de fusionner (race condition, chacun vérifiait
+si l'autre avait déjà créé la page avant que ce soit le cas) : fusionnées
+manuellement en une seule 🔍 Références créateurs — positionnement,
+conversion, closing (pour Claude), la page en double vidée avec une
+redirection claire plutôt que laissée à traîner.
+
+**Confirmés par recherche web réelle** : Hormozi (Value Equation, Grand
+Slam Offer, framework de closing CLOSER, hooks verbatim vérifiés), Matis
+Clouet (méthode des 7 croyances pour le closing, déjà documentée
+publiquement sur LinkedIn), Marvin Ndiaye (confirmé fondateur de Fresheo,
+pas une supposition, format d'audit brut comme signature reconnaissable).
+"Hanskadss" identifié avec bon niveau de confiance comme Hans Kadss (méthode
+"Hook Build Sell"). "Ethan business" identifié avec confiance moyenne comme
+Ethan Duvin (@etnbusiness), signalé explicitement comme moins certain.
+
+12 règles actionnables au total proposées par les deux agents, dont
+plusieurs déjà en ligne avec la Règle n°8 ajoutée en CP (phrase d'ancrage
+fixe) mais qui ajoutent du neuf : nommer son propre mécanisme en 2-3 mots
+(comme "Hook Build Sell" ou "Value Assets"), un format vidéo identique et
+reconnaissable à chaque publication (comme les audits bruts de Marvin
+Ndiaye), et la grille des 7 croyances de Matis Clouet comme checklist de
+préparation au closing. Pas encore intégrées aux guides reels/YouTube
+(à faire dans un prochain passage, volontairement pas fait dans la même
+frappe pour éviter de mélanger recherche et rédaction finale sans relecture).
+
+**Résumé hebdomadaire de performance** ajouté dans Studio créatif > Mes
+scripts (`IdeationScripts.tsx`) : scripts publiés cette semaine, total de
+vues loguées avec variation vs la semaine passée, meilleur score de la
+semaine, et une alerte si des scripts publiés n'ont pas encore leurs vues
+loguées (les chiffres restent incomplets sans ça). Approximation assumée et
+documentée : `updated_at` sert de proxy pour "quand publié/mesuré" (pas de
+colonne `published_at` dédiée), imprécis si un vieux script publié est
+retouché plus tard mais le meilleur signal disponible sans migration.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre (1 erreur préexistante confirmée
+sans lien), `next build` de production complet, exit 0.
