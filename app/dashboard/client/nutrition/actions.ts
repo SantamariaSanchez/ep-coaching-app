@@ -10,6 +10,7 @@ import type { Food, NutritionProfileInput, DietMode, DietStructure } from "@/uti
 import type { DietPlanMealInput } from "@/app/dashboard/coach/clients/[id]/nutrition/diet-plan-actions";
 import { getCoachForClient, alreadyNotifiedToday } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
+import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 
 // Self-serve nutrition targets — only available to free-tier community
 // members. They set and adjust their own targets, no coach review.
@@ -205,6 +206,9 @@ export async function addFoodLog(params: {
       if (existing?.id) return { id: existing.id };
     }
 
+    // Vérifié AVANT l'insert (voir lib/first-action-celebration.ts).
+    const isFirstMeal = await isFirstEverAction(guard.userId, "food_logs", "client_id");
+
     const { data, error } = await supabase
       .from("food_logs")
       .insert({
@@ -229,6 +233,18 @@ export async function addFoodLog(params: {
     if (!data) return { error: "Erreur lors de l'ajout (pas de data)." };
 
     awardPoints(guard.userId, POINTS.nutrition_log_day, "Nutrition loguée", "nutrition_log_day", params.loggedAt);
+
+    // Encouragement immédiat au membre lui-même, uniquement la toute
+    // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
+    // rien n'était envoyé au membre pour son propre premier repas loggé.
+    if (isFirstMeal) {
+      celebrateFirstAction(guard.userId, {
+        type: "first_meal_logged",
+        title: "🥗 Premier repas loggé !",
+        body: "Deux minutes par repas, et tu sais exactement où tu en es. Continue comme ça.",
+        url: "/dashboard/client/nutrition",
+      }).catch(() => {});
+    }
 
     // Notifie le coach une fois que la journée est bien remplie plutôt qu'à
     // chaque aliment ajouté (sinon un client qui logue 6 fois par jour

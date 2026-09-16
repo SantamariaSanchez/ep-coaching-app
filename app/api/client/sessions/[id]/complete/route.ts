@@ -9,6 +9,7 @@ import { wrapBrandedEmail } from "@/lib/mailing-audience";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
+import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -105,6 +106,12 @@ export async function POST(
   const [wy, wm, wd] = todayStr.split("-").map(Number);
   const weekStartStr = new Date(Date.UTC(wy, wm - 1, wd - daysSinceMonday)).toISOString().split("T")[0];
 
+  // Vérifié AVANT l'insert : cette séance peut écrire plusieurs lignes
+  // workout_logs d'un coup (une par exercice), donc un COUNT fait après
+  // l'insert ne vaudrait jamais 1 pour une vraie première séance.
+  const isFirstWorkout =
+    body.workoutData.length > 0 && (await isFirstEverAction(guard.userId, "workout_logs", "client_id"));
+
   if (body.workoutData.length > 0) {
     await supabase.from("workout_logs").insert(
       body.workoutData.map((w) => ({
@@ -125,6 +132,18 @@ export async function POST(
         session_id: sessionId,
       }))
     );
+
+    // Encouragement immédiat au membre lui-même, uniquement la toute
+    // première fois (voir lib/first-action-celebration.ts) — jusqu'ici
+    // seul le coach était notifié d'une séance terminée, jamais le membre.
+    if (isFirstWorkout) {
+      celebrateFirstAction(guard.userId, {
+        type: "first_workout_logged",
+        title: "🔥 Première séance loguée !",
+        body: "C'est noté, et ça restera dans ton historique. Continue, chaque séance compte.",
+        url: "/dashboard/client/logbook",
+      }).catch(() => {});
+    }
   }
 
   awardPoints(guard.userId, POINTS.session_complete, "Séance terminée", "session_complete", sessionId);
