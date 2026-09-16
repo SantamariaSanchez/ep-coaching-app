@@ -5185,3 +5185,41 @@ changement d'onglet, ou composants déjà auto-sauvegardants).
 
 `tsc --noEmit` propre, `eslint` propre sur les 3 fichiers modifiés, `next
 build` de production complet, exit 0. Aucun `git stash` nécessaire.
+
+## CP — Clarté de marque sur les reels : identité explicite + zéro ton étude (2026-09-16)
+
+Retour direct, verbatim, très frustré : "un enfant doit comprendre. Instagram
+c'est pas ici qu'on développe et montre l'expertise, ça doit être simple,
+pas de gnagnagna étude. Faut que direct le gars qui tombe sur mon reel
+sache qui je suis, ce que je fais. C'est une aberration qu'après avoir
+discuté avec quelqu'un, il me demande 'tu travailles dans quoi ?'". Plafond
+observé : ~300 vues/reel. Constat en lisant les deux guides existants :
+🎥 Guide production scripts YouTube avait déjà un bloc "Qui est Santamaria /
+EP Coaching" explicite en tête de page, 🎬 Guide production scripts reels
+NE L'AVAIT PAS — exactement l'angle mort que le retour direct décrit, le
+format qui en a le PLUS besoin (un spectateur ne voit souvent qu'UN SEUL
+reel, jamais 10-14 minutes pour comprendre progressivement) était celui qui
+en manquait.
+
+Corrigé directement dans Notion (pas du code, ces guides pilotent les
+routines cloud de production) :
+- Ajout du même bloc identité (qui/niche/qui il aide/comment/phrase
+  d'accroche) au guide reels, repris du guide YouTube.
+- Nouvelle **Règle n°8** au guide reels : identité claire dans les 3
+  premières secondes ou en description sur CHAQUE reel quel que soit le
+  pilier ; jamais de ton "étude"/jargon sur Instagram (contrairement à
+  YouTube qui reste le seul format pour le détail/la nuance scientifique,
+  la règle n°1 sourcing PubMed reste, seule la FORME change) ; test
+  explicite avant insertion "un enfant de 5 ans comprendrait-il cette
+  phrase du premier coup ?" ; ajout à la boucle qualité (règle n°7).
+
+Lancé en parallèle une vraie recherche web (pas juste mémoire/Notion,
+demande explicite) sur Hormozi, Matis Clouet, Marvin Ndiaye, "Ethan
+business" et "Hanskadss" (nom probablement mal transcrit, à identifier),
+pour bâtir un référentiel réel de ton/positionnement/conversion/closing —
+voir agents `recherche-hormozi-ethan`/`recherche-createurs-fr`, rapport à
+suivre.
+
+### Validation
+
+Modification Notion uniquement, aucun code touché.
