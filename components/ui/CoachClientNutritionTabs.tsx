@@ -420,8 +420,20 @@ export default function CoachClientNutritionTabs({
       )}
 
       {/* Content */}
-      {tab === "plan" && (
-        <div className="space-y-5">
+      {/*
+        Les 4 onglets restent montés en permanence (`hidden`, jamais un
+        rendu conditionnel `{tab === "x" && <X/>}`) : ce dernier démonte
+        ENTIÈREMENT le sous-arbre non actif, et perdait donc tout plan en
+        cours de construction dans PlanBuilder (nom, repas déjà ajoutés,
+        notes par jour...) dès qu'on jetait un œil à un autre onglet avant
+        d'enregistrer. Même bug de pattern React, même correctif, que les 5
+        autres endroits déjà corrigés (MASTERCLASS.md Axe CB) — celui-ci
+        avait été manqué lors de cette repasse car il vit dans un fichier
+        nutrition, pas dans la liste de fichiers examinés à l'époque.
+        Aucun des 4 contenus ne fait de fetch réseau au montage (tout vient
+        déjà des props), donc aucun coût à les garder montés.
+      */}
+      <div hidden={tab !== "plan"} className="space-y-5">
           {/* Objectifs TDEE : repliés une fois qu'un plan existe déjà (voir
               showObjectifs plus haut) — se règlent une fois, se consultent
               rarement, pas besoin d'un onglet à part pour ça. */}
@@ -507,22 +519,21 @@ export default function CoachClientNutritionTabs({
             onDeactivate={async (planId) => { await deactivateDietPlan(clientId, planId); }}
             onDelete={async (planId) => { await deleteDietPlan(clientId, planId); }}
           />
-        </div>
-      )}
+      </div>
 
-      {tab === "today" && (
+      <div hidden={tab !== "today"}>
         <TodayLogsView logs={todayLogs} nutritionProfile={nutritionProfile} />
-      )}
+      </div>
 
-      {tab === "history" && (
+      <div hidden={tab !== "history"}>
         <HistoryView
           historyLogs={historyLogs}
           today={today}
           targets={{ calories: nutritionProfile?.calories_target ?? 0 }}
         />
-      )}
+      </div>
 
-      {tab === "supplements" && (
+      <div hidden={tab !== "supplements"}>
         <SupplementsSection
           supplements={supplements}
           // isCoachView pilote le texte ("Suggérer"/"ce client" vs
@@ -535,7 +546,7 @@ export default function CoachClientNutritionTabs({
           onSetStatus={(id, status) => setSupplementStatus(clientId, id, status)}
           onDelete={(id) => deleteSupplement(clientId, id)}
         />
-      )}
+      </div>
     </div>
   );
 }

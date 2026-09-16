@@ -270,11 +270,19 @@ export async function removeFoodLog(
     if (!guard.ok) return { error: guard.error };
 
     const supabase = await createServerSupabase();
-    await supabase
+    // Résultat vérifié (audit nutrition 2026-09-16) : jusqu'ici jamais lu,
+    // donc un échec serveur (RLS, réseau) renvoyait quand même {} — succès
+    // affiché côté client alors que la ligne restait en base, jusqu'au
+    // prochain resync serveur qui la faisait réapparaître sans explication.
+    const { error } = await supabase
       .from("food_logs")
       .delete()
       .eq("id", logId)
       .eq("client_id", guard.userId);
+    if (error) {
+      console.error("removeFoodLog error:", error);
+      return { error: "Erreur lors de la suppression." };
+    }
 
     // Même correctif que addFoodLog ci-dessus.
     revalidatePath("/dashboard/client/nutrition");
@@ -395,11 +403,15 @@ export async function createOwnDietPlan(
   try {
     const supabase = await createServerSupabase();
 
-    await supabase
+    // Best-effort : ne bloque jamais la création du nouveau plan (le vrai
+    // but de cet appel), juste tracée si elle échoue au lieu de disparaître
+    // en silence (audit nutrition 2026-09-16).
+    const { error: deactivateError } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("client_id", guard.userId)
       .eq("is_active", true);
+    if (deactivateError) console.error("createOwnDietPlan (deactivate previous) error:", deactivateError);
 
     const { data: plan, error: planError } = await supabase
       .from("diet_plans")
@@ -437,16 +449,28 @@ export async function activateOwnDietPlan(planId: string): Promise<{ error?: str
 
   try {
     const supabase = await createServerSupabase();
-    await supabase
+    // Les deux résultats sont désormais vérifiés (audit nutrition
+    // 2026-09-16) : ni l'un ni l'autre ne l'était, donc "Activer" pouvait
+    // échouer entièrement côté serveur (le 2e update, celui qui compte
+    // vraiment) tout en renvoyant {} — succès affiché, plan resté inactif.
+    const { error: deactivateError } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("client_id", guard.userId)
       .eq("is_active", true);
-    await supabase
+    if (deactivateError) {
+      console.error("activateOwnDietPlan (deactivate) error:", deactivateError);
+      return { error: "Erreur lors de l'activation." };
+    }
+    const { error } = await supabase
       .from("diet_plans")
       .update({ is_active: true })
       .eq("id", planId)
       .eq("client_id", guard.userId);
+    if (error) {
+      console.error("activateOwnDietPlan error:", error);
+      return { error: "Erreur lors de l'activation." };
+    }
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
@@ -462,11 +486,16 @@ export async function deactivateOwnDietPlan(planId: string): Promise<{ error?: s
 
   try {
     const supabase = await createServerSupabase();
-    await supabase
+    // Résultat vérifié (audit nutrition 2026-09-16) : jamais lu jusqu'ici.
+    const { error } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("id", planId)
       .eq("client_id", guard.userId);
+    if (error) {
+      console.error("deactivateOwnDietPlan error:", error);
+      return { error: "Erreur lors de la désactivation." };
+    }
 
     revalidatePath("/dashboard/client/nutrition");
     return {};
@@ -687,7 +716,13 @@ export async function deleteSavedMeal(mealId: string): Promise<{ error?: string 
 
   try {
     const supabase = await createServerSupabase();
-    await supabase.from("saved_meals").delete().eq("id", mealId).eq("owner_id", guard.userId);
+    // Même correctif que removeFoodLog (audit nutrition 2026-09-16) :
+    // résultat jamais vérifié jusqu'ici.
+    const { error } = await supabase.from("saved_meals").delete().eq("id", mealId).eq("owner_id", guard.userId);
+    if (error) {
+      console.error("deleteSavedMeal error:", error);
+      return { error: "Erreur lors de la suppression." };
+    }
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
     return {};

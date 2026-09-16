@@ -506,6 +506,34 @@ export default function ClientNutritionView({
     if (date === today) setTodayLogs(apply);
     else setHistoryLogsState(apply);
   }
+  // Réconciliation en lot (audit nutrition 2026-09-16, voir handleLogSavedMeal) :
+  // remplace chaque entrée optimiste encore "optimistic-..." par sa ligne
+  // réelle, matchée par aliment+quantité au sein du SEUL lot concerné
+  // (tempIds) — jamais tout le journal, pour ne jamais réconcilier par
+  // erreur une entrée optimiste sans rapport qui partagerait le même
+  // aliment/quantité. Même raison que la réconciliation déjà faite en
+  // ligne pour handleValidateSlot : sans ça, le prochain resync serveur
+  // (useEffect plus haut, dépendance initialTodayLogs/historyLogs) AJOUTE
+  // la ligne réelle tout en PRÉSERVANT l'entrée optimiste encore en
+  // "optimistic-" (c'est voulu, pour ne jamais faire disparaître un ajout
+  // encore en vol) — sans réconciliation, ce repas apparaît donc EN DOUBLE
+  // à l'écran dès qu'un changement d'onglet/de visibilité déclenche ce
+  // resync, sans le moindre doublon réel en base.
+  function replaceOptimisticLogIds(
+    date: string,
+    tempIds: Set<string>,
+    insertedLogs: { id: string; foodId: string; quantityG: number }[]
+  ) {
+    const byKey = new Map(insertedLogs.map((r) => [`${r.foodId}:${r.quantityG}`, r.id]));
+    const apply = (prev: FoodLogWithFood[]) =>
+      prev.map((l) => {
+        if (!tempIds.has(l.id)) return l;
+        const realId = byKey.get(`${l.food_id}:${l.quantity_g}`);
+        return realId ? { ...l, id: realId } : l;
+      });
+    if (date === today) setTodayLogs(apply);
+    else setHistoryLogsState(apply);
+  }
 
   // Retour direct 2026-09-10/11, répété de nombreuses fois malgré 2
   // correctifs de fond déjà livrés (diet_plan_meal_id, retrait de
@@ -1066,6 +1094,7 @@ export default function ClientNutritionView({
       };
     });
 
+    const tempIds = new Set(optimisticLogs.map((l) => l.id));
     addOptimisticLogs(date, optimisticLogs);
     closeModal();
 
@@ -1075,9 +1104,15 @@ export default function ClientNutritionView({
       date
     );
     if (result.error) {
-      removeLogsByIds(date, new Set(optimisticLogs.map((l) => l.id)));
+      removeLogsByIds(date, tempIds);
       setAddingError(result.error);
     } else {
+      // Bug trouvé (audit nutrition 2026-09-16) : contrairement à
+      // handleValidateSlot (même action logMealItems), ces entrées
+      // optimistes n'étaient jamais réconciliées avec leur vrai id serveur
+      // — voir replaceOptimisticLogIds ci-dessus pour pourquoi ça affichait
+      // le repas en double après un simple changement d'onglet.
+      replaceOptimisticLogIds(date, tempIds, result.insertedLogs ?? []);
       notifyGateRefresh();
     }
   }

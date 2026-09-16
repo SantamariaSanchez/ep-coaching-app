@@ -795,7 +795,21 @@ export default function ClientProfileTabs({
         />
       )}
 
-      {activeTab === "nutrition" && (
+      {/*
+        `hidden`, pas un rendu conditionnel `{activeTab === "x" && <X/>}` :
+        même bug de démontage React que MASTERCLASS.md Axe CB (5 endroits
+        déjà corrigés), retrouvé ici en corrigeant CoachClientNutritionTabs
+        (audit nutrition 2026-09-16) — cette page-ci l'enveloppe encore
+        d'un second niveau de démontage. Quitter l'onglet "Nutrition" pour
+        n'importe quel autre onglet de cette fiche client démontait
+        entièrement CoachClientNutritionTabs, donc perdait de la même façon
+        tout plan de diète en cours de construction dans son PlanBuilder.
+        Seul cet onglet est corrigé ici (périmètre nutrition) : les autres
+        onglets de cette page suivent le même motif `{activeTab === "x" &&
+        ...}` et pourraient avoir le même risque, mais restent hors
+        périmètre de cet audit.
+      */}
+      <div hidden={activeTab !== "nutrition"}>
         <CoachClientNutritionTabs
           clientId={client.id}
           clientWeight={latestWeight ?? client.weight_start}
@@ -821,7 +835,7 @@ export default function ClientProfileTabs({
           setSupplementStatus={setSupplementStatus}
           deleteSupplement={deleteSupplement}
         />
-      )}
+      </div>
 
       {activeTab === "bilans" && (
         <>

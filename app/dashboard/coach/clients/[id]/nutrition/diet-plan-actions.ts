@@ -111,11 +111,18 @@ export async function rescaleActiveDietPlanToTargets(
 
   if (updates.length === 0) return { rescaled: false, planId: plan.id };
 
-  await Promise.all(
+  // Résultats vérifiés (audit nutrition 2026-09-16) : jusqu'ici jamais lus,
+  // un échec sur une ligne (rare, mais possible) passait inaperçu et
+  // laissait ce seul aliment avec un grammage périmé après un changement
+  // de cibles, sans aucune trace pour le diagnostiquer.
+  const results = await Promise.all(
     updates.map((u) =>
       supabase.from("diet_plan_meals").update({ quantity_g: u.quantity_g }).eq("id", u.id)
     )
   );
+  for (const r of results) {
+    if (r.error) console.error("rescaleActiveDietPlanToTargets update error:", r.error);
+  }
 
   revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
   revalidatePath(`/dashboard/client/nutrition`);
@@ -167,12 +174,15 @@ export async function createDietPlan(
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
-    // Deactivate previous plans
-    await supabase
+    // Deactivate previous plans — best-effort, ne bloque jamais la création
+    // du nouveau plan (le vrai but de cet appel), juste tracée si elle
+    // échoue au lieu de disparaître en silence (audit nutrition 2026-09-16).
+    const { error: deactivateError } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("client_id", clientId)
       .eq("is_active", true);
+    if (deactivateError) console.error("createDietPlan (deactivate previous) error:", deactivateError);
 
     const baseRow = {
       client_id: clientId,
@@ -276,11 +286,18 @@ export async function deactivateDietPlan(
     if (!guard.ok) return { error: guard.error };
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
-    await supabase
+    // Résultat vérifié (audit nutrition 2026-09-16) : jamais lu jusqu'ici,
+    // un échec serveur renvoyait quand même {} (succès affiché au coach,
+    // plan resté actif en base).
+    const { error } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("id", planId)
       .eq("client_id", clientId);
+    if (error) {
+      console.error("deactivateDietPlan error:", error);
+      return { error: "Erreur lors de la désactivation." };
+    }
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
@@ -301,18 +318,30 @@ export async function activateDietPlan(
 
     const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
+    // Les deux résultats sont désormais vérifiés (audit nutrition
+    // 2026-09-16) : "Activer" pouvait échouer entièrement côté serveur (le
+    // 2e update, celui qui compte vraiment) tout en renvoyant {} — succès
+    // affiché au coach, plan resté inactif.
     // Only one active plan per client at a time
-    await supabase
+    const { error: deactivateError } = await supabase
       .from("diet_plans")
       .update({ is_active: false })
       .eq("client_id", clientId)
       .eq("is_active", true);
+    if (deactivateError) {
+      console.error("activateDietPlan (deactivate) error:", deactivateError);
+      return { error: "Erreur lors de l'activation." };
+    }
 
-    await supabase
+    const { error } = await supabase
       .from("diet_plans")
       .update({ is_active: true })
       .eq("id", planId)
       .eq("client_id", clientId);
+    if (error) {
+      console.error("activateDietPlan error:", error);
+      return { error: "Erreur lors de l'activation." };
+    }
 
     revalidatePath(`/dashboard/coach/clients/${clientId}/nutrition`);
     revalidatePath(`/dashboard/client/nutrition`);
