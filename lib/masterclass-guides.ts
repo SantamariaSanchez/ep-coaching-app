@@ -655,6 +655,228 @@ export const MASTERCLASS_GUIDES: MasterclassGuide[] = [
       },
     ],
   },
+
+  // ── Guide 4 : Outils recommandés ────────────────────────────────────
+  {
+    slug: "outils-recommandes-coach",
+    title: "Les outils externes dont un coach en ligne solo a besoin, à côté de l'appli",
+    category: "outils",
+    estimatedMinutes: 40,
+    summary:
+      "Une checklist des outils externes essentiels pour faire tourner ton activité de coach en ligne. L'appli gère tes clients, tes programmes et ton contenu, ces outils couvrent le reste : automatisation, prise de rendez-vous, visuels, montage et planification.",
+    finalOutcome:
+      "Tu sais exactement quel outil externe utiliser pour chaque besoin (DM automatiques, rendez-vous, visuels, montage, planification), et tu as mis en place ceux dont tu as vraiment besoin maintenant.",
+    steps: [
+      {
+        title: "Pourquoi des outils externes en plus de l'appli",
+        blocks: [
+          {
+            type: "paragraph",
+            text:
+              "EP Coaching gère tes clients, leurs programmes, leur nutrition et ton contenu (scripts, mailing, réseaux). Mais certaines tâches ne sont pas le métier de l'appli et sont déjà très bien faites par des outils spécialisés, gratuits ou à faible coût. Cette page te dit lequel utiliser, pourquoi, et quand, pour que tu n'aies pas à chercher au hasard.",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Aucun de ces outils n'est connecté automatiquement à l'appli : tu les utilises en parallèle, chacun pour sa tâche précise. Coche un outil une fois que tu l'as réellement mis en place pour ton activité.",
+          },
+        ],
+      },
+      {
+        title: "ManyChat, automatiser tes réponses en DM Instagram",
+        blocks: [
+          {
+            type: "heading",
+            text: "Catégorie : automatisation des messages",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Quand tu postes un reel avec un appel à l'action du type \"Abonne toi et commente [numéro] pour recevoir le guide\" (le champ cta de tes scripts dans Studio créatif), c'est ManyChat qui détecte ce commentaire et envoie automatiquement le lien du leadmagnet en message privé, sans que tu aies à répondre toi-même à chaque commentaire un par un.",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Utilise-le dès que tu publies un reel avec ce type de CTA. Sans lui, chaque commentaire \"1\" ou \"guide\" te demande une réponse manuelle, ce qui devient intenable dès que tu dépasses une dizaine de commentaires par publication.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : manychat.com",
+          },
+        ],
+        deliverables: ["Un compte ManyChat créé et connecté à ton compte Instagram professionnel."],
+      },
+      {
+        title: "Calendly, la prise de rendez-vous d'appel de vente",
+        blocks: [
+          {
+            type: "heading",
+            text: "Catégorie : prise de rendez-vous",
+          },
+          {
+            type: "paragraph",
+            text:
+              "C'est la destination classique de ton tunnel de vente : après le lead magnet et quelques échanges, tu proposes un appel de découverte, et Calendly laisse le prospect choisir un créneau directement dans tes disponibilités, sans échange de messages du type \"tu es libre quand\".",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Utilise-le dès que tu fais des appels de vente ou des appels découverte réguliers. Il envoie aussi les rappels automatiques, ce qui réduit les rendez-vous manqués.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : calendly.com",
+          },
+        ],
+        deliverables: [
+          "Un compte Calendly créé avec au moins un type d'événement (appel découverte) et tes disponibilités réelles configurées.",
+        ],
+      },
+      {
+        title: "Notion, déjà couvert en détail",
+        blocks: [
+          {
+            type: "paragraph",
+            text:
+              "Notion (positionnement, piliers de contenu, suivi hebdomadaire) a déjà son propre guide complet dans cette Masterclass. Si tu ne l'as pas encore fait, commence par lui plutôt que de le refaire ici.",
+          },
+        ],
+        deliverables: ["Le guide Notion pour un coach en ligne suivi (voir plus haut dans la Masterclass)."],
+      },
+      {
+        title: "Canva, créer des visuels sans designer",
+        blocks: [
+          {
+            type: "heading",
+            text: "Catégorie : création visuelle",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Pour des carrousels Instagram, des miniatures YouTube ou des visuels de posts, Canva te donne des modèles prêts à l'emploi que tu adaptes en quelques minutes, sans compétence en design. Enregistre tes couleurs et ta police une fois dans un modèle, puis duplique-le pour chaque nouveau visuel.",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Utilise-le chaque fois que tu as besoin d'un visuel (carrousel, miniature, story) et que tu n'as pas de designer sous la main, ce qui est le cas la plupart du temps pour un coach solo.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : canva.com",
+          },
+        ],
+        deliverables: ["Un compte Canva créé, avec au moins un modèle de carrousel ou de miniature adapté à ton identité."],
+      },
+      {
+        title: "CapCut, monter tes reels et shorts depuis ton téléphone",
+        blocks: [
+          {
+            type: "heading",
+            text: "Catégorie : montage vidéo mobile",
+          },
+          {
+            type: "paragraph",
+            text:
+              "CapCut (ou un équivalent de montage mobile) permet de monter un reel ou un short directement depuis ton téléphone entre deux clients : couper les silences, ajouter les sous-titres automatiques, caler une musique, sans passer par un ordinateur ni un logiciel de montage professionnel.",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Utilise-le pour tout contenu filmé au téléphone (la majorité de tes reels). Garde un ordinateur et un logiciel plus complet uniquement si tu montes des vidéos longues et complexes.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : capcut.com",
+          },
+        ],
+        deliverables: ["CapCut installé sur ton téléphone, un premier reel monté avec sous-titres."],
+      },
+      {
+        title: "Later ou Metricool, planifier tes posts sur toutes les plateformes",
+        blocks: [
+          {
+            type: "heading",
+            text: "Catégorie : planification de publication",
+          },
+          {
+            type: "paragraph",
+            text:
+              "L'appli couvre maintenant la publication sur Instagram, YouTube, LinkedIn, X, Reddit, WhatsApp, Discord, Telegram et YouTube Communauté. Poster manuellement chaque jour sur autant de plateformes n'est pas réaliste pour un coach solo. Un outil comme Later ou Metricool te permet de préparer une semaine de contenu en une seule session et de le programmer d'avance sur les plateformes qu'il supporte.",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Utilise-le dès que tu publies sur plus de 2 ou 3 plateformes régulièrement. Vérifie quelles plateformes sont couvertes par l'outil choisi : certaines (comme WhatsApp, Discord ou Telegram) ne sont pas toujours planifiables depuis ces outils et restent à publier manuellement au bon moment.",
+          },
+          {
+            type: "paragraph",
+            text: "Sites officiels : later.com et metricool.com",
+          },
+        ],
+        deliverables: ["Un compte Later ou Metricool créé, avec au moins 2 plateformes connectées."],
+      },
+      {
+        title: "Deux outils supplémentaires à considérer",
+        blocks: [
+          {
+            type: "heading",
+            text: "Trello ou un tableau simple, pour ne rien oublier côté suivi client administratif",
+          },
+          {
+            type: "paragraph",
+            text:
+              "L'appli suit déjà les programmes et messages de tes clients, mais pas les tâches ponctuelles autour (relancer un client inactif par téléphone, préparer un contrat, envoyer une facture). Un tableau simple type Trello, avec une colonne À faire, En cours, Fait, évite que ces tâches administratives se perdent dans ta tête ou dans des notes éparpillées. Utile dès que tu gères plus de quelques clients en parallèle.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : trello.com",
+          },
+          {
+            type: "heading",
+            text: "Un gestionnaire de mots de passe, pour la sécurité de tous ces comptes",
+          },
+          {
+            type: "paragraph",
+            text:
+              "Entre l'appli, ManyChat, Calendly, Canva, Stripe et les réseaux sociaux, un coach solo accumule vite dix comptes ou plus. Réutiliser le même mot de passe partout est le risque de sécurité le plus courant et le plus évitable. Un gestionnaire comme Bitwarden (gratuit) génère et retient un mot de passe unique et solide pour chaque compte. Utile dès que tu as plus de 3 ou 4 comptes professionnels, donc dès le début.",
+          },
+          {
+            type: "paragraph",
+            text: "Site officiel : bitwarden.com",
+          },
+        ],
+        deliverables: [
+          "Un choix fait (utile ou pas pour toi maintenant) pour ces deux outils, plutôt qu'un oubli par défaut.",
+        ],
+      },
+      {
+        title: "Récap : quel outil pour quel besoin",
+        blocks: [
+          {
+            type: "list",
+            items: [
+              "Automatiser tes réponses en DM après un CTA \"commente X\" : ManyChat.",
+              "Faire prendre rendez-vous un prospect pour un appel de vente : Calendly.",
+              "Organiser ton positionnement, tes piliers de contenu, ton suivi : Notion (guide dédié).",
+              "Créer un visuel (carrousel, miniature) sans designer : Canva.",
+              "Monter un reel ou un short depuis ton téléphone : CapCut.",
+              "Planifier une semaine de posts d'avance sur plusieurs plateformes : Later ou Metricool.",
+              "Suivre tes tâches administratives ponctuelles : Trello.",
+              "Sécuriser tous ces comptes avec des mots de passe uniques : Bitwarden.",
+            ],
+          },
+          {
+            type: "paragraph",
+            text:
+              "Retiens le principe général : l'appli reste le centre pour tes clients, leurs programmes et ton contenu. Ces outils externes couvrent chacun une tâche précise à côté, tu n'as pas besoin de les connecter entre eux ni de tout adopter le premier jour.",
+          },
+        ],
+        deliverables: [
+          "La liste des outils que tu vas réellement mettre en place, dans l'ordre où tu vas t'en occuper.",
+        ],
+      },
+    ],
+  },
 ];
 
 export function getMasterclassGuide(slug: string): MasterclassGuide | undefined {
