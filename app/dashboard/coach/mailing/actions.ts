@@ -11,6 +11,7 @@ import {
   wrapBrandedEmail,
   type BrevoListSummary,
 } from "@/lib/brevo-mailing";
+import { refreshMailingStats, refreshManyMailingStats, type CampaignStats } from "@/lib/brevo-stats";
 import { audienceToStorageKey, storageKeyToAudience, type MailingAudience } from "@/lib/mailing-audience";
 import { revalidatePath } from "next/cache";
 
@@ -274,4 +275,64 @@ export async function sendSingleMailing(
 
   revalidatePath("/dashboard/coach/mailing");
   return { success: true, recipientCount: 1 };
+}
+
+// Suivi de performance (2026-09-16) : lecture à la demande de l'API Brevo
+// (jamais au chargement de la page, voir lib/brevo-stats.ts) — un coach ne
+// peut rafraîchir que ses propres envois, d'où le .eq("coach_id", ...)
+// même si createAdminClient() contourne la RLS.
+export async function refreshMailingStatsAction(
+  mailingId: string
+): Promise<{ stats?: CampaignStats; fetchedAt?: string; error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("coach_mailings")
+    .select("id, brevo_campaign_id")
+    .eq("id", mailingId)
+    .eq("coach_id", guard.userId)
+    .maybeSingle();
+  const row = data as { id: string; brevo_campaign_id: number | null } | null;
+  if (!row) return { error: "Envoi introuvable." };
+  if (!row.brevo_campaign_id) {
+    return { error: "Pas de campagne Brevo associée à cet envoi (envoi direct à une personne, sans statistiques)." };
+  }
+
+  const stats = await refreshMailingStats(row.id, row.brevo_campaign_id);
+  if (!stats) return { error: "Impossible de récupérer les statistiques Brevo pour le moment. Réessaie plus tard." };
+
+  revalidatePath("/dashboard/coach/mailing");
+  return { stats, fetchedAt: new Date().toISOString() };
+}
+
+// Rafraîchit d'un coup les envois récents de l'historique (jusqu'à 10)
+// plutôt que de cliquer campagne par campagne — reste séquentiel côté
+// lib/brevo-stats.ts (voir refreshManyMailingStats pour le rate-limit
+// Brevo, même logique que syncClientsToList dans lib/brevo-mailing.ts).
+export async function refreshAllMailingStatsAction(): Promise<{ updated?: number; failed?: number; error?: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("coach_mailings")
+    .select("id, brevo_campaign_id")
+    .eq("coach_id", guard.userId)
+    .eq("status", "sent")
+    .not("brevo_campaign_id", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(10);
+
+  const rows = (data ?? []) as { id: string; brevo_campaign_id: number | null }[];
+  const toRefresh = rows
+    .filter((r) => r.brevo_campaign_id != null)
+    .map((r) => ({ id: r.id, brevoCampaignId: r.brevo_campaign_id as number }));
+  if (toRefresh.length === 0) return { updated: 0, failed: 0 };
+
+  const { updated, failed } = await refreshManyMailingStats(toRefresh);
+
+  revalidatePath("/dashboard/coach/mailing");
+  return { updated, failed };
 }

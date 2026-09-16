@@ -23,7 +23,10 @@ import { todayInParis } from "@/lib/dates";
 // Brevo unique existant pour l'instant (voir la note dans CROISSANCE.md) —
 // la connexion "chaque coach son propre compte Brevo" attendra un vrai
 // 2e coach actif, comme pour le CRM (même décision déjà actée le 14/08).
-const BREVO_API = "https://api.brevo.com/v3";
+// Exportés pour lib/brevo-stats.ts (lecture des statistiques de campagne) :
+// même base d'API et mêmes en-têtes que les fonctions d'envoi ci-dessous,
+// une seule source de vérité plutôt que de dupliquer la clé/URL ailleurs.
+export const BREVO_API = "https://api.brevo.com/v3";
 const SENDER = { name: "EP Coaching", email: "peccoux.manu@gmail.com" };
 // Dossier Brevo déjà utilisé par les listes existantes de la plateforme
 // (Newsletter EP Coaching, Leads Fiche Push, Guide Structure) — même
@@ -37,7 +40,7 @@ const COACHS_LIST_NAME = "Coachs EP Coaching";
 
 export type { MailingAudience };
 
-function brevoHeaders() {
+export function brevoHeaders() {
   return {
     "Content-Type": "application/json",
     "api-key": process.env.BREVO_API_KEY!,

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Send, FlaskConical, Users, CheckCircle2, XCircle, Clock3, Eye, EyeOff,
   Copy, CalendarClock, Globe2, UserCog, List as ListIcon, ChevronDown,
-  LayoutTemplate, Search, X,
+  LayoutTemplate, Search, X, RefreshCw,
 } from "lucide-react";
 import {
   sendTestMailing,
@@ -12,10 +12,12 @@ import {
   sendSingleMailing,
   searchMailingContacts,
   getMailingRecipientCount,
+  refreshAllMailingStatsAction,
   type MailingContactResult,
 } from "@/app/dashboard/coach/mailing/actions";
-import type { CoachMailing } from "@/lib/coach-mailings";
+import type { CoachMailing, CampaignStats } from "@/lib/coach-mailings";
 import type { BrevoListSummary } from "@/lib/brevo-mailing";
+import MailingStatsCard, { rateColor, pct } from "@/components/coach/MailingStatsCard";
 import {
   audienceToStorageKey,
   storageKeyToAudience,
@@ -74,6 +76,58 @@ export default function CoachMailingComposer({
   useEffect(() => {
     setHistory(initialHistory);
   }, [initialHistory]);
+
+  // Suivi de performance (2026-09-16) : fusionne un snapshot rafraîchi par
+  // MailingStatsCard.tsx dans l'historique local, sans attendre le
+  // round-trip revalidatePath (voir refreshMailingStatsAction).
+  function updateMailingStats(mailingId: string, stats: CampaignStats, fetchedAt: string) {
+    setHistory((prev) => prev.map((m) => (m.id === mailingId ? { ...m, stats, stats_fetched_at: fetchedAt } : m)));
+  }
+
+  const statsEntries = useMemo(
+    () => history.filter((m): m is CoachMailing & { stats: CampaignStats } => m.stats != null),
+    [history]
+  );
+
+  // Résumé rapide (moyenne sur les 5 derniers envois avec stats déjà
+  // récupérées) : une vraie valeur ajoutée pour un coach qui ouvre la page
+  // sans avoir à comparer ligne par ligne — voir le bloc affiché sous le
+  // composeur.
+  const recentStatsEntries = useMemo(() => statsEntries.slice(0, 5), [statsEntries]);
+  const avgOpenRate =
+    recentStatsEntries.length > 0
+      ? recentStatsEntries.reduce((sum, m) => sum + m.stats.openRate, 0) / recentStatsEntries.length
+      : null;
+  const avgClickRate =
+    recentStatsEntries.length > 0
+      ? recentStatsEntries.reduce((sum, m) => sum + m.stats.clickRate, 0) / recentStatsEntries.length
+      : null;
+
+  // Amélioration non demandée explicitement (voir rapport) : signale une
+  // campagne dont le taux d'ouverture s'écroule par rapport aux autres
+  // envois du coach — le signal utile pour savoir qu'il faut retravailler
+  // l'objet, plutôt que de laisser un chiffre bas se noyer dans la liste.
+  // Comparaison seulement à partir de 3 autres envois avec stats (sinon
+  // pas assez de recul), et seulement si la moyenne des autres n'est pas
+  // déjà elle-même très faible (sinon tout paraîtrait "anormalement bas").
+  function lowOpenRateWarningFor(mailing: CoachMailing): boolean {
+    if (!mailing.stats) return false;
+    const others = statsEntries.filter((s) => s.id !== mailing.id);
+    if (others.length < 3) return false;
+    const avg = others.reduce((sum, s) => sum + s.stats.openRate, 0) / others.length;
+    if (avg < 0.05) return false;
+    return mailing.stats.openRate < avg * 0.5;
+  }
+
+  const [isRefreshingAll, startRefreshAllTransition] = useTransition();
+  function refreshAllStats() {
+    startRefreshAllTransition(async () => {
+      await refreshAllMailingStatsAction();
+      // revalidatePath dans l'action ci-dessus resynchronise initialHistory
+      // (voir le useEffect juste au-dessus), qui contient alors les
+      // stats_json à jour pour chaque ligne rafraîchie.
+    });
+  }
 
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
@@ -243,6 +297,11 @@ export default function CoachMailingComposer({
             recipient_count: 1,
             status: "sent",
             created_at: new Date().toISOString(),
+            // Envoi 1-1 transactionnel : jamais de campagne Brevo, donc
+            // jamais de statistiques possibles (voir MailingStatsCard.tsx).
+            brevo_campaign_id: null,
+            stats: null,
+            stats_fetched_at: null,
           },
           ...prev,
         ]);
@@ -276,6 +335,12 @@ export default function CoachMailingComposer({
           recipient_count: n,
           status: result.scheduled ? "scheduled" : "sent",
           created_at: new Date().toISOString(),
+          // Ligne temporaire remplacée par la vraie ligne (avec son
+          // brevo_campaign_id réel) dès que revalidatePath resynchronise
+          // initialHistory ci-dessus — pas de stats disponibles avant ça.
+          brevo_campaign_id: null,
+          stats: null,
+          stats_fetched_at: null,
         },
         ...prev,
       ]);
@@ -530,7 +595,41 @@ export default function CoachMailingComposer({
       {/* ── Historique ── */}
       {history.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">Historique</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Historique</p>
+            <button
+              type="button"
+              onClick={refreshAllStats}
+              disabled={isRefreshingAll}
+              className="inline-flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
+            >
+              <RefreshCw size={11} className={isRefreshingAll ? "animate-spin" : ""} />
+              {isRefreshingAll ? "Actualisation…" : "Rafraîchir les stats"}
+            </button>
+          </div>
+
+          {/* Résumé rapide : moyenne sur les envois déjà consultés (voir
+              recentStatsEntries plus haut) — n'apparaît qu'une fois qu'il y
+              a au moins 2 envois avec des stats à comparer. */}
+          {recentStatsEntries.length >= 2 && avgOpenRate != null && avgClickRate != null && (
+            <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3 mb-3">
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
+                Moyenne sur les {recentStatsEntries.length} derniers envois consultés
+              </p>
+              <div className="flex items-center gap-4">
+                <span className="text-[14px] font-black" style={{ color: rateColor(avgOpenRate, [0.1, 0.2]) }}>
+                  {pct(avgOpenRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">ouverture</span>
+                </span>
+                <span className="text-[14px] font-black" style={{ color: rateColor(avgClickRate, [0.01, 0.02]) }}>
+                  {pct(avgClickRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">clic</span>
+                </span>
+              </div>
+              <p className="mt-1.5 text-[10px] text-[#F5EDED]/35">
+                Repère : un taux d&apos;ouverture correct tourne autour de 20 à 30%, un bon taux de clic autour de 2 à 5%.
+              </p>
+            </div>
+          )}
+
           <div className="flex flex-col gap-2">
             {history.map((m) => {
               const meta = statusMeta(m.status);
@@ -566,6 +665,18 @@ export default function CoachMailingComposer({
                       )}
                     </span>
                   </div>
+                  {m.status === "sent" && (
+                    <div className="pl-[21px]">
+                      <MailingStatsCard
+                        mailingId={m.id}
+                        brevoCampaignId={m.brevo_campaign_id}
+                        stats={m.stats}
+                        fetchedAt={m.stats_fetched_at}
+                        lowOpenRateWarning={lowOpenRateWarningFor(m)}
+                        onRefreshed={(stats, fetchedAt) => updateMailingStats(m.id, stats, fetchedAt)}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
