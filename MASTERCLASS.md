@@ -4909,3 +4909,49 @@ générée), exit 0.
 
 **Migration à appliquer manuellement** : `20260916a_ad_campaigns.sql` dans le
 Supabase SQL Editor (en plus de `20260916b`/`20260916c` ci-dessus).
+
+## CH — Audit egress Supabase : lead magnets sur-fetchés (2026-09-16)
+
+Suite de l'Axe CD (incident quota). Audit ciblé du reste du code après le
+correctif `DashboardNav.tsx` : polling (`setInterval`), sur-fetching
+(`select("*")`), images non redimensionnées, autres `router.prefetch`.
+
+**Polling** : tous les `setInterval` du repo (agenda, messagerie, chronomètre
+de séance, lecteur audio, minuteur d'enregistrement, bannière de session)
+vérifiés un par un — aucun ne relit Supabase dans l'intervalle, tous des
+horloges locales (`Date.now()`) ou de la lecture `localStorage`. La vraie
+messagerie (`ConversationView.tsx`) utilise déjà Supabase Realtime
+(`postgres_changes`), pas de polling. Rien à corriger ici.
+
+**Trouvaille principale : `lib/lead-magnets.ts`** — `getAllLeadMagnetsCached()`
+sélectionnait `content`+`sources` (texte intégral de chaque guide) pour
+TOUTES les entrées publiées, réutilisé tel quel par 5 écrans dont `/ressources`
+(page publique, canal d'acquisition) qui n'affiche que titre/accroche/
+catégorie. À l'échelle des ~1000 lead magnets visés (`LEADMAGNETS.md`), c'est
+le poste d'egress le plus lourd trouvé dans tout l'audit, largement devant
+`DashboardNav.tsx`. Séparé en deux caches : `SELECT_FIELDS_LIST` (listing,
+recherche via `/api/library-search`) sans `content`/`sources`, et
+`SELECT_FIELDS_FULL` via une nouvelle `getAllGuidesWithContent()` réservée au
+seul consommateur qui a vraiment besoin du texte intégral
+(`SocialGenerator.tsx`, Studio créatif). `ConversationView.tsx` :
+`select("*")` sur `messages` remplacé par les colonnes explicites déjà
+utilisées.
+
+**Documenté, pas corrigé** (chantiers à part entière, pas des "correctifs
+sûrs et rapides") : `utils/photos.ts`/`personal-photos.ts`/`avatar.ts`
+génèrent une nouvelle `createSignedUrl` à CHAQUE chargement de page (jeton
+différent à chaque fois), empêchant tout cache navigateur même pour une
+photo déjà vue 10 fois — vrai poste d'egress, corrigé proprement demanderait
+un cache d'URLs signées avec invalidation à l'upload/suppression. Aucune
+compression côté client avant upload des photos de progression. Les
+transformations d'image Supabase Storage (`?width=&quality=`) sont une
+fonctionnalité payante (plan Pro), indisponible sur le plan actuel — pas
+d'effet à les ajouter maintenant. Les vidéos de formation passent par
+YouTube (`youtube_id`), aucun risque Supabase Storage de ce côté.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` propre sur les 5 fichiers touchés (2 erreurs
+préexistantes confirmées sans lien via `git stash`/`stash pop`), `next build`
+de production complet (79/79 pages, y compris `/ressources/[slug]` en SSG),
+exit 0.
