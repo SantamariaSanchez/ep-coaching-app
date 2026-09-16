@@ -5650,3 +5650,36 @@ cache.
 `tsc --noEmit`, `eslint`, `next build` de production : tous propres.
 Vérifié en base que le bug était réel avant de le corriger (jamais de
 correctif sur une simple supposition).
+
+## DD — Audit d'intégrité des 3 autres migrations "réussies" + 3 nouveaux scripts (2026-09-16)
+
+Avant de continuer, vérifié directement en base (`information_schema.columns`,
+comparé au code appelant) les 3 autres tables créées ce jour-là et jusqu'ici
+seulement présumées saines : `ad_campaigns`, `coach_script_deletion_reasons`,
+`coach_masterclass_progress`, `signed_url_cache`. Les 4 colonnes/schémas
+correspondent exactement à ce que le code lit et écrit, aucune divergence
+trouvée. Seule `coach_mailings` (Axe DC) avait vraiment un problème.
+
+**3 nouveaux scripts** (sujets encore jamais traités par aucun script
+existant, vérifié par requête anti-doublon avant écriture) :
+- "Ton entraînement doit-il vraiment changer selon ton cycle ?" (068,
+  mauvais_principe_demasque, 60s) — Mikkonen et al., Sports Medicine 2023.
+- "Muscler un seul côté rend l'autre plus fort aussi" (343,
+  comprendre_pour_decider, 60s) — Altheyab et al., Experimental Physiology
+  2024 + Manca et al., Journal of Applied Physiology 2018.
+- "Tu t'arrêtes trop tôt, ou tu vas trop loin ?" (162, quiz, 30s) — pas de
+  DOI requis, c'est un quiz d'auto-évaluation, pas une affirmation
+  factuelle à sourcer.
+
+Les 3 appliquent le bloc 0 "Coach en musculation." dès la légende
+(cohérence avec le fix de l'Axe CY, pas seulement pour les nouveaux
+scripts). Ajoutés à `coach_scripts` (`status='a_tourner'`) et à la page
+Notion 🚨 Scripts prêts maintenant.
+
+### Validation
+
+Comptage de mots réel avant insertion (60s : 130-155 mots selon script,
+30s : 80 mots, dans les fourchettes de la Règle n°2 du guide). Vérifié par
+requête SQL qu'aucun tiret cadratin/demi-cadratin ne s'est glissé dans
+`content`/`hook`/`cta`/`instagram_caption` des 3 scripts avant de les
+considérer terminés.
