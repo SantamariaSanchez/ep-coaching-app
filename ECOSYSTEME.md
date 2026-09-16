@@ -122,11 +122,17 @@ Tout ce qui suit était listé "reste à faire" plus tôt dans la journée — c
 
 ## Vrai reste à faire
 
-- **Cadence carrousel/story** (routines cloud à créer, voir section 4 ci-dessus) :
-  toujours en attente, la prudence sur le quota Supabase reste de mise même si des
-  lectures/écritures ponctuelles ont réussi en cours de session (pas une preuve que
-  le quota du mois est levé, à confirmer par l'utilisateur avant de créer de
-  nouvelles routines qui écrivent en base).
+- **Cadence carrousel/story** : story avait déjà sa routine (`Production quotidienne
+  Séquences Story`, existait avant cette session, écrit dans Notion) — sa dernière
+  exécution a juste échoué sur la même limite de session Claude rencontrée par mes
+  propres agents ce soir, pas un bug, elle repassera normalement. Carrousel n'avait
+  vraiment aucune routine : créée ce soir (`trig_01NoBBHCKsRN7iRUVgzTbbRs`, "EP
+  Coaching - Production quotidienne de carrousel Instagram", 2h45 UTC/4h45 Paris),
+  écrit directement dans `coach_scripts` (`platform='instagram_carrousel'`, même
+  pipeline que les reels/YouTube), lancée une première fois manuellement pour tester.
+  Les lectures/écritures Supabase réussissant normalement pendant toute cette
+  session, la prudence initiale sur le quota n'était plus justifiée pour cette
+  action précise (lecture/écriture ponctuelle, pas un gros volume).
 - **Compte fondateur / connexion** : compte confirmé existant (`profiles`,
   `is_platform_owner: true`, aucune ligne dans `auth_login_attempts` donc pas un
   verrouillage) — reste un problème de mot de passe côté Supabase Auth, hors de
