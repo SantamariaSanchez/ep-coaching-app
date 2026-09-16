@@ -5729,3 +5729,31 @@ pas d'un clic.
 
 Mêmes contrôles que les Axes DD/DE (anti-doublon, absence de tiret
 cadratin/demi-cadratin par requête SQL).
+
+## DG — WhatsApp Statut et YouTube Communauté, les 2 dernières plateformes du chantier d'origine (2026-09-16)
+
+Complète la liste explicite du chantier d'origine ("X, Reddit, WhatsApp,
+Discord, Telegram, YouTube Community, IG Carrousel/Story") : après X
+(Axe DE), Reddit (Axe DE) et Discord (Axe DF), les 2 dernières
+plateformes explicitement demandées et jamais encore concrétisées.
+- **WhatsApp Statut** ("Une fois par semaine par muscle, c'est trop peu") :
+  format volontairement minimal, un seul fait, pas de structure
+  accroche/développement/CTA — un Statut se consomme en 3 secondes de
+  scroll, la densité d'Instagram ou de Reddit n'a pas sa place ici.
+- **YouTube Communauté** ("70% des powerlifters interrogés étaient
+  actuellement blessés") : reprend le registre "invite à répondre" déjà
+  choisi pour Discord (Axe DF), cohérent avec le fait que l'onglet
+  Communauté YouTube sert justement à faire réagir les abonnés déjà
+  acquis, pas à en recruter de nouveaux.
+
+Avec cet axe, les 7 plateformes explicitement nommées dans la demande
+d'origine ont chacune au moins un script réel en base, avec un registre
+volontairement différent par plateforme plutôt qu'un même message copié
+partout (Instagram/YouTube : broadcast avec CTA numéroté ; X : broadcast
+sourcé sans numéro ; Reddit : valeur pure sans aucun CTA ; Discord/YouTube
+Communauté : question ouverte à la communauté déjà acquise ; WhatsApp
+Statut : un seul fait, format minimal).
+
+### Validation
+
+Mêmes contrôles que les Axes DD/DE/DF.
