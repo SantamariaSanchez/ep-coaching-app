@@ -6645,3 +6645,50 @@ de colonnes déjà existantes sur le programme actif de Santamaria via
 Relu en base après écriture : les 4 compteurs du bilan (`unplacedDays`,
 `unconfiguredExercises`, `untargetedTrainedGroups`, `hasObjective`)
 tombent tous à 0/vrai avec ces données.
+
+## ED — Logbook : repos non bloquant, notes persistantes, historique complet (2026-09-17)
+
+Retour direct, quatre frictions distinctes sur le Logbook (SessionView.tsx) :
+
+1. **Chrono de repos bloquant.** `RestTimerOverlay` était un plein écran
+   (`fixed inset-0`, backdrop flouté) qui, une fois le temps suggéré
+   atteint, imposait un questionnaire "prêt physiquement ? prêt
+   mentalement ?" à répondre avant de pouvoir continuer. Supprimé
+   entièrement, remplacé par `RestTimerBadge` : un badge discret dans
+   l'en-tête (couleur ambre puis verte une fois le temps suggéré atteint),
+   0 clic. Le temps total de séance change lui aussi subtilement de
+   couleur pendant le repos (ambre) vs en série (blanc) — le signal visuel
+   demandé à la place du questionnaire à valider. Plus aucun bouton ne
+   ferme le chrono : il se referme tout seul (et persiste sa durée réelle,
+   `rest_duration_seconds`, toujours utilisée dans l'export CSV) dès que
+   le set suivant est validé (`closeRestTimer`, appelé depuis
+   `handleValidateSet`) ou dès que "Terminer la séance" est cliqué.
+2. **Note d'exercice pas vraiment persistante.** La note libre "Ton
+   exercice" vivait en `localStorage`, clée par `sessionId` — donc remise
+   à zéro à chaque nouvelle séance malgré l'impression d'une note qui
+   reste. Nouvelle table `client_exercise_notes` (migration
+   `20260917e_client_exercise_notes.sql`, une ligne par client+exercice,
+   RLS client + lecture coach) et route `PATCH /api/client/exercise-
+   notes`, débouncée à 800ms côté client. Chargée une fois au démarrage de
+   la séance (`InitData.exerciseNotes`) plutôt que recalculée à chaque
+   frappe.
+3. **Historique limité à un seul set.** `prevWeights` ne gardait que LE
+   set le plus récemment créé (toutes séances confondues), pas
+   spécifiquement ceux de la dernière fois où l'exercice a été fait — et
+   l'écran n'affichait qu'un seul groupe de 3 chiffres. Nouveau
+   `InitData.prevSets` (`app/api/client/sessions/[id]/route.ts`) :
+   regroupe tous les sets de la séance précédente la PLUS RÉCENTE pour cet
+   exercice (par `session_id`, triés par `set_number`), affichés
+   maintenant un par un ("Set 1", "Set 2"...) dans le panneau Historique.
+   `prevWeights` reste inchangé (sert uniquement à `suggestNextWeight`).
+4. **Carte de rappel bilan/repas qui revient chaque jour.** `DailyGateOverlay`
+   fermait via `sessionStorage` avec une clé datée
+   (`ep-gate-dismissed-${today}-${reason}`) : une fermeture ne tenait que
+   jusqu'au changement de jour (voire moins, sessionStorage ne survit pas
+   à la fermeture d'onglet). Clé désormais sans date, en `localStorage` :
+   une fermeture est définitive par type de rappel (morning/meal/evening).
+
+### Validation
+
+`tsc --noEmit` propre. Migration `client_exercise_notes` appliquée et
+vérifiée (table + policies RLS présentes).
