@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera } from "lucide-react";
 import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
+import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
@@ -218,6 +219,10 @@ function MyScripts({
   useEffect(() => {
     setScripts(initialScripts);
   }, [initialScripts]);
+
+  // Prompteur (retour direct 2026-09-17) : ouvre en plein écran par-dessus
+  // tout, caméra + texte défilant + enregistrement, voir Teleprompter.tsx.
+  const [teleprompterScript, setTeleprompterScript] = useState<{ title: string; content: string } | null>(null);
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -820,6 +825,13 @@ function MyScripts({
           </div>
         </div>
       )}
+      {teleprompterScript && (
+        <Teleprompter
+          title={teleprompterScript.title}
+          content={teleprompterScript.content}
+          onClose={() => setTeleprompterScript(null)}
+        />
+      )}
     </div>
   );
 
@@ -920,7 +932,23 @@ function MyScripts({
                   <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#E01E1E" }}>
                     Script (mot pour mot)
                   </span>
-                  {script.content && <CopyButton text={script.content} />}
+                  {script.content && (
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setTeleprompterScript({ title: script.title, content: script.content! })}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+                          background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.4)",
+                          borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
+                          color: "#E01E1E", cursor: "pointer",
+                        }}
+                      >
+                        <Camera size={12} /> Prompteur
+                      </button>
+                      <CopyButton text={script.content} />
+                    </div>
+                  )}
                 </div>
                 {openId === script.id ? (
                   <div>
