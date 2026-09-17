@@ -6046,3 +6046,28 @@ explorer plusieurs guides) a disparu des deux côtés à la fois.
 `tsc --noEmit` propre, `eslint` (mêmes 3 erreurs préexistantes non
 bloquantes que l'Axe DN, aucune nouvelle), `next build` de production
 complet (exit 0).
+
+## DP — La recherche publique lead magnets ne tolérait aucune faute de frappe (2026-09-17)
+
+`lib/fuzzy-search.ts` (`fuzzyMatchAny`, distance de Levenshtein avec
+tolérance croissante selon la longueur du mot) existe depuis le
+2026-09-16 et est déjà utilisé par la recherche du Studio créatif
+(`IdeationScripts.tsx`), mais n'avait jamais été backporté sur
+`/ressources` (`LeadMagnetsExplorer.tsx`), la page publique la plus
+visitée du site (confirmée canal d'acquisition organique). Cette page
+avait sa propre logique locale (`foldAccents` + sous-chaîne exacte par
+mot, corrigée une première fois le 2026-09-10 pour les accents) : une
+vraie faute de frappe ("musculaton", "proteinne", fréquente au clavier
+téléphone) ne matchait donc jamais rien, sur la page où ça compte le
+plus (~700+ entrées, un visiteur qui ne trouve rien repart).
+
+Remplacé par l'utilitaire partagé : comportement identique pour une
+saisie correcte (le fuzzy-match essaie d'abord la sous-chaîne exacte
+avant de tolérer une distance), tolérance de faute en plus. Code local
+`foldAccents` supprimé (devenu mort, plus aucun appelant).
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` (1 seule erreur `react-hooks/set-state-in-effect`,
+déjà préexistante sur une autre ligne du fichier avant ce changement,
+aucune nouvelle), `next build` de production complet (exit 0).
