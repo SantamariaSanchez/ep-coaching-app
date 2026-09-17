@@ -6,6 +6,7 @@ import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, Layou
 import { normalizeKeyword, type LeadMagnetSummary, type LeadMagnetFormat } from "@/lib/lead-magnets";
 import { RESOURCE_CATEGORIES, RESOURCE_SUBCATEGORIES, type ResourceCategory } from "@/lib/resource-categories";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
+import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 
 const FORMAT_LABELS: Record<LeadMagnetFormat, { label: string; icon: typeof BookOpen }> = {
   guide: { label: "Guide", icon: BookOpen },
@@ -17,15 +18,6 @@ const RECENT_SEARCHES_KEY = "ep-lead-magnets-recent-searches";
 const LAST_CATEGORY_KEY = "ep-lead-magnets-last-category";
 const MAX_RECENT_SEARCHES = 5;
 const PAGE_SIZE = 24;
-
-// Recherche insensible aux accents ("proteine" doit matcher "protéine") —
-// même idiome que normalize() dans lib/session-accessories.ts.
-function foldAccents(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "");
-}
 
 function readRecentSearches(): string[] {
   if (typeof window === "undefined") return [];
@@ -277,20 +269,19 @@ export default function LeadMagnetsExplorer({
     // sans accent, tres frequent au clavier telephone) ne matchait jamais
     // "protéine" dans le titre. (2) Un seul gros sous-texte exact : chercher
     // "perte poids" ne matchait pas un titre "Comment perdre du poids
-    // durablement" (les mots ne se suivent pas dans cet ordre). Fix : chaque
-    // MOT de la recherche doit matcher quelque part (titre, accroche OU
-    // sous-categorie), accents pliés des deux côtés, plutôt qu'une seule
-    // sous-chaîne figée.
-    const words = foldAccents(search.trim()).split(/\s+/).filter(Boolean);
+    // durablement" (les mots ne se suivent pas dans cet ordre).
+    // Passé sur `fuzzyMatchAny` (lib/fuzzy-search.ts, 2026-09-17) plutôt que
+    // la sous-chaîne exacte maison ci-dessus : même comportement pour une
+    // saisie correcte (le fuzzy-match essaie d'abord la sous-chaîne exacte),
+    // mais tolère en plus une vraie faute de frappe ("musculaton",
+    // "proteinne") — déjà utilisé par la recherche du Studio créatif
+    // (IdeationScripts.tsx) mais jamais backporté sur cette page publique,
+    // la plus visitée du site.
     return magnets.filter((m) => {
       if (category && m.category !== category) return false;
       if (subcategory && m.subcategory !== subcategory) return false;
       if (format && m.format !== format) return false;
-      if (words.length > 0) {
-        const haystack = foldAccents(`${m.title} ${m.hook} ${m.subcategory ?? ""}`);
-        if (!words.every((w) => haystack.includes(w))) return false;
-      }
-      return true;
+      return fuzzyMatchAny([m.title, m.hook, m.subcategory], search);
     });
   }, [magnets, search, category, subcategory, format, keywordMatch]);
 
