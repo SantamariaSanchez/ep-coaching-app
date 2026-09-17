@@ -6021,3 +6021,28 @@ un `next build` de production complet (exit 0) que cette règle ne bloque
 pas le build, donc pas de correctif forcé qui aurait complexifié le code
 pour satisfaire une règle non bloquante déjà tolérée ailleurs dans ce
 fichier.
+
+## DO — "Continue ta lecture" : suggestions de guides liés en fin de lead magnet (2026-09-17)
+
+Complète directement l'Axe DN (déblocage automatique) : aucune page
+`/ressources/[slug]` n'invitait à consulter un autre guide après celui-ci,
+alors qu'à l'échelle de ~700+ lead magnets c'est justement le lead qui en
+consulte plusieurs qui est le plus qualifié à convertir. Ajouté côté
+serveur (`app/ressources/[slug]/page.tsx`) : jusqu'à 3 suggestions, même
+sous-catégorie en priorité puis reste de la catégorie, calculées via
+`getAllLeadMagnets()` (déjà mis en cache, aucune requête supplémentaire
+réelle). Rendu une fois le contenu débloqué (guide, checklist, et le
+résultat du quiz), jamais pendant la capture pour ne pas diluer le seul
+CTA qui compte à ce moment.
+
+Avec l'Axe DN, le parcours devient : un lead ouvre un premier guide,
+laisse son contact, voit 3 suggestions liées, clique sur l'une d'elles et
+se retrouve débloqué instantanément sans rien retaper — la friction qui
+freinait justement les leads les plus qualifiés (ceux qui voudraient
+explorer plusieurs guides) a disparu des deux côtés à la fois.
+
+### Validation
+
+`tsc --noEmit` propre, `eslint` (mêmes 3 erreurs préexistantes non
+bloquantes que l'Axe DN, aucune nouvelle), `next build` de production
+complet (exit 0).
