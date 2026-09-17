@@ -6,8 +6,15 @@ import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
 
 export const dynamic = "force-dynamic";
 
-const TITLE = "Ton coach | EP Coaching";
-const DESCRIPTION = "Qui t'accompagne chez EP Coaching, et sur quoi.";
+// Titre/description enrichis du nom (audit SEO 2026-09-17, retour direct :
+// "quand on cherche mon nom [...] il faut qu'on ressorte en haut") : cette
+// page affiche déjà Santamaria Sanchéz visiblement (CoachDirectoryExplorer,
+// seul coach humain à ce jour), mais son nom n'apparaissait dans aucune
+// balise title/description alors que c'est la page la plus directement
+// pertinente pour une recherche sur son nom propre.
+const TITLE = "Santamaria Sanchéz, coach EP Coaching";
+const DESCRIPTION =
+  "Qui t'accompagne chez EP Coaching : Santamaria Sanchéz, coach en bodybuilding et coach pour les coachs, et sur quoi il peut t'aider.";
 
 export const metadata: Metadata = {
   title: TITLE,

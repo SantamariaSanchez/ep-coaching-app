@@ -90,6 +90,36 @@ const STATS = [
   { value: "100%", label: "Personnalisé" },
 ];
 
+// JSON-LD (retour direct 2026-09-17 : "je veux que quand on cherche mon
+// nom ou EP Coaching sur Google, on ressorte en haut") : rien n'associait
+// jusqu'ici "Santamaria Sanchéz" à "EP Coaching" pour les moteurs de
+// recherche, ni en donnée structurée ni même dans le texte visible de
+// cette page (le nom n'apparaissait nulle part). sameAs pointe uniquement
+// vers des profils réels et confirmés (Instagram, TikTok, YouTube) —
+// jamais une URL LinkedIn inventée, aucune URL vanity confirmée à ce jour
+// (voir 🎥 Guide production scripts YouTube).
+const STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "EP Coaching",
+  url: "https://ep-coaching.vercel.app",
+  description: DESCRIPTION,
+  founder: {
+    "@type": "Person",
+    name: "Santamaria Sanchéz",
+    sameAs: [
+      "https://instagram.com/santamariasanchez_",
+      "https://www.tiktok.com/@santamariasanchez_",
+      "https://www.youtube.com/@santamaria_sanchez",
+    ],
+  },
+  sameAs: [
+    "https://instagram.com/santamariasanchez_",
+    "https://www.tiktok.com/@santamariasanchez_",
+    "https://www.youtube.com/@santamaria_sanchez",
+  ],
+};
+
 export default function HomePage() {
   return (
     <div
@@ -104,6 +134,12 @@ export default function HomePage() {
         overflow: "hidden",
       }}
     >
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+      />
+
       <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
 
         {/* ── Logo ── */}
@@ -395,7 +431,7 @@ export default function HomePage() {
             textTransform: "uppercase",
           }}
         >
-          EP Coaching · Coaching Bodybuilding & Performance
+          EP Coaching · Fondé par Santamaria Sanchéz · Coaching Bodybuilding & Performance
         </p>
       </div>
     </div>

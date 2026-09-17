@@ -6336,3 +6336,92 @@ Vérifié en base après coup : les 4 jobs de l'Axe DU sont revenus à leur
 schedule d'origine, les 5 jobs DST sont sur leur nouveau schedule, aucun
 `command` ne contient de placeholder, les 2 colonnes `coach_mailings`
 existent (`information_schema.columns`).
+
+## DW — Nom de Santamaria absent de tout le SEO de l'appli (2026-09-17)
+
+Retour direct : "je veux que quand je cherche moi [...] ou EP Coaching ou
+coaching sportif on ressorte en haut". Vérifié avant d'agir : "Santamaria"
+n'apparaissait dans AUCUNE balise meta ni dans le texte visible de
+`app/page.tsx` (l'accueil, destination du lien en bio Instagram) ni de
+`app/coachs/page.tsx` (la page qui affiche pourtant son profil), malgré un
+audit SEO déjà mené le 2026-09-16 (sitemap, robots.txt, metadata par page,
+voir Axes de cette date). Aucune donnée structurée (JSON-LD) nulle part
+sur le site non plus, alors que c'est le levier le plus direct pour
+qu'un moteur de recherche associe une personne à une marque (recherche de
+nom propre).
+
+Corrigé :
+- `app/page.tsx` : JSON-LD `Organization` (EP Coaching) avec `founder`
+  `Person` (Santamaria Sanchéz) et `sameAs` vers les vrais profils
+  confirmés (Instagram, TikTok, YouTube — jamais une URL LinkedIn
+  inventée, aucune vanity URL confirmée à ce jour). Ligne de bas de page
+  passée de "EP Coaching · Coaching Bodybuilding & Performance" à
+  "EP Coaching · Fondé par Santamaria Sanchéz · Coaching Bodybuilding &
+  Performance" (texte visible, pas que la donnée structurée).
+- `app/coachs/page.tsx` : titre/description passés de "Ton coach | EP
+  Coaching" (aucun nom) à "Santamaria Sanchéz, coach EP Coaching" — cette
+  page affiche déjà son profil visiblement (seul coach humain à ce jour,
+  `getCoachDirectory()`), mais son nom n'apparaissait dans aucune balise
+  title/description alors que c'est la page la plus directement
+  pertinente pour une recherche sur son nom propre.
+
+Le mot "coaching sportif" était déjà présent dans le title/description de
+l'accueil depuis l'audit du 2026-09-16 ("Coaching sportif en ligne
+(bodybuilding, nutrition, performance)"), rien à ajouter sur ce point
+précis. Pas touché au site vitrine (repo séparé
+github.com/SantamariaSanchez/EPCoaching), hors du périmètre de cette
+session (pas de checkout local disponible).
+
+### Validation
+
+`tsc --noEmit` propre. JSON-LD vérifié syntaxiquement valide (`JSON.stringify`
+d'un objet TypeScript, pas de chaîne construite à la main qui risquerait
+un JSON cassé).
+
+## DX — Corrections de fond sur le contenu Studio créatif : identité, zéro barre, priorité objectif (2026-09-17)
+
+Retour direct, sévère et justifié : *"tu as mis coach en muscu en
+première ligne, c'est nul et faux, je suis coach body et pour les coachs
+[...] charger la barre ou les études, tout le monde s'en fout, et je suis
+coach body donc 0 contexte pour une barre, il existe des machines [...]
+mon client s'en fout de la fenêtre anabolique ou du mindset, lui il veut
+atteindre son objectif, pas qu'on lui parle technique."* Trois problèmes
+distincts, tous corrigés :
+
+1. **Identité fausse** : 84 scripts sur le stock non publié utilisaient
+   "Coach en musculation." en bloc 0 de description — corrigé en masse
+   vers "Coach en bodybuilding." (identité réelle), et vers "Coach en
+   bodybuilding, et coach pour les coachs qui veulent scaler." pour les 7
+   scripts identifiés comme ciblant spécifiquement le segment coach/business
+   (14 points avant de te lancer, temps administratif, multitâche de
+   coach, incertitude d'entrepreneur, 10 à 30 clients, un coach ou un plan
+   clair, partie invisible du métier).
+2. **Référence à la barre, 0 contexte réel** : 9 scripts mentionnaient
+   "charger la barre"/"sur la barre" — remplacé par "monter en charge",
+   "sur la machine", "une charge très légère" selon le contexte exact de
+   chaque script (jamais un simple copier-coller, relu chaque script
+   individuellement). Squat/développé gardés comme noms de mouvements
+   génériques (existent en version machine), seule la mention explicite
+   de la barre elle-même a été retirée.
+3. **Nouvelle Règle n°10** ajoutée au 🎬 Guide production scripts reels
+   (et Règle n°9 miroir au 🎥 Guide YouTube) : identité exacte, zéro barre,
+   et surtout **priorité absolue à l'objectif client sur le mécanisme
+   technique** — le hook et la conclusion de chaque script doivent porter
+   sur ce que le client obtient (perdre du gras, prendre du muscle,
+   atteindre son objectif), jamais sur le "pourquoi ça marche" comme sujet
+   central. Ajouté aussi une liste explicite de sujets déjà épuisés à ne
+   plus reprendre sans angle vraiment neuf (fenêtre anabolique, motivation
+   vs discipline, mindset générique, HIIT vs cardio modéré).
+
+Volontairement pas fait : réécrire intégralement le corps des 84 scripts
+pour appliquer la Règle n°10 point 4 (priorité objectif) rétroactivement —
+chantier bien plus lourd qu'un correctif de mots-clés, laissé à la
+prochaine session de production de scripts qui appliquera la règle
+nativement plutôt que de tout réécrire d'un coup sans le recul nécessaire
+pour bien faire chaque script.
+
+### Validation
+
+Vérifié par requête SQL qu'il ne reste aucune occurrence de "coach en
+musculation" ni de "la barre" au sens équipement (hors faux positif
+figuré "la barre est haute/basse") dans le stock non publié.
