@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { NEWSLETTER_LIST_ID } from "@/utils/brevo";
+import { enforceRateLimit, clientIp, PRESETS } from "@/lib/rate-limit";
 
 // Point d'entrée public unique pour l'inscription à la newsletter Brevo
 // (liste "Newsletter EP Coaching", id 6, déjà existante et déjà utilisée
@@ -37,6 +38,21 @@ export async function OPTIONS(req: Request) {
 
 export async function POST(req: Request) {
   const headers = corsHeaders(req.headers.get("origin"));
+
+  // Point d'entrée public sans compte, cross-origin (ep-site inclus) :
+  // strictement aucune limite avant ce fix, même trou que submitLead
+  // (app/ressources/actions.ts) avant son propre correctif. Même preset
+  // email (5/h par IP) : ce n'est qu'une inscription newsletter, pas un
+  // flux qu'un usage normal répète.
+  const limited = await enforceRateLimit(
+    `newsletter-subscribe:${clientIp(req)}`,
+    PRESETS.email.limit,
+    PRESETS.email.windowSeconds
+  );
+  if (limited) {
+    for (const [key, value] of headers) limited.headers.set(key, value);
+    return limited;
+  }
 
   let body: { email?: string; source?: string; website?: string };
   try {
