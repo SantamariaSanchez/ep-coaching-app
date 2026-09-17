@@ -2,7 +2,36 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { Calculator, Dumbbell, ArrowLeft } from "lucide-react";
+import { Calculator, Dumbbell, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
+
+// Ni le calculateur calories ni le 1RM n'invitaient à aller plus loin après
+// le résultat (2026-09-17, même constat que pour /ressources, voir
+// MASTERCLASS.md) — alors que c'est justement le moment où l'intention est
+// la plus claire (quelqu'un qui vient de calculer ses macros ou sa charge
+// max a une vraie question nutrition/entraînement en tête). Un seul guide
+// vraiment pertinent par calculateur plutôt qu'une liste générique.
+function ToolCta({ guideSlug, guideTitle }: { guideSlug: string; guideTitle: string }) {
+  return (
+    <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+      <Link
+        href={`/ressources/${guideSlug}`}
+        className="ep-card"
+        style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", textDecoration: "none" }}
+      >
+        <BookOpen size={16} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
+        <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED", flex: 1 }}>{guideTitle}</p>
+        <ArrowRight size={14} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
+      </Link>
+      <Link
+        href="/auth/client"
+        className="ep-btn-primary"
+        style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, height: 42, fontSize: 12.5 }}
+      >
+        Suivre ça automatiquement dans l&apos;appli <ArrowRight size={14} />
+      </Link>
+    </div>
+  );
+}
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -177,6 +206,7 @@ function CaloriesCalculator() {
             Estimation de maintenance (métabolisme de base × niveau d&apos;activité). Pour prendre du muscle,
             ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.
           </p>
+          <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
         </div>
       )}
     </div>
@@ -245,6 +275,7 @@ function OneRepMaxCalculator() {
             Formule d&apos;Epley, fiable jusqu&apos;à 10-12 répétitions. Au delà, l&apos;estimation devient
             moins précise.
           </p>
+          <ToolCta guideSlug="checklist-bases-avant-ajouter-poids" guideTitle="Les bases à maîtriser avant d'ajouter du poids sur la barre" />
         </div>
       )}
     </div>
