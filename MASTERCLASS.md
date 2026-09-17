@@ -6530,3 +6530,70 @@ besoin de rate limit, la signature Stripe fait déjà ce travail.
 ### Validation
 
 `tsc --noEmit` propre.
+
+## EB — Vérification du programme perso contre le sheet + Fat Grips/trépied/shaker dans "à prévoir" (2026-09-17)
+
+Retour direct : Santamaria a collé le contenu complet de son Google Sheet
+perso (source de vérité, prep avec Florian/ThePrepDad, déjà documentée
+dans la page Notion "💪 Nutrition, Programme & Roadmap réels") et demandé
+de vérifier que l'app et Notion correspondent bien, puis de corriger si
+besoin.
+
+**Vérification programme** : les 40 exercices du programme actif
+(`programs.id = f68a0966...`, 5 jours PUSH/PULL/LEGS-ÉPAULES/UPPER/LEGS-
+BICEPS, table `exercises`) comparés un par un au sheet. Un seul écart
+trouvé : PUSH #1 était enregistré "Élévations latérales buste soutenu"
+(mauvais exercice, mauvais texte de set up) au lieu de "Élévations
+latérales machine" du sheet — présent identiquement dans l'app ET dans
+Notion. Corrigé aux deux endroits (`UPDATE exercises ...` en base, et
+`notion-update-page` sur la table PUSH). Tout le reste (PULL, LEGS/
+ÉPAULES, UPPER, LEGS/BICEPS, 39 exercices) confirmé identique au sheet.
+
+**Accessoires "à prévoir"** (fonctionnalité déjà existante depuis le
+2026-09-08/10, voir Axe correspondant et `lib/session-accessories.ts`) :
+- Catalogue 0RIR vérifié à jour sur 0rir-shop.com (Cuffs, Lift Loops,
+  Lock Belt, Micro Plates, Prime Straps, Super Pin — inchangé depuis la
+  dernière vérification, "Sac 0RIR" exclu car c'est le sac lui-même).
+  Ajouté **Fat Grips** (fatgripz.com), seul accessoire hors 0RIR demandé.
+- Ajouté **trépied** et **shaker Nutrimuscle** comme accessoires
+  "toujours" (`ALWAYS_ACCESSORIES`), distincts des accessoires déduits
+  des exercices : jamais liés à un exercice précis, jamais évincés par le
+  plafond à 3, toujours affichés dans "à prévoir" dès qu'une séance est
+  prévue. Les 4 endroits qui affichent "à prévoir" (séance en cours,
+  Programme, aperçu du jour coach) adaptés pour ne plus forcer un lien
+  cliquable ni une ligne "Pour tel exercice" quand ça n'a pas de sens.
+- Appliqué le bagage explicite (`exercise_library.accessories`, "c'est
+  moi qui choisis", jamais deviné automatiquement dans l'affichage) sur
+  9 des exercices du programme perso où le nom correspond exactement à
+  une entrée d'`exercise_library` : Lock Belt (Hack squat, Leg extension,
+  Leg curl assis), Prime Straps (Tirage vertical neutre, Tirage
+  horizontal assis pronation, Rowing haltères), Cuffs (Oiseau poulie
+  vis-à-vis), Super Pin (Élévations latérales machine), Micro Plates
+  (Développé incliné haltères).
+
+**Trouvé mais volontairement pas corrigé dans cette passe** : environ 15
+autres exercices du programme perso (ex. "Pec deck", "Développé incliné
+smith", "Mollets assis", "Presse pieds bas linéaire"...) n'ont AUCUNE
+entrée `exercise_library` au nom exactement identique — la bibliothèque
+partagée (658 lignes) contient soit des variantes par marque de machine
+("Mollets assis — Technogym"...), soit des noms légèrement différents
+("Pec deck / Butterfly" au lieu de "Pec deck"). Le bagage d'accessoires
+se matche par égalité stricte de nom (`getAccessoriesByExerciseName`,
+`utils/exercise-library.ts`), donc ces exercices ne peuvent afficher
+aucun accessoire choisi tant que ce nom n'existe pas exactement dans la
+bibliothèque partagée. Corriger ça implique soit d'ajouter ~15 lignes à
+la bibliothèque partagée (affecte tous les coachs qui l'utilisent, pas
+qu'un chantier perso), soit de renommer des entrées existantes (risque de
+casser d'autres programmes qui les citent déjà) — trop gros pour cette
+passe, à traiter à part. En attendant, Santamaria peut choisir un
+accessoire pour n'importe quel exercice de son programme directement
+depuis ExerciseDetailPanel (bouton d'édition d'un exercice) : le sélecteur
+crée/rattache l'entrée bibliothèque nécessaire au moment de l'usage, "à
+prévoir" ne sert que d'automatisation en plus, pas le seul moyen de
+choisir.
+
+### Validation
+
+`tsc --noEmit` propre. Programme vérifié en base après le fix (SELECT sur
+la ligne corrigée). Notion relu après édition pour confirmer le nouveau
+texte.
