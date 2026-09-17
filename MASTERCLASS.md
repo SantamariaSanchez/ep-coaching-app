@@ -6717,3 +6717,39 @@ si aucun n'est supporté plutôt qu'un échec silencieux.
 `tsc --noEmit` et `eslint` propres sur le nouveau composant (un
 `setState` synchrone dans l'effet caméra déplacé dans la fonction async
 pour satisfaire `react-hooks/set-state-in-effect`).
+
+**Repasse le même jour** (retour direct après premier essai réel : "je
+vois juste un écran noir, je me vois pas" + "dans la galerie c'est bien
+enregistré sauf que le format c'est en paysage") — deux bugs réels
+distincts trouvés en creusant :
+
+1. **Écran noir** : le `<video>` de prévisualisation n'était monté dans
+   le JSX QUE quand `ready` était déjà vrai (`{ready && (...)}`), mais
+   `videoRef.current.srcObject = stream` s'exécutait AVANT le
+   `setReady(true)` qui déclenche ce montage — au moment de l'affectation,
+   `videoRef.current` valait encore `null` (l'élément n'existait pas
+   encore dans le DOM), donc l'affectation ne faisait rien. Le flux
+   caméra existait bien (l'enregistrement fonctionnait, lui lisant
+   `streamRef.current` directement, jamais l'élément `<video>`), mais ne
+   s'affichait jamais à l'écran. Corrigé en montant le `<video>` en
+   permanence dès le premier rendu (visibilité gérée par opacité, jamais
+   par montage/démontage conditionnel).
+2. **Enregistrement en paysage** : `getUserMedia({ width: {ideal:1080},
+   height: {ideal:1920} })` n'est qu'une PRÉFÉRENCE, pas une garantie —
+   beaucoup de caméras (webcam de PC, certains téléphones selon
+   l'orientation du capteur) renvoient un flux natif en paysage que le
+   navigateur affiche correctement à l'écran via des métadonnées de
+   rotation, mais que `MediaRecorder` enregistre tel quel, sans cette
+   rotation d'affichage — d'où un fichier bien réel mais en paysage.
+   Corrigé en n'enregistrant plus jamais le flux caméra brut : chaque
+   frame est désormais redessinée sur un `<canvas>` hors-DOM à la
+   résolution exacte voulue (portrait 1080×1920 par défaut, bascule
+   paysage ajoutée pour une vidéo YouTube), recadrée en "cover" (comme le
+   ferait CSS `object-fit`) — c'est ce canvas, converti en flux via
+   `canvas.captureStream()` et combiné à la piste audio d'origine, qui est
+   passé à `MediaRecorder`. Le format de sortie ne dépend donc plus de ce
+   que la caméra source décide de renvoyer.
+
+### Validation (repasse)
+
+`tsc --noEmit` et `eslint` propres.
