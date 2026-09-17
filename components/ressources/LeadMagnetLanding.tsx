@@ -7,7 +7,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import type { LeadMagnet, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
+import type { LeadMagnet, LeadMagnetSummary, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
 const UNLOCK_PREFIX = "ep-unlocked-";
@@ -114,6 +114,49 @@ function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean
           </Link>
         </>
       )}
+    </div>
+  );
+}
+
+// ── Continue ta lecture (suggestions, une fois débloqué) ──────────────────
+
+function RelatedMagnets({ items }: { items: LeadMagnetSummary[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div style={{ marginTop: 20 }}>
+      <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 10 }}>
+        Continue ta lecture
+      </p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {items.map((m) => {
+          const Icon = getMagnetIcon(m.icon);
+          return (
+            <Link
+              key={m.slug}
+              href={`/ressources/${m.slug}`}
+              className="ep-card"
+              style={{
+                display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                textDecoration: "none",
+              }}
+            >
+              <div
+                style={{
+                  width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                  background: "rgba(224,30,30,0.12)", border: "1px solid rgba(224,30,30,0.22)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                }}
+              >
+                <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
+              </div>
+              <div style={{ minWidth: 0, flex: 1 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED", lineHeight: 1.3 }}>{m.title}</p>
+              </div>
+              <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.25)", flexShrink: 0 }} />
+            </Link>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -379,6 +422,7 @@ function QuizFlow({
   submitLead,
   skipCapture,
   isCoach,
+  relatedMagnets,
 }: {
   magnet: QuizMagnet;
   submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
@@ -387,6 +431,7 @@ function QuizFlow({
   // lead qui ne l'est pas encore doit passer par ce formulaire.
   skipCapture: boolean;
   isCoach: boolean;
+  relatedMagnets: LeadMagnetSummary[];
 }) {
   const [step, setStep] = useState(0);
   const [storedUnlock, setStoredUnlock] = useState(false);
@@ -522,6 +567,7 @@ function QuizFlow({
         <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.7, margin: 0 }}>{result.description}</p>
       </div>
       <AppCta isLoggedIn={skipCapture} isCoach={isCoach} />
+      <RelatedMagnets items={relatedMagnets} />
     </div>
   );
 }
@@ -531,9 +577,11 @@ function QuizFlow({
 export default function LeadMagnetLanding({
   magnet,
   submitLead,
+  relatedMagnets = [],
 }: {
   magnet: LeadMagnet;
   submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
+  relatedMagnets?: LeadMagnetSummary[];
 }) {
   const Icon = getMagnetIcon(magnet.icon);
   const [storedUnlock, setStoredUnlock] = useState(false);
@@ -607,7 +655,7 @@ export default function LeadMagnetLanding({
     return (
       <div className="page-transition" style={{ padding: "32px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
         <Header magnet={magnet} Icon={Icon} showKeyword={isCoach} />
-        <QuizFlow magnet={magnet} submitLead={submitLead} skipCapture={isLoggedIn} isCoach={isCoach} />
+        <QuizFlow magnet={magnet} submitLead={submitLead} skipCapture={isLoggedIn} isCoach={isCoach} relatedMagnets={relatedMagnets} />
       </div>
     );
   }
@@ -620,6 +668,7 @@ export default function LeadMagnetLanding({
         <>
           {magnet.format === "guide" ? <GuideContent magnet={magnet} /> : <ChecklistContent magnet={magnet} />}
           <AppCta isLoggedIn={isLoggedIn} isCoach={isCoach} />
+          <RelatedMagnets items={relatedMagnets} />
         </>
       ) : autoUnlocking ? (
         // Contact déjà connu (voir CONTACT_KEY) : pas la peine de montrer le

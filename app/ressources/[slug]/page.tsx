@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { getLeadMagnet, getLeadMagnetSlugs } from "@/lib/lead-magnets";
+import { getLeadMagnet, getLeadMagnetSlugs, getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadMagnetLanding from "@/components/ressources/LeadMagnetLanding";
 import { submitLead } from "../actions";
 
@@ -62,6 +62,20 @@ export default async function LeadMagnetPage({
   const magnet = await getLeadMagnet(slug);
   if (!magnet) notFound();
 
+  // "Continue ta lecture" (2026-09-17) : rien jusqu'ici n'invitait à
+  // consulter un autre guide après celui-ci, alors qu'à l'échelle de ~700+
+  // lead magnets c'est justement le lead qui en consulte plusieurs qui est
+  // le plus qualifié à convertir (voir aussi le déblocage automatique du
+  // contact déjà connu, LeadMagnetLanding.tsx). Même sous-catégorie
+  // d'abord pour rester vraiment pertinent, puis le reste de la catégorie
+  // pour compléter jusqu'à 3 suggestions.
+  const sameCategory = (await getAllLeadMagnets()).filter(
+    (m) => m.category === magnet.category && m.slug !== slug
+  );
+  const sameSubcategory = sameCategory.filter((m) => m.subcategory === magnet.subcategory);
+  const restOfCategory = sameCategory.filter((m) => m.subcategory !== magnet.subcategory);
+  const relatedMagnets = [...sameSubcategory, ...restOfCategory].slice(0, 3);
+
   // Titre/accroche/catégorie sont déjà affichés sans capture (voir Header
   // dans LeadMagnetLanding, rendu hors du bloc `unlocked`) : reprendre
   // exactement ces mêmes champs ici n'expose rien de plus à un robot qu'à un
@@ -86,7 +100,7 @@ export default async function LeadMagnetPage({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <LeadMagnetLanding magnet={magnet} submitLead={submitLead} />
+      <LeadMagnetLanding magnet={magnet} submitLead={submitLead} relatedMagnets={relatedMagnets} />
     </>
   );
 }
