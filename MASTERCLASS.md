@@ -6150,3 +6150,66 @@ plateforme.
 Vérifié par requête SQL qu'aucun tiret cadratin/demi-cadratin ne s'est
 glissé dans les 2 scripts. Anti-doublon vérifié avant écriture (aucun
 script existant sur les lead magnets 099/016).
+
+## DT — Relance J+1 après la toute première action d'un membre gratuit (2026-09-17)
+
+Investigation dédiée (priorité n°1 du mandat permanent : rétention et
+activation des membres gratuits) sur ce qui se passe réellement après
+qu'un nouveau membre a fait son tout premier geste de valeur. L'onboarding
+lui-même est déjà solide (`OnboardingFlow`, `WelcomeGuide`,
+`lib/onboarding-checklist.ts` avec 4 vraies actions branchées sur des
+compteurs réels) et `lib/first-action-celebration.ts` félicite déjà le
+membre pour sa première séance/premier repas/premier bilan, in-app + push.
+
+Le vrai trou trouvé n'est pas dans l'onboarding mais juste après : dès
+qu'une de ces actions existe, le membre est classé "actif" par
+`weekly-reengagement` (fenêtre `DORMANT_DAYS` de 10 jours,
+`lib/reengagement.ts`) et ne reçoit plus rien avant longtemps. Or
+`celebrateFirstAction` n'envoie jamais d'email, seulement in-app + push,
+canal partiellement fiable seulement (accepté ou révoqué à tout moment,
+non supporté sur Safari iOS avant la version 16.4). Le lendemain de ce premier geste,
+moment où un renforcement compte le plus pour transformer un geste isolé
+en habitude, n'avait donc aucun canal fiable pour une bonne part des
+membres.
+
+Corrigé avec un système minimal, sans nouvelle table :
+- `profiles.first_real_action_at` : posé une seule fois par
+  `celebrateFirstAction`, quel que soit le geste (séance/repas/bilan) qui
+  arrive en premier (`update ... where first_real_action_at is null`).
+- `app/api/cron/first-action-followup` (nouveau cron quotidien, 16h UTC,
+  jobid pg_cron `first-action-followup`) : cible les membres gratuits
+  (`subscription_status != 'active'`, un client accompagné a déjà un
+  coach humain qui suit son démarrage) dont `first_real_action_at` tombe
+  dans une fenêtre de 20h à 44h avant le passage du cron (fenêtre large
+  plutôt que "pile 24h" pour ne jamais rater quelqu'un si l'horaire dérive
+  d'un passage à l'autre). Envoie email (Brevo, `wrapBrandedEmail`) + push
+  + cloche in-app, une seule fois par membre
+  (`profiles.first_action_followup_sent_at`, jamais réinitialisé).
+- `lib/first-action-followup.ts` (`buildFollowupMessage`) : félicite pour
+  le geste déjà fait puis pointe vers la prochaine action manquante dans
+  l'ordre workout > repas > bilan (même ordre que la checklist
+  d'onboarding) ; si les 3 sont déjà cochées, félicite pour la régularité
+  plutôt que de répéter une checklist déjà terminée.
+- `first_action_followup` ajouté aux types "essentiel" de
+  `lib/notification-preferences.ts` (jamais désactivable), même
+  traitement que les autres mécanismes de relance de rétention
+  (`quiet_client_relance`, `stagnation_escalation`...).
+
+Volontairement pas touché : le cron `weekly-reengagement` lui-même (cette
+relance J+1 est un complément qui vit dans le trou qu'il laisse, pas un
+remplacement) et la félicitation immédiate de `celebrateFirstAction`
+(reste in-app + push, instantanée ; cette relance est le rattrapage à
+J+1, plus posé, par email).
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres sur les fichiers touchés (après
+`npm ci`, `node_modules` absent au démarrage de la session). `next build`
+échoue dès `/api/webhooks/stripe` (`STRIPE_SECRET_KEY` absent de cet
+environnement) confirmé pré-existant et sans rapport avec ce chantier
+(même échec identique après `git stash` de tous les changements de cette
+session). Migration appliquée en direct sur `cadmwvrsjklgtrrebflz`
+(colonnes + `cron.schedule`), vérifiée par requête SQL après coup
+(colonnes présentes, job actif). Avis Supabase sécurité/perf revérifiés
+après coup : aucune nouvelle entrée, uniquement du bruit préexistant déjà
+documenté (index inutilisés, fonctions `SECURITY DEFINER` historiques).
