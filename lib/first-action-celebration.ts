@@ -52,6 +52,13 @@ export async function isFirstEverAction(
  * lib/notify.ts). À appeler seulement après une écriture réussie, et
  * seulement si `isFirstEverAction` a renvoyé true avant cette écriture.
  * Fire-and-forget : ne doit jamais faire échouer l'action appelante.
+ *
+ * Pose aussi `profiles.first_real_action_at` la toute première fois
+ * (workout/repas/bilan, peu importe lequel arrive en premier) : sans ça,
+ * rien ne permettait de savoir QUAND relancer le lendemain (voir
+ * app/api/cron/first-action-followup, ajouté le 2026-09-17 pour combler le
+ * trou entre "vient de faire son premier geste" et la relance des membres
+ * dormants à J+10, lib/reengagement.ts).
  */
 export async function celebrateFirstAction(
   clientId: string,
@@ -59,6 +66,17 @@ export async function celebrateFirstAction(
 ): Promise<void> {
   try {
     await notifyUser(clientId, celebration);
+  } catch {
+    // best-effort — jamais bloquant
+  }
+
+  try {
+    const admin = createAdminClient();
+    await admin
+      .from("profiles")
+      .update({ first_real_action_at: new Date().toISOString() })
+      .eq("id", clientId)
+      .is("first_real_action_at", null);
   } catch {
     // best-effort — jamais bloquant
   }

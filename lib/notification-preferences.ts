@@ -53,6 +53,7 @@ const ESSENTIEL_TYPES = new Set([
   "stagnation_escalation",
   "stagnation_escalation_coach",
   "coach_relaunch",
+  "first_action_followup",
 ]);
 
 const COMMUNAUTE_PREFIXES = ["community_", "coach_post", "new_formation_published"];
