@@ -6425,3 +6425,41 @@ pour bien faire chaque script.
 Vérifié par requête SQL qu'il ne reste aucune occurrence de "coach en
 musculation" ni de "la barre" au sens équipement (hors faux positif
 figuré "la barre est haute/basse") dans le stock non publié.
+
+## DY — Tracking Studio créatif étendu (partages/enregistrements) + recherche marché (2026-09-17)
+
+Retour direct : "like et comment et partage et save [...] le tracking sur
+l'appli doit être hyper simple et hyper utile [...] tu dois absolument
+aller faire des recherches toi." Deux volets :
+
+1. **Le tracking de performance existait déjà** (Studio créatif, depuis le
+   2026-09-10, Axe BJ-suivant) avec vues/likes/commentaires par script
+   publié, moyenne automatique, comparatif semaine par semaine — pas un
+   chantier à construire de zéro contrairement à ce que le retour laissait
+   supposer. Complété avec les 2 métriques manquantes explicitement
+   demandées : `shares`/`saves` (migration
+   `20260917d_coach_scripts_shares_saves.sql`), ajoutées au type
+   `CoachScript`, à `updateScript`, et à l'UI d'édition/affichage de
+   `IdeationScripts.tsx` (mêmes composants, même ergonomie que les 3
+   champs existants, aucun champ obligatoire en plus pour rester rapide).
+   LinkedIn était déjà un `platform` supporté (`PLATFORM_LABELS`), rien à
+   ajouter côté plateformes.
+2. **Recherche marché** menée (WebSearch, pas de transcription vidéo
+   fiable disponible comme outil pour ce niveau de précision) sur le
+   framework Hook-Story-Offer (structure précise 0-3s/4-15s/16-45s/5
+   dernières secondes), des données 2026 sur les CTA (un CTA "enregistre"
+   augmente la portée sur 7-14 jours, aussi fort qu'un CTA commentaire),
+   Taylor Chiche/MentorClass, Tai Lopez, et confirmé qu'aucune source
+   fiable ne documente assez précisément la méthodologie de Sacha Dust,
+   Marvin ou Hans Kadss pour l'appliquer sans inventer (Règle n°1 du guide
+   scripts, jamais inventer). Nouvelle **Règle n°11** ajoutée au 🎬 Guide
+   production scripts reels : structure précise du reel, CTA "enregistre"
+   en alternance avec "commente", et nouveau mécanisme de CTA vers une
+   vidéo YouTube existante quand elle répond exactement au sujet du reel
+   (une seule vidéo publiée à ce jour, donc mécanisme limité pour
+   l'instant, se généralisera avec la chaîne).
+
+### Validation
+
+`tsc --noEmit` propre. Colonnes `shares`/`saves` vérifiées présentes en
+base après migration.

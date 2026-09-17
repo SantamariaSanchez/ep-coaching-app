@@ -223,6 +223,10 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
   const [perfViews, setPerfViews] = useState("");
   const [perfLikes, setPerfLikes] = useState("");
   const [perfComments, setPerfComments] = useState("");
+  // Ajoutés le 2026-09-17 (retour direct : "like et comment et partage et
+  // save"), même schéma que les 3 champs ci-dessus.
+  const [perfShares, setPerfShares] = useState("");
+  const [perfSaves, setPerfSaves] = useState("");
 
   // Moyenne des vues sur les scripts déjà loggés, pour repérer "au-dessus
   // de la moyenne" automatiquement plutôt que de demander au coach de le
@@ -268,22 +272,26 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
     setPerfViews(script.views != null ? String(script.views) : "");
     setPerfLikes(script.likes != null ? String(script.likes) : "");
     setPerfComments(script.comments_count != null ? String(script.comments_count) : "");
+    setPerfShares(script.shares != null ? String(script.shares) : "");
+    setPerfSaves(script.saves != null ? String(script.saves) : "");
   }
 
   function savePerf(id: string) {
     const views = perfViews.trim() ? Number(perfViews) : null;
     const likes = perfLikes.trim() ? Number(perfLikes) : null;
     const commentsCount = perfComments.trim() ? Number(perfComments) : null;
-    if ([views, likes, commentsCount].some((v) => v != null && (!Number.isFinite(v) || v < 0))) {
+    const shares = perfShares.trim() ? Number(perfShares) : null;
+    const saves = perfSaves.trim() ? Number(perfSaves) : null;
+    if ([views, likes, commentsCount, shares, saves].some((v) => v != null && (!Number.isFinite(v) || v < 0))) {
       setError("Chiffres invalides.");
       return;
     }
     setError(null);
     const backup = scripts;
-    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, views, likes, comments_count: commentsCount } : s)));
+    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, views, likes, comments_count: commentsCount, shares, saves } : s)));
     setPerfEditId(null);
     startTransition(async () => {
-      const result = await updateScript(id, { views, likes, commentsCount });
+      const result = await updateScript(id, { views, likes, commentsCount, shares, saves });
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -390,6 +398,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
         views: null,
         likes: null,
         comments_count: null,
+        shares: null,
+        saves: null,
       };
       setScripts((prev) => [newScript, ...prev]);
       setTitle("");
@@ -1065,6 +1075,18 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                           placeholder="Commentaires (optionnel)" aria-label="Commentaires"
                           style={{ ...inputStyle, width: 150, padding: "8px 10px" }}
                         />
+                        <input
+                          type="number" min="0" inputMode="numeric"
+                          value={perfShares} onChange={(e) => setPerfShares(e.target.value)}
+                          placeholder="Partages (optionnel)" aria-label="Partages"
+                          style={{ ...inputStyle, width: 130, padding: "8px 10px" }}
+                        />
+                        <input
+                          type="number" min="0" inputMode="numeric"
+                          value={perfSaves} onChange={(e) => setPerfSaves(e.target.value)}
+                          placeholder="Enregistrements (optionnel)" aria-label="Enregistrements"
+                          style={{ ...inputStyle, width: 160, padding: "8px 10px" }}
+                        />
                       </div>
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
@@ -1090,6 +1112,8 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                       <span style={{ fontSize: 12, fontWeight: 800, color: "#4ade80" }}>{script.views.toLocaleString("fr-FR")} vues</span>
                       {script.likes != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.likes.toLocaleString("fr-FR")} likes</span>}
                       {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.comments_count.toLocaleString("fr-FR")} commentaires</span>}
+                      {script.shares != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.shares.toLocaleString("fr-FR")} partages</span>}
+                      {script.saves != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.saves.toLocaleString("fr-FR")} enreg.</span>}
                       {avgViews != null && script.views > avgViews && (
                         <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#facc15", background: "rgba(250,204,21,0.12)", padding: "2px 7px", borderRadius: 999 }}>
                           🔥 Au-dessus de la moyenne

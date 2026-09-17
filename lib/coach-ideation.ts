@@ -99,6 +99,13 @@ export interface CoachScript {
   views: number | null;
   likes: number | null;
   comments_count: number | null;
+  // Ajoutés le 2026-09-17 (retour direct : "like et comment et partage et
+  // save") — les partages et enregistrements comptent souvent plus que les
+  // likes pour l'algorithme (signal d'intérêt réel), migration
+  // 20260917d_coach_scripts_shares_saves. Optionnels comme likes/comments,
+  // même logique de friction minimale au logging.
+  shares: number | null;
+  saves: number | null;
 }
 
 export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
@@ -106,7 +113,7 @@ export async function getCoachScripts(coachId: string): Promise<CoachScript[]> {
     const admin = createAdminClient();
     const { data } = await admin
       .from("coach_scripts")
-      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count")
+      .select("id, coach_id, title, format, content, created_at, updated_at, duration_seconds, hook, pillar, source_reference, cta, instagram_caption, platform, status, views, likes, comments_count, shares, saves")
       .eq("coach_id", coachId)
       .order("updated_at", { ascending: false });
     return (data as CoachScript[]) ?? [];

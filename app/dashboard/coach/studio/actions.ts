@@ -318,6 +318,10 @@ export async function updateScript(
     views?: number | null;
     likes?: number | null;
     commentsCount?: number | null;
+    // Ajoutés le 2026-09-17 (retour direct : "like et comment et partage
+    // et save"), même logique que les 3 champs ci-dessus.
+    shares?: number | null;
+    saves?: number | null;
     // Retour direct 2026-09-16 : élargi à toutes les plateformes de contenu
     // (voir PLATFORM_LABELS côté client) — texte libre, pas de liste fermée
     // ici pour rester tolérant si une nouvelle plateforme apparaît avant
@@ -351,7 +355,7 @@ export async function updateScript(
     if (!(SCRIPT_STATUSES as readonly string[]).includes(updates.status)) return { error: "Statut invalide." };
     patch.status = updates.status;
   }
-  for (const [key, col] of [["views", "views"], ["likes", "likes"], ["commentsCount", "comments_count"]] as const) {
+  for (const [key, col] of [["views", "views"], ["likes", "likes"], ["commentsCount", "comments_count"], ["shares", "shares"], ["saves", "saves"]] as const) {
     const val = updates[key];
     if (val === undefined) continue;
     if (val !== null && (!Number.isFinite(val) || val < 0)) return { error: "Chiffre invalide." };
