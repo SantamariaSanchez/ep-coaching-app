@@ -6128,3 +6128,25 @@ passage : Mifflin-St Jeor pour le métabolisme de base et Epley pour le
 
 `tsc --noEmit`, `eslint`, `next build` de production : tous propres
 (exit 0).
+
+## DS — Telegram, la plateforme oubliée du chantier multi-plateformes (2026-09-17)
+
+En reprenant la production de scripts, vérifié par requête directe que
+`platform = 'telegram'` avait 0 ligne en base : sur les 7 plateformes
+explicitement demandées dans le chantier d'origine, Telegram avait été
+la seule jamais concrétisée malgré l'Axe DG qui affirmait le chantier
+"complet". Corrigé avec "L'échauffement qui sert vraiment à quelque
+chose" (099, mauvais_principe_demasque, registre diffusion avec CTA
+numéroté, même traitement que WhatsApp Statut) — Fradkin et al. 2006.
+
+Ajouté aussi un 2e script Reddit ("Hypertrophie ou force, comment
+vraiment choisir", 016, comprendre_pour_decider, aucun CTA commercial,
+même registre que le premier post Reddit de l'Axe DE) pour renforcer la
+présence sur cette plateforme avant de généraliser à un 2e post par
+plateforme.
+
+### Validation
+
+Vérifié par requête SQL qu'aucun tiret cadratin/demi-cadratin ne s'est
+glissé dans les 2 scripts. Anti-doublon vérifié avant écriture (aucun
+script existant sur les lead magnets 099/016).
