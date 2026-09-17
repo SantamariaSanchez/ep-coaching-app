@@ -6071,3 +6071,32 @@ avant de tolérer une distance), tolérance de faute en plus. Code local
 `tsc --noEmit` propre, `eslint` (1 seule erreur `react-hooks/set-state-in-effect`,
 déjà préexistante sur une autre ligne du fichier avant ce changement,
 aucune nouvelle), `next build` de production complet (exit 0).
+
+## DQ — 3 nouveaux scripts Nutrition/Psychologie, jamais traités (2026-09-17)
+
+Retour direct : "continue et travail sur les choses, implémente". Repris
+la production de scripts avec 3 sujets Nutrition encore jamais utilisés
+(vérifié par requête anti-doublon avant écriture) :
+- "La fenêtre anabolique de 30 minutes, mythe ou réalité" (047,
+  mauvais_principe_demasque, 45s) — Ji et al., Nutrients 2025 + Jäger et
+  al., position stand ISSN 2017.
+- "La créatine ne muscle pas que le muscle" (103, comprendre_pour_decider,
+  60s) — Gordji-Nejad et al., Scientific Reports 2024 + Roschel et al.,
+  Nutrients 2021.
+- "Une fringale n'est presque jamais un manque de volonté" (095,
+  comprendre_pour_decider, 60s) — Weigle et al. 2005 + St-Onge et al. 2012,
+  American Journal of Clinical Nutrition.
+
+Chacun applique le bloc identité "Coach en musculation." en tête de
+légende (Règle n°4/8) et évite le mot "étude" dans le script parlé
+lui-même (reformulé "des chercheurs ont testé..."), le détail
+scientifique restant uniquement dans `source_reference`. Ajoutés à
+`coach_scripts` (`status='a_tourner'`) et à la page Notion 🚨 Scripts
+prêts maintenant.
+
+### Validation
+
+Comptage de mots réel avant insertion (45s : 118 mots, 60s : 158 et 166
+mots, dans les fourchettes de la Règle n°2). Vérifié par requête SQL
+qu'aucun tiret cadratin/demi-cadratin ne s'est glissé dans
+`content`/`hook`/`cta`/`instagram_caption` des 3 scripts.
