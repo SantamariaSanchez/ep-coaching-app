@@ -6597,3 +6597,51 @@ choisir.
 `tsc --noEmit` propre. Programme vérifié en base après le fix (SELECT sur
 la ligne corrigée). Notion relu après édition pour confirmer le nouveau
 texte.
+
+## EC — Bilan avant sauvegarde du programme perso, les 4 points ouverts traités (2026-09-17)
+
+Retour direct : "dans modifier mon programme y'a des trucs à faire encore
+alors fais-les" — référence au panneau "Bilan avant sauvegarde"
+(`DeliveryReviewPanel`, `ProgramEditor.tsx`) qui affiche 4 points
+d'avancement sur un programme, jamais bloquants mais jamais traités
+depuis la création du programme perso le 2026-09-01.
+
+Les 4 points, tous à zéro avant cette passe :
+1. **Séances placées sur un jour réel** : `program_days.weekday` était
+   `null` sur les 5 jours. Renseigné d'après le vrai planning déjà en
+   place dans `schedule_blocks` (Push=Mardi, Pull=Mercredi, Upper=Jeudi,
+   Legs/Épaules=Samedi, Legs/Biceps=Dimanche), pas inventé.
+2. **Exercices configurés en détail** : `tension_focus` et `rom_notes`
+   étaient `null` sur les 40 lignes de `exercises`. Renseignés un par un
+   avec un jugement technique réel par mouvement (ex. Bayesian curl uni →
+   tension étirée, caractéristique de l'exercice ; Leg extension →
+   tension raccourcie, contraction en haut), en s'appuyant sur les
+   indications d'exécution déjà écrites par Santamaria lui-même dans
+   `notes` plutôt qu'en inventant. **Volontairement pas rempli** :
+   `resistance_notes` (élastiques réellement possédés), `availability_
+   notes` (affluence de sa salle à son horaire) et `discomfort_notes`
+   (seuil personnel d'inconfort) — ces 3 champs demandent une
+   connaissance personnelle/situationnelle que je n'ai pas et qu'il
+   serait malhonnête d'inventer ; ils ne comptent pas dans le critère
+   "configuré" du bilan (`isAssignmentConfigured`, `ExerciseDetailPanel.
+   tsx`), donc aucun impact sur le point 2 du bilan.
+3. **Budget de volume par groupe musculaire** : `programs.volume_targets`
+   était vide alors que 11 groupes sont réellement travaillés. Rempli
+   avec le volume hebdomadaire déjà réellement programmé (calculé à la
+   main depuis les séries de chaque exercice, ex. Épaules 18 séries/
+   semaine, Dos 15, Quadriceps 11), donc une confirmation honnête de ce
+   qui est déjà en place plutôt qu'une nouvelle prescription inventée.
+4. **Objectif de phase** : `programs.objective` était vide. Rempli avec
+   la phase réelle de la roadmap déjà documentée dans Notion ("💪
+   Nutrition, Programme & Roadmap réels") : Prise de masse, semaines
+   0-34 vers la Heroes Cup WNBF France 2027.
+
+Aucune migration, aucun changement de code : uniquement du remplissage
+de colonnes déjà existantes sur le programme actif de Santamaria via
+`execute_sql`. Rien à commit/push pour cet axe.
+
+### Validation
+
+Relu en base après écriture : les 4 compteurs du bilan (`unplacedDays`,
+`unconfiguredExercises`, `untargetedTrainedGroups`, `hasObjective`)
+tombent tous à 0/vrai avec ces données.
