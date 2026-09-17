@@ -6498,3 +6498,35 @@ seul script précis.
 
 `tsc --noEmit` propre sur toute la chaîne (page.tsx → IdeationHub.tsx →
 IdeationScripts.tsx → content-leads-tracking.ts → lead-magnets.ts).
+
+## EA — Reprise du backlog sécurité de l'Axe P : un vrai trou de rate limiting trouvé (2026-09-17)
+
+Retour direct : "continue de travailler sur l'appli aux endroits que tu
+veux". Repassage de `get_advisors` (security + performance) : tous les
+points déjà remontés par l'Axe DB (2026-09-16) confirmés toujours sains
+sans changement (5 tables RLS-sans-policy, 11 fonctions SECURITY DEFINER,
+`pg_net` en public, 38 index inutilisés). Rien de nouveau côté Supabase.
+
+Repris ensuite le point resté en suspens de l'Axe P (audit sécurité plus
+ancien) : "59 fichiers de mutation sur 71 sans `enforceRateLimit`, non
+audités un par un". Plutôt que de tout ré-auditer (dépense de tokens trop
+large pour la semaine, routines à préserver), ciblé le sous-ensemble qui
+compte vraiment : les routes publiques (sans compte) plutôt que les
+server actions authentifiées (risque bien plus bas, déjà noté comme tel).
+
+**Trouvé et corrigé** : `app/api/newsletter/subscribe/route.ts` — point
+d'entrée public, cross-origin (appelé aussi par ep-site en statique),
+avec un honeypot mais strictement aucune limite de débit, le même trou
+que `submitLead` avant son propre correctif (Axe P). Ajouté
+`enforceRateLimit` + `clientIp`, même preset `PRESETS.email` (5/h par IP).
+
+**Vérifié sain, pas de fix nécessaire** : les deux autres routes POST
+sans `enforceRateLimit` (`client/schedule-blocks/ack-alarm`,
+`notifications/read`) sont toutes les deux authentifiées et scopées au
+propriétaire (`owner_id`/`user_id` = `guard.userId`), exactement le
+profil de risque déjà jugé bas dans l'Axe P. `webhooks/stripe` n'a pas
+besoin de rate limit, la signature Stripe fait déjà ce travail.
+
+### Validation
+
+`tsc --noEmit` propre.
