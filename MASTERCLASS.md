@@ -6100,3 +6100,31 @@ Comptage de mots réel avant insertion (45s : 118 mots, 60s : 158 et 166
 mots, dans les fourchettes de la Règle n°2). Vérifié par requête SQL
 qu'aucun tiret cadratin/demi-cadratin ne s'est glissé dans
 `content`/`hook`/`cta`/`instagram_caption` des 3 scripts.
+
+## DR — CTA manquant après chaque calculateur de /outils (2026-09-17)
+
+En vérifiant si un nouveau chantier "formations" (100€/formation, décidé
+dans le pricing du 2026-09-16) manquait côté produit : déjà entièrement
+construit (5 formations, 7 à 15 leçons chacune, aucune coquille vide),
+gating actuel basé sur `isSubscribed` (coaching payant classique) plutôt
+que sur un futur système d'achat à l'unité ou de tier SaaS Premium —
+volontairement pas touché, ça dépend entièrement de Stripe (pas encore
+autorisé) et construire ce gating maintenant serait spéculatif sur une
+base qui peut encore changer.
+
+En cherchant ailleurs, trouvé un vrai gain rapide : ni le calculateur
+calories/macros ni le calculateur 1RM de `/outils` (page publique
+optimisée SEO) ne proposaient quoi que ce soit après avoir affiché un
+résultat, alors que c'est justement le moment où l'intention
+nutrition/entraînement du visiteur est la plus claire. Ajouté un bloc
+CTA (un guide vraiment pertinent + création de compte) après chaque
+résultat : `guide-macros` pour le calculateur calories, `checklist-
+bases-avant-ajouter-poids` pour le 1RM (les deux slugs vérifiés
+existants avant de les câbler). Formules elles-mêmes revérifiées au
+passage : Mifflin-St Jeor pour le métabolisme de base et Epley pour le
+1RM, les deux références standard, correctement implémentées.
+
+### Validation
+
+`tsc --noEmit`, `eslint`, `next build` de production : tous propres
+(exit 0).
