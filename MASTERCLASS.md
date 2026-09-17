@@ -6213,3 +6213,65 @@ session). Migration appliquée en direct sur `cadmwvrsjklgtrrebflz`
 (colonnes présentes, job actif). Avis Supabase sécurité/perf revérifiés
 après coup : aucune nouvelle entrée, uniquement du bruit préexistant déjà
 documenté (index inutilisés, fonctions `SECURITY DEFINER` historiques).
+
+## DU — L'appli répond 402 sur 100% des appels, et 4 crons tournaient 24/7 sans aucun client payant (2026-09-17)
+
+Retour direct : "travaille sur l'appli, focus". Requête sur les logs
+`edge_logs` du projet Supabase (`cadmwvrsjklgtrrebflz`) sur les dernières
+24h : 1413 requêtes sur 1416 renvoient `402 Payment Required`, tous
+endpoints confondus (`lead_magnets`, `profiles`, `schedule_blocks`,
+`live_events`...). Ce n'est donc pas "juste" le login qui est bloqué par
+la crise de quota egress ([[project_supabase_quota_crisis]]), c'est
+littéralement 100% des appels REST qui échouent en production
+aujourd'hui, jusqu'au renouvellement du cycle le 2026-09-27. Rien à
+corriger côté code sur ce point précis (c'est une limite de plan
+Supabase, pas un bug), mais ça confirme que la crise est plus sévère que
+ce que la mémoire précédente indiquait.
+
+Ce qui EST corrigeable côté code : `cron.job` (pg_cron, exécuté depuis
+Postgres lui-même, indépendant de Vercel dont `vercel.json` a
+volontairement `crons: []`, voir les migrations `supabase/migrations/202608*_*_cron.sql`)
+listait 4 jobs tournant toutes les 5 à 15 minutes, 24h/24, 7j/7, alors
+qu'il y a 0 client payant actif aujourd'hui ([[feedback_client_vs_membre]]) :
+`live-reminders` (*/5), `meal-reminders` (*/15), `nag-client-tasks`
+(*/10), `send-client-reminders` (*/10). Chacun de ces passages consomme
+au moins une requête Supabase même quand il n'y a strictement rien à
+notifier — un vrai poste d'egress de fond, invisible tant que l'app
+fonctionne, qui va directement re-consommer une partie du quota libéré
+le 27 si rien ne change.
+
+Réduit la fréquence des 4 jobs sans rien casser côté utilisateur, via
+`cron.alter_job` (jamais `cron.unschedule`/`cron.schedule` : le champ
+`command` de ces jobs contient le vrai `CRON_SECRET` en clair, pas le
+placeholder des fichiers de migration d'origine — le recréer aurait
+cassé le cron en silence) :
+- `live-reminders` */5 → */10 : la fenêtre de rappel
+  (`REMINDER_WINDOW_MINUTES = 15`) reste strictement plus large que le
+  nouveau pas, aucun live ne peut être manqué.
+- `meal-reminders` */15 → */20 : fenêtre élargie en conséquence dans
+  `app/api/cron/meal-reminders/route.ts` (`target` à `target + 20` au
+  lieu de `+ 15`) — une fenêtre de largeur égale au pas du cron contient
+  toujours exactement un passage, quel que soit l'horaire du créneau.
+- `nag-client-tasks` */10 → */20 et `send-client-reminders` */10 → */20 :
+  les deux utilisent une logique de rattrapage ("relance si le délai
+  configuré est dépassé" / "envoie si l'heure est passée et pas encore
+  fait aujourd'hui"), jamais une fenêtre stricte — juste quelques minutes
+  de délai supplémentaire possible avant qu'une relance parte, aucune
+  perte de notification.
+
+Volontairement PAS touché : `schedule-block-notify` (*/5), qui porte la
+fonctionnalité réveil ("réveil qui sonne vraiment", relance explicitement
+construite sur un pas de 5 minutes pendant sa fenêtre d'escalade de 30
+min, voir les commentaires du fichier) — y toucher recasserait une
+fonctionnalité déjà corrigée après plusieurs retours directs, pour un
+gain marginal. `live-reminders-24h` (horaire) et tous les crons
+quotidiens/hebdomadaires : déjà assez espacés, aucun gain réel à en
+tirer.
+
+### Validation
+
+`tsc --noEmit` propre. Changement de fréquence vérifié en base après
+application (`select jobid, schedule, command ilike '%REPLACE_WITH%' from
+cron.job where jobid in (1,2,6,20)`) : les 4 schedules sont bien passés
+aux nouvelles valeurs, et aucun `command` ne contient le placeholder
+(confirme que le vrai secret est resté intact).
