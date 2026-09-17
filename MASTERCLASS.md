@@ -5974,3 +5974,50 @@ profite aux deux pages (client et coach), grâce à la fonction partagée.
 Aucun test existant sur `currentStreak` à mettre à jour (vérifié avant
 d'affirmer). Logique revérifiée à la main sur les cas limites (0 point,
 1 seul point le jour de l'inscription, une vraie coupure la veille).
+
+## DN — Déblocage automatique des lead magnets suivants pour un contact déjà connu (2026-09-17)
+
+Retour direct : "continue de travailler, va toujours plus loin, réfléchis
+et mets en place les idées". En traçant ce qui arrive à un email capturé
+sur `/ressources/[slug]` (d'abord soupçonné à tort un vrai bug : les
+téléchargeurs de guides étaient ajoutés à la liste Brevo "Newsletter EP
+Coaching" (id 6) sans jamais recevoir la newsletter promise dans le mail
+de livraison, `member-value-newsletter` ciblant une liste différente
+"Tous les membres EP Coaching". **Vérifié directement auprès de l'API
+Brevo avant d'accuser** : une routine cloud distincte, jamais encore
+inspectée, envoie bien une vraie campagne quotidienne à la liste 6
+(campagne #67, envoyée le 2026-09-16, 42 destinataires) — hypothèse
+fausse, aucun bug, corrigée avant d'être remontée comme telle),
+trouvé une vraie friction ailleurs : `LeadMagnetLanding.tsx` mémorisait le
+déblocage PAR guide (`localStorage`, clé par slug), donc un visiteur qui
+avait déjà laissé son email pour un premier guide devait retaper
+email/téléphone pour chaque guide suivant qu'il ouvrait, alors que ce
+sont justement les leads qui en consultent plusieurs qui sont les plus
+qualifiés à convertir.
+
+Ajouté une mémorisation du contact (clé partagée `ep-lead-contact`, pas
+par slug) : dès qu'un email/téléphone est validé une première fois, les
+guides et quiz suivants se débloquent automatiquement et en silence
+(bref "Déblocage en cours..." plutôt qu'un flash du formulaire). L'appel
+`submitLead` par guide reste systématiquement fait, jamais sauté : la
+ligne `leads` par (slug, email) reste la seule donnée qui dit vraiment
+quels guides intéressent ce contact, l'automatisation ne retire que
+l'interaction humaine répétée.
+
+Vérifié aussi, en même temps, que le flux de bienvenue des coachs IA
+(`lib/ai-coach-welcome.ts`, ses 2 call sites) et la relance des clients
+silencieux (`lib/quiet-client-relance.ts`) n'ont pas la même classe de
+faux positif jour 1 que les Axes DH/DI : le premier n'a pas de fenêtre
+temporelle à mal gérer, le second était déjà couvert par le fix de
+l'Axe DL (`accountAgeDaysOf`, commentaire daté du 2026-09-16 qui le
+référence explicitement).
+
+### Validation
+
+`tsc --noEmit` propre. `eslint` relève 3 erreurs `react-hooks/set-state-in-effect`
+(2 nouvelles, 1 préexistante dans ce même fichier depuis le 2026-08-15,
+vérifié par `git log`/`git show` avant de la croire mienne) : confirmé par
+un `next build` de production complet (exit 0) que cette règle ne bloque
+pas le build, donc pas de correctif forcé qui aurait complexifié le code
+pour satisfaire une règle non bloquante déjà tolérée ailleurs dans ce
+fichier.
