@@ -11,6 +11,17 @@ import type { LeadMagnet, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
 
 const UNLOCK_PREFIX = "ep-unlocked-";
+// Retour d'usage attendu (jamais mesuré jusqu'ici, mais visible dans le
+// code) : le déblocage était mémorisé PAR guide (UNLOCK_PREFIX + slug), donc
+// un visiteur qui a déjà laissé son email pour un premier guide devait
+// retaper email/téléphone pour CHAQUE guide suivant qu'il ouvrait — alors
+// que ce sont justement les leads qui en consultent plusieurs qui sont les
+// plus qualifiés. Mémorise maintenant le contact une fois donné (clé
+// partagée, pas par slug) pour débloquer automatiquement, en silence, les
+// guides suivants — sans jamais sauter l'appel `submitLead` par guide : la
+// ligne `leads` par (slug, email) reste écrite normalement, c'est la seule
+// donnée qui dit vraiment quels guides intéressent ce contact.
+const CONTACT_KEY = "ep-lead-contact";
 
 function readUnlocked(slug: string): boolean {
   if (typeof window === "undefined") return false;
@@ -26,6 +37,28 @@ function markUnlocked(slug: string) {
     localStorage.setItem(UNLOCK_PREFIX + slug, "1");
   } catch {
     // stockage indisponible, tant pis, le déblocage reste valable pour cette session
+  }
+}
+
+function readRememberedContact(): { email: string; phone: string } | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(CONTACT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { email?: unknown; phone?: unknown };
+    const email = typeof parsed.email === "string" ? parsed.email : "";
+    const phone = typeof parsed.phone === "string" ? parsed.phone : "";
+    return email || phone ? { email, phone } : null;
+  } catch {
+    return null;
+  }
+}
+
+function rememberContact(email: string, phone: string) {
+  try {
+    localStorage.setItem(CONTACT_KEY, JSON.stringify({ email, phone }));
+  } catch {
+    // stockage indisponible, tant pis, juste pas de déblocage auto la prochaine fois
   }
 }
 
@@ -98,8 +131,12 @@ function CaptureForm({
   onUnlocked: () => void;
   ctaLabel: string;
 }) {
-  const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  // Pré-rempli si ce visiteur a déjà laissé son contact sur un guide
+  // précédent (voir CONTACT_KEY plus haut) : il n'a alors qu'à valider,
+  // jamais à retaper depuis zéro. Lazy initializer, jamais recalculé au
+  // re-render.
+  const [email, setEmail] = useState(() => readRememberedContact()?.email ?? "");
+  const [phone, setPhone] = useState(() => readRememberedContact()?.phone ?? "");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,6 +150,7 @@ function CaptureForm({
       setError(res.error);
       return;
     }
+    rememberContact(email, phone);
     markUnlocked(slug);
     onUnlocked();
   }
@@ -352,6 +390,7 @@ function QuizFlow({
 }) {
   const [step, setStep] = useState(0);
   const [storedUnlock, setStoredUnlock] = useState(false);
+  const [autoUnlocking, setAutoUnlocking] = useState(false);
   const unlocked = skipCapture || storedUnlock;
 
   // localStorage n'existe pas côté serveur : lire un déblocage déjà acquis
@@ -361,6 +400,28 @@ function QuizFlow({
   const [answers, setAnswers] = useState<string[]>([]);
 
   const finished = step >= magnet.questions.length;
+
+  // Même déblocage silencieux que la page guide/checklist (voir CONTACT_KEY) :
+  // seulement une fois le quiz terminé, jamais avant, pas la peine de
+  // deviner si ce visiteur ira au bout.
+  useEffect(() => {
+    if (!finished || unlocked) return;
+    const remembered = readRememberedContact();
+    if (!remembered) return;
+    let cancelled = false;
+    setAutoUnlocking(true);
+    submitLead(magnet.slug, remembered.email, remembered.phone).then((res) => {
+      if (cancelled) return;
+      setAutoUnlocking(false);
+      if (!res.error) {
+        markUnlocked(magnet.slug);
+        setStoredUnlock(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [finished, unlocked, magnet.slug, submitLead]);
 
   function selectAnswer(resultKey: string) {
     const next = [...answers, resultKey];
@@ -419,6 +480,13 @@ function QuizFlow({
   const result = computeResult();
 
   if (!unlocked) {
+    if (autoUnlocking) {
+      return (
+        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
+          Déblocage en cours...
+        </p>
+      );
+    }
     return (
       <div>
         <div
@@ -471,6 +539,8 @@ export default function LeadMagnetLanding({
   const [storedUnlock, setStoredUnlock] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCoach, setIsCoach] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
+  const [autoUnlocking, setAutoUnlocking] = useState(false);
 
   // Cette page est mise en cache (ISR, voir app/ressources/[slug]/page.tsx)
   // et donc partagée entre visiteurs : le statut de connexion ne peut pas
@@ -491,9 +561,11 @@ export default function LeadMagnetLanding({
       if (cancelled) return;
       if (!user) {
         setStoredUnlock(readUnlocked(magnet.slug));
+        setAuthChecked(true);
         return;
       }
       setIsLoggedIn(true);
+      setAuthChecked(true);
       sb.from("profiles").select("role").eq("id", user.id).single().then(({ data }) => {
         if (!cancelled) setIsCoach((data as { role?: string } | null)?.role === "coach");
       });
@@ -502,6 +574,32 @@ export default function LeadMagnetLanding({
       cancelled = true;
     };
   }, [magnet.slug]);
+
+  // Débloque en silence un guide jamais vu si ce visiteur a déjà laissé son
+  // contact sur un autre guide (voir CONTACT_KEY) : `authChecked` attend que
+  // l'effet ci-dessus ait vraiment tranché membre/anonyme et lu le
+  // déblocage propre à CE slug, pour ne jamais soumettre inutilement pour
+  // quelqu'un déjà connecté ou déjà débloqué. `submitLead` reste appelé
+  // normalement (même ligne `leads` par guide qu'un déblocage manuel),
+  // seule l'interaction humaine disparaît.
+  useEffect(() => {
+    if (!authChecked || isLoggedIn || storedUnlock) return;
+    const remembered = readRememberedContact();
+    if (!remembered) return;
+    let cancelled = false;
+    setAutoUnlocking(true);
+    submitLead(magnet.slug, remembered.email, remembered.phone).then((res) => {
+      if (cancelled) return;
+      setAutoUnlocking(false);
+      if (!res.error) {
+        markUnlocked(magnet.slug);
+        setStoredUnlock(true);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [authChecked, isLoggedIn, storedUnlock, magnet.slug, submitLead]);
 
   const unlocked = isLoggedIn || storedUnlock;
 
@@ -523,6 +621,14 @@ export default function LeadMagnetLanding({
           {magnet.format === "guide" ? <GuideContent magnet={magnet} /> : <ChecklistContent magnet={magnet} />}
           <AppCta isLoggedIn={isLoggedIn} isCoach={isCoach} />
         </>
+      ) : autoUnlocking ? (
+        // Contact déjà connu (voir CONTACT_KEY) : pas la peine de montrer le
+        // formulaire pour un aller-retour qui va se résoudre en un instant,
+        // juste un état d'attente bref plutôt qu'un flash visuel du
+        // formulaire suivi immédiatement de son remplacement.
+        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
+          Déblocage en cours...
+        </p>
       ) : (
         <div>
           <div
