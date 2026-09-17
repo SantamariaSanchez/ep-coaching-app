@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Circle, Square, Download, RotateCcw, SwitchCamera, Type } from "lucide-react";
+import { X, Play, Pause, Circle, Square, Download, RotateCcw, SwitchCamera, Type, RectangleVertical, RectangleHorizontal } from "lucide-react";
 import { createPortal } from "react-dom";
 
 // Prompteur (Studio créatif > Scripts, retour direct 2026-09-17 : "un
@@ -13,6 +13,30 @@ import { createPortal } from "react-dom";
 // caméra/micro, MediaRecorder pour enregistrer directement le tournage,
 // défilement du texte piloté par requestAnimationFrame pour rester fluide
 // à n'importe quelle vitesse.
+//
+// Repasse 2026-09-18 (retour direct : "je me vois pas, écran noir" +
+// "l'enregistrement est en paysage") — deux bugs réels distincts :
+// 1. Le <video> de prévisualisation n'était monté QUE quand `ready` était
+//    déjà vrai, mais `videoRef.current.srcObject = stream` s'exécutait
+//    AVANT le `setReady(true)` qui le montait : au moment de l'assignation
+//    le <video> n'existait pas encore dans le DOM, `videoRef.current`
+//    valait `null`, l'affectation ne faisait donc rien. Le flux existait
+//    bien (l'enregistrement fonctionnait, lui lisant `streamRef.current`
+//    directement) mais ne s'affichait jamais. Corrigé en montant le
+//    <video> en permanence (visibilité gérée par opacité, pas par
+//    montage/démontage) pour que la ref existe déjà quand le flux arrive.
+// 2. `getUserMedia({ width: {ideal:1080}, height: {ideal:1920} })` n'est
+//    qu'une PRÉFÉRENCE : beaucoup de caméras (webcam de PC, certains
+//    téléphones selon l'orientation du capteur) renvoient quand même un
+//    flux natif en paysage, que le <video> affiche correctement à l'écran
+//    (rotation géré par les métadonnées d'affichage) mais que
+//    MediaRecorder enregistre tel quel, sans cette rotation d'affichage —
+//    d'où un fichier bien réel mais en paysage. Corrigé en ne enregistrant
+//    plus jamais le flux caméra brut : chaque frame est dessinée sur un
+//    <canvas> à la résolution EXACTE voulue (portrait 1080x1920 par
+//    défaut, bascule paysage possible), recadrée en "cover" comme le
+//    ferait CSS object-fit — le format de sortie ne dépend plus du tout
+//    de ce que la caméra source décide de renvoyer.
 
 const MIME_CANDIDATES = [
   "video/webm;codecs=vp9,opus",
@@ -52,9 +76,15 @@ export default function Teleprompter({
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Canvas hors-DOM où chaque frame caméra est redessinée à la résolution
+  // exacte voulue avant d'être enregistrée — voir commentaire de tête sur
+  // le bug "enregistrement en paysage".
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const drawRafRef = useRef<number | null>(null);
 
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [ready, setReady] = useState(false);
 
   const [scrolling, setScrolling] = useState(false);
@@ -93,8 +123,13 @@ export default function Teleprompter({
           return;
         }
         streamRef.current = stream;
+        // Le <video> est monté en permanence dans le JSX (visibilité gérée
+        // par opacité, jamais par montage conditionnel) précisément pour
+        // que cette ref existe déjà ici — voir le commentaire de tête sur
+        // le bug "écran noir".
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.play().catch(() => {});
         }
         setReady(true);
       } catch (err) {
@@ -140,8 +175,46 @@ export default function Teleprompter({
   }, [scrolling, speed]);
 
   // ── Enregistrement ────────────────────────────────────────────────────
+  // Redessine chaque frame caméra sur le canvas hors-DOM, recadrée en
+  // "cover" à la résolution cible — c'est ce canvas, jamais le flux caméra
+  // brut, qui est enregistré. Le format de sortie ne dépend donc plus de
+  // ce que la caméra source décide de renvoyer (voir bug "paysage").
+  function drawFrame() {
+    const canvas = canvasRef.current;
+    const video = videoRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (canvas && video && ctx && video.videoWidth > 0) {
+      const targetW = canvas.width;
+      const targetH = canvas.height;
+      const targetRatio = targetW / targetH;
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const srcRatio = vw / vh;
+      let sx: number, sy: number, sw: number, sh: number;
+      if (srcRatio > targetRatio) {
+        sh = vh;
+        sw = vh * targetRatio;
+        sx = (vw - sw) / 2;
+        sy = 0;
+      } else {
+        sw = vw;
+        sh = vw / targetRatio;
+        sx = 0;
+        sy = (vh - sh) / 2;
+      }
+      ctx.save();
+      if (facingMode === "user") {
+        ctx.translate(targetW, 0);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
+      ctx.restore();
+    }
+    drawRafRef.current = requestAnimationFrame(drawFrame);
+  }
+
   function startRecording() {
-    if (!streamRef.current) return;
+    if (!streamRef.current || !videoRef.current) return;
     if (!mimeType) {
       setRecordError("Ton navigateur ne sait pas enregistrer de vidéo ici. Filme avec l'appli caméra de ton téléphone en gardant ce prompteur ouvert à côté.");
       return;
@@ -153,11 +226,24 @@ export default function Teleprompter({
     }
     chunksRef.current = [];
     try {
-      const recorder = new MediaRecorder(streamRef.current, { mimeType });
+      const canvas = document.createElement("canvas");
+      canvas.width = orientation === "portrait" ? 1080 : 1920;
+      canvas.height = orientation === "portrait" ? 1920 : 1080;
+      canvasRef.current = canvas;
+      drawRafRef.current = requestAnimationFrame(drawFrame);
+
+      const canvasStream = canvas.captureStream(30);
+      const audioTracks = streamRef.current.getAudioTracks();
+      const combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+
+      const recorder = new MediaRecorder(combined, { mimeType });
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
+        if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
+        drawRafRef.current = null;
+        canvasRef.current = null;
         const blob = new Blob(chunksRef.current, { type: mimeType });
         setRecordedUrl(URL.createObjectURL(blob));
       };
@@ -167,6 +253,9 @@ export default function Teleprompter({
       setRecSeconds(0);
       recTimerRef.current = setInterval(() => setRecSeconds((s) => s + 1), 1000);
     } catch {
+      if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
+      drawRafRef.current = null;
+      canvasRef.current = null;
       setRecordError("Échec au démarrage de l'enregistrement.");
     }
   }
@@ -184,6 +273,7 @@ export default function Teleprompter({
   useEffect(() => {
     return () => {
       if (recTimerRef.current) clearInterval(recTimerRef.current);
+      if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         try { recorderRef.current.stop(); } catch {}
       }
@@ -201,17 +291,21 @@ export default function Teleprompter({
 
   const overlay = (
     <div className="fixed inset-0 z-[999] bg-black" style={{ touchAction: "none" }}>
-      {/* Caméra en fond, plein écran */}
-      {ready && !cameraError && (
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          playsInline
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ transform: facingMode === "user" ? "scaleX(-1)" : "none" }}
-        />
-      )}
+      {/* Caméra en fond, plein écran — TOUJOURS montée (jamais démontée
+          conditionnellement sur `ready`) : c'est exactement ce qui causait
+          l'écran noir, voir le commentaire de tête du fichier. Seule
+          l'opacité change tant que le flux n'est pas encore arrivé. */}
+      <video
+        ref={videoRef}
+        autoPlay
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover transition-opacity"
+        style={{
+          transform: facingMode === "user" ? "scaleX(-1)" : "none",
+          opacity: ready && !cameraError ? 1 : 0,
+        }}
+      />
 
       {!ready && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -254,6 +348,21 @@ export default function Teleprompter({
               <Circle size={8} fill="white" /> {formatRecTime(recSeconds)}
             </span>
           )}
+          {/* Format d'enregistrement — retour direct 2026-09-17 : "l'enregistrement
+              est en paysage". Portrait par défaut (reels/stories), bascule
+              possible pour une vidéo YouTube en paysage. Verrouillé pendant
+              l'enregistrement (changer la taille du canvas en cours de prise
+              n'aurait aucun sens). */}
+          <button
+            type="button"
+            onClick={() => setOrientation((o) => (o === "portrait" ? "landscape" : "portrait"))}
+            aria-label={orientation === "portrait" ? "Passer en paysage" : "Passer en portrait"}
+            title={orientation === "portrait" ? "Portrait (reels) · clique pour paysage" : "Paysage (YouTube) · clique pour portrait"}
+            disabled={recording}
+            className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white disabled:opacity-40"
+          >
+            {orientation === "portrait" ? <RectangleVertical size={15} /> : <RectangleHorizontal size={15} />}
+          </button>
           <button
             type="button"
             onClick={() => setFacingMode((f) => (f === "user" ? "environment" : "user"))}
