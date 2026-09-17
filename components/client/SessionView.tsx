@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import {
   Timer,
@@ -12,7 +11,6 @@ import {
   Trophy,
   Dumbbell,
   Activity,
-  Brain,
   AlertCircle,
   BarChart2,
   Clock,
@@ -100,9 +98,17 @@ interface InitData {
   exercises: Exercise[];
   prMap: Record<string, number>;
   prevWeights: Record<string, PrevWeight>;
+  // Tous les sets de la séance précédente la plus récente pour cet exercice
+  // (retour direct 2026-09-17 : "je vois ce que j'ai fait la dernière fois,
+  // pas juste un set mais TOUS les sets"), dans l'ordre. Clé = nom en
+  // minuscules, même convention que prevWeights.
+  prevSets: Record<string, PrevWeight[]>;
   existingSets: SessionSet[];
   libraryByName: Record<string, LibraryTip>;
   accessoriesByName: Record<string, string[]>;
+  // Note libre persistante par exercice (client_exercise_notes), clé = nom
+  // exact — voir migration 20260917e.
+  exerciseNotes: Record<string, string>;
 }
 
 interface SetState {
@@ -144,8 +150,16 @@ interface ExerciseState {
 
 type Step = "warmup" | "session" | "recap";
 
+// Retour direct 2026-09-17 ("faut pas qu'on soit bloqué, faut juste le
+// mettre en petit en haut mais pas bloquant... 0 clic juste regarder") :
+// l'ancien RestTimerOverlay était un plein écran bloquant avec un
+// questionnaire "prêt physiquement/mentalement ?" à valider avant de
+// pouvoir continuer. Supprimé entièrement (mentalStep/mentalPhysical/
+// mentalMental/noWaitStartedAt disparaissent avec) au profit d'un badge
+// discret dans l'en-tête (RestTimerBadge) qui ne bloque plus rien : le
+// chrono tourne, se referme tout seul (voir handleValidateSet) dès que le
+// set suivant est validé, sans aucune action requise.
 interface RestTimer {
-  visible: boolean;
   startedAt: number;
   suggestedSeconds: number;
   // Le libellé ("1-2 min", "3-5 min"...) correspondant au VRAI RIR de ce
@@ -155,10 +169,6 @@ interface RestTimer {
   // donc affichait toujours "3-5 min" même quand le compte à rebours réel
   // (suggestedSeconds, lui calculé avec le bon RIR) visait 90s ("1-2 min").
   suggestedLabel: string;
-  mentalStep: "hidden" | "checking" | "no_wait";
-  mentalPhysical: boolean | null;
-  mentalMental: boolean | null;
-  noWaitStartedAt: number | null;
   // Identifie le set concerne par son localId, pas par sa position : entre
   // l'ouverture et la fermeture du chrono, l'utilisateur peut retirer une
   // serie ou reordonner ses exercices, ce qui decalait les index et faisait
@@ -248,31 +258,6 @@ function loadCustomExercises(sessionId: string): Exercise[] {
 function saveCustomExercises(sessionId: string, list: Exercise[]) {
   try {
     localStorage.setItem(customExercisesKey(sessionId), JSON.stringify(list));
-  } catch {}
-}
-
-// Notes libres du client sur un exercice (consignes, douleur, variante...) —
-// distinctes des notes du coach déjà présentes sur l'exercice programmé.
-function exerciseNotesKey(sessionId: string) {
-  return `ep-exercise-notes-${sessionId}`;
-}
-
-function loadExerciseNotes(sessionId: string): Record<string, string> {
-  if (typeof window === "undefined") return {};
-  try {
-    const raw = localStorage.getItem(exerciseNotesKey(sessionId));
-    return raw ? (JSON.parse(raw) as Record<string, string>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function saveExerciseNote(sessionId: string, exerciseName: string, note: string) {
-  try {
-    const all = loadExerciseNotes(sessionId);
-    if (note) all[exerciseName] = note;
-    else delete all[exerciseName];
-    localStorage.setItem(exerciseNotesKey(sessionId), JSON.stringify(all));
   } catch {}
 }
 
@@ -697,208 +682,52 @@ function WarmupStep({
 
 // ── Rest Timer ────────────────────────────────────────────────────────────────
 
-function RestTimerOverlay({
-  timer,
-  onUpdate,
-  onClose,
-}: {
-  timer: RestTimer;
-  onUpdate: (patch: Partial<RestTimer>) => void;
-  onClose: (elapsed: number) => void;
-}) {
-  // MASTERCLASS (react-hooks/purity, 2026-08-16) : useState(expression)
-  // évalue l'expression à chaque rendu même si la valeur n'est utilisée
-  // qu'au premier ; useState(() => expression) garantit un seul appel.
+// Badge de repos non bloquant (retour direct 2026-09-17, remplace l'ancien
+// RestTimerOverlay plein écran + questionnaire "prêt ?" à valider) : juste
+// le temps qui défile, en petit, dans l'en-tête. Aucun clic requis, aucun
+// backdrop, le reste de l'écran (sets suivants, notes...) reste utilisable
+// pendant que ça compte. Se referme tout seul dès que le set suivant est
+// validé (voir handleValidateSet) — jamais par une action dédiée.
+function RestTimerBadge({ timer }: { timer: RestTimer }) {
   const [elapsed, setElapsed] = useState(() =>
     Math.floor((Date.now() - timer.startedAt) / 1000)
   );
-  const [noWaitElapsed, setNoWaitElapsed] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const noWaitRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const beepedRef = useRef(false);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
+    beepedRef.current = false;
+    const interval = setInterval(() => {
       const s = Math.floor((Date.now() - timer.startedAt) / 1000);
       setElapsed(s);
       if (s >= timer.suggestedSeconds && !beepedRef.current) {
         beepedRef.current = true;
         playBeep();
         try { navigator.vibrate([200, 100, 200]); } catch {}
-        onUpdate({ mentalStep: "checking" });
       }
     }, 500);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => clearInterval(interval);
   }, [timer.startedAt, timer.suggestedSeconds]);
 
-  useEffect(() => {
-    if (timer.mentalStep === "no_wait") {
-      noWaitRef.current = setInterval(
-        () => setNoWaitElapsed((s) => s + 1),
-        1000
-      );
-    }
-    return () => {
-      if (noWaitRef.current) clearInterval(noWaitRef.current);
-    };
-  }, [timer.mentalStep]);
-
-  const pct = Math.min((elapsed / timer.suggestedSeconds) * 100, 100);
-  const both = timer.mentalPhysical === true && timer.mentalMental === true;
-  const anyNo = timer.mentalPhysical === false || timer.mentalMental === false;
+  const ready = elapsed >= timer.suggestedSeconds;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center">
-      <div
-        className="ep-modal-overlay absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={() => {
-          if (timer.mentalStep === "hidden") {
-            onUpdate({ mentalStep: "checking" });
-          }
-        }}
-      />
-      <div
-        className="ep-modal-panel relative w-full max-w-md bg-[#150000] border-t border-[#890404]/40 rounded-t-2xl p-6 space-y-5 overflow-y-auto"
-        style={{ maxHeight: "88dvh", paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 32px)" }}
+    <div
+      className="flex items-center gap-1.5 px-2.5 py-1 rounded-full transition-colors"
+      style={{
+        background: ready ? "rgba(74,222,128,0.12)" : "rgba(250,204,21,0.12)",
+        border: `1px solid ${ready ? "rgba(74,222,128,0.3)" : "rgba(250,204,21,0.3)"}`,
+      }}
+      title={`Repos suggéré : ${timer.suggestedLabel}`}
+    >
+      <span
+        className="text-[11px] font-black tabular-nums"
+        style={{ color: ready ? "#4ade80" : "#facc15" }}
       >
-        {timer.mentalStep === "hidden" && (
-          <>
-            <div className="text-center">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-                Repos : {timer.suggestedLabel}
-              </p>
-              <p className="text-5xl font-black text-white tabular-nums">
-                {formatTime(elapsed)}
-              </p>
-              <p className="text-xs text-[#F5EDED]/35 mt-1">
-                Suggéré : {formatTime(timer.suggestedSeconds)}
-              </p>
-            </div>
-            <div className="h-2 bg-[#890404]/15 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full transition-all"
-                style={{
-                  width: `${pct}%`,
-                  backgroundColor: pct >= 100 ? "#4ade80" : "#E01E1E",
-                }}
-              />
-            </div>
-            <button
-              onClick={() => onUpdate({ mentalStep: "checking" })}
-              className="w-full text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60 py-2 transition-colors"
-            >
-              Vérifier ma préparation →
-            </button>
-          </>
-        )}
-
-        {(timer.mentalStep === "checking" || timer.mentalStep === "no_wait") && (
-          <>
-            <div className="flex items-center gap-2">
-              <Brain size={16} className="text-[#E01E1E]" />
-              <p className="text-sm font-black uppercase tracking-widest text-white">
-                Es-tu prêt ?
-              </p>
-              <span className="ml-auto text-sm font-black text-white tabular-nums">
-                {formatTime(elapsed)}
-              </span>
-            </div>
-
-            <div className="space-y-3">
-              {/* Physical */}
-              <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-                <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
-                  💪 Physiquement, tes muscles ont récupéré ?
-                </p>
-                <div className="flex gap-2">
-                  {[true, false].map((v) => (
-                    <button
-                      key={String(v)}
-                      onClick={() => {
-                        onUpdate({ mentalPhysical: v });
-                        // Bug réel : ce passage à "no_wait" (l'écran "prends
-                        // encore 30-60s" avec le bouton "Je suis prêt
-                        // maintenant") ne vivait que dans le bouton Mental
-                        // ci-dessous — répondre "Non" ici seul (physique pas
-                        // récupéré, mental prêt) laissait anyNo=true mais
-                        // both=false : ni le bouton "C'est parti" ni cet
-                        // écran de patience ne s'affichaient, l'utilisateur
-                        // restait bloqué sans aucune suite possible.
-                        if (!v) onUpdate({ mentalStep: "no_wait", noWaitStartedAt: Date.now() });
-                      }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${
-                        timer.mentalPhysical === v
-                          ? v
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "bg-[#890404]/10 text-[#F5EDED]/40 border border-[#890404]/20 hover:border-[#890404]/40"
-                      }`}
-                    >
-                      {v ? "Oui" : "Non"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Mental */}
-              <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4">
-                <p className="text-xs font-semibold text-[#F5EDED]/70 mb-3">
-                  🧠 Mentalement, tu es concentré et prêt à exploser ce set ?
-                </p>
-                <div className="flex gap-2">
-                  {[true, false].map((v) => (
-                    <button
-                      key={String(v)}
-                      onClick={() => {
-                        onUpdate({ mentalMental: v });
-                        if (!v) onUpdate({ mentalStep: "no_wait", noWaitStartedAt: Date.now() });
-                      }}
-                      className={`flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-colors ${
-                        timer.mentalMental === v
-                          ? v
-                            ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                            : "bg-red-500/20 text-red-400 border border-red-500/30"
-                          : "bg-[#890404]/10 text-[#F5EDED]/40 border border-[#890404]/20 hover:border-[#890404]/40"
-                      }`}
-                    >
-                      {v ? "Oui" : "Non"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {both && (
-              <button
-                onClick={() => onClose(elapsed)}
-                className="w-full py-3.5 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] text-white text-sm font-black uppercase tracking-widest transition-colors"
-              >
-                C&apos;est parti 🔥
-              </button>
-            )}
-
-            {timer.mentalStep === "no_wait" && anyNo && (
-              <div className="text-center space-y-3">
-                <p className="text-xs text-[#F5EDED]/50 leading-relaxed">
-                  Prends encore 30-60 secondes. La qualité du set dépend de ta
-                  préparation.
-                </p>
-                {noWaitElapsed >= 30 && (
-                  <button
-                    onClick={() => onClose(elapsed)}
-                    className="w-full py-3 rounded-xl border border-[#890404]/40 hover:border-[#890404]/70 text-sm font-bold text-[#F5EDED]/70 transition-colors"
-                  >
-                    Je suis prêt maintenant
-                  </button>
-                )}
-              </div>
-            )}
-          </>
-        )}
-      </div>
+        {formatTime(elapsed)}
+      </span>
+      <span className="text-[8px] font-bold uppercase tracking-wider text-[#F5EDED]/35">
+        repos
+      </span>
     </div>
   );
 }
@@ -1259,6 +1088,7 @@ function SetRow({
 function ExerciseCard({
   exState,
   prevWeight,
+  prevSets,
   prThreshold,
   sessionId,
   libraryTip,
@@ -1275,6 +1105,8 @@ function ExerciseCard({
 }: {
   exState: ExerciseState;
   prevWeight: PrevWeight | null;
+  /** Tous les sets de la dernière fois, pas juste le dernier — voir InitData.prevSets. */
+  prevSets: PrevWeight[];
   prThreshold: number | null;
   sessionId: string;
   libraryTip?: LibraryTip;
@@ -1486,35 +1318,44 @@ function ExerciseCard({
         </div>
       )}
 
-      {/* History hint (real data fetched in coach logbook, here we show prev weight) */}
-      {exState.showHistory && prevWeight && (
+      {/* Historique — retour direct 2026-09-17 : "j'arrive sur mon exo et je
+          vois ce que j'ai fait la dernière fois, pas juste un set mais TOUS
+          les sets". Une ligne par set de la séance précédente (prevSets,
+          déjà dans l'ordre), plutôt qu'un seul groupe de chiffres qui ne
+          représentait qu'un set choisi arbitrairement (le plus récent
+          enregistré, pas forcément le premier de la série). */}
+      {exState.showHistory && prevSets.length > 0 && (
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
           <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-            Dernière session
+            Dernière séance ({prevSets.length} set{prevSets.length > 1 ? "s" : ""})
           </p>
-          <div className="flex gap-4 text-sm font-black text-white">
-            {prevWeight.weight != null && (
-              <span>
-                {prevWeight.weight}
-                <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-                  kg
+          <div className="flex flex-col gap-1.5">
+            {prevSets.map((s, i) => (
+              <div key={i} className="flex items-center gap-3 text-sm">
+                <span className="text-[10px] font-bold text-[#F5EDED]/30 w-10 flex-shrink-0">
+                  Set {i + 1}
                 </span>
-              </span>
-            )}
-            {prevWeight.reps != null && (
-              <span>
-                {prevWeight.reps}
-                <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">
-                  reps
+                <span className="flex gap-3 font-black text-white">
+                  {s.weight != null && (
+                    <span>
+                      {s.weight}
+                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">kg</span>
+                    </span>
+                  )}
+                  {s.reps != null && (
+                    <span>
+                      {s.reps}
+                      <span className="text-[10px] font-normal text-[#F5EDED]/40 ml-0.5">reps</span>
+                    </span>
+                  )}
+                  {s.rir != null && (
+                    <span>
+                      RIR <span className="text-[#E01E1E]">{s.rir}</span>
+                    </span>
+                  )}
                 </span>
-              </span>
-            )}
-            {prevWeight.rir != null && (
-              <span>
-                RIR{" "}
-                <span className="text-[#E01E1E]">{prevWeight.rir}</span>
-              </span>
-            )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -1680,7 +1521,7 @@ export default function SessionView({
         const exStates = buildExerciseState(
           combined,
           data.existingSets,
-          loadExerciseNotes(sessionId)
+          data.exerciseNotes
         );
         setExercises(exStates);
 
@@ -1860,6 +1701,12 @@ export default function SessionView({
   // les cas ou l'etat React n'a pas encore ete rendu.
   const savingSetsRef = useRef<Set<string>>(new Set());
 
+  // Debounce des notes libres par exercice (client_exercise_notes) — un
+  // PATCH par frappe saturerait l'API pour rien, un par exercice suffit
+  // (une Map plutôt qu'un seul timer : deux exercices différents notés
+  // presque en même temps ne doivent pas s'annuler l'un l'autre).
+  const noteSaveTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
   // Enregistre (ou re-enregistre) un set. La route POST est idempotente sur
   // (seance, exercice, numero de serie) : la rappeler pour un set deja
   // enregistre met a jour la meme ligne, elle n'en cree jamais une seconde.
@@ -1982,51 +1829,17 @@ export default function SessionView({
     [exercises, persistSet]
   );
 
-  const handleValidateSet = useCallback(
-    (exIdx: number, setIdx: number) => {
-      const set = exercises[exIdx]?.sets[setIdx];
-      // Le ref est teste en plus de `set.saving` : sur un double-tap, les
-      // deux clics arrivent avant que React n'ait rendu le premier etat, et
-      // le second relancait aussi le chrono de repos a zero.
-      if (!set || set.saving || savingSetsRef.current.has(set.localId)) return;
-
-      // Chrono de repos ouvert immediatement : il doit demarrer quand la
-      // serie se termine, pas a la fin de l'aller-retour reseau.
-      const rir = set.rirActual ? parseInt(set.rirActual) : 2;
-      const suggested = getSuggestedRest(rir);
-      setRestTimer({
-        visible: true,
-        startedAt: Date.now(),
-        suggestedSeconds: suggested.seconds,
-        suggestedLabel: suggested.label,
-        mentalStep: "hidden",
-        mentalPhysical: null,
-        mentalMental: null,
-        noWaitStartedAt: null,
-        setLocalId: set.localId,
-      });
-
-      void persistSet(exIdx, setIdx);
-    },
-    [exercises, persistSet]
-  );
-
-  const handleRetrySaveSet = useCallback(
-    (exIdx: number, setIdx: number) => {
-      void persistSet(exIdx, setIdx);
-    },
-    [persistSet]
-  );
-
-  const handleRestClose = useCallback(
-    (elapsed: number) => {
-      const localId = restTimer?.setLocalId;
-      setRestTimer(null);
-      if (!localId) return;
-
+  // Referme le chrono de repos EN COURS (celui du set précédent) et
+  // persiste sa durée réelle — retour direct 2026-09-17 : plus aucun clic
+  // ne ferme le chrono explicitement (voir RestTimerBadge, non bloquant),
+  // donc c'est la validation du set SUIVANT qui referme celui d'avant.
+  // Extrait de l'ancien handleRestClose (déclenché jusque-là par le bouton
+  // "C'est parti" de RestTimerOverlay), même logique de persistance.
+  const closeRestTimer = useCallback(
+    (timer: RestTimer, elapsedSeconds: number) => {
       let dbId: string | null = null;
       for (const ex of exercises) {
-        const s = ex.sets.find((x) => x.localId === localId);
+        const s = ex.sets.find((x) => x.localId === timer.setLocalId);
         if (s) {
           dbId = s.dbId;
           break;
@@ -2035,10 +1848,10 @@ export default function SessionView({
 
       setExercises((exs) =>
         exs.map((ex) => {
-          const idx = ex.sets.findIndex((s) => s.localId === localId);
+          const idx = ex.sets.findIndex((s) => s.localId === timer.setLocalId);
           if (idx === -1) return ex;
           const newSets = [...ex.sets];
-          newSets[idx] = { ...newSets[idx], restDuration: elapsed };
+          newSets[idx] = { ...newSets[idx], restDuration: elapsedSeconds };
           return { ...ex, sets: newSets };
         })
       );
@@ -2051,11 +1864,49 @@ export default function SessionView({
         fetch(`/api/client/sessions/${sessionId}/sets/${dbId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ rest_duration_seconds: elapsed }),
+          body: JSON.stringify({ rest_duration_seconds: elapsedSeconds }),
         }).catch(() => {});
       }
     },
-    [exercises, restTimer, sessionId]
+    [exercises, sessionId]
+  );
+
+  const handleValidateSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      const set = exercises[exIdx]?.sets[setIdx];
+      // Le ref est teste en plus de `set.saving` : sur un double-tap, les
+      // deux clics arrivent avant que React n'ait rendu le premier etat, et
+      // le second relancait aussi le chrono de repos a zero.
+      if (!set || set.saving || savingSetsRef.current.has(set.localId)) return;
+
+      // Plus aucun blocage entre deux sets (retour direct 2026-09-17) : si
+      // un chrono de repos tournait déjà pour le set précédent, il se
+      // referme ici et sa durée réelle est celle qui vient de s'écouler.
+      if (restTimer) {
+        closeRestTimer(restTimer, Math.floor((Date.now() - restTimer.startedAt) / 1000));
+      }
+
+      // Chrono de repos ouvert immediatement : il doit demarrer quand la
+      // serie se termine, pas a la fin de l'aller-retour reseau.
+      const rir = set.rirActual ? parseInt(set.rirActual) : 2;
+      const suggested = getSuggestedRest(rir);
+      setRestTimer({
+        startedAt: Date.now(),
+        suggestedSeconds: suggested.seconds,
+        suggestedLabel: suggested.label,
+        setLocalId: set.localId,
+      });
+
+      void persistSet(exIdx, setIdx);
+    },
+    [exercises, persistSet, restTimer, closeRestTimer]
+  );
+
+  const handleRetrySaveSet = useCallback(
+    (exIdx: number, setIdx: number) => {
+      void persistSet(exIdx, setIdx);
+    },
+    [persistSet]
   );
 
   const handleAddExercise = useCallback(
@@ -2189,18 +2040,33 @@ export default function SessionView({
     [sessionId]
   );
 
-  // Notes libres du client sur un exercice — persistées et jointes aux sets
-  // envoyés en base pour rester visibles côté coach.
+  // Notes libres du client sur un exercice — persistées en base
+  // (client_exercise_notes, toujours la même quelle que soit la séance) ET
+  // jointes aux sets envoyés pour rester visibles côté coach dans l'export.
+  // PATCH débouncé à 800ms : la frappe met à jour l'écran tout de suite,
+  // l'enregistrement réseau suit une fois que le client a fini d'écrire.
   const handleExerciseNotesChange = useCallback(
     (exIdx: number, exerciseName: string, notes: string) => {
-      saveExerciseNote(sessionId, exerciseName, notes);
+      const existing = noteSaveTimersRef.current.get(exerciseName);
+      if (existing) clearTimeout(existing);
+      noteSaveTimersRef.current.set(
+        exerciseName,
+        setTimeout(() => {
+          noteSaveTimersRef.current.delete(exerciseName);
+          fetch("/api/client/exercise-notes", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ exercise_name: exerciseName, note: notes }),
+          }).catch(() => {});
+        }, 800)
+      );
       setExercises((prev) => {
         const next = [...prev];
         next[exIdx] = { ...next[exIdx], clientNotes: notes };
         return next;
       });
     },
-    [sessionId]
+    []
   );
 
   // Compute volume per muscle group
@@ -2696,11 +2562,21 @@ export default function SessionView({
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
                 {session.day_label}
               </p>
-              <div className="flex items-center gap-1.5">
-                <Clock size={12} className="text-[#E01E1E]" />
-                <span className="text-lg font-black text-white tabular-nums">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <Clock size={12} style={{ color: restTimer ? "#facc15" : "#E01E1E" }} />
+                {/* Retour direct 2026-09-17 : "change subtilement la couleur
+                    du temps total dès que le set est fini et dès qu'on
+                    reprend, comme ça pas besoin de valider le repos, 0 clic
+                    juste regarder". Le temps total change de couleur au lieu
+                    d'ouvrir un questionnaire à valider — le badge de repos
+                    juste à côté donne le détail pour qui veut le temps exact. */}
+                <span
+                  className="text-lg font-black tabular-nums transition-colors"
+                  style={{ color: restTimer ? "#facc15" : "#fff" }}
+                >
                   {formatTime(sessionElapsed)}
                 </span>
+                {restTimer && <RestTimerBadge timer={restTimer} />}
               </div>
             </div>
             <div className="text-right">
@@ -2801,6 +2677,7 @@ export default function SessionView({
             prevWeight={
               initData.prevWeights[exState.exercise.name.toLowerCase()] ?? null
             }
+            prevSets={initData.prevSets[exState.exercise.name.toLowerCase()] ?? []}
             prThreshold={getEffectiveThreshold(exState.exercise.name)}
             libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
             sessionId={sessionId}
@@ -2832,7 +2709,16 @@ export default function SessionView({
       <div className="fixed bottom-[calc(env(safe-area-inset-bottom)+84px)] md:bottom-4 left-0 right-0 px-4 z-50">
         <div className="max-w-md mx-auto">
           <button
-            onClick={() => setStep("recap")}
+            onClick={() => {
+              // Referme le chrono de repos du dernier set validé — sans set
+              // suivant pour le déclencher, sa durée ne serait sinon jamais
+              // persistée (voir closeRestTimer).
+              if (restTimer) {
+                closeRestTimer(restTimer, Math.floor((Date.now() - restTimer.startedAt) / 1000));
+                setRestTimer(null);
+              }
+              setStep("recap");
+            }}
             className="ep-btn-primary w-full"
             style={{ padding: "14px 24px", fontSize: 12, borderRadius: 12 }}
           >
@@ -2841,20 +2727,6 @@ export default function SessionView({
         </div>
       </div>
 
-      {/* Rest timer overlay — rendu via portail dans <body> : la nav du bas vit
-          hors du stacking context de <main> (position relative + z-index),
-          donc son z-index dépassait celui de l'overlay peu importe sa valeur
-          ici, et le recouvrait complètement en bas d'écran. */}
-      {restTimer &&
-        typeof document !== "undefined" &&
-        createPortal(
-          <RestTimerOverlay
-            timer={restTimer}
-            onUpdate={(patch) => setRestTimer((prev) => prev ? { ...prev, ...patch } : null)}
-            onClose={handleRestClose}
-          />,
-          document.body
-        )}
     </div>
   );
 }

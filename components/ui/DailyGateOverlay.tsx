@@ -35,6 +35,15 @@ import { Sun, Moon as MoonIcon, UtensilsCrossed, X, ChevronRight } from "lucide-
 // Le bilan complet (toutes les cartes, jamais gating) reste accessible à
 // tout moment via /dashboard/client/bilan ou /dashboard/coach/moi/bilan
 // (voir bilanHref) — cette carte n'est qu'un rappel, plus un verrou.
+//
+// Retour direct 2026-09-17 ("c'est bien une seule fois mais après enlève-le,
+// c'est chiant de mettre la croix à chaque fois") : la clé de fermeture
+// incluait la date (`ep-gate-dismissed-${today}-${reason}`) en sessionStorage,
+// donc la carte revenait chaque nouveau jour (et même chaque nouvel onglet,
+// sessionStorage ne survit pas à la fermeture de l'onglet) réclamer une
+// nouvelle croix. Fermeture désormais définitive par type de rappel
+// (morning/meal/evening), sans date, en localStorage : une fois fermée une
+// fois, elle ne revient plus jamais pour cette raison précise.
 
 export type GateReason = "morning" | "meal" | "evening";
 export interface PendingMeal {
@@ -63,25 +72,23 @@ const REASON_META: Record<GateReason, { icon: typeof Sun; title: string; subtitl
 export default function DailyGateOverlay({
   initialActive,
   initialPendingMeal,
-  today,
   mealBaseHref,
   bilanHref,
 }: {
   initialActive: GateReason | null;
   initialPendingMeal?: PendingMeal;
-  today: string;
   mealBaseHref: string;
   bilanHref: string;
 }) {
   const pathname = usePathname();
 
-  // Clé datée + raison : mémorisée dès la fermeture, s'invalide seule au
-  // changement de jour (nouvelle valeur de `today`, donc nouvelle clé).
-  const storageKey = initialActive ? `ep-gate-dismissed-${today}-${initialActive}` : null;
+  // Clé par raison seule (plus de date) : une fermeture est définitive pour
+  // ce type de rappel, voir commentaire plus haut.
+  const storageKey = initialActive ? `ep-gate-dismissed-${initialActive}` : null;
   const [dismissed, setDismissed] = useState(() => {
     if (!storageKey || typeof window === "undefined") return false;
     try {
-      return window.sessionStorage.getItem(storageKey) === "1";
+      return window.localStorage.getItem(storageKey) === "1";
     } catch {
       return false;
     }
@@ -91,7 +98,7 @@ export default function DailyGateOverlay({
     setDismissed(true);
     if (!storageKey) return;
     try {
-      window.sessionStorage.setItem(storageKey, "1");
+      window.localStorage.setItem(storageKey, "1");
     } catch {
       // Stockage indisponible (navigation privée, quota) : reste fermé
       // pour cette session React, c'est le principal qui compte.

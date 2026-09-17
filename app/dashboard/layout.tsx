@@ -18,7 +18,6 @@ import { isEmailVerified } from "@/lib/email-verification";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { isStrongSession } from "@/lib/mfa";
 import { getDailyGateStatus } from "@/lib/daily-gate";
-import { todayInParis } from "@/lib/dates";
 import { freeTierStatus, freeTierUrgencyLabel } from "@/lib/free-tier";
 import { getAccessType } from "@/utils/auth-client";
 
@@ -108,7 +107,6 @@ async function DailyGateLoader({
     <DailyGateOverlay
       initialActive={gate.active}
       initialPendingMeal={gate.pendingMeal}
-      today={todayInParis()}
       mealBaseHref={isCoach ? "/dashboard/coach/moi/nutrition" : "/dashboard/client/nutrition"}
       bilanHref={isCoach ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan"}
     />

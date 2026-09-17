@@ -11,7 +11,18 @@ interface InitData {
   exercises: Exercise[];
   prMap: Record<string, number>; // exerciseName.lower → best weight
   prevWeights: Record<string, { weight: number | null; reps: string | null; rir: number | null }>;
+  // Retour direct 2026-09-17 ("j'arrive sur mon exo et je vois ce que j'ai
+  // fait la dernière fois, pas juste un set mais TOUS les sets") :
+  // prevWeights ne garde qu'UN set (le plus récent créé, toutes séances
+  // confondues) — utile pour la suggestion de charge (suggestNextWeight),
+  // mais illisible comme "historique". prevSets regroupe plutôt TOUS les
+  // sets de la séance précédente la plus récente où cet exercice a été
+  // fait, dans l'ordre (set_number croissant).
+  prevSets: Record<string, { weight: number | null; reps: string | null; rir: number | null }[]>;
   existingSets: SessionSet[];
+  // Note libre persistante par exercice, clé = nom exact (pas .lower, même
+  // convention que accessoriesByName) — voir client_exercise_notes.
+  exerciseNotes: Record<string, string>;
   // exerciseName.lower → conseils réels + vidéo d'exemple, tirés de la
   // bibliothèque d'exercices (exercise_library) plutôt que d'un petit
   // dictionnaire générique — voir lib/execution-tips.ts pour le fallback.
@@ -79,11 +90,18 @@ export async function GET(
 
   // Fetch previous weights for each exercise
   const prevWeights: Record<string, { weight: number | null; reps: string | null; rir: number | null }> = {};
+  // Retour direct 2026-09-17 : voir le commentaire sur InitData.prevSets.
+  // Un seul groupe par exercice, celui de la séance la plus récente où il a
+  // été fait (session_id du tout premier set rencontré, puisque lastSets
+  // est trié par created_at décroissant), pas juste son dernier set.
+  const prevSets: Record<string, { weight: number | null; reps: string | null; rir: number | null }[]> = {};
+  const latestSessionIdByExercise: Record<string, string> = {};
+  const prevSetsUnsorted: Record<string, { setNumber: number; weight: number | null; reps: string | null; rir: number | null }[]> = {};
   if (exercises.length > 0) {
     const exerciseNames = exercises.map((e) => e.name);
     const { data: lastSets } = await supabase
       .from("session_sets")
-      .select("exercise_name, weight_kg, reps_actual, rir_actual, created_at")
+      .select("exercise_name, weight_kg, reps_actual, rir_actual, created_at, session_id, set_number")
       .in("exercise_name", exerciseNames)
       .neq("session_id", sessionId) // exclude current session
       .order("created_at", { ascending: false });
@@ -97,6 +115,22 @@ export async function GET(
           rir: set.rir_actual,
         };
       }
+      if (!(key in latestSessionIdByExercise)) {
+        latestSessionIdByExercise[key] = set.session_id;
+      }
+      if (set.session_id === latestSessionIdByExercise[key]) {
+        (prevSetsUnsorted[key] ??= []).push({
+          setNumber: set.set_number,
+          weight: set.weight_kg,
+          reps: set.reps_actual != null ? String(set.reps_actual) : null,
+          rir: set.rir_actual,
+        });
+      }
+    }
+    for (const [key, rows] of Object.entries(prevSetsUnsorted)) {
+      prevSets[key] = rows
+        .sort((a, b) => a.setNumber - b.setNumber)
+        .map(({ weight, reps, rir }) => ({ weight, reps, rir }));
     }
   }
 
@@ -115,14 +149,32 @@ export async function GET(
     }
   }
 
+  // Note libre persistante par exercice (Logbook, "Ton exercice") — retour
+  // direct 2026-09-17 : avant, cette note vivait en localStorage clée par
+  // sessionId, donc remise à zéro à chaque nouvelle séance. Une seule ligne
+  // par (client, exercice), indépendante de la séance en cours (voir
+  // migration 20260917e_client_exercise_notes.sql).
+  const exerciseNotes: Record<string, string> = {};
+  if (exercises.length > 0) {
+    const { data: noteRows } = await supabase
+      .from("client_exercise_notes")
+      .select("exercise_name, note")
+      .eq("client_id", guard.userId);
+    for (const row of (noteRows as { exercise_name: string; note: string }[]) ?? []) {
+      exerciseNotes[row.exercise_name] = row.note;
+    }
+  }
+
   const result: InitData = {
     session: sess,
     exercises,
     prMap,
     prevWeights,
+    prevSets,
     existingSets: (existingSets as SessionSet[]) ?? [],
     libraryByName,
     accessoriesByName,
+    exerciseNotes,
   };
 
   return NextResponse.json(result);
