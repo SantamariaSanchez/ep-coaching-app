@@ -6463,3 +6463,38 @@ aller faire des recherches toi." Deux volets :
 
 `tsc --noEmit` propre. Colonnes `shares`/`saves` vérifiées présentes en
 base après migration.
+
+## DZ — Signal de leads réels par script, inspiré du SaaS "Insider" (2026-09-17)
+
+Retour direct : transcript cité (Matis Clouet) décrivant "Insider", un SaaS
+Meta Partner qui montre par lead/par jour quels reels convertissent en
+DM/cash. Aucun connecteur Instagram/YouTube Meta Partner réel n'existe dans
+cette session (vérifié à nouveau, `ToolSearch` ne remonte toujours aucun
+outil "instagram"/"youtube"/"mindsor" utilisable), donc impossible de
+répliquer le tracking automatique du reach/DM d'un vrai Insider. Construit
+à la place un signal honnête à partir d'une vraie donnée déjà fiable :
+chaque script cite un numéro de leadmagnet dans son CTA (`source_reference`,
+format `lead_magnets:<keyword> ...`), et la table `leads` contient les
+captures réelles par `lead_magnet_slug`. En reliant les deux, on affiche
+"X leads captés sur ce numéro" sans aucune saisie manuelle.
+
+Nouveau fichier `lib/content-leads-tracking.ts` : `getLeadCountsBySlug()`
+(une lecture de toute la table `leads`, groupée par slug, total + 30
+derniers jours) et `getRealLeadsByScriptId(scripts)` (résout le/les
+numéro(s) cité(s) par chaque script vers son slug puis son total réel,
+mis en cache par keyword pour éviter les doublons de requête). Deux
+fonctions ajoutées à `lib/lead-magnets.ts` pour cette résolution :
+`getLeadMagnetByAnyKeyword` et `extractLeadMagnetKeywords`. Branché dans
+`app/dashboard/coach/studio/page.tsx` → `IdeationHub.tsx` →
+`IdeationScripts.tsx`, affiché juste sous la ligne "Source" existante.
+
+Limite honnête documentée en commentaire dans le code et respectée dans
+le libellé UI ("captés sur ce numéro", jamais "générés par CE script") :
+plusieurs scripts différents peuvent citer le même numéro à des dates
+différentes, donc le total n'est jamais attribuable avec certitude à un
+seul script précis.
+
+### Validation
+
+`tsc --noEmit` propre sur toute la chaîne (page.tsx → IdeationHub.tsx →
+IdeationScripts.tsx → content-leads-tracking.ts → lead-magnets.ts).
