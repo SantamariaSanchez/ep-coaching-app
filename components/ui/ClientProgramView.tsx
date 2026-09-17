@@ -109,18 +109,26 @@ export default function ClientProgramView({
                       <Backpack size={11} /> À prévoir
                     </p>
                     <div className="flex flex-col gap-1">
-                      {accessories.map((a) => (
-                        <a
-                          key={a.accessory}
-                          href={a.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1 text-[11.5px] font-bold text-white hover:text-[#E01E1E] transition-colors"
-                        >
-                          {a.accessory}
-                          <ExternalLink size={9} className="text-[#F5EDED]/30" />
-                        </a>
-                      ))}
+                      {accessories.map((a) =>
+                        // ALWAYS_ACCESSORIES (trépied, shaker) n'ont pas de
+                        // fiche produit, voir lib/session-accessories.ts.
+                        a.url ? (
+                          <a
+                            key={a.accessory}
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-[11.5px] font-bold text-white hover:text-[#E01E1E] transition-colors"
+                          >
+                            {a.accessory}
+                            <ExternalLink size={9} className="text-[#F5EDED]/30" />
+                          </a>
+                        ) : (
+                          <span key={a.accessory} className="flex items-center gap-1 text-[11.5px] font-bold text-white">
+                            {a.accessory}
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
                 )}

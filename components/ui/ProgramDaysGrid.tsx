@@ -74,18 +74,29 @@ export default function ProgramDaysGrid({
                       <Backpack size={11} /> À prévoir
                     </p>
                     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {accessories.map((a) => (
-                        <a
-                          key={a.accessory}
-                          href={a.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
-                        >
-                          {a.accessory}
-                          <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
-                        </a>
-                      ))}
+                      {accessories.map((a) =>
+                        // ALWAYS_ACCESSORIES (trépied, shaker) n'ont pas de
+                        // fiche produit, voir lib/session-accessories.ts.
+                        a.url ? (
+                          <a
+                            key={a.accessory}
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+                          >
+                            {a.accessory}
+                            <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+                          </a>
+                        ) : (
+                          <span
+                            key={a.accessory}
+                            style={{ fontSize: 11.5, fontWeight: 700, color: "#F5EDED" }}
+                          >
+                            {a.accessory}
+                          </span>
+                        )
+                      )}
                     </div>
                   </div>
                 )}

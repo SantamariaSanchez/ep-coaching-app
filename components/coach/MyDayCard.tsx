@@ -205,18 +205,26 @@ export default function MyDayCard({
             <Backpack size={12} /> À prévoir pour {todaySeanceLabel}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-            {todayAccessories.map((a) => (
-              <a
-                key={a.accessory}
-                href={a.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
-              >
-                {a.accessory}
-                <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
-              </a>
-            ))}
+            {todayAccessories.map((a) =>
+              // ALWAYS_ACCESSORIES (trépied, shaker) n'ont pas de fiche
+              // produit, voir lib/session-accessories.ts.
+              a.url ? (
+                <a
+                  key={a.accessory}
+                  href={a.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED", textDecoration: "none" }}
+                >
+                  {a.accessory}
+                  <ExternalLink size={9} style={{ color: "rgba(245,237,237,0.3)" }} />
+                </a>
+              ) : (
+                <span key={a.accessory} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#F5EDED" }}>
+                  {a.accessory}
+                </span>
+              )
+            )}
           </div>
         </div>
       )}

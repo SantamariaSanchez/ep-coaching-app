@@ -74,6 +74,16 @@ export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string
     reason: "Pour monter par petits paliers au lieu de sauter 2,5 kg d'un coup et bloquer",
     url: "https://0rir-shop.com/products/micro-magnetic-plates",
   },
+  // Retour direct 2026-09-17 : "à part le 0RIR shop, le reste c'est les fat
+  // grip, mais sinon y'a vraiment rien d'autre qui est bien" — seul ajout
+  // hors catalogue 0RIR (vérifié le 2026-09-17 sur 0rir-shop.com : Cuffs,
+  // Lift Loops, Lock Belt, Micro Plates, Prime Straps, Super Pin, le "Sac
+  // 0RIR" exclu ici car c'est le sac lui-même, pas un accessoire à y mettre).
+  {
+    accessory: "Fat Grips",
+    reason: "Épaissit la prise pour cibler l'avant-bras, l'inverse de Prime Straps qui l'enlève de l'équation",
+    url: "https://fatgripz.com/",
+  },
 ];
 
 /** Ordre volontaire : du plus structurant au plus optionnel.
@@ -149,6 +159,18 @@ export interface SessionAccessory {
   forExercises: string[];
 }
 
+// Retour direct 2026-09-17 : "met aussi trépied et shaker Nutrimuscle, bon
+// même si ça c'est tout le temps comme le shaker" — contrairement au bagage
+// ci-dessus (déduit des exercices, capé à 3), ces deux-là n'ont aucun lien
+// avec le contenu de la séance : toujours dans le sac, toujours affichés.
+// `url` vide et `forExercises` vide les distinguent dans le rendu (pas de
+// lien produit à cliquer, pas de "Pour tel exercice") plutôt que d'inventer
+// une fiche produit ou une justification par exercice qui n'existe pas.
+export const ALWAYS_ACCESSORIES: SessionAccessory[] = [
+  { accessory: "Trépied", reason: "Pour filmer tes séries", url: "", forExercises: [] },
+  { accessory: "Shaker Nutrimuscle", reason: "Intra et post-workout", url: "", forExercises: [] },
+];
+
 function normalize(value: string): string {
   return value
     .toLowerCase()
@@ -212,5 +234,8 @@ export function accessoriesForSession(
     for (const accessoryName of explicit) add(accessoryName, raw);
   }
 
-  return [...found.values()].slice(0, 3);
+  // ALWAYS_ACCESSORIES (trépied, shaker) s'ajoutent après le plafond à 3 :
+  // ils ne sont pas déduits de la séance, donc ne doivent jamais prendre la
+  // place d'une vraie suggestion liée aux exercices du jour.
+  return [...found.values()].slice(0, 3).concat(ALWAYS_ACCESSORIES);
 }

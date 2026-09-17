@@ -2749,25 +2749,36 @@ export default function SessionView({
                 survol n'existe pas, et sans le pourquoi la liste n'est qu'un
                 nom de produit de plus. */}
             <ul className="space-y-2">
-              {sessionAccessories.map((a) => (
-                <li key={a.accessory}>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block group"
-                  >
+              {sessionAccessories.map((a) => {
+                // ALWAYS_ACCESSORIES (trépied, shaker) n'ont ni fiche produit
+                // ni exercice à justifier (lib/session-accessories.ts) : pas
+                // de lien cliquable ni de ligne "Pour ...".
+                const content = (
+                  <>
                     <span className="flex items-center gap-1 text-[12.5px] font-bold text-white group-hover:text-[#E01E1E] transition-colors">
                       {a.accessory}
-                      <ExternalLink size={10} className="text-[#F5EDED]/30" />
+                      {a.url && <ExternalLink size={10} className="text-[#F5EDED]/30" />}
                     </span>
                     <span className="block text-[11px] text-[#F5EDED]/45 leading-snug">{a.reason}</span>
-                    <span className="block text-[10px] text-[#F5EDED]/25 mt-0.5">
-                      Pour {a.forExercises.slice(0, 3).join(", ")}
-                    </span>
-                  </a>
-                </li>
-              ))}
+                    {a.forExercises.length > 0 && (
+                      <span className="block text-[10px] text-[#F5EDED]/25 mt-0.5">
+                        Pour {a.forExercises.slice(0, 3).join(", ")}
+                      </span>
+                    )}
+                  </>
+                );
+                return (
+                  <li key={a.accessory}>
+                    {a.url ? (
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className="block group">
+                        {content}
+                      </a>
+                    ) : (
+                      <div className="block">{content}</div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
         </div>
