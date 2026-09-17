@@ -258,6 +258,28 @@ export async function getLeadMagnetByKeyword(raw: string): Promise<LeadMagnet | 
   return all.find((m) => m.keyword === keyword);
 }
 
+// Ajouté le 2026-09-17 (chantier tracking Insider-like, retour direct :
+// "quels sont les reels qui vous rapportent le plus de cash, qu'est-ce
+// qui convertit") — contrairement à getLeadMagnetByKeyword, accepte aussi
+// les keywords non numériques (UUID généré pour les quiz/checklists créés
+// hors du catalogue numéroté 001-999, voir lead_magnets.keyword) plutôt
+// que de rejeter silencieusement tout ce qui n'est pas que des chiffres.
+export async function getLeadMagnetByAnyKeyword(raw: string): Promise<LeadMagnet | undefined> {
+  const all = await getAllLeadMagnetsFullCached();
+  const normalized = normalizeKeyword(raw);
+  return all.find((m) => m.keyword === raw || (normalized !== null && m.keyword === normalized));
+}
+
+// Extrait chaque token "lead_magnets:<keyword>" d'une source_reference de
+// coach_scripts (ex: "lead_magnets:131 guide-x (Auteur et al. 2026)" ou
+// "lead_magnets:072f644f-... slug + science_articles:... (...)") — ignore
+// volontairement les références science_articles, qui ne correspondent à
+// aucune ligne lead_magnets/leads.
+export function extractLeadMagnetKeywords(sourceReference: string | null | undefined): string[] {
+  if (!sourceReference) return [];
+  return [...sourceReference.matchAll(/lead_magnets:(\S+)/g)].map((m) => m[1]);
+}
+
 export async function getLeadMagnetsByCategory(): Promise<Record<ResourceCategory, LeadMagnet[]>> {
   const all = await getAllLeadMagnetsFullCached();
   const map = {} as Record<ResourceCategory, LeadMagnet[]>;

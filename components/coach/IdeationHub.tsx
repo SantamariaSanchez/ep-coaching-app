@@ -11,6 +11,7 @@ import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
 import type { GuideMagnet } from "@/lib/lead-magnets";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
+import type { SlugLeadCounts } from "@/lib/content-leads-tracking";
 
 type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
 
@@ -39,6 +40,7 @@ export default function IdeationHub({
   initialScripts,
   guides,
   canvas,
+  realLeadsByScriptId,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
@@ -46,6 +48,7 @@ export default function IdeationHub({
   initialScripts: CoachScript[];
   guides: GuideMagnet[];
   canvas: BusinessCanvas | null;
+  realLeadsByScriptId: Record<string, SlugLeadCounts>;
 }) {
   const [tab, setTab] = useState<Tab>("idees");
 
@@ -101,7 +104,7 @@ export default function IdeationHub({
         <SocialGenerator guides={guides} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={initialScripts} canvas={canvas} />
+        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} />
       </div>
       <div hidden={tab !== "notes"}>
         <IdeationNotes initialNotes={initialNotes} />

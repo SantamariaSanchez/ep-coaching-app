@@ -7,6 +7,7 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
+import type { SlugLeadCounts } from "@/lib/content-leads-tracking";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -82,7 +83,15 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 // travail (CRUD, propre à chaque coach), le reste (Prompts/Hooks/CTA/
 // Montage) est une bibliothèque de référence statique (lib/content-library.ts)
 // partagée par tous, à copier-coller plutôt qu'à modifier.
-export default function IdeationScripts({ initialScripts, canvas }: { initialScripts: CoachScript[]; canvas: BusinessCanvas | null }) {
+export default function IdeationScripts({
+  initialScripts,
+  canvas,
+  realLeadsByScriptId,
+}: {
+  initialScripts: CoachScript[];
+  canvas: BusinessCanvas | null;
+  realLeadsByScriptId: Record<string, SlugLeadCounts>;
+}) {
   const [subTab, setSubTab] = useState<Tab>("mes-scripts");
 
   return (
@@ -122,7 +131,7 @@ export default function IdeationScripts({ initialScripts, canvas }: { initialScr
         coûte rien. Seule la visibilité change désormais.
       */}
       <div hidden={subTab !== "mes-scripts"}>
-        <MyScripts initialScripts={initialScripts} />
+        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} />
       </div>
       <div hidden={subTab !== "prompts"}>
         <PromptLibrary canvas={canvas} />
@@ -198,7 +207,13 @@ const selectStyle: React.CSSProperties = {
   cursor: "pointer",
 };
 
-function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
+function MyScripts({
+  initialScripts,
+  realLeadsByScriptId,
+}: {
+  initialScripts: CoachScript[];
+  realLeadsByScriptId: Record<string, SlugLeadCounts>;
+}) {
   const [scripts, setScripts] = useState(initialScripts);
   useEffect(() => {
     setScripts(initialScripts);
@@ -972,6 +987,21 @@ function MyScripts({ initialScripts }: { initialScripts: CoachScript[] }) {
                     </p>
                   )}
                 </div>
+              )}
+
+              {/* Signal réel (retour direct 2026-09-17, inspiré du SaaS
+                  "Insider" cité par le coach) : contrairement aux vues/likes
+                  au-dessus (saisis à la main, purement déclaratifs), ce
+                  chiffre vient de vraies captures dans la table `leads`,
+                  résolues depuis le numéro de leadmagnet cité en CTA. Jamais
+                  "généré par CE script" dans le libellé : plusieurs scripts
+                  différents peuvent citer le même numéro à des dates
+                  différentes (voir lib/content-leads-tracking.ts). */}
+              {realLeadsByScriptId[script.id] && (
+                <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 700, color: "#facc15" }}>
+                  📩 {realLeadsByScriptId[script.id].total} lead{realLeadsByScriptId[script.id].total > 1 ? "s" : ""} captés sur ce numéro
+                  {realLeadsByScriptId[script.id].last30Days > 0 && ` (${realLeadsByScriptId[script.id].last30Days} sur les 30 derniers jours)`}
+                </p>
               )}
 
               {/* Description à poster avec la vidéo — distincte du script

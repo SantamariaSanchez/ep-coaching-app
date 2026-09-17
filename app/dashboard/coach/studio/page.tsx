@@ -4,6 +4,7 @@ import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getAllGuidesWithContent } from "@/lib/lead-magnets";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
+import { getRealLeadsByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
@@ -37,6 +38,9 @@ export default async function CoachStudioPage() {
     // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
     getBusinessCanvas(user.id),
   ]);
+  // Dépend de `scripts` (résout leur source_reference), donc après le
+  // Promise.all ci-dessus plutôt que dans le même lot.
+  const realLeadsByScriptId = await getRealLeadsByScriptId(scripts);
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -58,6 +62,7 @@ export default async function CoachStudioPage() {
         initialScripts={scripts}
         guides={guides}
         canvas={canvas}
+        realLeadsByScriptId={realLeadsByScriptId}
       />
     </div>
   );
