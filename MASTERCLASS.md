@@ -6692,3 +6692,28 @@ Retour direct, quatre frictions distinctes sur le Logbook (SessionView.tsx) :
 
 `tsc --noEmit` propre. Migration `client_exercise_notes` appliquée et
 vérifiée (table + policies RLS présentes).
+
+## EE — Prompteur avec caméra et enregistrement dans Studio créatif (2026-09-17)
+
+Retour direct : "un bouton prompteur dans Scripts, ça doit défiler le
+texte à la vitesse que je veux (et aussi ça peut ne pas défiler), et ça
+doit ouvrir la caméra pour que je filme mes reels/vidéos ici, vraiment
+faut que ça fonctionne, que je puisse faire mon tournage ici."
+
+Nouveau composant `components/coach/Teleprompter.tsx`, bouton "Prompteur"
+ajouté sur chaque script avec du contenu (`IdeationScripts.tsx`, juste à
+côté du bouton Copier existant). Tout se passe côté navigateur, aucune
+route API : `getUserMedia` pour la caméra/micro (bascule avant/arrière),
+défilement du texte par `requestAnimationFrame` (fluide à n'importe
+quelle vitesse, curseur 5-120 px/s, bouton Pause pour un texte fixe),
+`MediaRecorder` pour enregistrer directement la vidéo+audio du tournage
+avec un bouton d'enregistrement classique (rond rouge → carré), lien de
+téléchargement une fois la prise arrêtée. `MediaRecorder.isTypeSupported`
+teste plusieurs codecs (vp9/vp8/webm/mp4) avant de démarrer, message clair
+si aucun n'est supporté plutôt qu'un échec silencieux.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres sur le nouveau composant (un
+`setState` synchrone dans l'effet caméra déplacé dans la fonction async
+pour satisfaire `react-hooks/set-state-in-effect`).
