@@ -6275,3 +6275,64 @@ application (`select jobid, schedule, command ilike '%REPLACE_WITH%' from
 cron.job where jobid in (1,2,6,20)`) : les 4 schedules sont bien passés
 aux nouvelles valeurs, et aucun `command` ne contient le placeholder
 (confirme que le vrai secret est resté intact).
+
+## DV — Supabase passé en Pro : crise résolue, 2 migrations en attente depuis longtemps enfin appliquées (2026-09-17)
+
+Retour direct : "j'ai mis Supabase payant [...] corrige les problèmes
+qu'on avait". Vérifié avant tout plutôt que de supposer : requête sur
+`edge_logs` des 5 dernières minutes, 0% de `402` (100% de `200`/`201`/`204`),
+contre 1413/1416 il y a moins de deux heures (Axe DU) — le plan Pro est
+bien actif, la crise décrite dans [[project_supabase_quota_crisis]] est
+résolue. Cette mémoire doit être mise à jour en conséquence.
+
+Trois corrections en chaîne, une fois l'accès rétabli :
+
+1. **Annulé le ralentissement de l'Axe DU** (`live-reminders` */10→*/5,
+   `meal-reminders` */20→*/15 avec la fenêtre de code remise à 15 min,
+   `nag-client-tasks` et `send-client-reminders` */20→*/10) : la
+   contrainte de quota qui justifiait ce ralentissement n'existe plus,
+   revenir à la précision de notification d'origine est un pur gain, sans
+   aucune raison de garder le compromis.
+
+2. **Appliqué `20260916_fix_dst_drift_notification_crons.sql`**, en
+   attente depuis la veille (fichier avec placeholder
+   `REPLACE_WITH_CRON_SECRET`, l'utilisateur n'avait justement pas accès
+   à l'appli pour l'exécuter lui-même dans le SQL Editor). Vérifié
+   d'abord que le code des 5 routes concernées (`nutrition-reminder`,
+   `missed-session-check`, `stagnation-escalation`,
+   `weekly-progress-recap`, `weekly-sleep-recap`) implémentait déjà le
+   bon calcul dynamique en heure de Paris (`nowInParis`, guard de fenêtre)
+   avant de toucher à quoi que ce soit — c'était le cas partout. Appliqué
+   via `cron.alter_job` (jamais `cron.unschedule`/`cron.schedule` du
+   fichier, qui aurait remplacé le vrai `CRON_SECRET` par le placeholder
+   et cassé les 5 jobs en silence) : les 3 jobs quotidiens passent de
+   leur décalage UTC figé (faux à un des deux changements d'heure/an) à
+   `*/15 * * * *`, les 2 jobs hebdo à `0 * * * 0` (toutes les heures,
+   dimanche uniquement). Ces notifications arrivaient donc bien décalées
+   depuis un temps indéterminé, sans qu'aucune alerte ne le signale nulle
+   part.
+
+3. **Appliqué `20260916b_mailing_stats_cache.sql`** (colonnes
+   `stats_json`/`stats_fetched_at` sur `coach_mailings`), en attente
+   depuis la veille pour la même raison. `lib/coach-mailings.ts` avait
+   déjà un repli sur une sélection sans ces colonnes quand elles
+   n'existaient pas (retour direct antérieur) : ce repli redevient
+   simplement inutilisé maintenant que les colonnes existent, aucun code
+   à toucher.
+
+Vérifié en parallèle que le connecteur Stripe et un éventuel connecteur
+Instagram/YouTube dédié (posting/analytics) ne sont PAS disponibles dans
+cette session malgré le retour direct ("plein de connecteurs [...] accès
+à mon insta et mon youtube") — seul TikTok a un vrai connecteur de
+publication (Higgsfield). Signalé à l'utilisateur plutôt que de laisser
+croire à un accès qui n'existe pas : la nouvelle grille tarifaire
+([[project_pricing_2026-09-16]]) reste donc bloquée côté Stripe jusqu'à
+une authentification explicite de ce connecteur précis.
+
+### Validation
+
+`tsc --noEmit` propre après le retour à */15 de `meal-reminders`.
+Vérifié en base après coup : les 4 jobs de l'Axe DU sont revenus à leur
+schedule d'origine, les 5 jobs DST sont sur leur nouveau schedule, aucun
+`command` ne contient de placeholder, les 2 colonnes `coach_mailings`
+existent (`information_schema.columns`).

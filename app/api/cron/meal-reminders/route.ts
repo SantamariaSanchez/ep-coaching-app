@@ -15,10 +15,10 @@ import { todayInParis } from "@/lib/dates";
 // un tap — voir handleTogglePlanItem/DietPlanCard dans ClientNutritionView.
 // Décalage Paris géré dynamiquement via Intl (fuseau IANA), pas un offset
 // UTC figé dans le cron comme les autres jobs horaires de l'appli : celui-ci
-// tourne en continu toute la journée (*/20 depuis le 2026-09-17, chantier
-// egress Supabase, voir MASTERCLASS.md — passé de */15 à */20 pour réduire
-// le nombre d'appels 24/7 alors qu'il n'y a aujourd'hui aucun client payant
-// actif ; un simple décalage fixe dériverait au changement d'heure d'été/hiver).
+// tourne en continu toute la journée (*/15, remis à ce pas le 2026-09-17
+// après passage de Supabase en plan Pro qui lève la crise de quota egress,
+// voir MASTERCLASS.md — le */20 temporaire n'a plus de raison d'être), un
+// simple décalage fixe dériverait au changement d'heure d'été/hiver.
 function parisNow(): { minutes: number; today: string; dow: string } {
   const { minutes, dow } = parisNowBase();
   return { minutes, today: todayInParis(), dow };
@@ -38,16 +38,14 @@ export async function GET(req: Request) {
 
   const { minutes: nowMinutes, today, dow } = parisNow();
 
-  // Créneaux dus dans les 20 prochaines minutes — largeur de fenêtre alignée
-  // sur le pas du cron (*/20) : comme les ticks du cron forment une suite
-  // périodique de période 20 min, une fenêtre de largeur 20 min contient
-  // toujours exactement un tick, quel que soit l'horaire exact du créneau
-  // (pas besoin que le créneau tombe sur un multiple de 20). Chaque créneau
-  // n'est donc touché que par un seul passage du cron par jour, jamais deux.
+  // Créneaux dus dans les 15 prochaines minutes — bornes alignées sur le pas
+  // du cron (*/15, et toutes les heures par défaut ci-dessus tombent aussi
+  // sur des multiples de 15) : chaque créneau n'est donc touché que par un
+  // seul passage du cron par jour, jamais deux.
   const dueSlots = Object.entries(DEFAULT_SLOT_TIMES)
     .filter(([, t]) => {
       const target = timeToMinutes(t);
-      return nowMinutes >= target && nowMinutes < target + 20;
+      return nowMinutes >= target && nowMinutes < target + 15;
     })
     .map(([slot]) => slot);
 
