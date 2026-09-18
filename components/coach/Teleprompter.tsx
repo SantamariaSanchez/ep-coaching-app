@@ -182,6 +182,33 @@ export default function Teleprompter({
   // c'est droit), plutôt qu'une nouvelle hypothèse non vérifiée.
   const [pendingRotation, setPendingRotation] = useState<{ blob: Blob; url: string } | null>(null);
   const [rotationDeg, setRotationDeg] = useState<0 | 90 | 180 | 270>(90);
+  // Retour direct 2026-09-18 ("c'est hyper zoomé" après le passage à
+  // object-cover) : object-cover sur un flux réellement paysage affiché
+  // dans un cadre portrait doit énormément agrandir l'image pour remplir la
+  // hauteur, d'où le zoom — object-contain, lui, montrait tout sans zoom
+  // mais en petit avec des bandes (l'aller-retour précédent). Les deux sont
+  // juste deux conséquences du même flux mal orienté ; aucun réglage
+  // object-fit ne peut à la fois remplir l'écran ET ne pas zoomer sans
+  // corriger l'orientation d'abord. Tourner l'aperçu (même logique que la
+  // rotation posée après coup sur le fichier, voir lib/mp4-rotate.ts et
+  // pendingRotation ci-dessus) redonne un flux effectivement portrait,
+  // remplissable sans zoom excessif. Réglable en direct (bouton dans la
+  // barre du haut) et mémorisé par téléphone/caméra, pour ne plus jamais
+  // avoir à le redécouvrir à chaque ouverture.
+  const [previewRotation, setPreviewRotation] = useState<0 | 90 | 180 | 270>(() => {
+    if (typeof window === "undefined") return 90;
+    const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-${facingMode}`));
+    return stored === 90 || stored === 180 || stored === 270 ? stored : 90;
+  });
+  function cyclePreviewRotation() {
+    setPreviewRotation((d) => {
+      const next = ((d + 90) % 360) as 0 | 90 | 180 | 270;
+      try {
+        window.localStorage.setItem(`ep-teleprompter-rotation-${facingMode}`, String(next));
+      } catch {}
+      return next;
+    });
+  }
   const [mimeType] = useState(() => pickSupportedMimeType());
   // Incrémenté par le bouton "Réessayer" pour rejouer l'effet caméra sans
   // changer facingMode (sinon un simple setFacingMode((f) => f) ne change
@@ -279,6 +306,23 @@ export default function Teleprompter({
       streamRef.current = null;
     };
   }, [facingMode, retryToken]);
+
+  // La rotation mémorisée est spécifique à CHAQUE caméra (avant/arrière —
+  // pas forcément montée dans le même sens) : relue à chaque changement de
+  // `facingMode`, pas seulement au tout premier montage (l'initialiseur de
+  // previewRotation ci-dessus ne joue qu'une fois).
+  useEffect(() => {
+    // localStorage n'est lisible que côté client, après montage — même
+    // motif que la synchronisation media query ailleurs dans ce projet
+    // (ex. DashboardNav.tsx), pas un effet qu'on pourrait éviter.
+    let next: 0 | 90 | 180 | 270 = 90;
+    try {
+      const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-${facingMode}`));
+      if (stored === 90 || stored === 180 || stored === 270) next = stored;
+    } catch {}
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setPreviewRotation(next);
+  }, [facingMode]);
 
   // ── Défilement du texte (requestAnimationFrame, fluide à toute vitesse) ─
   useEffect(() => {
@@ -437,7 +481,9 @@ export default function Teleprompter({
             // pour un problème qu'un nouvel essai ne corrigerait pas non
             // plus (le capteur du téléphone reste monté pareil).
             setAdvancing(false);
-            setRotationDeg(90);
+            // Part de la rotation déjà réglée sur l'aperçu live (souvent la
+            // même correction) plutôt que de recommencer à deviner à zéro.
+            setRotationDeg(previewRotation);
             setPendingRotation({ blob, url });
             return;
           }
@@ -576,20 +622,33 @@ export default function Teleprompter({
           "trop zoomé" sur l'ancien pipeline à base de canvas, entièrement
           abandonné depuis) laisse justement ce rectangle paysage flotter au
           centre avec des bandes noires autour au lieu de remplir l'écran.
-          `object-cover` remplit tout l'écran en rognant l'excédent sur les
-          côtés — exactement ce qui est demandé ici, pour l'APERÇU LIVE
-          seulement. Le fichier enregistré n'en dépend pas (voir
-          saveVideoBlob : il enregistre le flux brut, jamais ce qui est
-          affiché à l'écran) — son orientation/cadrage se règle par la
-          rotation confirmée dans l'aperçu "Tourner" après la prise. */}
+          `object-cover` remplit tout l'écran, mais sur un flux VRAIMENT
+          paysage affiché dans un cadre portrait, ça veut dire l'agrandir
+          énormément pour couvrir la hauteur ("hyper zoomé", retour direct
+          suivant). Impossible de remplir l'écran ET ne pas zoomer sans
+          d'abord corriger l'orientation : `previewRotation` tourne le flux
+          (mémorisé par caméra, réglable via le bouton dans la barre du
+          haut) pour qu'il devienne effectivement portrait avant que
+          `object-cover` le remplisse — les dimensions sont inversées avant
+          rotation (100vh/100vw) pour qu'après rotation, le rendu retombe
+          exactement sur la taille de l'écran. Le fichier enregistré n'en
+          dépend pas (voir saveVideoBlob : il enregistre le flux brut,
+          jamais ce qui est affiché à l'écran) — son orientation/cadrage se
+          règle par la rotation confirmée dans l'aperçu "Tourner" après la
+          prise. */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover transition-opacity"
+        className="object-cover transition-opacity"
         style={{
-          transform: facingMode === "user" ? "scaleX(-1)" : "none",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          width: previewRotation === 90 || previewRotation === 270 ? "100vh" : "100%",
+          height: previewRotation === 90 || previewRotation === 270 ? "100vw" : "100%",
+          transform: `translate(-50%, -50%) rotate(${previewRotation}deg) ${facingMode === "user" ? "scaleX(-1)" : ""}`,
           opacity: ready && !cameraError ? 1 : 0,
         }}
       />
@@ -635,6 +694,15 @@ export default function Teleprompter({
               <Circle size={8} fill="white" /> {formatRecTime(recSeconds)}
             </span>
           )}
+          <button
+            type="button"
+            onClick={cyclePreviewRotation}
+            aria-label="Tourner l'aperçu caméra"
+            disabled={recording}
+            className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white disabled:opacity-40"
+          >
+            <RotateCcw size={16} />
+          </button>
           <button
             type="button"
             onClick={() => setFacingMode((f) => (f === "user" ? "environment" : "user"))}
