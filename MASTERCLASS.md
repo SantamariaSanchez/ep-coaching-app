@@ -7668,3 +7668,46 @@ elle-même.
 l'ancien état bloquant (`pendingRotation`, `rotationDeg`,
 `confirmRotationFix`, `cancelRotationFix`) vérifiées absentes par `grep`
 avant de commiter, pas seulement supposées retirées.
+
+## EZ — Prompteur : la rotation par défaut tournait un flux qui était enfin devenu droit (2026-09-18)
+
+Retour direct, capture d'écran à l'appui, quelques minutes après l'Axe
+EY : le diagnostic affiché à l'écran montrait "608×1080" — or 608/1080 =
+0,563, quasiment identique à 9/16 = 0,5625. Ce n'est pas un hasard :
+contrairement au "180×320" des captures précédentes (qui n'évoquait
+aucun ratio standard), la négociation caméra a cette fois réellement
+obtenu un flux PORTRAIT sur ce téléphone — signe que le correctif
+`width`/`height` en `ideal` à côté d'`aspectRatio` (Axe EY, lui-même une
+réaction au "180×320" d'une capture antérieure) a fini par produire
+l'effet voulu.
+
+**Le problème** : `previewRotation` restait par défaut à 90°, une
+valeur héritée de tous les essais précédents sur l'ANCIEN flux —
+réellement paysage, lui, et qui avait donc réellement besoin d'être
+tourné. Appliquer cette même rotation de 90° par défaut à un flux qui
+vient de devenir droit produit exactement l'inverse de l'effet voulu :
+le visage apparaît tourné pour la première fois alors que le format
+lui-même est enfin le bon — ce que montrait la capture.
+
+**Fix** : défaut ramené à 0° (aucune rotation appliquée sauf calibration
+explicite). Clé `localStorage` montée en v3 : toute valeur mémorisée
+sous l'ancien flux paysage (90° ou autre) n'a plus de sens avec le
+nouveau flux portrait, mieux vaut la faire redécouvrir de zéro que
+garder une valeur héritée d'une réalité caméra qui a changé.
+
+**Leçon de cette repasse** : corriger la résolution (Axe EY) a changé
+la nature du problème sous-jacent (flux paysage → flux quasi-portrait)
+sans que le réglage de rotation, lui, ne soit réévalué en conséquence —
+deux correctifs indépendants qui, pris ensemble, produisaient un
+symptôme inverse de chacun pris séparément. Utile de se souvenir, sur ce
+chantier précis, qu'un changement de résolution/négociation caméra peut
+invalider une hypothèse de rotation déjà "acquise", pas seulement
+l'inverse.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. Le raisonnement
+(608/1080 ≈ 9/16) est un calcul vérifiable, pas une supposition — reste,
+comme toujours sur ce chantier, à confirmer visuellement que 0° est
+bien la bonne valeur sur le téléphone réel (le bouton "Tourner" reste
+disponible sinon).
