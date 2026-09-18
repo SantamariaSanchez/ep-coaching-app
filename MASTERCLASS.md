@@ -6792,3 +6792,68 @@ tenté en plus par prudence mais échoue dans cet environnement sur une
 route non liée (`/api/webhooks/stripe`, `STRIPE_SECRET_KEY` absente du
 sandbox, aucun `.env` ici) — confirmé pré-existant, sans rapport avec ce
 changement.
+
+## EG — Repasse prompteur, ménage plateformes/contenu, guides Notion (2026-09-18)
+
+Retour direct après premier vrai test du prompteur + retour sur le fond
+des scripts Instagram/YouTube et la structure des piliers. Plusieurs
+correctifs distincts :
+
+**Prompteur** : caméra trop zoomée (`object-cover` recadrait l'image
+caméra pour remplir tout l'écran, gardant seulement une tranche zoomée du
+centre) → `object-contain`, image entière jamais rognée, sur la
+prévisualisation ET sur le canvas d'enregistrement (même logique
+cover→contain que la préview). Zone de texte défilant réduite de 58% à
+22% de la hauteur d'écran pour laisser voir beaucoup plus la caméra.
+
+**Plateformes de scripts** : retour à Instagram/Threads/YouTube/LinkedIn
+uniquement (annule l'élargissement du 2026-09-16 : Telegram, Pinterest,
+Reddit, Twitch, Discord, WhatsApp, TikTok, Facebook, YouTube Communauté,
+X supprimés de `PLATFORM_LABELS`). 15 scripts déjà en base sur ces
+plateformes supprimés (tous `a_tourner`, jamais tournés, et de toute
+façon écrits dans l'ancien style "étude/mécanisme" déjà rejeté).
+
+**Contenu YouTube corrigé** : titre "Ostéoporose : soulever lourd n'est
+pas le problème" (fragment, mot médical en tête) → "Soulever lourd
+renforce tes os, pas l'inverse" (phrase complète, mots simples). Script
+"La périodisation muscle ou juste la force ?" supprimé entièrement (pas
+juste retitré) : sujet de mécanisme technique que personne ne comprend
+ni ne demande, cité par Santamaria lui-même comme contre-exemple.
+
+**Description Instagram restructurée (75 scripts non publiés)** : la
+ligne d'identité "Coach en bodybuilding[...]." en tout premier, ajoutée
+le 2026-09-16, n'aurait jamais dû précéder la ligne d'ouverture
+"Abonne-toi..." — retirée partout. Nouveau paragraphe "positionnement
+niche" (très court, 1-2 phrases, gabarit "J'accompagne [segment]. Si
+t'as [situation], écris-moi en message privé.") inséré juste après
+l'ouverture à la place, deux variantes (physique/coach-business) selon
+le segment déjà connu des 8 scripts coach. Fait par SQL `regexp_replace`
+en plusieurs passes (formats de retour à la ligne réels trouvés
+incohérents entre scripts : parfois `\n`, parfois `\n\n`, accents
+parfois absents sur "à" — chaque variante traitée séparément et
+vérifiée par comptage avant/après plutôt que supposée réussie).
+
+**Guides Notion mis à jour en conséquence** (pour que la prochaine
+production reste alignée, pas seulement la base corrigée une fois) :
+- ✍️ Guide rédaction description Instagram et 🎬 Guide production
+  scripts reels (Règle n°4) : structure 4 blocs revue, bloc identité
+  retiré, paragraphe positionnement niche documenté, corps à garder
+  court (4-5 lignes max).
+- 🎥 Guide production scripts YouTube (Règle n°4) : règle stricte sur les
+  titres (vraie phrase, mots simples, jamais de jargon en tête, style
+  Yomi Denzel/Hormozi), avec les deux erreurs réelles ci-dessus comme
+  exemples documentés. Règle n°1 précisée : la profondeur YouTube porte
+  sur le développement du sujet, jamais sur la complexité du vocabulaire.
+- 📊 Stratégie Contenu Instagram — Funnel : nouvelle section "Domaines de
+  sujets encore inexplorés" (retour direct : "5 piliers alors que ma
+  niche a énormément de domaines différents où j'ai jamais pris
+  position"), ~20 sujets concrets listés (physique + business coach) pour
+  élargir la rotation au-delà des 4-5 mêmes angles techniques déjà
+  épuisés.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres sur le code touché. Comptages SQL
+avant/après pour chaque passe de correction des descriptions Instagram
+(0 script restant avec l'ancienne ligne d'identité, 75/75 avec le
+nouveau paragraphe).
