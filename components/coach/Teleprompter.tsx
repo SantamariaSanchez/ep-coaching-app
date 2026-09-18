@@ -38,11 +38,24 @@ import { createPortal } from "react-dom";
 //    ferait CSS object-fit — le format de sortie ne dépend plus du tout
 //    de ce que la caméra source décide de renvoyer.
 
+// Repasse 2026-09-18 (retour direct, capture d'écran de la galerie
+// Android : "le format du fichier n'est pas pris en charge") : le webm
+// était tenté EN PREMIER, et Chrome Android sait très bien l'enregistrer
+// (isTypeSupported répond vrai) — mais l'appli Galerie/Photos native de
+// la plupart des téléphones (Android comme iOS) ne sait pas LIRE un
+// .webm, seulement les formats vidéo "standards" comme le mp4/H.264.
+// Le fichier n'était donc pas corrompu, juste dans un conteneur que le
+// lecteur natif ne reconnaît pas. Mp4 tenté en premier désormais :
+// support d'enregistrement mp4 large sur Chrome/Android et Safari/iOS
+// récents, lisible partout une fois enregistré. Webm reste en repli pour
+// les navigateurs qui ne savent enregistrer que ça (ex. Firefox).
 const MIME_CANDIDATES = [
+  "video/mp4;codecs=avc1,mp4a.40.2",
+  "video/mp4;codecs=h264,aac",
+  "video/mp4",
   "video/webm;codecs=vp9,opus",
   "video/webm;codecs=vp8,opus",
   "video/webm",
-  "video/mp4",
 ];
 
 function pickSupportedMimeType(): string | null {
@@ -260,8 +273,10 @@ export default function Teleprompter({
       drawRafRef.current = requestAnimationFrame(drawFrame);
 
       const canvasStream = canvas.captureStream(30);
+      const videoTracks = canvasStream.getVideoTracks();
+      if (videoTracks.length === 0) throw new Error("captureStream sans piste vidéo");
       const audioTracks = streamRef.current.getAudioTracks();
-      const combined = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+      const combined = new MediaStream([...videoTracks, ...audioTracks]);
 
       const recorder = new MediaRecorder(combined, { mimeType });
       recorder.ondataavailable = (e) => {
@@ -271,6 +286,15 @@ export default function Teleprompter({
         if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
         drawRafRef.current = null;
         const blob = new Blob(chunksRef.current, { type: mimeType });
+        // Filet de sécurité : une capture ratée (canvas jamais dessiné,
+        // flux coupé) produit un blob quasi vide plutôt qu'une erreur —
+        // sans ce contrôle, le fichier "réussi" présenté à l'enregistrement
+        // est en réalité illisible. Mieux vaut le dire tout de suite que
+        // laisser découvrir un fichier corrompu dans la galerie ensuite.
+        if (blob.size < 10_000) {
+          setRecordError("L'enregistrement a échoué (fichier vide). Réessaie une nouvelle prise.");
+          return;
+        }
         recordedBlobRef.current = blob;
         setRecordedUrl(URL.createObjectURL(blob));
       };
