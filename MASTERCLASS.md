@@ -7383,6 +7383,21 @@ résultat possible est "toujours pas droit après confirmation" — jamais
 un fichier corrompu. Reste, comme toujours sur ce chantier, à confirmer
 sur le téléphone réel de Santamaria.
 
+**Vérification supplémentaire (2026-09-18, même journée, retour "travaille
+2h, réfléchis")** : plutôt que de s'arrêter à `tsc`/`eslint`/`build` (qui
+ne disent rien sur la logique elle-même), `patchMp4Rotation` a été exécuté
+pour de vrai (script `tsx` jetable, jamais commité) contre une structure
+MP4 synthétique mais réaliste (`moov > trak` vidéo + `trak` audio, chacun
+avec un vrai `tkhd` v0). Résultat, octet par octet, pour les 4 angles
+(0°/90°/180°/270°) : la matrice écrite correspond EXACTEMENT aux valeurs
+standard (mêmes que `MediaRecorder.setOrientationHint()` d'Android), seuls
+les 36 octets de la matrice du `tkhd` VIDÉO changent (0 diff à 0°, la
+matrice identité étant déjà en place), le `tkhd` audio et le contenu
+`mdat` ne sont jamais touchés, et un fichier non-MP4 ressort strictement
+inchangé. La seule inconnue restante est donc bien celle assumée dans
+le code : QUEL angle (90 ou 270 le plus souvent) corrige CE téléphone —
+plus aucun doute sur le fonctionnement du mécanisme de patch lui-même.
+
 ## ET — Studio créatif : 1,6 Mo de guides chargés à chaque visite, prompteur toujours au milieu (2026-09-18)
 
 Retour direct, sec : "j'ai mis 30s pour aller sur le prompteur en 4
