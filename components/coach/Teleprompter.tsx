@@ -144,8 +144,25 @@ export default function Teleprompter({
       setCameraError(null);
       setReady(false);
       try {
+        // Repasse 2026-09-18 (retour direct : "le format est bon mais y'a
+        // des bandes noires en haut et en bas") — sans canvas maintenant
+        // (voir commentaire de tête), l'image enregistrée est exactement
+        // celle que renvoie la caméra. Des bandes noires dans le fichier
+        // final veulent dire que le capteur donne une image plus large que
+        // haute (paysage) et que le navigateur la remplit dans un cadre
+        // portrait par AJOUT DE BANDES plutôt que par recadrage, faute
+        // d'autorisation explicite de recadrer. `resizeMode:
+        // "crop-and-scale"` est la contrainte standard qui autorise
+        // justement ce recadrage — pas encore dans les types TypeScript du
+        // DOM, castée en `any` ici, mais bien supportée par les
+        // navigateurs qui l'implémentent (Chrome notamment).
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, width: { ideal: 1080 }, height: { ideal: 1920 } },
+          video: {
+            facingMode,
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+            resizeMode: "crop-and-scale",
+          } as MediaTrackConstraints,
           audio: true,
         });
         if (cancelled) {
