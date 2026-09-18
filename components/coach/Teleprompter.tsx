@@ -641,10 +641,25 @@ export default function Teleprompter({
     if (!pendingRotation) return;
     setAdvancing(true);
     const { blob, url } = pendingRotation;
-    setPendingRotation(null);
     const fixedBlob = await patchMp4Rotation(blob, rotationDeg);
-    const fixedUrl = fixedBlob === blob ? url : URL.createObjectURL(fixedBlob);
-    if (fixedUrl !== url) URL.revokeObjectURL(url);
+    // patchMp4Rotation renvoie le blob d'ORIGINE, inchangé, sur toute
+    // structure de fichier inattendue (voir lib/mp4-rotate.ts — jamais de
+    // fichier corrompu en sortie). Sans ce contrôle, "C'est droit" aurait
+    // fait avancer silencieusement à la prochaine prise en laissant croire
+    // que la correction avait marché, alors que le fichier resterait
+    // tourné — un avertissement affiché juste avant que l'écran change de
+    // script (voir onFinishedTake) ne serait pratiquement jamais vu.
+    if (fixedBlob === blob) {
+      setAdvancing(false);
+      setPendingRotation(null);
+      setOrientationNote(
+        "La correction de rotation n'a pas pu s'appliquer sur ce fichier. Recommence cette prise."
+      );
+      return;
+    }
+    setPendingRotation(null);
+    const fixedUrl = URL.createObjectURL(fixedBlob);
+    URL.revokeObjectURL(url);
     await saveVideoBlob(fixedBlob, fixedUrl);
     setAdvancing(false);
     onFinishedTake?.();
