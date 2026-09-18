@@ -197,14 +197,14 @@ export default function Teleprompter({
   // avoir à le redécouvrir à chaque ouverture.
   const [previewRotation, setPreviewRotation] = useState<0 | 90 | 180 | 270>(() => {
     if (typeof window === "undefined") return 90;
-    const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-${facingMode}`));
+    const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v2-${facingMode}`));
     return stored === 90 || stored === 180 || stored === 270 ? stored : 90;
   });
   function cyclePreviewRotation() {
     setPreviewRotation((d) => {
       const next = ((d + 90) % 360) as 0 | 90 | 180 | 270;
       try {
-        window.localStorage.setItem(`ep-teleprompter-rotation-${facingMode}`, String(next));
+        window.localStorage.setItem(`ep-teleprompter-rotation-v2-${facingMode}`, String(next));
       } catch {}
       return next;
     });
@@ -226,12 +226,22 @@ export default function Teleprompter({
       setCameraError(null);
       setReady(false);
       try {
-        // Voir le commentaire de tête (repasse 2026-09-18 bis) : aspectRatio
-        // seul, sans width/height imposés, pour laisser le navigateur choisir
-        // un mode natif déjà portrait plutôt que de forcer une résolution
-        // précise qu'il satisferait en gardant le capteur en paysage.
+        // Retour direct 2026-09-18 (capture d'écran : "180×320" affiché en
+        // diagnostic) : `aspectRatio` seul, sans le moindre repère de
+        // résolution, avait laissé ce téléphone choisir un mode minuscule
+        // (à peine plus qu'une vignette) — l'orientation ne se corrige de
+        // toute façon plus ici (rotation posée après coup, voir plus bas et
+        // lib/mp4-rotate.ts), donc plus aucune raison de laisser la
+        // résolution filer aussi bas. `width`/`height` en `ideal` (jamais
+        // `exact`) redonnent un vrai repère de qualité sans empêcher
+        // `aspectRatio` de continuer à influencer le choix du mode.
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode, aspectRatio: { ideal: 9 / 16 } },
+          video: {
+            facingMode,
+            aspectRatio: { ideal: 9 / 16 },
+            width: { ideal: 1080 },
+            height: { ideal: 1920 },
+          },
           audio: true,
         });
         if (cancelled) {
@@ -317,7 +327,7 @@ export default function Teleprompter({
     // (ex. DashboardNav.tsx), pas un effet qu'on pourrait éviter.
     let next: 0 | 90 | 180 | 270 = 90;
     try {
-      const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-${facingMode}`));
+      const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v2-${facingMode}`));
       if (stored === 90 || stored === 180 || stored === 270) next = stored;
     } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -635,7 +645,19 @@ export default function Teleprompter({
           dépend pas (voir saveVideoBlob : il enregistre le flux brut,
           jamais ce qui est affiché à l'écran) — son orientation/cadrage se
           règle par la rotation confirmée dans l'aperçu "Tourner" après la
-          prise. */}
+          prise.
+
+          Ordre des transforms CSS (bug corrigé le même jour, capture
+          d'écran à l'appui — le visage restait mal orienté quel que soit
+          l'angle choisi) : une liste `transform: A B C` s'applique en
+          partant de la DROITE (C d'abord, puis B, puis A) — donc l'ordre
+          précédent (`rotate(...) scaleX(-1)`) miroitait l'image BRUTE
+          (encore dans son orientation capteur, pas redressée), puis la
+          tournait : le miroir se faisait dans le mauvais repère. Ici,
+          `scaleX(-1)` est placé APRÈS `rotate(...)` dans la liste pour
+          être appliqué avant lui, donc appliqué à l'image déjà redressée —
+          le miroir "selfie" doit toujours agir en dernier, sur le résultat
+          final, jamais sur le flux brut du capteur. */}
       <video
         ref={videoRef}
         autoPlay
@@ -648,7 +670,7 @@ export default function Teleprompter({
           left: "50%",
           width: previewRotation === 90 || previewRotation === 270 ? "100vh" : "100%",
           height: previewRotation === 90 || previewRotation === 270 ? "100vw" : "100%",
-          transform: `translate(-50%, -50%) rotate(${previewRotation}deg) ${facingMode === "user" ? "scaleX(-1)" : ""}`,
+          transform: `translate(-50%, -50%) ${facingMode === "user" ? "scaleX(-1) " : ""}rotate(${previewRotation}deg)`,
           opacity: ready && !cameraError ? 1 : 0,
         }}
       />
@@ -694,14 +716,18 @@ export default function Teleprompter({
               <Circle size={8} fill="white" /> {formatRecTime(recSeconds)}
             </span>
           )}
+          {/* Retour direct 2026-09-18 (capture d'écran) : ce bouton passait
+              inaperçu en simple icône (confondable avec "recommencer",
+              même icône utilisée plus bas pour ça) — un libellé texte le
+              rend identifiable sans avoir à deviner. */}
           <button
             type="button"
             onClick={cyclePreviewRotation}
-            aria-label="Tourner l'aperçu caméra"
+            aria-label="Tourner l'aperçu si l'image n'est pas droite"
             disabled={recording}
-            className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white disabled:opacity-40"
+            className="flex items-center gap-1 bg-black/50 border border-white/15 text-white text-[10px] font-bold px-2.5 h-9 rounded-full disabled:opacity-40 flex-shrink-0"
           >
-            <RotateCcw size={16} />
+            <RotateCcw size={14} /> Tourner
           </button>
           <button
             type="button"
@@ -885,51 +911,61 @@ export default function Teleprompter({
           </div>
         )}
 
-        <div className="flex items-center gap-3 mb-2">
-          <button
-            type="button"
-            onClick={() => setScrolling((v) => !v)}
-            className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex-shrink-0"
-          >
-            {scrolling ? <Pause size={13} /> : <Play size={13} />}
-            {scrolling ? "Pause" : "Défiler"}
-          </button>
-          <div className="flex-1 flex items-center gap-2">
-            <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">Vitesse</span>
-            <input
-              type="range"
-              min={5}
-              max={120}
-              step={5}
-              value={speed}
-              onChange={(e) => setSpeed(Number(e.target.value))}
-              aria-label="Vitesse de défilement"
-              className="flex-1"
-            />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Type size={13} className="text-white/40 flex-shrink-0" />
-          <input
-            type="range"
-            min={16}
-            max={44}
-            step={2}
-            value={fontSize}
-            onChange={(e) => setFontSize(Number(e.target.value))}
-            aria-label="Taille du texte"
-            className="flex-1"
-          />
-          <button
-            type="button"
-            onClick={() => textScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-            className="text-[10px] font-bold text-white/50 uppercase flex-shrink-0"
-          >
-            ↑ Début
-          </button>
-        </div>
-        {trackInfo && (
-          <p className="text-[9px] text-white/25 text-center mt-2">{trackInfo}</p>
+        {/* Retour direct 2026-09-18 (capture d'écran) : ces réglages de
+            défilement n'ont aucune utilité pendant la vérification d'une
+            rotation (on ne filme plus, on regarde juste si c'est droit) et
+            n'ajoutaient que de l'encombrement au moment précis où il faut
+            le plus voir l'aperçu (texte en haut + caméra au milieu + tout
+            ça empilé en bas, exactement ce qui rendait l'écran surchargé). */}
+        {!pendingRotation && (
+          <>
+            <div className="flex items-center gap-3 mb-2">
+              <button
+                type="button"
+                onClick={() => setScrolling((v) => !v)}
+                className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex-shrink-0"
+              >
+                {scrolling ? <Pause size={13} /> : <Play size={13} />}
+                {scrolling ? "Pause" : "Défiler"}
+              </button>
+              <div className="flex-1 flex items-center gap-2">
+                <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">Vitesse</span>
+                <input
+                  type="range"
+                  min={5}
+                  max={120}
+                  step={5}
+                  value={speed}
+                  onChange={(e) => setSpeed(Number(e.target.value))}
+                  aria-label="Vitesse de défilement"
+                  className="flex-1"
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Type size={13} className="text-white/40 flex-shrink-0" />
+              <input
+                type="range"
+                min={16}
+                max={44}
+                step={2}
+                value={fontSize}
+                onChange={(e) => setFontSize(Number(e.target.value))}
+                aria-label="Taille du texte"
+                className="flex-1"
+              />
+              <button
+                type="button"
+                onClick={() => textScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+                className="text-[10px] font-bold text-white/50 uppercase flex-shrink-0"
+              >
+                ↑ Début
+              </button>
+            </div>
+            {trackInfo && (
+              <p className="text-[9px] text-white/25 text-center mt-2">{trackInfo}</p>
+            )}
+          </>
         )}
       </div>
     </div>
