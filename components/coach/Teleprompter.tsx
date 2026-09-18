@@ -122,6 +122,12 @@ export default function Teleprompter({
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [recordError, setRecordError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Retour direct 2026-09-18 ("c'est toujours en paysage") : plutôt que
+  // de supposer que le correctif de résolution suffit, on vérifie
+  // vraiment les dimensions du fichier produit et on le dit honnêtement
+  // si ça n'a pas marché, au lieu de laisser découvrir le problème une
+  // fois dans la galerie.
+  const [orientationWarning, setOrientationWarning] = useState<string | null>(null);
   const [mimeType] = useState(() => pickSupportedMimeType());
   // Incrémenté par le bouton "Réessayer" pour rejouer l'effet caméra sans
   // changer facingMode (sinon un simple setFacingMode((f) => f) ne change
@@ -199,6 +205,30 @@ export default function Teleprompter({
     };
   }, [scrolling, speed]);
 
+  // Vérifie les VRAIES dimensions du fichier produit (en le chargeant
+  // dans un <video> détaché) plutôt que de supposer que demander une
+  // résolution portrait au canvas suffit à l'obtenir — retour direct
+  // 2026-09-18 après un premier correctif qui ne suffisait pas encore :
+  // mieux vaut le dire honnêtement si l'orientation réelle ne correspond
+  // pas à ce qui a été demandé que de laisser découvrir le problème une
+  // fois le fichier dans la galerie.
+  function checkRecordedOrientation(url: string, expected: "portrait" | "landscape") {
+    const probe = document.createElement("video");
+    probe.preload = "metadata";
+    probe.src = url;
+    probe.onloadedmetadata = () => {
+      const actualIsPortrait = probe.videoHeight > probe.videoWidth;
+      const expectedIsPortrait = expected === "portrait";
+      if (probe.videoWidth > 0 && actualIsPortrait !== expectedIsPortrait) {
+        setOrientationWarning(
+          `Le fichier enregistré est en ${actualIsPortrait ? "portrait" : "paysage"} (${probe.videoWidth}×${probe.videoHeight}) au lieu de ${expected === "portrait" ? "portrait" : "paysage"} comme demandé. Le format d'enregistrement de ton téléphone force cette orientation malgré la demande.`
+        );
+      } else {
+        setOrientationWarning(null);
+      }
+    };
+  }
+
   // ── Enregistrement ────────────────────────────────────────────────────
   // Redessine chaque frame caméra sur le canvas hors-DOM à la résolution
   // cible — c'est ce canvas, jamais le flux caméra brut, qui est
@@ -260,6 +290,7 @@ export default function Teleprompter({
       return;
     }
     setRecordError(null);
+    setOrientationWarning(null);
     if (recordedUrl) {
       URL.revokeObjectURL(recordedUrl);
       setRecordedUrl(null);
@@ -268,8 +299,19 @@ export default function Teleprompter({
     try {
       const canvas = canvasRef.current;
       if (!canvas) throw new Error("canvas indisponible");
-      canvas.width = orientation === "portrait" ? 1080 : 1920;
-      canvas.height = orientation === "portrait" ? 1920 : 1080;
+      // Repasse 2026-09-18 (retour direct : "c'est toujours en paysage"
+      // même après le passage sur DOM + mp4) : bug Chrome documenté
+      // (crbug 897727) — MediaRecorder + canvas.captureStream() sur
+      // Android échoue ou se comporte de façon incorrecte pour une
+      // résolution de canvas "large" (déjà signalé dès 1280x720), l'encodeur
+      // matériel semble retomber sur son format préféré (paysage) au lieu
+      // de respecter une résolution portrait haute comme 1080x1920. Canvas
+      // réduit à 540x960 (qHD, un quart des pixels de 1080x1920) pour
+      // rester dans une résolution que l'encodeur matériel gère de façon
+      // fiable — largement suffisant pour un reel/une vidéo parlante, de
+      // toute façon recompressée par Instagram/YouTube à l'upload.
+      canvas.width = orientation === "portrait" ? 540 : 960;
+      canvas.height = orientation === "portrait" ? 960 : 540;
       drawRafRef.current = requestAnimationFrame(drawFrame);
 
       const canvasStream = canvas.captureStream(30);
@@ -296,7 +338,9 @@ export default function Teleprompter({
           return;
         }
         recordedBlobRef.current = blob;
-        setRecordedUrl(URL.createObjectURL(blob));
+        const url = URL.createObjectURL(blob);
+        setRecordedUrl(url);
+        checkRecordedOrientation(url, orientation);
       };
       recorder.start();
       recorderRef.current = recorder;
@@ -532,6 +576,9 @@ export default function Teleprompter({
         {saveError && (
           <p className="text-[11px] text-amber-300 text-center mb-2">{saveError}</p>
         )}
+        {orientationWarning && (
+          <p className="text-[11px] text-amber-300 text-center mb-2">{orientationWarning}</p>
+        )}
 
         {recordedUrl ? (
           <div className="flex items-center gap-2 mb-3">
@@ -549,6 +596,7 @@ export default function Teleprompter({
                 recordedBlobRef.current = null;
                 setRecordedUrl(null);
                 setSaveError(null);
+                setOrientationWarning(null);
               }}
               aria-label="Refaire une prise"
               className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/10 border border-white/15 text-white"
