@@ -6857,3 +6857,48 @@ production reste alignée, pas seulement la base corrigée une fois) :
 avant/après pour chaque passe de correction des descriptions Instagram
 (0 script restant avec l'ancienne ligne d'identité, 75/75 avec le
 nouveau paragraphe).
+
+## EH — LinkedIn/Threads en contenu écrit (app + routine cloud) (2026-09-18)
+
+Retour direct : LinkedIn et Threads sont du contenu ÉCRIT (reçu par
+mail, posté direct, jamais tourné), contrairement à Instagram Reel/
+YouTube. Deux volets, app et routine cloud existante.
+
+**App** (`components/coach/IdeationScripts.tsx`, `app/dashboard/coach/
+studio/actions.ts`) : nouveau `WRITTEN_PLATFORMS` (`linkedin`, `threads`)
+distinct des plateformes vidéo. Pour ces deux plateformes : pas de
+bouton Prompteur (rien à filmer), pas de bloc Description séparé (le
+texte du post est déjà tout le contenu), libellé "Texte du post" au lieu
+de "Script (mot pour mot)", et un nouveau script se crée directement en
+statut `publie` (nouveau paramètre optionnel `status` sur `createScript`)
+plutôt que `a_tourner` — cohérent avec "je pars du principe que les
+posts reçus par mail, je les poste direct".
+
+**Routine cloud "EP Coaching - LinkedIn quotidien"** (`trig_
+01J8NWJrurB6sUSD3ZpQZo4K`, tourne chaque matin à 4h Europe/Paris, déjà
+existante depuis le 2026-08-24, envoie 5 posts LinkedIn par mail Gmail)
+mise à jour pour :
+- Produire EN PLUS 5 posts Threads/jour, adaptés des mêmes 5 angles
+  LinkedIn (retour direct : "threads j'y poste le contenu linkedin comme
+  ça ça fait 2 en 1") mais nettement plus courts et TOUJOURS conclus par
+  une vraie question ouverte à l'audience (retour direct : "j'ai
+  l'impression Threads les gens échangent plus, faut montrer qu'on
+  s'intéresse à eux").
+- Envoyer les 10 posts (2 sections claires) dans le même email.
+- Insérer les 10 posts dans `coach_scripts` juste après l'envoi
+  (`coach_id` de Santamaria, `format='court'`, `platform` selon le post,
+  `status='publie'`, pas d'`instagram_caption`) — pour que le suivi de
+  performance existe dans Studio créatif dès qu'il logue les vues/likes
+  réels après publication.
+- Boucle de feedback élargie : en plus du journal qualitatif Notion déjà
+  en place, vérifie désormais aussi les vraies stats `coach_scripts`
+  (vues/likes/commentaires/partages/enregistrements) une fois qu'elles
+  existeront (retour direct : "linkedin continue pareil mais réitère car
+  tu verras les stats quand tu pourras") — ignoré sans bloquer tant
+  qu'aucune vue n'est encore loguée.
+
+### Validation
+
+Mise à jour confirmée par la réponse de l'API `RemoteTrigger` (prompt
+relu intégralement après update). `tsc --noEmit` et `eslint` propres sur
+les fichiers app touchés.
