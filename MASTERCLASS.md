@@ -7559,3 +7559,32 @@ message d'erreur ne le signale — ça se réinitialisait juste, en silence.
 `react-hooks/set-state-in-effect` sur ces deux fichiers reste le même
 `setScripts(initialScripts)` préexistant, sans lien, déjà identifié dans
 des Axes antérieurs) et `next build` propres.
+
+## EX — Prompteur : ne plus avancer silencieusement si le patch de rotation échoue (2026-09-18)
+
+Retour direct : "travaille 2h, réfléchis, corrige-toi" — relecture
+complète de `Teleprompter.tsx`, ligne par ligne, plutôt qu'un nouveau
+correctif ponctuel sur un symptôme signalé. Trouvé en la lisant : dans
+`confirmRotationFix`, `patchMp4Rotation` renvoie volontairement le blob
+d'origine INCHANGÉ sur toute structure de fichier inattendue (voir
+lib/mp4-rotate.ts, Axe ES — jamais de fichier corrompu en sortie), mais
+`confirmRotationFix` ne vérifiait jamais ce cas de retour et enchaînait
+quand même sur la sauvegarde puis le script suivant. Conséquence
+concrète : sur un fichier dont la structure ne correspond pas à ce que
+`patchMp4Rotation` sait patcher, appuyer sur "C'est droit" aurait
+sauvegardé la prise TOUJOURS tournée, sans le moindre avertissement —
+exactement le genre de "ça a l'air d'avoir marché mais en fait non" que
+tout ce chantier essaie d'éliminer depuis l'Axe EP.
+
+**Fix** : si le patch n'a rien pu appliquer, l'écran s'arrête sur le
+même bouton "Recommencer cette prise" que pour les bandes noires,
+plutôt que d'avancer. Un avertissement affiché juste avant de changer
+d'écran (l'option envisagée d'abord) aurait été quasi invisible, effacé
+par le changement de script suivant une fraction de seconde après —
+bloquer l'avancement est le seul moyen fiable de garantir que la
+personne voit vraiment le problème plutôt que de le découvrir après
+coup dans sa galerie.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres.
