@@ -7382,3 +7382,51 @@ l'hypothèse ci-dessus serait fausse pour un appareil donné, le pire
 résultat possible est "toujours pas droit après confirmation" — jamais
 un fichier corrompu. Reste, comme toujours sur ce chantier, à confirmer
 sur le téléphone réel de Santamaria.
+
+## ET — Studio créatif : 1,6 Mo de guides chargés à chaque visite, prompteur toujours au milieu (2026-09-18)
+
+Retour direct, sec : "j'ai mis 30s pour aller sur le prompteur en 4
+clics, c'est pas normal" + "actuellement c'est un format paysage au
+milieu de l'écran et en haut et en bas bande noire... je veux l'image
+sur TOUT mon téléphone, pas juste au milieu." Deux causes réelles et
+vérifiées, pas des hypothèses.
+
+**Studio créatif lent** : `app/dashboard/coach/studio/page.tsx`
+chargeait `getAllGuidesWithContent()` — le texte intégral des 482 guides
+publiés, ≈1,6 Mo de JSON (mesuré directement en base,
+`sum(length(content::text))`) — à CHAQUE visite de la page, alors que ce
+contenu ne sert qu'à un seul onglet parmi cinq (le Générateur de
+prompts, `SocialGenerator.tsx`), pas forcément ouvert. Ce poids
+transitait donc sur toute visite de Studio créatif (Idées, Scripts,
+Notes...) même quand personne n'utilisait le Générateur — exactement le
+genre de "la page charge plus que ce qu'elle affiche" qui rend une
+appli lente sans que rien ne le montre dans son propre code métier.
+
+**Fix** : nouvelle action `fetchGuidesForGenerator` (`studio/actions.ts`),
+appelée par `SocialGenerator.tsx` lui-même, uniquement la première fois
+que son onglet est réellement ouvert (`IdeationHub.tsx` retient ce
+déclenchement via `hasOpenedGenerator`, mis à jour directement dans le
+`onClick` de l'onglet plutôt que via un effet, pour éviter le même piège
+`react-hooks/set-state-in-effect` déjà rencontré plusieurs fois sur ce
+projet). Studio créatif ne transporte plus ce poids que pour qui ouvre
+vraiment le Générateur.
+
+**Prompteur toujours "au milieu"** : `object-contain` (posé à l'Axe EE
+contre un "trop zoomé" remonté sur l'ANCIEN pipeline à base de canvas,
+entièrement abandonné depuis l'Axe EN) laisse un flux caméra réellement
+paysage (voir Axe ES) flotter en petit rectangle centré, bandes noires
+tout autour, au lieu de remplir l'écran — exactement ce qui a été
+redécrit ("paysage au milieu, bandes noires en haut/bas/côtés"). `object-
+cover` remplit tout l'écran en rognant l'excédent, posé UNIQUEMENT sur
+l'aperçu LIVE : le fichier réellement enregistré ne dépend jamais de ce
+qui est affiché à l'écran (voir `saveVideoBlob`, il enregistre le flux
+brut), son cadrage se règle par la rotation confirmée après la prise
+(Axe ES), pas par ce réglage CSS.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres sur les 5 fichiers
+touchés. Poids réel du payload guides vérifié par requête SQL directe
+(482 guides, ≈1,6 Mo) avant et après le correctif, pas seulement supposé.
+Comme pour le reste du chantier prompteur, le ressenti de fluidité réel
+reste à confirmer sur le téléphone de Santamaria.
