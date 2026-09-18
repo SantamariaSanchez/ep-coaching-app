@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Circle, Square, Download, RotateCcw, SwitchCamera, Type, RectangleVertical, RectangleHorizontal } from "lucide-react";
+import { X, Play, Pause, Circle, Square, Download, RotateCcw, SwitchCamera, Type } from "lucide-react";
 import { createPortal } from "react-dom";
 
 // Prompteur (Studio créatif > Scripts, retour direct 2026-09-17 : "un
@@ -10,45 +10,60 @@ import { createPortal } from "react-dom";
 // filme mes reels/vidéos ici, vraiment faut que ça fonctionne, que je
 // puisse faire mon tournage ici"). Tout se passe côté navigateur (aucune
 // route API, aucune donnée envoyée nulle part) : getUserMedia pour la
-// caméra/micro, MediaRecorder pour enregistrer directement le tournage,
-// défilement du texte piloté par requestAnimationFrame pour rester fluide
-// à n'importe quelle vitesse.
+// caméra/micro, MediaRecorder pour enregistrer, défilement du texte piloté
+// par requestAnimationFrame pour rester fluide à n'importe quelle vitesse.
 //
-// Repasse 2026-09-18 (retour direct : "je me vois pas, écran noir" +
-// "l'enregistrement est en paysage") — deux bugs réels distincts :
-// 1. Le <video> de prévisualisation n'était monté QUE quand `ready` était
-//    déjà vrai, mais `videoRef.current.srcObject = stream` s'exécutait
-//    AVANT le `setReady(true)` qui le montait : au moment de l'assignation
-//    le <video> n'existait pas encore dans le DOM, `videoRef.current`
-//    valait `null`, l'affectation ne faisait donc rien. Le flux existait
-//    bien (l'enregistrement fonctionnait, lui lisant `streamRef.current`
-//    directement) mais ne s'affichait jamais. Corrigé en montant le
-//    <video> en permanence (visibilité gérée par opacité, pas par
-//    montage/démontage) pour que la ref existe déjà quand le flux arrive.
-// 2. `getUserMedia({ width: {ideal:1080}, height: {ideal:1920} })` n'est
-//    qu'une PRÉFÉRENCE : beaucoup de caméras (webcam de PC, certains
-//    téléphones selon l'orientation du capteur) renvoient quand même un
-//    flux natif en paysage, que le <video> affiche correctement à l'écran
-//    (rotation géré par les métadonnées d'affichage) mais que
-//    MediaRecorder enregistre tel quel, sans cette rotation d'affichage —
-//    d'où un fichier bien réel mais en paysage. Corrigé en ne enregistrant
-//    plus jamais le flux caméra brut : chaque frame est dessinée sur un
-//    <canvas> à la résolution EXACTE voulue (portrait 1080x1920 par
-//    défaut, bascule paysage possible), recadrée en "cover" comme le
-//    ferait CSS object-fit — le format de sortie ne dépend plus du tout
-//    de ce que la caméra source décide de renvoyer.
+// Repasse 2026-09-18, plusieurs allers-retours réels sur téléphone :
+// 1. Écran noir : le <video> n'était monté QUE quand `ready` était déjà
+//    vrai, mais `srcObject` était assigné AVANT ce `setReady(true)` — la
+//    ref valait encore `null`. Corrigé : <video> monté en permanence,
+//    visibilité gérée par opacité.
+// 2. Trop zoomé : `object-cover` rognait l'image pour remplir l'écran.
+//    Corrigé : `object-contain`, image entière jamais rognée.
+// 3. Format vidéo illisible en galerie : le webm était tenté en premier
+//    (Chrome Android l'enregistre très bien) mais l'appli Galerie native
+//    de la plupart des téléphones ne sait pas LIRE un .webm. Corrigé :
+//    mp4 tenté en premier.
+// 4. "Toujours en paysage" + "pas fluide" : la V1 de ce correctif
+//    redessinait chaque frame caméra sur un <canvas> caché pour FORCER une
+//    résolution portrait exacte avant l'enregistrement (`canvas.
+//    captureStream()` + `MediaRecorder`). Deux problèmes réels avec cette
+//    approche, pas un seul :
+//    - Performance : redessiner 30 fois/seconde sur un canvas en plus
+//      d'afficher la caméra ET de faire défiler le texte surchargeait le
+//      rendu sur téléphone, d'où le manque de fluidité constaté.
+//    - Fiabilité : bug Chrome documenté (crbug 897727) — MediaRecorder +
+//      canvas.captureStream() sur Android se comporte de façon incorrecte
+//      pour certaines résolutions de canvas, l'encodeur matériel retombant
+//      sur son format préféré (paysage) au lieu de respecter la résolution
+//      demandée.
+//    Solution retenue : ARRÊTER de passer par un canvas. On enregistre
+//    directement le flux caméra brut (`streamRef.current`) avec
+//    MediaRecorder, exactement le chemin standard, le plus testé et le
+//    plus efficace du web pour ça — c'est aussi ce qu'une appli caméra
+//    native ferait en interne. Ça résout la fluidité (plus de redessin en
+//    double) ET l'orientation la plupart du temps (le chemin
+//    d'enregistrement direct n'a pas le bug canvas ci-dessus), sans
+//    garantie à 100% sur des appareils très anciens/atypiques — d'où la
+//    vérification honnête après coup (checkRecordedOrientation) plutôt
+//    que de prétendre que c'est toujours parfait.
+//
+// Note sur "mets l'appareil photo natif du téléphone avec le prompteur en
+// extension par-dessus" : c'est un vrai bon réflexe (un vrai prompteur
+// pro fonctionne comme ça), mais littéralement impossible depuis une page
+// web — aucune techno web ne permet à un site d'afficher du contenu
+// par-dessus une AUTRE application (appli Caméra native comprise), c'est
+// bloqué par le système (iOS et Android) pour des raisons de sécurité,
+// pas un manque d'effort. La meilleure approche possible depuis le web
+// est celle ci-dessus : utiliser la caméra du téléphone directement DANS
+// cette page (comme le fait une appli native en interne), avec le texte
+// affiché par-dessus dans la même page, et un enregistrement le plus
+// proche possible du chemin natif (flux brut, sans étape de retraitement
+// superflue) pour rester fluide.
 
-// Repasse 2026-09-18 (retour direct, capture d'écran de la galerie
-// Android : "le format du fichier n'est pas pris en charge") : le webm
-// était tenté EN PREMIER, et Chrome Android sait très bien l'enregistrer
-// (isTypeSupported répond vrai) — mais l'appli Galerie/Photos native de
-// la plupart des téléphones (Android comme iOS) ne sait pas LIRE un
-// .webm, seulement les formats vidéo "standards" comme le mp4/H.264.
-// Le fichier n'était donc pas corrompu, juste dans un conteneur que le
-// lecteur natif ne reconnaît pas. Mp4 tenté en premier désormais :
-// support d'enregistrement mp4 large sur Chrome/Android et Safari/iOS
-// récents, lisible partout une fois enregistré. Webm reste en repli pour
-// les navigateurs qui ne savent enregistrer que ça (ex. Firefox).
+// mp4 tenté en premier (lisible par la Galerie native, voir point 3
+// ci-dessus), webm en repli pour les navigateurs qui ne savent
+// enregistrer que ça (Firefox notamment).
 const MIME_CANDIDATES = [
   "video/mp4;codecs=avc1,mp4a.40.2",
   "video/mp4;codecs=h264,aac",
@@ -92,23 +107,9 @@ export default function Teleprompter({
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Canvas où chaque frame caméra est redessinée à la résolution exacte
-  // voulue avant d'être enregistrée — voir commentaire de tête sur le bug
-  // "enregistrement en paysage". Repasse 2026-09-18 (retour direct : "le
-  // format est encore en paysage" après le premier correctif cover→contain) :
-  // le canvas était créé avec `document.createElement`, donc jamais
-  // attaché au DOM — `captureStream()` sur un canvas détaché est connu
-  // pour se comporter de façon peu fiable sur certains moteurs mobiles
-  // (Safari/WebKit notamment), qui peuvent lui donner une taille par
-  // défaut au lieu de respecter canvas.width/height. Un vrai <canvas>
-  // monté dans le JSX (masqué en opacité, jamais en display:none qui
-  // peut couper le rendu) lève ce risque.
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const drawRafRef = useRef<number | null>(null);
 
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
-  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [ready, setReady] = useState(false);
 
   const [scrolling, setScrolling] = useState(false);
@@ -122,12 +123,10 @@ export default function Teleprompter({
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [recordError, setRecordError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  // Retour direct 2026-09-18 ("c'est toujours en paysage") : plutôt que
-  // de supposer que le correctif de résolution suffit, on vérifie
-  // vraiment les dimensions du fichier produit et on le dit honnêtement
-  // si ça n'a pas marché, au lieu de laisser découvrir le problème une
-  // fois dans la galerie.
-  const [orientationWarning, setOrientationWarning] = useState<string | null>(null);
+  // Purement informatif désormais (plus de canvas à "corriger") : si le
+  // fichier sort quand même en paysage sur un appareil atypique, mieux
+  // vaut le dire honnêtement que prétendre que c'est toujours garanti.
+  const [orientationNote, setOrientationNote] = useState<string | null>(null);
   const [mimeType] = useState(() => pickSupportedMimeType());
   // Incrémenté par le bouton "Réessayer" pour rejouer l'effet caméra sans
   // changer facingMode (sinon un simple setFacingMode((f) => f) ne change
@@ -205,134 +204,57 @@ export default function Teleprompter({
     };
   }, [scrolling, speed]);
 
-  // Vérifie les VRAIES dimensions du fichier produit (en le chargeant
-  // dans un <video> détaché) plutôt que de supposer que demander une
-  // résolution portrait au canvas suffit à l'obtenir — retour direct
-  // 2026-09-18 après un premier correctif qui ne suffisait pas encore :
-  // mieux vaut le dire honnêtement si l'orientation réelle ne correspond
-  // pas à ce qui a été demandé que de laisser découvrir le problème une
-  // fois le fichier dans la galerie.
-  function checkRecordedOrientation(url: string, expected: "portrait" | "landscape") {
+  // Vérifie les VRAIES dimensions du fichier produit (en le chargeant dans
+  // une balise <video> détachée) — purement informatif : sans canvas à
+  // ajuster, il n'y a plus rien à "corriger" ici, juste à signaler
+  // honnêtement si un appareil atypique sort quand même un fichier en
+  // paysage plutôt que de prétendre que c'est toujours garanti.
+  function checkRecordedOrientation(url: string) {
     const probe = document.createElement("video");
     probe.preload = "metadata";
     probe.src = url;
     probe.onloadedmetadata = () => {
-      const actualIsPortrait = probe.videoHeight > probe.videoWidth;
-      const expectedIsPortrait = expected === "portrait";
-      if (probe.videoWidth > 0 && actualIsPortrait !== expectedIsPortrait) {
-        setOrientationWarning(
-          `Le fichier enregistré est en ${actualIsPortrait ? "portrait" : "paysage"} (${probe.videoWidth}×${probe.videoHeight}) au lieu de ${expected === "portrait" ? "portrait" : "paysage"} comme demandé. Le format d'enregistrement de ton téléphone force cette orientation malgré la demande.`
+      if (probe.videoWidth > 0 && probe.videoWidth > probe.videoHeight) {
+        setOrientationNote(
+          `Cette prise est sortie en paysage (${probe.videoWidth}×${probe.videoHeight}). Vérifie que ton téléphone est bien tenu à la verticale au moment de filmer.`
         );
       } else {
-        setOrientationWarning(null);
+        setOrientationNote(null);
       }
     };
   }
 
   // ── Enregistrement ────────────────────────────────────────────────────
-  // Redessine chaque frame caméra sur le canvas hors-DOM à la résolution
-  // cible — c'est ce canvas, jamais le flux caméra brut, qui est
-  // enregistré (voir bug "paysage" plus haut).
-  //
-  // Repasse 2026-09-18 (retour direct : "c'est bcp trop proche, on dirait
-  // c'est zoomé") : la première version recadrait en "cover" (remplir le
-  // cadre en rognant l'excédent) — recadrer une image large (webcam/
-  // téléphone en paysage) vers un cadre portrait étroit revient à ne
-  // garder qu'une fine tranche verticale du centre, ce qui fait
-  // paraître le sujet beaucoup plus proche/gros qu'à l'écran. Recadrage
-  // en "contain" désormais : l'image entière est gardée, mise à l'échelle
-  // pour rentrer dans le cadre, avec des bandes noires si besoin plutôt
-  // que de rogner — jamais de zoom involontaire.
-  function drawFrame() {
-    const canvas = canvasRef.current;
-    const video = videoRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (canvas && video && ctx && video.videoWidth > 0) {
-      const targetW = canvas.width;
-      const targetH = canvas.height;
-      const targetRatio = targetW / targetH;
-      const vw = video.videoWidth;
-      const vh = video.videoHeight;
-      const srcRatio = vw / vh;
-      let dw: number, dh: number, dx: number, dy: number;
-      if (srcRatio > targetRatio) {
-        // Source plus large que la cible : la largeur devient la
-        // contrainte, bandes noires en haut/bas.
-        dw = targetW;
-        dh = targetW / srcRatio;
-        dx = 0;
-        dy = (targetH - dh) / 2;
-      } else {
-        // Source plus étroite/haute que la cible : la hauteur devient la
-        // contrainte, bandes noires à gauche/droite.
-        dh = targetH;
-        dw = targetH * srcRatio;
-        dy = 0;
-        dx = (targetW - dw) / 2;
-      }
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, targetW, targetH);
-      ctx.save();
-      if (facingMode === "user") {
-        ctx.translate(targetW, 0);
-        ctx.scale(-1, 1);
-      }
-      ctx.drawImage(video, 0, 0, vw, vh, dx, dy, dw, dh);
-      ctx.restore();
-    }
-    drawRafRef.current = requestAnimationFrame(drawFrame);
-  }
-
+  // Enregistre directement le flux caméra brut (streamRef.current), sans
+  // aucune étape de retraitement (canvas, redimensionnement) — voir le
+  // commentaire de tête sur pourquoi un canvas intermédiaire causait à la
+  // fois le manque de fluidité et le bug d'orientation. C'est le chemin le
+  // plus léger et le plus fiable que permet le web pour ça.
   function startRecording() {
-    if (!streamRef.current || !videoRef.current) return;
+    if (!streamRef.current) return;
     if (!mimeType) {
       setRecordError("Ton navigateur ne sait pas enregistrer de vidéo ici. Filme avec l'appli caméra de ton téléphone en gardant ce prompteur ouvert à côté.");
       return;
     }
     setRecordError(null);
-    setOrientationWarning(null);
+    setOrientationNote(null);
     if (recordedUrl) {
       URL.revokeObjectURL(recordedUrl);
       setRecordedUrl(null);
     }
     chunksRef.current = [];
     try {
-      const canvas = canvasRef.current;
-      if (!canvas) throw new Error("canvas indisponible");
-      // Repasse 2026-09-18 (retour direct : "c'est toujours en paysage"
-      // même après le passage sur DOM + mp4) : bug Chrome documenté
-      // (crbug 897727) — MediaRecorder + canvas.captureStream() sur
-      // Android échoue ou se comporte de façon incorrecte pour une
-      // résolution de canvas "large" (déjà signalé dès 1280x720), l'encodeur
-      // matériel semble retomber sur son format préféré (paysage) au lieu
-      // de respecter une résolution portrait haute comme 1080x1920. Canvas
-      // réduit à 540x960 (qHD, un quart des pixels de 1080x1920) pour
-      // rester dans une résolution que l'encodeur matériel gère de façon
-      // fiable — largement suffisant pour un reel/une vidéo parlante, de
-      // toute façon recompressée par Instagram/YouTube à l'upload.
-      canvas.width = orientation === "portrait" ? 540 : 960;
-      canvas.height = orientation === "portrait" ? 960 : 540;
-      drawRafRef.current = requestAnimationFrame(drawFrame);
-
-      const canvasStream = canvas.captureStream(30);
-      const videoTracks = canvasStream.getVideoTracks();
-      if (videoTracks.length === 0) throw new Error("captureStream sans piste vidéo");
-      const audioTracks = streamRef.current.getAudioTracks();
-      const combined = new MediaStream([...videoTracks, ...audioTracks]);
-
-      const recorder = new MediaRecorder(combined, { mimeType });
+      const recorder = new MediaRecorder(streamRef.current, { mimeType });
       recorder.ondataavailable = (e) => {
         if (e.data.size > 0) chunksRef.current.push(e.data);
       };
       recorder.onstop = () => {
-        if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
-        drawRafRef.current = null;
         const blob = new Blob(chunksRef.current, { type: mimeType });
-        // Filet de sécurité : une capture ratée (canvas jamais dessiné,
-        // flux coupé) produit un blob quasi vide plutôt qu'une erreur —
-        // sans ce contrôle, le fichier "réussi" présenté à l'enregistrement
-        // est en réalité illisible. Mieux vaut le dire tout de suite que
-        // laisser découvrir un fichier corrompu dans la galerie ensuite.
+        // Filet de sécurité : une capture ratée (flux coupé en cours de
+        // route) produit un blob quasi vide plutôt qu'une erreur — sans ce
+        // contrôle, le fichier "réussi" présenté à l'enregistrement est en
+        // réalité illisible. Mieux vaut le dire tout de suite que laisser
+        // découvrir un fichier corrompu dans la galerie ensuite.
         if (blob.size < 10_000) {
           setRecordError("L'enregistrement a échoué (fichier vide). Réessaie une nouvelle prise.");
           return;
@@ -340,7 +262,7 @@ export default function Teleprompter({
         recordedBlobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
-        checkRecordedOrientation(url, orientation);
+        checkRecordedOrientation(url);
       };
       recorder.start();
       recorderRef.current = recorder;
@@ -348,8 +270,6 @@ export default function Teleprompter({
       setRecSeconds(0);
       recTimerRef.current = setInterval(() => setRecSeconds((s) => s + 1), 1000);
     } catch {
-      if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
-      drawRafRef.current = null;
       setRecordError("Échec au démarrage de l'enregistrement.");
     }
   }
@@ -409,7 +329,6 @@ export default function Teleprompter({
   useEffect(() => {
     return () => {
       if (recTimerRef.current) clearInterval(recTimerRef.current);
-      if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
       if (recorderRef.current && recorderRef.current.state !== "inactive") {
         try { recorderRef.current.stop(); } catch {}
       }
@@ -428,14 +347,10 @@ export default function Teleprompter({
   const overlay = (
     <div className="fixed inset-0 z-[999] bg-black" style={{ touchAction: "none" }}>
       {/* Caméra en fond, plein écran — TOUJOURS montée (jamais démontée
-          conditionnellement sur `ready`) : c'est exactement ce qui causait
-          l'écran noir, voir le commentaire de tête du fichier. Seule
-          l'opacité change tant que le flux n'est pas encore arrivé. */}
-      {/* Repasse 2026-09-18 : "c'est bcp trop proche, on dirait c'est
-          zoomé" — object-cover rognait l'image caméra pour remplir tout
-          l'écran (souvent bien plus large que haut), donc ne montrait
-          qu'une tranche zoomée du centre. object-contain montre l'image
-          entière, jamais rognée, quitte à laisser des bandes noires. */}
+          conditionnellement sur `ready`), object-contain (jamais cover)
+          pour ne jamais rogner/zoomer l'image. C'est exactement CE flux,
+          sans aucun retraitement, qui est enregistré (voir handleSaveVideo
+          et le commentaire de tête). */}
       <video
         ref={videoRef}
         autoPlay
@@ -447,12 +362,6 @@ export default function Teleprompter({
           opacity: ready && !cameraError ? 1 : 0,
         }}
       />
-      {/* Canvas d'enregistrement — DOIT être monté dans le DOM (jamais
-          document.createElement) pour que captureStream() respecte de
-          façon fiable sa résolution sur tous les navigateurs, voir
-          commentaire de tête. Masqué visuellement, jamais display:none
-          (couperait le rendu sur certains moteurs). */}
-      <canvas ref={canvasRef} aria-hidden style={{ position: "fixed", top: 0, left: 0, opacity: 0, pointerEvents: "none" }} />
 
       {!ready && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -495,21 +404,6 @@ export default function Teleprompter({
               <Circle size={8} fill="white" /> {formatRecTime(recSeconds)}
             </span>
           )}
-          {/* Format d'enregistrement — retour direct 2026-09-17 : "l'enregistrement
-              est en paysage". Portrait par défaut (reels/stories), bascule
-              possible pour une vidéo YouTube en paysage. Verrouillé pendant
-              l'enregistrement (changer la taille du canvas en cours de prise
-              n'aurait aucun sens). */}
-          <button
-            type="button"
-            onClick={() => setOrientation((o) => (o === "portrait" ? "landscape" : "portrait"))}
-            aria-label={orientation === "portrait" ? "Passer en paysage" : "Passer en portrait"}
-            title={orientation === "portrait" ? "Portrait (reels) · clique pour paysage" : "Paysage (YouTube) · clique pour portrait"}
-            disabled={recording}
-            className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white disabled:opacity-40"
-          >
-            {orientation === "portrait" ? <RectangleVertical size={15} /> : <RectangleHorizontal size={15} />}
-          </button>
           <button
             type="button"
             onClick={() => setFacingMode((f) => (f === "user" ? "environment" : "user"))}
@@ -522,13 +416,10 @@ export default function Teleprompter({
         </div>
       </div>
 
-      {/* Texte défilant, superposé à la caméra — retour direct 2026-09-18 :
-          "faut mettre un plus petit espace et le texte défile que dans
-          cet espace" puis "le texte mets-le pas au milieu mais en haut".
-          Bande étroite (22% de la hauteur, contre 58% avant) collée en
-          haut sous la barre de contrôles plutôt qu'au centre : on voit
-          beaucoup plus la caméra, le texte reste confiné à cette bande
-          (overflow-y-auto ci-dessous, inchangé). */}
+      {/* Texte défilant, superposé à la caméra — bande étroite en haut de
+          l'écran (22% de la hauteur), pour laisser voir beaucoup plus la
+          caméra. Le texte défile UNIQUEMENT dans cette bande
+          (overflow-y-auto), jamais toute la page. */}
       <div
         className="absolute left-0 right-0 z-10"
         style={{ top: "calc(env(safe-area-inset-top, 0px) + 64px)", height: "22vh", padding: "0 20px" }}
@@ -576,8 +467,8 @@ export default function Teleprompter({
         {saveError && (
           <p className="text-[11px] text-amber-300 text-center mb-2">{saveError}</p>
         )}
-        {orientationWarning && (
-          <p className="text-[11px] text-amber-300 text-center mb-2">{orientationWarning}</p>
+        {orientationNote && (
+          <p className="text-[11px] text-amber-300 text-center mb-2">{orientationNote}</p>
         )}
 
         {recordedUrl ? (
@@ -596,7 +487,7 @@ export default function Teleprompter({
                 recordedBlobRef.current = null;
                 setRecordedUrl(null);
                 setSaveError(null);
-                setOrientationWarning(null);
+                setOrientationNote(null);
               }}
               aria-label="Refaire une prise"
               className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/10 border border-white/15 text-white"
