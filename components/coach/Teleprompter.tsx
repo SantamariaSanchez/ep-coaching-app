@@ -207,16 +207,31 @@ export default function Teleprompter({
   // excessif. Réglable en direct (bouton dans la barre du haut) et
   // mémorisé par téléphone/caméra, pour ne plus jamais avoir à le
   // redécouvrir à chaque ouverture.
+  //
+  // Retour direct 2026-09-18 (capture d'écran suivante, "608×1080"
+  // affiché en diagnostic) : ce chiffre est PRESQUE EXACTEMENT un ratio
+  // 9:16 (608/1080 = 0,563, contre 0,5625 pour 9/16) — la négociation
+  // caméra (Axe EY, `width`/`height` en `ideal` ajoutés à côté
+  // d'`aspectRatio`) a donc bel et bien fini par obtenir un flux
+  // RÉELLEMENT portrait sur ce téléphone, contrairement aux tentatives
+  // précédentes (180×320, un format qui n'évoquait aucun ratio standard).
+  // Or la valeur par défaut ci-dessous restait à 90° (héritée des essais
+  // sur l'ancien flux, réellement paysage lui) : sur un flux DÉJÀ droit,
+  // appliquer 90° par défaut le fait paraître tourné pour la première
+  // fois, pas l'inverse — exactement ce que montre la capture. Défaut
+  // ramené à 0 (aucune rotation par défaut) ; la clé localStorage est
+  // aussi montée en v3 pour ignorer toute valeur mémorisée sous l'ancien
+  // flux (paysage) qui ne correspond plus au nouveau (portrait).
   const [previewRotation, setPreviewRotation] = useState<0 | 90 | 180 | 270>(() => {
-    if (typeof window === "undefined") return 90;
-    const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v2-${facingMode}`));
-    return stored === 90 || stored === 180 || stored === 270 ? stored : 90;
+    if (typeof window === "undefined") return 0;
+    const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v3-${facingMode}`));
+    return stored === 90 || stored === 180 || stored === 270 ? stored : 0;
   });
   function cyclePreviewRotation() {
     setPreviewRotation((d) => {
       const next = ((d + 90) % 360) as 0 | 90 | 180 | 270;
       try {
-        window.localStorage.setItem(`ep-teleprompter-rotation-v2-${facingMode}`, String(next));
+        window.localStorage.setItem(`ep-teleprompter-rotation-v3-${facingMode}`, String(next));
       } catch {}
       return next;
     });
@@ -364,9 +379,9 @@ export default function Teleprompter({
     // localStorage n'est lisible que côté client, après montage — même
     // motif que la synchronisation media query ailleurs dans ce projet
     // (ex. DashboardNav.tsx), pas un effet qu'on pourrait éviter.
-    let next: 0 | 90 | 180 | 270 = 90;
+    let next: 0 | 90 | 180 | 270 = 0;
     try {
-      const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v2-${facingMode}`));
+      const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v3-${facingMode}`));
       if (stored === 90 || stored === 180 || stored === 270) next = stored;
     } catch {}
     // eslint-disable-next-line react-hooks/set-state-in-effect
