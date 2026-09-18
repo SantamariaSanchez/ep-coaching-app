@@ -7430,3 +7430,35 @@ touchés. Poids réel du payload guides vérifié par requête SQL directe
 (482 guides, ≈1,6 Mo) avant et après le correctif, pas seulement supposé.
 Comme pour le reste du chantier prompteur, le ressenti de fluidité réel
 reste à confirmer sur le téléphone de Santamaria.
+
+## EU — Prompteur : bouton pour tourner l'aperçu live, contre le zoom excessif de l'Axe ET (2026-09-18)
+
+Retour direct, immédiat après l'Axe ET : "c'est hyper zoomé." Cause
+directement liée à ce même axe, pas un nouveau bug séparé : `object-
+cover` sur un flux caméra réellement paysage (confirmé indépendamment
+par le correctif de rotation du fichier, Axe ES) affiché dans un cadre
+portrait doit agrandir l'image massivement pour couvrir toute la
+hauteur — c'est le zoom remonté. `object-contain` (avant) montrait tout
+sans zoom mais en petit avec des bandes ; `object-cover` (Axe ET)
+remplit l'écran mais zoome fort. Ce sont deux symptômes du MÊME flux mal
+orienté, pas deux bugs distincts : aucun réglage `object-fit` ne peut à
+la fois remplir l'écran ET ne pas zoomer sans corriger l'orientation du
+flux avant d'appliquer le cadrage.
+
+**Fix** : bouton "tourner" dans la barre du haut du prompteur, qui
+pivote l'aperçu LIVE (`previewRotation`, dimensions vidéo inversées
+avant rotation — 100vh/100vw au lieu de 100%/100% — pour retomber
+exactement sur la taille de l'écran une fois tourné). Mémorisé par
+caméra (avant/arrière, clé `localStorage` distincte) : réglé une seule
+fois, plus jamais à redécouvrir à chaque ouverture du prompteur. La
+rotation choisie ici pré-remplit aussi `rotationDeg`, la confirmation de
+rotation posée sur le FICHIER après chaque prise (Axe ES) — les deux
+corrections viennent du même défaut d'orientation du capteur, donc la
+prise suivante part déjà du bon angle au lieu de recommencer à deviner
+à zéro à chaque tournage.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. Comme pour le reste du
+chantier prompteur, le rendu réel de l'aperçu tourné reste à confirmer
+sur le téléphone de Santamaria.
