@@ -6753,3 +6753,42 @@ distincts trouvés en creusant :
 ### Validation (repasse)
 
 `tsc --noEmit` et `eslint` propres.
+
+## EF — Recettes absentes de la recherche unique (palette de commande) (2026-09-18)
+
+Exécution autonome (mandat permanent) : avant de choisir, un agent
+d'exploration a passé en revue le repo entier (nav, boutons, outils coach
+business/compta/finance) à la recherche d'un vrai trou d'expérience plutôt
+qu'un doublon d'un chantier déjà fait. Verdict : codebase très mature,
+aucun bouton mort, aucun `onClick` vide, aucune route de nav cassée
+trouvée. Le seul vrai gap concret trouvé : `/api/library-search` (item 38,
+recherche unique Cmd/Ctrl+K, `CommandPalette.tsx`) couvre aliments,
+exercices, salles, science et ressources, mais jamais les recettes,
+pourtant la plus grosse bibliothèque de contenu de l'appli
+(`lib/recipes-data.ts`, RECIPES, 10 500+ lignes, plus les recettes
+communauté). Un membre ou un coach qui tape le nom d'une recette depuis
+n'importe où dans l'appli obtenait "Aucun résultat" alors que la recette
+existe à deux clics sur `/recettes`.
+
+**Corrigé** : `RECIPES` + `getCommunityRecipes()` ajoutés au
+`Promise.all` de la route, catégorie `"Recette"` ajoutée à
+`LibrarySearchResult`/`LibraryResult` (même `fuzzyMatch` que les 5 autres
+catégories, recettes exclusives incluses telles quelles, la page les
+affiche déjà verrouillées plutôt que masquées). Les recettes n'ayant pas
+de page dédiée par id (juste une recherche + un panneau dépliable sur
+`/recettes`), `libraryHref` renvoie vers `{base}/recettes?q=<nom>` plutôt
+qu'une route individuelle. `RecipesClient.tsx` accepte maintenant un
+`initialSearch` (nouveau prop, passé depuis le `searchParams` de chaque
+page serveur `app/dashboard/{coach,client}/recettes/page.tsx`, jamais
+`useSearchParams` côté client pour éviter tout besoin de `Suspense`) :
+préremplit la barre de recherche interne ET déplie directement la fiche
+si le nom correspond exactement à une recette, pour atterrir droit dessus
+plutôt que sur le catalogue complet non filtré.
+
+### Validation
+
+`tsc --noEmit` et `eslint` (5 fichiers touchés) propres. `next build`
+tenté en plus par prudence mais échoue dans cet environnement sur une
+route non liée (`/api/webhooks/stripe`, `STRIPE_SECRET_KEY` absente du
+sandbox, aucun `.env` ici) — confirmé pré-existant, sans rapport avec ce
+changement.
