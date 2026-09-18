@@ -7202,3 +7202,55 @@ cette fois la vérification du résultat ne dépend plus uniquement d'un
 raisonnement à distance : l'appli elle-même vérifie chaque prise et le
 dit honnêtement si ce n'est toujours pas bon, au lieu de laisser
 Santamaria découvrir le problème après coup.
+
+## EQ — GEO : visibilité dans les réponses des moteurs IA (2026-09-18)
+
+Retour direct : "travaille sur le SEO donc ok mais maintenant travaille
+sur le GEO donc pour qu'on soit sûr d'apparaître dans les résultats de
+recherche de l'IA, et passe y du temps, vraiment travaille longtemps."
+Le SEO classique (déjà bien avancé, plusieurs audits antérieurs — titres/
+descriptions par page, robots.txt, sitemap.xml, JSON-LD Organization sur
+la home) optimise pour être bien classé dans une liste de liens. Le GEO
+(Generative Engine Optimization) est différent : ChatGPT, Perplexity, les
+AI Overviews Google et Gemini ne renvoient pas une liste de liens, ils
+lisent des pages et EN EXTRAIENT une réponse directe — ils privilégient du
+contenu factuel, structuré en question/réponse, avec un auteur/une entité
+identifiable derrière, plutôt qu'un bon score de mots-clés.
+
+**Quatre leviers ajoutés, tous construits sur des faits déjà établis
+ailleurs dans le code — jamais un chiffre ou une promesse inventée pour
+l'occasion :**
+
+1. **`public/llms.txt`** : résumé factuel de la marque (ce qu'est EP
+   Coaching, qui est Santamaria Sanchéz, ce qui est inclus, les pages
+   publiques, le contact) au format markdown proposé par la convention
+   llms.txt — de plus en plus lu directement par les crawlers des
+   moteurs IA en complément du HTML classique.
+2. **FAQ visible + JSON-LD `FAQPage`** sur la page d'accueil
+   (`app/page.tsx`) : 5 questions/réponses ("Qu'est-ce qu'EP Coaching ?",
+   "Est-ce gratuit ?", "Qui est Santamaria Sanchéz ?", etc.), reprises
+   mot pour mot de `DESCRIPTION`/`FEATURES` déjà présents sur cette même
+   page — jamais de données structurées sans le texte visible derrière,
+   Google et les moteurs IA pénalisent ou ignorent ce genre d'incohérence.
+3. **Schema.org `Person` réel sur `/coachs`** pour Santamaria Sanchéz :
+   jusqu'ici il n'existait qu'en 3 mots dans un champ `founder` de
+   l'Organization de la home. Ici, bio et spécialités viennent
+   directement de la table `profiles` (`getCoachDirectory`), jamais
+   inventées, uniquement dans le cas mono-coach (le seul cas réel à ce
+   jour).
+4. **Auteur identifié sur les ~700+ pages `/ressources/[slug]`** : le
+   template `Article` JSON-LD n'avait qu'un `publisher` Organization,
+   aucun signal d'expertise (E-E-A-T) associé à une vraie personne. Un
+   seul fichier touché (le template partagé) suffit à corriger les 700+
+   pages générées d'un coup.
+
+`SANTAMARIA_SOCIALS` (comptes personnels réels et confirmés, à ne pas
+confondre avec `BRAND_SOCIALS.instagram/tiktok` qui restent des
+placeholders "à remplir" pour le compte @ep.coaching) centralisé dans
+`lib/brand-links.ts` pour que `app/page.tsx`, `app/coachs/page.tsx` et
+le template `/ressources/[slug]` ne dérivent jamais l'un de l'autre.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres (build complet lancé
+et confirmé réussi, pas seulement le typecheck).
