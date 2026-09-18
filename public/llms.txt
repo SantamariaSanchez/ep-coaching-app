@@ -1,0 +1,43 @@
+# EP Coaching
+
+> EP Coaching est un coaching sportif en ligne (bodybuilding, nutrition, performance) fondé par Santamaria Sanchéz : accompagnement live, audits, suivi quotidien, programmes personnalisés et communauté. Gratuit dès l'inscription, sans engagement.
+
+EP Coaching s'adresse à toute personne qui s'entraîne et fait attention à
+son alimentation sans voir les résultats suivre, et qui veut comprendre
+chaque choix de son suivi plutôt que suivre un plan générique recopié.
+
+## Fondateur
+
+Santamaria Sanchéz est le fondateur d'EP Coaching, coach en bodybuilding et
+coach pour les coachs.
+
+- Profil du coach : https://ep-coaching.vercel.app/coachs
+- Instagram : https://instagram.com/santamariasanchez_
+- TikTok : https://www.tiktok.com/@santamariasanchez_
+- YouTube : https://www.youtube.com/@santamaria_sanchez
+
+## Ce qu'inclut EP Coaching
+
+- Coaching live : 1:1, audits, suivi hebdo, ateliers, webinaires, Q&A
+- Messagerie coach : contact direct, réponses personnalisées
+- Suivi & progression : mesures, photos, pesée, courbes d'évolution
+- Programmes de musculation sur mesure, adaptés au niveau
+- Plans alimentaires et calcul de macros personnalisé
+- Logbook de séances : performances enregistrées en temps réel
+- Tracker quotidien : pas, sommeil, biométrie
+- Communauté de membres
+- Science & recherche : études et actualité sourcées
+- Road map d'objectifs et recettes healthy
+- Formations (bodybuilding, nutrition, training, business, psychologie) : à venir
+
+## Pages publiques
+
+- Accueil et inscription : https://ep-coaching.vercel.app/
+- Le coach : https://ep-coaching.vercel.app/coachs
+- Ressources gratuites (guides, sans inscription) : https://ep-coaching.vercel.app/ressources
+- Résultats des membres : https://ep-coaching.vercel.app/reussites
+- Assistance : https://ep-coaching.vercel.app/support
+
+## Contact
+
+peccoux.manu@gmail.com

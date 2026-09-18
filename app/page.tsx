@@ -30,6 +30,7 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import InstallAppHint from "@/components/ui/InstallAppHint";
 import NewsletterSignupForm from "@/components/newsletter/NewsletterSignupForm";
 import { ALL_LIVE_TYPES } from "@/lib/live-types";
+import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 
 const TITLE = "EP Coaching : coaching bodybuilding et performance en ligne";
 const DESCRIPTION =
@@ -107,17 +108,54 @@ const STRUCTURED_DATA = {
   founder: {
     "@type": "Person",
     name: "Santamaria Sanchéz",
-    sameAs: [
-      "https://instagram.com/santamariasanchez_",
-      "https://www.tiktok.com/@santamariasanchez_",
-      "https://www.youtube.com/@santamaria_sanchez",
-    ],
+    sameAs: SANTAMARIA_SOCIALS,
   },
-  sameAs: [
-    "https://instagram.com/santamariasanchez_",
-    "https://www.tiktok.com/@santamariasanchez_",
-    "https://www.youtube.com/@santamaria_sanchez",
-  ],
+  sameAs: SANTAMARIA_SOCIALS,
+};
+
+// FAQPage (retour direct 2026-09-18 : "travaille sur le GEO, pour qu'on soit
+// sûr d'apparaître dans les résultats de recherche de l'IA") — les moteurs
+// génératifs (ChatGPT, Perplexity, AI Overviews, Gemini...) citent en
+// priorité du contenu structuré en question/réponse direct et factuel,
+// contrairement au SEO classique qui se contente de mots-clés. Chaque
+// réponse ci-dessous reprend UNIQUEMENT des faits déjà établis ailleurs dans
+// cette même page (FEATURES, DESCRIPTION, liens) ou vérifiés en base
+// (0 formation publiée à ce jour, voir le commentaire sur FEATURES) — jamais
+// un chiffre ou une promesse inventée pour l'occasion. Affiché en texte
+// visible ci-dessous (pas seulement en JSON-LD cette page) : Google et les
+// moteurs IA pénalisent/ignorent des données structurées qui ne
+// correspondent à aucun contenu réellement visible sur la page.
+const FAQS = [
+  {
+    q: "Qu'est-ce qu'EP Coaching ?",
+    a: "EP Coaching est un coaching sportif en ligne (bodybuilding, nutrition, performance) : accompagnement live, audits, suivi quotidien, programmes personnalisés et communauté, fondé par Santamaria Sanchéz.",
+  },
+  {
+    q: "Est-ce qu'EP Coaching est gratuit ?",
+    a: "Oui, l'accès à EP Coaching est gratuit dès l'inscription, sans engagement.",
+  },
+  {
+    q: "Qui est Santamaria Sanchéz ?",
+    a: "Santamaria Sanchéz est le fondateur d'EP Coaching, coach en bodybuilding et coach pour les coachs.",
+  },
+  {
+    q: "Qu'est-ce qui est inclus dans EP Coaching ?",
+    a: `EP Coaching inclut ${FEATURES.filter((f) => !f.title.includes("à venir")).map((f) => f.title.toLowerCase()).join(", ")}.`,
+  },
+  {
+    q: "Comment rejoindre EP Coaching ?",
+    a: "L'inscription se fait directement depuis la page d'accueil d'EP Coaching, en quelques secondes et sans carte bancaire.",
+  },
+] as const;
+
+const FAQ_STRUCTURED_DATA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map(({ q, a }) => ({
+    "@type": "Question",
+    name: q,
+    acceptedAnswer: { "@type": "Answer", text: a },
+  })),
 };
 
 export default function HomePage() {
@@ -138,6 +176,11 @@ export default function HomePage() {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_STRUCTURED_DATA) }}
       />
 
       <div style={{ width: "100%", maxWidth: 480, position: "relative", zIndex: 1 }}>
@@ -362,6 +405,37 @@ export default function HomePage() {
           >
             <BookOpen size={14} /> Pas encore prêt(e) ? Ressources gratuites sans inscription
           </Link>
+        </div>
+
+        {/* ── FAQ ── contenu visible qui correspond exactement au JSON-LD
+            FAQPage ci-dessus (voir FAQS) : jamais de données structurées
+            sans le texte réel derrière, ni pour l'IA ni pour Google. */}
+        <div className="animate-fade-up stagger-6" style={{ marginTop: 32 }}>
+          <h2
+            style={{
+              fontSize: 11,
+              fontWeight: 800,
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              color: "rgba(245,237,237,0.35)",
+              textAlign: "center",
+              marginBottom: 14,
+            }}
+          >
+            Questions fréquentes
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {FAQS.map(({ q, a }) => (
+              <div key={q} className="ep-card" style={{ padding: "14px 16px" }}>
+                <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>
+                  {q}
+                </p>
+                <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)", margin: 0, lineHeight: 1.5 }}>
+                  {a}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ── Newsletter ── */}

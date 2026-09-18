@@ -21,3 +21,15 @@ export const BRAND_SOCIALS = {
     url: "https://wa.me/33766834777",
   },
 } as const;
+
+// Comptes personnels de Santamaria Sanchéz, réels et confirmés (contrairement
+// aux placeholders @ep.coaching ci-dessus) — utilisés dans les données
+// structurées (schema.org `sameAs`) sur app/page.tsx ET app/coachs/page.tsx.
+// Centralisé ici (retour direct 2026-09-17 : "quand on cherche mon nom sur
+// Google/l'IA, il faut qu'on ressorte") pour que ces deux pages ne dérivent
+// jamais l'une de l'autre au fil des modifications futures.
+export const SANTAMARIA_SOCIALS = [
+  "https://instagram.com/santamariasanchez_",
+  "https://www.tiktok.com/@santamariasanchez_",
+  "https://www.youtube.com/@santamaria_sanchez",
+] as const;

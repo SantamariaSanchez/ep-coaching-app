@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCoachDirectory } from "@/lib/coach-directory";
 import CoachDirectoryExplorer from "@/components/coachs/CoachDirectoryExplorer";
+import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 
 export const dynamic = "force-dynamic";
 
@@ -36,9 +37,39 @@ export const metadata: Metadata = {
 export default async function CoachsDirectoryPage() {
   const coaches = await getCoachDirectory();
   const isDirectory = coaches.length > 1;
+  // GEO/SEO (retour direct 2026-09-18) : cette page a déjà le titre/desc
+  // portant son nom (voir plus haut), mais aucune donnée structurée
+  // n'associait "Santamaria Sanchéz" à un vrai schema.org Person — le seul
+  // endroit qui le fait (app/page.tsx) le décrit en 3 mots dans un champ
+  // `founder`, pas avec sa vraie bio. Ici, la bio/spécialités réelles
+  // viennent directement de la base (getCoachDirectory), jamais inventées.
+  // Uniquement dans le cas mono-coach (aujourd'hui le seul cas réel) : avec
+  // plusieurs coachs, il faudrait choisir lequel schématiser, ce n'est plus
+  // évident.
+  const soloCoach = !isDirectory ? coaches[0] : null;
+  const personStructuredData = soloCoach
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Person",
+        name: soloCoach.full_name ?? "Santamaria Sanchéz",
+        jobTitle: "Coach en bodybuilding",
+        description: soloCoach.bio ?? DESCRIPTION,
+        ...(soloCoach.avatar_url ? { image: soloCoach.avatar_url } : {}),
+        ...(soloCoach.specializations.length > 0 ? { knowsAbout: soloCoach.specializations } : {}),
+        sameAs: SANTAMARIA_SOCIALS,
+        worksFor: { "@type": "Organization", name: "EP Coaching", url: "https://ep-coaching.vercel.app" },
+      }
+    : null;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 680, margin: "0 auto" }}>
+      {personStructuredData && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personStructuredData) }}
+        />
+      )}
       <div style={{ marginBottom: 24 }}>
         <Link
           href="/ressources"

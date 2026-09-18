@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getLeadMagnet, getLeadMagnetSlugs, getAllLeadMagnets } from "@/lib/lead-magnets";
 import LeadMagnetLanding from "@/components/ressources/LeadMagnetLanding";
 import { submitLead } from "../actions";
+import { SANTAMARIA_SOCIALS } from "@/lib/brand-links";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
@@ -80,6 +81,10 @@ export default async function LeadMagnetPage({
   // dans LeadMagnetLanding, rendu hors du bloc `unlocked`) : reprendre
   // exactement ces mêmes champs ici n'expose rien de plus à un robot qu'à un
   // visiteur humain non converti, donc aucun risque de cloaking.
+  // author/E-E-A-T (retour direct 2026-09-18, GEO) : sans auteur identifié,
+  // un moteur génératif n'a aucun signal d'expertise à citer derrière ce
+  // contenu — juste "EP Coaching" en publisher, jamais une vraie personne.
+  // Ajouté sur ~700+ pages d'un coup en touchant ce seul template.
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -87,6 +92,11 @@ export default async function LeadMagnetPage({
     description: magnet.hook,
     articleSection: magnet.category,
     url: `${APP_URL}/ressources/${slug}`,
+    author: {
+      "@type": "Person",
+      name: "Santamaria Sanchéz",
+      sameAs: SANTAMARIA_SOCIALS,
+    },
     publisher: {
       "@type": "Organization",
       name: "EP Coaching",
