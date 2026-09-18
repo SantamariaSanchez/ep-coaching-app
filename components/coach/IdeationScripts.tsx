@@ -62,6 +62,14 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
 };
 
+// Retour direct 2026-09-18 : LinkedIn et Threads sont du contenu ÉCRIT
+// (reçu par mail, décidé et posté direct), jamais filmé — contrairement à
+// Instagram Reel/YouTube. Pas de description distincte du texte du post,
+// pas de bouton Prompteur (rien à filmer), et un nouveau script sur ces
+// plateformes se crée directement en statut "publié" (voir submitNew),
+// jamais à_tourner/tourné qui n'a pas de sens ici.
+const WRITTEN_PLATFORMS = new Set(["linkedin", "threads"]);
+
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
@@ -388,7 +396,9 @@ function MyScripts({
       return;
     }
     startTransition(async () => {
-      const result = await createScript({ title: t, format, platform: newPlatform });
+      // Écrit (LinkedIn/Threads) : direct en publié, jamais à_tourner.
+      const initialStatus: ScriptStatus = WRITTEN_PLATFORMS.has(newPlatform) ? "publie" : "a_tourner";
+      const result = await createScript({ title: t, format, platform: newPlatform, status: initialStatus });
       if (result.error) {
         setError(result.error);
         return;
@@ -408,7 +418,7 @@ function MyScripts({
         source_reference: null,
         cta: null,
         instagram_caption: null,
-        status: "a_tourner",
+        status: initialStatus,
         views: null,
         likes: null,
         comments_count: null,
@@ -924,22 +934,27 @@ function MyScripts({
               <div style={{ marginTop: 10, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.2)", borderRadius: 10, padding: "10px 12px" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                   <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#E01E1E" }}>
-                    Script (mot pour mot)
+                    {/* Retour direct 2026-09-18 : LinkedIn/Threads sont du
+                        texte posté tel quel, jamais lu à voix haute. */}
+                    {WRITTEN_PLATFORMS.has(script.platform) ? "Texte du post" : "Script (mot pour mot)"}
                   </span>
                   {script.content && (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <button
-                        type="button"
-                        onClick={() => setTeleprompterScript({ title: script.title, content: script.content! })}
-                        style={{
-                          display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-                          background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.4)",
-                          borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
-                          color: "#E01E1E", cursor: "pointer",
-                        }}
-                      >
-                        <Camera size={12} /> Prompteur
-                      </button>
+                      {/* Prompteur : rien à filmer sur du contenu écrit. */}
+                      {!WRITTEN_PLATFORMS.has(script.platform) && (
+                        <button
+                          type="button"
+                          onClick={() => setTeleprompterScript({ title: script.title, content: script.content! })}
+                          style={{
+                            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
+                            background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.4)",
+                            borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
+                            color: "#E01E1E", cursor: "pointer",
+                          }}
+                        >
+                          <Camera size={12} /> Prompteur
+                        </button>
+                      )}
                       <CopyButton text={script.content} />
                     </div>
                   )}
@@ -1029,8 +1044,12 @@ function MyScripts({
               {/* Description à poster avec la vidéo — distincte du script
                   parlé ci-dessus. Même colonne "instagram_caption" réutilisée
                   pour toute plateforme (YouTube inclus) : le libellé
-                  s'adapte, la donnée reste une seule colonne texte libre. */}
-              {(script.instagram_caption || captionOpenId === script.id) && (
+                  s'adapte, la donnée reste une seule colonne texte libre.
+                  Retour direct 2026-09-18 : sur LinkedIn/Threads (contenu
+                  écrit), il n'y a rien à décrire en plus du texte du post
+                  lui-même, ce bloc entier n'a pas de sens et n'apparaît
+                  plus pour ces deux plateformes. */}
+              {!WRITTEN_PLATFORMS.has(script.platform) && (script.instagram_caption || captionOpenId === script.id) && (
                 <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
@@ -1085,7 +1104,7 @@ function MyScripts({
                   )}
                 </div>
               )}
-              {!script.instagram_caption && captionOpenId !== script.id && (
+              {!WRITTEN_PLATFORMS.has(script.platform) && !script.instagram_caption && captionOpenId !== script.id && (
                 <button
                   type="button"
                   onClick={() => { setCaptionOpenId(script.id); setCaptionDraft(""); }}

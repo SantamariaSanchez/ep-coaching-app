@@ -269,6 +269,12 @@ export async function createScript(input: {
   format: ScriptFormat;
   content?: string;
   platform?: string;
+  // Retour direct 2026-09-18 : LinkedIn/Threads sont du contenu écrit,
+  // jamais tourné ("pars du principe que les posts que je poste, je les
+  // poste direct") — permet de créer directement en statut "publié" au
+  // lieu de forcer un passage par à_tourner/tourné qui n'a pas de sens
+  // pour ce format.
+  status?: ScriptStatus;
 }): Promise<{ error?: string; success?: boolean; id?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -282,6 +288,9 @@ export async function createScript(input: {
   if (!(SCRIPT_FORMATS as readonly string[]).includes(input.format)) return { error: "Format invalide." };
   const platform = input.platform?.trim();
   if (platform !== undefined && platform.length > 40) return { error: "Plateforme invalide." };
+  if (input.status !== undefined && !(SCRIPT_STATUSES as readonly string[]).includes(input.status)) {
+    return { error: "Statut invalide." };
+  }
 
   const admin = createAdminClient();
   const { data, error } = await admin
@@ -292,6 +301,7 @@ export async function createScript(input: {
       format: input.format,
       content: input.content?.trim() || null,
       ...(platform ? { platform } : {}),
+      ...(input.status ? { status: input.status } : {}),
     })
     .select("id")
     .single();
