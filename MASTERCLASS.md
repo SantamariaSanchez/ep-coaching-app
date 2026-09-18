@@ -7049,3 +7049,54 @@ aucun accès à un appareil réel) — c'est justement pour ça que la
 vérification d'orientation a été ajoutée en plus du correctif de
 résolution, pour avoir un signal fiable si le problème persistait
 encore malgré tout.
+
+## EN — Prompteur : abandon du canvas, enregistrement direct du flux caméra (2026-09-18)
+
+Retour direct : "la vidéo c'est pas du tout fluide" + demande explicite
+de mettre l'appareil photo natif du téléphone avec le prompteur "en
+extension par-dessus".
+
+**Sur l'appareil photo natif** : expliqué honnêtement dans le code et
+au coach — littéralement impossible depuis une page web. Aucune
+technologie web ne permet à un site de s'afficher par-dessus une AUTRE
+application (l'appli Caméra native comprise), c'est bloqué par le
+système (iOS et Android) pour des raisons de sécurité, pas un manque
+d'effort ou de compétence. Le mieux possible depuis le web reste
+d'utiliser la caméra du téléphone directement dans la page.
+
+**Sur le manque de fluidité et le bug d'orientation persistant** : les
+deux venaient de la MÊME cause architecturale. La V1 du correctif
+d'orientation (Axes EE/EK/EM) redessinait chaque frame caméra sur un
+`<canvas>` caché à 30 fps pour forcer une résolution portrait exacte
+avant `MediaRecorder` — en plus d'afficher la caméra ET de faire
+défiler le texte. Ce redessin permanent surchargeait le rendu sur
+téléphone (la vraie cause du manque de fluidité), ET c'est exactement
+le chemin qui déclenche le bug Chrome documenté (crbug 897727) sur
+`canvas.captureStream()` + `MediaRecorder` sur Android (la vraie cause
+du paysage persistant, même après la réduction de résolution de
+l'Axe EM).
+
+**Solution retenue** : abandon complet du canvas. `MediaRecorder`
+enregistre directement `streamRef.current` (le flux caméra brut), sans
+aucune étape de retraitement intermédiaire — le chemin le plus léger et
+le plus testé du web pour ça, similaire à ce qu'une appli caméra native
+ferait en interne. Ça règle la fluidité (plus de redessin en double) ET
+l'orientation dans l'écrasante majorité des cas (le chemin
+d'enregistrement direct ne traverse pas le bug canvas ci-dessus). La
+vérification honnête des dimensions réelles du fichier produit
+(Axe EM) est gardée, mais devient purement informative : plus rien à
+"corriger" via un canvas, juste à signaler si un appareil vraiment
+atypique sort quand même un fichier en paysage.
+
+**Simplification en bonus** : le bouton de bascule portrait/paysage
+manuel est retiré — il n'avait plus de sens sans canvas à reshaper,
+l'orientation suit maintenant naturellement la façon dont le téléphone
+est tenu, exactement comme une appli caméra classique. Sert aussi la
+demande explicite de garder l'outil "simple d'utilisation".
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres. Reste à confirmer par un vrai test
+sur le téléphone de Santamaria (aucun accès à un appareil réel depuis
+cet environnement) — la note d'orientation reste affichée en filet de
+sécurité si un cas imprévu subsiste malgré ce changement d'architecture.
