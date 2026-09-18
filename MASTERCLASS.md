@@ -7521,3 +7521,41 @@ contrairement aux repasses précédentes sur ce chantier, celle-ci corrige
 une erreur de raisonnement identifiable avec certitude, même sans accès
 à l'appareil. Reste, comme toujours, à confirmer que l'angle choisi via
 le bouton "Tourner" a maintenant un rendu cohérent sur le téléphone réel.
+
+## EW — Prompteur : la caméra restait coupée puis rouverte à CHAQUE script du tournage automatique (2026-09-18)
+
+Repasse sur le même chantier, même journée ("travaille 2h, ce n'est pas
+le meilleur prompteur du marché") : audit structurel du tournage
+automatique (jusqu'à 70+ scripts d'affilée, Axe EP) plutôt qu'un nouveau
+correctif ponctuel. `IdeationScripts.tsx` posait `key={currentFilmScript.
+id}` sur `<Teleprompter>` — React démonte et remonte ENTIÈREMENT un
+composant dont la `key` change, donc CHAQUE script de la file coupait la
+caméra (effet de nettoyage au démontage) puis la redemandait (effet
+d'ouverture au remontage). Sur une file de 70 scripts, ça fait 70 coupures
+et réouvertures de caméra — un flash/délai réel, répété, jamais
+identifié avant parce qu'aucun rapport ne mentionnait spécifiquement ce
+symptôme, seulement le ressenti global "pas le meilleur du marché".
+
+**Fix** : `key` retiré, remplacé par un prop `scriptId` explicite. Un
+effet dédié, gardé volontairement DISTINCT de celui qui gère la caméra
+(`[facingMode, retryToken]`, jamais touché), réinitialise uniquement ce
+qui est propre à la prise précédente quand `scriptId` change (erreur,
+aperçu de rotation en attente avec révocation de son URL, chrono,
+défilement du texte remis en haut) — le flux caméra, lui, reste ouvert
+en continu pour toute la file, comme le ferait une vraie appli de
+tournage.
+
+**Effet de bord réel découvert en creusant ça** : `speed`, `fontSize` et
+`facingMode` sont de simples `useState` sans persistance — avec le
+démontage/remontage systématique d'avant, ils étaient donc silencieusement
+remis à leurs valeurs par défaut à CHAQUE script. Régler la vitesse de
+défilement ou passer à la caméra arrière une fois en début de tournage ne
+tenait donc jamais plus d'un script avant ce correctif, sans qu'aucun
+message d'erreur ne le signale — ça se réinitialisait juste, en silence.
+
+### Validation
+
+`tsc --noEmit`, `eslint` (aucune nouvelle erreur — le seul signalement
+`react-hooks/set-state-in-effect` sur ces deux fichiers reste le même
+`setScripts(initialScripts)` préexistant, sans lien, déjà identifié dans
+des Axes antérieurs) et `next build` propres.
