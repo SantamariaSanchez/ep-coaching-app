@@ -175,10 +175,19 @@ export default function Teleprompter({
   }, [scrolling, speed]);
 
   // ── Enregistrement ────────────────────────────────────────────────────
-  // Redessine chaque frame caméra sur le canvas hors-DOM, recadrée en
-  // "cover" à la résolution cible — c'est ce canvas, jamais le flux caméra
-  // brut, qui est enregistré. Le format de sortie ne dépend donc plus de
-  // ce que la caméra source décide de renvoyer (voir bug "paysage").
+  // Redessine chaque frame caméra sur le canvas hors-DOM à la résolution
+  // cible — c'est ce canvas, jamais le flux caméra brut, qui est
+  // enregistré (voir bug "paysage" plus haut).
+  //
+  // Repasse 2026-09-18 (retour direct : "c'est bcp trop proche, on dirait
+  // c'est zoomé") : la première version recadrait en "cover" (remplir le
+  // cadre en rognant l'excédent) — recadrer une image large (webcam/
+  // téléphone en paysage) vers un cadre portrait étroit revient à ne
+  // garder qu'une fine tranche verticale du centre, ce qui fait
+  // paraître le sujet beaucoup plus proche/gros qu'à l'écran. Recadrage
+  // en "contain" désormais : l'image entière est gardée, mise à l'échelle
+  // pour rentrer dans le cadre, avec des bandes noires si besoin plutôt
+  // que de rogner — jamais de zoom involontaire.
   function drawFrame() {
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -190,24 +199,30 @@ export default function Teleprompter({
       const vw = video.videoWidth;
       const vh = video.videoHeight;
       const srcRatio = vw / vh;
-      let sx: number, sy: number, sw: number, sh: number;
+      let dw: number, dh: number, dx: number, dy: number;
       if (srcRatio > targetRatio) {
-        sh = vh;
-        sw = vh * targetRatio;
-        sx = (vw - sw) / 2;
-        sy = 0;
+        // Source plus large que la cible : la largeur devient la
+        // contrainte, bandes noires en haut/bas.
+        dw = targetW;
+        dh = targetW / srcRatio;
+        dx = 0;
+        dy = (targetH - dh) / 2;
       } else {
-        sw = vw;
-        sh = vw / targetRatio;
-        sx = 0;
-        sy = (vh - sh) / 2;
+        // Source plus étroite/haute que la cible : la hauteur devient la
+        // contrainte, bandes noires à gauche/droite.
+        dh = targetH;
+        dw = targetH * srcRatio;
+        dy = 0;
+        dx = (targetW - dw) / 2;
       }
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, targetW, targetH);
       ctx.save();
       if (facingMode === "user") {
         ctx.translate(targetW, 0);
         ctx.scale(-1, 1);
       }
-      ctx.drawImage(video, sx, sy, sw, sh, 0, 0, targetW, targetH);
+      ctx.drawImage(video, 0, 0, vw, vh, dx, dy, dw, dh);
       ctx.restore();
     }
     drawRafRef.current = requestAnimationFrame(drawFrame);
@@ -295,12 +310,17 @@ export default function Teleprompter({
           conditionnellement sur `ready`) : c'est exactement ce qui causait
           l'écran noir, voir le commentaire de tête du fichier. Seule
           l'opacité change tant que le flux n'est pas encore arrivé. */}
+      {/* Repasse 2026-09-18 : "c'est bcp trop proche, on dirait c'est
+          zoomé" — object-cover rognait l'image caméra pour remplir tout
+          l'écran (souvent bien plus large que haut), donc ne montrait
+          qu'une tranche zoomée du centre. object-contain montre l'image
+          entière, jamais rognée, quitte à laisser des bandes noires. */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-cover transition-opacity"
+        className="absolute inset-0 w-full h-full object-contain transition-opacity"
         style={{
           transform: facingMode === "user" ? "scaleX(-1)" : "none",
           opacity: ready && !cameraError ? 1 : 0,
@@ -375,10 +395,15 @@ export default function Teleprompter({
         </div>
       </div>
 
-      {/* Texte défilant, superposé à la caméra */}
+      {/* Texte défilant, superposé à la caméra — retour direct 2026-09-18 :
+          "faut mettre un plus petit espace et le texte défile que dans
+          cet espace". Bande étroite centrée (22% de la hauteur, contre
+          58% avant) plutôt qu'un pavé qui mangeait la moitié de l'écran :
+          on voit beaucoup plus la caméra, le texte reste confiné à cette
+          bande (overflow-y-auto ci-dessous, inchangé). */}
       <div
         className="absolute left-0 right-0 z-10"
-        style={{ top: "18%", bottom: "24%", padding: "0 20px" }}
+        style={{ top: "36%", bottom: "42%", padding: "0 20px" }}
       >
         <div
           ref={textScrollRef}

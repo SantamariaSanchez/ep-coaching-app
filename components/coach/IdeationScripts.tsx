@@ -48,24 +48,18 @@ function formatDuration(seconds: number | null): string | null {
 // sur coach_scripts, voir migration 20260901d), ces nouvelles valeurs sont
 // juste reconnues ici pour un badge propre au lieu de retomber sur aucun
 // badge (voir `platformInfo ?? null` plus bas).
+// Retour direct 2026-09-18 : "enlève Telegram, Pinterest, Reddit, Twitch,
+// Discord, WhatsApp, TikTok, Facebook, YouTube Communauté et X, c'est
+// Reel Insta ça englobe tout" — revient sur l'élargissement du 2026-09-16.
+// Carrousel/Story Insta retirés aussi, mais pour une autre raison : ce ne
+// sont pas des scripts parlés (la création de carrousel vit ailleurs dans
+// l'appli), les garder ici pousserait à leur écrire un "mot pour mot" qui
+// n'a pas de sens pour ce format.
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
   instagram: { label: "Instagram Reel", color: "#E1306C" },
-  instagram_carrousel: { label: "Carrousel Insta", color: "#E1306C" },
-  instagram_story: { label: "Story Insta", color: "#E1306C" },
-  tiktok: { label: "TikTok", color: "#F5EDED" },
-  facebook: { label: "Facebook", color: "#1877F2" },
   threads: { label: "Threads", color: "#F5EDED" },
   youtube: { label: "YouTube", color: "#FF0000" },
-  youtube_communaute: { label: "YouTube Communauté", color: "#FF0000" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
-  x: { label: "X (Twitter)", color: "#F5EDED" },
-  reddit: { label: "Reddit", color: "#FF4500" },
-  whatsapp_statut: { label: "Statut WhatsApp", color: "#25D366" },
-  whatsapp_diffusion: { label: "Chaîne WhatsApp", color: "#25D366" },
-  discord: { label: "Discord", color: "#5865F2" },
-  telegram: { label: "Telegram", color: "#26A5E4" },
-  pinterest: { label: "Pinterest", color: "#E60023" },
-  twitch: { label: "Twitch", color: "#9146FF" },
 };
 
 type Tab = "mes-scripts" | "prompts" | "hooks" | "cta" | "technique";
