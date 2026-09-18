@@ -7015,3 +7015,37 @@ présenter un fichier cassé comme "réussi" :
 ### Validation
 
 `tsc --noEmit` et `eslint` propres.
+
+## EM — Prompteur : toujours en paysage, vraie cause trouvée (bug encodeur Android) (2026-09-18)
+
+Retour direct après le fix mp4 : "c'est toujours en paysage". Recherche
+web ciblée plutôt que deviner une nouvelle fois : bug Chrome documenté
+(crbug 897727) — `MediaRecorder` + `canvas.captureStream()` sur Android
+se comporte de façon incorrecte/échoue pour des résolutions de canvas
+"larges" (déjà signalé à partir de 1280×720, fonctionne à 640×480).
+L'encodeur matériel semble retomber sur son format préféré (paysage) au
+lieu de respecter la résolution portrait haute (1080×1920) demandée —
+cohérent avec le symptôme exact : pas de crash, pas de corruption,
+juste toujours paysage peu importe ce qui est demandé.
+
+**Corrigé** : canvas réduit à 540×960 (qHD, un quart des pixels de
+1080×1920), une résolution dans la zone documentée comme fiable pour
+l'encodeur matériel — largement suffisant pour un reel/une vidéo
+parlante, de toute façon recompressée par Instagram/YouTube à l'upload.
+
+**Ajouté en plus** : une vraie vérification honnête après chaque prise
+plutôt que de supposer que le correctif suffit — le fichier produit est
+chargé dans une balise `<video>` détachée pour lire ses VRAIES
+dimensions (`videoWidth`/`videoHeight`), et un avertissement clair
+s'affiche à l'écran si l'orientation réelle ne correspond toujours pas
+à ce qui a été demandé, plutôt que de laisser redécouvrir le problème
+dans la galerie à chaque fois.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres. Reste à confirmer par un vrai test
+sur le téléphone de Santamaria (pas testable depuis cet environnement,
+aucun accès à un appareil réel) — c'est justement pour ça que la
+vérification d'orientation a été ajoutée en plus du correctif de
+résolution, pour avoir un signal fiable si le problème persistait
+encore malgré tout.
