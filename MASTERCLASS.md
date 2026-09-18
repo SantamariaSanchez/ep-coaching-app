@@ -7136,3 +7136,69 @@ s'afficher par-dessus une autre appli, camera native comprise).
 `tsc --noEmit` et `eslint` propres. Comme pour les repasses précédentes
 sur ce chantier, reste à confirmer par un vrai test sur le téléphone de
 Santamaria (aucun accès à un appareil réel depuis cet environnement).
+
+## EP — Prompteur : bandes noires toujours là après l'Axe EO + tournage automatique en un bouton (2026-09-18)
+
+Retour direct, sec : "ya toujours tes bande noir CORRIGEE ET ARRETE DE
+LIVRER ALORS QUE C PAS FINI TU DOIS TRAVAILLER JUSQUA REUSSIR". Le
+correctif de l'Axe EO (`resizeMode: "crop-and-scale"`) n'a rien changé
+— et il ne pouvait pas marcher : `resizeMode` a été retiré très tôt des
+brouillons du spec Media Capture et n'a jamais été réellement
+implémenté par les navigateurs mobiles (Chrome Android compris). Ce
+n'était donc pas "essayé et raté", c'était silencieusement ignoré —
+l'erreur de l'Axe EO a été de croire qu'une contrainte nommée dans la
+doc du spec est forcément honorée par le navigateur, sans vérifier ce
+qu'il accorde réellement.
+
+**Corrigé, deux changements réels cette fois :**
+
+1. **Négociation** : `aspectRatio: { ideal: 9/16 }` seul (sans
+   `width`/`height` imposés) au lieu de dicter une résolution portrait
+   précise que le navigateur satisfaisait en gardant le capteur en
+   paysage et en AJOUTANT des bandes. Après obtention du flux,
+   `track.getSettings()` relit les vraies dimensions accordées ; si
+   elles sortent quand même en paysage, `track.applyConstraints()`
+   retente explicitement (`exact` cette fois, pas `ideal`) plutôt que
+   de supposer que la première tentative a suffi.
+2. **Vérification** : `checkRecordedFrame` (remplace la vérification
+   purement déclarative de l'Axe EN/EO) ne lit plus seulement
+   largeur/hauteur du fichier — un fichier peut être "portrait" en
+   dimensions ET avoir des bandes noires DEDANS, exactement le
+   symptôme rapporté. Elle échantillonne un vrai pixel de la vidéo
+   enregistrée (canvas hors-écran, une seule fois sur une frame fixe,
+   donc pas concerné par le bug canvas.captureStream()+MediaRecorder
+   de l'Axe EM/EN qui avait fait abandonner le pipeline canvas) et
+   compare la luminosité des bandes haut/bas à celle du centre. Une
+   prise en paysage ou avec des bandes détectées n'avance plus
+   automatiquement vers le script suivant — elle propose "Recommencer
+   cette prise" au lieu d'avancer sur un enregistrement cassé sans le
+   dire. C'est le vrai changement de posture demandé : ne plus
+   déclarer une prise "réussie" sans l'avoir vérifiée.
+
+**Tournage automatique en un bouton** (retour direct, même échange) :
+"quand on met REC le texte doit défiler automatiquement", "enlève le
+bouton Enregistrer, faut TOUJOURS enregistrer", "un seul bouton en haut
+qui enchaîne les scripts du plus ancien au plus récent". Dans
+`Teleprompter.tsx` : REC démarre le défilement automatiquement, Stop le
+met en pause ; plus de bouton de sauvegarde manuelle, la sauvegarde
+(Web Share API, déjà en place depuis l'Axe précédent) se lance seule
+dès l'arrêt si la vérification ci-dessus passe. Dans
+`IdeationScripts.tsx` : suppression du bouton Prompteur par script,
+remplacé par un bouton unique "Lancer le tournage" au-dessus de "Mes
+scripts" qui construit une file (scripts filmables — hors
+LinkedIn/Threads, statut à_tourner, contenu non vide — triés du plus
+ancien au plus récent) et enchaîne seul via `onFinishedTake` : marque le
+script courant "tourné" puis passe au suivant, sans clic entre deux
+prises.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres sur les deux fichiers modifiés (une
+erreur `react-hooks/set-state-in-effect` préexistante à la ligne 222 de
+`IdeationScripts.tsx`, sans rapport avec ce chantier, déjà identifiée
+dans des Axes précédents). Toujours aucun accès à un appareil réel
+depuis cet environnement — contrairement aux repasses précédentes,
+cette fois la vérification du résultat ne dépend plus uniquement d'un
+raisonnement à distance : l'appli elle-même vérifie chaque prise et le
+dit honnêtement si ce n'est toujours pas bon, au lieu de laisser
+Santamaria découvrir le problème après coup.
