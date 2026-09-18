@@ -134,7 +134,14 @@ const COACH_TABS: TabItem[] = [
     label: "Contenu",
     icon: GraduationCap,
     href: "/dashboard/coach/formations",
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass"],
+    // Retour direct 2026-09-18 : "l'onglet appel de vente est sur l'ordi
+    // mais pas sur mon tel" — "admin/ventes" (groupe sidebar "Mon
+    // business", au même niveau que "business"/"studio"/"masterclass"/
+    // "documents" ci-dessous) manquait de ce tableau, donc n'apparaissait
+    // jamais dans mobileSubItems (aucun onglet ne le revendiquait comme
+    // frère) alors que le desktop affiche la sidebar complète sans ce
+    // filtre — bug uniquement mobile, invisible sur ordi.
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes"],
   },
   {
     label: "Communauté",

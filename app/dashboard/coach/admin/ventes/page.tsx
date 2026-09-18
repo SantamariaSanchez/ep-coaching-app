@@ -2,8 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getMySalesCalls } from "@/lib/sales-calls";
-import SalesCallsTable from "@/components/coach/SalesCallsTable";
-import { ChevronLeft, PhoneCall } from "lucide-react";
+import SalesCallTabs from "@/components/coach/SalesCallTabs";
+import { ChevronLeft } from "lucide-react";
 
 function StatCard({ label, value, sub, color = "#F5EDED" }: { label: string; value: string; sub?: string; color?: string }) {
   return (
@@ -68,14 +68,7 @@ export default async function SalesCallsPage() {
         <StatCard label="CA / appel" value={revenuePerCall !== null ? `${revenuePerCall}€` : "···"} />
       </div>
 
-      {calls.length === 0 ? (
-        <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <PhoneCall size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun appel enregistré pour l&apos;instant.</p>
-        </div>
-      ) : null}
-
-      <SalesCallsTable calls={calls} />
+      <SalesCallTabs calls={calls} />
     </div>
   );
 }
