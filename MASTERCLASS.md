@@ -7603,3 +7603,68 @@ coup dans sa galerie.
 ### Validation
 
 `tsc --noEmit`, `eslint` et `next build` propres.
+
+## EY — Prompteur : la rotation se calibre une fois, plus jamais à chaque prise (2026-09-18)
+
+Retour direct, cahier des charges détaillé transmis en plein milieu du
+chantier (screenshot du même écran "Tourner"/"C'est droit" déjà corrigé
+par les Axes EU-EX, mais pas encore redéployé au moment de la capture) :
+"toute étape manuelle de correction doit disparaître... plusieurs
+dizaines de prises par jour." Exigence produit claire et légitime,
+distincte des bugs déjà corrigés — même une fois la rotation calculée
+correctement (Axe EV) et le patch vérifié fiable octet par octet (Axe
+ES), demander une confirmation PAR PRISE reste un vrai défaut d'usage
+sur un vrai tournage rapide.
+
+**Constat qui débloque le sujet** : la rotation nécessaire ne change
+JAMAIS d'une prise à l'autre dans une même session — même téléphone,
+même caméra, même montage physique du capteur. Il n'y a donc aucune
+raison de la redemander à chaque fois : une seule calibration, réutilisée
+partout. Cette calibration existait déjà (`previewRotation`, réglable
+via le bouton "Tourner" de la barre du haut, mémorisé par caméra depuis
+l'Axe EU) — il ne restait qu'à s'en servir pour le fichier enregistré au
+lieu de reproposer l'aperçu tourné à chaque paysage détecté.
+
+**Fix** : suppression complète de l'écran bloquant "Tourner"/"C'est
+droit" (état `pendingRotation`, fonctions `confirmRotationFix`/
+`cancelRotationFix`). Une prise détectée en paysage se patche désormais
+directement avec `previewRotation` déjà calibré, puis sauvegarde et
+enchaîne sur le script suivant sans aucune interruption — même
+comportement qu'une prise réussie du premier coup. Si le patch échoue
+(fichier à structure inattendue), l'écran s'arrête honnêtement sur
+"Recommencer cette prise" plutôt que d'avancer en silence (même
+principe de sécurité que l'Axe EX, jamais abandonné). Les bandes noires
+restent bloquantes elles aussi : contrairement à l'orientation, aucune
+rotation ne peut réparer un cadrage réellement rogné, refaire la prise
+reste la seule option honnête.
+
+**Trois ajouts explicitement demandés dans le même retour** :
+1. `screen.orientation.lock("portrait")` tenté au montage, échec
+   capturé et ignoré en silence (Safari iOS ne l'implémente pas,
+   la plupart des navigateurs l'exigent en plein écran) — n'a aucune
+   influence sur le sens dans lequel le capteur livre ses frames (ça
+   reste réglé par `previewRotation`), mais évite au moins que
+   l'interface elle-même ne parte de travers si le téléphone est
+   incliné en filmant.
+2. `console.log` de diagnostic à l'ouverture de la caméra (résolution
+   réelle négociée) et à chaque prise (dimensions détectées, bandes
+   noires, rotation appliquée) — pour vérifier par le code plutôt que
+   par un aller-retour de test à chaque itération, comme demandé.
+3. Import `Check` (icône) et le prop `rotationDeg`/état `pendingRotation`
+   retirés proprement (plus aucune référence, vérifié par grep avant
+   commit) plutôt que laissés en code mort.
+
+**Ce qui ne change toujours pas, et pourquoi c'est honnête de le dire** :
+aucune API web n'expose le sens de montage réel du capteur d'un
+téléphone — la calibration initiale via le bouton "Tourner" reste
+nécessaire une fois, ce n'est pas quelque chose qu'un correctif logiciel
+peut éliminer complètement sans cette information. Ce qui disparaît
+ici, précisément, c'est la RÉPÉTITION à chaque prise, pas la calibration
+elle-même.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. Toutes les références à
+l'ancien état bloquant (`pendingRotation`, `rotationDeg`,
+`confirmRotationFix`, `cancelRotationFix`) vérifiées absentes par `grep`
+avant de commiter, pas seulement supposées retirées.
