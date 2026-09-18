@@ -630,6 +630,28 @@ export default function DashboardNav({
     tabHrefs.forEach((href) => router.prefetch(href));
   }, [tabHrefsKey, router]);
 
+  // Retour direct 2026-09-18 ("changer d'onglet ça charge à chaque fois, ça
+  // doit être instantané") : les tabs du bas sont préchauffés d'office
+  // depuis l'Axe ci-dessus, mais PAS les pages à l'intérieur d'une section
+  // (Nutrition/Programme/Logbook sous "Moi", Formations/Ressources/Recettes
+  // sous "Contenu"...) — elles restent de simples <Link> au comportement
+  // par défaut de Next.js, qui ne préchauffe la donnée complète d'une page
+  // dynamique (seulement son squelette `loading.tsx`), donc chaque clic
+  // dedans déclenche un vrai aller-retour serveur. mobileSubItems est déjà
+  // le bon périmètre borné (3 à 12 items : seulement les frères de l'onglet
+  // ACTUELLEMENT ouvert, jamais les ~81 segments de toute la nav) — même
+  // raisonnement que le prefetch des tabs ci-dessus, juste un niveau plus
+  // bas, désormais possible sans reproduire le dépassement de quota Supabase
+  // de l'Axe du 2026-09-16 (résolu depuis, passage en Pro).
+  const subItemHrefsKey = mobileSubItems
+    .map(({ href: hrefOverride, segment }) => hrefOverride ?? (segment ? `${base}/${segment}` : base))
+    .join("|");
+
+  useEffect(() => {
+    const subHrefs = subItemHrefsKey ? subItemHrefsKey.split("|") : [];
+    subHrefs.forEach((href) => router.prefetch(href));
+  }, [subItemHrefsKey, router]);
+
   useEffect(() => {
     if (isCoach) {
       fetch("/api/coach/pending-count")

@@ -614,6 +614,23 @@ export default function Teleprompter({
             borderRadius: 16,
             padding: "24px 18px",
             scrollbarWidth: "none",
+            // Retour direct 2026-09-18 ("la vidéo dans le prompteur c'est
+            // pas fluide") : `scroll-behavior` est une propriété CSS
+            // héritée — `html { scroll-behavior: smooth }` (app/globals.css)
+            // s'appliquait donc aussi à CE conteneur. Le défilement ici est
+            // piloté à la main, 60x/seconde (`textScrollRef.current.
+            // scrollTop += ...` dans le rAF plus haut) : avec
+            // `scroll-behavior: smooth` hérité, CHAQUE petit incrément
+            // déclenchait sa propre easing native du navigateur par-dessus
+            // l'incrément suivant — des animations de scroll qui se
+            // chevauchent en permanence au lieu d'un mouvement continu,
+            // exactement ce qui rend le défilement (et par contrecoup tout
+            // le rendu à l'écran pendant le tournage) saccadé. `auto` ici
+            // annule l'héritage pour CE conteneur seulement ; le bouton
+            // "↑ Début" garde son geste doux car `scrollTo({behavior:
+            // "smooth"})` le redemande explicitement par API, ce qui prime
+            // toujours sur cette propriété CSS.
+            scrollBehavior: "auto",
           }}
         >
           <p
