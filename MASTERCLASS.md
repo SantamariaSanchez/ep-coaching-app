@@ -7462,3 +7462,62 @@ prise suivante part déjà du bon angle au lieu de recommencer à deviner
 `tsc --noEmit`, `eslint` et `next build` propres. Comme pour le reste du
 chantier prompteur, le rendu réel de l'aperçu tourné reste à confirmer
 sur le téléphone de Santamaria.
+
+## EV — Prompteur : le vrai bug derrière "aucun angle n'est droit", capture d'écran à l'appui (2026-09-18)
+
+Retour direct avec capture d'écran : "hyper zoomé" persistant + "ce
+n'est absolument pas le meilleur prompteur du marché." La capture a
+permis de trouver, pour la première fois sur ce chantier, un bug
+vérifiable PAR LA PREUVE plutôt que par un raisonnement à distance.
+
+**Bug réel n°1 — ordre des transforms CSS** : `transform: rotate(...)
+scaleX(-1)` (posé à l'Axe EU) miroitait l'image alors qu'elle était
+encore dans son orientation BRUTE (pas redressée), puis la tournait —
+une liste de transforms CSS s'applique de la droite vers la gauche,
+donc le miroir agissait dans le mauvais repère. Résultat concret :
+AUCUN angle de rotation ne pouvait jamais avoir l'air droit, le miroir
+lui-même déformant systématiquement le résultat quel que soit l'angle
+choisi. Inversé en `scaleX(-1) rotate(...)` pour que le miroir "selfie"
+s'applique en dernier, sur l'image déjà redressée.
+
+**Bug réel n°2 — résolution minuscule** : le diagnostic affiché à
+l'écran (`trackInfo`, ajouté à l'Axe EQ) montrait "180×320" sur la
+capture — une résolution proche d'une vignette. `aspectRatio` seul,
+sans le moindre repère de largeur/hauteur (retiré à l'Axe EQ en pariant
+que ça aiderait à obtenir un mode portrait natif), avait laissé ce
+téléphone choisir une résolution minimale. Comme l'orientation se
+corrige de toute façon par rotation posée après coup (Axes ES/EU), plus
+aucune raison de sacrifier la résolution pour cet espoir : `width`/
+`height` en `ideal` (jamais `exact`) restaurés à côté de `aspectRatio`.
+
+**Clarté et encombrement** : le bouton de rotation de l'aperçu live
+n'était qu'une icône (`RotateCcw`), la même que celle utilisée pour
+"Recommencer cette prise" ailleurs dans l'écran — confondable, sans
+libellé pour la distinguer. Libellé texte ajouté. Clé `localStorage`
+montée en v2 : toute rotation déjà mémorisée sous l'ANCIEN calcul
+(mathématiquement faux, bug n°1) n'a plus de sens avec le nouvel ordre
+de transform, mieux vaut la faire redécouvrir que garder une valeur
+héritée d'un calcul cassé. Réglages de défilement/vitesse/police et
+diagnostic masqués pendant la vérification d'une rotation (visibles sur
+la capture, empilés en plus de l'aperçu tourné + boutons + texte
+d'explication — de l'encombrement pur au moment où il faut le plus voir
+l'aperçu, sans aucune utilité à cet instant précis).
+
+**Ce qui reste un choix produit assumé, pas un bug** : le bon ANGLE de
+rotation (90/180/270) continue de se découvrir par le bouton "Tourner",
+confirmé visuellement par Santamaria — aucune API web n'expose le sens
+de montage réel du capteur pour le déduire à l'avance (déjà expliqué à
+l'Axe ES). Ce qui a changé ici, c'est que le calcul sous-jacent est
+enfin mathématiquement correct : avant ce correctif, tourner ne pouvait
+tout simplement jamais donner un résultat droit, quel que soit l'angle
+essayé — maintenant, un angle correct existe réellement à trouver.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. Le bug d'ordre des
+transforms est un fait vérifiable par lecture du code (la sémantique
+`transform: A B` de CSS n'est pas une supposition), pas une hypothèse —
+contrairement aux repasses précédentes sur ce chantier, celle-ci corrige
+une erreur de raisonnement identifiable avec certitude, même sans accès
+à l'appareil. Reste, comme toujours, à confirmer que l'angle choisi via
+le bouton "Tourner" a maintenant un rendu cohérent sur le téléphone réel.
