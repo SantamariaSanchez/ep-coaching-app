@@ -994,12 +994,22 @@ function MyScripts({
                     </div>
                   </div>
                 ) : (
+                  // Retour direct 2026-09-18 : "un espace réduit, genre 1/3
+                  // de l'écran pour ceux qui sont longs mais pas plus, et
+                  // que ça défile dans le rectangle, pas tout l'onglet" —
+                  // hauteur plafonnée avec défilement interne au lieu d'un
+                  // bloc qui grandissait sans limite et allongeait toute la
+                  // page pour un script long.
                   <p
                     onClick={() => {
                       setOpenId(script.id);
                       setDraft(script.content ?? "");
                     }}
-                    style={{ margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6, whiteSpace: "pre-wrap", cursor: "text" }}
+                    style={{
+                      margin: 0, fontSize: 13, color: "#F5EDED", lineHeight: 1.6,
+                      whiteSpace: "pre-wrap", cursor: "text",
+                      maxHeight: "33vh", overflowY: "auto",
+                    }}
                   >
                     {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
                   </p>
@@ -1092,12 +1102,20 @@ function MyScripts({
                       </div>
                     </div>
                   ) : (
+                    // Retour direct 2026-09-18 : "les description ça sert
+                    // à rien que j'aie une vue dessus, fait apparaître
+                    // seulement 1 ligne c'est suffisant" — juste de quoi
+                    // confirmer qu'elle existe, pas la relire en entier ici
+                    // (clique pour l'ouvrir en entier si besoin, inchangé).
                     <p
                       onClick={() => {
                         setCaptionOpenId(script.id);
                         setCaptionDraft(script.instagram_caption ?? "");
                       }}
-                      style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", whiteSpace: "pre-wrap", lineHeight: 1.5, cursor: "text" }}
+                      style={{
+                        margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5, cursor: "text",
+                        whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                      }}
                     >
                       {script.instagram_caption}
                     </p>

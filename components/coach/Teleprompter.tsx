@@ -73,12 +73,23 @@ export default function Teleprompter({
   const streamRef = useRef<MediaStream | null>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  // Gardé à côté de recordedUrl (qui n'est qu'un object URL) pour pouvoir
+  // reconstruire un vrai fichier à partager, voir handleSaveVideo.
+  const recordedBlobRef = useRef<Blob | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
   const recTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  // Canvas hors-DOM où chaque frame caméra est redessinée à la résolution
-  // exacte voulue avant d'être enregistrée — voir commentaire de tête sur
-  // le bug "enregistrement en paysage".
+  // Canvas où chaque frame caméra est redessinée à la résolution exacte
+  // voulue avant d'être enregistrée — voir commentaire de tête sur le bug
+  // "enregistrement en paysage". Repasse 2026-09-18 (retour direct : "le
+  // format est encore en paysage" après le premier correctif cover→contain) :
+  // le canvas était créé avec `document.createElement`, donc jamais
+  // attaché au DOM — `captureStream()` sur un canvas détaché est connu
+  // pour se comporter de façon peu fiable sur certains moteurs mobiles
+  // (Safari/WebKit notamment), qui peuvent lui donner une taille par
+  // défaut au lieu de respecter canvas.width/height. Un vrai <canvas>
+  // monté dans le JSX (masqué en opacité, jamais en display:none qui
+  // peut couper le rendu) lève ce risque.
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawRafRef = useRef<number | null>(null);
 
@@ -97,6 +108,7 @@ export default function Teleprompter({
   const [recSeconds, setRecSeconds] = useState(0);
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [recordError, setRecordError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [mimeType] = useState(() => pickSupportedMimeType());
   // Incrémenté par le bouton "Réessayer" pour rejouer l'effet caméra sans
   // changer facingMode (sinon un simple setFacingMode((f) => f) ne change
@@ -241,10 +253,10 @@ export default function Teleprompter({
     }
     chunksRef.current = [];
     try {
-      const canvas = document.createElement("canvas");
+      const canvas = canvasRef.current;
+      if (!canvas) throw new Error("canvas indisponible");
       canvas.width = orientation === "portrait" ? 1080 : 1920;
       canvas.height = orientation === "portrait" ? 1920 : 1080;
-      canvasRef.current = canvas;
       drawRafRef.current = requestAnimationFrame(drawFrame);
 
       const canvasStream = canvas.captureStream(30);
@@ -258,8 +270,8 @@ export default function Teleprompter({
       recorder.onstop = () => {
         if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
         drawRafRef.current = null;
-        canvasRef.current = null;
         const blob = new Blob(chunksRef.current, { type: mimeType });
+        recordedBlobRef.current = blob;
         setRecordedUrl(URL.createObjectURL(blob));
       };
       recorder.start();
@@ -270,7 +282,6 @@ export default function Teleprompter({
     } catch {
       if (drawRafRef.current != null) cancelAnimationFrame(drawRafRef.current);
       drawRafRef.current = null;
-      canvasRef.current = null;
       setRecordError("Échec au démarrage de l'enregistrement.");
     }
   }
@@ -283,6 +294,48 @@ export default function Teleprompter({
       clearInterval(recTimerRef.current);
       recTimerRef.current = null;
     }
+  }
+
+  // Retour direct 2026-09-18 ("fais attention que ça s'enregistre bien
+  // dans ma galerie, aucun bug") : un <a download> sur un blob: URL ouvre
+  // souvent juste la vidéo dans un lecteur sur mobile (surtout iOS
+  // Safari) au lieu de l'enregistrer réellement dans la pellicule/galerie
+  // — aucune vraie intégration "Enregistrer dans Photos" par ce chemin.
+  // Web Share API (fichiers) ouvre la feuille de partage native, qui
+  // propose "Enregistrer la vidéo"/"Enregistrer dans Photos" de façon
+  // fiable sur iOS ET Android. Utilisé en priorité, avec un repli sur le
+  // téléchargement classique (desktop, ou navigateur sans support fichiers).
+  async function handleSaveVideo() {
+    setSaveError(null);
+    const blob = recordedBlobRef.current;
+    const filename = `${title.replace(/[^a-z0-9]+/gi, "-").slice(0, 40) || "tournage"}.${fileExt}`;
+
+    if (blob && typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+      try {
+        const file = new File([blob], filename, { type: mimeType ?? blob.type });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file] });
+          return;
+        }
+      } catch (err) {
+        // AbortError = la personne a fermé la feuille de partage elle-même,
+        // jamais une vraie erreur à signaler.
+        if (err instanceof Error && err.name === "AbortError") return;
+      }
+    }
+
+    // Repli : téléchargement classique (a[download] déclenché par script
+    // plutôt qu'un <a> visible, même résultat, un seul chemin à tester).
+    if (!recordedUrl) {
+      setSaveError("Rien à enregistrer.");
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = recordedUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   useEffect(() => {
@@ -326,6 +379,12 @@ export default function Teleprompter({
           opacity: ready && !cameraError ? 1 : 0,
         }}
       />
+      {/* Canvas d'enregistrement — DOIT être monté dans le DOM (jamais
+          document.createElement) pour que captureStream() respecte de
+          façon fiable sa résolution sur tous les navigateurs, voir
+          commentaire de tête. Masqué visuellement, jamais display:none
+          (couperait le rendu sur certains moteurs). */}
+      <canvas ref={canvasRef} aria-hidden style={{ position: "fixed", top: 0, left: 0, opacity: 0, pointerEvents: "none" }} />
 
       {!ready && !cameraError && (
         <div className="absolute inset-0 flex items-center justify-center">
@@ -397,13 +456,14 @@ export default function Teleprompter({
 
       {/* Texte défilant, superposé à la caméra — retour direct 2026-09-18 :
           "faut mettre un plus petit espace et le texte défile que dans
-          cet espace". Bande étroite centrée (22% de la hauteur, contre
-          58% avant) plutôt qu'un pavé qui mangeait la moitié de l'écran :
-          on voit beaucoup plus la caméra, le texte reste confiné à cette
-          bande (overflow-y-auto ci-dessous, inchangé). */}
+          cet espace" puis "le texte mets-le pas au milieu mais en haut".
+          Bande étroite (22% de la hauteur, contre 58% avant) collée en
+          haut sous la barre de contrôles plutôt qu'au centre : on voit
+          beaucoup plus la caméra, le texte reste confiné à cette bande
+          (overflow-y-auto ci-dessous, inchangé). */}
       <div
         className="absolute left-0 right-0 z-10"
-        style={{ top: "36%", bottom: "42%", padding: "0 20px" }}
+        style={{ top: "calc(env(safe-area-inset-top, 0px) + 64px)", height: "22vh", padding: "0 20px" }}
       >
         <div
           ref={textScrollRef}
@@ -445,21 +505,26 @@ export default function Teleprompter({
         {recordError && (
           <p className="text-[11px] text-amber-300 text-center mb-2">{recordError}</p>
         )}
+        {saveError && (
+          <p className="text-[11px] text-amber-300 text-center mb-2">{saveError}</p>
+        )}
 
         {recordedUrl ? (
           <div className="flex items-center gap-2 mb-3">
-            <a
-              href={recordedUrl}
-              download={`${title.replace(/[^a-z0-9]+/gi, "-").slice(0, 40) || "tournage"}.${fileExt}`}
+            <button
+              type="button"
+              onClick={handleSaveVideo}
               className="flex-1 flex items-center justify-center gap-1.5 bg-[#E01E1E] text-white text-xs font-black uppercase tracking-wide py-2.5 rounded-xl"
             >
               <Download size={14} /> Enregistrer la vidéo
-            </a>
+            </button>
             <button
               type="button"
               onClick={() => {
                 URL.revokeObjectURL(recordedUrl);
+                recordedBlobRef.current = null;
                 setRecordedUrl(null);
+                setSaveError(null);
               }}
               aria-label="Refaire une prise"
               className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/10 border border-white/15 text-white"
