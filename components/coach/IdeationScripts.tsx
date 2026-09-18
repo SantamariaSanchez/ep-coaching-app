@@ -222,9 +222,14 @@ function MyScripts({
     setScripts(initialScripts);
   }, [initialScripts]);
 
-  // Prompteur (retour direct 2026-09-17) : ouvre en plein écran par-dessus
-  // tout, caméra + texte défilant + enregistrement, voir Teleprompter.tsx.
-  const [teleprompterScript, setTeleprompterScript] = useState<{ title: string; content: string } | null>(null);
+  // Tournage automatique (retour direct 2026-09-18 : "moi je veux pas un
+  // bouton Prompteur sur chaque script mais un seul bouton en haut et
+  // ensuite ça me fait tourner les scripts du plus ancien au plus récent")
+  // — un seul bouton lance une file (scripts filmables à tourner, du plus
+  // ancien au plus récent), le Prompteur s'enchaîne seul d'un script au
+  // suivant via onFinishedTake, voir Teleprompter.tsx.
+  const [filmQueueIds, setFilmQueueIds] = useState<string[] | null>(null);
+  const [filmQueueIndex, setFilmQueueIndex] = useState(0);
 
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
@@ -388,6 +393,61 @@ function MyScripts({
   const publishedScripts =
     statusFilter === "all" ? filtered.filter((s) => s.status === "publie") : [];
 
+  // File du tournage automatique : uniquement du contenu filmé (jamais
+  // LinkedIn/Threads, voir WRITTEN_PLATFORMS), pas encore tourné, avec un
+  // vrai script à lire — du plus ancien au plus récent (l'inverse du tri
+  // "le plus en retard d'abord" utilisé pour activeScripts, ici on veut
+  // vraiment vider le plus vieux stock en premier).
+  const filmableScripts = useMemo(
+    () =>
+      scripts
+        .filter((s) => !WRITTEN_PLATFORMS.has(s.platform) && s.status === "a_tourner" && !!s.content)
+        .slice()
+        .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()),
+    [scripts]
+  );
+
+  function startFilmingQueue() {
+    if (filmableScripts.length === 0) return;
+    setFilmQueueIds(filmableScripts.map((s) => s.id));
+    setFilmQueueIndex(0);
+  }
+
+  // Appelé par le Prompteur une fois une prise sauvegardée (jamais sur un
+  // clic — voir Teleprompter.tsx) : marque le script courant "tourné" puis
+  // avance dans la file, sans aucune action de la personne entre deux
+  // prises. Referme elle-même la file une fois le dernier script atteint,
+  // plutôt que via un effet séparé qui devrait rejouer un setState en cascade.
+  function finishCurrentTake() {
+    const id = filmQueueIds?.[filmQueueIndex];
+    if (id) {
+      const backup = scripts;
+      setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, status: "tourne" } : s)));
+      startTransition(async () => {
+        const result = await updateScript(id, { status: "tourne" });
+        if (result.error) {
+          setScripts(backup);
+          setError(result.error);
+        }
+      });
+    }
+    const nextIndex = filmQueueIndex + 1;
+    if (!filmQueueIds || nextIndex >= filmQueueIds.length) {
+      setFilmQueueIds(null);
+      setFilmQueueIndex(0);
+    } else {
+      setFilmQueueIndex(nextIndex);
+    }
+  }
+
+  // Script introuvable (ex. supprimé entre-temps) : ne rend rien plutôt que
+  // de crasher — la personne referme via le X du Prompteur pour en relancer
+  // une nouvelle si besoin.
+  const currentFilmScript =
+    filmQueueIds && filmQueueIndex < filmQueueIds.length
+      ? scripts.find((s) => s.id === filmQueueIds[filmQueueIndex]) ?? null
+      : null;
+
   function submitNew() {
     setError(null);
     const t = title.trim();
@@ -523,7 +583,21 @@ function MyScripts({
 
   return (
     <div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 8, marginBottom: 14 }}>
+        <button
+          type="button"
+          onClick={startFilmingQueue}
+          disabled={filmableScripts.length === 0}
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            background: "rgba(224,30,30,0.15)", color: "#E01E1E", padding: "8px 14px",
+            borderRadius: 999, fontWeight: 800, fontSize: 12,
+            border: "1px solid rgba(224,30,30,0.4)", cursor: filmableScripts.length === 0 ? "default" : "pointer",
+            opacity: filmableScripts.length === 0 ? 0.4 : 1,
+          }}
+        >
+          <Camera size={14} /> Lancer le tournage{filmableScripts.length > 0 ? ` (${filmableScripts.length})` : ""}
+        </button>
         <button
           type="button"
           onClick={() => setShowForm((v) => !v)}
@@ -829,11 +903,14 @@ function MyScripts({
           </div>
         </div>
       )}
-      {teleprompterScript && (
+      {currentFilmScript && filmQueueIds && (
         <Teleprompter
-          title={teleprompterScript.title}
-          content={teleprompterScript.content}
-          onClose={() => setTeleprompterScript(null)}
+          key={currentFilmScript.id}
+          title={currentFilmScript.title}
+          content={currentFilmScript.content ?? ""}
+          queueProgress={{ index: filmQueueIndex + 1, total: filmQueueIds.length }}
+          onClose={() => setFilmQueueIds(null)}
+          onFinishedTake={finishCurrentTake}
         />
       )}
     </div>
@@ -940,21 +1017,6 @@ function MyScripts({
                   </span>
                   {script.content && (
                     <div style={{ display: "flex", gap: 6 }}>
-                      {/* Prompteur : rien à filmer sur du contenu écrit. */}
-                      {!WRITTEN_PLATFORMS.has(script.platform) && (
-                        <button
-                          type="button"
-                          onClick={() => setTeleprompterScript({ title: script.title, content: script.content! })}
-                          style={{
-                            display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
-                            background: "rgba(224,30,30,0.15)", border: "1px solid rgba(224,30,30,0.4)",
-                            borderRadius: 8, padding: "6px 10px", fontSize: 10.5, fontWeight: 700,
-                            color: "#E01E1E", cursor: "pointer",
-                          }}
-                        >
-                          <Camera size={12} /> Prompteur
-                        </button>
-                      )}
                       <CopyButton text={script.content} />
                     </div>
                   )}

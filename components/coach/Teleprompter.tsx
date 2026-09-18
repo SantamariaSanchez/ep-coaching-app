@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Circle, Square, Download, RotateCcw, SwitchCamera, Type } from "lucide-react";
+import { X, Play, Pause, Circle, Square, RotateCcw, SwitchCamera, Type } from "lucide-react";
 import { createPortal } from "react-dom";
 
 // Prompteur (Studio créatif > Scripts, retour direct 2026-09-17 : "un
@@ -45,8 +45,36 @@ import { createPortal } from "react-dom";
 //    double) ET l'orientation la plupart du temps (le chemin
 //    d'enregistrement direct n'a pas le bug canvas ci-dessus), sans
 //    garantie à 100% sur des appareils très anciens/atypiques — d'où la
-//    vérification honnête après coup (checkRecordedOrientation) plutôt
+//    vérification honnête après coup (checkRecordedFrame) plutôt
 //    que de prétendre que c'est toujours parfait.
+//
+// Repasse 2026-09-18 (bis), retour direct après le correctif précédent :
+// "ya toujours tes bande noir, ARRÊTE DE LIVRER ALORS QUE C PAS FINI". Le
+// correctif précédent (`resizeMode: "crop-and-scale"`) n'a rien changé —
+// et pour cause : `resizeMode` n'a jamais été un constraint standardisé
+// (retiré très tôt des specs Media Capture, jamais réellement implémenté
+// dans Chrome mobile), donc il était simplement IGNORÉ silencieusement,
+// pas "essayé et raté". Deux changements réels cette fois, pas un ajustement
+// de plus à l'aveugle :
+// 1. Négociation : demander `aspectRatio: 9/16` SANS imposer de width/height
+//    précis force le sélecteur de contraintes du navigateur à choisir un
+//    mode natif dont le RATIO est déjà portrait, au lieu de lui demander une
+//    résolution portrait précise qu'il satisfait en gardant le capteur en
+//    paysage et en AJOUTANT des bandes (ce qui produit exactement le
+//    symptôme décrit). Après l'obtention du flux, on relit les vraies
+//    dimensions accordées (`track.getSettings()`) ; si elles sortent quand
+//    même en paysage, on retente explicitement avec `applyConstraints`
+//    (exact cette fois, pas ideal) plutôt que de supposer que la première
+//    tentative a suffi.
+// 2. Vérification : `checkRecordedFrame` ne se contente plus de lire la
+//    largeur/hauteur déclarées du fichier (un fichier peut être "portrait"
+//    en dimensions ET avoir des bandes noires DEDANS, ce qui est exactement
+//    le rapport reçu). Elle échantillonne un vrai pixel de la vidéo
+//    enregistrée (canvas hors-écran, une seule fois, pas de captureStream)
+//    et compare la luminosité des bandes haut/bas à celle du centre — si le
+//    haut/bas est quasi noir alors que le centre ne l'est pas, ce n'est pas
+//    déclaré "réussi", la prise est refusée avec un vrai bouton "Recommencer"
+//    au lieu d'avancer sur un enregistrement cassé.
 //
 // Note sur "mets l'appareil photo natif du téléphone avec le prompteur en
 // extension par-dessus" : c'est un vrai bon réflexe (un vrai prompteur
@@ -90,11 +118,20 @@ function formatRecTime(seconds: number): string {
 export default function Teleprompter({
   title,
   content,
+  queueProgress,
   onClose,
+  onFinishedTake,
 }: {
   title: string;
   content: string;
+  /** Tournage automatique (Studio créatif) : position dans la file, ex. "3/12". */
+  queueProgress?: { index: number; total: number };
   onClose: () => void;
+  /** Retour direct 2026-09-18 : "faut toujours toujours enregistrer donc
+   * enlève le bouton" + "quand j'ai fini une vidéo ça doit m'enchaîner sur
+   * la prochaine automatiquement" — appelé une fois la prise sauvegardée
+   * (ou la tentative de sauvegarde terminée), jamais sur un clic explicite. */
+  onFinishedTake?: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const textScrollRef = useRef<HTMLDivElement>(null);
@@ -102,7 +139,7 @@ export default function Teleprompter({
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   // Gardé à côté de recordedUrl (qui n'est qu'un object URL) pour pouvoir
-  // reconstruire un vrai fichier à partager, voir handleSaveVideo.
+  // reconstruire un vrai fichier à partager, voir saveVideoBlob.
   const recordedBlobRef = useRef<Blob | null>(null);
   const rafRef = useRef<number | null>(null);
   const lastFrameRef = useRef<number | null>(null);
@@ -111,6 +148,10 @@ export default function Teleprompter({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
   const [ready, setReady] = useState(false);
+  // Diagnostic discret (petit texte, voir barre du bas) : la résolution
+  // réellement accordée par le navigateur, pour savoir tout de suite si une
+  // future prise repart encore en paysage plutôt que de le déduire après coup.
+  const [trackInfo, setTrackInfo] = useState<string | null>(null);
 
   const [scrolling, setScrolling] = useState(false);
   // px/seconde — repère : ~25 mots/ligne à taille par défaut défile en
@@ -123,6 +164,11 @@ export default function Teleprompter({
   const [recordedUrl, setRecordedUrl] = useState<string | null>(null);
   const [recordError, setRecordError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Retour direct 2026-09-18 : plus de bouton "Enregistrer" ni "Refaire" —
+  // dès l'arrêt de l'enregistrement, sauvegarde automatique puis passage
+  // au script suivant. Cet état pilote l'affichage transitoire entre les
+  // deux (spinner + message) au lieu du gros bouton d'enregistrement.
+  const [advancing, setAdvancing] = useState(false);
   // Purement informatif désormais (plus de canvas à "corriger") : si le
   // fichier sort quand même en paysage sur un appareil atypique, mieux
   // vaut le dire honnêtement que prétendre que c'est toujours garanti.
@@ -144,32 +190,57 @@ export default function Teleprompter({
       setCameraError(null);
       setReady(false);
       try {
-        // Repasse 2026-09-18 (retour direct : "le format est bon mais y'a
-        // des bandes noires en haut et en bas") — sans canvas maintenant
-        // (voir commentaire de tête), l'image enregistrée est exactement
-        // celle que renvoie la caméra. Des bandes noires dans le fichier
-        // final veulent dire que le capteur donne une image plus large que
-        // haute (paysage) et que le navigateur la remplit dans un cadre
-        // portrait par AJOUT DE BANDES plutôt que par recadrage, faute
-        // d'autorisation explicite de recadrer. `resizeMode:
-        // "crop-and-scale"` est la contrainte standard qui autorise
-        // justement ce recadrage — pas encore dans les types TypeScript du
-        // DOM, castée en `any` ici, mais bien supportée par les
-        // navigateurs qui l'implémentent (Chrome notamment).
+        // Voir le commentaire de tête (repasse 2026-09-18 bis) : aspectRatio
+        // seul, sans width/height imposés, pour laisser le navigateur choisir
+        // un mode natif déjà portrait plutôt que de forcer une résolution
+        // précise qu'il satisferait en gardant le capteur en paysage.
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: {
-            facingMode,
-            width: { ideal: 1080 },
-            height: { ideal: 1920 },
-            resizeMode: "crop-and-scale",
-          } as MediaTrackConstraints,
+          video: { facingMode, aspectRatio: { ideal: 9 / 16 } },
           audio: true,
         });
         if (cancelled) {
           stream.getTracks().forEach((t) => t.stop());
           return;
         }
+
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const settings = track.getSettings();
+          const w = settings.width ?? 0;
+          const h = settings.height ?? 0;
+          // Le mode accordé est quand même en paysage (ou carré) malgré la
+          // contrainte aspectRatio — deuxième tentative EXPLICITE (exact,
+          // pas ideal) avant d'accepter le flux tel quel.
+          if (w > 0 && h > 0 && w >= h) {
+            try {
+              await track.applyConstraints({
+                aspectRatio: { exact: 9 / 16 },
+              } as MediaTrackConstraints);
+            } catch {
+              try {
+                await track.applyConstraints({
+                  width: { exact: 720 },
+                  height: { exact: 1280 },
+                } as MediaTrackConstraints);
+              } catch {
+                // Aucune des deux tentatives n'est acceptée par ce
+                // téléphone/navigateur — le flux brut reste tel quel, mais
+                // checkRecordedFrame le signalera honnêtement après coup
+                // plutôt que de prétendre que c'est réglé.
+              }
+            }
+          }
+        }
+
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
         streamRef.current = stream;
+        if (track) {
+          const s = track.getSettings();
+          setTrackInfo(s.width && s.height ? `${s.width}×${s.height}` : null);
+        }
         // Le <video> est monté en permanence dans le JSX (visibilité gérée
         // par opacité, jamais par montage conditionnel) précisément pour
         // que cette ref existe déjà ici — voir le commentaire de tête sur
@@ -221,24 +292,81 @@ export default function Teleprompter({
     };
   }, [scrolling, speed]);
 
-  // Vérifie les VRAIES dimensions du fichier produit (en le chargeant dans
-  // une balise <video> détachée) — purement informatif : sans canvas à
-  // ajuster, il n'y a plus rien à "corriger" ici, juste à signaler
-  // honnêtement si un appareil atypique sort quand même un fichier en
-  // paysage plutôt que de prétendre que c'est toujours garanti.
-  function checkRecordedOrientation(url: string) {
-    const probe = document.createElement("video");
-    probe.preload = "metadata";
-    probe.src = url;
-    probe.onloadedmetadata = () => {
-      if (probe.videoWidth > 0 && probe.videoWidth > probe.videoHeight) {
-        setOrientationNote(
-          `Cette prise est sortie en paysage (${probe.videoWidth}×${probe.videoHeight}). Vérifie que ton téléphone est bien tenu à la verticale au moment de filmer.`
-        );
-      } else {
-        setOrientationNote(null);
-      }
-    };
+  // Vérifie le VRAI fichier produit, pas seulement ses dimensions déclarées
+  // — voir le commentaire de tête (repasse 2026-09-18 bis) : un fichier peut
+  // être "portrait" en largeur/hauteur ET avoir des bandes noires dedans,
+  // ce qui est exactement ce qui a été signalé après le correctif précédent.
+  // Charge le blob dans une <video> détachée, va chercher une frame au
+  // milieu, la dessine sur un petit canvas hors-écran (une fois, jamais en
+  // flux continu — donc pas concerné par le bug canvas.captureStream() +
+  // MediaRecorder qui avait fait abandonner le pipeline canvas), et compare
+  // la luminosité des bandes haut/bas à celle du centre.
+  function checkRecordedFrame(url: string): Promise<{ width: number; height: number; letterboxed: boolean }> {
+    return new Promise((resolve) => {
+      const probe = document.createElement("video");
+      probe.preload = "metadata";
+      probe.muted = true;
+      probe.playsInline = true;
+      probe.src = url;
+      let settled = false;
+      const finish = (result: { width: number; height: number; letterboxed: boolean }) => {
+        if (settled) return;
+        settled = true;
+        resolve(result);
+      };
+      // Filet de sécurité : si la vidéo ne charge/ne seek jamais (fichier
+      // corrompu, navigateur atypique), ne jamais bloquer indéfiniment
+      // l'enchaînement automatique dessus.
+      const timeout = setTimeout(() => finish({ width: probe.videoWidth, height: probe.videoHeight, letterboxed: false }), 4000);
+      probe.onloadedmetadata = () => {
+        try {
+          probe.currentTime = Math.min(0.4, (probe.duration || 0.8) / 2) || 0.1;
+        } catch {
+          finish({ width: probe.videoWidth, height: probe.videoHeight, letterboxed: false });
+        }
+      };
+      probe.onseeked = () => {
+        clearTimeout(timeout);
+        const vw = probe.videoWidth;
+        const vh = probe.videoHeight;
+        if (!vw || !vh) {
+          finish({ width: vw, height: vh, letterboxed: false });
+          return;
+        }
+        try {
+          const canvas = document.createElement("canvas");
+          const sw = 80;
+          const sh = Math.max(1, Math.round((sw * vh) / vw));
+          canvas.width = sw;
+          canvas.height = sh;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            finish({ width: vw, height: vh, letterboxed: false });
+            return;
+          }
+          ctx.drawImage(probe, 0, 0, sw, sh);
+          const bandH = Math.max(2, Math.round(sh * 0.08));
+          const avgLuma = (y0: number, y1: number) => {
+            const { data } = ctx.getImageData(0, y0, sw, Math.max(1, y1 - y0));
+            let sum = 0;
+            let n = 0;
+            for (let i = 0; i < data.length; i += 4) {
+              sum += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+              n++;
+            }
+            return n ? sum / n : 0;
+          };
+          const top = avgLuma(0, bandH);
+          const bottom = avgLuma(sh - bandH, sh);
+          const middle = avgLuma(Math.round(sh * 0.4), Math.round(sh * 0.6));
+          const letterboxed = top < 18 && bottom < 18 && middle > top + 15 && middle > bottom + 15;
+          finish({ width: vw, height: vh, letterboxed });
+        } catch {
+          finish({ width: vw, height: vh, letterboxed: false });
+        }
+      };
+      probe.onerror = () => finish({ width: 0, height: 0, letterboxed: false });
+    });
   }
 
   // ── Enregistrement ────────────────────────────────────────────────────
@@ -271,7 +399,9 @@ export default function Teleprompter({
         // route) produit un blob quasi vide plutôt qu'une erreur — sans ce
         // contrôle, le fichier "réussi" présenté à l'enregistrement est en
         // réalité illisible. Mieux vaut le dire tout de suite que laisser
-        // découvrir un fichier corrompu dans la galerie ensuite.
+        // découvrir un fichier corrompu dans la galerie ensuite. Dans ce
+        // cas précis, PAS d'enchaînement automatique : mieux vaut laisser
+        // refaire cette prise plutôt qu'avancer sur un échec.
         if (blob.size < 10_000) {
           setRecordError("L'enregistrement a échoué (fichier vide). Réessaie une nouvelle prise.");
           return;
@@ -279,11 +409,37 @@ export default function Teleprompter({
         recordedBlobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
-        checkRecordedOrientation(url);
+        // Retour direct 2026-09-18 : "faut toujours toujours enregistrer
+        // donc enlève le bouton" + "ça doit m'enchaîner sur la prochaine
+        // automatiquement" — MAIS ("ARRÊTE DE LIVRER ALORS QUE C PAS FINI")
+        // seulement si la prise est vraiment bonne. checkRecordedFrame
+        // vérifie le vrai contenu du fichier ; si paysage ou bandes noires
+        // détectées, PAS d'enchaînement automatique — la personne doit
+        // pouvoir recommencer cette prise plutôt qu'avancer sur un
+        // enregistrement cassé sans le savoir.
+        void (async () => {
+          setAdvancing(true);
+          const probe = await checkRecordedFrame(url);
+          const isLandscape = probe.width > 0 && probe.width >= probe.height;
+          if (isLandscape || probe.letterboxed) {
+            setAdvancing(false);
+            setOrientationNote(
+              isLandscape
+                ? `Cette prise est sortie en paysage (${probe.width}×${probe.height}). Tiens le téléphone à la verticale et recommence cette prise.`
+                : "Bandes noires détectées sur cette prise (l'image ne remplit pas tout le cadre). Recommence cette prise."
+            );
+            return;
+          }
+          setOrientationNote(null);
+          await saveVideoBlob(blob, url);
+          setAdvancing(false);
+          onFinishedTake?.();
+        })();
       };
       recorder.start();
       recorderRef.current = recorder;
       setRecording(true);
+      setScrolling(true);
       setRecSeconds(0);
       recTimerRef.current = setInterval(() => setRecSeconds((s) => s + 1), 1000);
     } catch {
@@ -295,6 +451,7 @@ export default function Teleprompter({
     recorderRef.current?.stop();
     recorderRef.current = null;
     setRecording(false);
+    setScrolling(false);
     if (recTimerRef.current) {
       clearInterval(recTimerRef.current);
       recTimerRef.current = null;
@@ -310,12 +467,14 @@ export default function Teleprompter({
   // propose "Enregistrer la vidéo"/"Enregistrer dans Photos" de façon
   // fiable sur iOS ET Android. Utilisé en priorité, avec un repli sur le
   // téléchargement classique (desktop, ou navigateur sans support fichiers).
-  async function handleSaveVideo() {
+  // Prend le blob/l'url en paramètres explicites (jamais via l'état React)
+  // : appelée depuis `onstop` juste après les avoir construits, où l'état
+  // React correspondant n'a pas encore été re-rendu (fermeture obsolète).
+  async function saveVideoBlob(blob: Blob, url: string) {
     setSaveError(null);
-    const blob = recordedBlobRef.current;
     const filename = `${title.replace(/[^a-z0-9]+/gi, "-").slice(0, 40) || "tournage"}.${fileExt}`;
 
-    if (blob && typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
+    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare) {
       try {
         const file = new File([blob], filename, { type: mimeType ?? blob.type });
         if (navigator.canShare({ files: [file] })) {
@@ -331,16 +490,22 @@ export default function Teleprompter({
 
     // Repli : téléchargement classique (a[download] déclenché par script
     // plutôt qu'un <a> visible, même résultat, un seul chemin à tester).
-    if (!recordedUrl) {
-      setSaveError("Rien à enregistrer.");
-      return;
-    }
     const a = document.createElement("a");
-    a.href = recordedUrl;
+    a.href = url;
     a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
+  }
+
+  // Bouton "Recommencer cette prise" (paysage ou bandes noires détectées) —
+  // remet à zéro pour retenter un enregistrement du même script.
+  function resetTake() {
+    if (recordedUrl) URL.revokeObjectURL(recordedUrl);
+    recordedBlobRef.current = null;
+    setRecordedUrl(null);
+    setOrientationNote(null);
+    setSaveError(null);
   }
 
   useEffect(() => {
@@ -366,7 +531,7 @@ export default function Teleprompter({
       {/* Caméra en fond, plein écran — TOUJOURS montée (jamais démontée
           conditionnellement sur `ready`), object-contain (jamais cover)
           pour ne jamais rogner/zoomer l'image. C'est exactement CE flux,
-          sans aucun retraitement, qui est enregistré (voir handleSaveVideo
+          sans aucun retraitement, qui est enregistré (voir saveVideoBlob
           et le commentaire de tête). */}
       <video
         ref={videoRef}
@@ -413,7 +578,7 @@ export default function Teleprompter({
           <X size={18} />
         </button>
         <p className="text-[11px] font-bold text-white/70 truncate max-w-[45%] text-center">
-          {title}
+          {queueProgress ? `${queueProgress.index}/${queueProgress.total} · ${title}` : title}
         </p>
         <div className="flex items-center gap-2">
           {recording && (
@@ -488,28 +653,26 @@ export default function Teleprompter({
           <p className="text-[11px] text-amber-300 text-center mb-2">{orientationNote}</p>
         )}
 
-        {recordedUrl ? (
-          <div className="flex items-center gap-2 mb-3">
+        {/* Retour direct 2026-09-18 : plus de bouton "Enregistrer" — la
+            sauvegarde est toujours automatique dès l'arrêt (voir onstop).
+            Trois états possibles ici : en train de vérifier/sauvegarder
+            (spinner), prise refusée (paysage/bandes noires détectées, bouton
+            "Recommencer"), ou prête à filmer (bouton rond classique). */}
+        {advancing ? (
+          <div className="flex justify-center items-center gap-2 mb-3 py-3">
+            <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            <span className="text-xs font-bold text-white/70 uppercase tracking-wide">
+              Vérification et enregistrement…
+            </span>
+          </div>
+        ) : orientationNote ? (
+          <div className="flex justify-center mb-3">
             <button
               type="button"
-              onClick={handleSaveVideo}
-              className="flex-1 flex items-center justify-center gap-1.5 bg-[#E01E1E] text-white text-xs font-black uppercase tracking-wide py-2.5 rounded-xl"
+              onClick={resetTake}
+              className="flex items-center gap-1.5 bg-[#E01E1E] text-white text-xs font-black uppercase tracking-wide px-4 py-2.5 rounded-xl"
             >
-              <Download size={14} /> Enregistrer la vidéo
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                URL.revokeObjectURL(recordedUrl);
-                recordedBlobRef.current = null;
-                setRecordedUrl(null);
-                setSaveError(null);
-                setOrientationNote(null);
-              }}
-              aria-label="Refaire une prise"
-              className="w-11 h-11 flex-shrink-0 flex items-center justify-center rounded-xl bg-white/10 border border-white/15 text-white"
-            >
-              <RotateCcw size={16} />
+              <RotateCcw size={14} /> Recommencer cette prise
             </button>
           </div>
         ) : (
@@ -573,6 +736,9 @@ export default function Teleprompter({
             ↑ Début
           </button>
         </div>
+        {trackInfo && (
+          <p className="text-[9px] text-white/25 text-center mt-2">{trackInfo}</p>
+        )}
       </div>
     </div>
   );
