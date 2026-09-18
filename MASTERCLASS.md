@@ -7327,3 +7327,58 @@ un tournage reste à confirmer sur le téléphone de Santamaria (aucun
 accès à un appareil réel depuis cet environnement) — mais cette fois la
 cause identifiée (héritage CSS) est vérifiable en lisant le code, pas
 une hypothèse sur un comportement matériel invérifiable à distance.
+
+## ES — Prompteur : la vraie cause du "paysage" persistant, patch de métadonnées MP4 (2026-09-18)
+
+Retour direct, sec, après l'Axe EQ (négociation `aspectRatio` +
+`applyConstraints`) : "ça me dit que c'est en paysage alors que mon tel
+est à la verticale." Toutes les pistes côté `getUserMedia` sont
+désormais épuisées (`resizeMode` à l'Axe EO, `aspectRatio` +
+`applyConstraints` à l'Axe EQ) sans effet — signe que le problème n'est
+plus dans la NÉGOCIATION de la caméra mais dans l'ENCODAGE, en aval,
+là où aucune contrainte `getUserMedia` ne peut plus agir.
+
+**Cause probable** (raisonnée, pas observée directement — toujours aucun
+accès à un appareil réel) : ce téléphone livre à `MediaRecorder` les
+frames brutes de son capteur, monté à l'horizontale au niveau matériel
+même quand le téléphone est tenu à la verticale — une disposition
+courante sur beaucoup de smartphones. Une vraie appli caméra native gère
+ça en encodant les frames telles quelles (paysage) MAIS en écrivant une
+matrice de rotation dans le conteneur du fichier (boîte MP4 `tkhd`) qui
+dit aux lecteurs "affiche ceci tourné de 90°" — c'est ce qui fait qu'une
+vidéo "paysage à l'intérieur" s'affiche pourtant droite dans la Galerie.
+L'API web `MediaRecorder`, elle, n'a aucun équivalent du
+`setOrientationHint()` natif Android pour poser cette matrice : le
+fichier sort donc sans elle, d'où "paysage" au sens propre alors que le
+téléphone était bien vertical.
+
+**Fix** (`lib/mp4-rotate.ts`, nouveau) : patche directement les octets
+du fichier déjà enregistré pour y écrire cette matrice de rotation —
+aucun réencodage, aucun nouveau passage par `MediaRecorder` ou par un
+`<canvas>` (qui avait déjà cassé l'enregistrement sur ce même chantier,
+voir Axe EM). Parcourt la structure de boîtes MP4 (`moov > trak > tkhd`)
+à la main, repère la piste vidéo (dimensions non nulles en `tkhd`,
+contrairement à la piste audio) et réécrit sa matrice 3×3. Renvoie le
+blob d'origine inchangé si la structure ne ressemble pas à un MP4 valide
+(webm, fichier inattendu) — jamais de fichier corrompu en sortie.
+
+**Sur le sens de la rotation** : aucune API web n'expose l'angle de
+montage réel du capteur d'un téléphone donné — le deviner à l'aveugle
+(90° ou 270°, sens horaire ou anti-horaire selon le modèle) aurait été
+exactement le genre d'hypothèse non vérifiée que Santamaria a explicitement
+demandé d'arrêter de livrer. À la place, `Teleprompter.tsx` propose un
+aperçu de la prise tourné (bouton "Tourner", cycle 0°/90°/180°/270°),
+que la personne confirme elle-même une fois que ça a l'air droit ("C'est
+droit") avant que le fichier patché soit sauvegardé et que le tournage
+automatique enchaîne sur le script suivant — la vérification vient de
+la personne qui VOIT le résultat, pas d'un calcul qui devine.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. La logique de parcours
+de boîtes MP4 est écrite défensivement (renvoie le blob d'origine sans
+y toucher sur toute structure inattendue) : dans le pire cas où
+l'hypothèse ci-dessus serait fausse pour un appareil donné, le pire
+résultat possible est "toujours pas droit après confirmation" — jamais
+un fichier corrompu. Reste, comme toujours sur ce chantier, à confirmer
+sur le téléphone réel de Santamaria.
