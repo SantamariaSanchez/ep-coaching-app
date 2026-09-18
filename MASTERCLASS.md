@@ -6984,3 +6984,34 @@ Téléchargements est le comportement normal de toute façon).
 ### Validation
 
 `tsc --noEmit` et `eslint` propres.
+
+## EL — Prompteur : cause réelle du fichier illisible en galerie trouvée (2026-09-18)
+
+Retour direct avec capture d'écran de la galerie Android : le prompteur
+fonctionnait bien à l'usage (aperçu correct, texte en haut, sauvegarde
+déclenchée) mais le fichier une fois dans la galerie affichait "le
+format du fichier n'est pas pris en charge ou les fichiers sont
+manquants/corrompus".
+
+**Cause réelle** : `MIME_CANDIDATES` tentait le webm EN PREMIER, et
+Chrome Android sait très bien l'enregistrer (`isTypeSupported` répond
+vrai) — mais l'appli Galerie/Photos native de la plupart des
+téléphones (Android comme iOS) ne sait PAS lire un `.webm`, seulement
+des formats vidéo standards comme le mp4/H.264. Le fichier n'était donc
+jamais corrompu, juste dans un conteneur que le lecteur natif ne
+reconnaît pas. Ordre inversé : mp4 tenté en premier (deux syntaxes de
+codec essayées, `avc1,mp4a.40.2` et `h264,aac`, pour couvrir les deux
+conventions de nommage selon le navigateur), webm reste en repli pour
+les navigateurs qui ne savent enregistrer que ça (Firefox notamment).
+
+**Deux filets de sécurité ajoutés en plus**, pour ne plus jamais
+présenter un fichier cassé comme "réussi" :
+- Erreur explicite si `canvasStream.getVideoTracks()` est vide avant
+  même de démarrer l'enregistrement (piste vidéo manquante).
+- Contrôle de la taille du blob final (`< 10 000 octets` = capture
+  ratée) avant de proposer le fichier au lieu de le présenter comme
+  valide.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres.
