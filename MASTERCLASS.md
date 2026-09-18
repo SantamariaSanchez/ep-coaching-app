@@ -7254,3 +7254,76 @@ le template `/ressources/[slug]` ne dérivent jamais l'un de l'autre.
 
 `tsc --noEmit`, `eslint` et `next build` propres (build complet lancé
 et confirmé réussi, pas seulement le typecheck).
+
+## ER — Fluidité : la vraie cause du prompteur saccadé, et navigation par onglets (2026-09-18)
+
+Retour direct : "changer d'onglet ça charge à chaque fois, ça doit être
+instantané" + "la vidéo dans le prompteur c'est pas fluide, réfléchis et
+corrige et optimise réellement." Deux symptômes distincts, deux causes
+distinctes, chacune vérifiée avant correction plutôt que devinée.
+
+**Prompteur saccadé** : cause trouvée en lisant `app/globals.css`, pas en
+supposant. `html { scroll-behavior: smooth }` (ligne 176) est une
+propriété CSS **héritée** — elle s'appliquait donc aussi au conteneur de
+défilement du texte du prompteur, qui déplace lui-même `scrollTop`
+~60 fois/seconde via `requestAnimationFrame` (voir Axes EE-EQ). Chaque
+petit incrément déclenchait sa propre animation d'easing native du
+navigateur par-dessus l'incrément suivant : des animations de scroll qui
+se chevauchent en permanence au lieu d'un mouvement continu — exactement
+la saccade décrite, et une cause complètement différente de tout ce qui
+avait été corrigé jusqu'ici sur ce fichier (canvas, orientation, bandes
+noires). **Fix** : `scrollBehavior: "auto"` posé directement sur ce
+conteneur, qui annule l'héritage sans rien changer au bouton "↑ Début"
+(`scrollTo({behavior: "smooth"})` redemande le comportement doux
+explicitement par API, ce qui prime toujours sur la propriété CSS).
+
+**Navigation par onglets qui recharge** : `DashboardNav.tsx` préchauffe
+déjà (`router.prefetch()`) les onglets du bas (Aujourd'hui/Clients/Moi/
+Contenu...) depuis une repasse perf antérieure (2026-09-10). Mais les
+pages À L'INTÉRIEUR d'une section (Nutrition, Programme, Logbook sous
+"Moi", Formations/Ressources/Recettes sous "Contenu"...) restent de
+simples `<Link>` au comportement par défaut de Next.js : pour une page
+dynamique, ça ne précharge que le squelette `loading.tsx`, jamais la
+vraie donnée — chaque clic dedans déclenche donc un aller-retour serveur
+complet. Étendu au même mécanisme déjà en place, borné à
+`mobileSubItems` (les 3 à 12 items de la section ACTUELLEMENT ouverte,
+jamais les ~81 segments de toute la nav) : la limitation posée le
+2026-09-16 (dépassement de quota Supabase) qui interdisait d'élargir ce
+préchauffage ne s'applique plus, le compte est passé en Pro depuis (voir
+mémoire "Supabase quota crisis").
+
+**Ce qui n'a volontairement PAS été touché** : le cache client global
+Next.js (`staleTimes`). Cette piste a déjà été essayée puis retirée
+(Axes BS/BT, 2026-09-10/11, dans ce même fichier) après un vrai bug de
+production — une coche qui se décochait au retour sur un onglet, parce
+que le rendu client restait périmé jusqu'à 30 secondes après une
+mutation. Le préchauffage étendu ci-dessus utilise le même mécanisme
+`router.prefetch()` déjà en place pour les onglets du bas depuis cette
+date SANS avoir jamais reproduit ce bug — les pages à risque connu
+(Nutrition, Logbook, Checkin, onboarding) appellent déjà `router.
+refresh()` après leurs mutations (vérifié dans le code), ce qui force un
+aller-retour serveur réel indépendamment de tout cache de préchauffage.
+Réintroduire `staleTimes` lui-même (qui avait causé le bug) n'a en
+revanche pas été reconsidéré : le gain de vitesse ne justifie pas de
+rejouer un incident déjà vécu et documenté.
+
+**Bonus pendant l'investigation** : audit des advisors de performance
+Supabase (`get_advisors`) — aucun souci sur les grosses tables déjà en
+usage, seulement deux avertissements sur `client_exercise_notes` (créée
+plus tôt dans cette même session, Axe EG-EH) : `auth.uid()` ré-évalué
+par ligne et policies permissives dupliquées sur SELECT. Corrigés
+directement en base (`(select auth.uid())`, fusion des deux policies
+SELECT en une seule) — sans lien avec le ressenti de lenteur remonté
+(table neuve, quasi vide), mais un vrai correctif tant que c'était sous
+les yeux.
+
+### Validation
+
+`tsc --noEmit`, `eslint` et `next build` propres. Advisors Supabase
+performance re-vérifiés après le correctif RLS : les deux avertissements
+sur `client_exercise_notes` ont disparu. Comme pour les repasses
+précédentes sur le prompteur, la fluidité réelle du défilement pendant
+un tournage reste à confirmer sur le téléphone de Santamaria (aucun
+accès à un appareil réel depuis cet environnement) — mais cette fois la
+cause identifiée (héritage CSS) est vérifiable en lisant le code, pas
+une hypothèse sur un comportement matériel invérifiable à distance.
