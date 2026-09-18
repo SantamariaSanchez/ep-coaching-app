@@ -117,12 +117,23 @@ function formatRecTime(seconds: number): string {
 }
 
 export default function Teleprompter({
+  scriptId,
   title,
   content,
   queueProgress,
   onClose,
   onFinishedTake,
 }: {
+  /** Retour direct 2026-09-18 ("meilleur prompteur du marché") : le
+   * tournage automatique enchaîne jusqu'à 70+ scripts. IdeationScripts.tsx
+   * ne pose plus `key={scriptId}` sur ce composant (ça le démontait/
+   * remontait entièrement à chaque script, donc coupait et redemandait la
+   * caméra à chaque fois — un vrai flash/délai perceptible répété des
+   * dizaines de fois par session). scriptId permet de réinitialiser
+   * seulement l'état PROPRE À LA PRISE (voir l'effet plus bas) quand on
+   * change de script, sans jamais toucher au flux caméra qui, lui, reste
+   * ouvert en continu pour toute la file. */
+  scriptId: string;
   title: string;
   content: string;
   /** Tournage automatique (Studio créatif) : position dans la file, ex. "3/12". */
@@ -333,6 +344,46 @@ export default function Teleprompter({
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setPreviewRotation(next);
   }, [facingMode]);
+
+  // Changement de script dans la file (voir le commentaire sur `scriptId`
+  // ci-dessus) : réinitialise tout ce qui est PROPRE À LA PRISE précédente
+  // (un message d'erreur, un aperçu de rotation en attente, un chrono figé
+  // à l'ancienne valeur...) qui n'a plus aucun sens pour le nouveau script,
+  // sans jamais toucher au flux caméra (`streamRef`, `facingMode`,
+  // `previewRotation`) qui reste ouvert en continu pour toute la file.
+  // Un seul `useEffect` avec plusieurs setState, comme le motif déjà
+  // établi ailleurs dans ce fichier pour une synchronisation légitime
+  // avec un système externe (ici : un nouveau script de la file, pas un
+  // état interne qu'on pourrait dériver du rendu).
+  useEffect(() => {
+    if (recorderRef.current && recorderRef.current.state !== "inactive") {
+      try { recorderRef.current.stop(); } catch {}
+    }
+    recorderRef.current = null;
+    chunksRef.current = [];
+    recordedBlobRef.current = null;
+    if (recTimerRef.current) {
+      clearInterval(recTimerRef.current);
+      recTimerRef.current = null;
+    }
+    if (textScrollRef.current) textScrollRef.current.scrollTop = 0;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setRecording(false);
+    setScrolling(false);
+    setRecSeconds(0);
+    setRecordedUrl((prev) => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
+    setRecordError(null);
+    setSaveError(null);
+    setOrientationNote(null);
+    setAdvancing(false);
+    setPendingRotation((prev) => {
+      if (prev) URL.revokeObjectURL(prev.url);
+      return null;
+    });
+  }, [scriptId]);
 
   // ── Défilement du texte (requestAnimationFrame, fluide à toute vitesse) ─
   useEffect(() => {

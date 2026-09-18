@@ -905,7 +905,7 @@ function MyScripts({
       )}
       {currentFilmScript && filmQueueIds && (
         <Teleprompter
-          key={currentFilmScript.id}
+          scriptId={currentFilmScript.id}
           title={currentFilmScript.title}
           content={currentFilmScript.content ?? ""}
           queueProgress={{ index: filmQueueIndex + 1, total: filmQueueIds.length }}
