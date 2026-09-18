@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { X, Play, Pause, Circle, Square, RotateCcw, SwitchCamera, Type, Check } from "lucide-react";
+import { X, Play, Pause, Circle, Square, RotateCcw, SwitchCamera, Type } from "lucide-react";
 import { createPortal } from "react-dom";
 import { patchMp4Rotation } from "@/lib/mp4-rotate";
 
@@ -188,11 +188,12 @@ export default function Teleprompter({
   // Retour direct 2026-09-18 ("ça me dit que c'est en paysage alors que mon
   // tel est à la verticale") : aucune API web n'expose le sens de montage
   // du capteur de ce téléphone, donc impossible de deviner à l'aveugle QUEL
-  // angle corrige le fichier — voir lib/mp4-rotate.ts. À la place : un
-  // aperçu tourné, confirmé par la personne elle-même (qui, elle, voit si
-  // c'est droit), plutôt qu'une nouvelle hypothèse non vérifiée.
-  const [pendingRotation, setPendingRotation] = useState<{ blob: Blob; url: string } | null>(null);
-  const [rotationDeg, setRotationDeg] = useState<0 | 90 | 180 | 270>(90);
+  // angle corrige le fichier — voir lib/mp4-rotate.ts. Calibré UNE FOIS via
+  // le bouton "Tourner" de la barre du haut (`previewRotation` ci-dessous,
+  // mémorisé par caméra) puis appliqué automatiquement à chaque prise sans
+  // jamais redemander de confirmation (retour direct : "toute étape
+  // manuelle de correction doit disparaître, plusieurs dizaines de prises
+  // par jour").
   // Retour direct 2026-09-18 ("c'est hyper zoomé" après le passage à
   // object-cover) : object-cover sur un flux réellement paysage affiché
   // dans un cadre portrait doit énormément agrandir l'image pour remplir la
@@ -201,11 +202,11 @@ export default function Teleprompter({
   // juste deux conséquences du même flux mal orienté ; aucun réglage
   // object-fit ne peut à la fois remplir l'écran ET ne pas zoomer sans
   // corriger l'orientation d'abord. Tourner l'aperçu (même logique que la
-  // rotation posée après coup sur le fichier, voir lib/mp4-rotate.ts et
-  // pendingRotation ci-dessus) redonne un flux effectivement portrait,
-  // remplissable sans zoom excessif. Réglable en direct (bouton dans la
-  // barre du haut) et mémorisé par téléphone/caméra, pour ne plus jamais
-  // avoir à le redécouvrir à chaque ouverture.
+  // rotation posée après coup sur le fichier, voir lib/mp4-rotate.ts)
+  // redonne un flux effectivement portrait, remplissable sans zoom
+  // excessif. Réglable en direct (bouton dans la barre du haut) et
+  // mémorisé par téléphone/caméra, pour ne plus jamais avoir à le
+  // redécouvrir à chaque ouverture.
   const [previewRotation, setPreviewRotation] = useState<0 | 90 | 180 | 270>(() => {
     if (typeof window === "undefined") return 90;
     const stored = Number(window.localStorage.getItem(`ep-teleprompter-rotation-v2-${facingMode}`));
@@ -297,6 +298,14 @@ export default function Teleprompter({
         if (track) {
           const s = track.getSettings();
           setTrackInfo(s.width && s.height ? `${s.width}×${s.height}` : null);
+          // Log temporaire (retour direct : "ajoute des logs pour que je
+          // puisse vérifier sans retester à chaque itération").
+          console.log("[Teleprompter] caméra ouverte :", {
+            facingMode,
+            width: s.width,
+            height: s.height,
+            aspectRatio: s.aspectRatio,
+          });
         }
         // Le <video> est monté en permanence dans le JSX (visibilité gérée
         // par opacité, jamais par montage conditionnel) précisément pour
@@ -327,6 +336,25 @@ export default function Teleprompter({
       streamRef.current = null;
     };
   }, [facingMode, retryToken]);
+
+  // Retour direct 2026-09-18 : verrouille l'orientation de la PAGE en
+  // portrait pendant le tournage — n'a aucune influence sur le sens dans
+  // lequel le capteur caméra livre ses frames (ça reste réglé par
+  // previewRotation ci-dessus/lib/mp4-rotate.ts), mais évite au moins que
+  // toute l'interface ne parte de travers si le téléphone est incliné en
+  // filmant. `screen.orientation.lock()` échoue silencieusement sur la
+  // plupart des navigateurs hors plein écran (Safari iOS ne l'implémente
+  // même pas) — capturé et ignoré exprès, jamais une erreur bloquante pour
+  // une amélioration purement défensive.
+  useEffect(() => {
+    const orientation = screen.orientation as (ScreenOrientation & { lock?: (o: string) => Promise<void> }) | undefined;
+    orientation?.lock?.("portrait").catch(() => {});
+    return () => {
+      try {
+        (screen.orientation as (ScreenOrientation & { unlock?: () => void }) | undefined)?.unlock?.();
+      } catch {}
+    };
+  }, []);
 
   // La rotation mémorisée est spécifique à CHAQUE caméra (avant/arrière —
   // pas forcément montée dans le même sens) : relue à chaque changement de
@@ -379,10 +407,6 @@ export default function Teleprompter({
     setSaveError(null);
     setOrientationNote(null);
     setAdvancing(false);
-    setPendingRotation((prev) => {
-      if (prev) URL.revokeObjectURL(prev.url);
-      return null;
-    });
   }, [scriptId]);
 
   // ── Défilement du texte (requestAnimationFrame, fluide à toute vitesse) ─
@@ -523,36 +547,59 @@ export default function Teleprompter({
         recordedBlobRef.current = blob;
         const url = URL.createObjectURL(blob);
         setRecordedUrl(url);
-        // Retour direct 2026-09-18 : "faut toujours toujours enregistrer
-        // donc enlève le bouton" + "ça doit m'enchaîner sur la prochaine
-        // automatiquement" — MAIS ("ARRÊTE DE LIVRER ALORS QUE C PAS FINI")
-        // seulement si la prise est vraiment bonne. checkRecordedFrame
-        // vérifie le vrai contenu du fichier ; si paysage ou bandes noires
-        // détectées, PAS d'enchaînement automatique — la personne doit
-        // pouvoir recommencer cette prise plutôt qu'avancer sur un
-        // enregistrement cassé sans le savoir.
+        // Retour direct 2026-09-18 ("plusieurs dizaines de prises par jour,
+        // toute étape manuelle de correction doit disparaître") : plus
+        // d'écran de confirmation "Tourner"/"C'est droit" bloquant à
+        // CHAQUE prise. La rotation nécessaire est la même pour TOUTES les
+        // prises d'une session (même téléphone, même caméra, même montage
+        // du capteur) — déjà calibrée une fois via le bouton "Tourner" de
+        // la barre du haut (`previewRotation`, mémorisé par caméra). Donc :
+        // paysage détecté → on patche directement avec cette rotation déjà
+        // connue et on enchaîne, sans demander de reconfirmer à chaque
+        // fois. Le bouton du haut reste l'unique réglage manuel si jamais
+        // l'angle mémorisé ne convient plus (ex. changement de téléphone).
         void (async () => {
           setAdvancing(true);
           const probe = await checkRecordedFrame(url);
+          // Logs temporaires (retour direct) pour vérifier la détection
+          // sans avoir à retester manuellement à chaque itération.
+          console.log("[Teleprompter] prise :", {
+            videoWidth: probe.width,
+            videoHeight: probe.height,
+            letterboxed: probe.letterboxed,
+            previewRotationAppliquee: previewRotation,
+          });
           const isLandscape = probe.width > 0 && probe.width >= probe.height;
-          if (isLandscape) {
-            // Pas de bandes noires ici : le contenu est bon, juste tourné
-            // (voir lib/mp4-rotate.ts) — proposer un aperçu tourné à
-            // confirmer plutôt qu'un aller-retour "recommence la prise"
-            // pour un problème qu'un nouvel essai ne corrigerait pas non
-            // plus (le capteur du téléphone reste monté pareil).
-            setAdvancing(false);
-            // Part de la rotation déjà réglée sur l'aperçu live (souvent la
-            // même correction) plutôt que de recommencer à deviner à zéro.
-            setRotationDeg(previewRotation);
-            setPendingRotation({ blob, url });
-            return;
-          }
           if (probe.letterboxed) {
+            // Rognage/padding réel dans l'image : aucune rotation ne peut
+            // corriger ça après coup (contrairement à l'orientation), la
+            // seule option honnête reste de refaire la prise.
             setAdvancing(false);
             setOrientationNote(
               "Bandes noires détectées sur cette prise (l'image ne remplit pas tout le cadre). Recommence cette prise."
             );
+            return;
+          }
+          if (isLandscape) {
+            const fixedBlob = await patchMp4Rotation(blob, previewRotation);
+            console.log("[Teleprompter] rotation appliquée automatiquement :", previewRotation, "patché :", fixedBlob !== blob);
+            if (fixedBlob === blob) {
+              // patchMp4Rotation renvoie le blob d'origine, inchangé, si la
+              // structure du fichier ne correspond pas à ce qu'il sait
+              // patcher (voir lib/mp4-rotate.ts) — jamais avancer en
+              // silence sur un fichier resté tourné sans le dire.
+              setAdvancing(false);
+              setOrientationNote(
+                "La correction automatique n'a pas pu s'appliquer sur ce fichier. Recommence cette prise."
+              );
+              return;
+            }
+            const fixedUrl = URL.createObjectURL(fixedBlob);
+            URL.revokeObjectURL(url);
+            setOrientationNote(null);
+            await saveVideoBlob(fixedBlob, fixedUrl);
+            setAdvancing(false);
+            onFinishedTake?.();
             return;
           }
           setOrientationNote(null);
@@ -631,43 +678,6 @@ export default function Teleprompter({
     setRecordedUrl(null);
     setOrientationNote(null);
     setSaveError(null);
-  }
-
-  // Confirme l'angle choisi dans l'aperçu (voir pendingRotation) : patche
-  // les métadonnées du fichier déjà enregistré (lib/mp4-rotate.ts, aucun
-  // réencodage) puis enchaîne exactement comme une prise réussie du premier
-  // coup — sauvegarde automatique, script suivant.
-  async function confirmRotationFix() {
-    if (!pendingRotation) return;
-    setAdvancing(true);
-    const { blob, url } = pendingRotation;
-    const fixedBlob = await patchMp4Rotation(blob, rotationDeg);
-    // patchMp4Rotation renvoie le blob d'ORIGINE, inchangé, sur toute
-    // structure de fichier inattendue (voir lib/mp4-rotate.ts — jamais de
-    // fichier corrompu en sortie). Sans ce contrôle, "C'est droit" aurait
-    // fait avancer silencieusement à la prochaine prise en laissant croire
-    // que la correction avait marché, alors que le fichier resterait
-    // tourné — un avertissement affiché juste avant que l'écran change de
-    // script (voir onFinishedTake) ne serait pratiquement jamais vu.
-    if (fixedBlob === blob) {
-      setAdvancing(false);
-      setPendingRotation(null);
-      setOrientationNote(
-        "La correction de rotation n'a pas pu s'appliquer sur ce fichier. Recommence cette prise."
-      );
-      return;
-    }
-    setPendingRotation(null);
-    const fixedUrl = URL.createObjectURL(fixedBlob);
-    URL.revokeObjectURL(url);
-    await saveVideoBlob(fixedBlob, fixedUrl);
-    setAdvancing(false);
-    onFinishedTake?.();
-  }
-
-  function cancelRotationFix() {
-    if (pendingRotation) URL.revokeObjectURL(pendingRotation.url);
-    setPendingRotation(null);
   }
 
   useEffect(() => {
@@ -879,70 +889,16 @@ export default function Teleprompter({
           <p className="text-[11px] text-amber-300 text-center mb-2">{orientationNote}</p>
         )}
 
-        {/* Retour direct 2026-09-18 : "ça me dit que c'est en paysage alors
-            que mon tel est à la verticale" — le contenu de la prise est bon,
-            juste tourné (aucune API web n'expose le sens de montage du
-            capteur pour deviner l'angle à corriger à l'aveugle, voir
-            lib/mp4-rotate.ts). Aperçu tourné + validation par la personne
-            elle-même, qui voit si c'est droit. */}
-        {pendingRotation && (
-          <div className="flex flex-col items-center gap-2.5 mb-3">
-            <p className="text-[11px] text-amber-300 text-center">
-              Cette prise est sortie tournée. Appuie sur « Tourner » jusqu&apos;à ce que l&apos;aperçu soit droit.
-            </p>
-            <div
-              style={{
-                width: 90, height: 160, overflow: "hidden", borderRadius: 10,
-                background: "#000", display: "flex", alignItems: "center", justifyContent: "center",
-                border: "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              <video
-                src={pendingRotation.url}
-                muted
-                playsInline
-                autoPlay
-                loop
-                style={{
-                  width: rotationDeg === 90 || rotationDeg === 270 ? 160 : 90,
-                  height: rotationDeg === 90 || rotationDeg === 270 ? 90 : 160,
-                  transform: `rotate(${rotationDeg}deg)`,
-                  objectFit: "cover",
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setRotationDeg((d) => ((d + 90) % 360) as 0 | 90 | 180 | 270)}
-                className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-xs font-bold px-3.5 py-2.5 rounded-xl"
-              >
-                <RotateCcw size={14} /> Tourner
-              </button>
-              <button
-                type="button"
-                onClick={confirmRotationFix}
-                className="flex items-center gap-1.5 bg-[#E01E1E] text-white text-xs font-black uppercase tracking-wide px-4 py-2.5 rounded-xl"
-              >
-                <Check size={14} /> C&apos;est droit
-              </button>
-            </div>
-            <button
-              type="button"
-              onClick={cancelRotationFix}
-              className="text-[10px] font-bold text-white/40 uppercase"
-            >
-              Recommencer cette prise à la place
-            </button>
-          </div>
-        )}
-
-        {/* Retour direct 2026-09-18 : plus de bouton "Enregistrer" — la
-            sauvegarde est toujours automatique dès l'arrêt (voir onstop).
-            États possibles ici : en train de vérifier/sauvegarder (spinner),
-            prise refusée par bandes noires (bouton "Recommencer"), prise
-            tournée (aperçu ci-dessus), ou prête à filmer (bouton rond). */}
-        {pendingRotation ? null : advancing ? (
+        {/* Retour direct 2026-09-18 ("toute étape manuelle de correction
+            doit disparaître") : plus d'écran "Tourner"/"C'est droit"
+            bloquant à chaque prise — la rotation détectée automatiquement
+            (voir onstop) est corrigée en silence avec l'angle déjà calibré
+            une fois via le bouton "Tourner" de la barre du haut. États
+            possibles ici : en train de vérifier/sauvegarder/corriger
+            (spinner), prise refusée (bandes noires ou correction
+            impossible, bouton "Recommencer"), ou prête à filmer (bouton
+            rond). */}
+        {advancing ? (
           <div className="flex justify-center items-center gap-2 mb-3 py-3">
             <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
             <span className="text-xs font-bold text-white/70 uppercase tracking-wide">
@@ -977,61 +933,51 @@ export default function Teleprompter({
           </div>
         )}
 
-        {/* Retour direct 2026-09-18 (capture d'écran) : ces réglages de
-            défilement n'ont aucune utilité pendant la vérification d'une
-            rotation (on ne filme plus, on regarde juste si c'est droit) et
-            n'ajoutaient que de l'encombrement au moment précis où il faut
-            le plus voir l'aperçu (texte en haut + caméra au milieu + tout
-            ça empilé en bas, exactement ce qui rendait l'écran surchargé). */}
-        {!pendingRotation && (
-          <>
-            <div className="flex items-center gap-3 mb-2">
-              <button
-                type="button"
-                onClick={() => setScrolling((v) => !v)}
-                className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex-shrink-0"
-              >
-                {scrolling ? <Pause size={13} /> : <Play size={13} />}
-                {scrolling ? "Pause" : "Défiler"}
-              </button>
-              <div className="flex-1 flex items-center gap-2">
-                <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">Vitesse</span>
-                <input
-                  type="range"
-                  min={5}
-                  max={120}
-                  step={5}
-                  value={speed}
-                  onChange={(e) => setSpeed(Number(e.target.value))}
-                  aria-label="Vitesse de défilement"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Type size={13} className="text-white/40 flex-shrink-0" />
-              <input
-                type="range"
-                min={16}
-                max={44}
-                step={2}
-                value={fontSize}
-                onChange={(e) => setFontSize(Number(e.target.value))}
-                aria-label="Taille du texte"
-                className="flex-1"
-              />
-              <button
-                type="button"
-                onClick={() => textScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-                className="text-[10px] font-bold text-white/50 uppercase flex-shrink-0"
-              >
-                ↑ Début
-              </button>
-            </div>
-            {trackInfo && (
-              <p className="text-[9px] text-white/25 text-center mt-2">{trackInfo}</p>
-            )}
-          </>
+        <div className="flex items-center gap-3 mb-2">
+          <button
+            type="button"
+            onClick={() => setScrolling((v) => !v)}
+            className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex-shrink-0"
+          >
+            {scrolling ? <Pause size={13} /> : <Play size={13} />}
+            {scrolling ? "Pause" : "Défiler"}
+          </button>
+          <div className="flex-1 flex items-center gap-2">
+            <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">Vitesse</span>
+            <input
+              type="range"
+              min={5}
+              max={120}
+              step={5}
+              value={speed}
+              onChange={(e) => setSpeed(Number(e.target.value))}
+              aria-label="Vitesse de défilement"
+              className="flex-1"
+            />
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Type size={13} className="text-white/40 flex-shrink-0" />
+          <input
+            type="range"
+            min={16}
+            max={44}
+            step={2}
+            value={fontSize}
+            onChange={(e) => setFontSize(Number(e.target.value))}
+            aria-label="Taille du texte"
+            className="flex-1"
+          />
+          <button
+            type="button"
+            onClick={() => textScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
+            className="text-[10px] font-bold text-white/50 uppercase flex-shrink-0"
+          >
+            ↑ Début
+          </button>
+        </div>
+        {trackInfo && (
+          <p className="text-[9px] text-white/25 text-center mt-2">{trackInfo}</p>
         )}
       </div>
     </div>
