@@ -569,16 +569,25 @@ export default function Teleprompter({
   const overlay = (
     <div className="fixed inset-0 z-[999] bg-black" style={{ touchAction: "none" }}>
       {/* Caméra en fond, plein écran — TOUJOURS montée (jamais démontée
-          conditionnellement sur `ready`), object-contain (jamais cover)
-          pour ne jamais rogner/zoomer l'image. C'est exactement CE flux,
-          sans aucun retraitement, qui est enregistré (voir saveVideoBlob
-          et le commentaire de tête). */}
+          conditionnellement sur `ready`). Retour direct 2026-09-18 : "je
+          veux l'image sur TOUT mon téléphone, pas juste au milieu" — le
+          flux caméra sur ce téléphone est réellement paysage (voir
+          lib/mp4-rotate.ts), et `object-contain` (posé à l'Axe EE contre un
+          "trop zoomé" sur l'ancien pipeline à base de canvas, entièrement
+          abandonné depuis) laisse justement ce rectangle paysage flotter au
+          centre avec des bandes noires autour au lieu de remplir l'écran.
+          `object-cover` remplit tout l'écran en rognant l'excédent sur les
+          côtés — exactement ce qui est demandé ici, pour l'APERÇU LIVE
+          seulement. Le fichier enregistré n'en dépend pas (voir
+          saveVideoBlob : il enregistre le flux brut, jamais ce qui est
+          affiché à l'écran) — son orientation/cadrage se règle par la
+          rotation confirmée dans l'aperçu "Tourner" après la prise. */}
       <video
         ref={videoRef}
         autoPlay
         muted
         playsInline
-        className="absolute inset-0 w-full h-full object-contain transition-opacity"
+        className="absolute inset-0 w-full h-full object-cover transition-opacity"
         style={{
           transform: facingMode === "user" ? "scaleX(-1)" : "none",
           opacity: ready && !cameraError ? 1 : 0,

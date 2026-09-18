@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { CONTENT_PLATFORMS, CONTENT_STATUSES, type ContentPlatform, type ContentStatus } from "@/lib/content-ideas";
 import { INSPIRATION_PLATFORMS, type InspirationPlatform, SCRIPT_FORMATS, type ScriptFormat, SCRIPT_STATUSES, type ScriptStatus } from "@/lib/coach-ideation";
 import { safeExternalUrl } from "@/lib/sanitize";
+import { getAllGuidesWithContent, type GuideMagnet } from "@/lib/lead-magnets";
 
 // Axe 2 (VISION.md) : espace de création de contenu du coach.
 
@@ -424,4 +425,18 @@ export async function deleteScript(
 
   revalidatePath("/dashboard/coach/studio");
   return { success: true };
+}
+
+// Perf (retour direct 2026-09-18 : "j'ai mis 30s pour aller sur le
+// prompteur") : app/dashboard/coach/studio/page.tsx chargeait le texte
+// intégral des 482 guides publiés (≈1,6 Mo de JSON, vérifié en base) à
+// CHAQUE visite de la page, alors que ce texte ne sert qu'au Générateur
+// (SocialGenerator), un seul onglet parmi cinq et pas forcément ouvert.
+// Déplacé ici : appelé par SocialGenerator.tsx à la demande, uniquement
+// la première fois que son onglet est ouvert, au lieu de faire transiter
+// ce poids sur TOUTE visite de Studio créatif (idées, scripts, notes...).
+export async function fetchGuidesForGenerator(): Promise<GuideMagnet[]> {
+  const guard = await requireCoach();
+  if (!guard.ok) return [];
+  return getAllGuidesWithContent();
 }

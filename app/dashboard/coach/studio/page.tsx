@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
-import { getAllGuidesWithContent } from "@/lib/lead-magnets";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
 import { getRealLeadsByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
@@ -22,22 +21,23 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, guides, canvas] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, canvas] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
     getCoachScripts(user.id),
-    // Audit egress 2026-09-16 : seul endroit qui a réellement besoin du
-    // texte intégral des guides (générateur de prompts SocialGenerator),
-    // donc seul appelant de getAllGuidesWithContent plutôt que
-    // getAllLeadMagnets (version liste, sans intro/sections/conclusion).
-    getAllGuidesWithContent(),
     // Personnalisation de l'onglet Prompts (retour direct 2026-09-10) : le
     // Business Model Canvas du coach (déjà rempli dans "Développer mon
     // business" pour qui l'a fait) sert de contexte auto-injecté devant
     // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
     getBusinessCanvas(user.id),
   ]);
+  // Le texte intégral des guides (générateur de prompts SocialGenerator,
+  // ≈1,6 Mo pour 482 guides publiés) n'est plus chargé ici — voir
+  // fetchGuidesForGenerator dans actions.ts, appelé à la demande par
+  // SocialGenerator.tsx seulement quand son onglet est réellement ouvert.
+  // Retour direct 2026-09-18 : "j'ai mis 30s pour aller sur le prompteur",
+  // cette page transportait ce poids sur CHAQUE visite de Studio créatif.
   // Dépend de `scripts` (résout leur source_reference), donc après le
   // Promise.all ci-dessus plutôt que dans le même lot.
   const realLeadsByScriptId = await getRealLeadsByScriptId(scripts);
@@ -60,7 +60,6 @@ export default async function CoachStudioPage() {
         initialNotes={notes}
         initialInspirations={inspirations}
         initialScripts={scripts}
-        guides={guides}
         canvas={canvas}
         realLeadsByScriptId={realLeadsByScriptId}
       />

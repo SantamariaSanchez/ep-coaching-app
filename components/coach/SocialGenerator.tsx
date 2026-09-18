@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Check, Wand2 } from "lucide-react";
 import type { GuideMagnet } from "@/lib/lead-magnets";
+import { fetchGuidesForGenerator } from "@/app/dashboard/coach/studio/actions";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60";
@@ -144,8 +145,28 @@ Sujet : ${sujet || "(à préciser)"}
 Angle : ${angle || "(à préciser)"}`;
 }
 
-export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
-  const [slug, setSlug] = useState(guides[0]?.slug ?? "");
+// Retour direct 2026-09-18 ("j'ai mis 30s pour aller sur le prompteur") :
+// le texte intégral des guides (≈1,6 Mo pour 482 guides publiés) ne
+// transite plus par la page serveur (voir studio/page.tsx) — chargé ici à
+// la demande, uniquement une fois cet onglet réellement ouvert (`active`
+// passe à `true`, voir IdeationHub.tsx), jamais au chargement de Studio
+// créatif dans son ensemble.
+export default function SocialGenerator({ active }: { active: boolean }) {
+  const [guides, setGuides] = useState<GuideMagnet[] | null>(null);
+  const fetchStarted = useRef(false);
+
+  useEffect(() => {
+    if (!active || fetchStarted.current) return;
+    fetchStarted.current = true;
+    void fetchGuidesForGenerator().then(setGuides);
+  }, [active]);
+
+  // "" tant qu'aucun choix explicite n'a été fait dans le <select> — le
+  // premier guide chargé sert alors de valeur par défaut, calculé au rendu
+  // (effectiveSlug ci-dessous) plutôt que synchronisé depuis un effet une
+  // fois les guides arrivés (guides est chargé après le premier rendu,
+  // contrairement à l'ancienne version qui les recevait déjà en prop).
+  const [slug, setSlug] = useState("");
   const [sujet, setSujet] = useState("");
   const [angle, setAngle] = useState("");
   const [copied, setCopied] = useState(false);
@@ -157,7 +178,8 @@ export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
     setPlatformIds((prev) => (prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id]));
   }
 
-  const selected = guides.find((g) => g.slug === slug) ?? guides[0] ?? null;
+  const effectiveSlug = slug || guides?.[0]?.slug || "";
+  const selected = (guides ?? []).find((g) => g.slug === effectiveSlug) ?? guides?.[0] ?? null;
   const prompt = useMemo(
     () => (selected ? buildPrompt(selected, sujet, angle, platformIds) : ""),
     [selected, sujet, angle, platformIds]
@@ -169,6 +191,15 @@ export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
     } catch {}
+  }
+
+  if (guides === null) {
+    return (
+      <div className="flex items-center gap-2 text-[12px] text-[#F5EDED]/40">
+        <div className="w-3.5 h-3.5 border-2 border-[#E01E1E]/40 border-t-[#E01E1E] rounded-full animate-spin" />
+        Chargement des guides...
+      </div>
+    );
   }
 
   if (guides.length === 0) {
@@ -189,7 +220,7 @@ export default function SocialGenerator({ guides }: { guides: GuideMagnet[] }) {
 
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4 space-y-2.5">
         <select
-          value={slug}
+          value={effectiveSlug}
           onChange={(e) => setSlug(e.target.value)}
           aria-label="Guide déjà publié"
           className={inputCls}

@@ -9,7 +9,6 @@ import IdeationScripts from "@/components/coach/IdeationScripts";
 import SocialGenerator from "@/components/coach/SocialGenerator";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
-import type { GuideMagnet } from "@/lib/lead-magnets";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { SlugLeadCounts } from "@/lib/content-leads-tracking";
 
@@ -38,7 +37,6 @@ export default function IdeationHub({
   initialNotes,
   initialInspirations,
   initialScripts,
-  guides,
   canvas,
   realLeadsByScriptId,
 }: {
@@ -46,11 +44,19 @@ export default function IdeationHub({
   initialNotes: IdeationNote[];
   initialInspirations: Inspiration[];
   initialScripts: CoachScript[];
-  guides: GuideMagnet[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
 }) {
   const [tab, setTab] = useState<Tab>("idees");
+  // Perf (retour direct 2026-09-18, voir studio/page.tsx et
+  // SocialGenerator.tsx) : le texte intégral des guides ne se charge plus
+  // qu'à la demande, la première fois que cet onglet est réellement ouvert
+  // — jamais au chargement de la page. Reste vrai (`true`, jamais retiré)
+  // une fois passé à `true`, pour ne déclencher qu'un seul chargement même
+  // si on quitte puis revient sur l'onglet (même doctrine que le montage
+  // permanent des 5 sous-espaces ci-dessous : ne jamais perdre un état déjà
+  // acquis).
+  const [hasOpenedGenerator, setHasOpenedGenerator] = useState(false);
 
   return (
     <div>
@@ -67,7 +73,10 @@ export default function IdeationHub({
               type="button"
               role="tab"
               aria-selected={active}
-              onClick={() => setTab(id)}
+              onClick={() => {
+                setTab(id);
+                if (id === "generateur") setHasOpenedGenerator(true);
+              }}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-t-lg text-[12.5px] font-extrabold whitespace-nowrap flex-shrink-0 transition-colors"
               style={{
                 border: "none",
@@ -101,7 +110,7 @@ export default function IdeationHub({
         <ContentStudio initialIdeas={initialIdeas} />
       </div>
       <div hidden={tab !== "generateur"}>
-        <SocialGenerator guides={guides} />
+        <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
         <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} />
