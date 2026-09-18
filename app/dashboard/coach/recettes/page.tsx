@@ -7,9 +7,15 @@ import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe } from "@/app/dashboard/client/recettes/actions";
 import { createCustomFood } from "@/app/dashboard/client/nutrition/actions";
 
-export default async function CoachRecettesPage() {
+export default async function CoachRecettesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const user = await getUser();
   if (!user) redirect("/");
+
+  const { q } = await searchParams;
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/recettes");
@@ -45,6 +51,7 @@ export default async function CoachRecettesPage() {
         createCustomFood={createCustomFood}
         presetDiet={intake?.diet_type ?? null}
         presetAllergens={intake ? intake.allergens : null}
+        initialSearch={q}
       />
     </div>
   );

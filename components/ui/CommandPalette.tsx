@@ -18,7 +18,7 @@ interface ClientResult {
 interface LibraryResult {
   key: string;
   label: string;
-  category: "Aliment" | "Exercice" | "Salle" | "Science" | "Ressource";
+  category: "Aliment" | "Exercice" | "Salle" | "Science" | "Ressource" | "Recette";
 }
 
 interface Result {
@@ -46,6 +46,11 @@ function libraryHref(result: LibraryResult, isCoach: boolean): string {
       return `${base}/science/recherche`;
     case "Ressource":
       return `/ressources/${result.key.replace(/^lm-/, "")}`;
+    // Les recettes n'ont pas de page dédiée par id (voir components/recipes/
+    // RecipesClient.tsx) : ?q= pré-remplit sa propre barre de recherche
+    // interne, qui filtre par nom exact et ouvre directement la fiche.
+    case "Recette":
+      return `${base}/recettes?q=${encodeURIComponent(result.label)}`;
   }
 }
 

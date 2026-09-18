@@ -438,6 +438,7 @@ export default function RecipesClient({
   presetAllergens,
   recommendedPhase,
   checkGenerationQuota,
+  initialSearch,
 }: {
   communityRecipes: CommunityRecipe[];
   foods: Food[];
@@ -478,6 +479,11 @@ export default function RecipesClient({
   // à faire remonter les recettes pertinentes pour le client, jamais utilisé
   // côté coach qui parcourt le catalogue pour plusieurs clients différents.
   recommendedPhase?: Phase | null;
+  // Arrivée depuis la palette de commande (?q=, voir CommandPalette.tsx
+  // libraryHref) : pré-remplit la recherche interne pour sauter directement
+  // à la recette visée plutôt que d'atterrir sur le catalogue complet non
+  // filtré.
+  initialSearch?: string;
 }) {
   const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
   const recipesUnlocked = isCoach || hasUnlocked("exclusive_recipes", points, isSubscribed);
@@ -505,12 +511,13 @@ export default function RecipesClient({
   const [foods, setFoods] = useState<Food[]>(initialFoods);
   const [tab, setTab] = useState<"bibliotheque" | "creer">("bibliotheque");
   const [showAddForm, setShowAddForm] = useState(false);
-  const [recipes, setRecipes] = useState<DisplayRecipe[]>([
+  const initialRecipes: DisplayRecipe[] = [
     ...communityRecipes.map(communityToDisplay),
     ...RECIPES.map(toDisplay),
-  ]);
+  ];
+  const [recipes, setRecipes] = useState<DisplayRecipe[]>(initialRecipes);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch ?? "");
   const [meals, setMeals] = useState<Set<MealType>>(new Set());
   const [diets, setDiets] = useState<Set<Diet>>(new Set());
   const [phases, setPhases] = useState<Set<Phase>>(new Set());
@@ -524,7 +531,13 @@ export default function RecipesClient({
   // stocké ici comme string ("1"|"2"|"3") et reconverti au moment du
   // filtre plutôt que d'élargir la contrainte du composant partagé.
   const [budgets, setBudgets] = useState<Set<"1" | "2" | "3">>(new Set());
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  // Arrivée depuis la palette de commande : ouvre directement la fiche visée
+  // plutôt que de se contenter de filtrer la liste dessus.
+  const [expandedId, setExpandedId] = useState<string | null>(() => {
+    if (!initialSearch) return null;
+    const q = initialSearch.trim().toLowerCase();
+    return initialRecipes.find((r) => r.name.toLowerCase() === q)?.id ?? null;
+  });
   const [showFilters, setShowFilters] = useState(false);
 
   function toggleSet<T>(setter: React.Dispatch<React.SetStateAction<Set<T>>>, value: T) {

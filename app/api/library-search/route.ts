@@ -5,6 +5,8 @@ import { getExerciseLibrary } from "@/utils/exercise-library";
 import { getGymsWithReviews } from "@/utils/gyms";
 import { getScienceArticles } from "@/utils/science";
 import { searchLeadMagnets } from "@/lib/lead-magnets";
+import { RECIPES } from "@/lib/recipes-data";
+import { getCommunityRecipes } from "@/utils/community-recipes";
 import { cleanText, LIMITS } from "@/lib/sanitize";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { fuzzyMatch } from "@/lib/fuzzy-search";
@@ -22,7 +24,7 @@ import { fuzzyMatch } from "@/lib/fuzzy-search";
 export interface LibrarySearchResult {
   key: string;
   label: string;
-  category: "Aliment" | "Exercice" | "Salle" | "Science" | "Ressource";
+  category: "Aliment" | "Exercice" | "Salle" | "Science" | "Ressource" | "Recette";
 }
 
 export async function GET(req: Request) {
@@ -40,13 +42,25 @@ export async function GET(req: Request) {
   const q = cleanText(searchParams.get("q"), LIMITS.searchQuery)?.toLowerCase().trim();
   if (!q || q.length < 2) return NextResponse.json({ results: [] });
 
-  const [foods, exercises, gyms, articles, leadMagnets] = await Promise.all([
+  const [foods, exercises, gyms, articles, leadMagnets, communityRecipes] = await Promise.all([
     getAllFoods(),
     getExerciseLibrary(),
     getGymsWithReviews(),
     getScienceArticles(),
     searchLeadMagnets({ query: q, limit: 5 }),
+    getCommunityRecipes(),
   ]);
+  // Recettes (item 38 étendu, 2026-09-18) : RECIPES (bibliothèque figée,
+  // lib/recipes-data.ts) + les recettes communauté déjà chargées via
+  // getCommunityRecipes ci-dessus — la plus grosse bibliothèque de contenu
+  // de l'appli (10 500+ lignes), jusqu'ici absente de cette recherche unique
+  // alors que les 5 autres catégories y sont. Recettes exclusives incluses
+  // telles quelles : la page /recettes les affiche déjà verrouillées plutôt
+  // que masquées, même logique ici.
+  const recipes = [
+    ...RECIPES.map((r) => ({ id: r.id, name: r.name })),
+    ...communityRecipes.map((r) => ({ id: r.id, name: r.name })),
+  ];
 
   // Retour direct 2026-09-16 : "qu'on trouve même si c'est mal écrit ou
   // approximatif" — fuzzyMatch tolère une faute de frappe/lettre manquante
@@ -69,6 +83,10 @@ export async function GET(req: Request) {
       .slice(0, 5)
       .map((a) => ({ key: `sci-${a.id}`, label: a.title_fr ?? a.title, category: "Science" as const })),
     ...leadMagnets.items.map((m) => ({ key: `lm-${m.slug}`, label: m.title, category: "Ressource" as const })),
+    ...recipes
+      .filter((r) => fuzzyMatch(r.name, q))
+      .slice(0, 5)
+      .map((r) => ({ key: `recipe-${r.id}`, label: r.name, category: "Recette" as const })),
   ];
 
   return NextResponse.json({ results: results.slice(0, 16) });

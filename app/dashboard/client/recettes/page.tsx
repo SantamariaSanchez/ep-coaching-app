@@ -9,9 +9,15 @@ import RecipesClient from "@/components/recipes/RecipesClient";
 import { createCommunityRecipe, deleteCommunityRecipe, checkRecipeGenerationQuota } from "./actions";
 import { createCustomFood, addFoodLog } from "@/app/dashboard/client/nutrition/actions";
 
-export default async function ClientRecettesPage() {
+export default async function ClientRecettesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const user = await getUser();
   if (!user) redirect("/");
+
+  const { q } = await searchParams;
 
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/recettes");
@@ -52,6 +58,7 @@ export default async function ClientRecettesPage() {
         presetDiet={intake?.diet_type ?? null}
         presetAllergens={intake ? intake.allergens : null}
         recommendedPhase={goalToPhase(profile?.goal)}
+        initialSearch={q}
       />
     </div>
   );
