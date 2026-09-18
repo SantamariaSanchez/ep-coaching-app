@@ -6902,3 +6902,85 @@ mise à jour pour :
 Mise à jour confirmée par la réponse de l'API `RemoteTrigger` (prompt
 relu intégralement après update). `tsc --noEmit` et `eslint` propres sur
 les fichiers app touchés.
+
+## EI — Appels de vente invisible sur mobile + bibliothèque de closing (2026-09-18)
+
+Retour direct : "sur l'ordi y'a l'onglet appel de vente mais sur mon tel
+il y est pas". Cause réelle : `mobileSubItems` (bande de sous-onglets
+mobile, `DashboardNav.tsx`) ne montre que les items sidebar dont le
+segment matche l'onglet du bas actif — "Appels de vente" (segment
+`admin/ventes`, groupe sidebar "Mon business") n'était revendiqué par
+AUCUN onglet, alors que le desktop affiche la sidebar complète sans ce
+filtre (bug 100% mobile, invisible en test desktop). Ajouté aux
+`matchSegments` de l'onglet "Contenu", qui porte déjà le reste du
+groupe "Mon business" (business, studio, masterclass, documents...).
+
+Contenu ajouté (retour direct : "met du contenu et plein de question à
+poser selon les situations, des vrai contenu dédié au closing, question
+par question, pas mot pour mot") : nouvelle bibliothèque statique
+`lib/sales-call-library.ts` (même convention que `lib/content-library.ts`,
+pas de table Supabase), 8 catégories (ouverture, découverte, objectif,
+urgence, qualification, transition offre, objections courantes,
+closing, relance) — chaque question avec une note sur quand/pourquoi
+l'utiliser. Rendue via `SalesCallScripts.tsx` (recherche + filtre par
+catégorie), accessible via un nouvel onglet `SalesCallTabs.tsx` à côté
+du tableau de suivi existant.
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres.
+
+## EJ — Studio créatif : espace des scripts optimisé (2026-09-18)
+
+Retour direct : "les script tu vois faut défiler défiler donc corrige,
+mets un plus petit espace et le texte défile que dans cet espace... et
+les description ça sert à rien que j'aie une vue dessus, fait
+apparaître seulement 1 ligne c'est suffisant". Deux blocs de
+`IdeationScripts.tsx` :
+- **Script (mot pour mot)** : hauteur plafonnée à 33vh avec défilement
+  interne (`overflowY: auto`) au lieu de grandir sans limite et
+  allonger toute la page pour un script long.
+- **Description Instagram/YouTube** : aperçu réduit à 1 ligne tronquée
+  (`whiteSpace: nowrap`, `textOverflow: ellipsis`) au lieu du texte
+  complet affiché en permanence — clique toujours pour l'ouvrir en
+  entier, comportement d'édition inchangé.
+
+### Validation
+
+`tsc --noEmit` propre.
+
+## EK — Prompteur, repasse finale : canvas hors-DOM, position du texte, sauvegarde galerie (2026-09-18)
+
+Retour direct après un nouveau test réel : "tout est parfait sauf le
+format qui est en paysage" (persistant malgré le correctif cover→contain
+de l'Axe EE) et "le texte mets-le pas au milieu mais en haut", puis
+"fais attention que ça s'enregistre bien dans ma galerie, le bon type
+de fichier, aucun bug".
+
+**Format toujours en paysage, cause réelle trouvée** : le canvas
+d'enregistrement était créé via `document.createElement("canvas")`,
+donc jamais attaché au DOM. `HTMLCanvasElement.captureStream()` sur un
+canvas détaché est connu pour se comporter de façon peu fiable sur
+certains moteurs mobiles (Safari/WebKit en tête), qui peuvent lui
+donner une taille par défaut au lieu de respecter `canvas.width`/
+`canvas.height` réellement définis dans le code. Corrigé avec un vrai
+`<canvas>` monté dans le JSX (masqué par opacité à 0, jamais
+`display:none` qui peut couper le rendu sur certains moteurs).
+
+**Position du texte** : bande déplacée du centre (36%-58%) vers le haut
+de l'écran, juste sous la barre de contrôles.
+
+**Sauvegarde galerie** : `<a download>` sur un `blob:` URL ouvre souvent
+juste la vidéo dans un lecteur sur mobile (surtout iOS Safari, aucune
+vraie intégration "Enregistrer dans Photos" par ce chemin) au lieu de
+l'enregistrer réellement. Web Share API (`navigator.share` avec
+`files`) utilisée en priorité désormais : ouvre la feuille de partage
+native, qui propose "Enregistrer la vidéo"/"dans Photos" de façon
+fiable sur iOS ET Android. Repli sur le téléchargement classique
+(élément `<a>` créé par script) si `navigator.canShare` ne supporte pas
+les fichiers (desktop notamment, où télécharger dans le dossier
+Téléchargements est le comportement normal de toute façon).
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres.
