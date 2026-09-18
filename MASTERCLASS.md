@@ -7100,3 +7100,39 @@ demande explicite de garder l'outil "simple d'utilisation".
 sur le téléphone de Santamaria (aucun accès à un appareil réel depuis
 cet environnement) — la note d'orientation reste affichée en filet de
 sécurité si un cas imprévu subsiste malgré ce changement d'architecture.
+
+## EO — Prompteur : bandes noires en haut/bas du fichier enregistré (2026-09-18)
+
+Retour direct, précision importante après l'abandon du canvas (Axe EN) :
+"c'est encore en paysage" puis reformulé plus précisément "j'ai
+l'impression que le format est bon, mais c'est juste que en haut et en
+bas c'est noir, y'a des bandes noires qui cachent le reste de la
+vidéo". Diagnostic différent du paysage pur : le conteneur du fichier
+est bien portrait, mais l'image à l'intérieur est plus petite (des
+bandes noires comblent le haut/bas), signe que le capteur caméra donne
+une image plus large que haute (paysage) et que le navigateur la place
+dans le cadre portrait demandé par AJOUT DE BANDES plutôt que par
+recadrage — comportement par défaut sans autorisation explicite de
+recadrer.
+
+**Corrigé** : ajout de `resizeMode: "crop-and-scale"` à la contrainte
+vidéo de `getUserMedia`. C'est la contrainte standard du spec Media
+Capture qui autorise justement le navigateur à recadrer l'image native
+du capteur pour correspondre à la résolution demandée, plutôt que de la
+faire tenir en ajoutant des bandes. Pas encore présente dans les types
+TypeScript du DOM utilisés par le projet, castée en `any` pour passer
+outre, mais bien supportée par les navigateurs qui l'implémentent
+(Chrome notamment).
+
+Point annexe clarifié avec Santamaria dans cet échange : son appli
+installée sur son téléphone reste, techniquement, la même stack web
+(Next.js/PWA) qu'un site — "application mobile" de son point de vue
+(installée, plein écran, icône sur l'écran d'accueil) ne change rien à
+la limite structurelle déjà expliquée à l'Axe EN (impossible de
+s'afficher par-dessus une autre appli, camera native comprise).
+
+### Validation
+
+`tsc --noEmit` et `eslint` propres. Comme pour les repasses précédentes
+sur ce chantier, reste à confirmer par un vrai test sur le téléphone de
+Santamaria (aucun accès à un appareil réel depuis cet environnement).
