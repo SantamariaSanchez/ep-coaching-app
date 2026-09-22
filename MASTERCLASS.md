@@ -7824,3 +7824,55 @@ code vérifié par `tsc --noEmit`, `eslint`, `next build` (tous verts)
 avant commit/push. Routine cloud mise à jour vérifiée par relecture du
 `get`/`update` renvoyé (prochain run 2026-09-23 4h Paris, `platform='facebook'`
 confirmé dans le prompt stocké).
+
+## FC — Agenda remonté dans la nav mobile, nettoyage d'un diagnostic nutrition oublié (2026-09-22)
+
+Retour direct : "organise les choses pour que les choses importantes
+soient simples d'accès et pas trop d'aller-retour, du genre l'agenda
+c'est important alors en max 2 clics à accéder" + "nutrition je veux
+pouvoir tracker mes calories enfin".
+
+**Nutrition — vérifié avant de conclure à un bug** : `food_logs` contient
+déjà un vrai historique complet (calories/macros, `diet_plan_meal_id`,
+export CSV) et une requête directe sur le compte de Santamaria
+(`client_id = 845b826a-...`) montre une journée entière loguée avec
+succès le 2026-09-14 (20 lignes, aucun doublon par `diet_plan_meal_id`)
+— le correctif de fond du "ça reste plus coché" (migration `20260910c`,
+matching par `diet_plan_meal_id` exact) a donc bien tenu. Rien logué
+depuis 8 jours, mais aucune trace d'un nouveau bug ; simple nettoyage
+fait : `app/dashboard/coach/moi/nutrition/page.tsx` gardait un
+`console.log` de diagnostic temporaire renvoyant vers un "MASTERCLASS.md
+Axe BX" qui n'a jamais existé sous ce nom — retiré.
+
+**Navigation — cause réelle du "ça a l'air caché" trouvée** : l'Agenda
+existe déjà en 2 taps (onglet Moi/Suivi → pastille Agenda), mais cette
+pastille était 7e sur 12 côté coach et 4e sur 9 côté client dans
+`components/ui/DashboardNav.tsx` — hors écran sur mobile, nécessitant un
+scroll horizontal dans la bande de sous-onglets pour la voir. Compter les
+clics ne suffisait pas : la vraie friction était qu'il fallait d'abord
+scroller pour la repérer. Fix : Agenda remonté en 3e position (juste
+après Bilan et Nutrition) dans `COACH_SIDEBAR["Mon Suivi"]` et
+`CLIENT_SIDEBAR["Suivi"]` — `mobileSubItems` (la bande de pastilles)
+respecte l'ordre de ces tableaux, donc ce seul changement la rend
+visible sans scroll pour les deux rôles.
+
+**Pas traité ici, périmètre plus large** : les autres sections repérées
+comme enfouies à 2 taps + scroll (Studio créatif, Messagerie coach,
+Modèles/Mailing, Masterclass/Compta...) n'ont pas été remontées — l'ajustement
+ci-dessus cible spécifiquement l'exemple donné ("l'agenda"), pas une
+refonte complète de la hiérarchie de nav, qui reste à faire si Santamaria
+la demande explicitement pour d'autres sections précises.
+
+**Prompteur** : aucun nouveau symptôme concret fourni cette fois-ci (pas
+de capture d'écran ni de description de bug). Le dernier axe du chantier
+prompteur (EZ, 2026-09-18) reste correct techniquement (`tsc`/`eslint`/
+`build` verts) mais listait déjà un point ouvert non lié au code : la
+confirmation visuelle sur le téléphone réel que la rotation par défaut à
+0° est la bonne valeur. Rien de nouveau à corriger sans un symptôme
+concret — le bouton "Tourner" reste le filet de sécurité en attendant.
+
+### Validation
+
+`food_logs` interrogé directement (pas supposé) pour confirmer l'absence
+de bug de doublon. `tsc --noEmit`, `eslint`, `next build` propres sur
+les deux fichiers modifiés avant commit/push.

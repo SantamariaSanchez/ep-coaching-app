@@ -274,6 +274,14 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Bilan & progression", icon: ClipboardCheck, segment: "moi/bilan" },
       { label: "Nutrition",      icon: Apple,          segment: "moi/nutrition" },
+      // Remonté ici (retour direct 2026-09-22 : "l'agenda c'est important
+      // alors en max 2 clics à accéder") — en 7e position sur 12, la
+      // pastille "Agenda" tombait hors de l'écran mobile et n'était
+      // atteignable qu'en faisant défiler la bande de sous-onglets
+      // horizontalement, ce qui la rendait perçue comme cachée même si
+      // techniquement accessible en 2 taps. 3e position = visible d'emblée,
+      // juste après Bilan et Nutrition, sans scroll.
+      { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
       // Manquait entièrement (trouvé en audit 2026-08-19) : un coach était
@@ -282,7 +290,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // pour un coach). Voir app/dashboard/coach/moi/formations/page.tsx.
       { label: "Formations",     icon: GraduationCap,  segment: "moi/formations" },
       { label: "Road Map",       icon: Map,            segment: "moi/roadmap" },
-      { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
       { label: "Steps",          icon: Footprints,     segment: "moi/steps" },
       { label: "Sommeil",        icon: Watch,          segment: "moi/tracking" },
       { label: "Photos",         icon: Image,          segment: "moi/photos" },
@@ -321,8 +328,11 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Bilan & progression", icon: ClipboardCheck, segment: "bilan" },
       { label: "Nutrition",      icon: Apple,           segment: "nutrition" },
-      { label: "Road Map",       icon: Map,             segment: "roadmap" },
+      // Remonté ici (retour direct 2026-09-22 : "l'agenda c'est important
+      // alors en max 2 clics à accéder") — même correctif que côté coach
+      // ci-dessus : 4e pastille sur 9 = hors écran, scroll nécessaire.
       { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },
+      { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Steps",          icon: Footprints,      segment: "steps" },
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
       { label: "Photos",         icon: Image,           segment: "photos" },
