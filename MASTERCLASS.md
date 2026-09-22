@@ -7762,3 +7762,65 @@ Vérifié par les données réelles des deux plateformes (région Supabase
 via `get_project`, région de déploiement AVANT et APRÈS via
 `get_deployment`), pas supposé. Reste à confirmer par le ressenti réel
 de Santamaria sur son téléphone une fois ce déploiement propagé.
+
+## FB — Routines cloud mortes 3 jours (quota hebdo) + bascule Studio créatif Facebook (2026-09-22)
+
+Retour direct : "les scripts Insta actuels, les gens s'en foutent" +
+"on s'est encore fait bannir le Insta donc on a encore Facebook, donc
+travaille sur ça les scripts." Avant de réécrire quoi que ce soit,
+vérification par les données réelles plutôt que par supposition.
+
+**Découverte n°1 — confirmée, pas supposée** : `mcp__Windsor.ai__get_data`
+sur le connecteur `instagram` renvoie
+`"Instagram Error validating access token: Session key is malformed
+because of invalid user id"` — le bannissement est réel au niveau API,
+pas juste une restriction d'interface.
+
+**Découverte n°2, bien plus grave, trouvée en creusant pourquoi les
+scripts actuels semblaient stagnants** : `RemoteTrigger.list_runs` +
+`get_run_log` sur TOUTES les routines cloud (scripts reels, YouTube,
+carrousel Instagram, etc.) montre que chaque run depuis le
+**2026-09-19** échoue en ~5 secondes avec
+`rate_limit: rejected (seven_day)` — le compte a atteint son quota
+d'usage hebdomadaire, et ÇA BLOQUE SILENCIEUSEMENT TOUTES LES ROUTINES
+CLOUD DE L'ÉCOSYSTÈME depuis 3 jours, sans notification d'erreur.
+Reset automatique constaté à 2026-09-22 12:00 UTC (14h Paris) — rien à
+corriger côté code, mais explique directement la plainte : la page
+Notion "🎬 Guide production scripts reels" a reçu deux vraies mises à
+jour de fond (Règle n°8 le 2026-09-16, Règles n°9/10/11 le 2026-09-17)
+demandant explicitement zéro ton "étude", voix brute, priorité
+objectif client — mais la routine n'a tourné sous ces nouvelles règles
+que 2 jours (17 et 18) avant de tomber silencieusement en panne. Ce que
+Santamaria voit dans Studio créatif est donc ce lot de 2 jours, pas 3
+jours d'itération continue comme il le croyait.
+
+**Fix appliqué** :
+1. `components/coach/IdeationScripts.tsx` (`PLATFORM_LABELS` +défaut de
+   création) : ajout du badge "Facebook Reel", défaut de plateforme
+   changé de `instagram` à `facebook` (Instagram reste choisissable).
+2. Routine cloud `trig_015b99vqWhJxcFnWkFjYZ2i1` ("Production
+   quotidienne de scripts Studio creatif", 5 scripts/jour) : prompt mis
+   à jour pour insérer `platform='facebook'` au lieu de `'instagram'`,
+   et retirer le handle `@santamariasanchez_` de l'ouverture de
+   `instagram_caption` (compte banni, ne pas y renvoyer) — remplacé par
+   une formulation générique sans handle tant que le vrai handle
+   Facebook n'est pas fourni par Santamaria (jamais inventé, Règle n°1
+   du guide). Reste du guide (structure, CTA numéroté, ton Règles
+   n°9/10/11) inchangé, s'applique pareil à Facebook.
+
+**Pas encore fait, à décider avec Santamaria** : la routine carrousel
+Instagram (`trig_01NoBBHCKsRN7iRUVgzTbbRs`, `platform='instagram_carrousel'`)
+tourne sous le même compte Instagram banni et n'a pas été basculée —
+signalé, pas modifié unilatéralement, faute de savoir s'il veut aussi
+un équivalent carrousel Facebook. Le vrai handle/nom de la Page
+Facebook manque aussi pour compléter `instagram_caption` correctement.
+
+### Validation
+
+Panne confirmée par les logs réels de `get_run_log` sur plusieurs
+routines et plusieurs jours (pas une supposition), reset du quota
+confirmé par le timestamp `resets_at` renvoyé par l'API. Changement de
+code vérifié par `tsc --noEmit`, `eslint`, `next build` (tous verts)
+avant commit/push. Routine cloud mise à jour vérifiée par relecture du
+`get`/`update` renvoyé (prochain run 2026-09-23 4h Paris, `platform='facebook'`
+confirmé dans le prompt stocké).
