@@ -7876,3 +7876,57 @@ concret — le bouton "Tourner" reste le filet de sécurité en attendant.
 `food_logs` interrogé directement (pas supposé) pour confirmer l'absence
 de bug de doublon. `tsc --noEmit`, `eslint`, `next build` propres sur
 les deux fichiers modifiés avant commit/push.
+
+## FD — Accessoires de séance enfin remplis (0 → 658 exercices), 13 pages sans `loading.tsx` (2026-09-22)
+
+**Accessoires** : retour direct, 5e fois sur ce sujet ("les accessoires
+des séances c'est toujours faux"), avec cette fois la vraie liste
+correcte donnée directement par muscle/split (push, pull, legs+épaule,
+upper, legs+biceps). Avant de corriger, vérifié en base plutôt que
+supposé : `select muscle_group, accessories, count(*) from
+exercise_library group by muscle_group, accessories` montre que 95%+
+des 658 exercices avaient `accessories = []` — le vrai problème n'était
+pas "le mauvais accessoire", c'était l'absence quasi totale de données,
+depuis que le code a délibérément arrêté la devinette par mots-clés
+(retour du 2026-09-10, voir `lib/session-accessories.ts`) sans que le
+remplissage manuel promis (`exercise_library.accessories`) ne suive.
+
+**Fix** : `update exercise_library set accessories = ... where
+muscle_group in (...)` par groupe musculaire, en union quand un groupe
+apparaît sous deux libellés de split différents (ex. Épaules apparaît en
+"push" ET en "legs+épaule" avec des accessoires légèrement différents,
+union des deux plutôt que de trancher au hasard entre deux réponses
+également données par Santamaria). `accessoriesForSession` plafonne déjà
+l'affichage à 3 par séance, donc une union un peu large ne pollue pas
+l'écran. Nouvel accessoire "Sangle en 8" ajouté à `ACCESSORY_CATALOG`
+(vérifié sur 0rir-shop.com : n'existe pas dans les 7 produits du
+catalogue, url laissée vide plutôt qu'inventée, comme Trépied/Shaker).
+Muscle groups non mentionnés par Santamaria (Abdominaux, Adducteurs,
+Avant-bras, Full Body/Cardio) volontairement pas touchés.
+
+**Navigation/fluidité** : demande explicite d'y passer du temps. Audit
+plutôt que supposition : `find app/dashboard -name page.tsx` croisé avec
+la présence d'un `loading.tsx` sibling montre 13 routes sans leur propre
+squelette de chargement (dont ma propre page Pilotage de ce même jour,
+oubliée). Vérifié ensuite que chacune a bien un ancestor `loading.tsx`
+(donc pas un écran figé, juste un squelette générique au lieu d'un
+squelette dédié) avant de conclure — pas un bug bloquant, mais une vraie
+incohérence avec les 55 autres routes déjà couvertes individuellement.
+Les 13 comblées avec le même `<PageSkeleton />` que partout ailleurs.
+
+**Déjà en place, vérifié plutôt que refait** : prefetch borné (tabs +
+sous-onglets de l'onglet actif, historique Axe du 2026-09-16/18),
+retour tactile visuel immédiat au tap (`.ep-nav-tab:active`,
+`.ep-nav-link:active`, déjà scale(0.90)/scale(0.97)), durée de
+transition de page déjà réduite à 200ms (historique 500ms→350ms→200ms).
+Rien de cassé trouvé sur ces trois points après audit, donc rien
+retouché : le vrai gisement restant était les 13 `loading.tsx`
+manquants, pas une régression sur l'existant.
+
+### Validation
+
+Comptage réel en base avant/après pour les accessoires (0 → couverture
+complète par groupe musculaire concerné). `find` réel (pas une
+supposition) pour les 13 `loading.tsx`, avec vérification de l'ancestor
+avant de qualifier chacun de "manquant". `tsc --noEmit`, `eslint`,
+`next build` propres avant commit/push.

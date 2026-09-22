@@ -84,6 +84,18 @@ export const ACCESSORY_CATALOG: { accessory: string; reason: string; url: string
     reason: "Épaissit la prise pour cibler l'avant-bras, l'inverse de Prime Straps qui l'enlève de l'équation",
     url: "https://fatgripz.com/",
   },
+  // Retour direct 2026-09-22 : liste corrigée par split réel (push, pull,
+  // legs+épaule, upper, legs+biceps) plutôt que par mot-clé d'exercice. La
+  // "Sangle en 8" en fait partie mais n'existe pas au catalogue 0RIR
+  // (vérifié le 2026-09-22 sur 0rir-shop.com : 7 produits, aucun ne
+  // correspond) — même statut que Fat Grips (hors 0RIR), mais sans lien
+  // produit connu : url vide en attendant que Santamaria en donne un, pas
+  // un lien inventé.
+  {
+    accessory: "Sangle en 8",
+    reason: "Bloque le poignet à la barre en configuration \"8\" sur les tirages lourds, sans lâcher avant le dos",
+    url: "",
+  },
 ];
 
 /** Ordre volontaire : du plus structurant au plus optionnel.
