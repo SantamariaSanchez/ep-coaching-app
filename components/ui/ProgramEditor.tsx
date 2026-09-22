@@ -402,6 +402,77 @@ function DeliveryReviewPanel({
   );
 }
 
+// ── Diversité des positions de résistance (longueur musculaire) ─────────
+// Retour direct 2026-09-22 ("sur l'appli on peut réellement tout faire sur
+// la prog d'un client ?") : lib/exercise-library position (Mi-course /
+// Allongée / Raccourcie — la longueur musculaire où la tension mécanique
+// est maximale pour cet exercice) est renseignée sur les 658 exercices de
+// la bibliothèque mais n'était utilisée nulle part dans le constructeur de
+// programme, seulement comme valeur par défaut de tension dans
+// ExerciseDetailPanel (defaultTensionFromClassification). Un groupe
+// travaillé uniquement dans une seule position sous-exploite l'hypertrophie
+// par rapport à un mix des 3 (chaque position sollicite le muscle à une
+// longueur différente). Repère de couverture, pas une règle bloquante —
+// même esprit que VolumeBudgetReviewPanel/DeliveryReviewPanel ci-dessus.
+function computePositionCoverage(
+  days: DayRow[],
+  library: LibraryExercise[]
+): Record<string, { total: number; positions: Set<string> }> {
+  const byName = new Map(library.map((l) => [l.name, l]));
+  const coverage: Record<string, { total: number; positions: Set<string> }> = {};
+  for (const day of days) {
+    for (const ex of day.exercises) {
+      if (ex.is_direct !== "true" || !ex.muscle_group) continue;
+      const lib = byName.get(ex.name);
+      if (!lib?.position) continue;
+      const entry = coverage[ex.muscle_group] ?? { total: 0, positions: new Set<string>() };
+      entry.total += 1;
+      entry.positions.add(lib.position);
+      coverage[ex.muscle_group] = entry;
+    }
+  }
+  return coverage;
+}
+
+function PositionCoveragePanel({
+  days,
+  library,
+}: {
+  days: DayRow[];
+  library: LibraryExercise[];
+}) {
+  const coverage = computePositionCoverage(days, library);
+  const flagged = Object.entries(coverage).filter(([, v]) => v.total >= 2 && v.positions.size === 1);
+
+  if (flagged.length === 0) return null;
+
+  return (
+    <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
+        Diversité des positions de résistance
+      </p>
+      <p className="text-[10.5px] text-[#F5EDED]/30 mb-3 leading-relaxed max-w-2xl">
+        Un groupe travaillé uniquement en position Mi-course, Allongée ou Raccourcie sous-exploite
+        l&apos;hypertrophie par rapport à un mix des 3 (la tension mécanique maximale se déplace selon la
+        longueur du muscle à laquelle il travaille). Un repère, pas une règle bloquante.
+      </p>
+      <div className="space-y-1.5">
+        {flagged.map(([group, v]) => (
+          <div
+            key={group}
+            className="flex items-center gap-2.5 bg-[#150000] border border-amber-500/25 rounded-lg px-3 py-2"
+          >
+            <p className="text-xs font-bold text-white flex-1">{group}</p>
+            <p className="text-[10.5px] text-amber-300/85 text-right">
+              {v.total} exercice{v.total > 1 ? "s" : ""}, tous en position {[...v.positions][0]}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function initFromProgram(program: ProgramWithDays | null) {
   if (!program) {
     return {
@@ -2005,6 +2076,7 @@ export default function ProgramEditor({
             targets={state.volume_targets}
             onSetTarget={setVolumeTarget}
           />
+          <PositionCoveragePanel days={state.days} library={library} />
           <DeliveryReviewPanel
             unplacedDays={state.days.length - placedDays}
             unconfiguredExercises={totalExercises - configuredExercises}

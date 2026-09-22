@@ -7978,3 +7978,43 @@ TypeScript que les 6 existantes (`MedicalConstraint`). Sources vérifiées
 par recherche PubMed réelle (DOI cités), pas reprises telles quelles du
 contenu fourni par Santamaria. `tsc --noEmit`, `eslint`, `next build`
 propres avant commit/push.
+
+## FF — Le constructeur de programme n'exploitait jamais la position de résistance déjà en base (2026-09-22)
+
+Suite directe de la même question que l'Axe FE : "sur l'appli on peut
+réellement tout faire sur la prog ou la nutrition d'un client ?".
+`exercise_library.position` (Mi-course / Allongée / Raccourcie — la
+longueur musculaire à laquelle la tension mécanique d'un exercice est
+maximale) est renseignée sur les 658 exercices depuis un chantier
+précédent, mais grep sur `components/ui/ProgramEditor.tsx` ne trouvait
+qu'un seul usage réel : `defaultTensionFromClassification={configLib.position}`
+(ligne ~2057), qui ne fait que pré-remplir une valeur de tension par
+défaut dans `ExerciseDetailPanel`. Aucune vérification de couverture :
+un coach pouvait empiler 3 exercices quadriceps tous en position
+Mi-course sans jamais être averti qu'aucun des 3 ne travaille le muscle
+en position Allongée ou Raccourcie, alors que la donnée pour le
+détecter existait déjà en base.
+
+**Fix** : `computePositionCoverage()` (parallèle à `computeWeeklyVolume()`
+qui existait déjà pour le budget de séries) agrège, par groupe musculaire
+et sur toute la semaine, l'ensemble des positions distinctes couvertes
+par les exercices directs (`is_direct === "true"`). `PositionCoveragePanel`
+affiche un repère (jamais un blocage, même logique que
+`VolumeBudgetReviewPanel`/`DeliveryReviewPanel` juste au-dessus) quand un
+groupe a 2 exercices directs ou plus mais une seule position parmi eux.
+Panneau silencieux si tout est déjà varié ou si aucun groupe n'a assez
+d'exercices pour juger — pas de bruit inutile. Placé en Phase 4
+(Livraison), à côté des deux autres bilans de fin de construction.
+
+**Pas traité** : `ProgramTemplateEditor.tsx` (modèles réutilisables, pas
+un programme client) partage `DayRow` mais n'a pas reçu le même panneau
+— un modèle générique n'a pas la bibliothèque complète en contexte de la
+même façon, et la demande portait sur "la prog d'un client", pas les
+modèles.
+
+### Validation
+
+`tsc --noEmit` et `eslint components/ui/ProgramEditor.tsx` propres.
+`next build` a échoué sur un point sans rapport (résolution réseau de
+next/font/google dans `app/layout.tsx`, hors de ce fichier) — non
+imputable à ce changement.
