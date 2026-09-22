@@ -55,8 +55,16 @@ function formatDuration(seconds: number | null): string | null {
 // sont pas des scripts parlés (la création de carrousel vit ailleurs dans
 // l'appli), les garder ici pousserait à leur écrire un "mot pour mot" qui
 // n'a pas de sens pour ce format.
+// Facebook réintroduit le 2026-09-22 (retour direct : "on s'est encore
+// fait bannir le Insta donc on a encore Facebook, donc travaille sur ça
+// les scripts") — pas un caprice de plus sur la liste, une vraie
+// nécessité opérationnelle : le compte Instagram est inaccessible (jeton
+// Windsor.ai invalide, confirmé côté API au moment de ce retour), Facebook
+// reste la chaîne de diffusion disponible. Traité comme Instagram/YouTube
+// (filmé, pas écrit) : un Reel Facebook se tourne pareil qu'un Reel Insta.
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
   instagram: { label: "Instagram Reel", color: "#E1306C" },
+  facebook: { label: "Facebook Reel", color: "#1877F2" },
   threads: { label: "Threads", color: "#F5EDED" },
   youtube: { label: "YouTube", color: "#FF0000" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
@@ -234,7 +242,13 @@ function MyScripts({
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [format, setFormat] = useState<ScriptFormat>("court");
-  const [newPlatform, setNewPlatform] = useState("instagram");
+  // Retour direct 2026-09-22 : "on s'est encore fait bannir le Insta donc
+  // on a encore Facebook" — le compte Instagram est inaccessible pour
+  // l'instant (confirmé : jeton Windsor.ai invalide au moment de ce
+  // retour), Facebook reste postable. Défaut changé pour suivre la
+  // réalité opérationnelle actuelle ; Instagram reste choisissable dans le
+  // menu pour préparer du contenu en attendant que le compte revienne.
+  const [newPlatform, setNewPlatform] = useState("facebook");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
