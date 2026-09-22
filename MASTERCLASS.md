@@ -8156,6 +8156,25 @@ sûr par défaut.
 
 `tsc --noEmit` et `eslint lib/meal-creator.ts` propres.
 
+## FJ — Le générateur automatique de programme ignorait la diversité de position (2026-09-22)
+
+Suite de l'Axe FF (panneau de couverture manuel dans `ProgramEditor.tsx`) :
+le générateur AUTOMATIQUE (`generateProgramDraft` dans `lib/plan-generator.ts`)
+avait le même angle mort, en amont — `pick(group, category)` choisit le
+compound puis l'isolation d'un groupe musculaire par un simple round-robin
+sur les candidats filtrés, sans jamais regarder leur `position`
+(Mi-course/Allongée/Raccourcie). Un programme généré pouvait donc empiler
+compound + isolation d'un même groupe tous les deux en position identique,
+alors que la donnée pour l'éviter existe déjà en base.
+
+**Fix** : `pick()` prend un paramètre optionnel `avoidPosition` — quand
+l'isolation est choisie après le compound du même groupe/jour, elle
+préfère un candidat dont la position diffère de celle du compound déjà
+retenu. Retombe sur l'ensemble complet des candidats si ce filtre viderait
+le choix (aucune régression possible : le round-robin existant continue
+de fonctionner à l'identique quand aucune position alternative n'est
+disponible).
+
 ### Validation
 
-`tsc --noEmit` et `eslint components/ui/DietPlanManager.tsx` propres.
+`tsc --noEmit` et `eslint lib/plan-generator.ts` propres.

@@ -423,13 +423,22 @@ export function generateProgramDraft(
   // exercice partout — un programme "réfléchi", pas juste répété.
   const rotation: Record<string, number> = {};
 
-  function pick(group: string, category: "compose" | "isolation"): LibraryExercise | null {
+  // `avoidPosition` (Axe FJ, MASTERCLASS.md — suite de l'Axe FF) : quand
+  // renseigné, préfère un candidat dont la position de résistance
+  // (Mi-course/Allongée/Raccourcie, lib/exercise-library) diffère de celle
+  // déjà choisie pour ce groupe dans la même séance, plutôt que de laisser
+  // le hasard/round-robin empiler deux exercices en position identique.
+  // Retombe sur tous les candidats si le filtre viderait le choix (aucune
+  // régression possible par rapport au comportement précédent).
+  function pick(group: string, category: "compose" | "isolation", avoidPosition?: string | null): LibraryExercise | null {
     const candidates = filteredCandidates(library, group, category, excludeText, allowed);
     if (candidates.length === 0) return null;
+    const pool = avoidPosition ? candidates.filter((c) => c.position !== avoidPosition) : candidates;
+    const usable = pool.length > 0 ? pool : candidates;
     const key = `${group}:${category}`;
-    const idx = (rotation[key] ?? 0) % candidates.length;
+    const idx = (rotation[key] ?? 0) % usable.length;
     rotation[key] = (rotation[key] ?? 0) + 1;
-    return candidates[idx];
+    return usable[idx];
   }
 
   return template.map((day) => {
@@ -437,7 +446,7 @@ export function generateProgramDraft(
     for (const group of day.groups) {
       const compound = pick(group, "compose");
       if (compound) exercises.push(toGeneratedExercise(compound));
-      const isolation = pick(group, "isolation");
+      const isolation = pick(group, "isolation", compound?.position ?? null);
       if (isolation) exercises.push(toGeneratedExercise(isolation));
     }
     return { dayLabel: day.label, exercises };
