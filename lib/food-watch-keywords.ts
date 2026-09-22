@@ -39,10 +39,14 @@ export interface FoodWatchContext {
   dislikedKeywords: string[];
   excludedCategoryKeywords: string[];
   dietLabel: string | null;
+  // Valeur brute derrière dietLabel — gardée à part pour comparer aux tags
+  // réels d'un aliment (food.diet_tags) sans avoir à re-dériver la clé
+  // depuis son libellé affiché.
+  diet: Diet | null;
 }
 
 export function buildFoodWatchContext(intake: ClientIntake | null | undefined): FoodWatchContext {
-  if (!intake) return { allergens: [], dislikedKeywords: [], excludedCategoryKeywords: [], dietLabel: null };
+  if (!intake) return { allergens: [], dislikedKeywords: [], excludedCategoryKeywords: [], dietLabel: null, diet: null };
   const dislikedKeywords = intake.disliked_foods
     ? intake.disliked_foods.toLowerCase().split(/[,;\n.]+/).map((s) => s.trim()).filter((s) => s.length > 2)
     : [];
@@ -52,6 +56,7 @@ export function buildFoodWatchContext(intake: ClientIntake | null | undefined): 
     dislikedKeywords,
     excludedCategoryKeywords: excludedCategoryKeywords(diet),
     dietLabel: diet && diet !== "omnivore" ? DIET_LABELS[diet] : null,
+    diet: diet && diet !== "omnivore" ? diet : null,
   };
 }
 
@@ -73,21 +78,39 @@ export function summarizeFoodWatchContext(ctx: FoodWatchContext): string {
 // détesté) — toutes remontées plutôt que la première trouvée, pour que le
 // coach voie tout d'un coup au lieu de re-matcher au fil de la saisie.
 export function checkFoodWatch(
-  food: { name: string; category: string | null },
+  food: { name: string; category: string | null; diet_tags?: string[] | null; allergens?: string[] | null },
   ctx: FoodWatchContext
 ): string[] {
   const name = food.name.toLowerCase();
   const category = (food.category ?? "").toLowerCase();
   const reasons: string[] = [];
 
-  for (const allergen of ctx.allergens) {
-    const hit = ALLERGEN_FOOD_KEYWORDS[allergen].find((k) => name.includes(k));
-    if (hit) reasons.push(`allergène ${ALLERGEN_LABELS[allergen].toLowerCase()} probable (« ${hit} »)`);
+  // Tag réel par aliment (migration 20260922_foods_diet_tags_allergens) —
+  // prioritaire sur l'heuristique par mot-clé quand il existe : confirmé,
+  // pas juste "probable". Retombe sur le substring uniquement pour les
+  // aliments pas encore vérifiés (food.allergens null).
+  if (food.allergens) {
+    for (const allergen of ctx.allergens) {
+      if (food.allergens.includes(allergen)) {
+        reasons.push(`allergène ${ALLERGEN_LABELS[allergen].toLowerCase()} confirmé`);
+      }
+    }
+  } else {
+    for (const allergen of ctx.allergens) {
+      const hit = ALLERGEN_FOOD_KEYWORDS[allergen].find((k) => name.includes(k));
+      if (hit) reasons.push(`allergène ${ALLERGEN_LABELS[allergen].toLowerCase()} probable (« ${hit} »)`);
+    }
   }
 
   if (ctx.dietLabel) {
-    const hit = ctx.excludedCategoryKeywords.find((k) => category.includes(k));
-    if (hit) reasons.push(`non compatible régime ${ctx.dietLabel.toLowerCase()}`);
+    if (food.diet_tags) {
+      if (ctx.diet && !food.diet_tags.includes(ctx.diet)) {
+        reasons.push(`non compatible régime ${ctx.dietLabel.toLowerCase()} (vérifié)`);
+      }
+    } else {
+      const hit = ctx.excludedCategoryKeywords.find((k) => category.includes(k));
+      if (hit) reasons.push(`non compatible régime ${ctx.dietLabel.toLowerCase()}`);
+    }
   }
 
   const dislikedHit = ctx.dislikedKeywords.find((k) => name.includes(k) || k.includes(name));

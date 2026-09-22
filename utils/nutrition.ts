@@ -71,6 +71,14 @@ export interface Food {
   // Cuisson/préparation/association — référence partagée entre coachs
   // (migration 20260807 diet_meal_reasoning_and_food_prep_notes).
   prep_notes?: string | null;
+  // Régimes compatibles / allergènes RÉELS de cet aliment (migration
+  // 20260922_foods_diet_tags_allergens) — même énumération que
+  // lib/recipes-data.ts Diet/Allergen. null/absent = pas encore vérifié,
+  // ne jamais en déduire une compatibilité par défaut (voir
+  // lib/meal-creator.ts et lib/food-watch-keywords.ts, qui retombent sur
+  // une heuristique par catégorie uniquement quand ces champs sont vides).
+  diet_tags?: string[] | null;
+  allergens?: string[] | null;
   // micros (per 100g, default 0)
   vitamin_d?: number;
   vitamin_c?: number;

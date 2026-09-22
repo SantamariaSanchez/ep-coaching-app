@@ -8018,3 +8018,67 @@ modèles.
 `next build` a échoué sur un point sans rapport (résolution réseau de
 next/font/google dans `app/layout.tsx`, hors de ce fichier) — non
 imputable à ce changement.
+
+## FG — `foods` (808 lignes) n'avait aucun tag diététique réel par aliment (2026-09-22)
+
+Suite directe de l'Axe FF, même question : "on peut réellement tout faire
+sur la prog ou la nutrition d'un client ?". `lib/meal-creator.ts`
+documentait déjà lui-même la limite : "Compatibilité régime/allergène au
+niveau de la catégorie (pas de tag par aliment dans `foods`) —
+approximation volontairement large". Vérifié en base (`execute_sql`) :
+808 lignes, 37 valeurs de `category` en texte libre avec accents/pluriels
+incohérents selon le batch de seed (`Legumes` 75 lignes vs `Légume` 17
+lignes, `Feculents` 65 vs `Féculent` 14 vs `Féculents` 1, etc.). Ce
+mélange casse déjà silencieusement `CATEGORY_TO_GROUP`/`CATEGORY_DIET`
+dans le Meal Creator : les lignes accentuées ne matchent aucune clé et
+retombent sur "omnivore uniquement" par défaut, donc des aliments
+clairement vegan (riz, patate douce...) du premier batch de seed
+n'apparaissaient jamais dans les groupes du wizard. Bug de données trouvé
+au passage : `"Whey"` catégorisé `"Viandes"` (protéine laitière, pas de
+la viande).
+
+**Fix** : migration `20260922_foods_diet_tags_allergens.sql` — deux
+colonnes `text[]` nullable, `diet_tags` et `allergens`, réutilisant EXACTEMENT
+les énumérations déjà en place dans `lib/recipes-data.ts` (Diet:
+omnivore/vegetarien/vegan/pescetarien, Allergen: les 8 déjà utilisés pour
+les recettes). Check constraints `NOT VALID` (même pattern que
+`20260805k_input_hardening_constraints.sql`) pour valider les futures
+écritures sans bloquer l'existant. Backfill : les 808 lignes passées en
+revue nom par nom (pas juste par catégorie) — viandes/poissons/laitiers/
+œufs/légumes/fruits/légumineuses/oléagineux tagués avec un haut niveau de
+confiance à partir de la composition réelle connue (ex. "Whey" = lactose
+pas vegan, "Pesto" = lactose + fruits à coque via le parmesan/pin,
+"Pousses de soja" = allergène soja même si catégorisé "Legumes"). Principe
+tenu partout : un aliment composite ou dont la recette varie vraiment
+d'un fabricant à l'autre (Granola, Muesli, Sauce curry, Gnocchi,
+Réglisse, barre de céréales générique...) reste `NULL` plutôt que deviné
+— le risque de mal étiqueter (déjà signalé à l'Axe FE) est pris au
+sérieux, pas juste réduit en le maquillant par une fausse confiance.
+
+`lib/meal-creator.ts` (`buildFoodGroups`) et `lib/food-watch-keywords.ts`
+(`checkFoodWatch`, `FoodWatchContext`) préfèrent maintenant le tag RÉEL
+par aliment quand il existe (`food.diet_tags`/`food.allergens` non nuls),
+et ne retombent sur l'ancienne heuristique par catégorie/mot-clé que pour
+les aliments pas encore vérifiés — donc rien ne régresse sur les lignes
+encore `NULL`, et le bandeau de vigilance nutrition passe de "probable"
+à "confirmé" partout où la donnée réelle existe désormais.
+
+**Pas traité** : la normalisation des 37 valeurs de `category` elle-même
+(fusionner "Legumes"/"Légume" etc.) — changement à plus large surface
+(UI de groupement, filtres existants sur la valeur exacte) qui mérite un
+chantier séparé plutôt que d'être glissé dans cette migration.
+
+**Important** : la migration ajoutée ci-dessus modifie 808 lignes en
+production — elle doit être exécutée manuellement dans le Supabase SQL
+Editor (pas automatisée par le déploiement Vercel, comme toute migration
+de ce repo). Elle a été écrite et committée mais PAS appliquée par moi en
+base : à lancer manuellement, voir `supabase/migrations/20260922_foods_diet_tags_allergens.sql`.
+
+### Validation
+
+`tsc --noEmit` et `eslint lib/meal-creator.ts lib/food-watch-keywords.ts
+utils/nutrition.ts` propres. `next build` échoue sur le même point sans
+rapport que l'Axe FF (résolution réseau de next/font/google). Classification
+des 808 lignes vérifiée par relecture manuelle nom par nom (pas de
+génération automatique par mot-clé non relue), listes exactes tirées
+d'une requête `execute_sql` réelle sur la base, pas supposées.

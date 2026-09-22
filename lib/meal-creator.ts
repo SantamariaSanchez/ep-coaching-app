@@ -72,10 +72,13 @@ export function buildFoodGroups(allFoods: Food[]): Record<FoodGroupKey, CuratedF
   for (const food of allFoods) {
     const group = food.category ? CATEGORY_TO_GROUP[food.category] : undefined;
     if (!group) continue;
+    // Préfère le tag RÉEL par aliment (migration 20260922_foods_diet_tags_
+    // allergens) quand il existe — l'approximation par catégorie ci-dessus
+    // reste le filet de sécurité pour les aliments pas encore vérifiés.
     out[group].push({
       name: food.name,
-      diet: CATEGORY_DIET[food.category!] ?? ["omnivore"],
-      allergens: CATEGORY_ALLERGENS[food.category!] ?? [],
+      diet: (food.diet_tags && food.diet_tags.length > 0 ? food.diet_tags : CATEGORY_DIET[food.category!] ?? ["omnivore"]) as Diet[],
+      allergens: (food.allergens && food.allergens.length > 0 ? food.allergens : CATEGORY_ALLERGENS[food.category!] ?? []) as Allergen[],
     });
   }
   for (const key of Object.keys(out) as FoodGroupKey[]) {
