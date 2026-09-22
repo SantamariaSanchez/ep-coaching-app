@@ -28,9 +28,9 @@ export default async function CoachContraintesPage() {
           Contraintes & populations spécifiques
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40 leading-relaxed max-w-xl">
-          Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA : comment adapter un
-          programme, et surtout quand orienter vers un professionnel plutôt que d&apos;essayer de gérer
-          la situation seul.
+          Blessures, maladies chroniques, handicap, grossesse, ménopause, TCA, véganisme, Ramadan,
+          obésité : comment adapter un programme, et surtout quand orienter vers un professionnel
+          plutôt que d&apos;essayer de gérer la situation seul.
         </p>
       </div>
 

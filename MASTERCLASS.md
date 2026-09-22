@@ -7930,3 +7930,51 @@ complète par groupe musculaire concerné). `find` réel (pas une
 supposition) pour les 13 `loading.tsx`, avec vérification de l'ancestor
 avant de qualifier chacun de "manquant". `tsc --noEmit`, `eslint`,
 `next build` propres avant commit/push.
+
+## FE — 3 populations manquantes dans "Contraintes & populations spécifiques" (2026-09-22)
+
+Retour direct : *"sur l'appli on peut réellement tout faire sur la
+prog ou la nutrition d'un client ? non alors travaille"*. Plutôt que de
+supposer où étaient les trous, audit réel de `lib/medical-constraints.ts`
+(espace coach "Contraintes & populations spécifiques", Axe 8 VISION.md) :
+6 fiches déjà là (blessures, maladies chroniques, handicap, grossesse,
+ménopause, TCA), mais rien sur le véganisme/végétarisme, le Ramadan, ou
+l'obésité — trois cas explicitement cités dans le contenu Mastermind
+niveau 3 que Santamaria a fourni.
+
+**Fix** : 3 nouvelles fiches ajoutées (`vegetarisme-veganisme`,
+`ramadan-jeune-religieux`, `obesite`), même format que les 6 existantes
+(overview, principes d'adaptation, signaux d'alerte, sources). Sourcées
+fraîchement sur PubMed plutôt que de réutiliser les citations données
+par Santamaria dans le dump Mastermind (sans DOI, non vérifiables
+telles quelles, Règle n°1 du chantier lead magnets appliquée ici aussi) :
+West et al. 2023 Adv Nutr et Bakaloudi et al. 2020 Clin Nutr pour le
+véganisme, Chaouachi et al. 2012 J Sports Sci et Trabelsi et al. 2025
+Tunis Med pour le Ramadan, Conradie-Smit et al. 2025 S Afr Med J et
+Gerber et al. 2026 Swiss Med Wkly pour l'obésité. Page liste et page
+détail (`app/dashboard/coach/contraintes/`) sont 100% dynamiques
+(`MEDICAL_CONSTRAINTS.map`, `generateStaticParams`) : aucune modif UI
+nécessaire pour que les 3 nouvelles fiches apparaissent.
+
+**En plus** : `lib/coach-specializations.ts` (annuaire de coachs, Axe 5
+VISION.md) ajoutait déjà "Grossesse & post-partum" et "TCA" comme
+spécialisations recherchables, mais pas "Nutrition végétarienne/végane"
+ni "Obésité & surpoids" — ajoutées pour rester cohérent avec les
+nouvelles fiches (pas de contrainte CHECK en base sur ces valeurs,
+`profiles.specializations` est un simple `text[]`, vérifié avant
+d'ajouter).
+
+**Pas traité, périmètre plus large et plus risqué** : la table `foods`
+(recherche d'aliments côté nutrition) n'a aucune colonne de tag
+diététique (vegan, FODMAP...) — remplir ça correctement demanderait de
+retagger des milliers de lignes existantes, un chantier à part qui
+mérite d'être fait délibérément plutôt que glissé ici sans vérification
+ligne par ligne (risque réel de mal étiqueter un aliment).
+
+### Validation
+
+Structure des 3 nouvelles fiches vérifiée contre le même schéma
+TypeScript que les 6 existantes (`MedicalConstraint`). Sources vérifiées
+par recherche PubMed réelle (DOI cités), pas reprises telles quelles du
+contenu fourni par Santamaria. `tsc --noEmit`, `eslint`, `next build`
+propres avant commit/push.

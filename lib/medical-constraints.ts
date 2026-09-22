@@ -174,6 +174,85 @@ export const MEDICAL_CONSTRAINTS: MedicalConstraint[] = [
       "Bratland-Sanda & Sundgot-Borgen, \"Eating disorders in athletes: overview of prevalence, risk factors and recommendations for prevention and treatment\", Eur J Sport Sci, 2013",
     ],
   },
+  // 3 fiches ajoutées le 2026-09-22, retour direct : "sur l'appli on peut
+  // réellement tout faire sur la prog ou la nutrition d'un client ?" —
+  // ces 3 cas (donnés dans le contenu Mastermind niveau 3 fourni par
+  // Santamaria : véganisme, Ramadan, obésité) manquaient alors que TCA,
+  // grossesse, ménopause et handicap étaient déjà couverts. Sourcées
+  // fraîchement sur PubMed plutôt que réutiliser les citations du
+  // Mastermind (données sans DOI, non vérifiables telles quelles).
+  {
+    slug: "vegetarisme-veganisme",
+    title: "Végétarisme & véganisme",
+    shortLabel: "Végan/végé",
+    summary: "Sécuriser les apports en protéines et micronutriments à risque, sans jamais présenter le régime lui-même comme un problème.",
+    overview:
+      "Un régime végétalien ou végétarien bien construit n'entraîne aucun désavantage démontré sur la performance, l'adaptation à l'entraînement ou la récupération. Le vrai risque n'est pas le régime en soi, mais un apport spontané insuffisant en protéines et en certains micronutriments clés quand la transition n'a pas été accompagnée. Le rôle du coach est d'aider à combler ces apports, jamais de remettre en cause le choix alimentaire ou éthique du client.",
+    adaptationPrinciples: [
+      "Sécuriser l'apport protéique total avant toute autre chose : viser la même fourchette que pour un régime omnivore (1,6 à 2,2 g/kg/j), en insistant sur la variété des sources végétales (légumineuses, soja, seitan, quinoa) pour couvrir le profil complet en acides aminés sur la journée plutôt que par repas isolé.",
+      "Surveiller particulièrement 4 micronutriments à risque documenté en cas de régime végétalien spontané (non supplémenté) : vitamine B12 (quasi absente des sources végétales, supplémentation quasi systématique nécessaire en végétalien strict), fer, zinc, calcium.",
+      "La vitamine B12 ne se \"rattrape\" pas par l'alimentation seule en végétalien strict : orienter vers un dosage sanguin et une supplémentation adaptée avec un professionnel de santé plutôt que de laisser une carence s'installer silencieusement.",
+      "Ne jamais présenter le régime comme la cause d'une stagnation ou d'une fatigue sans avoir vérifié ces apports concrets en premier : la première hypothèse est presque toujours un déficit de planification, pas le régime lui-même.",
+    ],
+    redFlags: [
+      "Fatigue inexpliquée, pâleur, essoufflement à l'effort inhabituel : évoquer une carence en fer ou B12, orienter vers un bilan sanguin plutôt que de deviner.",
+      "Régime végétalien récent sans aucune supplémentation en B12 envisagée : signal à traiter rapidement, pas à laisser \"se voir avec le temps\".",
+      "Apport calorique ou protéique total manifestement insuffisant pour l'objectif visé (prise de muscle notamment) : revoir le plan avant d'incriminer autre chose.",
+    ],
+    sources: [
+      "West et al., \"Nutritional Considerations for the Vegan Athlete\", Adv Nutr, 2023 (doi: 10.1016/j.advnut.2023.04.012)",
+      "Bakaloudi et al., \"Intake and adequacy of the vegan diet, a systematic review of the evidence\", Clin Nutr, 2020 (doi: 10.1016/j.clnu.2020.11.035)",
+    ],
+  },
+  {
+    slug: "ramadan-jeune-religieux",
+    title: "Ramadan & jeûne religieux",
+    shortLabel: "Ramadan",
+    summary: "Adapter horaires et charge autour du jeûne diurne, sans jamais suggérer de l'interrompre : le coach s'adapte à la pratique, pas l'inverse.",
+    overview:
+      "Le jeûne du Ramadan (abstinence totale de nourriture ET de boisson du lever au coucher du soleil, pendant environ un mois) a des effets variables et globalement modestes sur la performance quand l'entraînement, l'alimentation et le sommeil sont réorganisés autour de lui. Le rôle du coach est d'adapter le programme à la pratique religieuse du client, jamais de la questionner ni de suggérer une interruption.",
+    adaptationPrinciples: [
+      "Décaler les séances aux moments compatibles avec le jeûne : juste avant la rupture du jeûne (iftar) ou en soirée après un repas, pour ne jamais entraîner à jeun strict sur une séance à charge élevée.",
+      "Maintenir autant que possible l'apport calorique et protéique total habituel en le concentrant sur la fenêtre nocturne (iftar à sahur), plutôt que d'accepter un déficit énergétique non voulu par simple contrainte d'horaires.",
+      "Le vrai risque documenté n'est pas la performance elle-même mais l'hypohydratation et la dette de sommeil (horaires sociaux nocturnes décalés) : prioriser l'hydratation sur la fenêtre nocturne et surveiller la qualité du sommeil, pas seulement sa durée.",
+      "Réduire le volume d'entraînement plutôt que l'intensité les jours où la fatigue est marquée : mieux vaut une séance plus courte bien exécutée qu'une séance longue en dette de sommeil et d'hydratation.",
+      "Revenir progressivement au programme habituel après l'Aïd plutôt que de reprendre le rythme pré-Ramadan du jour au lendemain.",
+    ],
+    redFlags: [
+      "Vertiges, confusion, crampes sévères pendant l'effort : signes de déshydratation significative, arrêter la séance immédiatement.",
+      "Perte de poids rapide et importante sur le mois (au-delà de la perte d'eau attendue) : signal d'un déficit calorique non voulu à corriger sur la fenêtre nocturne.",
+      "Dette de sommeil qui s'accumule sur plusieurs jours sans récupération : réduire le volume avant que la fatigue ne devienne le facteur limitant de tout le mois.",
+    ],
+    sources: [
+      "Chaouachi et al., \"The effects of Ramadan intermittent fasting on athletic performance: recommendations for the maintenance of physical fitness\", J Sports Sci, 2012 (doi: 10.1080/02640414.2012.698297)",
+      "Chamari et al., \"Optimizing training and competition during the month of Ramadan\", Tunis Med, 2019",
+      "Trabelsi et al., \"Assessment of hydration status and sleep in athletes during Ramadan month\", Tunis Med, 2025 (doi: 10.62438/tunismed.v103i7.5828)",
+    ],
+  },
+  {
+    slug: "obesite",
+    title: "Obésité",
+    shortLabel: "Obésité",
+    summary: "Prioriser les bénéfices de santé mesurables (tension, glycémie, mobilité) sur le seul chiffre du poids, jamais l'inverse.",
+    overview:
+      "L'activité physique chez une personne en situation d'obésité apporte des bénéfices de santé mesurables (tension artérielle, sensibilité à l'insuline, mobilité, qualité de vie) même sans perte de poids significative. Les recommandations récentes déplacent explicitement le focus du chiffre sur la balance vers ces marqueurs fonctionnels et de santé. Le renforcement musculaire a un rôle particulier : préserver la masse maigre pendant une perte de poids, là où le cardio seul y contribue peu.",
+    adaptationPrinciples: [
+      "Ouvrir sur les marqueurs de santé et de fonction (tension, endurance, mobilité, sommeil, humeur) plutôt que sur un objectif de poids chiffré : ce sont ces bénéfices qui sont les mieux documentés, y compris en l'absence de perte de poids.",
+      "Toujours inclure du renforcement musculaire, pas seulement du cardio : il aide à préserver la masse maigre pendant une perte de poids et améliore la mobilité et la fonction indépendamment du poids perdu.",
+      "Progression très graduelle du volume/intensité en tenant compte des contraintes articulaires et de la tolérance à l'effort réelles, jamais un programme copié d'un client sans cette contrainte.",
+      "Approche sans jugement ni discours culpabilisant sur le poids (\"weight stigma\") : la littérature récente en fait un point de vigilance explicite, un discours culpabilisant nuit à l'adhésion sans bénéfice de santé démontré.",
+      "Si le client est suivi médicalement pour l'obésité (traitement médicamenteux GLP-1, chirurgie bariatrique passée ou à venir), coordonner le programme avec cette prise en charge plutôt que l'ignorer : les besoins en protéines et le risque de perte osseuse changent après une chirurgie bariatrique notamment.",
+    ],
+    redFlags: [
+      "Douleur articulaire qui s'aggrave avec la progression de charge : ralentir et réévaluer le choix d'exercices plutôt que forcer.",
+      "Client récemment opéré (chirurgie bariatrique) sans suivi nutritionnel/osseux actif : orienter vers l'équipe médicale avant tout programme de renforcement à charge significative.",
+      "Discours d'auto-dévalorisation marqué autour du poids : rester dans le rôle du coach, orienter si besoin vers un accompagnement psychologique dédié plutôt que de \"motiver\" seul.",
+    ],
+    sources: [
+      "Conradie-Smit et al., \"Physical activity in obesity management\", S Afr Med J, 2025 (doi: 10.7196/SAMJ.2025.v115i9b.3603)",
+      "Gerber et al., \"Swiss obesity clinical practice guidance\", Swiss Med Wkly, 2026 (doi: 10.57187/5415)",
+    ],
+  },
 ];
 
 export function getMedicalConstraintBySlug(slug: string): MedicalConstraint | undefined {

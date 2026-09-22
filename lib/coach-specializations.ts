@@ -22,6 +22,11 @@ export const COACH_SPECIALIZATIONS = [
   "Adolescents & jeunes athlètes",
   "Seniors (50+)",
   "Nutrition seule (sans suivi entraînement)",
+  // Ajoutées le 2026-09-22 (retour direct : "on peut réellement tout
+  // faire sur la prog ou la nutrition d'un client ?"), en même temps que
+  // les fiches correspondantes dans lib/medical-constraints.ts.
+  "Nutrition végétarienne & végane",
+  "Obésité & surpoids",
 ] as const;
 
 export type CoachSpecialization = (typeof COACH_SPECIALIZATIONS)[number];
