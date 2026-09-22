@@ -46,9 +46,11 @@ function getDayColor(cals: number, target: number) {
 function TodayLogsView({
   logs,
   nutritionProfile,
+  foods,
 }: {
   logs: FoodLogWithFood[];
   nutritionProfile: NutritionProfile | null;
+  foods?: Food[];
 }) {
   const targets = {
     calories: nutritionProfile?.calories_target ?? 0,
@@ -142,7 +144,7 @@ function TodayLogsView({
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
             Micronutriments du jour
           </p>
-          <MicroBarList logs={logs} />
+          <MicroBarList logs={logs} foods={foods} />
         </div>
       )}
     </div>
@@ -522,7 +524,7 @@ export default function CoachClientNutritionTabs({
       </div>
 
       <div hidden={tab !== "today"}>
-        <TodayLogsView logs={todayLogs} nutritionProfile={nutritionProfile} />
+        <TodayLogsView logs={todayLogs} nutritionProfile={nutritionProfile} foods={foods} />
       </div>
 
       <div hidden={tab !== "history"}>

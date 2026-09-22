@@ -8178,3 +8178,34 @@ disponible).
 ### Validation
 
 `tsc --noEmit` et `eslint lib/plan-generator.ts` propres.
+
+## FK — Nouveau : suggestion d'aliment réel pour combler une carence en micronutriment
+
+Demande explicite : "travaille sur de nouvelle idée et implémentation
+utile et complétive". `getMicroDeficiencyOrder`/`MicroBarList` détectaient
+déjà une carence (barre rouge/orange triée du pire au mieux couvert),
+mais ne faisaient jamais le lien avec une action concrète — juste un
+constat. Les valeurs par micronutriment/100g existent déjà sur `foods`
+(utilisées pour le calcul lui-même), simplement jamais triées pour
+répondre à "riche en quoi ?".
+
+**Ajout** : `topFoodsForMicro()` (`utils/nutrition-utils.ts`) trie le
+catalogue `foods` par valeur du micronutriment donné, exclut les
+aliments déjà loggés ce jour/dans ce plan (pour suggérer une vraie
+nouveauté plutôt que répéter ce qui est déjà mangé), retourne le top 3.
+`MicroBarList` (utilisé par `DietPlanManager`, `CoachClientNutritionTabs`,
+`ClientNutritionView`) affiche cette suggestion sous chaque barre en
+carence notable (< 60% de la cible) quand le catalogue complet est
+disponible (prop `foods` optionnelle, ajoutée à `DietPlanManager` et
+`CoachClientNutritionTabs`/`TodayLogsView` — `ClientNutritionView` n'a
+pas le catalogue complet en contexte, laissé inchangé, aucune régression
+puisque la prop est optionnelle).
+
+**Pas testé visuellement** (pas de navigateur dans cet environnement) —
+vérifié par relecture de la logique et `tsc`/`eslint` propres uniquement.
+
+### Validation
+
+`tsc --noEmit` et `eslint utils/nutrition-utils.ts
+components/ui/MicroBarList.tsx components/ui/DietPlanManager.tsx
+components/ui/CoachClientNutritionTabs.tsx` propres.

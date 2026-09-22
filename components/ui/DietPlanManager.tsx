@@ -1185,7 +1185,7 @@ export function PlanBuilder({
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
             Couverture des micronutriments {structure === "weekly" && currentDay ? `· ${DAY_TABS.find((d) => d.key === currentDay)?.label ?? ""}` : ""}
           </p>
-          <MicroBarList logs={microLogs} />
+          <MicroBarList logs={microLogs} foods={foods} />
         </div>
       )}
 

@@ -66,3 +66,24 @@ export function getMicroDeficiencyOrder(
 
   return stats.sort((a, b) => a.pct - b.pct);
 }
+
+// Axe FK (MASTERCLASS.md) : getMicroDeficiencyOrder détecte déjà une
+// carence (barre rouge/orange), mais ne suggérait jamais QUOI manger pour
+// la combler — juste un constat, jamais une action. Les valeurs par 100g
+// de chaque micronutriment existent déjà sur `foods` (utilisées pour le
+// calcul lui-même), simplement jamais triées pour répondre à "riche en
+// quoi ?". `excludeNames` évite de resuggérer un aliment déjà mangé ce
+// jour/dans ce plan.
+export function topFoodsForMicro(
+  key: MicroKey,
+  foods: Food[],
+  excludeNames: Set<string> = new Set(),
+  limit = 3
+): { name: string; valuePer100: number }[] {
+  return foods
+    .filter((f) => !excludeNames.has(f.name))
+    .map((f) => ({ name: f.name, valuePer100: (f[key as keyof Food] as number) ?? 0 }))
+    .filter((f) => f.valuePer100 > 0)
+    .sort((a, b) => b.valuePer100 - a.valuePer100)
+    .slice(0, limit);
+}
