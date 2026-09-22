@@ -8125,3 +8125,37 @@ vérifié par relecture de la logique et `tsc`/`eslint` propres uniquement.
 ### Validation
 
 `tsc --noEmit` et `eslint components/ui/DietPlanManager.tsx` propres.
+
+## FI — Le générateur de recette (Meal Creator) perdait ~130 aliments par bug de catégorie (2026-09-22)
+
+Trouvé en creusant l'Axe FH : `lib/meal-creator.ts` a une table
+`CATEGORY_TO_GROUP` qui décide si un aliment entre dans un des 4 groupes
+du wizard (protéine/glucide/légume/matière grasse) — mais elle ne
+listait que 11 des 37 valeurs réelles de `category` en base. Une
+catégorie absente (toutes les variantes accentuées/plurielles du même
+concept selon le batch de seed : `"Poisson"` vs `"Poissons"`,
+`"Légume"` vs `"Legumes"`, `"Laitier"` vs `"Laitiers"`, `"Œufs"` vs
+`"Oeufs"`, `"Viande rouge"`/`"Viande blanche"`/`"Charcuterie"` jamais
+mappées du tout, `"Matieres grasses"`/`"Matière grasse"` jamais mappées
+non plus...) faisait que l'aliment n'entrait dans AUCUN groupe, quels
+que soient ses `diet_tags` réels de l'Axe FG — invisible dans le
+générateur de recette, peu importe le régime du client. Environ 130
+aliments concernés (toute la charcuterie, les variantes accent/pluriel
+de poisson/légume/laitier/féculent/légumineuse/oléagineux/œuf, les 25
+matières grasses).
+
+**Fix** : `CATEGORY_TO_GROUP` complété avec toutes les variantes
+réellement présentes en base (vérifiées par la requête `group by
+category` de l'Axe FG, pas supposées), chacune mappée au même groupe
+logique que sa variante déjà couverte. `CATEGORY_DIET`/`CATEGORY_ALLERGENS`
+inchangées : elles ne servent plus que de filet de secours pour les 16
+aliments encore `NULL` (Axe FG), leur fallback `?? ["omnivore"]` reste
+sûr par défaut.
+
+### Validation
+
+`tsc --noEmit` et `eslint lib/meal-creator.ts` propres.
+
+### Validation
+
+`tsc --noEmit` et `eslint components/ui/DietPlanManager.tsx` propres.

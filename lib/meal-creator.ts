@@ -23,20 +23,47 @@ interface CuratedFood {
 
 // La catégorie de `foods` (Viandes, Poissons...) est plus fine que les 4
 // groupes du wizard — cette table fait le pont. Sucreries/Boissons/
-// Compléments/Divers ne rentrent dans aucun groupe (pas des ingrédients de
-// base pour composer un repas) et sont volontairement exclues.
+// Compléments/Divers/Epices ne rentrent dans aucun groupe (pas des
+// ingrédients de base pour composer un repas) et sont volontairement
+// exclues.
+//
+// Bug trouvé pendant l'Axe FH (MASTERCLASS.md) en creusant l'Axe FG : `foods`
+// a plusieurs orthographes de la même catégorie selon le batch de seed
+// (accents/pluriel — "Legumes"/"Légume", "Poissons"/"Poisson",
+// "Feculents"/"Féculent"/"Féculents"...). Une catégorie absente d'ici
+// n'entrait dans AUCUN groupe, quels que soient ses diet_tags réels —
+// environ 130 aliments (toute la charcuterie, les viandes rouge/blanche,
+// les œufs "Œufs", les laitiers "Laitier", etc.) n'apparaissaient donc
+// jamais dans le générateur de recette. Toutes les variantes réellement
+// présentes en base sont listées ici, pas seulement la plus fréquente.
 const CATEGORY_TO_GROUP: Record<string, FoodGroupKey> = {
   Viandes: "proteine",
+  "Viande rouge": "proteine",
+  "Viande blanche": "proteine",
+  Charcuterie: "proteine",
   Poissons: "proteine",
+  Poisson: "proteine",
   Oeufs: "proteine",
+  Œufs: "proteine",
   Laitiers: "proteine",
+  Laitier: "proteine",
   Legumineuses: "proteine",
+  Légumineuse: "proteine",
+  "Proteines vege": "proteine",
   Feculents: "glucide",
+  Féculent: "glucide",
+  Féculents: "glucide",
   Cereales: "glucide",
   Fruits: "glucide",
+  Fruit: "glucide",
   Legumes: "legume",
+  Légume: "legume",
   Oleagineux: "matiere_grasse",
+  Oléagineux: "matiere_grasse",
   Sauces: "matiere_grasse",
+  Sauce: "matiere_grasse",
+  "Matieres grasses": "matiere_grasse",
+  "Matière grasse": "matiere_grasse",
 };
 
 // Compatibilité régime/allergène au niveau de la catégorie (pas de tag par
