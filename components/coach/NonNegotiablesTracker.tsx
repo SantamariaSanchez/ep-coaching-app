@@ -60,13 +60,20 @@ function DayDot({ day }: { day: NonNegotiablesDay }) {
   );
 }
 
-function StatTile({ label, value }: { label: string; value: string | number }) {
+// `target` : repère facultatif issu des objectifs hebdo du Mastermind
+// ("5 appels stratégiques par semaine"), affiché en comparaison, jamais
+// comme un seuil de réussite/échec strict — Santamaria a explicitement
+// dit que ces chiffres ne sont pas à prendre au pied de la lettre.
+function StatTile({ label, value, target }: { label: string; value: string | number; target?: number }) {
   return (
     <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(137,4,4,0.06)", border: `1px solid ${BORDER}` }}>
       <p style={{ margin: 0, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: DIM }}>
         {label}
       </p>
-      <p style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 800, color: "#fff" }}>{value}</p>
+      <p style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 800, color: "#fff" }}>
+        {value}
+        {target !== undefined && <span style={{ fontSize: 11, fontWeight: 600, color: DIM }}> / {target} visé</span>}
+      </p>
     </div>
   );
 }
@@ -291,7 +298,7 @@ export default function NonNegotiablesTracker({
           <StatTile label="Vues cumulées" value={weeklyStats.totalViews.toLocaleString("fr-FR")} />
           <StatTile label="Engagement" value={weeklyStats.totalEngagement.toLocaleString("fr-FR")} />
           <StatTile label="Nouveaux leads" value={weeklyStats.newLeads} />
-          <StatTile label="Appels bookés" value={weeklyStats.callsBooked} />
+          <StatTile label="Appels bookés" value={weeklyStats.callsBooked} target={5} />
           <StatTile label="Appels faits" value={weeklyStats.callsDone} />
           <StatTile label="Ventes closes" value={weeklyStats.callsClosed} />
           <StatTile
