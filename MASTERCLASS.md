@@ -8254,3 +8254,73 @@ par être utilisée.
 
 `tsc --noEmit` et `eslint lib/plan-generator.ts
 "app/dashboard/coach/clients/[id]/autogenerate/actions.ts"` propres.
+
+## FM — Périodisation de mésocycle (Axe 12, VISION.md)
+
+Demande explicite : "des plus gros chantiers". Confirmé sur la
+périodisation de mésocycle après avoir proposé le choix (`AskUserQuestion`)
+entre ça, la suite du pilotage business Mastermind, ou autre chose. Voir
+VISION.md Axe 12 pour le "quoi/pourquoi" côté produit — cette entrée
+couvre le détail technique.
+
+**Schéma** : `supabase/migrations/20260923_program_mesocycle.sql` ajoute
+`programs.mesocycle_start_date` (date) et `programs.mesocycle_weeks`
+(int, 2-12, `NOT VALID` check comme `20260805k...`). Les deux nullable :
+un programme sans mésocycle configuré n'est jamais affecté.
+
+**Calcul** (`lib/mesocycle.ts`, pur, testable) : `computeMesocycleStatus`
+dérive la semaine courante (1-indexée, plafonnée à `totalWeeks`) à partir
+de la date de départ et d'aujourd'hui, signale `isOverdue` si le bloc
+prévu est déjà fini, et calcule un `volumeFactor` (0-1) — montée linéaire
+de 70% à 100% entre la semaine 1 et l'avant-dernière, 50% pour la
+dernière semaine (décharge). 70% de départ choisi comme repère simple,
+pas une prétention de calculer le MEV réel de CE client sans données
+pour le faire.
+
+**UI coach** (`ProgramEditor.tsx`, Phase Structure) : case à cocher
+"Suivre un mésocycle" qui révèle date de départ + durée, avec le statut
+calculé affiché en direct. `VolumeBudgetReviewPanel` (Phase Livraison)
+affiche un bandeau de statut et ajuste l'affichage de la cible ("visé
+(plein)") par le facteur de la semaine en cours — le budget saisi reste
+la cible PLEINE (avant-dernière semaine), jamais réécrit, seul l'affichage
+change.
+
+**Persistance à travers les sauvegardes** : `saveProgramForClient`
+recrée un nouveau programme à CHAQUE sauvegarde (désactive l'ancien,
+insère un nouveau — commentaire existant du fichier, pattern antérieur à
+cette session). Sans précaution, la date de départ du mésocycle aurait
+été perdue à la moindre petite modif du programme. `initFromProgram`
+recharge les deux champs depuis le programme actif à l'ouverture de
+l'éditeur, et `handleSave` les renvoie tels quels (modifiables
+explicitement, jamais réinitialisés en silence) — même logique déjà en
+place pour `objective`/`volume_targets`. Un bug identique a été évité
+dans `loadTemplate` (chargement d'un modèle) : le setState y reconstruit
+un objet complet sans spread, oublié une première fois puis corrigé
+avant commit (`tsc` l'a signalé immédiatement).
+
+**Fallback colonnes manquantes** : suit exactement le pattern déjà en
+place pour la migration 20260806 (`isUnknownColumnError`) — 3 niveaux
+d'insertion (tout, puis sans le mésocycle si sa migration n'est pas
+encore appliquée, puis sans aucun champ de conception en dernier
+recours), pour ne jamais perdre `objective`/`coach_notes`/`volume_targets`
+juste parce que CETTE migration précise n'a pas encore été lancée.
+
+**Affichage client/coach** : `MesocycleStatusBanner` (nouveau composant
+partagé) affiché sur les 3 pages qui montrent un programme actif —
+`app/dashboard/client/program/page.tsx`, `app/dashboard/coach/moi/programme/page.tsx`,
+`components/ui/ClientProgramView.tsx` (page dédiée coach + onglet
+`ClientProfileTabs`). Purement informatif ("Semaine 3/5 de ton bloc"),
+jamais bloquant.
+
+**Important** : migration écrite et committée mais PAS appliquée par moi
+en base (action `apply_migration` bloquée par le classifieur auto-mode
+sur cette session, "Modify Shared Resources") — à lancer manuellement
+dans le Supabase SQL Editor, voir `supabase/migrations/20260923_program_mesocycle.sql`.
+
+### Validation
+
+`tsc --noEmit` et `eslint lib/mesocycle.ts utils/programs.ts
+components/ui/ProgramEditor.tsx components/ui/MesocycleStatusBanner.tsx
+components/ui/ClientProgramView.tsx "app/dashboard/client/program/page.tsx"
+"app/dashboard/coach/moi/programme/page.tsx"` propres. Pas testé
+visuellement (pas de navigateur dans cet environnement).

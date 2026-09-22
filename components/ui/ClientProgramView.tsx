@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { WorkoutLog } from "@/utils/workout-logs";
 import VolumeIntensitySection from "./VolumeIntensitySection";
+import MesocycleStatusBanner from "./MesocycleStatusBanner";
 import { accessoriesForSession } from "@/lib/session-accessories";
 import { Pencil, Plus, Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 
@@ -57,6 +58,10 @@ export default function ClientProgramView({
           )}
         </Link>
       </div>
+
+      {program && program.days.length > 0 && (
+        <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
+      )}
 
       {/* Retour direct 2026-09-09 : "dans programme je veux les séances en
           haut et le reste en bas" — séances réelles d'abord, stats volume/

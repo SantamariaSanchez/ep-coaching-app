@@ -11,6 +11,7 @@ import { saveCurrentProgramAsTemplate } from "@/app/dashboard/coach/clients/[id]
 import ProgramEditor from "@/components/ui/ProgramEditor";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
+import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { saveOwnCoachProgram } from "./actions";
@@ -54,6 +55,7 @@ export default async function CoachMonProgrammePage() {
           défaut, voir ProgramDaysGrid), stats volume/intensité après. */}
       {program && program.days.length > 0 && (
         <>
+          <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
           <div style={{ marginBottom: 24 }}>
             <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
           </div>

@@ -400,6 +400,37 @@ Triage fait avant de construire, pas tout pris au pied de la lettre :
   déjà tracké côté Notion ("Niveau 3, objectif 4"), pas de raison de le
   dupliquer en code sans un besoin applicatif clair.
 
+## Axe 12 — NOUVEAU (2026-09-23) : périodisation de mésocycle
+
+**Statut : première brique livrée (2026-09-23).**
+
+Demande explicite : "des plus gros chantiers", confirmée sur la
+proposition "périodisation de mésocycle" plutôt que sur les deux autres
+pistes proposées (suite du pilotage business Mastermind, ou une
+direction encore différente). Le programme était jusqu'ici statique :
+aucune notion de "semaine 3 sur 5" ni de montée de volume programmée à
+l'avance — un deload n'était que DÉTECTÉ après coup par stagnation
+(`ExerciseProgressionChart`), jamais PLANIFIÉ dès la conception.
+
+- **Livré** : deux champs optionnels sur `programs`
+  (`mesocycle_start_date`, `mesocycle_weeks`, voir `lib/mesocycle.ts`).
+  Un programme sans mésocycle configuré garde exactement son
+  comportement historique. Quand activé (case à cocher dans
+  `ProgramEditor`, Phase Structure) : montée linéaire du volume de 70% à
+  100% du budget visé entre la semaine 1 et l'avant-dernière semaine,
+  puis décharge automatique à ~50% pour la dernière semaine du bloc.
+  Affiché comme repère de calcul dans le panneau Volume &amp; intensité
+  (jamais une réécriture automatique des séries — le coach ajuste
+  lui-même), et comme bandeau informatif côté client/coach sur leurs
+  pages "Mon programme" respectives (`MesocycleStatusBanner`).
+- **Pas fait (délibérément, pour une première brique)** : pas de
+  relance automatique d'un nouveau mésocycle en fin de bloc (juste un
+  signal "bloc terminé, à relancer"), pas de réécriture automatique des
+  séries d'exercice selon le facteur de volume calculé, pas de
+  périodisation par exercice individuel (seulement au niveau du budget
+  de volume par groupe musculaire, cohérent avec `VolumeBudgetReviewPanel`
+  déjà existant).
+
 ## Décision explicite (2026-08-19) sur la gouvernance de ces chantiers
 
 "Je veux que toutes les décisions, ça soit principalement moi" —

@@ -9,6 +9,7 @@ import ProgramPresetSelector from "@/components/ui/ProgramPresetSelector";
 import ProgramFromScratchSection from "@/components/ui/ProgramFromScratchSection";
 import VolumeIntensitySection from "@/components/ui/VolumeIntensitySection";
 import ProgramDaysGrid from "@/components/ui/ProgramDaysGrid";
+import MesocycleStatusBanner from "@/components/ui/MesocycleStatusBanner";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import { getAccessoriesByExerciseName } from "@/utils/exercise-library";
 import { saveOwnProgram } from "./actions";
@@ -52,6 +53,7 @@ export default async function ClientProgramPage() {
             "à prévoir" contrairement aux autres pages de programme. */}
         {program && program.days.length > 0 && (
           <>
+            <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
             <div className="mb-6">
               <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
             </div>
@@ -138,6 +140,7 @@ export default async function ClientProgramPage() {
         </div>
       ) : (
         <>
+          <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
           <div style={{ marginBottom: 24 }}>
             <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
           </div>
