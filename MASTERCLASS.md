@@ -7711,3 +7711,54 @@ l'inverse.
 comme toujours sur ce chantier, à confirmer visuellement que 0° est
 bien la bonne valeur sur le téléphone réel (le bouton "Tourner" reste
 disponible sinon).
+
+## FA — Toute l'appli lente : fonctions Vercel à Washington, base Supabase à Francfort (2026-09-22)
+
+Retour direct, cette fois sur l'appli entière et pas seulement le
+prompteur : "10s pour ouvrir l'appli, 10s à chaque onglet." Investigation
+par les données réelles (API Vercel + API Supabase), pas par
+raisonnement à distance sur le code applicatif.
+
+**Diagnostic** : `mcp__Vercel__get_deployment` sur le dernier déploiement
+production montrait `"regions": ["iad1"]` (Washington DC, la région par
+défaut de Vercel) alors que `mcp__Supabase__get_project` montrait
+`"region": "eu-central-1"` (Francfort) pour la base de données. Chaque
+appel Supabase depuis une fonction serverless (middleware `getUser()`,
+layout `getUser()`/`getProfile()`, requêtes propres à chaque page)
+traversait donc l'Atlantique dans les deux sens — un problème
+d'infrastructure pur, invisible dans le code applicatif lui-même
+(aucune des optimisations déjà faites cette session — cache, prefetch,
+allègement de payload — ne pouvait le corriger, puisqu'elles agissent
+toutes APRÈS que la fonction ait déjà payé cette latence réseau pour
+atteindre la base). Repéré en creusant les logs `runtime` Vercel : une
+rafale de ~12 requêtes serverless simultanées (le préchauffage des
+sous-onglets posé à l'Axe ER) suffisait à rendre le symptôme flagrant,
+mais la cause de fond touchait déjà CHAQUE navigation, prefetch ou pas.
+
+**Fix** : `vercel.json` → `"regions": ["fra1"]` (Francfort, la région
+Vercel la plus proche de Supabase). Vérifié utile de confirmer plutôt
+que de supposer : le plan Hobby aurait pu restreindre la sélection de
+région à `iad1` uniquement (une limitation historique connue de Vercel).
+Après déploiement, `get_deployment` sur le nouveau build confirme
+`"regions": ["fra1"]` — le plan Hobby a bien accepté le changement, pas
+de blocage. Chaque requête Supabase passe désormais par un aller-retour
+réseau proche de zéro au lieu de ~150-300ms par appel, sur CHAQUE page,
+CHAQUE navigation — l'effet attendu dépasse largement tout ce qui a été
+réglé côté code cette session.
+
+**Pourquoi ce n'était pas visible avant** : ce projet n'avait jamais eu
+de raison de choisir explicitement une région Vercel — `regions` était
+absent de `vercel.json` depuis le début, donc Vercel appliquait
+silencieusement son défaut (`iad1`) sans que personne ne le décide. Un
+mésalignement entre la région de calcul et la région de la base de
+données ne produit aucune erreur, aucun log d'avertissement — juste une
+lenteur diffuse sur absolument tout, le genre de cause qui se cache
+derrière "l'appli est lente" sans qu'aucune page précise ne semble
+fautive.
+
+### Validation
+
+Vérifié par les données réelles des deux plateformes (région Supabase
+via `get_project`, région de déploiement AVANT et APRÈS via
+`get_deployment`), pas supposé. Reste à confirmer par le ressenti réel
+de Santamaria sur son téléphone une fois ce déploiement propagé.
