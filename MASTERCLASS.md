@@ -8096,3 +8096,32 @@ génération automatique par mot-clé non relue), listes exactes tirées
 d'une requête `execute_sql` réelle sur la base, pas supposées. Couverture
 finale re-vérifiée par requête après application (`792/808`), pas
 seulement supposée correcte.
+
+## FH — Le picker d'aliments n'exploitait pas encore les tags réels de l'Axe FG (2026-09-22)
+
+Immédiatement après l'Axe FG : la donnée `diet_tags`/`allergens` par
+aliment existait enfin en base, mais le picker de recherche d'aliment
+dans `DietPlanManager.tsx` (construction d'un plan nutritionnel) ne
+faisait toujours qu'afficher un badge d'avertissement APRÈS sélection
+(`checkFoodWatch`) — jamais un vrai filtre à la recherche. Un coach avec
+un client vegan voyait "Poulet" dans les résultats de recherche au même
+niveau que "Lentilles", juste avec une petite icône d'alerte à repérer.
+
+**Fix** : case à cocher "Masquer les aliments non compatibles régime
+{régime}" au-dessus du champ de recherche, visible uniquement quand le
+client a un régime déclaré autre qu'omnivore, cochée par défaut. Filtre
+UNIQUEMENT sur les aliments dont `diet_tags` est renseigné (donc
+vérifié) — un aliment pas encore tagué (`NULL`) reste toujours affiché,
+jamais masqué par supposition, cohérent avec le principe de l'Axe FG
+("NULL ne veut jamais dire sans risque, mais ne veut jamais dire risqué
+non plus"). Compteur affiché entre parenthèses (combien sont masqués),
+et message dédié quand le filtre vide la liste, avec un rappel qu'on
+peut le désactiver pour voir aussi les aliments pas encore vérifiés.
+
+**Pas testé visuellement** (pas de navigateur dans cet environnement) —
+vérifié par relecture de la logique et `tsc`/`eslint` propres uniquement.
+À vérifier en conditions réelles sur le site déployé.
+
+### Validation
+
+`tsc --noEmit` et `eslint components/ui/DietPlanManager.tsx` propres.

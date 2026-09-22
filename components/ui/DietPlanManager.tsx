@@ -459,13 +459,33 @@ export function PlanBuilder({
   const watchContext = useMemo(() => buildFoodWatchContext(intake), [intake]);
   const hasWatch = hasFoodWatchContext(watchContext);
 
-  const filtered = useMemo(() => {
+  // Masquer les aliments non compatibles avec le régime déclaré du client
+  // (Axe FG, MASTERCLASS.md) — activé par défaut dès qu'un régime
+  // restrictif existe, mais uniquement sur les aliments dont on est SÛR
+  // (food.diet_tags renseigné) : un aliment pas encore vérifié (diet_tags
+  // null) reste toujours affiché, jamais masqué par supposition.
+  const [hideIncompatible, setHideIncompatible] = useState(true);
+
+  const searchMatches = useMemo(() => {
     const q = search.toLowerCase().trim();
-    if (!q) return foods.slice(0, 30);
-    return foods
-      .filter((f) => f.name.toLowerCase().includes(q) || (f.category ?? "").toLowerCase().includes(q))
-      .slice(0, 30);
+    if (!q) return foods;
+    return foods.filter((f) => f.name.toLowerCase().includes(q) || (f.category ?? "").toLowerCase().includes(q));
   }, [foods, search]);
+
+  const diet = watchContext.diet;
+
+  const incompatibleCount = useMemo(() => {
+    if (!diet) return 0;
+    return searchMatches.filter((f) => f.diet_tags && !f.diet_tags.includes(diet)).length;
+  }, [searchMatches, diet]);
+
+  const filtered = useMemo(() => {
+    const base =
+      diet && hideIncompatible
+        ? searchMatches.filter((f) => !f.diet_tags || f.diet_tags.includes(diet))
+        : searchMatches;
+    return base.slice(0, 30);
+  }, [searchMatches, diet, hideIncompatible]);
 
   const dayMeals = useMemo(
     () => meals.filter((m) => m.day === currentDay),
@@ -1360,7 +1380,7 @@ export function PlanBuilder({
                     </p>
                   </div>
                 )}
-                <div className="px-5 py-3 flex-shrink-0">
+                <div className="px-5 py-3 flex-shrink-0 space-y-2">
                   <input
                     autoFocus
                     value={search}
@@ -1368,9 +1388,21 @@ export function PlanBuilder({
                     placeholder="Rechercher un aliment…" aria-label="Rechercher un aliment…"
                     className={inputCls}
                   />
+                  {watchContext.diet && (
+                    <label className="flex items-center gap-2 text-[10.5px] text-[#F5EDED]/45 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={hideIncompatible}
+                        onChange={(e) => setHideIncompatible(e.target.checked)}
+                        className="accent-[#E01E1E]"
+                      />
+                      Masquer les aliments non compatibles régime {watchContext.dietLabel?.toLowerCase()}
+                      {incompatibleCount > 0 && ` (${incompatibleCount})`}
+                    </label>
+                  )}
                 </div>
                 <div className="flex-1 overflow-y-auto px-2 pb-2">
-                  {filtered.length === 0 && (
+                  {filtered.length === 0 && search.trim() && (
                     <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
                       <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
                       <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
@@ -1378,6 +1410,17 @@ export function PlanBuilder({
                         <span className="text-white font-bold"> « {search.trim()} »</span>.
                         <br />
                         Essaie un autre terme, ou ajoute le à la bibliothèque d&apos;aliments.
+                        {hideIncompatible && watchContext.diet && " Le filtre régime peut aussi en cacher certains."}
+                      </p>
+                    </div>
+                  )}
+                  {filtered.length === 0 && !search.trim() && (
+                    <div className="px-3 py-8 flex flex-col items-center gap-2 text-center">
+                      <Search size={18} className="text-[#F5EDED]/15" strokeWidth={1.5} />
+                      <p className="text-xs text-[#F5EDED]/35 leading-relaxed">
+                        Aucun aliment compatible régime {watchContext.dietLabel?.toLowerCase()} trouvé.
+                        <br />
+                        Désactive le filtre ci-dessus pour voir aussi les aliments non vérifiés.
                       </p>
                     </div>
                   )}
