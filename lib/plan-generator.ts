@@ -355,15 +355,23 @@ export interface ProgramSuggestion {
 // Suggestions pures, jamais un programme prêt à sauvegarder — pas de sets/reps
 // prescrits, pas d'ExerciseInput/DayInput : le coach construit le programme
 // lui-même (via le picker normal) et pioche dans ces pistes s'il veut.
+// `injuries` ajouté (Axe FL, MASTERCLASS.md) : contrairement à
+// findSwapCandidate (qui inclut déjà intake.injuries depuis un fix
+// antérieur), cette fonction — qui produit les toutes premières
+// suggestions vues par le coach — n'excluait que le matériel détesté et
+// les exercices signalés problématiques, jamais les BLESSURES déclarées.
+// Même donnée, même risque (suggérer un mouvement qui aggrave une
+// blessure connue), la cohérence entre les deux fonctions manquait.
 export function buildProgramSuggestions(
   sessionsPerWeek: number,
   library: LibraryExercise[],
   dislikedEquipment: string | null,
   exercisesProblematic: string | null,
-  trainingAccess: ClientIntake["training_access"] = null
+  trainingAccess: ClientIntake["training_access"] = null,
+  injuries: string | null = null
 ): ProgramSuggestion[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
+  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
 
   return template.map((day) => ({
     dayLabel: day.label,
@@ -413,10 +421,11 @@ export function generateProgramDraft(
   library: LibraryExercise[],
   dislikedEquipment: string | null,
   exercisesProblematic: string | null,
-  trainingAccess: ClientIntake["training_access"] = null
+  trainingAccess: ClientIntake["training_access"] = null,
+  injuries: string | null = null
 ): GeneratedDay[] {
   const template = SPLIT_TEMPLATES[clampSessions(sessionsPerWeek)];
-  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""}`;
+  const excludeText = `${dislikedEquipment ?? ""} ${exercisesProblematic ?? ""} ${injuries ?? ""}`;
   const allowed = allowedEquipmentTypes(trainingAccess);
   // Fait tourner le choix quand un même groupe revient plusieurs fois dans
   // la semaine (ex. Legs A / Legs B) plutôt que de recoller le même

@@ -8175,6 +8175,20 @@ le choix (aucune régression possible : le round-robin existant continue
 de fonctionner à l'identique quand aucune position alternative n'est
 disponible).
 
+**Correction (2026-09-22, en creusant l'Axe FL ci-dessous)** : vérifié
+après coup que `generateProgramDraft` n'a AUCUN appelant dans tout le
+codebase (`grep` exhaustif) — la fonction réellement utilisée en
+production pour l'auto-génération (`/dashboard/coach/clients/[id]/autogenerate`)
+est `buildProgramSuggestions`, une fonction sœur différente (suggestions
+multiples à copier à la main, pas un choix ferme). Cet Axe FJ a donc
+amélioré une fonction non branchée à l'UI à ce jour — le commentaire du
+code ("un vrai point de départ éditable, pas une liste à retranscrire")
+suggère une fonctionnalité prévue mais jamais câblée, pas du code mort
+accidentel à supprimer sans certitude. Le fix reste correct et cohérent
+si/quand cette fonction est un jour branchée, mais n'a aujourd'hui aucun
+effet visible pour un coach — signalé honnêtement plutôt que de laisser
+croire à un impact en production.
+
 ### Validation
 
 `tsc --noEmit` et `eslint lib/plan-generator.ts` propres.
@@ -8209,3 +8223,34 @@ vérifié par relecture de la logique et `tsc`/`eslint` propres uniquement.
 `tsc --noEmit` et `eslint utils/nutrition-utils.ts
 components/ui/MicroBarList.tsx components/ui/DietPlanManager.tsx
 components/ui/CoachClientNutritionTabs.tsx` propres.
+
+## FL — Les toutes premières suggestions de programme ignoraient les blessures déclarées (2026-09-22)
+
+En creusant l'Axe FJ (voir la correction ajoutée ci-dessus) : la vraie
+fonction utilisée en production pour l'auto-génération de programme
+(`buildProgramSuggestions`, appelée par `generatePlanSuggestions` sur
+`/dashboard/coach/clients/[id]/autogenerate`) n'excluait que le matériel
+détesté et les exercices signalés problématiques de son `excludeText` —
+jamais `intake.injuries`. Exactement le même bug que celui déjà trouvé et
+corrigé sur `findSwapCandidate` (voir son commentaire dans le code, fix
+antérieur à cette session), mais resté non corrigé sur la fonction
+sœur qui produit les tout premiers exercices vus par le coach. Le
+risque réel était modéré (ce sont des suggestions à comparer, jamais
+sauvegardées automatiquement, et `checkExerciseConflicts` avertit déjà
+après coup si le coach reporte l'exercice dans l'éditeur), mais il n'y a
+aucune raison de laisser l'incohérence entre les deux fonctions plutôt
+que d'appliquer la même règle de sécurité aux deux.
+
+**Fix** : `buildProgramSuggestions` prend un paramètre `injuries`
+(optionnel, défaut `null`, aucune régression sur un éventuel autre
+appelant) ajouté à son `excludeText`, et son unique appelant
+(`app/dashboard/coach/clients/[id]/autogenerate/actions.ts`) lui passe
+maintenant `intake.injuries`. Même ajout, par cohérence, sur
+`generateProgramDraft` (non branchée à l'UI à ce jour, voir Axe FJ) pour
+que les deux fonctions restent alignées quel que soit celle qui finit
+par être utilisée.
+
+### Validation
+
+`tsc --noEmit` et `eslint lib/plan-generator.ts
+"app/dashboard/coach/clients/[id]/autogenerate/actions.ts"` propres.
