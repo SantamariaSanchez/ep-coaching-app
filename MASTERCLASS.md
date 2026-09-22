@@ -8068,11 +8068,23 @@ encore `NULL`, et le bandeau de vigilance nutrition passe de "probable"
 (UI de groupement, filtres existants sur la valeur exacte) qui mérite un
 chantier séparé plutôt que d'être glissé dans cette migration.
 
-**Important** : la migration ajoutée ci-dessus modifie 808 lignes en
-production — elle doit être exécutée manuellement dans le Supabase SQL
-Editor (pas automatisée par le déploiement Vercel, comme toute migration
-de ce repo). Elle a été écrite et committée mais PAS appliquée par moi en
-base : à lancer manuellement, voir `supabase/migrations/20260922_foods_diet_tags_allergens.sql`.
+**Important** : migration appliquée en production via le MCP Supabase
+(`apply_migration`), pas seulement committée en local — vérifié après coup
+par une requête réelle (`792/808` lignes avec `diet_tags`, `302/808` avec
+`allergens`). Les `16` lignes restées `NULL` sont les cas ambigus
+volontaires ci-dessus (Granola, Sauce curry, Gnocchi, Réglisse,
+Margarine, Brandade de morue, Tapenade, Smoothie banane...), vérifiées
+une par une, pas une erreur de couverture.
+
+**Correctif immédiat** (`20260923_foods_diet_tags_missed_items.sql`) :
+en relisant la liste des lignes `NULL`, 5 étaient de vrais oublis (pas
+des cas ambigus) — "Baguette" (catégorie Cereales, distincte de
+"Baguette tradition" dans Feculents qui elle avait été traitée), "Avocat"
+(catégorie "Matière grasse", oublié de la liste d'huiles), "Miel de
+manuka"/"Miel toutes fleurs" (catégorie Sucreries, seul "Miel" dans
+Sucrant avait été traité), et "Whey" nu (catégorie Complements, seules
+les variantes aromatisées avaient été listées). Corrigés et appliqués de
+la même façon.
 
 ### Validation
 
@@ -8081,4 +8093,6 @@ utils/nutrition.ts` propres. `next build` échoue sur le même point sans
 rapport que l'Axe FF (résolution réseau de next/font/google). Classification
 des 808 lignes vérifiée par relecture manuelle nom par nom (pas de
 génération automatique par mot-clé non relue), listes exactes tirées
-d'une requête `execute_sql` réelle sur la base, pas supposées.
+d'une requête `execute_sql` réelle sur la base, pas supposées. Couverture
+finale re-vérifiée par requête après application (`792/808`), pas
+seulement supposée correcte.
