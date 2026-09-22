@@ -363,6 +363,43 @@ directe sans validation humaine, fréquence quotidienne.
   représentent l'organigramme d'EP Coaching elle-même, pas un outil à
   dupliquer par coach tiers).
 
+## Axe 11 — NOUVEAU (2026-09-22) : pilotage business du coach (Mastermind ThePrepDad)
+
+**Statut : première brique livrée (2026-09-22).**
+
+Demande directe, contenu du Mastermind ThePrepDad fourni verbatim (valeurs,
+"Daily Non-Negotiables", "les données à tracker", "vos victoires",
+"niveaux et évaluations"), avec la précision explicite que les chiffres du
+Mastermind ne sont pas à copier tels quels : *"garde en tête que tout n'est
+pas à prendre mais chaque chose logique à implémenter alors tu le fais"*.
+Triage fait avant de construire, pas tout pris au pied de la lettre :
+
+- **Livré** : `/dashboard/coach/business/pilotage` — non-négociables
+  quotidiens (lecture, pleine conscience, objectifs revus matin/midi/soir,
+  création de contenu, outreach — voir `lib/business-non-negotiables.ts` et
+  `supabase/migrations/20260922_business_non_negotiables.sql`), streak et
+  historique 7 jours façon `lib/habit-score.ts`, 5 objectifs du mois, et un
+  pilotage hebdo qui AGRÈGE les 5 catégories du Mastermind (audience,
+  contenu, leads, ventes, pilotage) depuis les données déjà présentes dans
+  l'appli (`coach_scripts`, `leads`, `sales_calls`) plutôt que de faire
+  ressaisir des chiffres qui existent déjà ailleurs.
+- **Pas repris tel quel** : le pilier "Pas" (10 000/jour) réutilise
+  `step_logs`/`step_settings`, déjà génériques par utilisateur — pas de
+  nouvelle colonne redondante. Aucun seuil numérique du Mastermind
+  (10 000 pas, 10 pages, 100 min de contenu...) n'est codé en dur comme
+  objectif obligatoire : un jour est simplement "respecté" s'il y a une
+  vraie activité sur au moins un pilier, les chiffres réels restent
+  ajustables par Santamaria.
+- **Déjà existant, pas dupliqué** : "Vos victoires" du Mastermind a un
+  équivalent réel dans l'appli (Communauté → Victoires, `type: "victory"`
+  dans `utils/community.ts`), coach compris — pas reconstruit en parallèle.
+- **Volontairement pas fait** : le système "Niveaux et évaluations"/PMPC
+  (progression gamifiée du Mastermind lui-même, QCM/cas pratique avant de
+  passer au niveau suivant) reste un suivi personnel de Santamaria comme
+  élève du Mastermind, pas une fonctionnalité de l'appli EP Coaching —
+  déjà tracké côté Notion ("Niveau 3, objectif 4"), pas de raison de le
+  dupliquer en code sans un besoin applicatif clair.
+
 ## Décision explicite (2026-08-19) sur la gouvernance de ces chantiers
 
 "Je veux que toutes les décisions, ça soit principalement moi" —

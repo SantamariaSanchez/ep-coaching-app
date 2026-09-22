@@ -13,7 +13,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck,
+  BookOpenCheck, Gauge,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -201,6 +201,14 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Mon business",
     items: [
       { label: "Développer mon business", icon: Rocket, segment: "business" },
+      // Non-négociables quotidiens + les 5 catégories de données hebdo du
+      // Mastermind ThePrepDad (lecture, pleine conscience, objectifs,
+      // création, outreach — agrégées avec coach_scripts/leads/sales_calls
+      // déjà existants, voir lib/business-non-negotiables.ts). Demande
+      // directe 2026-09-22, contenu Mastermind fourni verbatim. Même
+      // schéma que "Publicité" juste en dessous : sa propre page, pas une
+      // section de BusinessHub.
+      { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
       // Outil de pilotage manuel de la pub payante (Google/Meta/TikTok
       // Ads) — demande directe du fondateur, aucun outil de ce type
       // n'existait. Pas d'intégration API régie, juste une saisie manuelle
