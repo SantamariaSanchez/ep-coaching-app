@@ -22,9 +22,16 @@ import {
   Map, ClipboardCheck, Image as ImageIcon, UtensilsCrossed, Video, Lightbulb, Sunrise, CheckCircle2, Circle,
   Droplet,
   Gift,
+  Award,
 } from "lucide-react";
 
 const ENGAGEMENT_ITEMS = [
+  {
+    href: "/dashboard/client/communaute/classement",
+    icon: Award,
+    title: "Le classement",
+    desc: "Vois où tu te situes parmi les membres les plus actifs.",
+  },
   {
     href: "/dashboard/client/communaute/victoires",
     icon: Trophy,
@@ -109,6 +116,13 @@ const GUIDE_ITEMS = [
     icon: Trophy,
     title: "Victoires",
     desc: "Partage tes réussites (texte ou photo) avec la communauté.",
+    locked: false,
+  },
+  {
+    href: "/dashboard/client/communaute/classement",
+    icon: Award,
+    title: "Classement",
+    desc: "Vois où tu te situes parmi les membres les plus actifs.",
     locked: false,
   },
   {

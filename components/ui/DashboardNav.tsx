@@ -13,7 +13,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Gauge,
+  BookOpenCheck, Gauge, Award,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -396,6 +396,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "Communauté",
     items: [
+      { label: "Classement", icon: Award, segment: "communaute/classement" },
       { label: "Victoires", icon: Trophy, segment: "communaute/victoires" },
       { label: "Questions", icon: HelpCircle, segment: "communaute/questions" },
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
