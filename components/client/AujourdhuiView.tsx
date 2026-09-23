@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import Link from "next/link";
 import {
   Quote, Calendar, Moon, Smartphone, Target, Utensils, Sparkles, EyeOff,
@@ -65,8 +65,7 @@ export default function AujourdhuiView({
   supplements,
   nutrition,
   steps,
-  weeklyConsistency,
-  weeklyRecap,
+  getWeeklyExtras,
 }: {
   firstName: string;
   /** Heure locale Paris (0-23), pour la salutation adaptée. */
@@ -89,12 +88,27 @@ export default function AujourdhuiView({
   nutrition: { logged: number; target: number | null } | null;
   /** Pas du jour — actual = null tant qu'aucune source (Oura, manuel) n'a rien remonté. */
   steps: { actual: number | null; goal: number };
-  /** % de jours actifs cette semaine (entraînement/nutrition/bilan confondus), null si non calculable. */
-  weeklyConsistency: number | null;
-  /** Même récap que la notification push hebdo (séances/nutrition/poids), null si la requête a échoué. */
-  weeklyRecap: WeeklyRecapStats | null;
   supplements: ClientSupplement[];
+  // Perf (retour direct : "quand j'ouvre l'appli c'est 5s") : weeklyConsistency
+  // (% de jours actifs cette semaine) et weeklyRecap (même récap que la
+  // notification push hebdo) ne sont qu'un bonus affiché EN PLUS du reste —
+  // chargés ici après le montage plutôt que d'allonger le Promise.all
+  // bloquant de la page serveur (voir app/dashboard/client/aujourdhui/page.tsx).
+  getWeeklyExtras: () => Promise<{ weeklyRecap: WeeklyRecapStats | null; weeklyConsistency: number | null }>;
 }) {
+  const [weeklyExtras, setWeeklyExtras] = useState<{ weeklyRecap: WeeklyRecapStats | null; weeklyConsistency: number | null }>({
+    weeklyRecap: null,
+    weeklyConsistency: null,
+  });
+  useEffect(() => {
+    getWeeklyExtras().then(setWeeklyExtras).catch(() => {});
+    // Volontairement une seule fois au montage : ce bonus n'a pas besoin de
+    // se re-charger à chaque re-render (les actions qui le feraient changer
+    // — logger une séance, un repas — rechargent déjà toute la page via
+    // router.refresh() ailleurs, pas ce composant isolément).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const { weeklyRecap, weeklyConsistency } = weeklyExtras;
   const [loggedKeys, setLoggedKeys] = useState(new Set(habitLogs.map((h) => h.habit_key)));
   // Repasse détail (audit onglet Aujourd'hui, 2026-09-16) : un seul flag
   // `isPending` partagé par TOUTES les habitudes + tous les compléments

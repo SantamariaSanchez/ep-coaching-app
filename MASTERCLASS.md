@@ -8324,3 +8324,78 @@ components/ui/ProgramEditor.tsx components/ui/MesocycleStatusBanner.tsx
 components/ui/ClientProgramView.tsx "app/dashboard/client/program/page.tsx"
 "app/dashboard/coach/moi/programme/page.tsx"` propres. Pas testé
 visuellement (pas de navigateur dans cet environnement).
+
+## FN — 3 retours directs : compteur nutrition à 0, lenteur au démarrage, créneau actuel (2026-09-23)
+
+### 1. "C'est toujours en 0 sur X kcal même quand je valide mon repas"
+
+Cause trouvée : `/dashboard/client/aujourdhui` lit `getTodayLogs()` (table
+`food_logs`) pour son compteur "X sur Y kcal", mais AUCUNE des fonctions
+qui écrivent dans cette table (`addFoodLog`, `removeFoodLog`,
+`logMealItems` — celle derrière le bouton "Valider le repas") ne
+revalidait cette route. L'écriture en base réussissait bien (vérifiable),
+mais le rendu serveur déjà en cache pour `/aujourdhui` ne le reflétait
+jamais tant qu'un rechargement complet ne forçait pas un nouveau fetch —
+exactement le même type de bug déjà rencontré et corrigé sur d'autres
+routes dans cette session (Axe W : `/dashboard/coach/moi/nutrition`
+oubliée par `logMealItems`, jamais recorrigé pour `/aujourdhui` depuis).
+`saveOwnNutritionProfile` (qui fixe la cible "sur Y kcal") avait le même
+trou. Les 4 fonctions revalident maintenant aussi
+`/dashboard/client/aujourdhui`.
+
+### 2. Notification NFC
+
+Vérifié : aucune mention de NFC (`NDEFReader`, permissions, manifest)
+nulle part dans le code de l'appli — recherche exhaustive sur tout le
+repo. Cette notification ne peut donc pas venir d'EP Coaching ; c'est
+très probablement le système Android du téléphone qui réagit à un tag
+NFC physique à proximité (étiquette, badge, terminal de paiement...),
+sans rapport avec l'appli. Signalé honnêtement plutôt que d'inventer un
+correctif fantôme.
+
+### 3. "Quand j'ouvre l'appli c'est 5s, trop long"
+
+Chaque fonction de données de `/dashboard/client/aujourdhui` vérifiée
+individuellement (aucune boucle N+1, aucune requête anormalement lourde)
+— mais la page attendait 11 requêtes en `Promise.all` avant de pouvoir
+rendre quoi que ce soit. `weeklyRecap` et `weeklyConsistency` (un bonus
+affiché EN PLUS du reste, jamais indispensable au premier rendu — voir
+leur propre commentaire d'origine, "Brainstorm 2 avatars") sorties de ce
+chemin bloquant : `app/dashboard/client/aujourdhui/actions.ts`
+(`getWeeklyExtras`, nouveau) les charge désormais après le montage côté
+client (`AujourdhuiView`, `useEffect` au montage), pendant que le reste de
+la page a déjà pu s'afficher avec 2 requêtes serveur de moins. Gain réel
+mais modeste — pas de garantie que ça élimine tout le délai perçu (pourrait
+aussi venir du réseau mobile, d'un cold start Vercel, ou du poids du
+bundle JS, hors de portée d'un diagnostic sans navigateur ni profiling).
+
+### 4. "Le créneau suivant c'est bien mais mieux si ça dit le créneau actuel"
+
+`MyDayCard.tsx` (dashboard coach, section "Ma journée") n'affichait que
+`nextBlock` (le prochain créneau à venir), jamais celui EN COURS.
+`app/dashboard/coach/page.tsx` calcule maintenant aussi `currentBlock`
+(un bloc où `start_time <= maintenant < end_time`) — volontairement PAS
+filtré sur l'icône "travail" contrairement à `nextBlock` (qui lui l'est,
+pour une raison différente : une PROJECTION future plus intéressante) :
+le créneau ACTUEL doit dire la vérité de ce qu'il y a à faire là, même si
+c'est du montage. La mini-carte affiche maintenant le créneau actuel en
+valeur principale ("jusqu'à HH:MM"), et le suivant en tout petit dessous
+("puis {label} à HH:MM") uniquement quand les deux existent — sinon
+retombe sur l'ancien comportement (prochain créneau normal, ou "journée
+libre").
+
+### Validation
+
+`tsc --noEmit` propre sur l'ensemble du projet. `eslint` propre sur
+chaque fichier touché individuellement
+(`app/dashboard/client/nutrition/actions.ts`,
+`app/dashboard/client/aujourdhui/page.tsx`,
+`app/dashboard/client/aujourdhui/actions.ts`,
+`components/client/AujourdhuiView.tsx`, `components/coach/MyDayCard.tsx`,
+`app/dashboard/coach/page.tsx`). `eslint .` sur l'ensemble du projet
+révèle 158 problèmes préexistants (93 erreurs, 65 warnings, dont une
+erreur `react-hooks/purity` sur `app/dashboard/coach/page.tsx:151`,
+`Date.now()` dans `nextLive`) — vérifié via `git diff` qu'aucun ne fait
+partie de mes modifications ; non corrigés ici, hors scope de cette
+demande précise. Pas testé visuellement (pas de navigateur dans cet
+environnement), en particulier le ressenti réel de lenteur au démarrage.

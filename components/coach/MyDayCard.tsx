@@ -36,6 +36,11 @@ export interface MyDayCardProps {
   tip: string;
   nutrition: { logged: number; target: number | null } | null;
   sleepHours: number | null;
+  // Retour direct : "c'est bien mais c'est mieux si ça dit le créneau
+  // actuel comme ça je sais je dois faire quoi, et en tout petit le
+  // créneau suivant" — currentBlock (celui EN COURS, start <= maintenant <
+  // end) prend la place principale, nextBlock ne reste qu'en petit dessous.
+  currentBlock: { label: string; endTime: string } | null;
   nextBlock: { label: string; startTime: string } | null;
   nextLive: { title: string; startsAt: string } | null;
   unreadPreview: UnreadPreview[];
@@ -55,6 +60,7 @@ function MiniCard({
   label,
   value,
   sub,
+  microSub,
   href,
   delay = 0,
 }: {
@@ -63,13 +69,15 @@ function MiniCard({
   label: string;
   value: string;
   sub: string;
+  /** Ligne supplémentaire, encore plus discrète que `sub` — ex. le créneau suivant, en tout petit sous le créneau actuel. */
+  microSub?: string;
   href: string;
   delay?: number;
 }) {
   return (
     <Link
       href={href}
-      aria-label={`${label} : ${value}, ${sub}`}
+      aria-label={`${label} : ${value}, ${sub}${microSub ? `, ${microSub}` : ""}`}
       className="animate-fade-up ep-press"
       style={{
         animationDelay: `${delay}ms`,
@@ -96,6 +104,11 @@ function MiniCard({
       <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)", lineHeight: 1.3 }}>
         {sub}
       </p>
+      {microSub && (
+        <p style={{ margin: 0, fontSize: 9, color: "rgba(245,237,237,0.22)", lineHeight: 1.2 }}>
+          {microSub}
+        </p>
+      )}
     </Link>
   );
 }
@@ -104,6 +117,7 @@ export default function MyDayCard({
   tip,
   nutrition,
   sleepHours,
+  currentBlock,
   nextBlock,
   nextLive,
   unreadPreview,
@@ -128,8 +142,18 @@ export default function MyDayCard({
   const sleepValue = sleepHours != null ? `${sleepHours}h` : "···";
   const sleepSub = sleepHours == null ? "pas encore loggé" : sleepHours < 6.5 ? "un peu court" : "correct";
 
-  const agendaValue = nextBlock ? nextBlock.label : "Rien de prévu";
-  const agendaSub = nextBlock ? `à ${nextBlock.startTime.slice(0, 5)}` : "journée libre";
+  // Créneau EN COURS prioritaire (label de la mini-carte adapté en
+  // conséquence) — le suivant ne reste qu'en petit dessous, jamais la
+  // valeur principale dès qu'il y a un créneau actuel à afficher.
+  const agendaLabel = currentBlock ? "Créneau actuel" : "Prochain créneau";
+  const agendaValue = currentBlock ? currentBlock.label : nextBlock ? nextBlock.label : "Rien de prévu";
+  const agendaSub = currentBlock
+    ? `jusqu'à ${currentBlock.endTime.slice(0, 5)}`
+    : nextBlock
+      ? `à ${nextBlock.startTime.slice(0, 5)}`
+      : "journée libre";
+  const agendaMicroSub =
+    currentBlock && nextBlock ? `puis ${nextBlock.label} à ${nextBlock.startTime.slice(0, 5)}` : undefined;
 
   const liveValue = nextLive ? nextLive.title : "Rien de programmé";
   const liveSub = nextLive
@@ -183,7 +207,7 @@ export default function MyDayCard({
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 10, marginBottom: 14 }}>
         <MiniCard icon={Apple} accent="#4ade80" label="Nutrition" value={nutritionValue} sub={nutritionSub} href="/dashboard/coach/moi/nutrition" delay={0} />
         <MiniCard icon={Moon} accent="#60a5fa" label="Sommeil" value={sleepValue} sub={sleepSub} href="/dashboard/coach/moi/tracking" delay={50} />
-        <MiniCard icon={CalendarClock} accent="#fb923c" label="Prochain créneau" value={agendaValue} sub={agendaSub} href="/dashboard/coach/moi/agenda" delay={100} />
+        <MiniCard icon={CalendarClock} accent="#fb923c" label={agendaLabel} value={agendaValue} sub={agendaSub} microSub={agendaMicroSub} href="/dashboard/coach/moi/agenda" delay={100} />
         <MiniCard icon={Video} accent="#c084fc" label="Prochain live" value={liveValue} sub={liveSub} href="/dashboard/coach/live" delay={150} />
         <MiniCard icon={Footprints} accent="#4ade80" label="Pas" value={stepsValue} sub={stepsSub} href="/dashboard/coach/moi/steps" delay={200} />
       </div>

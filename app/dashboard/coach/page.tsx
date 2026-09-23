@@ -123,6 +123,15 @@ export default async function CoachDashboard() {
     .filter((b) => b.day_of_week === isoDow && b.start_time >= hhmm && b.icon !== "travail")
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
 
+  // Retour direct : "c'est mieux si ça dit le créneau actuel comme ça je
+  // sais je dois faire quoi" — celui-ci n'est volontairement PAS filtré sur
+  // "travail" contrairement à nextBlock ci-dessus : si c'est vraiment ce
+  // qu'il y a à faire là, tout de suite (même du montage), c'est ça qu'il
+  // faut afficher, pas le sauter pour une projection plus "intéressante".
+  const currentBlock = scheduleBlocks
+    .filter((b) => b.day_of_week === isoDow && b.start_time <= hhmm && b.end_time > hhmm)
+    .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
+
   // Idée "onglet Aujourd'hui, suite" : le nom de séance dans l'agenda
   // ("Séance : Push"...) correspond exactement à un day_label du programme
   // actif — accessoriesForSession() existait déjà pour "Programme" et
@@ -192,6 +201,7 @@ export default async function CoachDashboard() {
         tip={getTipOfTheDay(today)}
         nutrition={nutrition}
         sleepHours={todayLog?.sleep_hours ?? null}
+        currentBlock={currentBlock ? { label: currentBlock.label, endTime: currentBlock.end_time } : null}
         nextBlock={nextBlock ? { label: nextBlock.label, startTime: nextBlock.start_time } : null}
         nextLive={nextLive ? { title: nextLive.title, startsAt: nextLive.starts_at } : null}
         unreadPreview={unreadPreview}

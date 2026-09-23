@@ -7,12 +7,11 @@ import { getTodayLog } from "@/utils/daily-logs";
 import { getClientSupplements } from "@/utils/supplements";
 import { getNutritionProfile, getTodayLogs } from "@/utils/nutrition";
 import { getStepSettings, getTodayStepsActual } from "@/utils/steps";
-import { getClientsWeeklyConsistency } from "@/lib/client-activity";
-import { getMyWeeklyRecap } from "@/lib/weekly-recap";
 import { getDailyQuote, getPromptOfDay } from "@/lib/mindset-content";
 import { todayInParis, nowInParis, weekNumber } from "@/lib/dates";
 import { toggleHabitLog, addJournalEntry } from "@/app/dashboard/client/mindset/actions";
 import { upsertDailyLog } from "@/app/dashboard/client/bilan/actions";
+import { getWeeklyExtras } from "./actions";
 import AujourdhuiView from "@/components/client/AujourdhuiView";
 
 export default async function AujourdhuiPage() {
@@ -36,9 +35,16 @@ export default async function AujourdhuiPage() {
   const { isoDow } = nowInParis();
   const subscribed = isSubscribed(profile);
 
+  // Perf (retour direct : "quand j'ouvre l'appli c'est 5s donc trop long") :
+  // weeklyConsistency et weeklyRecap sont un bonus affiché EN PLUS du reste
+  // (voir leurs commentaires d'origine plus bas dans l'historique), jamais
+  // indispensables au premier rendu — sortis de ce Promise.all bloquant,
+  // chargés après coup côté client (voir getWeeklyExtras dans ./actions.ts,
+  // appelé depuis AujourdhuiView). Ce Promise.all attend donc 2 requêtes
+  // serveur de moins avant de pouvoir rendre la page.
   const [
     allBlocks, habitLogs, biometricLogs, insights, todayLog, allSupplements,
-    nutritionProfile, todayFoodLogs, stepSettings, todaySteps, weeklyConsistencyMap, weeklyRecap,
+    nutritionProfile, todayFoodLogs, stepSettings, todaySteps,
   ] = await Promise.all([
     subscribed ? getScheduleBlocks(user.id) : Promise.resolve([]),
     getHabitLogs(user.id, todayStr),
@@ -62,17 +68,6 @@ export default async function AujourdhuiPage() {
     getTodayLogs(user.id, todayStr),
     getStepSettings(user.id),
     getTodayStepsActual(user.id),
-    // Même métrique que le coach voit déjà sur CHAQUE client
-    // (getClientsWeeklyConsistency, ClientsSection.tsx) — jamais montrée
-    // au client lui-même jusqu'ici. Accepte déjà un tableau d'ids, donc
-    // aucun nouveau code de calcul, juste un appel avec un seul id.
-    getClientsWeeklyConsistency([user.id]),
-    // Brainstorm "2 avatars" (2026-09-10) : ce même récap n'existait qu'en
-    // notification push hebdo (app/api/cron/weekly-progress-recap), facile
-    // à manquer ou désactiver — et jusqu'ici réservé aux clients coachés,
-    // corrigé dans ce même chantier. Affiché ici en plus, pas à la place :
-    // toujours consultable, pas juste vu en passant dans les notifs.
-    getMyWeeklyRecap(user.id),
   ]);
   const activeSupplements = allSupplements.filter((s) => s.status === "active");
 
@@ -108,8 +103,7 @@ export default async function AujourdhuiPage() {
       supplements={activeSupplements}
       nutrition={nutrition}
       steps={{ actual: todaySteps, goal: stepSettings.daily_goal }}
-      weeklyConsistency={weeklyConsistencyMap[user.id] ?? null}
-      weeklyRecap={weeklyRecap}
+      getWeeklyExtras={getWeeklyExtras}
     />
   );
 }

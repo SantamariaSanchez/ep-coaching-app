@@ -77,6 +77,10 @@ export async function saveOwnNutritionProfile(
   }
 
   revalidatePath(`/dashboard/client/nutrition`);
+  // Retour direct : "c'est toujours en 0 sur X kcal" — /dashboard/client/
+  // aujourdhui lit aussi nutritionProfile.calories_target (la cible "sur X"
+  // affichée), jamais revalidée jusqu'ici quand ce profil change.
+  revalidatePath("/dashboard/client/aujourdhui");
   return {};
 }
 
@@ -264,6 +268,12 @@ export async function addFoodLog(params: {
     // donc les deux doivent être invalidées.
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
+    // Retour direct : "c'est toujours en 0 sur X kcal" — /dashboard/client/
+    // aujourdhui lit les mêmes food_logs (getTodayLogs) pour son compteur du
+    // jour, jamais revalidée jusqu'ici : un aliment loggué ici n'y
+    // apparaissait donc pas tant qu'un rechargement complet ne forçait pas
+    // un nouveau rendu serveur.
+    revalidatePath("/dashboard/client/aujourdhui");
 
     return { id: data.id };
   } catch (e) {
@@ -303,6 +313,7 @@ export async function removeFoodLog(
     // Même correctif que addFoodLog ci-dessus.
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
+    revalidatePath("/dashboard/client/aujourdhui");
 
     return {};
   } catch (e) {
@@ -896,6 +907,13 @@ export async function logMealItems(
     // les 14-15/08, tous sur le même compte).
     revalidatePath("/dashboard/client/nutrition");
     revalidatePath("/dashboard/coach/moi/nutrition");
+    // Retour direct : "c'est toujours en 0 sur X kcal même quand je valide
+    // mon repas" — /dashboard/client/aujourdhui lit les mêmes food_logs
+    // (getTodayLogs) pour son compteur du jour, jamais revalidée jusqu'ici :
+    // "Valider le repas" écrivait bien en base, mais le rendu serveur déjà
+    // en cache pour cette route ne le reflétait jamais tant qu'un
+    // rechargement complet ne forçait pas un nouveau fetch.
+    revalidatePath("/dashboard/client/aujourdhui");
     return { count: rows.length, insertedLogs };
   } catch (e) {
     console.error("logMealItems error:", e);
