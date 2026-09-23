@@ -8399,3 +8399,47 @@ erreur `react-hooks/purity` sur `app/dashboard/coach/page.tsx:151`,
 partie de mes modifications ; non corrigés ici, hors scope de cette
 demande précise. Pas testé visuellement (pas de navigateur dans cet
 environnement), en particulier le ressenti réel de lenteur au démarrage.
+
+## FO — Le repas validé "se dé-valide" après un changement d'onglet : la vraie cause au-delà de l'Axe FN (2026-09-23)
+
+Retour répété malgré l'Axe FN : "j'ai validé mon repas, j'ai changé
+d'onglet, ce n'était plus validé" — exactement le même wording que le
+symptôme déjà documenté dans ce fichier le 2026-09-10 ("JE COCHE VALIDE
+JE CHANGE D'ONGLET JE REVIENS ET Y'A PLUS RIEN DE COCHE"), sensé être
+réglé par le retrait du "Deuxième filet" (un `router.refresh()` déclenché
+sur `visibilitychange`, retiré car il causait une race différente :
+refresh trop tôt, avant que le serveur ait fini d'écrire).
+
+**Vraie cause trouvée** : ce retrait a réglé la race qu'il visait, mais
+n'a rien laissé à sa place pour invalider le **Router Cache CLIENT** de
+Next.js après une mutation réussie. `revalidatePath` (déjà en place, côté
+serveur) invalide le cache SERVEUR — mais une navigation interne
+(changer d'onglet puis revenir sur `/dashboard/client/nutrition`) est une
+navigation CLIENT qui peut réutiliser le Router Cache du navigateur sans
+jamais redemander le rendu serveur frais, tant que rien ne lui dit
+explicitement de le faire. Confirmé dans le code : `useRouter` n'était
+même pas importé dans `ClientNutritionView.tsx`, donc rien n'appelait
+jamais `router.refresh()` depuis le retrait du "Deuxième filet".
+
+**Fix** : `router.refresh()` ajouté aux 5 points de succès de mutation
+déjà identifiés par le code existant (chacun appelait déjà
+`notifyGateRefresh()`, un mécanisme séparé pour la carte de rappel
+quotidienne — voir `lib/gate-events.ts`) : `handleAddFood` (x2 variantes),
+`handleLogSavedMeal`, `handleValidateSlot`, et un dernier point de log
+seul. Contrairement au "Deuxième filet" retiré, celui-ci se déclenche
+UNIQUEMENT après un succès CONFIRMÉ (jamais sur un timer/événement
+découplé de l'action) : l'écriture serveur est déjà terminée à ce moment
+précis, donc pas de course possible avec elle. L'affichage IMMÉDIAT reste
+piloté par l'état local React (optimistic + réconciliation, inchangé) —
+`router.refresh()` ne sert qu'à rafraîchir le cache pour la PROCHAINE
+navigation vers cette route, exactement le scénario "changer d'onglet
+puis revenir" signalé.
+
+### Validation
+
+`tsc --noEmit` propre. `eslint components/ui/ClientNutritionView.tsx`
+signale 6 erreurs `react-hooks/set-state-in-effect`, toutes préexistantes
+(vérifié via `git diff` : aucune sur une ligne ajoutée par ce fix). Pas
+testé visuellement (pas de navigateur dans cet environnement) — à
+confirmer par un vrai test "valider un repas, changer d'onglet, revenir"
+sur le site déployé.

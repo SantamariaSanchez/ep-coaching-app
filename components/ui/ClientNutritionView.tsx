@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { Plus, Trash2, X, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Check, Clock, Zap, Copy, BookOpen, Camera, ShoppingCart, Lightbulb, Bookmark, Flame, AlertTriangle, UtensilsCrossed, Search, ScanBarcode, CalendarDays } from "lucide-react";
 import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { onKeyActivate } from "@/lib/a11y";
@@ -556,6 +556,20 @@ export default function ClientNutritionView({
   // page. Lu une seule fois au montage : la valeur ne doit pas réapparaître
   // si le client navigue ensuite dans la page (changement d'onglet, etc.).
   const searchParams = useSearchParams();
+  // Retour direct répété : "j'ai validé mon repas, j'ai changé d'onglet, ce
+  // n'était plus validé" — le "Deuxième filet" (router.refresh() sur
+  // visibilitychange) avait été retiré plus haut car il causait une course
+  // différente (refresh trop tôt, avant que le serveur ait fini d'écrire,
+  // voir plus bas). Mais rien ne l'a remplacé : le Router Cache CLIENT de
+  // Next.js pour cette route restait donc figé sur l'état d'avant la
+  // validation jusqu'au prochain rechargement complet — une navigation
+  // interne (changer d'onglet puis revenir) réutilise ce cache périmé, pas
+  // un nouveau rendu serveur, même si revalidatePath a bien invalidé le
+  // cache SERVEUR au moment de la validation. router.refresh() appelé
+  // seulement APRÈS un succès CONFIRMÉ (jamais sur un timer/événement
+  // découplé de l'action elle-même) n'a pas cette race : l'écriture est
+  // déjà terminée à ce moment précis.
+  const router = useRouter();
   const [highlightSlot, setHighlightSlot] = useState<string | null>(() => searchParams.get("meal"));
   useEffect(() => {
     if (!highlightSlot) return;
@@ -1066,6 +1080,7 @@ export default function ClientNutritionView({
     } else if (result.id) {
       replaceOptimisticLogId(date, optimisticLog.id, result.id);
       notifyGateRefresh();
+      router.refresh();
     }
   }
 
@@ -1114,6 +1129,7 @@ export default function ClientNutritionView({
       // le repas en double après un simple changement d'onglet.
       replaceOptimisticLogIds(date, tempIds, result.insertedLogs ?? []);
       notifyGateRefresh();
+      router.refresh();
     }
   }
 
@@ -1181,6 +1197,7 @@ export default function ClientNutritionView({
         });
       });
       notifyGateRefresh();
+      router.refresh();
     }
     pendingToggleKeysRef.current.delete(pendingKey);
   }
@@ -1315,6 +1332,7 @@ export default function ClientNutritionView({
         prev.map((l) => (l.id === optimisticId ? { ...l, id: result.id! } : l))
       );
       notifyGateRefresh();
+      router.refresh();
     }
     pendingToggleKeysRef.current.delete(pendingKey);
   }
@@ -1398,6 +1416,7 @@ export default function ClientNutritionView({
     } else if (result.id) {
       replaceOptimisticLogId(date, optimisticLog.id, result.id);
       notifyGateRefresh();
+      router.refresh();
     }
   }
 
