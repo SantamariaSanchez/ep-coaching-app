@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download, ShieldOff } from "lucide-react";
+import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download, ShieldOff, Mail } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import { deleteOwnAccount } from "@/app/actions/account";
+import { deleteOwnAccount, requestEmailChange } from "@/app/actions/account";
 
 // Les autorisations (notifications, mouvement, installation) vivent
 // désormais dans components/settings/PermissionsCard, un vrai hub dédié —
@@ -21,6 +21,11 @@ export default function AccountActions({
   const router = useRouter();
   const sb = createClientSupabase();
   const [resetSent, setResetSent] = useState(false);
+  const [changingEmail, setChangingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [emailChangeSending, setEmailChangeSending] = useState(false);
+  const [emailChangeSent, setEmailChangeSent] = useState(false);
+  const [emailChangeError, setEmailChangeError] = useState<string | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -59,6 +64,18 @@ export default function AccountActions({
     router.refresh();
   }
 
+  async function handleChangeEmail() {
+    setEmailChangeSending(true);
+    setEmailChangeError(null);
+    const result = await requestEmailChange(newEmail);
+    setEmailChangeSending(false);
+    if (result.error) {
+      setEmailChangeError(result.error);
+      return;
+    }
+    setEmailChangeSent(true);
+  }
+
   async function resetPwd() {
     if (!email) return;
     // Passe par /auth/callback (échange le code contre une session) puis
@@ -87,6 +104,61 @@ export default function AccountActions({
         </div>
         <ChevronRight size={13} className="text-[#F5EDED]/20" />
       </button>
+
+      {changingEmail ? (
+        <div className="py-3 border-b border-[#890404]/10">
+          {emailChangeSent ? (
+            <p className="text-xs text-green-400">
+              Email de confirmation envoyé à {newEmail}. Clique sur le lien reçu pour valider le changement.
+            </p>
+          ) : (
+            <>
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <Mail size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
+                <input
+                  type="email"
+                  value={newEmail}
+                  onChange={(e) => setNewEmail(e.target.value)}
+                  placeholder="nouvelle.adresse@email.com"
+                  aria-label="Nouvelle adresse email"
+                  className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60"
+                />
+              </div>
+              {emailChangeError && <p className="text-xs text-red-400 mb-2.5">{emailChangeError}</p>}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleChangeEmail}
+                  disabled={emailChangeSending || !newEmail.trim()}
+                  className="flex-1 bg-[#E01E1E]/15 hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 disabled:opacity-50 rounded-lg py-2 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
+                >
+                  {emailChangeSending ? "Envoi…" : "Envoyer le lien de confirmation"}
+                </button>
+                <button
+                  onClick={() => {
+                    setChangingEmail(false);
+                    setEmailChangeError(null);
+                    setNewEmail("");
+                  }}
+                  className="px-3 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
+                >
+                  Annuler
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      ) : (
+        <button
+          onClick={() => setChangingEmail(true)}
+          className="flex items-center justify-between w-full py-3 border-b border-[#890404]/10"
+        >
+          <div className="flex items-center gap-2.5">
+            <Mail size={14} className="text-[#F5EDED]/40" />
+            <span className="text-sm text-white font-medium">Changer mon email</span>
+          </div>
+          <ChevronRight size={13} className="text-[#F5EDED]/20" />
+        </button>
+      )}
 
       {/* Item 48 : téléchargement direct — pas de Server Action, la route
           répond avec Content-Disposition: attachment. */}

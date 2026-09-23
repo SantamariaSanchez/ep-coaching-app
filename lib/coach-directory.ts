@@ -41,7 +41,7 @@ export async function getCoachDirectory(
     const admin = createAdminClient();
     const { data } = await admin
       .from("profiles")
-      .select("id, full_name, avatar_url, bio, instagram_handle, invite_code, accepting_new_clients, specializations, is_platform_owner, platform_subscription_status, is_ai_coach")
+      .select("id, full_name, avatar_url, bio, instagram_handle, invite_code, accepting_new_clients, specializations, is_platform_owner, platform_subscription_status, is_ai_coach, directory_visible")
       .eq("role", "coach")
       .not("invite_code", "is", null);
 
@@ -59,12 +59,18 @@ export async function getCoachDirectory(
             is_platform_owner: boolean | null;
             platform_subscription_status: string | null;
             is_ai_coach: boolean | null;
+            directory_visible?: boolean | null;
           }[]
         | null) ?? [];
 
     const eligible = rows
       .filter((r) => r.is_platform_owner || r.platform_subscription_status === "active")
-      .filter((r) => includeAICoaches || !r.is_ai_coach);
+      .filter((r) => includeAICoaches || !r.is_ai_coach)
+      // Confidentialité (Axe FP) : un coach peut se retirer explicitement de
+      // l'annuaire public sans désactiver accepting_new_clients (sens
+      // différent). directory_visible === false uniquement, jamais absence
+      // de colonne (migration pas encore appliquée) qui reste "visible".
+      .filter((r) => r.directory_visible !== false);
 
     // Le bucket avatars est privé : avatar_url en base n'est qu'un chemin,
     // jamais une URL affichable telle quelle (voir utils/avatar.ts). Sans

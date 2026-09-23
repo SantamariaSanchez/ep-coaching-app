@@ -121,6 +121,25 @@ export async function toggleAcceptingNewClients(accepting: boolean): Promise<{ e
   return { success: true };
 }
 
+// Axe FP (MASTERCLASS.md, audit Paramètres 2026-09-23) : se retirer de
+// l'annuaire public sans toucher accepting_new_clients (sens différent).
+// Revalide /coachs, la page publique qui lit ce champ (voir coach-directory.ts).
+export async function toggleDirectoryVisible(visible: boolean): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return { error: guard.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({ directory_visible: visible })
+    .eq("id", guard.userId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/dashboard/coach/parametres");
+  revalidatePath("/coachs");
+  return { success: true };
+}
+
 // Axe 5 (VISION.md) : étiquettes de spécialisation affichées dans
 // l'annuaire public /coachs. On revalide aussi /coachs pour que le
 // changement soit visible immédiatement (page dynamique, pas d'ISR ici).

@@ -7,6 +7,7 @@ import { getCoachWaitlist } from "@/utils/waitlist";
 import AccountActions from "@/components/profile/AccountActions";
 import AcceptingClientsCard from "@/components/coach/AcceptingClientsCard";
 import CoachSpecializationsCard from "@/components/coach/CoachSpecializationsCard";
+import PrivacyCard from "@/components/settings/PrivacyCard";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
@@ -57,7 +58,7 @@ export default async function CoachParametresPage() {
   const [acceptingRow, waitlist, notifRow, ouraRow, newsletterSubscribed] = await Promise.all([
     createAdminClient()
       .from("profiles")
-      .select("accepting_new_clients, specializations")
+      .select("accepting_new_clients, specializations, directory_visible")
       .eq("id", user.id)
       .maybeSingle(),
     getCoachWaitlist(user.id),
@@ -67,9 +68,10 @@ export default async function CoachParametresPage() {
     createAdminClient().from("oura_connections").select("client_id").eq("client_id", user.id).maybeSingle(),
     getNewsletterSubscriptionStatus(),
   ]);
-  const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null } | null;
+  const acceptingData = acceptingRow.data as { accepting_new_clients: boolean; specializations: string[] | null; directory_visible: boolean | null } | null;
   const accepting = acceptingData?.accepting_new_clients ?? true;
   const specializations = acceptingData?.specializations ?? [];
+  const directoryVisible = acceptingData?.directory_visible !== false;
   const notifPrefs = (notifRow.data?.notification_preferences as NotificationPreferences | null) ?? {};
   const mutedCategories = MUTABLE_CATEGORIES.filter((c) => notifPrefs[c] === true) as NotificationCategory[];
 
@@ -111,6 +113,8 @@ export default async function CoachParametresPage() {
       <AcceptingClientsCard initialAccepting={accepting} waitlist={waitlist} />
 
       <CoachSpecializationsCard initialSpecializations={specializations} />
+
+      <PrivacyCard initialVisible={directoryVisible} />
 
       {!profile.is_platform_owner && (
         <div className="mt-4">

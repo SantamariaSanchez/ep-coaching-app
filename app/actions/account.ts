@@ -1,9 +1,44 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
+import { createServerSupabase } from "@/lib/supabase-server";
 import { getProfile } from "@/utils/auth";
 import { requireAuth } from "@/lib/auth-guards";
 import { notifyAdmin } from "@/lib/admin-notify";
+
+// Retour direct (audit Paramètres, 2026-09-23) : aucun moyen de changer son
+// adresse email depuis l'app — une lacune vérifiée, pas une supposition.
+// Passe par le client Supabase LIÉ À LA SESSION (pas createAdminClient) pour
+// déclencher le flux standard de Supabase Auth : email de confirmation
+// envoyé à la nouvelle adresse avant que le changement soit effectif, donc
+// personne ne peut détourner un compte juste en volant une session déjà
+// ouverte. requireAuth() exige en plus une session forte (2FA validée) si
+// le compte l'a activée, même garde que deleteOwnAccount ci-dessous.
+export async function requestEmailChange(newEmail: string): Promise<{ error?: string; success?: boolean }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+
+  const trimmed = newEmail.trim().toLowerCase();
+  if (!trimmed || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+    return { error: "Adresse email invalide." };
+  }
+
+  try {
+    const supabase = await createServerSupabase();
+    const { error } = await supabase.auth.updateUser({ email: trimmed });
+    if (error) {
+      return {
+        error: /already|existe|registered/i.test(error.message)
+          ? "Cette adresse est déjà utilisée par un autre compte."
+          : "Erreur lors de la demande de changement d'email.",
+      };
+    }
+    return { success: true };
+  } catch (e) {
+    console.error("requestEmailChange error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
 
 // Suppression définitive du compte (auth + profil). Si le compte a un
 // historique important (séances, programme...) référencé sans cascade en

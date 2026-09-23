@@ -8443,3 +8443,66 @@ signale 6 erreurs `react-hooks/set-state-in-effect`, toutes préexistantes
 testé visuellement (pas de navigateur dans cet environnement) — à
 confirmer par un vrai test "valider un repas, changer d'onglet, revenir"
 sur le site déployé.
+
+## FP — Paramètres : audit complet, changement d'email, rubrique Confidentialité (2026-09-23)
+
+Retour direct : "les paramètres de l'appli où y'a seulement à peu près 10
+choses alors qu'une vraie appli y'a des centaines de paramètres". Audit
+read-only complet avant d'ajouter quoi que ce soit (agent dédié) :
+`app/dashboard/coach/parametres` et `.../client/parametres` ont en réalité
+~24 contrôles interactifs répartis en 10 "cartes" (PermissionsCard,
+NotificationPreferencesCard, NewsletterPreferenceCard, ConnectionsCard,
+AccountActions, TwoFactorCard, AcceptingClientsCard,
+CoachSpecializationsCard, cartes business coach, LegalLinksCard) — la
+perception "10 choses" vient de la densité visuelle par carte, pas d'un
+vide réel. Pas de table `user_settings` dédiée : les préférences sont
+éclatées entre `profiles`, `push_subscriptions` (quiet hours) et
+`oura_connections`.
+
+**Lacunes réellement vérifiées** (pas des suppositions) : aucun toggle
+kg/lb, aucun champ fuseau horaire (`Europe/Paris` hardcodé dans
+`lib/quiet-hours.ts`), aucun thème/langue (mono-FR volontaire), aucune
+rubrique Confidentialité, aucun changement d'email, `ConnectionsCard`
+(Oura) absente côté client alors que présente côté coach, aucune édition
+post-onboarding de `member_preferences` (objectif/fréquence déclarés une
+fois puis figés).
+
+**Livré cette passe** (2 lacunes parmi la liste, choisies pour leur
+rapport valeur/risque, pas tout d'un coup) :
+- **Changement d'email** (`requestEmailChange`, `app/actions/account.ts`) :
+  passe par `createServerSupabase()` (client LIÉ À LA SESSION, jamais
+  `createAdminClient`) pour déclencher le flux standard Supabase Auth
+  (email de confirmation envoyé à la nouvelle adresse avant que le
+  changement soit effectif) — un attaquant avec une session volée ne peut
+  pas détourner le compte silencieusement. `requireAuth()` exige en plus
+  une session forte (2FA) si activée, même garde que `deleteOwnAccount`.
+  UI ajoutée dans `AccountActions.tsx`, juste après "Changer mon mot de
+  passe".
+- **Rubrique Confidentialité** (`PrivacyCard.tsx`, nouveau) : un seul
+  réglage pour cette passe, `directory_visible` sur `profiles` (nullable,
+  default `true`, aucune régression) — se retirer de l'annuaire public
+  `/coachs` sans toucher `accepting_new_clients` (sens différent : accepter
+  de nouveaux clients ou non, pas être visible ou non). Filtré dans
+  `getCoachDirectory()` (`lib/coach-directory.ts`), jamais sur absence de
+  colonne (migration pas appliquée = toujours visible, comportement
+  historique).
+
+**Pas fait cette passe** (laissé pour une prochaine, périmètre trop large
+pour être bien fait maintenant) : kg/lb (nécessiterait de convertir
+l'affichage partout où un poids apparaît, pas juste ajouter un toggle),
+fuseau horaire, symétrie Oura côté client, édition post-onboarding de
+`member_preferences`, visibilité communauté (au-delà de l'annuaire).
+
+### Validation
+
+`tsc --noEmit` propre sur l'ensemble du projet. `eslint` propre sur
+`app/actions/account.ts`, `components/profile/AccountActions.tsx`,
+`lib/coach-directory.ts`, `app/dashboard/coach/profile/actions.ts`,
+`app/dashboard/coach/parametres/page.tsx`. `PrivacyCard.tsx` reproduit
+volontairement le même pattern `useEffect` de resync que
+`AcceptingClientsCard.tsx` (déjà 158 occurrences préexistantes de cette
+règle `react-hooks/set-state-in-effect` dans le projet, documenté Axe E) —
+cohérence avec le codebase existant plutôt qu'une déviation isolée sur un
+seul nouveau fichier. Migration `20260923_profile_directory_visible.sql`
+appliquée en base, `get_advisors` (sécurité) revérifié : rien de nouveau.
+Pas testé visuellement (pas de navigateur dans cet environnement).
