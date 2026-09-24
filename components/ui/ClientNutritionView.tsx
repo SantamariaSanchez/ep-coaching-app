@@ -1281,6 +1281,9 @@ export default function ClientNutritionView({
           next.splice(Math.min(idx, next.length), 0, backup);
           return next;
         });
+      } else if (!result.error) {
+        notifyGateRefresh();
+        router.refresh();
       }
       pendingToggleKeysRef.current.delete(pendingKey);
       return;
@@ -1360,6 +1363,9 @@ export default function ClientNutritionView({
       };
       if (date === today) setTodayLogs(restore);
       else setHistoryLogsState(restore);
+    } else if (!result.error) {
+      notifyGateRefresh();
+      router.refresh();
     }
   }
 
@@ -1477,6 +1483,10 @@ export default function ClientNutritionView({
           : `${failedCount} repas sur ${entries.length} n'${failedCount !== 1 ? "ont" : "a"} pas pu être copié${failedCount !== 1 ? "s" : ""}.`
       );
     }
+    if (failedCount < entries.length) {
+      notifyGateRefresh();
+      router.refresh();
+    }
 
     setCopyingYesterday(false);
   }
@@ -1582,6 +1592,8 @@ export default function ClientNutritionView({
     }
     if (logResult.id) {
       replaceOptimisticLogId(date, optimisticLog.id, logResult.id);
+      notifyGateRefresh();
+      router.refresh();
     }
     setShowQuickAddModal(false);
   }
