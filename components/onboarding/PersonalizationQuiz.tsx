@@ -3,78 +3,9 @@
 import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
-import type {
-  MemberPreferences,
-  ExperienceLevel,
-  PrimaryGoal,
-  TrainingFrequency,
-  TracksNutrition,
-  BiggestObstacle,
-} from "@/lib/personalization";
+import { PREFERENCE_QUESTIONS, type MemberPreferences } from "@/lib/personalization";
 
-interface Question<K extends keyof MemberPreferences> {
-  key: K;
-  title: string;
-  options: { value: NonNullable<MemberPreferences[K]>; label: string }[];
-}
-
-const QUESTIONS: [
-  Question<"experience_level">,
-  Question<"primary_goal">,
-  Question<"training_frequency">,
-  Question<"tracks_nutrition">,
-  Question<"biggest_obstacle">,
-] = [
-  {
-    key: "experience_level",
-    title: "Où tu te situes aujourd'hui ?",
-    options: [
-      { value: "debutant" as ExperienceLevel, label: "Je débute, ou je m'y suis jamais vraiment mis" },
-      { value: "intermediaire" as ExperienceLevel, label: "Je m'entraîne depuis un moment, sans avoir un niveau expert" },
-      { value: "confirme" as ExperienceLevel, label: "Je m'entraîne sérieusement depuis des années, possible objectif compétition (bodybuilding, physique)" },
-    ],
-  },
-  {
-    key: "primary_goal",
-    title: "Ton objectif principal ?",
-    options: [
-      { value: "perte_poids" as PrimaryGoal, label: "Perdre du poids" },
-      { value: "prise_muscle" as PrimaryGoal, label: "Prendre du muscle" },
-      { value: "performance" as PrimaryGoal, label: "Progresser en performance" },
-      { value: "sante_bien_etre" as PrimaryGoal, label: "Me sentir mieux, en bonne santé" },
-      { value: "remise_en_forme" as PrimaryGoal, label: "Reprendre une activité en douceur" },
-    ],
-  },
-  {
-    key: "training_frequency",
-    title: "Combien de séances par semaine tu vises ?",
-    options: [
-      { value: "0" as TrainingFrequency, label: "Aucune pour l'instant" },
-      { value: "1-2" as TrainingFrequency, label: "1 à 2" },
-      { value: "3-4" as TrainingFrequency, label: "3 à 4" },
-      { value: "5+" as TrainingFrequency, label: "5 ou plus" },
-    ],
-  },
-  {
-    key: "tracks_nutrition",
-    title: "Tu suis déjà tes calories ou tes macros ?",
-    options: [
-      { value: "jamais" as TracksNutrition, label: "Jamais, ça m'a jamais parlé" },
-      { value: "parfois" as TracksNutrition, label: "Parfois, pas régulièrement" },
-      { value: "toujours" as TracksNutrition, label: "Oui, systématiquement" },
-    ],
-  },
-  {
-    key: "biggest_obstacle",
-    title: "Qu'est-ce qui t'a le plus freiné jusqu'ici ?",
-    options: [
-      { value: "manque_de_temps" as BiggestObstacle, label: "Le manque de temps" },
-      { value: "manque_de_motivation" as BiggestObstacle, label: "Le manque de motivation ou de régularité" },
-      { value: "sais_pas_par_ou_commencer" as BiggestObstacle, label: "Je sais pas par où commencer" },
-      { value: "deja_essaye_sans_resultat" as BiggestObstacle, label: "J'ai déjà essayé sans résultat" },
-    ],
-  },
-];
+const QUESTIONS = PREFERENCE_QUESTIONS;
 
 export default function PersonalizationQuiz({
   onComplete,

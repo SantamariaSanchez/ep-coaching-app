@@ -22,6 +22,74 @@ export interface MemberPreferences {
   biggest_obstacle: BiggestObstacle | null;
 }
 
+export interface PreferenceQuestion<K extends keyof MemberPreferences> {
+  key: K;
+  title: string;
+  options: { value: NonNullable<MemberPreferences[K]>; label: string }[];
+}
+
+// Source unique des 5 questions du quiz d'onboarding — réutilisée telle
+// quelle par PersonalizationQuiz (première fois, plein écran) ET par
+// PreferencesCard (modification a posteriori, dans Paramètres) pour que
+// les deux ne puissent jamais diverger sur les libellés ou les valeurs.
+export const PREFERENCE_QUESTIONS: [
+  PreferenceQuestion<"experience_level">,
+  PreferenceQuestion<"primary_goal">,
+  PreferenceQuestion<"training_frequency">,
+  PreferenceQuestion<"tracks_nutrition">,
+  PreferenceQuestion<"biggest_obstacle">,
+] = [
+  {
+    key: "experience_level",
+    title: "Où tu te situes aujourd'hui ?",
+    options: [
+      { value: "debutant", label: "Je débute, ou je m'y suis jamais vraiment mis" },
+      { value: "intermediaire", label: "Je m'entraîne depuis un moment, sans avoir un niveau expert" },
+      { value: "confirme", label: "Je m'entraîne sérieusement depuis des années, possible objectif compétition (bodybuilding, physique)" },
+    ],
+  },
+  {
+    key: "primary_goal",
+    title: "Ton objectif principal ?",
+    options: [
+      { value: "perte_poids", label: "Perdre du poids" },
+      { value: "prise_muscle", label: "Prendre du muscle" },
+      { value: "performance", label: "Progresser en performance" },
+      { value: "sante_bien_etre", label: "Me sentir mieux, en bonne santé" },
+      { value: "remise_en_forme", label: "Reprendre une activité en douceur" },
+    ],
+  },
+  {
+    key: "training_frequency",
+    title: "Combien de séances par semaine tu vises ?",
+    options: [
+      { value: "0", label: "Aucune pour l'instant" },
+      { value: "1-2", label: "1 à 2" },
+      { value: "3-4", label: "3 à 4" },
+      { value: "5+", label: "5 ou plus" },
+    ],
+  },
+  {
+    key: "tracks_nutrition",
+    title: "Tu suis déjà tes calories ou tes macros ?",
+    options: [
+      { value: "jamais", label: "Jamais, ça m'a jamais parlé" },
+      { value: "parfois", label: "Parfois, pas régulièrement" },
+      { value: "toujours", label: "Oui, systématiquement" },
+    ],
+  },
+  {
+    key: "biggest_obstacle",
+    title: "Qu'est-ce qui t'a le plus freiné jusqu'ici ?",
+    options: [
+      { value: "manque_de_temps", label: "Le manque de temps" },
+      { value: "manque_de_motivation", label: "Le manque de motivation ou de régularité" },
+      { value: "sais_pas_par_ou_commencer", label: "Je sais pas par où commencer" },
+      { value: "deja_essaye_sans_resultat", label: "J'ai déjà essayé sans résultat" },
+    ],
+  },
+];
+
 export interface MythBuster {
   id: string;
   title: string;

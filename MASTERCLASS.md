@@ -8506,3 +8506,58 @@ cohérence avec le codebase existant plutôt qu'une déviation isolée sur un
 seul nouveau fichier. Migration `20260923_profile_directory_visible.sql`
 appliquée en base, `get_advisors` (sécurité) revérifié : rien de nouveau.
 Pas testé visuellement (pas de navigateur dans cet environnement).
+
+## FQ — Le quiz de personnalisation (objectif, niveau...) était figé pour toujours après l'onboarding (2026-09-24)
+
+Priorité n°1 du mandat permanent (rétention/activation des membres
+gratuits) : vérifié par le code que `member_preferences` (5 réponses du
+quiz d'onboarding : niveau, objectif, fréquence visée, suivi nutrition,
+principal frein) n'était consulté nulle part en écriture après
+l'inscription (`grep member_preferences` : seuls `app/onboarding/actions.ts`
+et `utils/member-preferences.ts` le touchent). Ce n'est pas cosmétique :
+`derivePersonalization` (`lib/personalization.ts`) s'en sert réellement
+pour réordonner les fonctionnalités du dashboard client
+(`reorderByPriority`) et adapter ses messages selon le segment
+débutant/confirmé — donc un objectif qui change (perte de poids devenue
+prise de muscle, quelqu'un qui commence enfin à suivre sa nutrition...)
+ne se répercutait jamais, pour aucun membre, gratuit ou accompagné (la
+page `/dashboard/client` sert les deux).
+
+**Corrigé, sans nouvelle table ni migration** : `saveMemberPreferences`
+(déjà un upsert partiel, jamais touché) exposé désormais aussi depuis les
+Paramètres, pas seulement l'onboarding.
+- `lib/personalization.ts` : les 5 questions (clé/titre/options) extraites
+  de `PersonalizationQuiz.tsx` vers `PREFERENCE_QUESTIONS`, exportée — une
+  seule source pour l'onboarding (plein écran, une fois) ET les
+  Paramètres (modification a posteriori), pour que les deux ne puissent
+  jamais diverger sur un libellé ou une valeur.
+- `components/settings/PreferencesCard.tsx` (nouveau) : une carte
+  "Personnalisation" en tête de `/dashboard/client/parametres`, même
+  pattern tap-to-save optimiste que `CoachSpecializationsCard` (pas de
+  bouton "Enregistrer" séparé, chaque réponse se sauvegarde seule,
+  rollback si le serveur refuse).
+- `router.refresh()` ajouté après chaque sauvegarde réussie : sans lui,
+  le Router Cache CLIENT de Next.js aurait continué de servir l'ancien
+  ordre de personnalisation sur `/dashboard/client` tant qu'un
+  rechargement complet ne l'aurait pas forcé — exactement la cause déjà
+  identifiée et corrigée pour un autre écran dans l'Axe FO juste
+  au-dessus, appliquée ici préventivement plutôt que d'attendre qu'un
+  membre la signale une deuxième fois.
+
+Non touché volontairement : `saveMemberPreferences` elle-même (le mirroir
+`profiles.goal`/`profiles.level` vers la fiche client coach continue de
+fonctionner tel quel, gratuit), et `weekly-reengagement`/Axe DT (relance
+J+1), qui restent indépendants de ce chantier.
+
+### Validation
+
+`npm ci` (node_modules absent au démarrage de la session, même situation
+que l'Axe DT). `npx tsc --noEmit -p .` propre sur l'ensemble du projet.
+`eslint` propre sur les 4 fichiers touchés
+(`lib/personalization.ts`, `components/onboarding/PersonalizationQuiz.tsx`,
+`components/settings/PreferencesCard.tsx`,
+`app/dashboard/client/parametres/page.tsx`). `npm run build` : compile
+avec succès, échoue ensuite sur `/api/webhooks/stripe`
+(`STRIPE_SECRET_KEY` absent de cet environnement) — confirmé préexistant
+et sans rapport, même échec déjà documenté à l'identique dans l'Axe DT.
+Pas testé visuellement (pas de navigateur dans cet environnement).

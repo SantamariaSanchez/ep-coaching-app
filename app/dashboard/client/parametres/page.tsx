@@ -5,10 +5,12 @@ import AccountActions from "@/components/profile/AccountActions";
 import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
+import PreferencesCard from "@/components/settings/PreferencesCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
 import { getNewsletterSubscriptionStatus } from "@/app/actions/newsletter";
+import { getMemberPreferences } from "@/utils/member-preferences";
 
 export default async function ClientParametresPage() {
   const user = await getUser();
@@ -19,7 +21,7 @@ export default async function ClientParametresPage() {
   if (profile.role === "coach") redirect("/dashboard/coach/parametres");
 
   const supabase = await createServerSupabase();
-  const [{ data: pushSub }, { data: notifRow }, newsletterSubscribed] = await Promise.all([
+  const [{ data: pushSub }, { data: notifRow }, newsletterSubscribed, memberPreferences] = await Promise.all([
     supabase
       .from("push_subscriptions")
       .select("id, quiet_hours_start, quiet_hours_end")
@@ -30,6 +32,7 @@ export default async function ClientParametresPage() {
     // plutôt que d'alourdir getProfile() utilisé partout dans l'appli.
     supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
     getNewsletterSubscriptionStatus(),
+    getMemberPreferences(user.id),
   ]);
   const notifPrefs = (notifRow?.notification_preferences as NotificationPreferences | null) ?? {};
   const mutedCategories = MUTABLE_CATEGORIES.filter((c) => notifPrefs[c] === true) as NotificationCategory[];
@@ -43,12 +46,16 @@ export default async function ClientParametresPage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Paramètres</h1>
       </div>
 
-      <PermissionsCard
-        pushSubscribed={!!pushSub}
-        stepsHref="/dashboard/client/steps"
-        quietHoursStart={pushSub?.quiet_hours_start ?? null}
-        quietHoursEnd={pushSub?.quiet_hours_end ?? null}
-      />
+      <PreferencesCard initialPreferences={memberPreferences} />
+
+      <div className="mt-8">
+        <PermissionsCard
+          pushSubscribed={!!pushSub}
+          stepsHref="/dashboard/client/steps"
+          quietHoursStart={pushSub?.quiet_hours_start ?? null}
+          quietHoursEnd={pushSub?.quiet_hours_end ?? null}
+        />
+      </div>
 
       <NotificationPreferencesCard initialMuted={mutedCategories} />
 
