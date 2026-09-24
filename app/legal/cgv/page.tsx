@@ -66,8 +66,8 @@ const sections: LegalSection[] = [
       <>
         <P>Deux formules sont proposées au choix du Coach lors de son inscription :</P>
         <Ul>
-          <li>Formule mensuelle : 100€ TTC par mois.</li>
-          <li>Formule semestrielle : 480€ TTC par période de 6 mois.</li>
+          <li>Formule Standard : 20€ TTC par mois.</li>
+          <li>Formule Premium : 200€ TTC par mois.</li>
         </Ul>
         <P>
           Ce tarif est fixe et unique, quel que soit le nombre de clients suivis par le Coach sur la
