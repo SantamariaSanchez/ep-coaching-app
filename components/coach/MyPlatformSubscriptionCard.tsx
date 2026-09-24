@@ -32,7 +32,7 @@ export default function MyPlatformSubscriptionCard({ billing }: { billing: Coach
 
       {!billing || !statusInfo ? (
         <p className="text-[11.5px] text-[#F5EDED]/40 leading-relaxed">
-          Pas encore de paiement enregistré. Ton essai gratuit de 2 mois est en cours ou n&apos;a pas encore démarré.
+          Pas encore de paiement enregistré.
         </p>
       ) : (
         <div className="flex items-center gap-2 flex-wrap">

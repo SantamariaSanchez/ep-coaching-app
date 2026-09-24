@@ -169,8 +169,7 @@ export default function CoachSignupFlow() {
           <Link href="/legal/cgv" target="_blank" style={{ color: "#E01E1E", fontWeight: 700 }}>
             CGV
           </Link>{" "}
-          d&apos;EP Coaching, y compris l&apos;essai gratuit de 2 mois et la facturation automatique
-          à son terme sauf résiliation.
+          d&apos;EP Coaching, y compris la facturation dès la souscription selon la formule choisie.
         </span>
       </label>
 

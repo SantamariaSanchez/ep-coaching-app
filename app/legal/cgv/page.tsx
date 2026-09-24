@@ -102,14 +102,14 @@ const sections: LegalSection[] = [
   },
   {
     id: "essai",
-    title: "7. Essai gratuit (Coachs tiers)",
+    title: "7. Absence de période d'essai",
     body: (
       <P>
-        L&apos;abonnement Plateforme souscrit par un Coach tiers inclut une période d&apos;essai gratuit de 2
-        mois. Une carte bancaire est demandée dès l&apos;inscription. Sauf résiliation avant le terme de
-        cette période d&apos;essai, le premier prélèvement intervient automatiquement à son échéance,
-        selon la formule choisie. En acceptant les présentes CGV lors de son inscription, le Coach
-        reconnaît avoir été informé de cette facturation automatique et l&apos;accepte expressément.
+        L&apos;abonnement Plateforme souscrit par un Coach tiers ne comporte aucune période d&apos;essai
+        gratuit. Une carte bancaire est demandée dès l&apos;inscription et le premier prélèvement
+        intervient dès la souscription, selon la formule choisie. En acceptant les présentes CGV lors
+        de son inscription, le Coach reconnaît avoir été informé de cette facturation immédiate et
+        l&apos;accepte expressément.
       </P>
     ),
   },
@@ -123,7 +123,8 @@ const sections: LegalSection[] = [
           professionnelles, dans le cadre de l&apos;activité indépendante du Coach. Conformément à l&apos;article
           L. 221-3 du Code de la consommation, le droit de rétractation applicable aux consommateurs
           ne s&apos;applique pas à cette souscription. Le Coach conserve néanmoins la possibilité de résilier
-          librement, sans frais, à tout moment durant la période d&apos;essai gratuit décrite à l&apos;article 7.
+          librement, sans frais, avant toute échéance de facturation, dans les conditions de résiliation
+          décrites à l&apos;article 9.
         </P>
         <P>
           <Strong>Clients consommateurs</Strong> : l&apos;abonnement de coaching donne accès, dès sa
@@ -238,7 +239,7 @@ export default function CGVPage() {
     <LegalPage
       eyebrow="Conditions de vente"
       title="Conditions Générales de Vente"
-      lastUpdated="19 août 2026"
+      lastUpdated="24 septembre 2026"
       intro={
         <P>
           Ces conditions régissent les souscriptions payantes proposées sur EP Coaching, que vous

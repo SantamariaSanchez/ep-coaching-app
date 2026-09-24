@@ -4,9 +4,9 @@
 // project_pricing_2026-09-16) : Standard vs Premium remplace l'ancien
 // mensuel/semestriel — seuls ces 2 prix (SaaS) peuvent être affichés
 // publiquement, jamais le coaching individuel/business ni les formations.
-// Pas d'essai gratuit configuré sur ces nouveaux Price Stripe (l'essai 2
-// mois de l'ancienne grille n'a pas été repris, à reconfirmer avec le
-// fondateur si voulu).
+// Décision du fondateur 2026-09-24 : pas d'essai gratuit sur ces nouveaux
+// Price Stripe, contrairement à l'ancienne grille (2 mois offerts). Retiré
+// aussi des CGV, de CoachSignupFlow.tsx et de MyPlatformSubscriptionCard.tsx.
 export const COACH_PLATFORM_PLANS = [
   {
     id: "standard",
