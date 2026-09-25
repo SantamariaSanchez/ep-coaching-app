@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
@@ -55,6 +56,21 @@ interface NavItem {
   icon: LucideIcon;
 }
 
+// Une seule cloche montée à la fois : deux instances ouvrent le même canal
+// temps réel "nav-notifications" et la seconde plante (erreur trouvée au test
+// en navigateur du parcours closer, 2026-09-25).
+function useIsDesktop(): boolean | null {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mq = window.matchMedia("(min-width: 768px)");
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(min-width: 768px)").matches,
+    () => null
+  );
+}
+
 export default function StaffShell({
   fullName,
   roleTitle,
@@ -74,6 +90,7 @@ export default function StaffShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isDesktop = useIsDesktop();
 
   const items: NavItem[] = unlocked
     ? [
@@ -106,7 +123,7 @@ export default function StaffShell({
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <EPLogo size="sm" showCoaching />
-          {unlocked && <NotificationBell variant="desktop" />}
+          {unlocked && isDesktop === true && <NotificationBell variant="desktop" />}
         </div>
         <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(137,4,4,0.3)", marginBottom: 16 }}>
           <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: poleColor, margin: "0 0 3px" }}>{poleName}</p>
@@ -152,7 +169,7 @@ export default function StaffShell({
             <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{roleTitle}</p>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            {unlocked && <NotificationBell variant="mobile" />}
+            {unlocked && isDesktop === false && <NotificationBell variant="mobile" />}
             <button type="button" onClick={logout} aria-label="Déconnexion" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 6 }}>
               <LogOut size={16} />
             </button>
