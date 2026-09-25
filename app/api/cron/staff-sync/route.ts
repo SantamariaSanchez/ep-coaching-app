@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { syncCalendly, syncPrequalifications } from "@/lib/staff-automation";
+import { syncCalendly, syncCatchUp, syncPrequalifications } from "@/lib/staff-automation";
 
 // Déclenché toutes les 5 minutes par pg_cron (migration
 // 20260925b_staff_automation.sql). Fait entrer dans l'espace équipe ce qui
@@ -10,6 +10,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const prequalifications = await syncPrequalifications().catch(() => 0);
+  const catchUp = await syncCatchUp().catch(() => 0);
   const calendly = await syncCalendly().catch((e) => ({ ok: false, reason: String(e), created: 0, canceled: 0 }));
-  return NextResponse.json({ ok: true, prequalifications, calendly });
+  return NextResponse.json({ ok: true, prequalifications, catchUp, calendly });
 }

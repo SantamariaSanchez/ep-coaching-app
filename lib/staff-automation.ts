@@ -43,6 +43,8 @@ interface Row {
 
 const ROW_FIELDS = "id, staff_id, kind, title, status, amount, occurred_on, due_at, data";
 const CLOSED_LEAD = ["close", "perdu"];
+// Fenêtre de reprise des leads pas encore confiés à quelqu'un.
+const CATCH_UP_DAYS = 30;
 
 // ── Répartition ─────────────────────────────────────────────────────────
 
@@ -173,10 +175,12 @@ export interface InboundLead {
   summary: string;
 }
 
-export async function routeInboundLead(input: InboundLead): Promise<void> {
+export type RouteResult = "assigned" | "merged" | "duplicate" | "no_staff" | "error";
+
+export async function routeInboundLead(input: InboundLead): Promise<RouteResult> {
   try {
     const admin = createAdminClient();
-    if (await findByExternalId(admin, input.externalId)) return;
+    if (await findByExternalId(admin, input.externalId)) return "duplicate";
     const email = input.email?.trim().toLowerCase() || null;
 
     const existing = await findOpenLead(admin, email, input.phone);
@@ -192,11 +196,11 @@ export async function routeInboundLead(input: InboundLead): Promise<void> {
         },
       });
       notify(row.staff_id, `${row.title} est revenu`, input.summary.slice(0, 140), "/equipe/crm");
-      return;
+      return "merged";
     }
 
     const assignee = await pickAssignee(admin, [["setter"], ["head-of-sales"], ["closer"]], "lead", ["nouveau", "contacte", "qualifie", "rdv_booke", "show"]);
-    if (!assignee) return;
+    if (!assignee) return "no_staff";
 
     const title = input.name?.trim() || email || input.phone || "Prospect";
     const row = await insertRow(admin, assignee.user_id, "lead", input.stage, {
@@ -222,8 +226,10 @@ export async function routeInboundLead(input: InboundLead): Promise<void> {
         "/equipe/crm"
       );
     }
+    return row ? "assigned" : "error";
   } catch (e) {
     console.error("routeInboundLead error:", e);
+    return "error";
   }
 }
 
@@ -566,7 +572,7 @@ const PREQUAL_LABELS: Record<string, string> = {
 
 export async function syncPrequalifications(): Promise<number> {
   const admin = createAdminClient();
-  const since = new Date(Date.now() - 14 * 86_400_000).toISOString();
+  const since = new Date(Date.now() - CATCH_UP_DAYS * 86_400_000).toISOString();
   const { data, error } = await admin
     .from("prequalification_responses")
     .select("id, form_type, first_name, last_name, phone, email, answers, created_at")
@@ -580,7 +586,7 @@ export async function syncPrequalifications(): Promise<number> {
     const lines = Object.entries(r.answers ?? {})
       .filter(([, v]) => typeof v === "string" && v.trim())
       .map(([k, v]) => `${PREQUAL_LABELS[k] ?? k} : ${v}`);
-    await routeInboundLead({
+    const result = await routeInboundLead({
       source: "prequalification",
       externalId: `prequal:${r.id}`,
       name: `${r.first_name} ${r.last_name}`.trim(),
@@ -590,8 +596,68 @@ export async function syncPrequalifications(): Promise<number> {
       stage: "qualifie",
       summary: `Formulaire de préqualification ${r.form_type === "business" ? "business" : "physique"} rempli.\n${lines.join("\n")}`,
     });
+    // Marquée traitée seulement si quelqu'un l'a vraiment reçue : sans
+    // équipe, elle attend la première recrue (rattrapage, voir plus bas).
+    if (result === "no_staff" || result === "error") continue;
     await admin.from("prequalification_responses").update({ staff_routed_at: new Date().toISOString() }).eq("id", r.id);
     routed++;
+  }
+  return routed;
+}
+
+// Rattrapage des leads arrivés quand personne n'était là pour les traiter
+// (ou avant qu'une recrue signe son contrat) : guides gratuits et
+// inscriptions de membres EP des 30 derniers jours. Sans doublon grâce à
+// l'identifiant externe, donc sans risque à chaque passage.
+export async function syncCatchUp(): Promise<number> {
+  const admin = createAdminClient();
+  if ((await activeMembers(admin, ["setter", "head-of-sales", "closer"])).length === 0) return 0;
+  const since = new Date(Date.now() - CATCH_UP_DAYS * 86_400_000).toISOString();
+  let routed = 0;
+
+  const { data: magnets } = await admin
+    .from("leads")
+    .select("id, email, phone, lead_magnet_slug, created_at")
+    .gte("created_at", since)
+    .order("created_at", { ascending: true })
+    .limit(100);
+  for (const l of (magnets as { id: string; email: string | null; phone: string | null; lead_magnet_slug: string | null }[]) ?? []) {
+    const result = await routeInboundLead({
+      source: "lead_magnet",
+      externalId: `leadmagnet:${l.id}`,
+      name: null,
+      email: l.email,
+      phone: l.phone,
+      stage: "nouveau",
+      summary: `A téléchargé un guide gratuit (${l.lead_magnet_slug ?? "ressource"}).`,
+    });
+    if (result === "assigned" || result === "merged") routed++;
+  }
+
+  const { data: owners } = await admin.from("profiles").select("id").or("is_platform_owner.eq.true,is_ai_coach.eq.true");
+  const epCoachIds = ((owners as { id: string }[]) ?? []).map((o) => o.id);
+  if (epCoachIds.length) {
+    const { data: members } = await admin
+      .from("profiles")
+      .select("id, full_name, email, phone, start_date")
+      .eq("role", "client")
+      .neq("subscription_status", "active")
+      .in("coach_id", epCoachIds)
+      .gte("start_date", since.slice(0, 10))
+      .order("start_date", { ascending: true })
+      .limit(100);
+    for (const m of (members as { id: string; full_name: string | null; email: string | null; phone: string | null }[]) ?? []) {
+      const result = await routeInboundLead({
+        source: "app_signup",
+        externalId: `signup:${m.id}`,
+        name: m.full_name,
+        email: m.email,
+        phone: m.phone,
+        stage: "nouveau",
+        summary: "S'est inscrit gratuitement dans l'appli (membre de la communauté).",
+      });
+      if (result === "assigned" || result === "merged") routed++;
+    }
   }
   return routed;
 }
