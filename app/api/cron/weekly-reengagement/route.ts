@@ -96,10 +96,22 @@ export async function GET(req: Request) {
 
   for (const client of rows) {
     // Un membre qui vit dans l'appli n'a rien à faire dans une séquence de
-    // relance : on vérifie les trois signaux d'activité réels avant d'écrire.
-    const [checkins, foodLogs, sessions] = await Promise.all([
+    // relance : on vérifie les signaux d'activité réels avant d'écrire.
+    // check_ins est réservé aux clients accompagnés (jamais alimenté par un
+    // membre gratuit, voir app/dashboard/client/checkin/page.tsx) : sans
+    // daily_logs (le bilan quotidien, seule action de "check-in" réellement
+    // ouverte aux membres gratuits et promue par la checklist d'onboarding,
+    // voir lib/onboarding-checklist.ts), un membre gratuit qui fait
+    // fidèlement son bilan chaque jour n'était jamais reconnu actif et
+    // recevait quand même les relances "tu n'es jamais revenu".
+    const [checkins, dailyLogs, foodLogs, sessions] = await Promise.all([
       supabase
         .from("check_ins")
+        .select("id", { count: "exact", head: true })
+        .eq("client_id", client.id)
+        .gte("created_at", dormantSince),
+      supabase
+        .from("daily_logs")
         .select("id", { count: "exact", head: true })
         .eq("client_id", client.id)
         .gte("created_at", dormantSince),
@@ -115,7 +127,10 @@ export async function GET(req: Request) {
         .gte("created_at", dormantSince),
     ]);
     const isActive =
-      (checkins.count ?? 0) > 0 || (foodLogs.count ?? 0) > 0 || (sessions.count ?? 0) > 0;
+      (checkins.count ?? 0) > 0 ||
+      (dailyLogs.count ?? 0) > 0 ||
+      (foodLogs.count ?? 0) > 0 ||
+      (sessions.count ?? 0) > 0;
     if (isActive) {
       skippedActive++;
       continue;
