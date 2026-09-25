@@ -125,7 +125,7 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
       <p className="ep-label" style={{ marginBottom: 8 }}>Mes chiffres du mois</p>
       <KpiGrid kpis={kpis} />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginTop: 18 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginTop: 18, alignItems: "start" }}>
         {playbook && <LoggingGuide playbook={playbook} />}
         <section className="ep-card" style={{ padding: "15px 16px" }}>
           <p className="ep-label" style={{ margin: "0 0 8px" }}>Mon espace</p>
