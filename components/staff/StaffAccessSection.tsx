@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Copy, Check, ChevronDown, Link2, UserPlus, X, KeyRound } from "lucide-react";
-import { addStaffInvite, revokeStaffInvite, setStaffMemberStatus } from "@/app/dashboard/coach/admin/organisation/actions";
+import { Copy, Check, ChevronDown, Link2, UserPlus, X, KeyRound, Send } from "lucide-react";
+import { addStaffInvite, revokeStaffInvite, setStaffMemberStatus, sendStaffInviteEmail } from "@/app/dashboard/coach/admin/organisation/actions";
 
 export interface StaffAccessRole {
   key: string;
@@ -70,6 +70,7 @@ function RoleRow({
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [sentIds, setSentIds] = useState<string[]>([]);
   const [pending, startTransition] = useTransition();
   const pendingInvites = invites.filter((i) => !i.used_at);
   const active = members.filter((m) => m.status === "actif").length;
@@ -152,10 +153,26 @@ function RoleRow({
                   {i.application_id && <span className="text-[10px] text-[#F5EDED]/35">(candidature acceptée)</span>}
                   <button
                     type="button"
+                    onClick={() =>
+                      startTransition(async () => {
+                        setError(null);
+                        const r = await sendStaffInviteEmail(i.id);
+                        if (r.error) setError(r.error);
+                        else setSentIds((ids) => [...ids, i.id]);
+                      })
+                    }
+                    disabled={pending || sentIds.includes(i.id)}
+                    className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] disabled:text-[#4ade80]"
+                  >
+                    {sentIds.includes(i.id) ? <Check size={11} /> : <Send size={11} />}
+                    {sentIds.includes(i.id) ? "Lien envoyé" : "Envoyer le lien"}
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => run(() => revokeStaffInvite(i.id))}
                     disabled={pending}
                     aria-label={`Retirer l'autorisation de ${i.email}`}
-                    className="ml-auto text-[#F5EDED]/35 hover:text-[#f87171]"
+                    className="text-[#F5EDED]/35 hover:text-[#f87171]"
                   >
                     <X size={13} />
                   </button>

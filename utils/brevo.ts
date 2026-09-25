@@ -24,7 +24,10 @@ export async function addBrevoContactToList(
       },
       body: JSON.stringify({
         email,
-        attributes: firstName ? { FIRSTNAME: firstName } : undefined,
+        // Le compte Brevo EP Coaching nomme cet attribut PRENOM (vérifié le
+        // 2026-09-24) : FIRSTNAME n'existe pas et était ignoré, le prénom se
+        // perdait à chaque inscription.
+        attributes: firstName ? { PRENOM: firstName } : undefined,
         listIds: [listId],
         updateEnabled: true,
       }),

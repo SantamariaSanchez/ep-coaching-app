@@ -9,10 +9,23 @@ import { notifyUser } from "@/lib/notify";
 // de quoi financer la récompense. Voir
 // supabase/migrations/20260816b_referral_rewards.sql.
 //
-// Montant fixe plutôt qu'un pourcentage du plan choisi par le filleul : plus
-// simple à annoncer ("1 mois offert") et indépendant du plan que le parrain
-// lui-même a choisi.
-export const REFERRAL_REWARD_CENTS = 50_000; // 500€ = le plan mensuel
+// "1 mois offert" = un mois de la formule du PARRAIN (c'est sa prochaine
+// facture qui est réduite), jamais un montant fixe : depuis la grille du
+// 2026-09-16, un mois de coaching physique vaut 200 € et un mois de coaching
+// business 500 €. L'ancien montant fixe de 500 € (ancien plan mensuel
+// unique) offrait 2,5 mois à un client coaching physique.
+export const REFERRAL_REWARD_CENTS_BY_PLAN: Record<string, number> = {
+  physique: 20_000,
+  business: 50_000,
+};
+const DEFAULT_REFERRAL_REWARD_CENTS = 20_000;
+
+async function rewardCentsFor(referrerId: string): Promise<number> {
+  const admin = createAdminClient();
+  const { data } = await admin.from("profiles").select("subscription_plan").eq("id", referrerId).maybeSingle();
+  const plan = (data as { subscription_plan: string | null } | null)?.subscription_plan ?? "";
+  return REFERRAL_REWARD_CENTS_BY_PLAN[plan] ?? DEFAULT_REFERRAL_REWARD_CENTS;
+}
 
 // Crédite le compte Stripe du parrain via son solde client (customer
 // balance) : Stripe applique automatiquement un solde négatif sur la
@@ -45,7 +58,7 @@ export async function rewardReferrerForNewPayment(referredUserId: string): Promi
     const { error: insertError } = await admin.from("referral_rewards").insert({
       referrer_id: referrerId,
       referred_id: referredUserId,
-      amount_cents: REFERRAL_REWARD_CENTS,
+      amount_cents: await rewardCentsFor(referrerId),
       status: "pending",
     });
     // Contrainte unique sur referred_id : un conflit veut dire que cette

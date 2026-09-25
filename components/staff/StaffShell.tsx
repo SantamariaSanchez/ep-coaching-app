@@ -21,6 +21,7 @@ import {
   MessageSquareQuote,
   Users,
   FileSignature,
+  UserCog,
   LogOut,
   type LucideIcon,
 } from "lucide-react";
@@ -78,6 +79,7 @@ export default function StaffShell({
         { href: "/equipe", label: "Tableau de bord", icon: LayoutDashboard },
         ...modules.map((m) => ({ href: `/equipe/${m.key}`, label: m.label, icon: ICONS[m.key] })),
         { href: "/equipe/poste", label: "Mon poste et contrat", icon: FileSignature },
+        { href: "/equipe/compte", label: "Mon compte", icon: UserCog },
       ]
     : [];
 

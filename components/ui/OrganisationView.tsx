@@ -53,9 +53,9 @@ export type RoleStatus = "a_pourvoir" | "en_recrutement" | "pourvu";
 export interface RoleCompensation {
   variable: string | null;
   fixed: string | null;
-  // Montant concret en euros, calcule a partir des offres reelles d'EP Coaching
-  // (500 euros/mois, 1500 euros/6 mois, 3000 euros en paiement unique) et du
-  // pourcentage de commission du poste. Retour direct 2026-09-08 : "les salaires
+  // Montant concret en euros, exprime par tranche de chiffre d'affaires
+  // encaisse (jamais par prix d'offre : /carrieres est public et la regle
+  // d'affichage du 2026-09-16 interdit d'y montrer le prix du coaching). Retour direct 2026-09-08 : "les salaires
   // il n'y a pas de chiffre ou de fourchette clair". Renseigne uniquement quand
   // le calcul repose sur un pourcentage reellement defini : ailleurs, annoncer
   // un montant reviendrait a l'inventer.

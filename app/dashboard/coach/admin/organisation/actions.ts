@@ -5,8 +5,11 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { requirePlatformOwner } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { ApplicationStatus } from "@/lib/job-applications";
-import { isStaffRoleKey } from "@/lib/staff-roles";
-import { cleanText, LIMITS } from "@/lib/sanitize";
+import { isStaffRoleKey, getRoleCard, staffLoginPath } from "@/lib/staff-roles";
+import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
+import { sendBrevoEmail } from "@/utils/brevo";
+import { wrapBrandedEmail } from "@/lib/mailing-audience";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 export type RoleStatus = "a_pourvoir" | "en_recrutement" | "pourvu";
 
@@ -230,4 +233,40 @@ export async function setStaffMemberStatus(
   if (error) return { error: "Modification impossible." };
   revalidatePath("/dashboard/coach/admin/organisation");
   return {};
+}
+
+// Envoie à la recrue le lien de connexion de son poste, pour ne pas avoir à
+// le copier-coller à la main. L'email doit déjà être autorisé (invitation
+// ouverte), sinon le lien ne lui servirait à rien.
+export async function sendStaffInviteEmail(inviteId: string): Promise<{ error?: string }> {
+  const guard = await requirePlatformOwner();
+  if (!guard.ok) return { error: guard.error };
+  const limited = await checkRateLimit(`staff-invite-mail:${guard.userId}`, 30, 3600);
+  if (!limited.allowed) return { error: "Trop d'envois récents, réessaie dans une heure." };
+
+  const admin = createAdminClient();
+  const { data: invite } = await admin
+    .from("staff_invites")
+    .select("id, role_key, email, used_at")
+    .eq("id", inviteId)
+    .eq("owner_id", guard.userId)
+    .maybeSingle();
+  if (!invite) return { error: "Autorisation introuvable." };
+  if (invite.used_at) return { error: "Cet accès a déjà été créé." };
+
+  const found = getRoleCard(invite.role_key);
+  if (!found) return { error: "Poste inconnu." };
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+  const link = `${appUrl}${staffLoginPath(invite.role_key)}`;
+  const body = `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">Équipe EP Coaching</p>
+<h1 style="margin:0 0 14px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">Bienvenue à bord, ${escapeHtml(found.role.title)}</h1>
+<p style="margin:0 0 14px;">Ton espace de travail est prêt. Crée ton accès avec cette adresse email (onglet Première connexion), confirme-la, puis signe ton contrat de collaboration : tu le recevras aussitôt par email avec ta fiche de poste et ton parcours d'intégration.</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin:4px auto 22px;"><tr><td style="border-radius:10px;background:#E01E1E;"><a href="${link}" style="display:inline-block;padding:13px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:10px;">Créer mon accès</a></td></tr></table>
+<p style="margin:0;font-size:12px;color:rgba(245,237,237,0.45);">Garde ce lien, c'est aussi ta page de connexion pour la suite : ${escapeHtml(link)}</p>`;
+  const sent = await sendBrevoEmail({
+    to: invite.email,
+    subject: `Ton accès ${found.role.title} chez EP Coaching`,
+    htmlContent: wrapBrandedEmail(body),
+  });
+  return sent ? {} : { error: "Envoi impossible pour le moment, réessaie plus tard." };
 }

@@ -53,7 +53,7 @@ export const POLES: Pole[] = [
           variable: "10 à 15% du montant payé par chaque client suivi",
           fixed: "Un fixe s'active une fois le poste réellement intégré (seuil de chiffre d'affaires récurrent à définir)",
           earnings:
-            "50 à 75 € par mois et par client suivi (sur l'abonnement à 500 €/mois). 10 clients suivis = 500 à 750 € par mois, 30 clients = 1 500 à 2 250 € par mois, en récurrent tant que le client reste.",
+            "100 à 150 € par mois pour chaque tranche de 1 000 € d'abonnements que tu suis, en récurrent tant que tes clients restent. Un portefeuille qui encaisse 5 000 € par mois te rapporte 500 à 750 € par mois.",
         },
         nonNegotiable: [
           "Répond à un client sous 24h ouvrées, sans exception",
@@ -75,7 +75,7 @@ export const POLES: Pole[] = [
           variable: "5% de supervision sur le chiffre d'affaires total du portefeuille coaching",
           fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
           earnings:
-            "5% du portefeuille coaching supervisé : 20 clients à 500 €/mois représentent 500 € par mois, 50 clients 1 250 € par mois, en plus du fixe une fois activé.",
+            "5 % du portefeuille coaching supervisé : 10 000 € encaissés dans le mois représentent 500 €, 25 000 € représentent 1 250 €, en plus du fixe une fois activé.",
         },
         nonNegotiable: [
           "A déjà coaché des clients en direct, pas seulement supervisé",
@@ -129,7 +129,7 @@ export const POLES: Pole[] = [
           variable: "4% du montant encaissé si le lead est fourni par EP Coaching, 7% s'il va chercher lui-même ses leads (prospection)",
           fixed: null,
           earnings:
-            "120 € par vente conclue sur une offre à 3 000 € avec un lead fourni, 210 € si tu as trouvé le lead toi-même. Sur l'offre à 1 500 €, 60 à 105 €. Un rendez-vous qualifié transformé par semaine représente environ 500 à 900 € par mois.",
+            "40 € pour chaque tranche de 1 000 € encaissés sur les ventes issues de tes rendez-vous avec un lead fourni, 70 € si tu as trouvé le lead toi-même. 10 000 € encaissés dans le mois grâce à tes rendez-vous représentent 400 à 700 €.",
         },
         nonNegotiable: [
           "Qualifie un lead entrant en moins de 2h en journée",
@@ -153,7 +153,7 @@ export const POLES: Pole[] = [
           variable: "8 à 10% du montant encaissé sur chaque vente conclue",
           fixed: null,
           earnings:
-            "240 à 300 € par vente conclue sur l'offre à 3 000 €, 120 à 150 € sur l'offre à 1 500 €. Deux ventes par semaine sur l'offre haute représentent environ 2 000 à 2 400 € par mois.",
+            "80 à 100 € pour chaque tranche de 1 000 € encaissés sur tes ventes. 10 000 € encaissés dans le mois représentent 800 à 1 000 €, 20 000 € représentent 1 600 à 2 000 €.",
         },
         nonNegotiable: [
           "Qualifie avant de persuader : ne pousse jamais une vente à quelqu'un qui n'est pas prêt",
@@ -175,7 +175,7 @@ export const POLES: Pole[] = [
           variable: "3% du chiffre d'affaires total généré par l'équipe sales",
           fixed: "Fixe mensuel activé une fois un seuil de chiffre d'affaires récurrent atteint",
           earnings:
-            "3% du chiffre d'affaires de toute l'équipe sales : 30 000 € encaissés dans le mois représentent 900 €, 60 000 € représentent 1 800 €, en plus du fixe une fois activé.",
+            "3 % du chiffre d'affaires de toute l'équipe sales : 30 000 € encaissés dans le mois représentent 900 €, 60 000 € représentent 1 800 €, en plus du fixe une fois activé.",
         },
         nonNegotiable: [
           "A déjà closé des ventes lui-même, pas seulement managé une équipe",

@@ -61,9 +61,11 @@ create index if not exists staff_members_owner_idx on public.staff_members (owne
 
 alter table public.staff_members enable row level security;
 
+drop policy if exists "staff_members_self_read" on public.staff_members;
 create policy "staff_members_self_read" on public.staff_members
   for select using (user_id = (select auth.uid()));
 
+drop policy if exists "staff_members_owner_read" on public.staff_members;
 create policy "staff_members_owner_read" on public.staff_members
   for select using (owner_id = (select auth.uid()));
 
@@ -85,6 +87,7 @@ create table if not exists public.staff_invites (
 
 alter table public.staff_invites enable row level security;
 
+drop policy if exists "staff_invites_owner_read" on public.staff_invites;
 create policy "staff_invites_owner_read" on public.staff_invites
   for select using (owner_id = (select auth.uid()));
 
@@ -120,6 +123,7 @@ create unique index if not exists staff_records_one_report_per_day
 alter table public.staff_records enable row level security;
 
 -- Chaque membre actif gère uniquement ses propres données.
+drop policy if exists "staff_records_own" on public.staff_records;
 create policy "staff_records_own" on public.staff_records
   for all
   using (
@@ -138,6 +142,7 @@ create policy "staff_records_own" on public.staff_records
   );
 
 -- Le fondateur lit tout ce que fait son équipe.
+drop policy if exists "staff_records_owner_read" on public.staff_records;
 create policy "staff_records_owner_read" on public.staff_records
   for select using (
     exists (

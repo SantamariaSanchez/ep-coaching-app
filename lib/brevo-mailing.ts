@@ -131,7 +131,10 @@ async function syncClientsToList(listId: number, clients: CoachClient[]): Promis
       headers: brevoHeaders(),
       body: JSON.stringify({
         email: client.email,
-        attributes: { FIRSTNAME: client.full_name?.split(" ")[0] ?? "" },
+        attributes: {
+          PRENOM: client.full_name?.split(" ")[0] ?? "",
+          NOM: client.full_name?.split(" ").slice(1).join(" ") ?? "",
+        },
         listIds: [listId],
         updateEnabled: true,
       }),
@@ -217,6 +220,15 @@ async function resolveAudience(
   return { listId, clientsToSync: await getCoachClientsForMailing(coachId) };
 }
 
+// Le compte Brevo nomme les attributs PRENOM/NOM, pas FIRSTNAME/LASTNAME :
+// un brouillon écrit avec l'ancienne balise partait avec "Salut ," sans
+// prénom. Converti ici pour couvrir aussi les brouillons déjà enregistrés.
+function normalizeMergeTags(text: string): string {
+  return text
+    .replace(/\{\{\s*contact\.FIRSTNAME\s*\}\}/g, "{{contact.PRENOM}}")
+    .replace(/\{\{\s*contact\.LASTNAME\s*\}\}/g, "{{contact.NOM}}");
+}
+
 export async function sendCoachCampaign(
   coachId: string,
   coachName: string,
@@ -257,10 +269,10 @@ export async function sendCoachCampaign(
     headers: brevoHeaders(),
     body: JSON.stringify({
       name: `${coachName} : ${todayInParis()} : ${subject.slice(0, 40)}`,
-      subject,
+      subject: normalizeMergeTags(subject),
       sender: SENDER,
       type: "classic",
-      htmlContent,
+      htmlContent: normalizeMergeTags(htmlContent),
       recipients: { listIds: [listId] },
       ...(scheduledAt ? { scheduledAt } : {}),
     }),

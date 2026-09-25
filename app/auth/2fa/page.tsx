@@ -29,7 +29,7 @@ export default async function TwoFactorPage() {
     .eq("id", user.id)
     .maybeSingle();
 
-  const dest = profile?.role === "coach" ? "/dashboard/coach" : "/dashboard/client";
+  const dest = profile?.role === "coach" ? "/dashboard/coach" : profile?.role === "staff" ? "/equipe" : "/dashboard/client";
 
   const {
     data: { session },
