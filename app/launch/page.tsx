@@ -36,5 +36,5 @@ export default async function LaunchPage() {
   if (!user) redirect("/");
 
   const profile = await getProfile(user.id);
-  redirect(profile?.role === "coach" ? "/dashboard/coach" : "/dashboard/client");
+  redirect(profile?.role === "coach" ? "/dashboard/coach" : profile?.role === "staff" ? "/equipe" : "/dashboard/client");
 }

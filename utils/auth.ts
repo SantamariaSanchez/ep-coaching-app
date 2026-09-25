@@ -334,7 +334,7 @@ export async function getPlatformOwner(): Promise<Profile | null> {
 
 export async function getUserRole(
   userId: string
-): Promise<"coach" | "client" | null> {
+): Promise<"coach" | "client" | "staff" | null> {
   const profile = await getProfile(userId);
   return profile?.role ?? null;
 }

@@ -125,6 +125,10 @@ export async function proxy(request: NextRequest) {
   const isCoachDashboard  = pathname.startsWith("/dashboard/coach");
   const isClientDashboard = pathname.startsWith("/dashboard/client");
   const isDashboard = isCoachDashboard || isClientDashboard;
+  // Espace des recrues de l'équipe (voir app/equipe). Le contrôle d'accès
+  // réel se fait dans la page (staff_members, service role) : ici, seulement
+  // la redirection de confort d'un visiteur non connecté.
+  const isStaffSpace = pathname === "/equipe" || pathname.startsWith("/equipe/");
   // The marketing homepage is treated like an auth page for already-logged-in
   // visitors: nobody who's already signed in should land back on "rejoindre
   // la communauté" — they should go straight into their dashboard.
@@ -150,6 +154,11 @@ export async function proxy(request: NextRequest) {
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
   }
+  if (!user && isStaffSpace) {
+    const res = NextResponse.redirect(new URL("/auth/equipe", request.url));
+    supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
+    return res;
+  }
   // Unauthenticated on the PWA launch route → marketing homepage (mirrors
   // app/launch/page.tsx's own `if (!user) redirect("/")`).
   if (!user && isLaunch) {
@@ -162,6 +171,13 @@ export async function proxy(request: NextRequest) {
   if (user && isDashboard) {
     try {
       const { role, coachId } = await resolveRole(user.id);
+      // Une recrue (profiles.role = "staff") n'a ni espace coach ni espace
+      // client : tout le dashboard la renvoie vers son espace métier.
+      if (role === "staff") {
+        const res = NextResponse.redirect(new URL("/equipe", request.url));
+        supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
+        return res;
+      }
       // Le contrôle de double authentification vit dans app/dashboard/layout.tsx
       // et non ici : le verrou de rafraîchissement ci-dessus fait qu'une requête
       // concurrente peut réutiliser le résultat d'une autre sans avoir chargé sa
@@ -216,7 +232,7 @@ export async function proxy(request: NextRequest) {
       role = profile?.role ?? null;
     }
 
-    const dest = role === "coach" ? "/dashboard/coach" : "/dashboard/client";
+    const dest = role === "coach" ? "/dashboard/coach" : role === "staff" ? "/equipe" : "/dashboard/client";
     const res = NextResponse.redirect(new URL(dest, request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;
@@ -226,5 +242,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/", "/launch", "/dashboard/:path*", "/auth/:path*"],
+    matcher: ["/", "/launch", "/dashboard/:path*", "/auth/:path*", "/equipe", "/equipe/:path*"],
 };

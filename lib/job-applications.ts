@@ -77,6 +77,26 @@ export async function getJobApplications(ownerId: string): Promise<JobApplicatio
   }
 }
 
+// CV des candidatures, lu à part de getJobApplications : si la colonne
+// cv_path n'existe pas encore (migration 20260925_staff_roles.sql pas encore
+// exécutée), seule cette lecture échoue, jamais la liste des candidatures.
+export async function getCvPathsByApplication(ownerId: string): Promise<Record<string, string>> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("job_applications")
+      .select("id, cv_path")
+      .eq("owner_id", ownerId)
+      .not("cv_path", "is", null);
+    if (error) return {};
+    const map: Record<string, string> = {};
+    for (const row of (data as { id: string; cv_path: string }[]) ?? []) map[row.id] = row.cv_path;
+    return map;
+  } catch {
+    return {};
+  }
+}
+
 // Regroupées par application_id une fois pour toutes (une requête, pas une
 // par candidature acceptée) — voir OrganisationView.tsx qui n'en a besoin
 // que pour construire la checklist des candidats déjà acceptés.

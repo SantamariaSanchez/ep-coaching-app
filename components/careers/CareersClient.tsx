@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { ChevronDown, Send, Check, Circle, Wallet, ShieldCheck, CalendarCheck } from "lucide-react";
+import { ChevronDown, Send, Check, Circle, Wallet, ShieldCheck, CalendarCheck, FileUp } from "lucide-react";
 import type { Pole, RoleStatus } from "@/components/ui/OrganisationView";
 import { submitApplication } from "@/app/carrieres/actions";
 import {
@@ -23,6 +23,7 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [answers, setAnswers] = useState<QualifyingAnswers>({});
+  const [cv, setCv] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -31,10 +32,36 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
     setAnswers((prev) => ({ ...prev, [key]: value }));
   }
 
+  function pickCv(file: File | null) {
+    setError(null);
+    if (!file) return setCv(null);
+    if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
+      setCv(null);
+      return setError("Le CV doit être un fichier PDF.");
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setCv(null);
+      return setError("Ton CV dépasse 5 Mo, compresse-le puis réessaie.");
+    }
+    setCv(file);
+  }
+
   function submit() {
     setError(null);
+    if (!cv) {
+      setError("Ton CV en PDF est requis.");
+      return;
+    }
+    const form = new FormData();
+    form.set("roleKey", roleKey);
+    form.set("roleTitle", roleTitle);
+    form.set("fullName", fullName);
+    form.set("email", email);
+    form.set("phone", phone);
+    form.set("answers", JSON.stringify(answers));
+    form.set("cv", cv);
     startTransition(async () => {
-      const result = await submitApplication(roleKey, roleTitle, fullName, email, phone, answers);
+      const result = await submitApplication(form);
       if (result.error) {
         setError(result.error);
         return;
@@ -121,6 +148,28 @@ function ApplyForm({ roleKey, roleTitle }: { roleKey: string; roleTitle: string 
           />
         </div>
       ))}
+
+      {/* CV obligatoire (demande directe 2026-09-25), en plus des questions
+          de qualification. */}
+      <div>
+        <label className="block text-[11px] font-semibold text-[#F5EDED]/60 mb-1" htmlFor={`cv-${roleKey}`}>
+          Ton CV (PDF, 5 Mo max)
+        </label>
+        <label
+          htmlFor={`cv-${roleKey}`}
+          className="flex items-center gap-2 w-full bg-[#150000] border border-dashed border-[#890404]/40 rounded-lg px-3 py-3 text-sm cursor-pointer hover:border-[#E01E1E]/60"
+        >
+          <FileUp size={15} className="text-[#E01E1E] flex-shrink-0" />
+          <span className={cv ? "text-white truncate" : "text-[#F5EDED]/35"}>{cv ? cv.name : "Choisir mon CV en PDF"}</span>
+        </label>
+        <input
+          id={`cv-${roleKey}`}
+          type="file"
+          accept="application/pdf,.pdf"
+          className="sr-only"
+          onChange={(e) => pickCv(e.target.files?.[0] ?? null)}
+        />
+      </div>
 
       {error && <p className="text-[11px] text-red-400">{error}</p>}
       <button

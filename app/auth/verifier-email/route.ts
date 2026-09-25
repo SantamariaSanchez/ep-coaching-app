@@ -34,6 +34,17 @@ export async function GET(request: NextRequest) {
     .select("role")
     .maybeSingle();
 
+  // Une recrue peut aussi avoir un compte membre existant (role "client") :
+  // c'est l'existence d'un accès équipe qui décide de la destination.
+  const { data: staff } = await admin
+    .from("staff_members")
+    .select("user_id")
+    .eq("user_id", data.user.id)
+    .maybeSingle();
+  if (staff || profile?.role === "staff") {
+    return NextResponse.redirect(`${origin}/equipe/contrat`);
+  }
+
   const dest = profile?.role === "coach" ? "/dashboard/coach" : "/dashboard/client";
   return NextResponse.redirect(`${origin}${dest}?email=confirme`);
 }

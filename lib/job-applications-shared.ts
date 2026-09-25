@@ -42,7 +42,7 @@ export const QUALIFYING_QUESTIONS = [
   },
   {
     key: "link",
-    label: "Un lien vers ton travail (Instagram, portfolio, CV...)",
+    label: "Un lien vers ton travail (Instagram, portfolio, LinkedIn...)",
     placeholder: "https://...",
     required: false,
   },
@@ -61,4 +61,9 @@ export interface JobApplication {
   notes: string | null;
   answers: QualifyingAnswers | null;
   created_at: string;
+  // Chemin du CV (PDF) dans le bucket privé job-cvs, obligatoire depuis le
+  // 2026-09-25. Jamais exposé tel quel au navigateur : cvUrl est une URL
+  // signée temporaire calculée côté serveur (Organisation, espace RH).
+  cv_path?: string | null;
+  cvUrl?: string | null;
 }

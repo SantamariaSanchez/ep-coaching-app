@@ -385,6 +385,16 @@ function ApplicationRow({
         {application.phone && (
           <span className="text-[11.5px] text-[#F5EDED]/55">{application.phone}</span>
         )}
+        {application.cvUrl && (
+          <a
+            href={application.cvUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[11.5px] font-bold text-[#E01E1E] hover:underline"
+          >
+            Voir le CV (PDF)
+          </a>
+        )}
       </div>
 
       {/* Réponses de qualification (2026-09-08) : ce que le candidat a

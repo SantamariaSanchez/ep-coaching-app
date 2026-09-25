@@ -9,7 +9,9 @@
 
 export interface Profile {
   id: string;
-  role: "coach" | "client";
+  // "staff" : recrue de l'équipe (espace /equipe, voir lib/staff-roles.ts).
+  // Ne donne aucun accès à lui seul, voir staff_members.
+  role: "coach" | "client" | "staff";
   full_name: string | null;
   email: string | null;
   phone: string | null;

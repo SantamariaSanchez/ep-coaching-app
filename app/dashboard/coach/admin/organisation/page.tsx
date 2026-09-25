@@ -5,7 +5,12 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { ChevronLeft, ExternalLink } from "lucide-react";
 import OrganisationView, { type RoleStatus } from "@/components/ui/OrganisationView";
 import { POLES } from "@/lib/org-roles";
-import { getJobApplications, getOnboardingStepsByApplication } from "@/lib/job-applications";
+import { getJobApplications, getOnboardingStepsByApplication, getCvPathsByApplication } from "@/lib/job-applications";
+import { createAdminClient } from "@/lib/supabase-admin";
+import { STAFF_ROLE_KEYS, staffLoginPath } from "@/lib/staff-roles";
+import { STAFF_CONTRACT_VERSION } from "@/lib/staff-contract";
+import { signCvUrls } from "@/lib/staff";
+import StaffAccessSection, { type StaffAccessInvite, type StaffAccessMember, type StaffAccessRole } from "@/components/staff/StaffAccessSection";
 import { getOpenTaskCountsByAgent } from "@/utils/ai-agents";
 import { setRoleStatus, setApplicationStatus, setApplicationNotes, toggleOnboardingStep } from "./actions";
 
@@ -88,7 +93,28 @@ export default async function OrganisationAdminPage() {
     initialStatuses[row.role_key as string] = row.status as RoleStatus;
   }
 
-  const applications = await getJobApplications(user.id);
+  const rawApplications = await getJobApplications(user.id);
+  // CV (PDF) : URL signée d'une heure, jamais le chemin brut du bucket privé.
+  const cvPaths = await getCvPathsByApplication(user.id);
+  const cvUrls = await signCvUrls(Object.values(cvPaths));
+  const applications = rawApplications.map((a) => ({ ...a, cvUrl: cvPaths[a.id] ? cvUrls[cvPaths[a.id]] ?? null : null }));
+
+  // Accès équipe (demande directe 2026-09-25) : un lien de connexion par
+  // métier, les emails autorisés et l'état du contrat de chaque recrue.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+  const staffRoles: StaffAccessRole[] = POLES.flatMap((p) =>
+    p.roles
+      .filter((r) => STAFF_ROLE_KEYS.includes(r.key))
+      .map((r) => ({ key: r.key, title: r.title, poleName: p.name, poleColor: p.color, url: `${appUrl}${staffLoginPath(r.key)}` }))
+  );
+  const adminForStaff = createAdminClient();
+  const [invitesRes, membersRes] = await Promise.all([
+    adminForStaff.from("staff_invites").select("id, role_key, email, used_at, application_id").eq("owner_id", user.id).order("created_at", { ascending: false }),
+    adminForStaff.from("staff_members").select("user_id, role_key, full_name, email, status, contract_signed_at, contract_version").eq("owner_id", user.id).order("created_at", { ascending: false }),
+  ]);
+  const staffUnavailable = !!invitesRes.error || !!membersRes.error;
+  const staffInvites = (invitesRes.data as StaffAccessInvite[] | null) ?? [];
+  const staffMembers = (membersRes.data as StaffAccessMember[] | null) ?? [];
   const acceptedIds = applications.filter((a) => a.status === "acceptee").map((a) => a.id);
   const [onboardingByApplication, openTaskCountsByAgent] = await Promise.all([
     getOnboardingStepsByApplication(acceptedIds),
@@ -194,6 +220,14 @@ export default async function OrganisationAdminPage() {
           }} />
         </div>
       </div>
+
+      <StaffAccessSection
+        roles={staffRoles}
+        invites={staffInvites}
+        members={staffMembers}
+        contractVersion={STAFF_CONTRACT_VERSION}
+        unavailable={staffUnavailable}
+      />
 
       <OrganisationView
         poles={POLES}
