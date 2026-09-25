@@ -66,10 +66,17 @@ export default function NotificationBell({
 
     const supabase = createClientSupabase();
     let channel: ReturnType<typeof supabase.channel> | null = null;
+    // Deux garde-fous (erreur "cannot add postgres_changes callbacks after
+    // subscribe()" vue en test navigateur le 2026-09-25) : si le composant
+    // est démonté avant la fin de getUser(), on n'ouvre jamais le canal
+    // (sinon il fuit et reste abonné), et chaque instance a son propre nom de
+    // canal (le client Supabase est partagé : le même nom renvoyait le canal
+    // déjà abonné d'une autre instance).
+    let cancelled = false;
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) return;
+      if (!user || cancelled) return;
       channel = supabase
-        .channel("nav-notifications")
+        .channel(`nav-notifications-${user.id}-${Math.random().toString(36).slice(2)}`)
         .on(
           "postgres_changes",
           { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
@@ -83,6 +90,7 @@ export default function NotificationBell({
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
+      cancelled = true;
       document.removeEventListener("mousedown", handleClickOutside);
       if (channel) supabase.removeChannel(channel);
     };
