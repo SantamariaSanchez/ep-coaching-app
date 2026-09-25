@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Workflow, CalendarDays, Users, CheckCircle2, CircleDashed } from "lucide-react";
+import { ChevronLeft, Workflow, CalendarDays, Users, CheckCircle2, CircleDashed, MessagesSquare, FolderOpen, ChevronRight } from "lucide-react";
+import { getUnreadBySender } from "@/lib/staff-team";
 import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getRoleCard, KINDS } from "@/lib/staff-roles";
@@ -53,6 +54,8 @@ export default async function TeamCockpitPage() {
 
   const now = new Date();
   const today = parisDate(now);
+  const unreadBySender = await getUnreadBySender(user.id, user.id);
+  const unreadTotal = Object.values(unreadBySender).reduce((a, b) => a + b, 0);
   const month = currentMonthKey(now);
   const nameOf = (id: string) => members.find((m) => m.user_id === id)?.full_name ?? "?";
 
@@ -91,7 +94,15 @@ export default async function TeamCockpitPage() {
       </Link>
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Administration</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">Pilotage de l&apos;équipe</h1>
-      <p className="text-sm text-[#F5EDED]/45 mt-2 mb-6 leading-relaxed">
+      <div className="flex flex-wrap gap-2 mt-4">
+        <Link href="/dashboard/coach/admin/equipe/messages" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-white bg-[#E01E1E] rounded-lg px-3 py-2">
+          <MessagesSquare size={13} /> Messagerie{unreadTotal > 0 ? ` (${unreadTotal})` : ""}
+        </Link>
+        <Link href="/dashboard/coach/admin/equipe/documents" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED] border border-[#E01E1E]/35 rounded-lg px-3 py-2">
+          <FolderOpen size={13} /> Documents partagés
+        </Link>
+      </div>
+      <p className="text-sm text-[#F5EDED]/45 mt-4 mb-6 leading-relaxed">
         Tout ce que fait l&apos;équipe, en un seul endroit. Les accès, liens de connexion et contrats se gèrent dans{" "}
         <Link href="/dashboard/coach/admin/organisation" className="text-[#E01E1E] font-bold">Organisation</Link>.
       </p>
@@ -151,9 +162,10 @@ export default async function TeamCockpitPage() {
             const kpis = computeKpis(m.role_key, records, {}, [], now).slice(0, 3);
             const signed = isContractSigned(m);
             return (
-              <div key={m.user_id} style={{ padding: "10px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
+              <Link key={m.user_id} href={`/dashboard/coach/admin/equipe/${m.user_id}`} style={{ display: "block", padding: "10px 0", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none" }}>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, alignItems: "baseline" }}>
                   <span style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{m.full_name}</span>
+                  {unreadBySender[m.user_id] ? <span style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", background: "#E01E1E", borderRadius: 999, padding: "1px 7px" }}>{unreadBySender[m.user_id]} message(s)</span> : null}
                   <span style={{ fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>{getRoleCard(m.role_key)?.role.title ?? m.role_key}</span>
                   {m.status !== "actif" && <span style={{ fontSize: 10.5, color: "#f87171", fontWeight: 700 }}>{m.status}</span>}
                   {!signed && <span style={{ fontSize: 10.5, color: "#facc15", fontWeight: 700 }}>contrat pas signé</span>}
@@ -162,8 +174,9 @@ export default async function TeamCockpitPage() {
                 <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: "3px 0 0", lineHeight: 1.55 }}>
                   {kpis.map((k) => `${k.label} : ${k.value}`).join(" · ")}
                   {urgent > 0 && <span style={{ color: "#f87171", fontWeight: 700 }}> · {urgent} action(s) urgente(s) en attente</span>}
+                  <ChevronRight size={12} style={{ display: "inline", marginLeft: 6, verticalAlign: "-2px", color: "rgba(245,237,237,0.3)" }} />
                 </p>
-              </div>
+              </Link>
             );
           })
         )}

@@ -241,6 +241,9 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
             <ChevronDown size={13} style={{ color: "rgba(245,237,237,0.3)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.15s", flexShrink: 0 }} />
           </p>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
+            {typeof record.data?._assigned_by_name === "string" && (
+              <span style={{ color: "#facc15", fontWeight: 700 }}>Assignée par {record.data._assigned_by_name as string} · </span>
+            )}
             {[...summary, ...derivedMetrics(kind, record)].join(" · ") || "Aucun détail"}
             {late && <span style={{ color: "#f87171", fontWeight: 700 }}> · En retard</span>}
           </p>

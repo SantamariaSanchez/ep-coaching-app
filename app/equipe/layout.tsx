@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { loadStaffContext } from "@/lib/staff-page";
-import { MODULES } from "@/lib/staff-roles";
+import { MODULES, navGroups } from "@/lib/staff-roles";
+import { getUnreadBySender } from "@/lib/staff-team";
 import StaffShell from "@/components/staff/StaffShell";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 
@@ -20,13 +21,15 @@ export default async function EquipeLayout({ children }: { children: React.React
   }
 
   const unlocked = ctx.emailVerified && ctx.contractSigned;
+  const unread = unlocked ? Object.values(await getUnreadBySender(ctx.member.owner_id, ctx.userId)).reduce((a, b) => a + b, 0) : 0;
   return (
     <StaffShell
       fullName={ctx.member.full_name}
       roleTitle={ctx.role.title}
       poleName={ctx.pole.name}
       poleColor={ctx.pole.color}
-      modules={unlocked ? ctx.cfg.modules.map((k) => ({ key: k, label: MODULES[k].label })) : []}
+      groups={unlocked ? navGroups(ctx.cfg).map((g) => ({ label: g.label, items: g.items.map((k) => ({ key: k, label: MODULES[k].label })) })) : []}
+      unreadMessages={unread}
       unlocked={unlocked}
     >
       <ServiceWorkerRegister />

@@ -70,6 +70,8 @@ export const RECORD_KINDS = [
   "opportunity",
   "process",
   "report",
+  "template",
+  "note",
 ] as const;
 export type RecordKind = (typeof RECORD_KINDS)[number];
 
@@ -638,6 +640,72 @@ export const KINDS: Record<Exclude<RecordKind, "report">, KindDef> = {
       NOTES,
     ],
   },
+  template: {
+    kind: "template",
+    singular: "Modèle",
+    plural: "Mes modèles",
+    addLabel: "Créer un modèle",
+    titleLabel: "Nom du modèle",
+    titlePlaceholder: "Ex : Relance après appel sans décision",
+    sort: "created_desc",
+    emptyText: "Aucun modèle perso. Crée ceux que tu réutilises souvent.",
+    stages: [
+      { value: "actif", label: "Actif", color: C.green },
+      { value: "archive", label: "Archivé", color: C.grey, closed: true },
+    ],
+    fields: [
+      { key: "title", label: "Nom du modèle", type: "text", column: "title", required: true },
+      {
+        key: "channel",
+        label: "Canal",
+        type: "select",
+        summary: true,
+        options: [
+          { value: "sms", label: "SMS / WhatsApp" },
+          { value: "dm", label: "Message privé (Instagram...)" },
+          { value: "email", label: "Email" },
+          { value: "appel", label: "Script d'appel" },
+          { value: "interne", label: "Interne" },
+          { value: "autre", label: "Autre" },
+        ],
+      },
+      { key: "body", label: "Texte du modèle", type: "textarea", required: true },
+    ],
+  },
+  note: {
+    kind: "note",
+    singular: "Page",
+    plural: "Espace de travail",
+    addLabel: "Nouvelle page",
+    titleLabel: "Titre",
+    titlePlaceholder: "Ex : Notes de réunion du lundi",
+    sort: "created_desc",
+    emptyText: "Ton espace est vide. Note ici tes réunions, idées, brouillons et procédures perso.",
+    stages: [
+      { value: "en_cours", label: "En cours", color: C.blue },
+      { value: "reference", label: "Référence", color: C.violet },
+      { value: "archive", label: "Archivée", color: C.grey, closed: true },
+    ],
+    fields: [
+      { key: "title", label: "Titre", type: "text", column: "title", required: true },
+      {
+        key: "category",
+        label: "Type",
+        type: "select",
+        summary: true,
+        options: [
+          { value: "reunion", label: "Réunion" },
+          { value: "idee", label: "Idée" },
+          { value: "brouillon", label: "Brouillon" },
+          { value: "procedure", label: "Procédure perso" },
+          { value: "apprentissage", label: "Ce que j'ai appris" },
+          { value: "autre", label: "Autre" },
+        ],
+      },
+      { key: "body", label: "Contenu", type: "textarea" },
+      { key: "link", label: "Lien utile", type: "url" },
+    ],
+  },
   process: {
     kind: "process",
     singular: "Process",
@@ -698,7 +766,18 @@ export type ModuleKey =
   | "process"
   | "rapports"
   | "scripts"
-  | "equipe";
+  | "equipe"
+  // Communs à tous les métiers (voir UNIVERSAL_MODULES).
+  | "espace"
+  | "modeles"
+  | "formation"
+  | "documents"
+  | "messages"
+  // Outils propres à certains métiers.
+  | "offres"
+  | "calendrier"
+  | "calculateur"
+  | "scorecards";
 
 export interface ModuleDef {
   key: ModuleKey;
@@ -725,7 +804,40 @@ export const MODULES: Record<ModuleKey, ModuleDef> = {
   rapports: { key: "rapports", label: "Rapport du jour", description: "Tes chiffres de la journée, en deux minutes." },
   scripts: { key: "scripts", label: "Scripts d'appel", description: "La banque de questions d'appel de vente, par situation." },
   equipe: { key: "equipe", label: "Mon équipe", description: "Les chiffres du mois de chaque personne que tu encadres." },
+  espace: { key: "espace", label: "Espace de travail", description: "Tes notes, réunions, brouillons et procédures perso.", kind: "note" },
+  modeles: { key: "modeles", label: "Modèles", description: "Les messages et scripts prêts à l'emploi de ton métier, et les tiens.", kind: "template" },
+  formation: { key: "formation", label: "Formation", description: "Ton parcours d'intégration, étape par étape." },
+  documents: { key: "documents", label: "Documents", description: "Ton contrat, les documents partagés avec toi et tes fichiers." },
+  messages: { key: "messages", label: "Équipe", description: "Toute l'équipe, les messages privés et le canal général." },
+  offres: { key: "offres", label: "Offres et paiement", description: "Ce que vend EP Coaching, pour qui, et le lien de paiement de chaque offre." },
+  calendrier: { key: "calendrier", label: "Calendrier éditorial", description: "Tes livrables semaine par semaine, par date de publication." },
+  calculateur: { key: "calculateur", label: "Calculateur", description: "Coût par lead, ROAS et budget nécessaire, en direct." },
+  scorecards: { key: "scorecards", label: "Scorecards", description: "Mission, résultats attendus et critères non négociables de chaque poste, pour recruter juste." },
 };
+
+// Présents chez tout le monde, quel que soit le métier : c'est la base
+// d'un poste (se former, s'organiser, ses documents, son équipe).
+export const UNIVERSAL_MODULES: ModuleKey[] = ["taches", "espace", "modeles", "formation", "documents", "messages"];
+
+/** Tous les onglets d'un métier : ses outils propres puis la base commune. */
+export function allModules(cfg: StaffRoleConfig): ModuleKey[] {
+  return [...new Set<ModuleKey>([...cfg.modules, ...UNIVERSAL_MODULES])];
+}
+
+// Regroupement de la navigation. "Mon travail" ne contient QUE les outils du
+// métier : un closer n'y voit jamais de livrables ni de programme.
+export function navGroups(cfg: StaffRoleConfig): { label: string; items: ModuleKey[] }[] {
+  const tools: ModuleKey[] = ["modeles", "scripts", "offres", "calendrier", "calculateur", "scorecards", "rapports"];
+  const shared = new Set<ModuleKey>([...UNIVERSAL_MODULES, ...tools]);
+  const mods = allModules(cfg);
+  const groups: { label: string; items: ModuleKey[] }[] = [
+    { label: "Mon travail", items: [...cfg.modules.filter((m) => !shared.has(m)), "taches", "espace"] },
+    { label: "Outils", items: tools.filter((t) => mods.includes(t)) },
+    { label: "Équipe et formation", items: ["messages", "formation"] },
+    { label: "Moi", items: ["documents"] },
+  ];
+  return groups.filter((g) => g.items.length > 0);
+}
 
 // ── Métiers ─────────────────────────────────────────────────────────────
 
@@ -758,56 +870,56 @@ export const STAFF_ROLES: StaffRoleConfig[] = [
   },
   {
     key: "setter",
-    modules: ["crm", "agenda", "scripts", "taches", "rapports"],
+    modules: ["crm", "agenda", "scripts", "offres", "taches", "rapports"],
     reportMetrics: [n("conversations", "Conversations (DM, commentaires)"), n("leads_qualifies", "Leads qualifiés"), n("rdv_bookes", "RDV bookés"), n("relances", "Relances no-show")],
     focus: "Des rendez-vous qualifiés qui se présentent, jamais un agenda rempli pour rien.",
   },
   {
     key: "closer",
-    modules: ["agenda", "crm", "scripts", "taches", "rapports"],
+    modules: ["agenda", "crm", "scripts", "offres", "taches", "rapports"],
     reportMetrics: [n("appels_prevus", "Appels prévus"), n("appels_tenus", "Appels tenus"), n("ventes", "Ventes"), m("cash_collecte", "Cash collecté (€)")],
     focus: "Ton taux de close et ton cash collecté. Qualifie avant de persuader.",
   },
   {
     key: "head-of-sales",
-    modules: ["equipe", "crm", "agenda", "scripts", "taches", "rapports"],
+    modules: ["equipe", "crm", "agenda", "scripts", "offres", "scorecards", "taches", "rapports"],
     team: ["setter", "closer"],
     reportMetrics: [n("coachings", "Coachings individuels de l'équipe"), n("appels_reecoutes", "Appels réécoutés"), n("ventes_equipe", "Ventes de l'équipe")],
     focus: "Le chiffre d'affaires signé par toute l'équipe et le vrai goulot d'étranglement du mois.",
   },
   {
     key: "createur-contenu-videaste",
-    modules: ["livrables", "agenda", "taches", "rapports"],
+    modules: ["livrables", "calendrier", "agenda", "taches", "rapports"],
     reportMetrics: [n("videos_tournees", "Vidéos tournées"), n("videos_montees", "Vidéos montées"), n("videos_livrees", "Vidéos livrées")],
     focus: "Livrer dans le délai annoncé, sans relance, dans l'identité de la marque.",
   },
   {
     key: "community-manager",
-    modules: ["livrables", "agenda", "taches", "rapports"],
+    modules: ["livrables", "calendrier", "agenda", "taches", "rapports"],
     reportMetrics: [n("posts_publies", "Posts publiés"), n("commentaires", "Commentaires traités"), n("dm", "Messages privés traités"), n("questions_chaudes", "Questions chaudes remontées")],
     focus: "Un calendrier tenu et une réponse publique en moins de 4h en journée.",
   },
   {
     key: "copywriter",
-    modules: ["livrables", "taches", "rapports"],
+    modules: ["livrables", "calendrier", "taches", "rapports"],
     reportMetrics: [n("textes_livres", "Textes livrés"), n("emails_ecrits", "Emails écrits"), n("accroches_testees", "Accroches testées")],
     focus: "Des textes dans la voix de la marque dès le premier jet.",
   },
   {
     key: "personal-brand-manager",
-    modules: ["opportunites", "livrables", "agenda", "taches", "rapports"],
+    modules: ["opportunites", "livrables", "calendrier", "agenda", "taches", "rapports"],
     reportMetrics: [n("contacts", "Opportunités contactées"), n("publications", "Publications validées"), n("alertes", "Alertes réputation traitées")],
     focus: "Des prises de parole alignées avec la marque, et une réaction sous 24h en cas d'enjeu.",
   },
   {
     key: "growth-traffic-manager",
-    modules: ["campagnes", "taches", "rapports"],
+    modules: ["campagnes", "calculateur", "taches", "rapports"],
     reportMetrics: [m("depense", "Dépense du jour (€)"), n("leads", "Leads du jour"), n("tests", "Tests lancés")],
     focus: "Un coût par lead précis et un retour sur investissement positif. Coupe ce qui ne performe pas.",
   },
   {
     key: "head-of-marketing",
-    modules: ["equipe", "livrables", "campagnes", "agenda", "taches", "rapports"],
+    modules: ["equipe", "livrables", "calendrier", "campagnes", "calculateur", "agenda", "taches", "rapports"],
     team: ["createur-contenu-videaste", "community-manager", "copywriter", "personal-brand-manager", "growth-traffic-manager"],
     reportMetrics: [n("contenus_valides", "Contenus validés"), n("reunions", "Points avec l'équipe")],
     focus: "La notoriété et l'acquisition du mois, et le canal qui coince vraiment.",
@@ -852,7 +964,7 @@ export const STAFF_ROLES: StaffRoleConfig[] = [
   },
   {
     key: "rh-people-ops",
-    modules: ["recrutement", "agenda", "taches", "rapports"],
+    modules: ["recrutement", "scorecards", "agenda", "taches", "rapports"],
     reportMetrics: [n("candidatures_traitees", "Candidatures traitées"), n("entretiens", "Entretiens menés"), n("reponses", "Réponses envoyées")],
     focus: "Des recrutements sur scorecard, et aucun candidat qui attend une réponse.",
   },
@@ -881,7 +993,7 @@ export function allowedKinds(roleKey: string): RecordKind[] {
   const cfg = getStaffRoleConfig(roleKey);
   if (!cfg) return [];
   const kinds = new Set<RecordKind>(["report"]);
-  for (const mod of cfg.modules) {
+  for (const mod of allModules(cfg)) {
     const kind = MODULES[mod].kind;
     if (kind) kinds.add(kind);
   }

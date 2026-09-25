@@ -5,7 +5,7 @@ import { getMyRecords, getTeamData, getApplicationsForHr, getRecentPayingClients
 import { computeKpis, targetActuals, todayAgenda, parisDate, type KpiExtras } from "@/lib/staff-kpis";
 import { computeNextActions } from "@/lib/staff-next-actions";
 import { getPlaybook } from "@/lib/staff-playbooks";
-import { MODULES } from "@/lib/staff-roles";
+import { MODULES, allModules } from "@/lib/staff-roles";
 import { nowInParis } from "@/lib/dates";
 import KpiGrid from "@/components/staff/KpiGrid";
 import TargetsCard from "@/components/staff/TargetsCard";
@@ -129,10 +129,10 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
         {playbook && <LoggingGuide playbook={playbook} />}
         <section className="ep-card" style={{ padding: "15px 16px" }}>
           <p className="ep-label" style={{ margin: "0 0 8px" }}>Mon espace</p>
-          {cfg.modules.map((k) => (
+          {allModules(cfg).map((k) => (
             <Link
               key={k}
-              href={`/equipe/${k}`}
+              href={k === "messages" ? "/equipe/messages?avec=general" : `/equipe/${k}`}
               style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "9px 0", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none" }}
             >
               <span>

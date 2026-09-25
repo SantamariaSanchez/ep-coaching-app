@@ -343,6 +343,13 @@ export async function onStaffRecordStatusChange(recordId: string): Promise<void>
     const row = data as Row | null;
     if (!row) return;
 
+    // Tâche assignée par le fondateur et terminée : il est prévenu.
+    if (row.kind === "task" && row.status === "fait" && typeof row.data._assigned_by === "string") {
+      const who = await memberById(admin, row.staff_id);
+      notify(row.data._assigned_by, "Tâche terminée", `${who?.full_name ?? "Un membre"} a terminé : ${row.title}`, `/dashboard/coach/admin/equipe/${row.staff_id}`);
+      return;
+    }
+
     if (row.kind === "appointment" && typeof row.data._lead_id === "string") {
       const { data: leadData } = await admin.from("staff_records").select(ROW_FIELDS).eq("id", row.data._lead_id).maybeSingle();
       const lead = leadData as Row | null;

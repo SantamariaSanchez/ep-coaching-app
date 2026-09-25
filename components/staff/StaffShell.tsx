@@ -22,6 +22,15 @@ import {
   MessageSquareQuote,
   Users,
   FileSignature,
+  NotebookPen,
+  Copy,
+  GraduationCap,
+  FolderOpen,
+  MessagesSquare,
+  CreditCard,
+  CalendarRange,
+  Calculator,
+  ClipboardList,
   UserCog,
   LogOut,
   type LucideIcon,
@@ -48,12 +57,27 @@ const ICONS: Record<ModuleKey, LucideIcon> = {
   rapports: FileBarChart,
   scripts: MessageSquareQuote,
   equipe: Users,
+  espace: NotebookPen,
+  modeles: Copy,
+  formation: GraduationCap,
+  documents: FolderOpen,
+  messages: MessagesSquare,
+  offres: CreditCard,
+  calendrier: CalendarRange,
+  calculateur: Calculator,
+  scorecards: ClipboardList,
 };
 
 interface NavItem {
   href: string;
   label: string;
   icon: LucideIcon;
+  badge?: number;
+}
+
+interface NavGroup {
+  label: string | null;
+  items: NavItem[];
 }
 
 // Une seule cloche montée à la fois : deux instances ouvrent le même canal
@@ -76,7 +100,8 @@ export default function StaffShell({
   roleTitle,
   poleName,
   poleColor,
-  modules,
+  groups,
+  unreadMessages,
   unlocked,
   children,
 }: {
@@ -84,7 +109,8 @@ export default function StaffShell({
   roleTitle: string;
   poleName: string;
   poleColor: string;
-  modules: { key: ModuleKey; label: string }[];
+  groups: { label: string; items: { key: ModuleKey; label: string }[] }[];
+  unreadMessages: number;
   unlocked: boolean;
   children: React.ReactNode;
 }) {
@@ -92,16 +118,34 @@ export default function StaffShell({
   const router = useRouter();
   const isDesktop = useIsDesktop();
 
-  const items: NavItem[] = unlocked
+  const navGroups: NavGroup[] = unlocked
     ? [
-        { href: "/equipe", label: "Tableau de bord", icon: LayoutDashboard },
-        ...modules.map((m) => ({ href: `/equipe/${m.key}`, label: m.label, icon: ICONS[m.key] })),
-        { href: "/equipe/poste", label: "Mon poste et contrat", icon: FileSignature },
-        { href: "/equipe/compte", label: "Mon compte", icon: UserCog },
+        { label: null, items: [{ href: "/equipe", label: "Tableau de bord", icon: LayoutDashboard }] },
+        ...groups.map((g) => ({
+          label: g.label,
+          items: [
+            ...g.items.map((m) => ({
+              href: m.key === "messages" ? "/equipe/messages?avec=general" : `/equipe/${m.key}`,
+              label: m.label,
+              icon: ICONS[m.key],
+              badge: m.key === "messages" ? unreadMessages : undefined,
+            })),
+            ...(g.label === "Moi"
+              ? [
+                  { href: "/equipe/poste", label: "Fiche technique", icon: FileSignature },
+                  { href: "/equipe/compte", label: "Mon compte", icon: UserCog },
+                ]
+              : []),
+          ],
+        })),
       ]
     : [];
+  const items: NavItem[] = navGroups.flatMap((g) => g.items);
 
-  const isActive = (href: string) => (href === "/equipe" ? pathname === "/equipe" : pathname.startsWith(href));
+  const isActive = (href: string) => {
+    const path = href.split("?")[0];
+    return path === "/equipe" ? pathname === "/equipe" : pathname.startsWith(path);
+  };
 
   async function logout() {
     const supabase = createClientSupabase();
@@ -131,7 +175,10 @@ export default function StaffShell({
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: 0 }}>{fullName}</p>
         </div>
         <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, overflowY: "auto" }} aria-label="Espace équipe">
-          {items.map(({ href, label, icon: Icon }) => {
+          {navGroups.map((g) => (
+            <div key={g.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 6 }}>
+              {g.label && <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "8px 12px 2px" }}>{g.label}</p>}
+          {g.items.map(({ href, label, icon: Icon, badge }) => {
             const active = isActive(href);
             return (
               <Link
@@ -147,10 +194,13 @@ export default function StaffShell({
                 }}
               >
                 <Icon size={15} style={{ color: active ? "#E01E1E" : "rgba(245,237,237,0.4)" }} />
-                {label}
+                <span style={{ flex: 1 }}>{label}</span>
+                {badge ? <span style={{ minWidth: 18, height: 18, borderRadius: 999, background: "#E01E1E", color: "#fff", fontSize: 10, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 5px" }}>{badge}</span> : null}
               </Link>
             );
           })}
+            </div>
+          ))}
         </nav>
         <button
           type="button"
@@ -177,7 +227,7 @@ export default function StaffShell({
         </div>
         {items.length > 0 && (
           <nav style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 12px 10px" }} aria-label="Espace équipe">
-            {items.map(({ href, label, icon: Icon }) => {
+            {items.map(({ href, label, icon: Icon, badge }) => {
               const active = isActive(href);
               return (
                 <Link
@@ -194,6 +244,7 @@ export default function StaffShell({
                 >
                   <Icon size={12} />
                   {label}
+                  {badge ? <span style={{ minWidth: 16, height: 16, borderRadius: 999, background: "#E01E1E", color: "#fff", fontSize: 9.5, fontWeight: 800, display: "inline-flex", alignItems: "center", justifyContent: "center", padding: "0 4px" }}>{badge}</span> : null}
                 </Link>
               );
             })}
