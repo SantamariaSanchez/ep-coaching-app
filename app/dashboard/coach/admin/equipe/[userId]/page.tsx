@@ -1,9 +1,9 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle } from "lucide-react";
+import { ChevronLeft, ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle, Table } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { getRoleCard, KINDS, STAFF_ROLES } from "@/lib/staff-roles";
+import { allowedKinds, getRoleCard, KINDS, STAFF_ROLES, type RecordKind } from "@/lib/staff-roles";
 import { computeKpis, type StaffRecord, type TeamMemberData } from "@/lib/staff-kpis";
 import { computeNextActions } from "@/lib/staff-next-actions";
 import { isContractSigned } from "@/lib/staff-page";
@@ -13,6 +13,7 @@ import KpiGrid from "@/components/staff/KpiGrid";
 import AssignTaskForm from "@/components/staff/AssignTaskForm";
 import TeamChat from "@/components/staff/TeamChat";
 import DocumentsPanel from "@/components/staff/DocumentsPanel";
+import CsvExport from "@/components/staff/CsvExport";
 
 export const dynamic = "force-dynamic";
 
@@ -49,6 +50,10 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
   if (!memberRow) notFound();
   const member = memberRow as { user_id: string; role_key: string; full_name: string; email: string; status: string; contract_signed_at: string | null; contract_version: string | null; created_at: string };
   const card = getRoleCard(member.role_key);
+  // Tableaux exportables : ceux du métier, sans l'espace de travail perso.
+  const boards = allowedKinds(member.role_key).filter(
+    (k): k is Exclude<RecordKind, "report" | "note" | "template"> => k !== "report" && k !== "note" && k !== "template"
+  );
 
   const { data: rows } = await admin.from("staff_records").select(RECORD_FIELDS).eq("staff_id", userId).order("created_at", { ascending: false }).limit(3000);
   const records = ((rows as StaffRecord[]) ?? []).map((r) => ({ ...r, amount: r.amount === null ? null : Number(r.amount), data: r.data ?? {} }));
@@ -184,6 +189,21 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
           )}
         </Section>
       </div>
+
+      {boards.length > 0 && (
+        <div style={{ marginBottom: 12 }}>
+          <Section icon={Table} title="Ses tableaux">
+            {boards.map((k) => (
+              <div key={k} style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 10, padding: "8px 0", borderTop: "1px solid rgba(245,237,237,0.05)" }}>
+                <span style={{ fontSize: 12.5, color: "#F5EDED" }}>
+                  {KINDS[k].plural} <span style={{ color: "rgba(245,237,237,0.45)" }}>· {records.filter((r) => r.kind === k).length}</span>
+                </span>
+                <CsvExport kind={k} memberId={userId} label="CSV" />
+              </div>
+            ))}
+          </Section>
+        </div>
+      )}
 
       <Section icon={FolderOpen} title="Documents">
         <DocumentsPanel documents={documents} meId={user.id} founder targets={docTargets} defaultTarget={`user:${userId}`} />

@@ -16,6 +16,7 @@ import TemplatesLibrary from "@/components/staff/TemplatesLibrary";
 import DocumentsPanel from "@/components/staff/DocumentsPanel";
 import TeamChat from "@/components/staff/TeamChat";
 import Calculator from "@/components/staff/Calculator";
+import CsvExport from "@/components/staff/CsvExport";
 import { OffersPanel, EditorialCalendar, ScorecardsPanel } from "@/components/staff/StaffTools";
 import { ApplicationsPanel, NewClientsPanel, ScriptsLibrary, TeamView } from "@/components/staff/StaffPanels";
 
@@ -136,6 +137,9 @@ export default async function StaffModulePage({
               </div>
             )}
             <RecordBoard kind={mod.kind} records={records.filter((r) => r.kind === mod.kind)} />
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+              <CsvExport kind={mod.kind} />
+            </div>
           </>
         );
       }
