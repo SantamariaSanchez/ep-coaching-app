@@ -1,5 +1,6 @@
 "use server";
 
+import { routeInboundLead } from "@/lib/staff-automation";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { sendBrevoEmail, addBrevoContactToList, NEWSLETTER_LIST_ID } from "@/utils/brevo";
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
@@ -86,6 +87,19 @@ export async function submitLead(
       .select("id")
       .single();
     if (error) return { error: "Erreur lors de l'enregistrement, réessaie." };
+
+    // Le lead part directement dans le CRM d'un setter (voir
+    // lib/staff-automation.ts). Sans setter actif, rien ne se passe : le
+    // lead reste visible dans Administration > Leads comme avant.
+    await routeInboundLead({
+      source: "lead_magnet",
+      externalId: `leadmagnet:${leadRow.id}`,
+      name: null,
+      email: trimmedEmail || null,
+      phone: normalizedPhone,
+      stage: "nouveau",
+      summary: `A téléchargé le guide gratuit "${magnet.title}".`,
+    });
 
     if (trimmedEmail) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";

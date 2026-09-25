@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { loadStaffContext } from "@/lib/staff-page";
 import { MODULES } from "@/lib/staff-roles";
 import StaffShell from "@/components/staff/StaffShell";
+import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 
 // Espace métier des recrues (demande directe 2026-09-25 : "pour chaque
 // métier il faut que l'appli soit adaptée à son métier"). Hors de
@@ -28,6 +29,7 @@ export default async function EquipeLayout({ children }: { children: React.React
       modules={unlocked ? ctx.cfg.modules.map((k) => ({ key: k, label: MODULES[k].label })) : []}
       unlocked={unlocked}
     >
+      <ServiceWorkerRegister />
       {children}
     </StaffShell>
   );

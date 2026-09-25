@@ -1,33 +1,38 @@
 import Link from "next/link";
-import { CalendarDays, AlertTriangle, FileBarChart, ChevronRight, PartyPopper, Target } from "lucide-react";
+import { CalendarDays, FileBarChart, ChevronRight, PartyPopper, Target } from "lucide-react";
 import { requireStaffPage } from "@/lib/staff-page";
 import { getMyRecords, getTeamData, getApplicationsForHr, getRecentPayingClients } from "@/lib/staff";
-import { computeKpis, overdueItems, todayAgenda, parisDate, kindLabel, type KpiExtras } from "@/lib/staff-kpis";
-import { MODULES, type ModuleKey, type RecordKind } from "@/lib/staff-roles";
+import { computeKpis, targetActuals, todayAgenda, parisDate, type KpiExtras } from "@/lib/staff-kpis";
+import { computeNextActions } from "@/lib/staff-next-actions";
+import { getPlaybook } from "@/lib/staff-playbooks";
+import { MODULES } from "@/lib/staff-roles";
+import { nowInParis } from "@/lib/dates";
 import KpiGrid from "@/components/staff/KpiGrid";
+import TargetsCard from "@/components/staff/TargetsCard";
+import PushOptIn from "@/components/staff/PushOptIn";
+import { MyDay, NextActions, LoggingGuide } from "@/components/staff/MyDay";
 
 export const dynamic = "force-dynamic";
 
-const MODULE_BY_KIND: Partial<Record<RecordKind, ModuleKey>> = Object.fromEntries(
-  Object.values(MODULES)
-    .filter((m) => m.kind)
-    .map((m) => [m.kind as RecordKind, m.key])
-);
-
+// Tableau de bord personnel d'une recrue (demande directe 2026-09-25 :
+// "chaque compte est une appli 100 % personnalisée, il sait ce qu'il doit
+// faire, quand, quoi logger"). Tout vient de SES données et de la routine
+// de SON métier : ce qu'il faut faire maintenant en premier, ses chiffres
+// ensuite.
 export default async function StaffDashboardPage({ searchParams }: { searchParams: Promise<{ bienvenue?: string }> }) {
   const ctx = await requireStaffPage();
   const { bienvenue } = await searchParams;
   const { member, cfg, role } = ctx;
   const now = new Date();
   const today = parisDate(now);
+  const { isoDow, hhmm } = nowInParis();
 
   const [records, team] = await Promise.all([getMyRecords(ctx.userId), getTeamData(member)]);
 
   const extras: KpiExtras = {};
   if (member.role_key === "rh-people-ops") {
     const apps = await getApplicationsForHr(member.owner_id);
-    const month = today.slice(0, 7);
-    extras.applicationsThisMonth = apps.filter((a) => parisDate(a.created_at).startsWith(month)).length;
+    extras.applicationsThisMonth = apps.filter((a) => parisDate(a.created_at).startsWith(today.slice(0, 7))).length;
     extras.applicationsWaiting = apps.filter((a) => a.status === "nouvelle").length;
   }
   if (member.role_key === "coach-onboarding-success") {
@@ -35,11 +40,13 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
     extras.newPayingClients = (await getRecentPayingClients()).filter((c) => (c.start_date ?? "") >= since).length;
   }
 
+  const playbook = getPlaybook(member.role_key);
   const kpis = computeKpis(member.role_key, records, extras, team, now);
+  const actions = computeNextActions(member.role_key, records, now);
   const agenda = cfg.modules.includes("agenda") ? todayAgenda(records, now) : [];
-  const overdue = overdueItems(records, now).slice(0, 8);
   const reportedToday = records.some((r) => r.kind === "report" && r.occurred_on === today);
   const firstName = member.full_name.split(" ")[0];
+  const monthLabel = now.toLocaleDateString("fr-FR", { timeZone: "Europe/Paris", month: "long" });
 
   return (
     <div className="page-transition">
@@ -48,7 +55,7 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
           <PartyPopper size={20} style={{ color: "#4ade80", flexShrink: 0 }} />
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.8)", margin: 0, lineHeight: 1.55 }}>
             Contrat signé, bienvenue dans l&apos;équipe. Ta copie, ta fiche de poste et ton parcours d&apos;intégration
-            viennent de partir par email.
+            viennent de partir par email. Ta journée type est juste en dessous.
           </p>
         </div>
       )}
@@ -57,19 +64,24 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
       <h1 style={{ fontSize: 28, fontWeight: 900, color: "#F5EDED", margin: "0 0 10px", letterSpacing: "-0.03em", textTransform: "uppercase" }}>
         Salut {firstName}
       </h1>
-      <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 20 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 18 }}>
         <Target size={15} style={{ color: "#E01E1E", marginTop: 2, flexShrink: 0 }} />
         <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", margin: 0, lineHeight: 1.6 }}>{cfg.focus}</p>
       </div>
 
-      <KpiGrid kpis={kpis} />
+      <PushOptIn />
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginTop: 18 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginBottom: 12 }}>
+        {playbook && <MyDay playbook={playbook} hhmm={hhmm} isoDow={isoDow} />}
+        <NextActions actions={actions} />
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginBottom: 18 }}>
         {cfg.modules.includes("agenda") && (
           <section className="ep-card" style={{ padding: "15px 16px" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
               <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
-                <CalendarDays size={12} /> Aujourd&apos;hui
+                <CalendarDays size={12} /> Rendez-vous du jour
               </p>
               <Link href="/equipe/agenda" style={{ fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}>Agenda</Link>
             </div>
@@ -88,28 +100,14 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
           </section>
         )}
 
-        <section className="ep-card" style={{ padding: "15px 16px" }}>
-          <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
-            <AlertTriangle size={12} /> À traiter maintenant
-          </p>
-          {overdue.length === 0 ? (
-            <p style={{ fontSize: 12.5, color: "#4ade80", margin: 0 }}>Rien en retard. Propre.</p>
-          ) : (
-            overdue.map((r) => {
-              const mod = MODULE_BY_KIND[r.kind];
-              return (
-                <Link
-                  key={r.id}
-                  href={mod ? `/equipe/${mod}` : "/equipe"}
-                  style={{ display: "flex", justifyContent: "space-between", gap: 8, padding: "7px 0", borderTop: "1px solid rgba(245,237,237,0.05)", textDecoration: "none" }}
-                >
-                  <span style={{ fontSize: 12.5, color: "#F5EDED", fontWeight: 600 }}>{r.title}</span>
-                  <span style={{ fontSize: 10.5, color: "#f87171", fontWeight: 700, flexShrink: 0 }}>{kindLabel(r.kind)}</span>
-                </Link>
-              );
-            })
-          )}
-        </section>
+        {playbook && (
+          <TargetsCard
+            defs={playbook.targets}
+            targets={member.targets ?? {}}
+            actuals={targetActuals(member.role_key, records, team, now)}
+            monthLabel={monthLabel}
+          />
+        )}
 
         <section className="ep-card" style={{ padding: "15px 16px" }}>
           <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
@@ -124,23 +122,13 @@ export default async function StaffDashboardPage({ searchParams }: { searchParam
         </section>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 12, marginTop: 12 }}>
+      <p className="ep-label" style={{ marginBottom: 8 }}>Mes chiffres du mois</p>
+      <KpiGrid kpis={kpis} />
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(310px, 1fr))", gap: 12, marginTop: 18 }}>
+        {playbook && <LoggingGuide playbook={playbook} />}
         <section className="ep-card" style={{ padding: "15px 16px" }}>
-          <p className="ep-label" style={{ margin: "0 0 10px" }}>Tes missions</p>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {role.tasks.map((t) => (
-              <li key={t} style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.6, marginBottom: 4 }}>{t}</li>
-            ))}
-          </ul>
-          <p className="ep-label" style={{ margin: "14px 0 8px" }}>Non négociable</p>
-          <ul style={{ margin: 0, paddingLeft: 18 }}>
-            {role.nonNegotiable.map((t) => (
-              <li key={t} style={{ fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.6, marginBottom: 4 }}>{t}</li>
-            ))}
-          </ul>
-        </section>
-        <section className="ep-card" style={{ padding: "15px 16px" }}>
-          <p className="ep-label" style={{ margin: "0 0 8px" }}>Ton espace</p>
+          <p className="ep-label" style={{ margin: "0 0 8px" }}>Mon espace</p>
           {cfg.modules.map((k) => (
             <Link
               key={k}

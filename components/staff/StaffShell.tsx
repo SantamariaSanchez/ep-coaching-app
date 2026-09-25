@@ -26,6 +26,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { EPLogo } from "@/components/ui/EPLogo";
+import NotificationBell from "@/components/ui/NotificationBell";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { ModuleKey } from "@/lib/staff-roles";
 
@@ -103,8 +104,9 @@ export default function StaffShell({
           borderRight: "1px solid rgba(137,4,4,0.25)", padding: "22px 14px", zIndex: 30,
         }}
       >
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
           <EPLogo size="sm" showCoaching />
+          {unlocked && <NotificationBell variant="desktop" />}
         </div>
         <div style={{ padding: "10px 12px", borderRadius: 12, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(137,4,4,0.3)", marginBottom: 16 }}>
           <p style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: poleColor, margin: "0 0 3px" }}>{poleName}</p>
@@ -149,9 +151,12 @@ export default function StaffShell({
             <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: poleColor, margin: 0 }}>{poleName}</p>
             <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{roleTitle}</p>
           </div>
-          <button type="button" onClick={logout} aria-label="Déconnexion" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 6 }}>
-            <LogOut size={16} />
-          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+            {unlocked && <NotificationBell variant="mobile" />}
+            <button type="button" onClick={logout} aria-label="Déconnexion" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 6 }}>
+              <LogOut size={16} />
+            </button>
+          </div>
         </div>
         {items.length > 0 && (
           <nav style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 12px 10px" }} aria-label="Espace équipe">

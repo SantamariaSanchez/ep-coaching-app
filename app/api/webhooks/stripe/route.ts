@@ -7,6 +7,32 @@ import { notifyAdmin } from "@/lib/admin-notify";
 import { notifyUser } from "@/lib/notify";
 import { rewardReferrerForNewPayment, applyPendingRewardsFor } from "@/lib/referral-rewards";
 import { logStripeCoachingPayment, logStripeRenewalPayment } from "@/lib/coach-finance-stripe-import";
+import { recordPayment } from "@/lib/staff-automation";
+import { STRIPE_PRICE_TO_PRODUCT, type ProductKey } from "@/lib/stripe-products";
+
+// Reconnaît le produit payé à partir de son Price ID (voir
+// lib/stripe-products.ts). Best effort : null si Stripe ne répond pas.
+async function productForSession(sessionId: string): Promise<ProductKey | null> {
+  try {
+    const items = await stripe.checkout.sessions.listLineItems(sessionId, { limit: 5 });
+    for (const it of items.data) {
+      const priceId = typeof it.price === "string" ? it.price : it.price?.id;
+      if (priceId && STRIPE_PRICE_TO_PRODUCT[priceId]) return STRIPE_PRICE_TO_PRODUCT[priceId];
+    }
+  } catch {
+    // produit inconnu, l'écriture de trésorerie reste générique
+  }
+  return null;
+}
+
+function productForInvoice(invoice: Stripe.Invoice): ProductKey | null {
+  for (const line of invoice.lines?.data ?? []) {
+    const l = line as unknown as { price?: string | { id?: string } | null; pricing?: { price_details?: { price?: string } } | null };
+    const priceId = l.pricing?.price_details?.price ?? (typeof l.price === "string" ? l.price : l.price?.id);
+    if (priceId && STRIPE_PRICE_TO_PRODUCT[priceId]) return STRIPE_PRICE_TO_PRODUCT[priceId];
+  }
+  return null;
+}
 
 // Stripe needs the raw request body to verify the webhook signature.
 export async function POST(request: Request) {
@@ -30,6 +56,23 @@ export async function POST(request: Request) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // Espace équipe (lib/staff-automation.ts) : vente closée chez le
+      // closer et le setter, écriture en trésorerie, suivi des 30 premiers
+      // jours. Vaut AUSSI pour un paiement fait via un lien envoyé à la main
+      // par un closer, sans compte dans l'appli (pas de client_reference_id) :
+      // avant, ce cas s'arrêtait juste en dessous sans rien enregistrer.
+      if (session.payment_status === "paid" || session.payment_status === "no_payment_required") {
+        await recordPayment({
+          externalId: session.id,
+          email: session.customer_details?.email ?? session.customer_email ?? null,
+          name: session.customer_details?.name ?? null,
+          amountCents: session.amount_total ?? 0,
+          product: await productForSession(session.id),
+          firstPayment: true,
+        });
+      }
+
       const userId = session.client_reference_id;
       if (!userId) break;
 
@@ -111,6 +154,17 @@ export async function POST(request: Request) {
       // checkout.session.completed (event id différent) : sans ce filtre,
       // le premier paiement serait compté deux fois dans la compta du coach.
       if (invoice.billing_reason !== "subscription_cycle") break;
+
+      // Renouvellement : écriture en trésorerie pour la personne en charge
+      // de la finance (jamais une nouvelle vente).
+      await recordPayment({
+        externalId: invoice.id ?? `invoice-${Date.now()}`,
+        email: invoice.customer_email ?? null,
+        name: invoice.customer_name ?? null,
+        amountCents: invoice.amount_paid ?? 0,
+        product: productForInvoice(invoice),
+        firstPayment: false,
+      });
 
       const customerId = typeof invoice.customer === "string" ? invoice.customer : null;
       if (!customerId || !invoice.amount_paid) break;

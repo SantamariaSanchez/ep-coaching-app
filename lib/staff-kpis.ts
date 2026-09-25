@@ -503,3 +503,76 @@ export function overdueItems(records: StaffRecord[], now: Date = new Date()): St
 export function kindLabel(kind: RecordKind): string {
   return kind === "report" ? "Rapport" : KINDS[kind].singular;
 }
+
+// Valeurs réelles du mois pour les objectifs personnels (lib/staff-playbooks.ts,
+// champ targets). Mêmes calculs que les indicateurs, en nombres bruts.
+export function targetActuals(
+  roleKey: string,
+  records: StaffRecord[],
+  team: TeamMemberData[] = [],
+  now: Date = new Date()
+): Record<string, number> {
+  const month = currentMonthKey(now);
+  const today = parisDate(now);
+  const reports = ofKind(records, "report");
+  const inM = (d: string | null | undefined) => inMonth(d, month);
+  const count = (kind: RecordKind, stage: string) => ofKind(records, kind).filter((r) => inM(stageDate(r, stage))).length;
+
+  switch (roleKey) {
+    case "closer": {
+      const s = salesCloser(records, reports, month);
+      return { ventes: s.sales, cash: s.cash, appels: s.callsHeld };
+    }
+    case "setter": {
+      const s = salesSetter(records, reports, month);
+      return { rdv: s.booked, qualifies: s.qualified };
+    }
+    case "head-of-sales": {
+      let cash = 0, sales = 0;
+      for (const m of [...team, { userId: "", fullName: "", roleKey: "closer", records }]) {
+        if (m.roleKey !== "closer") continue;
+        const s = salesCloser(m.records, ofKind(m.records, "report"), month);
+        cash += s.cash;
+        sales += s.sales;
+      }
+      return { ca_equipe: cash, ventes_equipe: sales };
+    }
+    case "createur-contenu-videaste":
+    case "copywriter":
+      return { livres: deliverables(records, month, today).delivered };
+    case "community-manager":
+      return { publies: Math.max(deliverables(records, month, today).published, reportSum(reports, month, "posts_publies")) };
+    case "personal-brand-manager":
+      return { confirmees: count("opportunity", "confirme") };
+    case "growth-traffic-manager": {
+      const c = campaigns(records);
+      return { leads: c.leads, ca_pub: c.revenue };
+    }
+    case "head-of-marketing":
+      return { livres_equipe: [...team.map((t) => t.records), records].reduce((s, r) => s + deliverables(r, month, today).delivered, 0) };
+    case "developpeur-saas":
+      return { resolus: tickets(records, month).resolved, features: count("feature", "livre") };
+    case "product-manager":
+      return { features_livrees: count("feature", "livre") };
+    case "support-client-tech":
+      return { resolus: tickets(records, month).resolved };
+    case "office-ops-manager":
+      return { process_valides: ofKind(records, "process").filter((p) => p.status === "valide").length };
+    case "secretaire-assistant":
+      return { emails: reportSum(reports, month, "emails") };
+    case "finance-comptabilite":
+      return {
+        encaisse: ofKind(records, "transaction")
+          .filter((t) => inM(t.occurred_on) && t.status === "paye" && t.data?.direction === "encaissement")
+          .reduce((s, t) => s + num(t.amount), 0),
+      };
+    case "rh-people-ops":
+      return { recrutes: count("candidate", "embauche"), entretiens: Math.max(count("candidate", "entretien"), reportSum(reports, month, "entretiens")) };
+    case "head-coach":
+      return { audits: ofKind(records, "audit").filter((a) => a.status === "fait" && inM(a.occurred_on ?? stageDate(a, "fait"))).length };
+    case "coach-onboarding-success":
+      return { actifs_j30: count("followup", "actif_j30") };
+    default:
+      return {};
+  }
+}

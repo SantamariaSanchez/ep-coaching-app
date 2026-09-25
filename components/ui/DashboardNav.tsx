@@ -427,6 +427,9 @@ const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // explicite du 2026-08-15 : "faut y pousser dans l'appli, je vois aucun
   // nouvel onglet". Vivait avant uniquement dans un artifact externe.
   { label: "Organisation", icon: Network, segment: "admin/organisation" },
+  // Pilotage de l'équipe recrutée (2026-09-25) : pipeline, RDV du jour,
+  // rapports et automatisations, voir app/dashboard/coach/admin/equipe.
+  { label: "Équipe", icon: Users, segment: "admin/equipe" },
   // Espace personnel de production video (scripts mot pour mot des 5
   // formations qu'il filme lui-meme, statut de tournage, lien YouTube) —
   // demande du 2026-09-23. Nom "Tournage" plutot que "Formations" pour ne

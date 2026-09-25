@@ -13,6 +13,9 @@ import { allowedKinds, getRoleCard, getStaffRoleConfig, KINDS, type KindDef, typ
 import { parisLocalToIso } from "@/lib/staff-kpis";
 import { STAFF_CONTRACT_VERSION, STAFF_TERMS_VERSION } from "@/lib/staff-contract";
 import { isContractSigned } from "@/lib/staff-page";
+import { applyStageHistory } from "@/lib/staff-stages";
+import { getPlaybook } from "@/lib/staff-playbooks";
+import { onStaffRecordStatusChange } from "@/lib/staff-automation";
 
 type Result = { ok: true } | { error: string };
 type EditableKind = Exclude<RecordKind, "report">;
@@ -102,43 +105,14 @@ function sanitizeValues(def: KindDef, values: Record<string, unknown>): CleanRec
   return out;
 }
 
-// Parcours linéaires : entrer dans une étape implique d'être passé par les
-// précédentes (un lead créé directement en "RDV booké" a forcément été
-// qualifié). Les étapes de sortie (perdu, refusé...) n'en font pas partie.
-const FUNNELS: Partial<Record<EditableKind, string[]>> = {
-  lead: ["nouveau", "contacte", "qualifie", "rdv_booke", "show", "close"],
-  deliverable: ["idee", "en_cours", "relecture", "livre", "publie"],
-  candidate: ["candidature", "entretien", "test", "offre", "embauche"],
-  feature: ["idee", "specifie", "en_dev", "en_test", "livre"],
-  followup: ["j0", "j7", "j30", "actif_j30"],
-  opportunity: ["idee", "contacte", "discussion", "confirme", "publie"],
-};
-
-// Trace la date d'entrée dans chaque étape : c'est ce qui permet de compter
-// "RDV bookés ce mois", "livrés ce mois", "résolus ce mois" sans historique
-// séparé.
 function withStageHistory(
   kind: EditableKind,
   status: string,
   internal: Record<string, unknown>,
   clean: CleanRecord
 ): CleanRecord {
-  const today = todayInParis();
-  const stages = { ...((internal._stages as Record<string, string> | undefined) ?? {}) };
-  if (!stages[status]) stages[status] = today;
-  const funnel = FUNNELS[kind];
-  const position = funnel?.indexOf(status) ?? -1;
-  if (funnel && position > 0) {
-    for (const earlier of funnel.slice(0, position)) if (!stages[earlier]) stages[earlier] = stages[status];
-  }
-  const extra: Record<string, unknown> = { _stages: stages };
-  if (kind === "ticket" && status === "resolu") extra._resolved_at = (internal._resolved_at as string) ?? new Date().toISOString();
-  if (kind === "ticket" && status !== "resolu") delete extra._resolved_at;
-
-  let occurredOn = clean.occurred_on;
-  if (!occurredOn && ((kind === "lead" && status === "close") || (kind === "audit" && status === "fait"))) occurredOn = today;
-
-  return { ...clean, occurred_on: occurredOn, data: { ...clean.data, ...extra } };
+  const merged = applyStageHistory(kind, status, { ...clean.data, ...internal }, clean.occurred_on);
+  return { ...clean, occurred_on: merged.occurred_on, data: merged.data };
 }
 
 function internalKeys(data: Record<string, unknown> | null | undefined): Record<string, unknown> {
@@ -217,6 +191,9 @@ export async function updateStaffRecord(id: string, status: string, values: Reco
     .eq("id", id)
     .eq("staff_id", guard.userId);
   if (error) return { error: "Modification impossible, réessaie." };
+  // Répercute l'issue d'un appel ou d'une vente sur les fiches reliées
+  // (setter et closer, agenda et CRM), voir lib/staff-automation.ts.
+  if (stage !== record.status) await onStaffRecordStatusChange(id);
   refresh();
   return { ok: true };
 }
@@ -252,6 +229,7 @@ export async function setStaffRecordStatus(id: string, status: string): Promise<
     .eq("id", id)
     .eq("staff_id", guard.userId);
   if (error) return { error: "Modification impossible, réessaie." };
+  await onStaffRecordStatusChange(id);
   refresh();
   return { ok: true };
 }
@@ -409,4 +387,23 @@ export async function resendStaffVerification(): Promise<Result> {
   if (!limited.allowed) return { error: "Trop d'envois récents. Vérifie tes spams, puis réessaie dans une heure." };
   const sent = await sendStaffVerificationEmail(member.email, member.full_name, member.role_key);
   return sent ? { ok: true } : { error: "Envoi impossible pour le moment, réessaie dans quelques minutes." };
+}
+
+// Objectifs du mois de la personne connectée, uniquement sur les indicateurs
+// prévus pour son métier (lib/staff-playbooks.ts).
+export async function setMyTargets(values: Record<string, unknown>): Promise<Result> {
+  const guard = await requireStaff();
+  if (!guard.ok) return { error: guard.error };
+  const pb = getPlaybook(guard.member.role_key);
+  if (!pb) return { error: "Poste inconnu." };
+  const targets: Record<string, number> = {};
+  for (const t of pb.targets) {
+    const v = cleanNumber(values?.[t.key], { min: 0, max: 10_000_000 });
+    if (v !== null && v > 0) targets[t.key] = t.unit === "eur" ? Math.round(v) : Math.round(v);
+  }
+  const admin = createAdminClient();
+  const { error } = await admin.from("staff_members").update({ targets }).eq("user_id", guard.userId);
+  if (error) return { error: "Objectifs pas encore disponibles (migration 20260925b à exécuter)." };
+  refresh();
+  return { ok: true };
 }

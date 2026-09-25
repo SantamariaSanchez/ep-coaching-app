@@ -7,6 +7,7 @@ import { getPlatformOwnerId } from "@/lib/job-applications";
 import { QUALIFYING_QUESTIONS, type QualifyingAnswers } from "@/lib/job-applications-shared";
 import { sendBrevoEmail } from "@/utils/brevo";
 import { POLES } from "@/lib/org-roles";
+import { routeApplicationToHr } from "@/lib/staff-automation";
 import { cleanText, escapeHtml, safeExternalUrl, LIMITS } from "@/lib/sanitize";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -120,16 +121,21 @@ export async function submitApplication(formData: FormData): Promise<{ error?: s
       answers: cleanAnswers,
     };
     const payload: Record<string, unknown> = cvPath ? { ...base, cv_path: cvPath } : base;
-    let { error } = await admin.from("job_applications").insert(payload);
+    let { data: inserted, error } = await admin.from("job_applications").insert(payload).select("id").maybeSingle();
     if (error && cvPath) {
       // Colonne cv_path absente (migration pas encore exécutée) : on garde la
       // candidature, le CV reste dans le bucket mais n'est pas relié.
-      ({ error } = await admin.from("job_applications").insert(base));
+      ({ data: inserted, error } = await admin.from("job_applications").insert(base).select("id").maybeSingle());
       if (!error) cvPath = null;
     }
     if (error) {
       console.error("submitApplication error:", error);
       return { error: "Erreur lors de l'envoi, réessaie." };
+    }
+
+    // Arrive aussi dans le pipeline de la personne RH, si le poste est pourvu.
+    if (inserted?.id) {
+      await routeApplicationToHr({ applicationId: inserted.id as string, roleKey, name, email: trimmedEmail, phone: trimmedPhone || null });
     }
 
     const answersHtml = QUALIFYING_QUESTIONS.filter((q) => cleanAnswers[q.key]).map(

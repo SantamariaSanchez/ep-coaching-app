@@ -1,5 +1,6 @@
 ﻿"use server";
 
+import { routeInboundLead } from "@/lib/staff-automation";
 import { todayInParis } from "@/lib/dates";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -277,6 +278,25 @@ export async function selfSignup(input: SelfSignupInput): Promise<SelfSignupResu
       body: `${fullName} vient de rejoindre la communauté.`,
       url: "/dashboard/coach/communaute/membres",
     }).catch(() => {});
+  }
+
+  // Un nouveau membre d'EP Coaching (rattaché au fondateur ou à un coach IA)
+  // est aussi un prospect pour le coaching humain : il arrive dans le CRM
+  // d'un setter (lib/staff-automation.ts). Jamais les membres d'un coach
+  // tiers : ce sont SES clients, pas des prospects d'EP Coaching.
+  if (coach) {
+    const { data: coachFlags } = await admin.from("profiles").select("is_platform_owner, is_ai_coach").eq("id", coach.id).maybeSingle();
+    if (coachFlags?.is_platform_owner || coachFlags?.is_ai_coach) {
+      await routeInboundLead({
+        source: "app_signup",
+        externalId: `signup:${authData.user.id}`,
+        name: fullName,
+        email,
+        phone: phone || null,
+        stage: "nouveau",
+        summary: "S'est inscrit gratuitement dans l'appli (membre de la communauté).",
+      });
+    }
   }
 
   notifyAdmin("Nouvelle inscription membre/client", [

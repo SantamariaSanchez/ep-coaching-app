@@ -26,6 +26,8 @@ export interface StaffMember {
   contract_signed_at: string | null;
   contract_signature: string | null;
   created_at: string;
+  /** Objectifs du mois (clé = TargetDef.key de lib/staff-playbooks.ts). */
+  targets: Record<string, number>;
 }
 
 const MEMBER_FIELDS =
@@ -34,8 +36,15 @@ const MEMBER_FIELDS =
 export const getStaffMember = cache(async function getStaffMember(userId: string): Promise<StaffMember | null> {
   try {
     const admin = createAdminClient();
+    const withTargets = await admin.from("staff_members").select(`${MEMBER_FIELDS}, targets`).eq("user_id", userId).maybeSingle();
+    if (!withTargets.error) {
+      const row = withTargets.data as StaffMember | null;
+      return row ? { ...row, targets: (row.targets as Record<string, number> | null) ?? {} } : null;
+    }
+    // Colonne targets pas encore créée (migration 20260925b pas exécutée) :
+    // l'accès à l'espace ne doit jamais en dépendre.
     const { data } = await admin.from("staff_members").select(MEMBER_FIELDS).eq("user_id", userId).maybeSingle();
-    return (data as StaffMember) ?? null;
+    return data ? { ...(data as Omit<StaffMember, "targets">), targets: {} } : null;
   } catch {
     return null;
   }
