@@ -317,7 +317,13 @@ function dayHeading(iso: string, today: string): string {
 export default function RecordBoard({ kind, records }: { kind: EditableKind; records: StaffRecord[] }) {
   const def = KINDS[kind];
   const router = useRouter();
-  const [filter, setFilter] = useState<string>("actifs");
+  // Un livre de comptes se lit en entier ; ailleurs on ouvre sur ce qui est
+  // en cours, sauf s'il n'y a rien en cours (sinon le tableau paraît vide).
+  const [filter, setFilter] = useState<string>(() =>
+    kind === "transaction" || (records.length > 0 && records.every((r) => def.stages.find((s) => s.value === r.status)?.closed))
+      ? "tous"
+      : "actifs"
+  );
   const [query, setQuery] = useState("");
   const [adding, setAdding] = useState(false);
   const [formKey, setFormKey] = useState(0);

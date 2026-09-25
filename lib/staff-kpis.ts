@@ -100,8 +100,13 @@ function num(v: unknown): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-const eur = (v: number) =>
-  `${Math.round(v).toLocaleString("fr-FR")} €`;
+// Centimes affichés seulement quand il y en a : 49,50 € reste exact pour la
+// trésorerie, 200 € ne devient pas 200,00 €.
+const eur = (v: number) => {
+  const cents = Math.round(v * 100) / 100;
+  const digits = Number.isInteger(cents) ? 0 : 2;
+  return `${cents.toLocaleString("fr-FR", { minimumFractionDigits: digits, maximumFractionDigits: digits })} €`;
+};
 const pct = (v: number) => `${Math.round(v * 100)} %`;
 const ratio = (a: number, b: number) => (b > 0 ? a / b : 0);
 
