@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import ProfileSetupStep from "./ProfileSetupStep";
 import PersonalizationQuiz from "./PersonalizationQuiz";
 import OnboardingTour from "./OnboardingTour";
-import { completeOnboarding, saveMemberPreferences } from "@/app/onboarding/actions";
+import { completeOnboarding, getWelcomeGuide, saveMemberPreferences } from "@/app/onboarding/actions";
 import {
   derivePersonalization,
   type MemberPreferences,
   type PersonalizationProfile,
 } from "@/lib/personalization";
+import type { GuideRef } from "@/lib/reengagement";
 
 type Step = "profile" | "quiz" | "tour";
 
@@ -20,6 +21,10 @@ export default function OnboardingFlow() {
   const [personalization, setPersonalization] = useState<PersonalizationProfile>(() =>
     derivePersonalization(null)
   );
+  // Chargé en tâche de fond pendant le quiz déjà terminé : le tour a
+  // plusieurs slides avant celui du guide, largement le temps que cette
+  // requête revienne. Reste null (slide simplement absente) si elle échoue.
+  const [guide, setGuide] = useState<GuideRef | null>(null);
   const [finishing, setFinishing] = useState(false);
 
   // Skip et fin de tour font strictement la même chose : on marque
@@ -41,6 +46,11 @@ export default function OnboardingFlow() {
       // Best-effort — si la sauvegarde échoue, l'utilisateur voit quand
       // même un tour personnalisé pour cette session (juste pas persisté).
     });
+    getWelcomeGuide(answers.primary_goal ?? null)
+      .then(setGuide)
+      .catch(() => {
+        // Best-effort — le tour reste utilisable sans slide guide.
+      });
     setPersonalization(
       derivePersonalization({
         experience_level: answers.experience_level ?? null,
@@ -66,6 +76,7 @@ export default function OnboardingFlow() {
   return (
     <OnboardingTour
       personalization={personalization}
+      guide={guide}
       onSkip={goToApp}
       onFinish={goToApp}
       finishing={finishing}

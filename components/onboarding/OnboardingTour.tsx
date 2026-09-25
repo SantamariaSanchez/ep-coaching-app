@@ -5,9 +5,10 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Dumbbell, Apple, Heart, Crown, ArrowRight, X,
   Image as ImageIcon, Sparkles, FlaskConical, Trophy,
-  GraduationCap, Lightbulb,
+  GraduationCap, Lightbulb, BookOpen,
 } from "lucide-react";
 import type { PersonalizationProfile } from "@/lib/personalization";
+import type { GuideRef } from "@/lib/reengagement";
 
 interface Slide {
   icon: React.ElementType;
@@ -16,6 +17,7 @@ interface Slide {
   desc: string;
   bullets?: string[];
   benefits?: { title: string; body: string }[];
+  guideLink?: { href: string; label: string };
 }
 
 const SLIDES: Slide[] = [
@@ -89,19 +91,38 @@ const SLIDES: Slide[] = [
 
 // Insère un slide "on répond direct" juste après l'accueil quand le
 // questionnaire de personnalisation a identifié des freins/idées reçues —
-// jamais pour les profils confirmés qui n'en ont pas besoin.
-function buildSlides(personalization: PersonalizationProfile): Slide[] {
-  if (personalization.mythBusters.length === 0) return SLIDES;
+// jamais pour les profils confirmés qui n'en ont pas besoin. Insère aussi,
+// juste après, un slide "premier guide" quand un guide a pu être choisi
+// (voir OnboardingFlow.tsx) : volontairement tôt dans le tour, avant que le
+// bouton "Passer" ait une chance d'être utilisé, pour maximiser les chances
+// qu'un membre gratuit reparte avec un vrai contenu reçu, pas juste une
+// visite guidée de fonctionnalités.
+function buildSlides(personalization: PersonalizationProfile, guide: GuideRef | null): Slide[] {
+  let slides = SLIDES;
 
-  const mythSlide: Slide = {
-    icon: Lightbulb,
-    eyebrow: "On sait ce que tu penses",
-    title: "On répond direct à ce qui te freine",
-    desc: personalization.mythBusters.map((m) => `${m.title} : ${m.body}`).join("\n\n"),
-    bullets: personalization.mythBusters.map((m) => m.title.replace(/^"|"$/g, "")),
-  };
+  if (personalization.mythBusters.length > 0) {
+    const mythSlide: Slide = {
+      icon: Lightbulb,
+      eyebrow: "On sait ce que tu penses",
+      title: "On répond direct à ce qui te freine",
+      desc: personalization.mythBusters.map((m) => `${m.title} : ${m.body}`).join("\n\n"),
+      bullets: personalization.mythBusters.map((m) => m.title.replace(/^"|"$/g, "")),
+    };
+    slides = [SLIDES[0], mythSlide, ...SLIDES.slice(1)];
+  }
 
-  return [SLIDES[0], mythSlide, ...SLIDES.slice(1)];
+  if (guide) {
+    const guideSlide: Slide = {
+      icon: BookOpen,
+      eyebrow: "Cadeau de bienvenue",
+      title: guide.title,
+      desc: guide.hook?.trim() || "Un guide choisi pour toi selon ton objectif, à lire en 5 minutes.",
+      guideLink: { href: `/ressources/${guide.slug}`, label: "Lire le guide" },
+    };
+    slides = [slides[0], guideSlide, ...slides.slice(1)];
+  }
+
+  return slides;
 }
 
 function BenefitCards({ items }: { items: { title: string; body: string }[] }) {
@@ -140,11 +161,13 @@ function BulletRow({ items }: { items: string[] }) {
 
 export default function OnboardingTour({
   personalization,
+  guide,
   onSkip,
   onFinish,
   finishing,
 }: {
   personalization: PersonalizationProfile;
+  guide: GuideRef | null;
   onSkip: () => void;
   onFinish: () => void;
   finishing: boolean;
@@ -152,7 +175,7 @@ export default function OnboardingTour({
   const [step, setStep] = useState(0);
   const [direction, setDirection] = useState(1);
 
-  const slides = buildSlides(personalization);
+  const slides = buildSlides(personalization, guide);
   const isLast = step === slides.length - 1;
   const slide = slides[step];
   const Icon = slide.icon;
@@ -270,6 +293,17 @@ export default function OnboardingTour({
 
             {slide.bullets && <BulletRow items={slide.bullets} />}
             {slide.benefits && <BenefitCards items={slide.benefits} />}
+            {slide.guideLink && (
+              <a
+                href={slide.guideLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ep-btn-primary"
+                style={{ marginTop: 22, textDecoration: "none" }}
+              >
+                {slide.guideLink.label} <ArrowRight size={16} />
+              </a>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>

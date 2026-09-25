@@ -1,4 +1,5 @@
 import { wrapBrandedEmail } from "@/lib/mailing-audience";
+import type { PrimaryGoal } from "@/lib/personalization";
 
 // ── Séquence de relance des membres dormants ────────────────────────────────
 // Contexte réel (constaté le 2026-09-08) : sur 15 comptes clients, 14 n'ont
@@ -59,6 +60,28 @@ export function categoryForGoal(goal: string | null): GuideCategory {
   if (/(marche|pas |bouger|sédentaire|sedentaire|actif|activité|activite)/.test(g))
     return "Steps & activité quotidienne";
   return "Général";
+}
+
+/**
+ * Équivalent de categoryForGoal() mais à partir de la réponse structurée
+ * (primary_goal) du quiz d'onboarding, pas du texte libre de l'intake —
+ * utilisé pour offrir un premier guide dès la fin du quiz, avant même
+ * qu'un client_intake existe.
+ */
+export function categoryForPrimaryGoal(goal: PrimaryGoal | null): GuideCategory {
+  switch (goal) {
+    case "perte_poids":
+      return "Nutrition";
+    case "prise_muscle":
+    case "performance":
+      return "Entraînement";
+    case "sante_bien_etre":
+      return "Psychologie";
+    case "remise_en_forme":
+      return "Steps & activité quotidienne";
+    default:
+      return "Général";
+  }
 }
 
 /**
