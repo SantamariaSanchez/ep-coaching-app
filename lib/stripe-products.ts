@@ -12,6 +12,10 @@ export const STRIPE_PRICE_TO_PRODUCT: Record<string, ProductKey> = {
   price_1UJ70nDArIBDR6d6vUhanxMY: "formation",
 };
 
+// Lien de paiement de la formation à l'unité (100 €, paiement unique, créé
+// le 2026-09-26). Interne à l'équipe : jamais affiché publiquement.
+export const FORMATION_PAYMENT_URL = "https://buy.stripe.com/7sYcN57y3gh57jS1TlfIs0d";
+
 export const PRODUCT_LABELS: Record<ProductKey, string> = {
   coaching_physique: "Coaching individuel physique",
   coaching_business: "Coaching business",

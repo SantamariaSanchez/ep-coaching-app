@@ -2,6 +2,7 @@ import { Wallet, AlertTriangle, ShieldCheck, Target, ListChecks } from "lucide-r
 import { SUBSCRIPTION_PLANS } from "@/lib/subscription-plans";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { POLES } from "@/lib/org-roles";
+import { FORMATION_PAYMENT_URL } from "@/lib/stripe-products";
 import { parisDate, type StaffRecord } from "@/lib/staff-kpis";
 import { KINDS } from "@/lib/staff-roles";
 import CopyField from "@/components/staff/CopyField";
@@ -55,9 +56,9 @@ export function OffersPanel() {
       price: "100€ l'unité",
       forWho: "Quelqu'un qui veut apprendre un sujet précis sans suivi individuel. Incluse dans l'appli Premium.",
       includes: ["Accès à vie à la formation choisie"],
-      link: null,
+      link: FORMATION_PAYMENT_URL,
       linkLabel: "Lien de paiement",
-      warning: "Pas encore de lien de paiement : demande-le à Santamaria avant de la proposer.",
+      warning: "Demande au prospect quelle formation il veut et note-la dans sa fiche : le lien est le même pour toutes, c'est Santamaria qui ouvre l'accès à la bonne.",
     },
   ];
 

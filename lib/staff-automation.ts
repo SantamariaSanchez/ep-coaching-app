@@ -424,6 +424,21 @@ export async function recordPayment(p: PaymentEvent): Promise<void> {
 
     if (!p.firstPayment) return;
 
+    // Le fondateur est prévenu de chaque nouvelle vente. Une formation
+    // n'ouvre aucun accès toute seule : c'est lui qui le donne.
+    const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();
+    if (owner?.id) {
+      const contact = email && email !== who ? ` (${email})` : "";
+      notify(
+        owner.id as string,
+        p.product === "formation" ? "Formation achetée, accès à ouvrir" : "Nouvelle vente",
+        p.product === "formation"
+          ? `${who}${contact} vient d'acheter une formation (${amount} €). Ouvre-lui l'accès à la bonne formation.`
+          : `${who}${contact} vient de payer ${amount} € (${label}).`,
+        "/dashboard/coach/admin/equipe"
+      );
+    }
+
     // Vente : la fiche prospect ouverte à cet email est closée
     // automatiquement, commission comprise, chez le closer et le setter.
     const lead = await findOpenLead(admin, email, null);
