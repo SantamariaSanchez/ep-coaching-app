@@ -6,6 +6,7 @@ import PermissionsCard from "@/components/settings/PermissionsCard";
 import NotificationPreferencesCard from "@/components/settings/NotificationPreferencesCard";
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
 import PreferencesCard from "@/components/settings/PreferencesCard";
+import AccessibilityCard from "@/components/settings/AccessibilityCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
@@ -60,6 +61,8 @@ export default async function ClientParametresPage() {
       <NotificationPreferencesCard initialMuted={mutedCategories} />
 
       <NewsletterPreferenceCard initialSubscribed={newsletterSubscribed} />
+
+      <AccessibilityCard />
 
       <AccountActions email={profile.email} signOutRedirect="/auth/client" />
 

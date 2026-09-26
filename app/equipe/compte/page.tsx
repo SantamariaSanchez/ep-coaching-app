@@ -1,6 +1,7 @@
 import { requireStaffPage } from "@/lib/staff-page";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 import StaffPasswordCard from "@/components/staff/StaffPasswordCard";
+import AccessibilityCard from "@/components/settings/AccessibilityCard";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function StaffAccountPage() {
           <p className="ep-label" style={{ marginBottom: 8 }}>Mot de passe</p>
           <StaffPasswordCard />
         </div>
+        <AccessibilityCard className="" />
       </div>
     </div>
   );

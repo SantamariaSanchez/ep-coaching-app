@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Montserrat, Playfair_Display } from "next/font/google";
-import { MotionConfig } from "framer-motion";
+import AccessibilityMotionConfig from "@/components/ui/AccessibilityMotionConfig";
+import { ACCESSIBILITY_INIT_SCRIPT } from "@/lib/accessibility";
 import ConfirmDialogProvider from "@/components/ui/ConfirmDialogProvider";
 import "./globals.css";
 
@@ -76,7 +77,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`}>
+    // suppressHydrationWarning : le script de <head> peut poser
+    // data-text-scale / data-reduce-motion sur <html> avant l'hydratation
+    // (Paramètres > Accessibilité), le DOM doit alors l'emporter.
+    <html lang="fr" className={`${montserrat.variable} ${playfair.variable} h-full`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: ACCESSIBILITY_INIT_SCRIPT }} />
+      </head>
       <body className="min-h-full">
         {/* "Mouvement réduit" (app/globals.css) couvre déjà les animations
             CSS (classes .animate-*, transitions Tailwind) via
@@ -91,10 +98,12 @@ export default function RootLayout({
             pour ça : elle respecte la préférence système en temps réel et
             neutralise transforms/layout animations (translateX, la pastille
             de nav qui glisse via layoutId) tout en gardant les fondus
-            d'opacité, exactement la même doctrine que le bloc CSS existant. */}
-        <MotionConfig reducedMotion="user">
+            d'opacité, exactement la même doctrine que le bloc CSS existant.
+            AccessibilityMotionConfig force en plus le mode réduit quand il
+            est activé dans Paramètres > Accessibilité. */}
+        <AccessibilityMotionConfig>
           <ConfirmDialogProvider>{children}</ConfirmDialogProvider>
-        </MotionConfig>
+        </AccessibilityMotionConfig>
       </body>
     </html>
   );

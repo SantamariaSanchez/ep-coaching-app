@@ -952,3 +952,43 @@
   body::after { animation: none; }
   html { scroll-behavior: auto; }
 }
+
+/* ── Réglages d'accessibilité de l'appli (Paramètres > Accessibilité) ─────── */
+/* Même doctrine que le bloc ci-dessus, mais activée par la personne dans
+   l'appli (attribut posé sur <html> par le script de app/layout.tsx), pour
+   qui ne connaît pas le réglage système de son téléphone. */
+html[data-reduce-motion="true"] .animate-fade-up,
+html[data-reduce-motion="true"] .animate-scale-in,
+html[data-reduce-motion="true"] .animate-slide-up,
+html[data-reduce-motion="true"] .animate-slide-in,
+html[data-reduce-motion="true"] .page-enter,
+html[data-reduce-motion="true"] .page-transition {
+  animation-name: fadeIn;
+  animation-duration: 0.2s;
+  transform: none !important;
+}
+html[data-reduce-motion="true"] .animate-pulse-glow { animation: none; }
+html[data-reduce-motion="true"] .ep-card:hover,
+html[data-reduce-motion="true"] a.ep-card:active,
+html[data-reduce-motion="true"] button.ep-card:active,
+html[data-reduce-motion="true"] .ep-btn-primary:hover,
+html[data-reduce-motion="true"] .ep-btn-primary:active,
+html[data-reduce-motion="true"] .ep-btn-secondary:active,
+html[data-reduce-motion="true"] .ep-btn-icon:active,
+html[data-reduce-motion="true"] .ep-msg-row:active,
+html[data-reduce-motion="true"] .ep-nav-tab:active,
+html[data-reduce-motion="true"] .ep-nav-link:active,
+html[data-reduce-motion="true"] .ep-press:active {
+  transform: none;
+}
+html[data-reduce-motion="true"] .animate-badge-pop { animation: none; opacity: 1; }
+html[data-reduce-motion="true"] body::after { animation: none; }
+html[data-reduce-motion="true"] { scroll-behavior: auto; }
+
+/* Taille du texte : le zoom à deux doigts est coupé (viewport
+   userScalable=false), et une grande partie des tailles sont en px inline,
+   qu'un changement de font-size racine n'atteindrait pas. zoom agrandit tout
+   l'affichage d'un bloc, comme le zoom du navigateur, sans casser la mise en
+   page (les largeurs en % se recalculent). */
+html[data-text-scale="large"] body { zoom: 1.12; }
+html[data-text-scale="xlarge"] body { zoom: 1.25; }
