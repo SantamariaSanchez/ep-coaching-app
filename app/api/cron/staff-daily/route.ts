@@ -10,6 +10,7 @@ import { getRoleCard } from "@/lib/staff-roles";
 import { getPlaybook } from "@/lib/staff-playbooks";
 import { computeNextActions } from "@/lib/staff-next-actions";
 import { computeKpis, parisDate, todayAgenda, type StaffRecord } from "@/lib/staff-kpis";
+import { runOnboarding } from "@/lib/staff-onboarding";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 const RECORD_FIELDS = "id, staff_id, kind, title, status, amount, occurred_on, due_at, data, created_at, updated_at";
@@ -83,13 +84,20 @@ function briefingHtml(m: Member, records: StaffRecord[], isoDow: number): string
 
 // Déclenché toutes les heures par pg_cron ; l'heure de Paris décide de ce
 // qui part (insensible aux changements d'heure) : 8h briefing, 18h rappel du
-// rapport, 19h récapitulatif d'équipe au fondateur. Jours ouvrés seulement.
+// rapport, 19h récapitulatif d'équipe au fondateur (jours ouvrés), 9h étapes
+// d'intégration des recrues (tous les jours).
 export async function GET(req: Request) {
   if (req.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const { isoDow, hhmm } = nowInParis();
   const hour = Number(hhmm.slice(0, 2));
+  // 9h, tous les jours : étapes du parcours d'intégration des recrues
+  // (lib/staff-onboarding.ts), calées sur leur date de signature.
+  if (hour === 9) {
+    const res = await runOnboarding(parisDate(new Date()));
+    return NextResponse.json({ ok: true, onboarding: res.sent });
+  }
   if (isoDow > 5 || ![8, 18, 19].includes(hour)) return NextResponse.json({ ok: true, skipped: hhmm });
 
   const { members, records } = await loadTeam();

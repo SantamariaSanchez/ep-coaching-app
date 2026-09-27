@@ -3,16 +3,25 @@ import { requireStaffPage } from "@/lib/staff-page";
 import { buildStaffContract } from "@/lib/staff-contract";
 import ContractView from "@/components/staff/ContractView";
 import ContractSignForm from "@/components/staff/ContractSignForm";
+import JotformSign from "@/components/staff/JotformSign";
+import { contractFormUrl, jotformEnabled } from "@/lib/jotform";
+import { STAFF_CONTRACT_VERSION } from "@/lib/staff-contract";
 
 export const dynamic = "force-dynamic";
 
 // Étape 2 de la première connexion (et de toute connexion après un
 // changement de version du contrat) : lecture puis signature électronique.
 // Une copie part par email dès la signature (voir signStaffContract).
-export default async function StaffContractPage() {
+export default async function StaffContractPage({ searchParams }: { searchParams: Promise<{ jotform?: string }> }) {
+  const { jotform } = await searchParams;
   const ctx = await requireStaffPage("contract");
   const contract = buildStaffContract(ctx.member.role_key, ctx.member.full_name, ctx.member.email);
   const isResign = !!ctx.member.contract_signed_at;
+  // JotForm configuré : c'est lui qui recueille la signature (voir
+  // app/api/webhooks/jotform), la signature intégrée reste en secours.
+  const jotformUrl = jotformEnabled()
+    ? contractFormUrl({ staffId: ctx.userId, fullName: ctx.member.full_name, email: ctx.member.email, role: ctx.role.title, version: STAFF_CONTRACT_VERSION })
+    : null;
 
   return (
     <div style={{ maxWidth: 760, margin: "0 auto" }}>
@@ -33,7 +42,11 @@ export default async function StaffContractPage() {
         {contract && <ContractView contract={contract} />}
       </div>
 
-      <ContractSignForm expectedName={ctx.member.full_name} />
+      {jotformUrl ? (
+        <JotformSign url={jotformUrl} waiting={jotform === "envoye"} expectedName={ctx.member.full_name} />
+      ) : (
+        <ContractSignForm expectedName={ctx.member.full_name} />
+      )}
     </div>
   );
 }

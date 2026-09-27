@@ -190,7 +190,7 @@ export function WeightCard({ today, existing, action, onSaved }: { today: string
 // ── Entraînement — bascule repos/entraînement d'abord, pour ne pas forcer
 // une réponse "Pull, Push, Legs" absurde un jour off. Pas de note de séance
 // ici : elle vit déjà dans le logbook à la fin de la séance, pas de doublon. ──
-export function TrainingCard({ today, existing, action, onSaved }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void }) {
+export function TrainingCard({ today, existing, action, onSaved, logbookHref = "/dashboard/client/logbook" }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void; logbookHref?: string }) {
   const [state, formAction, pending] = useActionState(action, null);
   const [isRestDay, setIsRestDay] = useState(existing?.training_name === "Repos");
 
@@ -255,7 +255,7 @@ export function TrainingCard({ today, existing, action, onSaved }: { today: stri
             </div>
             <p className={hint}>
               La note de la séance se donne à la fin de l&apos;entraînement, directement depuis le{" "}
-              <Link href="/dashboard/client/logbook" style={{ color: "#E01E1E", fontWeight: 700 }}>logbook</Link>. Pas besoin de la redonner ici.
+              <Link href={logbookHref} style={{ color: "#E01E1E", fontWeight: 700 }}>logbook</Link>. Pas besoin de la redonner ici.
             </p>
           </div>
         )}
@@ -272,7 +272,7 @@ export function TrainingCard({ today, existing, action, onSaved }: { today: stri
 // sleep_hours/sleep_rating n'ont plus leur place noyés dans LifestyleCard.
 // bedtime_actual/wake_time_actual sont optionnels (jamais bloquants), voir
 // lib/daily-gate.ts pour ce qui est réellement exigé. ──────────────────────
-export function SleepCard({ today, existing, action, onSaved }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void }) {
+export function SleepCard({ today, existing, action, onSaved, sleepHref = "/dashboard/client/tracking" }: { today: string; existing: DailyLog | null; action: BilanAction; onSaved?: () => void; sleepHref?: string }) {
   const [state, formAction, pending] = useActionState(action, null);
 
   useEffect(() => {
@@ -306,7 +306,7 @@ export function SleepCard({ today, existing, action, onSaved }: { today: string;
           </div>
           <p className={hint} style={{ marginTop: -8 }}>
             Facultatif, sert juste à suivre ta régularité dans l&apos;onglet{" "}
-            <Link href="/dashboard/client/sommeil" style={{ color: "#E01E1E", fontWeight: 700 }}>Sommeil</Link>.
+            <Link href={sleepHref} style={{ color: "#E01E1E", fontWeight: 700 }}>Sommeil</Link>.
           </p>
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
@@ -604,6 +604,10 @@ export default function DailyBilanForm({
   plan?: BilanPlan | null;
   trackerHref?: string;
 }) {
+  // Même formulaire côté membre et côté coach (Moi) : les liens suivent l'espace.
+  const isCoach = trackerHref?.startsWith("/dashboard/coach") ?? false;
+  const sleepHref = isCoach ? "/dashboard/coach/moi/tracking" : "/dashboard/client/tracking";
+  const logbookHref = isCoach ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
   const morningDone = !!existing && existing.weight_morning != null && existing.sleep_hours != null && existing.sleep_rating != null;
   const eveningDone = !!existing && existing.steps != null && existing.digestion != null && existing.stress != null && existing.hunger != null;
 
@@ -628,7 +632,7 @@ export default function DailyBilanForm({
       ) : (
         <>
           <WeightCard today={today} existing={existing} action={action} />
-          <SleepCard today={today} existing={existing} action={action} />
+          <SleepCard today={today} existing={existing} action={action} sleepHref={sleepHref} />
         </>
       )}
 
@@ -636,7 +640,7 @@ export default function DailyBilanForm({
         <EveningSummary existing={existing} onEdit={() => setEditingEvening(true)} />
       ) : (
         <>
-          <TrainingCard today={today} existing={existing} action={action} />
+          <TrainingCard today={today} existing={existing} action={action} logbookHref={logbookHref} />
           <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
           <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} plan={plan} trackerHref={trackerHref} />
         </>
