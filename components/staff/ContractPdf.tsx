@@ -24,17 +24,23 @@ export default function ContractPdf({ viewUrl, downloadUrl, title, downloadLabel
       <div className="hidden md:block ep-card" style={{ padding: 0, overflow: "hidden", marginBottom: 10 }}>
         <iframe src={`${viewUrl}#view=FitH`} title={title} style={{ display: "block", width: "100%", height: "72vh", border: 0, background: "#0D0000" }} />
       </div>
-      <div className="md:hidden ep-card" style={{ padding: "16px", marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
-        <FileText size={28} style={{ color: "#E01E1E", flexShrink: 0 }} />
-        <div style={{ minWidth: 0 }}>
-          <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{title}</p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "2px 0 0" }}>Ouvre-le pour le lire en entier avant de signer.</p>
+      {/* Le display est posé sur un élément intérieur : un style en ligne
+          écraserait la classe md:hidden de l'enveloppe. */}
+      <div className="md:hidden">
+        <div className="ep-card" style={{ padding: "16px", marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
+          <FileText size={28} style={{ color: "#E01E1E", flexShrink: 0 }} />
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{title}</p>
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "2px 0 0" }}>Ouvre-le pour le lire en entier avant de signer.</p>
+          </div>
         </div>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-        <a href={viewUrl} target="_blank" rel="noopener noreferrer" className="md:hidden" style={{ ...btn, background: "#E01E1E", color: "#fff" }}>
-          <ExternalLink size={14} /> Lire le contrat
-        </a>
+        <span className="md:hidden" style={{ flex: "1 1 200px" }}>
+          <a href={viewUrl} target="_blank" rel="noopener noreferrer" style={{ ...btn, width: "100%", background: "#E01E1E", color: "#fff" }}>
+            <ExternalLink size={14} /> Lire le contrat
+          </a>
+        </span>
         <a href={downloadUrl} style={{ ...btn, border: "1px solid rgba(137,4,4,0.45)", color: "rgba(245,237,237,0.85)" }}>
           <Download size={14} /> {downloadLabel}
         </a>
