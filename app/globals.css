@@ -992,3 +992,7 @@ html[data-reduce-motion="true"] { scroll-behavior: auto; }
    page (les largeurs en % se recalculent). */
 html[data-text-scale="large"] body { zoom: 1.12; }
 html[data-text-scale="xlarge"] body { zoom: 1.25; }
+
+/* Rangées de filtres qui défilent au doigt sans barre visible (tracker nutrition). */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }

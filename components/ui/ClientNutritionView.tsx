@@ -7,7 +7,8 @@ import BarcodeScannerModal from "@/components/ui/BarcodeScannerModal";
 import { onKeyActivate } from "@/lib/a11y";
 import { buildShoppingList, FOOD_IDEAS } from "@/lib/shopping-list";
 import MicroBarList from "@/components/ui/MicroBarList";
-import NutritionModeSelector from "@/components/ui/NutritionModeSelector";
+import NutritionTracker from "@/components/nutrition/NutritionTracker";
+import type { TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import SeasonModeBadge from "@/components/ui/SeasonModeBadge";
 import type {
   NutritionProfile,
@@ -654,6 +655,13 @@ export default function ClientNutritionView({
   // seuls les 40 premiers s'affichent (voir plus bas), la base de l'appli
   // doit donc passer avant pour rester atteignable sans avoir à chercher.
   const allRecipes = useMemo<LoggableRecipe[]>(() => [...RECIPES, ...recipes], [recipes]);
+  const trackerRecipes = useMemo<TrackerRecipe[]>(
+    () => [
+      ...RECIPES.map((r) => ({ id: r.id, name: r.name, meal: r.meal, kcal: r.kcal, protein: r.protein, carbs: r.carbs, fat: r.fat, source: "appli" as const })),
+      ...recipes.map((r) => ({ id: r.id, name: r.name, meal: r.meal, kcal: r.kcal, protein: r.protein, carbs: r.carbs, fat: r.fat, source: "communaute" as const })),
+    ],
+    [recipes]
+  );
 
   // Search modal
   const [addingToSlot, setAddingToSlot] = useState<string | null>(null);
@@ -1694,26 +1702,6 @@ export default function ClientNutritionView({
         </button>
       </div>
 
-      {/* Mode selector */}
-      <NutritionModeSelector
-        activeMode={planMode}
-        onChange={activePlan && updatePlanMode ? handleChangePlanMode : undefined}
-        changing={changingPlanMode}
-      />
-
-      {/* Coach's prescribed plan */}
-      {activePlan && activePlan.diet_plan_meals.length > 0 && (
-        <DietPlanCard
-          plan={activePlan}
-          todayLogs={todayLogs}
-          today={today}
-          onToggle={handleTogglePlanItem}
-          onValidateSlot={logMealItems ? handleValidateSlot : undefined}
-          isOwnPlan={isOwnPlan}
-          highlightSlot={highlightSlot}
-        />
-      )}
-
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         {(["today", "history", "courses"] as const).map((tab) => (
@@ -1733,199 +1721,20 @@ export default function ClientNutritionView({
 
       {/* ── TODAY TAB ─────────────────────────────────────────────────────── */}
       {activeTab === "today" && (
-        <div className="space-y-4">
-          {/* Type de jour — objectif calorique/glucides différent les jours
-              de repos ou high, uniquement si le coach en a défini. */}
-          {hasDayOffsets && !noTargets && (
-            <div className="flex gap-1.5">
-              {([
-                { key: "training", label: "Entraînement" },
-                ...(nutritionProfile?.calories_offset_rest != null ? [{ key: "repos", label: "Repos" }] : []),
-                ...(nutritionProfile?.calories_offset_high != null ? [{ key: "high", label: "High" }] : []),
-              ] as { key: "training" | "repos" | "high"; label: string }[]).map(({ key, label }) => (
-                <button
-                  key={key}
-                  onClick={() => selectDayType(key)}
-                  className={`flex-1 py-2 text-[10px] font-bold uppercase tracking-widest rounded-lg border transition-colors ${
-                    dayType === key
-                      ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]"
-                      : "border-[#890404]/25 text-[#F5EDED]/40 hover:text-[#F5EDED]/65"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* Rattrapage hebdo — toujours visible quand actif, pour que
-              l'objectif du jour ne bouge jamais sans explication. */}
-          {!noTargets && weeklyBank !== 0 && (
-            <div className="flex items-center gap-2 bg-[#1f0101] border border-[#890404]/25 rounded-lg px-3 py-2.5">
-              <Flame size={13} className={weeklyBank > 0 ? "text-[#4ade80] flex-shrink-0" : "text-[#fbbf24] flex-shrink-0"} />
-              <p className="text-[11px] text-[#F5EDED]/55 leading-snug">
-                {weeklyBank > 0
-                  ? `Objectif ajusté : +${weeklyBank} kcal aujourd'hui pour compenser le début de semaine.`
-                  : `Objectif ajusté : ${weeklyBank} kcal aujourd'hui pour rester sur la moyenne de la semaine.`}
-              </p>
-            </div>
-          )}
-
-          {/* Macro rings */}
-          {noTargets ? (
-            <div className="bg-[#1f0101] border border-[#890404]/30 rounded-xl p-5 text-center">
-              <p className="text-xs text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
-                {isOwnPlan
-                  ? "Aucun objectif défini. Utilise le calculateur ci-dessus."
-                  : "Aucun objectif défini. Contacte ton coach."}
-              </p>
-            </div>
-          ) : (
-            <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-5">
-              <div className="flex justify-around">
-                <MacroRing
-                  label="Calories"
-                  current={fmt(totals.calories)}
-                  target={targets.calories}
-                  color="#E01E1E"
-                  isCalorie
-                />
-                <MacroRing
-                  label="Protéines"
-                  current={fmt(totals.proteins)}
-                  target={targets.proteins}
-                  color="#60a5fa"
-                />
-                <MacroRing
-                  label="Glucides"
-                  current={fmt(totals.carbs)}
-                  target={targets.carbs}
-                  color="#fbbf24"
-                />
-                <MacroRing
-                  label="Lipides"
-                  current={fmt(totals.fats)}
-                  target={targets.fats}
-                  color="#fb7185"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Diète fixe/fixe-flexible : cocher le plan (DietPlanCard
-              ci-dessus) suffit, ce n'est pas du tracking libre — le
-              journal détaillé par repas (ajout manuel, bilan rapide,
-              copier hier) n'a de sens qu'en diète flexible, où il n'y a
-              justement pas de plan à cocher. Éviter de l'afficher quand
-              même en fixe/fixe-flexible pour ne pas donner deux façons
-              différentes (et déconnectées l'une de l'autre) de dire "j'ai
-              mangé ça". */}
-          {isFreeTracking && (
-            <>
-              {/* Bilan rapide — alternative rapide à la saisie manuelle, toujours
-                  accessible (avant, elle disparaissait dès le premier aliment
-                  loggé dans la journée — hors c'est le seul lien vers cette
-                  page, la perdre revenait à la rendre injoignable). */}
-              <a
-                href="/dashboard/client/nutrition/bilan-rapide"
-                className="w-full flex items-center justify-between gap-3 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:border-[#E01E1E]/60 rounded-xl px-4 py-3.5 transition-colors"
-              >
-                <span className="flex items-center gap-2.5 text-left">
-                  <span className="text-xl">⚡</span>
-                  <span>
-                    <span className="block text-xs font-bold text-white">
-                      {todayLogs.length === 0 ? "Bilan rapide" : "Compléter ma journée"}
-                    </span>
-                    <span className="block text-[10px] text-[#F5EDED]/40">
-                      Je choisis mes repas et mes aliments habituels, l&apos;appli calcule tout
-                    </span>
-                  </span>
-                </span>
-                <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-                  Commencer →
-                </span>
-              </a>
-
-              {/* Copy yesterday — the single biggest friction-killer for an empty day */}
-              {todayLogs.length === 0 && yesterdayLogs.length > 0 && (
-                <button
-                  onClick={handleCopyYesterday}
-                  disabled={copyingYesterday}
-                  className="w-full flex items-center justify-between gap-3 bg-[#1f0101] border border-[#890404]/40 hover:border-[#E01E1E]/50 rounded-xl px-4 py-3.5 transition-colors disabled:opacity-50"
-                >
-                  <span className="flex items-center gap-2.5 text-left">
-                    <Copy size={14} className="text-[#E01E1E] flex-shrink-0" />
-                    <span>
-                      <span className="block text-xs font-bold text-white">
-                        Copier la journée d&apos;hier
-                      </span>
-                      <span className="block text-[10px] text-[#F5EDED]/40">
-                        {yesterdayLogs.length} aliment{yesterdayLogs.length > 1 ? "s" : ""} ·{" "}
-                        {fmt(yesterdayCals)} kcal
-                      </span>
-                    </span>
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] flex-shrink-0">
-                    {copyingYesterday ? "…" : "Copier"}
-                  </span>
-                </button>
-              )}
-            </>
-          )}
-
-          {/* Error banner — shown when optimistic add fails after modal closes */}
-          {addingError && (
-            <div className="flex items-center justify-between gap-3 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">
-              <p className="text-xs text-red-400 font-semibold">{addingError}</p>
-              <button
-                onClick={() => setAddingError(null)}
-                aria-label="Fermer le message d'erreur"
-                className="text-red-400/60 hover:text-red-400 transition-colors text-xs"
-              >
-                ✕
-              </button>
-            </div>
-          )}
-
-          {/* Meal slots — journal détaillé, uniquement en diète flexible (voir plus haut) */}
-          {isFreeTracking && MEAL_SLOTS.map((slot) => {
-            const slotLogs = todayLogs.filter((l) => l.meal_slot === slot.key);
-            const slotCals = slotLogs.reduce(
-              (s, l) => s + (l.calories ?? 0),
-              0
-            );
-            return (
-              <MealSlotCard
-                key={slot.key}
-                slotKey={slot.key}
-                label={slot.label}
-                logs={slotLogs}
-                totalCals={slotCals}
-                today={today}
-                onAdd={() => openModal(slot.key)}
-                onDelete={handleDelete}
-                onSaveAsMeal={createSavedMeal ? () => openSaveMealPrompt(slot.key) : undefined}
-              />
-            );
-          })}
-
-          {/* ── Micronutriments ───────────────────────────────────────────── */}
-          {todayLogs.length > 0 && (
-            <div className="mt-6">
-              <div className="mb-4">
-                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-0.5">
-                  Apports du jour
-                </p>
-                <h2 className="text-base font-black uppercase tracking-tight">
-                  Micronutriments
-                </h2>
-              </div>
-              <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
-                <MicroBarList logs={todayLogs} />
-              </div>
-            </div>
-          )}
-        </div>
+        <NutritionTracker
+          today={today}
+          initialLogs={initialTodayLogs}
+          historyLogs={historyLogs}
+          foods={initialFoods}
+          plan={activePlan}
+          mode={planMode}
+          profile={nutritionProfile}
+          recipes={trackerRecipes}
+          savedMeals={savedMeals}
+          isOwnPlan={isOwnPlan}
+          onChangeMode={activePlan && updatePlanMode ? (m) => updatePlanMode(activePlan.id, m) : undefined}
+          createCustomFood={createCustomFood}
+        />
       )}
 
       {/* ── HISTORY TAB ───────────────────────────────────────────────────── */}

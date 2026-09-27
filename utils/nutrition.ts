@@ -240,6 +240,25 @@ export async function getNutritionProfile(
   }
 }
 
+// Les journaux ne passent plus par l'embed PostgREST `foods(*)` : la clé
+// étrangère food_logs.food_id -> foods a disparu de la base de prod (constaté
+// le 2026-09-27, "Could not find a relationship between 'food_logs' and
+// 'foods'"), et chaque lecture échouait EN SILENCE, renvoyant un journal
+// vide. C'était la cause du "toujours à 0 calorie" : l'aliment coché
+// s'affichait un instant puis disparaissait au rechargement. Les aliments
+// sont maintenant lus à part et rattachés ici, que la clé existe ou non.
+type FoodsReader = { from: (t: string) => any }; // eslint-disable-line @typescript-eslint/no-explicit-any
+export async function attachFoods<T extends { food_id: string | null }>(client: FoodsReader, rows: T[] | null): Promise<(T & { foods: Food | null })[]> {
+  const list = rows ?? [];
+  const ids = [...new Set(list.map((r) => r.food_id).filter((x): x is string => !!x))];
+  const byId = new Map<string, Food>();
+  for (let i = 0; i < ids.length; i += 200) {
+    const { data } = await client.from("foods").select("*").in("id", ids.slice(i, i + 200));
+    for (const f of (data ?? []) as Food[]) byId.set(f.id, f);
+  }
+  return list.map((r) => ({ ...r, foods: r.food_id ? byId.get(r.food_id) ?? null : null }));
+}
+
 export async function getTodayLogs(
   clientId: string,
   date?: string
@@ -247,13 +266,14 @@ export async function getTodayLogs(
   try {
     const supabase = await createServerSupabase();
     const day = date ?? todayInParis();
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("food_logs")
-      .select("*, foods(*)")
+      .select("*")
       .eq("client_id", clientId)
       .eq("logged_at", day)
       .order("id");
-    return (data as FoodLogWithFood[]) ?? [];
+    if (error) console.error("getTodayLogs error:", error);
+    return attachFoods(supabase, data as FoodLog[] | null);
   } catch {
     return [];
   }
@@ -267,14 +287,15 @@ export async function getLast30DaysLogs(
     const today = new Date();
     const thirtyDaysAgo = new Date(today);
     thirtyDaysAgo.setDate(today.getDate() - 29);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("food_logs")
-      .select("*, foods(*)")
+      .select("*")
       .eq("client_id", clientId)
       .gte("logged_at", thirtyDaysAgo.toISOString().split("T")[0])
       .order("logged_at", { ascending: false })
       .order("id");
-    return (data as FoodLogWithFood[]) ?? [];
+    if (error) console.error("getLast30DaysLogs error:", error);
+    return attachFoods(supabase, data as FoodLog[] | null);
   } catch {
     return [];
   }
@@ -288,13 +309,14 @@ export async function getLast7DaysLogs(
     const today = new Date();
     const sixDaysAgo = new Date(today);
     sixDaysAgo.setDate(today.getDate() - 6);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("food_logs")
-      .select("*, foods(*)")
+      .select("*")
       .eq("client_id", clientId)
       .gte("logged_at", sixDaysAgo.toISOString().split("T")[0])
       .order("logged_at", { ascending: false });
-    return (data as FoodLogWithFood[]) ?? [];
+    if (error) console.error("getLast7DaysLogs error:", error);
+    return attachFoods(supabase, data as FoodLog[] | null);
   } catch {
     return [];
   }
