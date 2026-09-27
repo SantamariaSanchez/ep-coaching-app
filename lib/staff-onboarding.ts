@@ -107,9 +107,11 @@ export const STEPS: Step[] = [
     founder: true,
     body: (m, pr) => {
       const pra = phase(pr, "pratique");
+      const dec = phase(pr, "decouverte");
+      const decLeft = dec ? dec.total - dec.done : 0;
       const pb = getPlaybook(m.role_key);
       return (
-        title(roleTitle(m), "Semaine 1 bouclée, place à la pratique") +
+        title(roleTitle(m), decLeft > 0 ? `Semaine 1 faite, encore ${decLeft} leçon${decLeft > 1 ? "s" : ""} de découverte` : "Semaine 1 bouclée, place à la pratique") +
         p(`Bilan de ta semaine : <strong>${pr.done.size} leçon${pr.done.size > 1 ? "s" : ""}</strong> terminée${pr.done.size > 1 ? "s" : ""}, <strong>${pr.reports} rapport${pr.reports > 1 ? "s" : ""}</strong> envoyé${pr.reports > 1 ? "s" : ""}, <strong>${pr.records}</strong> fiche${pr.records > 1 ? "s" : ""} dans ton espace.`) +
         p(`Les semaines 2 et 3, c'est la <strong>Pratique accompagnée</strong> : tu fais le vrai travail, avec un retour sur ce que tu produis.`) +
         (pra?.next.length ? h3("Au programme") + list(lessonItems(pra.next.slice(0, 4))) : "") +
