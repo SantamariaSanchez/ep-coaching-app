@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FileSignature } from "lucide-react";
 import { requireStaffPage } from "@/lib/staff-page";
@@ -9,6 +8,7 @@ import { trainingFor } from "@/lib/staff-training";
 import { templatesFor } from "@/lib/staff-templates";
 import { getChannel, getDocumentsFor, getTeamDirectory, getThread, getTrainingDone, getUnreadBySender } from "@/lib/staff-team";
 import RecordBoard from "@/components/staff/RecordBoard";
+import { getLatestSignedContract, getTemplateFile } from "@/lib/staff-contract-files";
 import DailyReport from "@/components/staff/DailyReport";
 import KpiGrid from "@/components/staff/KpiGrid";
 import TrainingView from "@/components/staff/TrainingView";
@@ -78,22 +78,29 @@ export default async function StaffModulePage({
         </>
       );
       break;
-    case "documents":
+    case "documents": {
+      // Mon contrat : le PDF signé s'il existe, sinon le modèle PDF du poste,
+      // sinon la version texte de la fiche technique.
+      const signedPdf = await getLatestSignedContract(ctx.userId, `${member.full_name} - ${ctx.role.title}`);
+      const templatePdf = signedPdf ? null : await getTemplateFile(member.role_key, ctx.role.title, member.contract_version ?? undefined);
+      const contractHref = signedPdf?.downloadUrl ?? templatePdf?.downloadUrl ?? "/equipe/poste";
       body = (
         <>
-          <Link href="/equipe/poste" className="ep-card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", marginBottom: 14, textDecoration: "none" }}>
+          <a href={contractHref} className="ep-card" style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 15px", marginBottom: 14, textDecoration: "none" }}>
             <FileSignature size={18} style={{ color: "#4ade80", flexShrink: 0 }} />
             <span style={{ flex: 1 }}>
               <span style={{ display: "block", fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>Mon contrat de collaboration</span>
               <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.5)" }}>
-                Signé le {member.contract_signed_at ? new Date(member.contract_signed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?"}, avec ta fiche technique
+                Signé le {member.contract_signed_at ? new Date(member.contract_signed_at).toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "?"}
+                {signedPdf ? " · télécharger le PDF signé" : templatePdf ? " · télécharger le PDF" : ", avec ta fiche technique"}
               </span>
             </span>
-          </Link>
+          </a>
           <DocumentsPanel documents={await getDocumentsFor(member.owner_id, ctx.userId, member.role_key)} meId={ctx.userId} />
         </>
       );
       break;
+    }
     case "messages": {
       const people = await getTeamDirectory(member.owner_id);
       const active = avec === "general" || people.some((p) => p.id === avec && p.id !== ctx.userId) ? (avec as string) : null;

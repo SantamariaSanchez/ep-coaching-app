@@ -49,7 +49,10 @@ skills_extracted
 Emmanuel/
 files_extracted/
 frontend_extracted/
-scripts/
+scripts/*
+# Sauf les scripts des contrats d'équipe (npm run contracts:generate / contracts:upload)
+!scripts/generate-contract-pdfs.ts
+!scripts/upload-contract-templates.ts
 .claude/
 
 # Ruflo local secrets and runtime data
@@ -59,3 +62,6 @@ scripts/
 .claude-flow/data/
 .claude-flow/logs/
 .claude-flow/sessions/
+
+# Modèles PDF des contrats d'équipe (vont dans Supabase Storage, jamais sur GitHub)
+contracts-templates/

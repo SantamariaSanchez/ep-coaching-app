@@ -8,6 +8,7 @@ import { getApplicationsForHr } from "@/lib/staff";
 import { STAFF_ROLE_KEYS, getRoleCard } from "@/lib/staff-roles";
 import { STAFF_CONTRACT_VERSION } from "@/lib/staff-contract";
 import DocumentsPanel from "@/components/staff/DocumentsPanel";
+import { getLatestSignedContract } from "@/lib/staff-contract-files";
 
 export const dynamic = "force-dynamic";
 
@@ -34,12 +35,16 @@ export default async function FounderTeamDocumentsPage() {
   ]);
   const members = (memberRows ?? []) as { user_id: string; role_key: string; full_name: string; status: string; contract_signed_at: string | null; contract_version: string | null; contract_signature: string | null }[];
 
-  // PDF signés (JotForm) : rangés comme documents personnels de la recrue.
-  const contractPdfs = new Map<string, { href: string | null; title: string }>();
-  for (const d of documents) {
-    if (d.staff_id && d.title.startsWith("Contrat signé") && !contractPdfs.has(d.staff_id)) contractPdfs.set(d.staff_id, { href: d.href, title: d.title });
-  }
-  const otherDocs = documents.filter((d) => !(d.staff_id && d.title.startsWith("Contrat signé")));
+  // PDF signés (JotForm) : bucket privé staff-contracts (lib/staff-contract-files.ts).
+  const signed = await Promise.all(members.map((m) => getLatestSignedContract(m.user_id, `${m.full_name} - ${getRoleCard(m.role_key)?.role.title ?? m.role_key}`)));
+  const contractPdfs = new Map<string, { href: string }>();
+  members.forEach((m, i) => {
+    const f = signed[i];
+    if (f) contractPdfs.set(m.user_id, { href: f.downloadUrl });
+  });
+  // Anciens PDF rangés dans les documents partagés (avant le 2026-09-27) : on
+  // les laisse dans la liste générale, rien n'est supprimé.
+  const otherDocs = documents;
   const cvs = applications.filter((a) => a.cvUrl);
 
   const targets = [
@@ -86,7 +91,7 @@ export default async function FounderTeamDocumentsPage() {
                 </p>
               </div>
               {pdf?.href && (
-                <a href={pdf.href} target="_blank" rel="noopener noreferrer" style={link}>
+                <a href={pdf.href} style={link}>
                   PDF signé
                 </a>
               )}
@@ -116,7 +121,7 @@ export default async function FounderTeamDocumentsPage() {
             </a>
           </div>
         ))}
-        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>Les liens des CV sont valables une heure, recharge la page pour en générer de nouveaux.</p>
+        <p style={{ fontSize: 11, color: "rgba(245,237,237,0.35)", margin: "8px 0 0" }}>Liens sécurisés temporaires (contrats 10 minutes, CV une heure) : recharge la page pour en générer de nouveaux.</p>
       </section>
 
       <section>

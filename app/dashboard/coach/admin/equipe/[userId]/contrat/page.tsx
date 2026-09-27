@@ -1,15 +1,19 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, FileSignature } from "lucide-react";
+import { ChevronLeft, ExternalLink, FileSignature } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { buildStaffContract } from "@/lib/staff-contract";
 import ContractView from "@/components/staff/ContractView";
+import ContractPdf from "@/components/staff/ContractPdf";
+import { getRoleCard } from "@/lib/staff-roles";
+import { getLatestSignedContract, getTemplateFile } from "@/lib/staff-contract-files";
 
 export const dynamic = "force-dynamic";
 
-// Le contrat signé d'un membre, tel qu'il l'a signé (texte, date, version,
-// nom tapé ou référence JotForm), lisible et imprimable par le fondateur.
+// Le contrat signé d'un membre : le PDF signé (JotForm) quand il existe,
+// sinon le texte du contrat, avec date, version, IP et signature ; plus le
+// modèle vierge du poste.
 export default async function MemberContractPage({ params }: { params: Promise<{ userId: string }> }) {
   const { userId } = await params;
   const user = await getUser();
@@ -26,7 +30,12 @@ export default async function MemberContractPage({ params }: { params: Promise<{
     .maybeSingle();
   if (!data) notFound();
   const m = data as { user_id: string; role_key: string; full_name: string; email: string; contract_signed_at: string | null; contract_version: string | null; contract_signature: string | null; contract_signed_ip: string | null };
-  const contract = buildStaffContract(m.role_key, m.full_name, m.email);
+  const roleTitle = getRoleCard(m.role_key)?.role.title ?? m.role_key;
+  const [signedPdf, template] = await Promise.all([
+    getLatestSignedContract(m.user_id, `${m.full_name} - ${roleTitle}`),
+    getTemplateFile(m.role_key, roleTitle, m.contract_version ?? undefined),
+  ]);
+  const contract = signedPdf ? null : buildStaffContract(m.role_key, m.full_name, m.email);
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -48,7 +57,21 @@ export default async function MemberContractPage({ params }: { params: Promise<{
           <p style={{ fontSize: 13, color: "#facc15", margin: 0 }}>Pas encore signé.</p>
         )}
       </div>
-      <div className="ep-card" style={{ padding: "22px 20px" }}>{contract && <ContractView contract={contract} />}</div>
+      {template && (
+        <a href={template.viewUrl} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 800, color: "#ff6b6b", textDecoration: "none", marginBottom: 14 }}>
+          <ExternalLink size={13} /> Voir le modèle du poste ({roleTitle}, version {m.contract_version ?? "actuelle"})
+        </a>
+      )}
+      {signedPdf ? (
+        <ContractPdf viewUrl={signedPdf.viewUrl} downloadUrl={signedPdf.downloadUrl} title={`Contrat signé de ${m.full_name}`} downloadLabel="Télécharger le contrat signé" />
+      ) : (
+        <>
+          {m.contract_signed_at && (
+            <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "0 0 10px" }}>Signé dans l&apos;appli (pas de PDF JotForm) : voici le texte accepté.</p>
+          )}
+          <div className="ep-card" style={{ padding: "22px 20px" }}>{contract && <ContractView contract={contract} />}</div>
+        </>
+      )}
     </div>
   );
 }

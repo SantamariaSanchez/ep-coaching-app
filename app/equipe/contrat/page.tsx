@@ -6,6 +6,8 @@ import ContractSignForm from "@/components/staff/ContractSignForm";
 import JotformSign from "@/components/staff/JotformSign";
 import { contractFormUrl, jotformEnabled } from "@/lib/jotform";
 import { STAFF_CONTRACT_VERSION } from "@/lib/staff-contract";
+import { getTemplateFile } from "@/lib/staff-contract-files";
+import ContractPdf from "@/components/staff/ContractPdf";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,10 @@ export const dynamic = "force-dynamic";
 export default async function StaffContractPage({ searchParams }: { searchParams: Promise<{ jotform?: string }> }) {
   const { jotform } = await searchParams;
   const ctx = await requireStaffPage("contract");
-  const contract = buildStaffContract(ctx.member.role_key, ctx.member.full_name, ctx.member.email);
+  // Le contrat de référence est le PDF du poste (bucket staff-contracts) ;
+  // s'il manque, on retombe sur la version texte générée depuis le code.
+  const pdf = await getTemplateFile(ctx.member.role_key, ctx.role.title);
+  const contract = pdf ? null : buildStaffContract(ctx.member.role_key, ctx.member.full_name, ctx.member.email);
   const isResign = !!ctx.member.contract_signed_at;
   // JotForm configuré : c'est lui qui recueille la signature (voir
   // app/api/webhooks/jotform), la signature intégrée reste en secours.
@@ -38,9 +43,13 @@ export default async function StaffContractPage({ searchParams }: { searchParams
           : "Lis-le tranquillement. Dès que tu signes, ton espace s'ouvre et tu reçois par email une copie du contrat, ta fiche de poste et ton parcours d'intégration."}
       </p>
 
-      <div className="ep-card" style={{ padding: "22px 20px", marginBottom: 18, maxHeight: "60vh", overflowY: "auto" }}>
-        {contract && <ContractView contract={contract} />}
-      </div>
+      {pdf ? (
+        <ContractPdf viewUrl={pdf.viewUrl} downloadUrl={pdf.downloadUrl} title={`Contrat ${ctx.role.title}`} />
+      ) : (
+        <div className="ep-card" style={{ padding: "22px 20px", marginBottom: 18, maxHeight: "60vh", overflowY: "auto" }}>
+          {contract && <ContractView contract={contract} />}
+        </div>
+      )}
 
       {jotformUrl ? (
         <JotformSign url={jotformUrl} waiting={jotform === "envoye"} expectedName={ctx.member.full_name} />

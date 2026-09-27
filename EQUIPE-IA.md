@@ -1051,3 +1051,14 @@ documentation du projet (`VISION.md`, `MASTERCLASS.md`, `CROISSANCE.md`,
 `LEADMAGNETS.md`) — modifiable directement, avec un commit qui explique le
 changement. Si un rôle de l'organigramme change (`lib/org-roles.ts`), son
 persona correspondant devrait changer avec lui.
+
+## Contrats de collaboration (PDF par poste)
+
+Depuis le 2026-09-27, chaque poste a son contrat en PDF, aux couleurs EP Coaching.
+
+- **Source de vérité** : `lib/org-roles.ts` (poste, missions, rémunération, `compensation.earnings`) et `lib/staff-contract.ts` (texte des articles, `STAFF_CONTRACT_VERSION`). Les PDF ne se retouchent jamais à la main.
+- **Où ils vivent** : bucket privé Supabase `staff-contracts`. Les modèles sont dans `templates/{roleKey}/{version}.pdf` et les contrats signés dans `signed/{staffId}/{version}-{submissionId}.pdf`. Le dossier local `contracts-templates/` sert de sas et est ignoré par git : les PDF ne vont jamais sur GitHub. L'appli ne les sert que par liens signés de 10 minutes (`lib/staff-contract-files.ts`).
+- **Signature** : JotForm sert uniquement à signer (champs `fullName`, `email`, `role`, `staffId`, `contractVersion`, `accept`, `signature`). Le webhook `/api/webhooks/jotform` relit la soumission chez JotForm, valide le contrat et range le PDF signé dans le bucket. Rien n'est supprimé chez JotForm.
+- **Régénérer** : `npm run contracts:generate` recrée les 19 PDF dans `contracts-templates/{roleKey}.pdf` (ou `npm run contracts:generate closer setter` pour quelques postes). Ensuite `npm run contracts:upload` les envoie ; le fichier le plus récent de chaque poste gagne.
+- **Changer un droit ou une obligation** : incrémente `STAFF_CONTRACT_VERSION` dans `lib/staff-contract.ts`, régénère, puis renvoie. Chaque membre devra signer la nouvelle version à sa prochaine connexion. Pour une simple faute de frappe, régénère et renvoie sans changer de version.
+- **Sécurité (en option)** : la migration `supabase/migrations/20260927b_staff_contracts_storage.sql` ajoute les règles d'accès au bucket et la colonne `staff_members.signed_pdf_path`. L'appli fonctionne sans elle.

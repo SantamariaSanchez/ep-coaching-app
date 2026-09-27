@@ -7,6 +7,7 @@ import { getStaffMember, sendContractEmail } from "@/lib/staff";
 import { getRoleCard } from "@/lib/staff-roles";
 import { STAFF_CONTRACT_VERSION, STAFF_TERMS_VERSION } from "@/lib/staff-contract";
 import { fetchSubmission, fetchSubmissionPdf, jotformEnabled } from "@/lib/jotform";
+import { storeSignedContract } from "@/lib/staff-contract-files";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
@@ -83,35 +84,30 @@ export async function POST(req: Request) {
     if (error) return NextResponse.json({ error: "Écriture impossible" }, { status: 500 });
   }
 
-  // PDF signé dans les documents : visible par la recrue (staff_id) et par
-  // le fondateur (owner_id), dans leur onglet Documents.
-  let pdfStored = false;
+  // PDF signé dans le bucket privé staff-contracts (jamais de suppression
+  // chez JotForm, rien d'autre n'y est géré). La recrue le retrouve dans son
+  // onglet Documents, le fondateur dans Administration > Équipe > Documents.
+  let pdfPath: string | null = null;
   const pdf = await fetchSubmissionPdf(sub.formId, sub.id);
   if (pdf) {
-    const path = `${member.owner_id}/contrats/${member.user_id}/${STAFF_CONTRACT_VERSION}-${sub.id}.pdf`;
-    const up = await admin.storage.from("staff-docs").upload(path, new Uint8Array(pdf), { contentType: "application/pdf", upsert: true });
-    if (!up.error) {
-      const { data: existing } = await admin.from("staff_documents").select("id").eq("storage_path", path).maybeSingle();
-      if (!existing) {
-        await admin.from("staff_documents").insert({
-          owner_id: member.owner_id,
-          staff_id: member.user_id,
-          title: `Contrat signé, ${member.full_name} (version ${STAFF_CONTRACT_VERSION})`,
-          storage_path: path,
-          note: `Signé sur JotForm le ${new Date(signedAt).toLocaleDateString("fr-FR", { timeZone: "Europe/Paris" })}.`,
-          uploaded_by: member.owner_id,
-        });
-      }
-      pdfStored = true;
+    pdfPath = await storeSignedContract(member.user_id, STAFF_CONTRACT_VERSION, sub.id, pdf);
+    if (pdfPath) {
+      // Colonne ajoutée par la migration 20260927b ; sans elle, l'appli
+      // retrouve quand même le fichier en listant signed/{staffId}/.
+      const { error } = await admin.from("staff_members").update({ signed_pdf_path: pdfPath }).eq("user_id", member.user_id);
+      if (error && !/signed_pdf_path/.test(error.message)) console.error("[jotform] signed_pdf_path:", error.message);
     }
+  } else {
+    console.error(`[jotform] PDF signé introuvable pour la soumission ${sub.id}`);
   }
+  const pdfStored = !!pdfPath;
 
   if (!alreadySigned) {
     await sendContractEmail(member, signedAt, signedName, STAFF_CONTRACT_VERSION).catch(() => false);
     await notifyAdmin("Contrat signé sur JotForm", [
       `<strong>${escapeHtml(member.full_name)}</strong> (${escapeHtml(member.email)})`,
       `Poste : ${escapeHtml(getRoleCard(member.role_key)?.role.title ?? member.role_key)}`,
-      pdfStored ? "Le PDF signé est rangé dans Administration > Équipe > Documents." : "Le PDF n'a pas pu être récupéré, il reste disponible dans JotForm.",
+      pdfStored ? "Le PDF signé est rangé dans Administration > Équipe > Documents." : "Le PDF signé n'a pas pu être récupéré automatiquement : la soumission reste consultable dans JotForm.",
       `<a href="${APP_URL}/dashboard/coach/admin/equipe/${member.user_id}" style="color:#E01E1E">Ouvrir sa fiche</a>`,
     ]);
     await notifyUser(member.owner_id, {

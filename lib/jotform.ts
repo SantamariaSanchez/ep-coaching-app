@@ -1,13 +1,16 @@
-// Signature des contrats d'équipe via JotForm (demande directe 2026-09-27 :
-// "utilise JotForm pour faire signer les contrats, quand c'est signé ça
-// vient à moi aussi"). Activé dès que JOTFORM_API_KEY et
-// JOTFORM_CONTRACT_FORM_ID sont définis ; sinon la signature intégrée à
-// l'appli reste en place.
+// Signature des contrats d'équipe via JotForm (demande directe 2026-09-27).
+// Le contrat lui-même est un PDF par poste, stocké dans le bucket privé
+// Supabase "staff-contracts" (voir lib/staff-contract-files.ts) : JotForm ne
+// sert qu'à SIGNER, il ne contient pas le texte du contrat et rien n'y est
+// conservé par l'appli (aucune suppression n'y est jamais faite non plus).
+// Le PDF signé est rapatrié dans staff-contracts par le webhook.
+// Activé dès que JOTFORM_API_KEY et JOTFORM_CONTRACT_FORM_ID sont définis ;
+// sinon la signature intégrée à l'appli reste en place.
 //
-// Le formulaire JotForm doit avoir ces champs (nom unique, onglet
-// "Avancé" de chaque champ dans JotForm) : staffId (caché), fullName,
-// email, role, contractVersion (caché), plus un champ Signature. Ils sont
-// préremplis par l'URL ci-dessous.
+// Champs du formulaire (nom unique, onglet "Avancé" dans JotForm) :
+// fullName, email, role (lecture seule), staffId et contractVersion
+// (cachés), accept (case obligatoire) et signature. Ils sont préremplis par
+// l'URL ci-dessous.
 
 export const JOTFORM_API = process.env.JOTFORM_API_BASE ?? "https://api.jotform.com";
 
