@@ -2,8 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createServerSupabase } from "@/lib/supabase-server";
-import { getTodayLog, getClientDailyLogs } from "@/utils/daily-logs";
-import { getTodayLogs } from "@/utils/nutrition";
+import { getClientDailyLogs } from "@/utils/daily-logs";
+import { getTodayLogs, getActiveDietPlan } from "@/utils/nutrition";
+import BilanDayPicker from "@/components/ui/BilanDayPicker";
+import { isWithinBilanBackfillWindow } from "@/lib/dates";
 import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
 import BilanProgressView from "@/components/ui/BilanProgressView";
@@ -17,7 +19,7 @@ function fmt(d: string) {
   return capitalize(new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(d + "T12:00:00")));
 }
 
-export default async function CoachMonBilanPage() {
+export default async function CoachMonBilanPage({ searchParams }: { searchParams: Promise<{ jour?: string }> }) {
   const supabase = await createServerSupabase();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/auth/coach");
@@ -30,12 +32,18 @@ export default async function CoachMonBilanPage() {
   // fusionné ici, voir components/ui/BilanProgressView. L'ancienne route
   // /dashboard/coach/moi/progression redirige maintenant ici.
   const today = todayInParis();
-  const [todayLog, allLogs, todayFoodLogs, autoSteps] = await Promise.all([
-    getTodayLog(user.id),
+  // Bilan d'un jour passé (?jour=AAAA-MM-JJ, 30 jours max) : rattraper un
+  // oubli avec exactement le même formulaire.
+  const { jour } = await searchParams;
+  const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
+  const [allLogs, dayFoodLogs, autoSteps, activePlan] = await Promise.all([
     getClientDailyLogs(user.id, 90),
-    getTodayLogs(user.id, today),
-    getTodayStepsActual(user.id),
+    getTodayLogs(user.id, date),
+    date === today ? getTodayStepsActual(user.id) : Promise.resolve(null),
+    getActiveDietPlan(user.id),
   ]);
+  const todayLog = allLogs.find((l) => l.log_date === date) ?? null;
+  const todayFoodLogs = dayFoodLogs;
 
   // Retour direct 2026-09-09 : "onglet par onglet, masterclass" — le bilan
   // client pré-remplit calories/macros depuis ce qui est déjà loggé dans
@@ -57,12 +65,14 @@ export default async function CoachMonBilanPage() {
   return (
     <div className="page-transition" style={{ maxWidth: 640, margin: "0 auto", padding: "32px 16px 80px" }}>
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>{fmt(today)}</p>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{date === today ? fmt(today) : `Rattrapage · ${fmt(date)}`}</p>
         <h1 className="ep-h1">Mon bilan &amp; ma progression</h1>
       </div>
 
+      <BilanDayPicker basePath="/dashboard/coach/moi/bilan" today={today} selected={date} logs={allLogs} />
+
       <div className="ep-card animate-scale-in" style={{ padding: "20px 16px", marginBottom: 32 }}>
-        <DailyBilanForm today={today} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} />
+        <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertCoachDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/coach/moi/nutrition" : `/dashboard/coach/moi/nutrition?jour=${date}`} />
       </div>
 
       <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />

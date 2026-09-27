@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { checkWeightObjectiveAchievements } from "@/utils/roadmap";
 import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
+import { afterBilanSaved } from "@/lib/nutrition-sync";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -84,11 +85,16 @@ export async function upsertCoachDailyLog(
     if (error) return { error: error.message };
 
     // Voir le même hook côté client dans app/dashboard/client/bilan/actions.ts.
+    // Même lien tracker -> bilan que côté membre (voir client/bilan/actions.ts).
+    await afterBilanSaved(supabase, guard.userId, log_date, formData.get("diet_followed") === "oui");
+
     if (weightMorning != null) {
       checkWeightObjectiveAchievements(guard.userId, weightMorning, log_date).catch(() => {});
     }
 
     revalidatePath("/dashboard/coach/moi/bilan");
+    revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
     return { success: true };
   } catch (e) {
     console.error("upsertCoachDailyLog error:", e);

@@ -9,6 +9,7 @@ import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
 import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
+import { afterBilanSaved } from "@/lib/nutrition-sync";
 
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
@@ -99,6 +100,11 @@ export async function upsertDailyLog(
       return { error: "Erreur serveur, réessaie." };
     }
 
+    // Calories et macros : le tracker nutrition fait foi (demande directe
+    // 2026-09-27, "ça doit pas se faire à la main"). "Diète suivie" remplit
+    // d'abord les repas du plan encore vides pour ce jour-là.
+    await afterBilanSaved(supabase, guard.userId, log_date, formData.get("diet_followed") === "oui");
+
     // Le bilan devient la seule saisie manuelle de pas nécessaire (voir
     // StepsClient, qui ne propose plus la sienne) : ce qui est confirmé ici
     // doit rejoindre step_logs, sinon l'historique/les séries de l'onglet
@@ -157,6 +163,8 @@ export async function upsertDailyLog(
     }).catch(() => {});
 
     revalidatePath("/dashboard/client/bilan");
+    revalidatePath("/dashboard/client/nutrition");
+    revalidatePath("/dashboard/coach/moi/nutrition");
     return { success: true };
   } catch (e) {
     console.error("upsertDailyLog error:", e);

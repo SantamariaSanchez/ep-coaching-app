@@ -372,52 +372,117 @@ export function LifestyleCard({
 }
 
 export type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
+export type BilanPlan = { name: string; mode: "fixed" | "flexible" | "fixed_flexible" };
 
+// Nutrition du bilan (refonte 2026-09-27, "ça doit pas se faire à la main") :
+// les calories et macros viennent du tracker, jamais retapées. Avec un plan,
+// une seule question : diète suivie ? "Oui" ajoute les repas du plan encore
+// vides ce jour-là. Saisie manuelle seulement sans plan ni tracker.
 export function NutritionCard({
-  today, existing, action, nutritionTotals, onSaved,
+  today, existing, action, nutritionTotals, plan, trackerHref, onSaved,
 }: {
-  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null; onSaved?: () => void;
+  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null; plan?: BilanPlan | null; trackerHref?: string; onSaved?: () => void;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
+  const [followed, setFollowed] = useState<"oui" | "non" | null>(null);
+  const href = trackerHref ?? "/dashboard/client/nutrition";
 
   useEffect(() => {
     if (state?.success) onSaved?.();
   }, [state, onSaved]);
 
+  const choice = (value: "oui" | "non", label: string) => (
+    <button
+      type="button"
+      onClick={() => setFollowed(value)}
+      style={{
+        flex: 1, height: 40, borderRadius: 10, fontSize: 12, fontWeight: 800,
+        border: `1px solid ${followed === value ? "#E01E1E" : "rgba(137,4,4,0.3)"}`,
+        background: followed === value ? "#E01E1E" : "transparent",
+        color: followed === value ? "#fff" : "rgba(245,237,237,0.6)", cursor: "pointer",
+      }}
+    >
+      {label}
+    </button>
+  );
+
   return (
     <form action={formAction}>
       <input type="hidden" name="log_date" value={today} />
+      {followed === "oui" && <input type="hidden" name="diet_followed" value="oui" />}
       <CardShell icon={Apple} title="Nutrition" saved={!!state?.success}>
-        {nutritionTotals && existing?.calories_kcal == null ? (
-          <p style={{ fontSize: 10, color: "rgba(74,222,128,0.6)", margin: "-6px 0 12px" }}>
-            Pré-rempli depuis ce que tu as déjà loggé dans Nutrition aujourd&apos;hui, modifiable si besoin.
-          </p>
-        ) : (
-          <p className={hint} style={{ margin: "-6px 0 12px" }}>
-            Log tes aliments dans{" "}
-            <Link href="/dashboard/client/nutrition" style={{ color: "#E01E1E", fontWeight: 700 }}>Nutrition</Link>{" "}
-            pour que ces champs se remplissent automatiquement, plutôt que de calculer à la main.
-          </p>
-        )}
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {plan && (
             <div>
-              <label className={lbl}>Protéines (g)</label>
-              <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? (nutritionTotals ? Math.round(nutritionTotals.proteins) : "")} placeholder="200" aria-label="200" className={inp} />
+              <label className={lbl}>Diète suivie ?</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {choice("oui", "Oui, comme prévu")}
+                {choice("non", "Non, j'ai fait autrement")}
+              </div>
+              {followed === "oui" && (
+                <p className={hint} style={{ color: "rgba(74,222,128,0.75)" }}>
+                  {nutritionTotals
+                    ? "Les repas de ton plan pas encore logués ce jour-là seront ajoutés à l'enregistrement."
+                    : `Ton plan "${plan.name}" sera logué pour ce jour-là à l'enregistrement.`}
+                </p>
+              )}
+              {followed === "non" && (
+                <p className={hint}>
+                  Mets ce que tu as vraiment mangé dans ton{" "}
+                  <Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>tracker</Link>
+                  {plan.mode === "flexible" ? ", en changeant les aliments du plan : les repas suivants se recalculent tout seuls." : " : remplace ou ajuste un aliment, le reste suit."}
+                </p>
+              )}
             </div>
-            <div>
-              <label className={lbl}>Glucides (g)</label>
-              <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? (nutritionTotals ? Math.round(nutritionTotals.carbs) : "")} placeholder="250" aria-label="250" className={inp} />
+          )}
+
+          {nutritionTotals ? (
+            <div style={{ borderRadius: 10, border: "1px solid rgba(74,222,128,0.25)", background: "rgba(74,222,128,0.06)", padding: "10px 12px" }}>
+              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(74,222,128,0.8)", margin: "0 0 6px" }}>
+                Depuis ton tracker
+              </p>
+              <p style={{ fontSize: 14, color: "#F5EDED", margin: 0 }}>
+                <b>{Math.round(nutritionTotals.calories)} kcal</b>
+                <span style={{ color: "rgba(245,237,237,0.55)", fontSize: 12 }}>
+                  {" "}· P {Math.round(nutritionTotals.proteins)} g · G {Math.round(nutritionTotals.carbs)} g · L {Math.round(nutritionTotals.fats)} g
+                </span>
+              </p>
+              <p className={hint} style={{ marginTop: 4 }}>
+                Mis à jour tout seul. Une erreur ? <Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>Corrige dans le tracker</Link>.
+              </p>
             </div>
-            <div>
-              <label className={lbl}>Lipides (g)</label>
-              <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? (nutritionTotals ? Math.round(nutritionTotals.fats) : "")} placeholder="80" aria-label="80" className={inp} />
-            </div>
-            <div>
-              <label className={lbl}>Total (kcal)</label>
-              <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? (nutritionTotals ? Math.round(nutritionTotals.calories) : "")} placeholder="2400" aria-label="2400" className={inp} />
-            </div>
-          </div>
+          ) : (
+            !plan && (
+              <p className={hint} style={{ margin: 0 }}>
+                Logue tes repas dans ton <Link href={href} style={{ color: "#E01E1E", fontWeight: 700 }}>tracker</Link>, les calories et macros arrivent ici toutes seules.
+              </p>
+            )
+          )}
+
+          {!nutritionTotals && (
+            <details>
+              <summary style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", cursor: "pointer" }}>Saisir les chiffres à la main</summary>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
+                <div>
+                  <label className={lbl}>Protéines (g)</label>
+                  <input name="proteins_g" type="number" min="0" defaultValue={existing?.proteins_g ?? ""} placeholder="200" aria-label="Protéines" className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Glucides (g)</label>
+                  <input name="carbs_g" type="number" min="0" defaultValue={existing?.carbs_g ?? ""} placeholder="250" aria-label="Glucides" className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Lipides (g)</label>
+                  <input name="fats_g" type="number" min="0" defaultValue={existing?.fats_g ?? ""} placeholder="80" aria-label="Lipides" className={inp} />
+                </div>
+                <div>
+                  <label className={lbl}>Total (kcal)</label>
+                  <input name="calories_kcal" type="number" min="0" defaultValue={existing?.calories_kcal ?? ""} placeholder="2400" aria-label="Calories" className={inp} />
+                </div>
+              </div>
+            </details>
+          )}
+
           <div>
             <label className={lbl}>Faim ressentie</label>
             <TriScale name="hunger" defaultValue={existing?.hunger} />
@@ -528,12 +593,16 @@ export default function DailyBilanForm({
   action,
   nutritionTotals,
   autoSteps,
+  plan,
+  trackerHref,
 }: {
   today: string;
   existing: DailyLog | null;
   action: BilanAction;
   nutritionTotals?: NutritionTotals | null;
   autoSteps?: number | null;
+  plan?: BilanPlan | null;
+  trackerHref?: string;
 }) {
   const morningDone = !!existing && existing.weight_morning != null && existing.sleep_hours != null && existing.sleep_rating != null;
   const eveningDone = !!existing && existing.steps != null && existing.digestion != null && existing.stress != null && existing.hunger != null;
@@ -569,7 +638,7 @@ export default function DailyBilanForm({
         <>
           <TrainingCard today={today} existing={existing} action={action} />
           <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
-          <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} />
+          <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} plan={plan} trackerHref={trackerHref} />
         </>
       )}
     </div>

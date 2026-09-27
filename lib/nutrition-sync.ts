@@ -42,18 +42,20 @@ export async function dayTotals(admin: Admin, userId: string, date: string) {
 /**
  * Recopie les totaux du tracker dans le bilan du jour s'il existe déjà. On
  * ne crée jamais de bilan ici : une ligne daily_logs vide compterait comme
- * un bilan commencé ailleurs dans l'appli.
+ * un bilan commencé ailleurs dans l'appli. Journée sans rien de logué : on
+ * ne touche pas aux chiffres, ils ont pu être saisis à la main.
  */
 export async function syncDailyNutrition(admin: Admin, userId: string, date: string): Promise<void> {
   try {
     const t = await dayTotals(admin, userId, date);
+    if (t.count === 0) return;
     await admin
       .from("daily_logs")
       .update({
-        calories_kcal: t.count ? t.calories : null,
-        proteins_g: t.count ? t.proteins : null,
-        carbs_g: t.count ? t.carbs : null,
-        fats_g: t.count ? t.fats : null,
+        calories_kcal: t.calories,
+        proteins_g: t.proteins,
+        carbs_g: t.carbs,
+        fats_g: t.fats,
         updated_at: new Date().toISOString(),
       })
       .eq("client_id", userId)
@@ -109,4 +111,18 @@ export async function fillDayFromPlan(
   }
   await syncDailyNutrition(admin, userId, date);
   return { inserted: await withFoods(admin, data) };
+}
+
+/**
+ * À l'enregistrement d'un bilan : "diète suivie" remplit les repas du plan
+ * encore vides ce jour-là, puis les totaux du tracker écrasent toute saisie
+ * manuelle (le tracker fait foi dès qu'il a quelque chose).
+ */
+export async function afterBilanSaved(admin: Admin, userId: string, date: string, dietFollowed: boolean): Promise<void> {
+  try {
+    if (dietFollowed) await fillDayFromPlan(admin, userId, date, { onlyIfEmpty: false });
+    await syncDailyNutrition(admin, userId, date);
+  } catch (e) {
+    console.error("afterBilanSaved error:", e);
+  }
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { useSearchParams } from "next/navigation";
 import { Check, ChevronLeft, ChevronRight, Lock, Plus, RotateCcw, Shuffle, Sparkles } from "lucide-react";
 import AddFoodSheet, { type PlanMealOption, type TrackerRecipe } from "@/components/nutrition/AddFoodSheet";
 import ItemSheet from "@/components/nutrition/ItemSheet";
@@ -138,7 +139,10 @@ export default function NutritionTracker({
   }) => Promise<{ food?: Food; error?: string }>;
 }) {
   const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false);
-  const [date, setDate] = useState(today);
+  // ?jour=AAAA-MM-JJ : ouvert depuis le bilan d'un jour passé.
+  const jour = useSearchParams().get("jour");
+  const startDate = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && jour <= today && jour >= shiftDate(today, -30) ? jour : today;
+  const [date, setDate] = useState(startDate);
   const [mode, setMode] = useState<DietMode>(plan ? initialMode : "flexible");
   const [foods, setFoods] = useState<Food[]>(initialFoods);
   const [logsByDate, setLogsByDate] = useState<Record<string, FoodLogWithFood[]>>(() => {
@@ -152,8 +156,8 @@ export default function NutritionTracker({
   // remplacements prévus en flexible. Lues au premier rendu, le tracker ne
   // s'affiche qu'une fois monté (voir `mounted` plus bas), donc aucun écart
   // avec le rendu serveur.
-  const [choices, setChoices] = useState<Record<string, VariantChoice>>(() => ({ [today]: readLS(`ep-variants:${planKey}:${today}`, {}) }));
-  const [overrides, setOverrides] = useState<Record<string, Record<string, Override>>>(() => ({ [today]: readLS(`ep-flex:${planKey}:${today}`, {}) }));
+  const [choices, setChoices] = useState<Record<string, VariantChoice>>(() => ({ [startDate]: readLS(`ep-variants:${planKey}:${startDate}`, {}) }));
+  const [overrides, setOverrides] = useState<Record<string, Record<string, Override>>>(() => ({ [startDate]: readLS(`ep-flex:${planKey}:${startDate}`, {}) }));
   const [sheet, setSheet] = useState<SheetState>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
