@@ -28,6 +28,10 @@ export interface LeaderboardResult {
   // qu'aucun point n'a été gagné (rien à classer) — l'appelant n'a alors
   // encore rien fait de réel dans l'appli.
   me: LeaderboardEntry | null;
+  // true quand l'appelant s'est retiré du classement (Paramètres >
+  // Confidentialité, profiles.leaderboard_visible = false) : il voit sa
+  // propre position, les autres membres non.
+  meHidden: boolean;
 }
 
 const LEADERBOARD_LIMIT = 50;
@@ -36,7 +40,7 @@ export async function getLeaderboard(currentUserId: string): Promise<Leaderboard
   try {
     const admin = createAdminClient();
     const [{ data: profiles }, { data: pointsRows }] = await Promise.all([
-      admin.from("profiles").select("id, full_name, avatar_url").eq("role", "client"),
+      admin.from("profiles").select("id, full_name, avatar_url, leaderboard_visible").eq("role", "client"),
       admin.from("gamification_points").select("client_id, points"),
     ]);
 
@@ -46,7 +50,15 @@ export async function getLeaderboard(currentUserId: string): Promise<Leaderboard
       pointsMap[id] = (pointsMap[id] ?? 0) + (row.points as number);
     }
 
+    // Un membre masqué (leaderboard_visible = false, NULL = visible) n'apparaît
+    // chez personne d'autre et ne décale pas leurs positions. Il reste compté
+    // dans SA propre vue, classé parmi les membres visibles, pour qu'il sache
+    // toujours où il en est.
+    const meHidden = (profiles ?? []).some(
+      (p) => p.id === currentUserId && p.leaderboard_visible === false
+    );
     const ranked = (profiles ?? [])
+      .filter((p) => p.leaderboard_visible !== false || p.id === currentUserId)
       .map((p) => ({
         id: p.id as string,
         full_name: p.full_name as string | null,
@@ -80,8 +92,8 @@ export async function getLeaderboard(currentUserId: string): Promise<Leaderboard
           : { ...ranked[myIndex], avatar_url: avatarMap[ranked[myIndex].id] ?? null, position: myIndex + 1 };
     }
 
-    return { top, me };
+    return { top, me, meHidden };
   } catch {
-    return { top: [], me: null };
+    return { top: [], me: null, meHidden: false };
   }
 }

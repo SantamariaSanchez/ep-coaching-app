@@ -7,6 +7,7 @@ import NotificationPreferencesCard from "@/components/settings/NotificationPrefe
 import NewsletterPreferenceCard from "@/components/settings/NewsletterPreferenceCard";
 import PreferencesCard from "@/components/settings/PreferencesCard";
 import AccessibilityCard from "@/components/settings/AccessibilityCard";
+import MemberPrivacyCard from "@/components/settings/MemberPrivacyCard";
 import LegalLinksCard from "@/components/settings/LegalLinksCard";
 import TwoFactorCard from "@/components/settings/TwoFactorCard";
 import { MUTABLE_CATEGORIES, type NotificationCategory, type NotificationPreferences } from "@/lib/notification-preferences";
@@ -31,7 +32,7 @@ export default async function ClientParametresPage() {
     // Colonne consultée uniquement ici, pas dans PROFILE_FIELDS (même
     // convention que accepting_new_clients côté coach) : lecture ciblée
     // plutôt que d'alourdir getProfile() utilisé partout dans l'appli.
-    supabase.from("profiles").select("notification_preferences").eq("id", user.id).maybeSingle(),
+    supabase.from("profiles").select("notification_preferences, leaderboard_visible").eq("id", user.id).maybeSingle(),
     getNewsletterSubscriptionStatus(),
     getMemberPreferences(user.id),
   ]);
@@ -61,6 +62,8 @@ export default async function ClientParametresPage() {
       <NotificationPreferencesCard initialMuted={mutedCategories} />
 
       <NewsletterPreferenceCard initialSubscribed={newsletterSubscribed} />
+
+      <MemberPrivacyCard initialVisible={notifRow?.leaderboard_visible !== false} />
 
       <AccessibilityCard />
 

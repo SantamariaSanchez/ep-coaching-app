@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Trophy, Rocket } from "lucide-react";
+import { Trophy, Rocket, EyeOff } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { getLeaderboard, type LeaderboardEntry } from "@/lib/leaderboard";
 import RankBadge from "@/components/ui/RankBadge";
@@ -55,7 +55,7 @@ export default async function ClassementPage() {
   if (!profile) redirect("/");
   if (profile.role === "coach") redirect("/dashboard/coach/communaute/membres");
 
-  const { top, me } = await getLeaderboard(user.id);
+  const { top, me, meHidden } = await getLeaderboard(user.id);
   const meInTop = me ? top.some((e) => e.id === me.id) : false;
 
   return (
@@ -72,9 +72,26 @@ export default async function ClassementPage() {
         </h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
           Séances, repas notés, bilans, partages : chaque action réelle rapporte des points. Membres gratuits
-          et clients accompagnés, tous coachs confondus, sur un seul classement.
+          et clients accompagnés, tous coachs confondus, sur un seul classement. Tu peux t&apos;en retirer depuis
+          tes paramètres.
         </p>
       </div>
+
+      {meHidden && (
+        <div className="mb-4 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3 flex items-start gap-3">
+          <EyeOff size={16} className="text-[#F5EDED]/45 flex-shrink-0 mt-0.5" strokeWidth={1.8} />
+          <p className="text-xs text-[#F5EDED]/55 leading-relaxed">
+            Tu es masqué du classement : les autres membres ne te voient pas, ta position ici n&apos;est visible
+            que par toi.{" "}
+            <Link
+              href="/dashboard/client/parametres"
+              className="font-bold text-[#E01E1E] hover:text-[#F5EDED] transition-colors"
+            >
+              Modifier
+            </Link>
+          </p>
+        </div>
+      )}
 
       {me && !meInTop && (
         <div className="mb-4">
