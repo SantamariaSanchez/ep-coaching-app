@@ -36,17 +36,17 @@ export default async function NoteTemplatesPage({
 
       <div className="mb-8">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          Templates messages
+          Modèles de messages
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">
           {client.full_name}
         </h1>
         <p className="mt-1 text-xs text-[#F5EDED]/30">
-          Cliquez sur un template pour le développer et copier le message
+          Clique sur un modèle pour le déplier, copie le message puis colle-le dans sa conversation.
         </p>
       </div>
 
-      <NoteTemplates clientName={client.full_name ?? "Client"} />
+      <NoteTemplates clientName={client.full_name ?? "Membre"} clientId={id} />
     </div>
   );
 }

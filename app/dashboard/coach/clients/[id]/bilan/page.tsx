@@ -1,8 +1,7 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
-import { getUser, getProfile } from "@/utils/auth";
-import { createAdminClient } from "@/lib/supabase-admin";
+import { redirect, notFound } from "next/navigation";
+import { getUser, getProfile, getClientById } from "@/utils/auth";
 import { getClientDailyLogs, groupLogsByWeek } from "@/utils/daily-logs";
 import ClientBilanView from "@/components/ui/ClientBilanView";
 import { ArrowLeft } from "lucide-react";
@@ -21,16 +20,16 @@ export default async function CoachClientBilanPage({
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const admin = createAdminClient();
-  // logs ne dépend pas de clientProfile (juste de id, déjà connu) : lancé en
-  // parallèle plutôt qu'après, quitte à jeter le résultat dans le cas rare
-  // où le client n'existe pas.
-  const [{ data: clientProfile }, logs] = await Promise.all([
-    admin.from("profiles").select("full_name").eq("id", id).single(),
-    getClientDailyLogs(id, 56),
-  ]);
+  // Avant, le nom était lu via le client admin sans aucun contrôle
+  // d'appartenance (seul le rôle coach était vérifié) : n'importe quel coach
+  // pouvait afficher les bilans de n'importe quel membre en forgeant l'id
+  // dans l'URL. getClientById ne renvoie le profil que s'il est rattaché à
+  // CE coach, même garde que la fiche membre et ses autres onglets.
+  const clientProfile = await getClientById(id, user.id);
+  if (!clientProfile) notFound();
 
-  if (!clientProfile) redirect("/dashboard/coach/clients");
+  // Les bilans ne sont lus qu'une fois l'appartenance vérifiée.
+  const logs = await getClientDailyLogs(id, 56);
 
   const weeks = groupLogsByWeek(logs);
 
@@ -46,7 +45,7 @@ export default async function CoachClientBilanPage({
           <ArrowLeft size={13} /> Retour
         </Link>
         <p className="ep-section-title" style={{ marginBottom: 4 }}>Bilans quotidiens</p>
-        <h1 className="ep-h1">{clientProfile.full_name ?? "Client"}</h1>
+        <h1 className="ep-h1">{clientProfile.full_name ?? "Membre"}</h1>
       </div>
 
       <ClientBilanView weeks={weeks} clientId={id} />

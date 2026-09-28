@@ -1,16 +1,28 @@
 "use client";
 
 import {
+  Fragment,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   useCallback,
 } from "react";
 import { createClientSupabase } from "@/lib/supabase-client";
-import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X, Search } from "lucide-react";
+import { Send, Mic, MicOff, Clock, Play, Pause, Image as ImageIcon, X, Search, RotateCw } from "lucide-react";
 import CoachVideoRecorder from "@/components/coach/CoachVideoRecorder";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { triggerAICoachReply } from "@/app/dashboard/client/messages/actions";
+import { formatClock, formatDayLabel, parisDayKey } from "@/components/messaging/message-format";
+
+// Taille d'une page d'historique. On charge les PLUS RÉCENTS d'abord : avant,
+// la requête triait du plus ancien au plus récent avec une limite de 100,
+// donc au-delà de 100 messages les nouveaux n'apparaissaient plus au
+// rechargement (seul le temps réel les montrait tant que la page restait ouverte).
+const PAGE_SIZE = 150;
+
+const MESSAGE_COLUMNS =
+  "id, conversation_id, sender_id, receiver_id, type, content, voice_url, voice_duration_seconds, image_url, video_url, is_read, expires_at, created_at";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -68,14 +80,19 @@ function VoicePlayer({
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const hoursLeft = expiresAt
-    ? Math.max(
-        0,
-        Math.floor(
-          (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60)
+  // Calculé une seule fois au montage (initialiseur de useState) : appeler
+  // Date.now() à chaque rendu rendait la bulle impure, et quelques minutes
+  // d'écart sur un compte à rebours en heures ne changent rien à l'affichage.
+  const [hoursLeft] = useState<number | null>(() =>
+    expiresAt
+      ? Math.max(
+          0,
+          Math.floor(
+            (new Date(expiresAt).getTime() - Date.now()) / (1000 * 60 * 60)
+          )
         )
-      )
-    : null;
+      : null
+  );
 
   useEffect(() => {
     return () => {
@@ -248,10 +265,9 @@ function MessageBubble({
    * sans ça le message apparaîtrait à tort comme venant du pair habituel. */
   fromFounder?: boolean;
 }) {
-  const time = new Intl.DateTimeFormat("fr-FR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(new Date(msg.created_at));
+  // Heure de Paris explicite : même référence que la liste des conversations
+  // (formatée côté serveur), quel que soit le fuseau de l'appareil.
+  const time = formatClock(msg.created_at);
 
   const isExpired = msg.content === "[Vocal expiré]";
 
@@ -292,7 +308,7 @@ function MessageBubble({
           <video src={msg.video_url} controls playsInline className="rounded-lg max-w-[240px] max-h-[300px]" />
         ) : (
           <p
-            className={`text-sm leading-relaxed break-words ${
+            className={`text-sm leading-relaxed break-words whitespace-pre-wrap ${
               isExpired ? "text-white/30 italic" : "text-white"
             }`}
             style={{ overflowWrap: "anywhere" }}
@@ -328,7 +344,22 @@ export default function ConversationView({
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
+  // Chargement initial : tant qu'il n'est pas terminé, on n'affiche pas
+  // "Aucun message" (faux vide), et un échec de lecture est dit clairement
+  // au lieu de ressembler à une conversation vide.
+  const [loaded, setLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
+  const [hasOlder, setHasOlder] = useState(false);
+  const [loadingOlder, setLoadingOlder] = useState(false);
+  const [olderError, setOlderError] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  // Renseigné juste avant d'ajouter des messages plus anciens EN HAUT de la
+  // liste : l'effet de défilement restaure alors la position de lecture au
+  // lieu de sauter tout en bas.
+  const prependAnchorRef = useRef<{ height: number; top: number } | null>(null);
+  const hasScrolledOnceRef = useRef(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
   const supabase = createClientSupabase();
 
@@ -353,18 +384,37 @@ export default function ConversationView({
       // à l'affichage, voir l'interface Message ci-dessus) — liste explicite
       // pour ne plus dépendre d'un futur ALTER TABLE messages qui ajouterait
       // une colonne lourde et la ferait remonter ici sans raison.
-      const { data } = await supabase
+      // Les PAGE_SIZE plus récents (tri décroissant), remis ensuite dans
+      // l'ordre chronologique pour l'affichage.
+      const { data, error } = await supabase
         .from("messages")
-        .select(
-          "id, conversation_id, sender_id, receiver_id, type, content, voice_url, voice_duration_seconds, image_url, video_url, is_read, expires_at, created_at"
-        )
+        .select(MESSAGE_COLUMNS)
         .eq("conversation_id", conversationId)
-        .order("created_at", { ascending: true })
-        .limit(100);
+        .order("created_at", { ascending: false })
+        .limit(PAGE_SIZE);
 
-      if (!cancelled) {
-        setMessages((data as Message[]) ?? []);
+      if (cancelled) return;
+      if (error) {
+        setLoadError(true);
+        setLoaded(true);
+        return;
       }
+
+      const latest = ((data as Message[]) ?? []).slice().reverse();
+      // Fusion plutôt que remplacement : un message arrivé en temps réel
+      // pendant la requête ne doit pas disparaître.
+      setMessages((prev) => {
+        const ids = new Set(latest.map((m) => m.id));
+        const extra = prev.filter((m) => !ids.has(m.id));
+        // Tri sur la date parsée, pas sur la chaîne : le temps réel ne
+        // renvoie pas forcément created_at au même format que PostgREST.
+        return [...latest, ...extra].sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+      });
+      setHasOlder(latest.length === PAGE_SIZE);
+      setLoadError(false);
+      setLoaded(true);
 
       // Mark unread messages as read
       await supabase
@@ -411,12 +461,55 @@ export default function ConversationView({
       supabase.removeChannel(channel);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId, userId]);
+  }, [conversationId, userId, reloadKey]);
 
-  // Scroll to bottom on new messages
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  // Défilement : en bas à chaque nouveau message (instantané la première
+  // fois, fluide ensuite), sauf quand on vient d'ajouter l'historique plus
+  // ancien en haut, où l'on garde le même message sous les yeux.
+  useLayoutEffect(() => {
+    const anchor = prependAnchorRef.current;
+    const container = scrollRef.current;
+    if (anchor && container) {
+      prependAnchorRef.current = null;
+      container.scrollTop = container.scrollHeight - anchor.height + anchor.top;
+      return;
+    }
+    if (messages.length === 0) return;
+    bottomRef.current?.scrollIntoView({ behavior: hasScrolledOnceRef.current ? "smooth" : "auto" });
+    hasScrolledOnceRef.current = true;
   }, [messages]);
+
+  async function loadOlder() {
+    const oldest = messages[0];
+    if (!oldest || loadingOlder) return;
+    setLoadingOlder(true);
+    setOlderError(false);
+    const { data, error } = await supabase
+      .from("messages")
+      .select(MESSAGE_COLUMNS)
+      .eq("conversation_id", conversationId)
+      .lt("created_at", oldest.created_at)
+      .order("created_at", { ascending: false })
+      .limit(PAGE_SIZE);
+    setLoadingOlder(false);
+    if (error) {
+      setOlderError(true);
+      return;
+    }
+    const older = ((data as Message[]) ?? []).slice().reverse();
+    setHasOlder(older.length === PAGE_SIZE);
+    if (older.length === 0) return;
+    const container = scrollRef.current;
+    if (container) {
+      prependAnchorRef.current = { height: container.scrollHeight, top: container.scrollTop };
+    }
+    // Dédoublonnage par id : un message déjà présent (arrivé en temps réel
+    // ou chargé avant) n'est jamais affiché deux fois.
+    setMessages((prev) => {
+      const ids = new Set(prev.map((m) => m.id));
+      return [...older.filter((m) => !ids.has(m.id)), ...prev];
+    });
+  }
 
   async function sendPushNotification(body: string) {
     try {
@@ -673,8 +766,30 @@ export default function ConversationView({
       )}
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
-        {messages.length === 0 && (
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-4 py-4 space-y-1">
+        {!loaded && (
+          <div className="flex items-center justify-center h-full">
+            <div
+              role="status"
+              aria-label="Chargement des messages"
+              className="w-5 h-5 border-2 border-[#890404]/40 border-t-[#E01E1E] rounded-full animate-spin"
+            />
+          </div>
+        )}
+        {loaded && loadError && messages.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-center" role="alert">
+            <p className="text-sm text-[#F5EDED]/60">
+              Impossible de charger la conversation.
+            </p>
+            <button
+              onClick={() => { setLoaded(false); setLoadError(false); setReloadKey((k) => k + 1); }}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-[#890404]/40 text-[#F5EDED]/70 hover:text-white hover:border-[#E01E1E]/60 transition-colors"
+            >
+              <RotateCw size={12} /> Réessayer
+            </button>
+          </div>
+        )}
+        {loaded && !loadError && messages.length === 0 && (
           <div className="flex items-center justify-center h-full">
             <p className="text-sm text-[#F5EDED]/25 text-center">
               Aucun message pour l&apos;instant.
@@ -683,19 +798,54 @@ export default function ConversationView({
             </p>
           </div>
         )}
+        {/* Historique plus ancien : chargé à la demande, par pages, pour
+            garder l'ouverture d'une conversation rapide. Masqué pendant une
+            recherche, qui ne porte que sur les messages déjà affichés. */}
+        {loaded && hasOlder && !searchTerm && (
+          <div className="flex flex-col items-center gap-1 pb-2">
+            <button
+              onClick={loadOlder}
+              disabled={loadingOlder}
+              className="text-[10px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full border border-[#890404]/30 text-[#F5EDED]/45 hover:text-[#F5EDED]/75 hover:border-[#890404]/60 disabled:opacity-50 transition-colors"
+            >
+              {loadingOlder ? "Chargement…" : "Voir les messages plus anciens"}
+            </button>
+            {olderError && (
+              <p className="text-[10px] text-red-400" role="alert">
+                Chargement impossible, réessaie.
+              </p>
+            )}
+          </div>
+        )}
         {messages.length > 0 && visibleMessages.length === 0 && (
           <p className="text-xs text-[#F5EDED]/25 text-center py-8">
             Aucun message ne correspond à ta recherche.
           </p>
         )}
-        {visibleMessages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            msg={msg}
-            isOwn={msg.sender_id === userId}
-            fromFounder={msg.sender_id !== userId && msg.sender_id !== peerId}
-          />
-        ))}
+        {visibleMessages.map((msg, i) => {
+          // Séparateur de jour (heure de Paris) dès que le jour change : sans
+          // lui, un message de juin et un de septembre étaient indiscernables,
+          // la bulle n'affichant que l'heure.
+          const dayKey = parisDayKey(msg.created_at);
+          const prev = visibleMessages[i - 1];
+          const showDay = !prev || parisDayKey(prev.created_at) !== dayKey;
+          return (
+            <Fragment key={msg.id}>
+              {showDay && (
+                <div className="flex justify-center py-2">
+                  <span className="text-[10px] font-semibold text-[#F5EDED]/40 bg-[#1f0101] border border-[#890404]/25 rounded-full px-2.5 py-0.5">
+                    {formatDayLabel(msg.created_at)}
+                  </span>
+                </div>
+              )}
+              <MessageBubble
+                msg={msg}
+                isOwn={msg.sender_id === userId}
+                fromFounder={msg.sender_id !== userId && msg.sender_id !== peerId}
+              />
+            </Fragment>
+          );
+        })}
         <div ref={bottomRef} />
       </div>
 
