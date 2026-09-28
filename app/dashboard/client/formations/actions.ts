@@ -4,6 +4,9 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { requireAuth } from "@/lib/auth-guards";
 import { awardPoints, POINTS } from "@/lib/gamification";
 import { revalidatePath } from "next/cache";
+import { getLessonWithContext } from "@/utils/formations";
+import { getProfile } from "@/utils/auth";
+import { isSubscribed } from "@/utils/auth-client";
 
 // Même classe de bug que app/dashboard/client/nutrition/actions.ts
 // (addFoodLog/removeFoodLog) : sans revalidatePath, une leçon marquée
@@ -38,6 +41,28 @@ function revalidateFormations() {
 export async function markLessonComplete(lessonId: string) {
   const guard = await requireAuth();
   if (!guard.ok) return { error: guard.error };
+
+  // Une leçon ne se termine que si elle est réellement regardable : publiée,
+  // avec une vidéo, dans une formation publiée (le fondateur seul peut
+  // tester ses brouillons). Sans ce contrôle, l'action appelée directement
+  // enregistrait n'importe quel identifiant de leçon, points compris.
+  const [context, profile] = await Promise.all([getLessonWithContext(lessonId), getProfile(guard.userId)]);
+  const lesson = context as unknown as {
+    is_published: boolean;
+    youtube_id: string | null;
+    formation_sections?: { formation_modules?: { formations?: { is_published: boolean } } };
+  } | null;
+  const formation = lesson?.formation_sections?.formation_modules?.formations;
+  const isOwner = profile?.is_platform_owner === true;
+  if (!lesson || !lesson.is_published || !lesson.youtube_id || !formation) {
+    return { error: "Leçon indisponible." };
+  }
+  if (!formation.is_published && !isOwner) return { error: "Leçon indisponible." };
+  // Même règle que la page de leçon membre : les vidéos sont réservées aux
+  // clients coachés (un coach suit ses formations depuis son espace Moi).
+  if (profile?.role === "client" && !isSubscribed(profile)) {
+    return { error: "Vidéos réservées aux clients coachés." };
+  }
 
   const supabase = await createServerSupabase();
   const { error } = await supabase

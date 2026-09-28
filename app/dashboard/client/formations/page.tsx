@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
-import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson } from "@/utils/formations";
+import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson, formatDuration, isLessonWatchable } from "@/utils/formations";
 import { BookOpen, Lock, Crown, PlayCircle, ChevronRight, Clock, Play } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -37,19 +37,26 @@ export default async function FormationsPage() {
     isFreeTier ? Promise.resolve(null) : getResumeLesson(user.id),
   ]);
 
-  // Get module/lesson counts for each formation
+  // Une formation en brouillon (is_published = false) n'était filtrée nulle
+  // part : ses leçons devenaient accessibles aux membres dès que le
+  // fondateur en publiait une pour tester. Elle n'apparaît plus qu'en carte
+  // teaser "Bientôt disponible", sans contenu ni compteurs, et ne compte
+  // pas dans les totaux (inutile de charger ses leçons).
   const formationData = await Promise.all(
     formations.map(async (f) => {
+      if (!f.is_published) {
+        return { formation: f, isDraft: true, total: 0, published: 0, publishedMin: 0, completedCount: 0 };
+      }
       const withModules = await getFormationWithModules(f.id);
-      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, totalMin: 0 };
+      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, publishedMin: 0 };
       const completedCount = withModules
-        ? withModules.modules.flatMap(m => m.sections.flatMap(s => s.lessons)).filter(l => completed.has(l.id)).length
+        ? withModules.modules.flatMap(m => m.sections.flatMap(s => s.lessons)).filter(l => isLessonWatchable(l) && completed.has(l.id)).length
         : 0;
-      return { formation: f, ...counts, completedCount };
+      return { formation: f, isDraft: false, ...counts, completedCount };
     })
   );
 
-  const totalMin = formationData.reduce((s, d) => s + d.totalMin, 0);
+  const totalMin = formationData.reduce((s, d) => s + d.publishedMin, 0);
   const totalLessons = formationData.reduce((s, d) => s + d.published, 0);
   const totalCompleted = formationData.reduce((s, d) => s + d.completedCount, 0);
 
@@ -66,8 +73,8 @@ export default async function FormationsPage() {
           Formations
         </h1>
         <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
-          {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponibles
-          {totalMin > 0 && ` · ${Math.round(totalMin / 60)}h de contenu`}
+          {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponible{totalLessons !== 1 ? "s" : ""}
+          {totalMin > 0 && ` · ${formatDuration(totalMin)} de contenu`}
         </p>
       </div>
 
@@ -120,7 +127,9 @@ export default async function FormationsPage() {
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <Crown size={14} style={{ color: "#E01E1E" }} />
             <p style={{ fontSize: 12.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
-              {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} t&apos;attend{totalLessons !== 1 ? "ent" : ""}
+              {totalLessons > 0
+                ? `${totalLessons} vidéo${totalLessons !== 1 ? "s" : ""} t'attend${totalLessons !== 1 ? "ent" : ""}`
+                : "L'Académie EP arrive bientôt"}
             </p>
           </div>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "0 0 12px", lineHeight: 1.5 }}>
@@ -166,10 +175,10 @@ export default async function FormationsPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {formationData.map(({ formation, published, completedCount, totalMin: fMin }, i) => {
+          {formationData.map(({ formation, isDraft, published, completedCount, publishedMin: fMin }, i) => {
             const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
             const col = FORMATION_COLORS[i % FORMATION_COLORS.length];
-            const isAvailable = published > 0;
+            const isAvailable = !isDraft && published > 0;
 
             return (
               <Link
@@ -240,19 +249,21 @@ export default async function FormationsPage() {
                         </p>
                       )}
 
-                      {/* Meta */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
-                          <PlayCircle size={10} />
-                          {published} vidéo{published !== 1 ? "s" : ""}
-                        </span>
-                        {fMin > 0 && (
+                      {/* Meta : absente sur une formation en brouillon (teaser) */}
+                      {!isDraft && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
-                            <Clock size={10} />
-                            {Math.round(fMin / 60)}h{fMin % 60 > 0 ? `${fMin % 60}min` : ""}
+                            <PlayCircle size={10} />
+                            {published} vidéo{published !== 1 ? "s" : ""}
                           </span>
-                        )}
-                      </div>
+                          {fMin > 0 && (
+                            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                              <Clock size={10} />
+                              {formatDuration(fMin)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Arrow or lock */}

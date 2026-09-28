@@ -15,13 +15,17 @@ export default async function CoachFormationsPage() {
   // vérification de rôle, ça évite une requête en cascade pour rien.
   const [profile, formations] = await Promise.all([getProfile(user.id), getFormations()]);
   if (profile?.role !== "coach") redirect("/dashboard/client");
+  // L'Académie EP est un contenu de plateforme : seul le fondateur l'édite
+  // (même règle que les actions, voir actions.ts). Un coach tiers garde
+  // l'accès en lecture à ses formations dans son espace Moi.
+  if (!profile?.is_platform_owner) redirect("/dashboard/coach/moi/formations");
 
   const formationData = await Promise.all(
     formations.map(async (f) => {
       const withModules = await getFormationWithModules(f.id);
-      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, totalMin: 0 };
-      // Vidéo renseignée mais pas encore publiée — du contenu prêt qui reste
-      // invisible pour les clients, souvent juste oublié.
+      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, publishedMin: 0 };
+      // Vidéo renseignée mais pas encore publiée : du contenu prêt qui reste
+      // invisible pour les membres, souvent juste oublié.
       const readyNotPublished = withModules
         ? withModules.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons)).filter((l) => l.youtube_id && !l.is_published).length
         : 0;
@@ -64,7 +68,7 @@ export default async function CoachFormationsPage() {
           </p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0, lineHeight: 1.5 }}>
             {totalPublished === 0
-              ? "Aucune vidéo n'est visible côté client pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon) pour que ce contenu serve enfin."
+              ? "Aucune vidéo n'est visible côté membre pour l'instant, même si l'URL YouTube est déjà renseignée. Publie-les (dans chaque leçon, ou d'un coup par module) pour que ce contenu serve enfin."
               : "Une URL YouTube renseignée sur une leçon ne suffit pas à la rendre visible, pense à la publier."}
           </p>
         </div>
@@ -98,16 +102,18 @@ export default async function CoachFormationsPage() {
             </div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 2 }}>
+                <h3 style={{ fontSize: 15, fontWeight: 800, letterSpacing: "-0.02em", color: "#F5EDED", margin: 0, overflowWrap: "anywhere" }}>
                   {formation.title}
                 </h3>
                 {formation.is_published
-                  ? <Eye size={12} style={{ color: "#4ade80" }} />
-                  : <EyeOff size={12} style={{ color: "rgba(245,237,237,0.2)" }} />
+                  ? <Eye size={12} style={{ color: "#4ade80" }} aria-label="Publiée" />
+                  : <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 9.5, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
+                      <EyeOff size={12} style={{ color: "rgba(245,237,237,0.25)" }} /> Brouillon
+                    </span>
                 }
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 12px" }}>
                 <span style={{ fontSize: 10, color: "rgba(245,237,237,0.3)", fontWeight: 600 }}>
                   {moduleCount} section{moduleCount !== 1 ? "s" : ""}
                 </span>

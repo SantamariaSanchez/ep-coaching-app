@@ -33,6 +33,10 @@ interface LeadMagnetBase {
   // coach le met dans le CTA de ses reels ("tape 076 dans la recherche"),
   // donc une fois publié il doit rester valable indéfiniment.
   keyword: string;
+  // Auteur : null pour le catalogue officiel du fondateur, id du coach tiers
+  // sinon. Rempli seulement par la version complète (page de détail, pour
+  // créditer le bon auteur dans le JSON-LD) : la version liste reste légère.
+  coachId?: string | null;
 }
 
 export interface GuideSection {
@@ -131,6 +135,7 @@ interface LeadMagnetSummaryRow {
 }
 
 interface LeadMagnetRow extends LeadMagnetSummaryRow {
+  coach_id: string | null;
   content: Record<string, unknown>;
   sources: LeadMagnetSource[] | null;
   created_at: string;
@@ -156,12 +161,12 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
   // noms que l'ancien littéral TS : intro/sections/conclusion pour guide,
   // intro/groups/conclusion pour checklist, intro/questions/outcomes pour
   // quiz), voir le script de migration et LEADMAGNETS.md.
-  return { ...base, ...row.content } as LeadMagnet;
+  return { ...base, ...row.content, coachId: row.coach_id ?? null } as LeadMagnet;
 }
 
 const SELECT_FIELDS_LIST =
   "slug, title, hook, category, subcategory, format, read_time, icon, keyword";
-const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, content, sources`;
+const SELECT_FIELDS_FULL = `${SELECT_FIELDS_LIST}, coach_id, content, sources`;
 
 // Contenu marketing public, pas scopé par coach ni par utilisateur — lu via
 // le client admin comme les autres références partagées (gyms, exercices).
@@ -212,7 +217,8 @@ const getAllLeadMagnetsFullCached = unstable_cache(
       return [];
     }
   },
-  ["lead-magnets-all"],
+  // v2 : ajout de coach_id, pour ne pas relire une entrée de cache d'avant.
+  ["lead-magnets-all-v2"],
   { tags: ["lead-magnets"], revalidate: 3600 }
 );
 

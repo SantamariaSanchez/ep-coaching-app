@@ -85,6 +85,12 @@ export default async function LeadMagnetPage({
   // un moteur génératif n'a aucun signal d'expertise à citer derrière ce
   // contenu — juste "EP Coaching" en publisher, jamais une vraie personne.
   // Ajouté sur ~700+ pages d'un coup en touchant ce seul template.
+  // Auteur exact : Santamaria Sanchéz seulement pour le catalogue officiel
+  // (coach_id vide). Un lead magnet écrit par un coach tiers n'est pas de
+  // lui : on crédite alors EP Coaching, jamais une personne qui n'a rien écrit.
+  const author = magnet.coachId
+    ? { "@type": "Organization", name: "EP Coaching", url: APP_URL }
+    : { "@type": "Person", name: "Santamaria Sanchéz", sameAs: SANTAMARIA_SOCIALS };
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -92,11 +98,7 @@ export default async function LeadMagnetPage({
     description: magnet.hook,
     articleSection: magnet.category,
     url: `${APP_URL}/ressources/${slug}`,
-    author: {
-      "@type": "Person",
-      name: "Santamaria Sanchéz",
-      sameAs: SANTAMARIA_SOCIALS,
-    },
+    author,
     publisher: {
       "@type": "Organization",
       name: "EP Coaching",
@@ -108,7 +110,12 @@ export default async function LeadMagnetPage({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        // JSON.stringify n'échappe pas "<" : un titre ou une accroche
+        // contenant "</script><script>..." (titres des lead magnets de coachs
+        // tiers, saisis librement et publiés aussitôt) fermait cette balise
+        // et exécutait du script sur la page publique. \u003c reste un "<"
+        // valide pour tout lecteur JSON-LD, mais ne ferme plus rien.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
       />
       <LeadMagnetLanding magnet={magnet} submitLead={submitLead} relatedMagnets={relatedMagnets} />
     </>

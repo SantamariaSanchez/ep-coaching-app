@@ -23,17 +23,24 @@ export default function VideoPlayer({
 }: VideoPlayerProps) {
   const [completed, setCompleted] = useState(initialCompleted);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Le résultat de l'action était ignoré : si l'écriture échouait (2FA
+  // exigée, leçon indisponible, réseau), le bouton passait quand même à
+  // "Terminé" alors que rien n'était enregistré. On ne bascule plus l'état
+  // qu'une fois l'écriture confirmée, et l'erreur s'affiche sous le bouton.
   async function toggleComplete() {
     setLoading(true);
-    if (completed) {
-      await unmarkLessonComplete(lessonId);
-      setCompleted(false);
-    } else {
-      await markLessonComplete(lessonId);
-      setCompleted(true);
+    setError(null);
+    try {
+      const res = completed ? await unmarkLessonComplete(lessonId) : await markLessonComplete(lessonId);
+      if (res.error) setError(res.error);
+      else setCompleted(!completed);
+    } catch {
+      setError("Connexion impossible, réessaie.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   return (
@@ -121,6 +128,12 @@ export default function VideoPlayer({
             }
           </button>
         </div>
+
+        {error && (
+          <p role="alert" style={{ fontSize: 11, color: "#f87171", margin: "10px 0 0", textAlign: "right", lineHeight: 1.4 }}>
+            {error}
+          </p>
+        )}
 
         {description && (
           <>

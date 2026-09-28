@@ -5,6 +5,7 @@ import { getCoachForClient } from "@/utils/insert-notification"
 import { notifyUser } from "@/lib/notify"
 import { requireAuth } from "@/lib/auth-guards"
 import { sendPushToUser } from "@/lib/push"
+import { escapeHtml } from "@/lib/sanitize"
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
@@ -18,6 +19,12 @@ const APP_URL =
 // session forte quand le compte a activé la double authentification.
 // Échec silencieux (return sans erreur) : tous les appelants les lancent
 // en fire-and-forget et ne doivent jamais échouer à cause d'elles.
+//
+// Tout ce qui vient d'une saisie (nom du membre, titre d'une demande de
+// guide, exercice...) passe par escapeHtml avant d'entrer dans le HTML d'un
+// email : sans ça, un membre pouvait glisser un lien piégé ou du balisage
+// dans l'email reçu par son coach. Sujets et notifications push restent du
+// texte brut, sans HTML à échapper.
 
 // En plus de l'email (seul canal historique), pousse aussi une notif
 // in-app + push au coach ASSIGNÉ à ce client — fire-and-forget, ne doit
@@ -47,7 +54,7 @@ export async function notifyCoachNewCheckin(clientName: string, clientId: string
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouveau check-in reçu</h2>
-        <p>${clientName} vient d'envoyer son check-in hebdomadaire.</p>
+        <p>${escapeHtml(clientName)} vient d'envoyer son check-in hebdomadaire.</p>
         <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -75,7 +82,7 @@ export async function notifyCoachNewCheckinWithMeasurements(clientName: string, 
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">📏 Check-in mensuel reçu</h2>
-        <p>${clientName} vient d'envoyer son check-in mensuel avec ses nouvelles mensurations.</p>
+        <p>${escapeHtml(clientName)} vient d'envoyer son check-in mensuel avec ses nouvelles mensurations.</p>
         <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -107,8 +114,8 @@ export async function notifyCoachNewCorrection(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouvelle correction demandée</h2>
-        <p>${clientName} demande une correction sur&nbsp;:
-           <strong style="color:white;">${exerciseName}</strong></p>
+        <p>${escapeHtml(clientName)} demande une correction sur&nbsp;:
+           <strong style="color:white;">${escapeHtml(exerciseName)}</strong></p>
         <a href="${APP_URL}/dashboard/coach/clients"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -145,9 +152,9 @@ export async function notifyCoachNewPhotoUpdate(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouvelle photo update reçue</h2>
-        <p>${clientName} vient d'envoyer une mise à jour photos.</p>
-        <p><strong>Type :</strong> ${type}</p>
-        <p><strong>Catégorie :</strong> ${category}</p>
+        <p>${escapeHtml(clientName)} vient d'envoyer une mise à jour photos.</p>
+        <p><strong>Type :</strong> ${escapeHtml(type)}</p>
+        <p><strong>Catégorie :</strong> ${escapeHtml(category)}</p>
         <a href="${APP_URL}${photosUrl}"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -181,7 +188,7 @@ export async function notifyClientPhotoFeedback(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Retour photo disponible</h2>
-        <p>Bonjour ${clientName.split(" ")[0]},</p>
+        <p>Bonjour ${escapeHtml(clientName.split(" ")[0])},</p>
         <p>Ton coach a répondu à ta photo update. Connecte-toi pour voir son retour.</p>
         <a href="${APP_URL}/dashboard/client/photos"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
@@ -214,7 +221,7 @@ export async function notifyCoachNewResourceRequest(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Nouvelle demande de guide</h2>
-        <p>${clientName} demande un guide sur&nbsp;: <strong style="color:white;">${title}</strong></p>
+        <p>${escapeHtml(clientName)} demande un guide sur&nbsp;: <strong style="color:white;">${escapeHtml(title)}</strong></p>
         <a href="${APP_URL}/dashboard/coach/ressources"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -249,8 +256,8 @@ export async function notifyClientRequestAnswered(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Réponse disponible</h2>
-        <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Ton coach a répondu à ta demande de guide sur&nbsp;: <strong style="color:white;">${title}</strong></p>
+        <p>Bonjour ${escapeHtml(clientName.split(" ")[0])},</p>
+        <p>Ton coach a répondu à ta demande de guide sur&nbsp;: <strong style="color:white;">${escapeHtml(title)}</strong></p>
         <a href="${APP_URL}/dashboard/client/ressources"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -279,8 +286,8 @@ export async function notifyClientNewLiveEvent(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">📅 Un appel a été programmé</h2>
-        <p>Bonjour ${clientName.split(" ")[0]},</p>
-        <p>Ton coach a programmé <strong style="color:white;">${title}</strong> le ${dateLabel}.</p>
+        <p>Bonjour ${escapeHtml(clientName.split(" ")[0])},</p>
+        <p>Ton coach a programmé <strong style="color:white;">${escapeHtml(title)}</strong> le ${dateLabel}.</p>
         <a href="${APP_URL}/dashboard/client/live"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;
                   text-decoration:none;display:inline-block;margin-top:16px;font-weight:bold;">
@@ -331,7 +338,7 @@ export async function notifyClientBilanReady(
     htmlContent: `
       <div style="font-family:sans-serif;background:#270101;color:#F5EDED;padding:32px;border-radius:12px;">
         <h2 style="color:#E01E1E;margin-top:0;">Ton bilan de la semaine est disponible</h2>
-        <p>Bonjour ${clientName.split(" ")[0]},</p>
+        <p>Bonjour ${escapeHtml(clientName.split(" ")[0])},</p>
         <p>Ton coach a répondu à ton check-in. Connecte-toi pour voir son retour.</p>
         <a href="${APP_URL}/dashboard/client/checkin"
            style="background:#E01E1E;color:white;padding:12px 24px;border-radius:8px;

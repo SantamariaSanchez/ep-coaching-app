@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getFormationWithModules, getUserProgress, countLessons } from "@/utils/formations";
+import { getFormationWithModules, getUserProgress, countLessons, formatDuration, isLessonWatchable } from "@/utils/formations";
 import { ChevronLeft, PlayCircle, CheckCircle2, Clock, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -28,11 +28,17 @@ export default async function CoachMoiFormationDetailPage({
   ]);
 
   if (!formation) notFound();
+  // Le fondateur prévisualise ses brouillons ici (ce que verront les
+  // membres une fois publiée) ; un coach tiers a la même règle qu'un membre.
+  const isOwner = profile?.is_platform_owner === true;
+  if (!formation.is_published && !isOwner) notFound();
 
-  const { published, totalMin } = countLessons(formation.modules);
+  const { published, publishedMin } = countLessons(formation.modules);
+  // Seules les leçons regardables comptent : une leçon terminée puis
+  // dépubliée ne doit pas faire dépasser 100 %.
   const completedCount = formation.modules
     .flatMap((m) => m.sections.flatMap((s) => s.lessons))
-    .filter((l) => completed.has(l.id)).length;
+    .filter((l) => isLessonWatchable(l) && completed.has(l.id)).length;
   const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
 
   return (
@@ -51,6 +57,25 @@ export default async function CoachMoiFormationDetailPage({
       >
         <ChevronLeft size={13} /> Formations
       </Link>
+
+      {/* Seul le fondateur arrive ici sur un brouillon (notFound pour les
+          autres) : il voit la formation telle que les membres la verront. */}
+      {!formation.is_published && (
+        <div
+          className="ep-card animate-fade-up"
+          style={{ padding: "12px 16px", marginBottom: 16, border: "1px solid rgba(224,30,30,0.25)" }}
+        >
+          <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: "0 0 3px" }}>
+            Brouillon, aperçu
+          </p>
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
+            Les membres ne voient que le titre de cette formation, en Bientôt disponible.{" "}
+            <Link href={`/dashboard/coach/formations/${formation.id}`} style={{ color: "#E01E1E", fontWeight: 700, textDecoration: "none" }}>
+              Publier depuis l&apos;éditeur
+            </Link>
+          </p>
+        </div>
+      )}
 
       <div
         className="ep-card-hero animate-fade-up"
@@ -83,10 +108,10 @@ export default async function CoachMoiFormationDetailPage({
           </p>
         )}
 
-        <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginBottom: 16 }}>
           {[
             { icon: PlayCircle, label: `${published} vidéo${published !== 1 ? "s" : ""}` },
-            { icon: Clock, label: `${Math.round(totalMin / 60)}h${totalMin % 60 > 0 ? ` ${totalMin % 60}min` : ""}` },
+            ...(publishedMin > 0 ? [{ icon: Clock, label: formatDuration(publishedMin) }] : []),
             { icon: CheckCircle2, label: `${completedCount} terminée${completedCount !== 1 ? "s" : ""}` },
           ].map(({ icon: Icon, label }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -126,7 +151,7 @@ export default async function CoachMoiFormationDetailPage({
         ) : (
           formation.modules.map((mod, mi) => {
             const allModLessons = mod.sections.flatMap((s) => s.lessons);
-            const modCompleted = allModLessons.filter((l) => completed.has(l.id)).length;
+            const modCompleted = allModLessons.filter((l) => isLessonWatchable(l) && completed.has(l.id)).length;
             const modPublished = allModLessons.filter((l) => l.is_published && l.youtube_id).length;
 
             return (

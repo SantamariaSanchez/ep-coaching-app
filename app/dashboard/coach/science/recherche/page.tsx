@@ -14,6 +14,9 @@ export default async function CoachScienceRecherchePage() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/recherche");
+  // Ajouter un résultat à la bibliothèque partagée est réservé au fondateur
+  // (voir importArticle) : un coach tiers garde la recherche, sans le bouton.
+  const canCurate = profile?.is_platform_owner === true;
 
   const counts = await getScienceCounts(user.id);
 
@@ -28,13 +31,15 @@ export default async function CoachScienceRecherchePage() {
           Science
         </h1>
         <p className="mt-1 text-sm text-[#F5EDED]/40">
-          Recherche un sujet et ajoute les meilleurs résultats à la bibliothèque ou à l&apos;actualité.
+          {canCurate
+            ? "Recherche un sujet et ajoute les meilleurs résultats à la bibliothèque ou à l'actualité."
+            : "Recherche un sujet directement dans PubMed."}
         </p>
       </div>
 
       <ScienceSubNav base="/dashboard/coach/science" counts={counts} />
 
-      <SearchView isCoach importArticle={importArticle} />
+      <SearchView isCoach={canCurate} importArticle={canCurate ? importArticle : undefined} />
     </div>
   );
 }
