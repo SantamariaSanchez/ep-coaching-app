@@ -42,6 +42,13 @@ interface Message {
   created_at: string;
 }
 
+// Ajoute un message que je viens d'envoyer, sauf s'il est déjà affiché :
+// l'événement temps réel de ma propre insertion peut arriver AVANT la
+// réponse de l'insert, et le message apparaissait alors deux fois.
+function appendUnique(prev: Message[], msg: Message): Message[] {
+  return prev.some((m) => m.id === msg.id) ? prev : [...prev, msg];
+}
+
 interface Props {
   /** The current logged-in user's ID */
   userId: string;
@@ -405,7 +412,9 @@ export default function ConversationView({
       // pendant la requête ne doit pas disparaître.
       setMessages((prev) => {
         const ids = new Set(latest.map((m) => m.id));
-        const extra = prev.filter((m) => !ids.has(m.id));
+        // Filtre sur la conversation : la fusion ne doit jamais faire
+        // remonter un message d'une autre conversation encore en mémoire.
+        const extra = prev.filter((m) => !ids.has(m.id) && m.conversation_id === conversationId);
         // Tri sur la date parsée, pas sur la chaîne : le temps réel ne
         // renvoie pas forcément created_at au même format que PostgREST.
         return [...latest, ...extra].sort(
@@ -427,9 +436,12 @@ export default function ConversationView({
 
     load();
 
-    // Realtime subscription
+    // Realtime subscription. Le nom inclut reloadKey : supabase.channel()
+    // renvoie le canal existant s'il porte le même nom, et l'ancien est
+    // encore en cours de fermeture quand "Réessayer" relance cet effet. Sans
+    // nom distinct, la conversation rechargée restait sans temps réel.
     const channel = supabase
-      .channel(`conv-${conversationId}`)
+      .channel(`conv-${conversationId}-${reloadKey}`)
       .on(
         "postgres_changes",
         {
@@ -549,7 +561,7 @@ export default function ConversationView({
       .single();
 
     if (!error && data) {
-      setMessages((prev) => [...prev, data as Message]);
+      setMessages((prev) => appendUnique(prev, data as Message));
       setText("");
       await sendPushNotification(content);
       // Coach IA : déclenche sa réponse automatique après coup, jamais dans
@@ -610,7 +622,7 @@ export default function ConversationView({
         if (insertError) throw insertError;
 
         if (msgData) {
-          setMessages((prev) => [...prev, msgData as Message]);
+          setMessages((prev) => appendUnique(prev, msgData as Message));
           await sendPushNotification(`${senderFirstName} t'a envoyé un vocal`);
         }
       } catch {
@@ -674,7 +686,7 @@ export default function ConversationView({
         if (insertError) throw insertError;
 
         if (msgData) {
-          setMessages((prev) => [...prev, msgData as Message]);
+          setMessages((prev) => appendUnique(prev, msgData as Message));
           await sendPushNotification(`${senderFirstName} t'a envoyé une photo`);
         }
       } catch {
@@ -717,7 +729,7 @@ export default function ConversationView({
       if (insertError) throw insertError;
 
       if (msgData) {
-        setMessages((prev) => [...prev, msgData as Message]);
+        setMessages((prev) => appendUnique(prev, msgData as Message));
         await sendPushNotification(`${senderFirstName} t'a envoyé une vidéo`);
       }
     },
@@ -786,6 +798,23 @@ export default function ConversationView({
               className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg border border-[#890404]/40 text-[#F5EDED]/70 hover:text-white hover:border-[#E01E1E]/60 transition-colors"
             >
               <RotateCw size={12} /> Réessayer
+            </button>
+          </div>
+        )}
+        {/* Échec du chargement alors que des messages sont affichés (reçus en
+            temps réel ou envoyés depuis) : sans ce bandeau, l'erreur
+            disparaissait dès le premier message et la conversation semblait
+            n'avoir aucun historique. */}
+        {loaded && loadError && messages.length > 0 && (
+          <div className="flex items-center justify-center gap-2 pb-2" role="alert">
+            <p className="text-[10px] text-[#F5EDED]/45">
+              L&apos;historique n&apos;a pas pu être chargé.
+            </p>
+            <button
+              onClick={() => { setLoadError(false); setReloadKey((k) => k + 1); }}
+              className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#F5EDED]/60 hover:text-white transition-colors"
+            >
+              <RotateCw size={10} /> Réessayer
             </button>
           </div>
         )}
