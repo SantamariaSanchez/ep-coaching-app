@@ -157,6 +157,11 @@ export async function updateLessonYoutube(lessonId: string, youtubeInput: string
   const raw = typeof youtubeInput === "string" ? youtubeInput.trim() : "";
   const id = raw ? extractYoutubeId(raw) : null;
   if (raw && !id) return { error: MSG_INVALID_URL };
+  // Même règle que publishSectionLessons : une leçon publiée sans vidéo
+  // casse son affichage membre. Et un import en masse qui remplirait plus
+  // tard cette leçon (sans "Publier directement") la rendrait visible sans
+  // que personne ne l'ait décidé, ni annonce aux membres.
+  if (isPublished === true && !id) return { error: "Ajoute une vidéo avant de publier cette leçon." };
 
   const before = isPublished && id ? await publishedSnapshot(supabase, await formationIdForLesson(supabase, lessonId)) : null;
 

@@ -88,9 +88,9 @@ export default async function LeadMagnetPage({
   // Auteur exact : Santamaria Sanchéz seulement pour le catalogue officiel
   // (coach_id vide). Un lead magnet écrit par un coach tiers n'est pas de
   // lui : on crédite alors EP Coaching, jamais une personne qui n'a rien écrit.
-  const author = magnet.coachId
-    ? { "@type": "Organization", name: "EP Coaching", url: APP_URL }
-    : { "@type": "Person", name: "Santamaria Sanchéz", sameAs: SANTAMARIA_SOCIALS };
+  const author = magnet.isOfficial
+    ? { "@type": "Person", name: "Santamaria Sanchéz", sameAs: SANTAMARIA_SOCIALS }
+    : { "@type": "Organization", name: "EP Coaching", url: APP_URL };
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",

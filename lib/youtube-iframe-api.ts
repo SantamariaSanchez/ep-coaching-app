@@ -149,6 +149,9 @@ export async function getYoutubeDurationSeconds(videoId: string, maxWaitMs = 600
           // getDuration() renvoie 0 tant que les métadonnées ne sont pas
           // chargées : on l'interroge toutes les 250 ms, au plus maxWaitMs.
           onReady: () => {
+            // Filet global déjà passé : sans ce garde, l'intervalle ci-dessous
+            // tournerait indéfiniment (finish() ne le nettoie qu'une fois).
+            if (settled) return;
             const startedAt = Date.now();
             poll = window.setInterval(() => {
               let duration = 0;

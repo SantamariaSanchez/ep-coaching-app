@@ -392,6 +392,11 @@ export function RecalcDurationsButton({
 }) {
   const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
   const [message, setMessage] = useState<{ tone: "ok" | "error"; text: string } | null>(null);
+  // Vidéos déjà mesurées pendant cette visite (clé leçon + vidéo). Une vidéo
+  // qui dure vraiment 10 min garde duration_min = 10 après le recalcul :
+  // sans ce suivi, elle restait candidate et le bouton ne disparaissait
+  // jamais. Les durées non détectées n'y entrent pas, pour pouvoir réessayer.
+  const [measured, setMeasured] = useState<Set<string>>(() => new Set());
   const aliveRef = useRef(true);
   useEffect(() => {
     aliveRef.current = true;
@@ -400,17 +405,22 @@ export function RecalcDurationsButton({
     };
   }, []);
 
-  const candidates = lessons.filter((l) => l.youtube_id && l.duration_min === 10);
+  const measureKey = (l: FormationLesson) => `${l.id}:${l.youtube_id ?? ""}`;
+  const candidates = lessons.filter((l) => l.youtube_id && l.duration_min === 10 && !measured.has(measureKey(l)));
   if (candidates.length === 0 && !message) return null;
 
   async function run() {
     setMessage(null);
     setProgress({ done: 0, total: candidates.length });
     const items: { lessonId: string; durationMin: number }[] = [];
+    const measuredKeys: string[] = [];
     for (let i = 0; i < candidates.length; i++) {
       const seconds = await getYoutubeDurationSeconds(candidates[i].youtube_id as string);
       if (!aliveRef.current) return;
-      if (seconds) items.push({ lessonId: candidates[i].id, durationMin: secondsToLessonMinutes(seconds) });
+      if (seconds) {
+        items.push({ lessonId: candidates[i].id, durationMin: secondsToLessonMinutes(seconds) });
+        measuredKeys.push(measureKey(candidates[i]));
+      }
       setProgress({ done: i + 1, total: candidates.length });
     }
 
@@ -426,6 +436,7 @@ export function RecalcDurationsButton({
       if (res.error) {
         setMessage({ tone: "error", text: res.error });
       } else {
+        setMeasured((prev) => new Set([...prev, ...measuredKeys]));
         const skipped = candidates.length - items.length;
         setMessage({
           tone: "ok",

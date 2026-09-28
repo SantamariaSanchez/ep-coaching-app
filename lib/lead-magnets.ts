@@ -33,10 +33,14 @@ interface LeadMagnetBase {
   // coach le met dans le CTA de ses reels ("tape 076 dans la recherche"),
   // donc une fois publié il doit rester valable indéfiniment.
   keyword: string;
-  // Auteur : null pour le catalogue officiel du fondateur, id du coach tiers
-  // sinon. Rempli seulement par la version complète (page de détail, pour
-  // créditer le bon auteur dans le JSON-LD) : la version liste reste légère.
-  coachId?: string | null;
+  // true pour le catalogue officiel du fondateur (coach_id vide), false pour
+  // un lead magnet écrit par un coach tiers. Rempli seulement par la version
+  // complète (page de détail, pour créditer le bon auteur dans le JSON-LD) :
+  // la version liste reste légère. Un booléen et jamais le coach_id lui-même :
+  // l'objet complet part tel quel dans LeadMagnetLanding ("use client"),
+  // donc dans le HTML de la page publique, et l'identifiant du compte d'un
+  // coach n'a rien à y faire.
+  isOfficial?: boolean;
 }
 
 export interface GuideSection {
@@ -161,7 +165,7 @@ function rowToMagnet(row: LeadMagnetRow): LeadMagnet {
   // noms que l'ancien littéral TS : intro/sections/conclusion pour guide,
   // intro/groups/conclusion pour checklist, intro/questions/outcomes pour
   // quiz), voir le script de migration et LEADMAGNETS.md.
-  return { ...base, ...row.content, coachId: row.coach_id ?? null } as LeadMagnet;
+  return { ...base, ...row.content, isOfficial: row.coach_id == null } as LeadMagnet;
 }
 
 const SELECT_FIELDS_LIST =
