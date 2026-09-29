@@ -99,13 +99,17 @@ export async function getClients(coachId: string): Promise<Profile[]> {
 // Total de membres inscrits chez CE coach (clients payants + communauté
 // gratuite), tous statuts confondus — sert de repère de croissance sur le
 // dashboard coach, distinct de getClients() qui ne compte que les payants actifs.
+// Le coach lui-même est exclu : le fondateur a coach_id = son propre id
+// (double rôle, il se suit lui-même), et la stat "membres" affichait 1
+// alors qu'aucun vrai membre n'était inscrit.
 export async function getTotalMembersCount(coachId: string): Promise<number> {
   try {
     const admin = createAdminClient();
     const { count } = await admin
       .from("profiles")
       .select("id", { count: "exact", head: true })
-      .eq("coach_id", coachId);
+      .eq("coach_id", coachId)
+      .neq("id", coachId);
     return count ?? 0;
   } catch {
     return 0;
@@ -114,13 +118,18 @@ export async function getTotalMembersCount(coachId: string): Promise<number> {
 
 // Le coach doit pouvoir écrire à n'importe quel membre parmi les SIENS
 // (clients payants et membres gratuits de sa communauté), pas seulement
-// ses clients actifs — utilisé par la liste des messages coach.
+// ses clients actifs : utilisé par la liste des messages coach et par les
+// notifications de nouveau post coach.
+// Le coach lui-même est retiré : avec le double rôle du fondateur (coach_id
+// = son propre id), il apparaissait comme un membre dans sa propre liste de
+// conversations et recevait la notification de ses propres posts.
+// getCommunityMembers() reste inchangé (la vue Membres a ses propres règles).
 export async function getAllMessageableMembers(coachId: string): Promise<Profile[]> {
   const [clients, communityMembers] = await Promise.all([
     getClients(coachId),
     getCommunityMembers(coachId),
   ]);
-  return [...clients, ...communityMembers];
+  return [...clients, ...communityMembers].filter((m) => m.id !== coachId);
 }
 
 export async function getCommunityMembers(coachId: string): Promise<Profile[]> {

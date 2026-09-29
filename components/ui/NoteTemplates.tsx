@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, MessageCircle, Zap, TrendingUp, BarChart2, Heart, Flame } from "lucide-react";
+import Link from "next/link";
+import { Copy, Check, MessageCircle, Zap, TrendingUp, BarChart2, Heart, Flame, Send } from "lucide-react";
 
 interface Template {
   id: string;
@@ -44,7 +45,7 @@ Prends le temps de répondre précisément, c'est ce qui me permet d'ajuster au 
 
 Je viens de regarder tes données de la semaine et je voulais te dire : excellent travail.
 
-Les chiffres parlent d'eux-mêmes, tu es dans la bonne direction. Continue comme ça, la régularité est la clé et tu le prouvent semaine après semaine.
+Les chiffres parlent d'eux-mêmes, tu es dans la bonne direction. Continue comme ça, la régularité est la clé et tu le prouves semaine après semaine.
 
 On reste sur le même cap, keep going 🔥`,
     },
@@ -115,45 +116,59 @@ Je t'ai mis les détails dans les notes. On reprend le déficit la semaine suiva
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
+  // Le presse-papiers peut être refusé (navigateur, permissions, contexte
+  // non sécurisé) : avant, l'échec était avalé et le bouton ne réagissait
+  // simplement pas. On le dit, et le texte reste sélectionnable à la main.
+  const [copyFailed, setCopyFailed] = useState(false);
 
   async function handleCopy() {
     try {
       await navigator.clipboard.writeText(text);
+      setCopyFailed(false);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      // fallback
+      setCopyFailed(true);
     }
   }
 
   return (
-    <button
-      onClick={handleCopy}
-      className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${
-        copied
-          ? "bg-green-500/20 text-green-400 border border-green-500/30"
-          : "bg-[#F5EDED]/5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 hover:bg-[#F5EDED]/10 border border-[#890404]/20"
-      }`}
-    >
-      {copied ? (
-        <>
-          <Check size={11} />
-          Copié
-        </>
-      ) : (
-        <>
-          <Copy size={11} />
-          Copier
-        </>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        onClick={handleCopy}
+        className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg transition-all ${
+          copied
+            ? "bg-green-500/20 text-green-400 border border-green-500/30"
+            : "bg-[#F5EDED]/5 text-[#F5EDED]/40 hover:text-[#F5EDED]/70 hover:bg-[#F5EDED]/10 border border-[#890404]/20"
+        }`}
+      >
+        {copied ? (
+          <>
+            <Check size={11} />
+            Copié
+          </>
+        ) : (
+          <>
+            <Copy size={11} />
+            Copier
+          </>
+        )}
+      </button>
+      {copyFailed && (
+        <p role="alert" className="text-[10px] text-red-400">
+          Copie impossible ici, sélectionne le texte à la main.
+        </p>
       )}
-    </button>
+    </div>
   );
 }
 
 function TemplateCard({
   template,
+  conversationHref,
 }: {
   template: Template;
+  conversationHref: string | null;
 }) {
   const [expanded, setExpanded] = useState(false);
   const Icon = template.icon;
@@ -200,7 +215,19 @@ function TemplateCard({
           <pre className="mt-4 text-sm text-[#F5EDED]/75 whitespace-pre-wrap leading-relaxed font-sans bg-black/20 rounded-lg px-4 py-3 border border-[#890404]/15">
             {template.body}
           </pre>
-          <div className="mt-3 flex justify-end">
+          {/* Copier puis ouvrir la conversation : le modèle contient des
+              passages à personnaliser (chiffres, détails), il n'est donc
+              jamais envoyé tel quel automatiquement. */}
+          <div className="mt-3 flex flex-wrap items-start justify-end gap-2">
+            {conversationHref && (
+              <Link
+                href={conversationHref}
+                className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg bg-[#E01E1E]/15 text-[#F5EDED]/80 hover:text-white hover:bg-[#E01E1E]/25 border border-[#E01E1E]/30 transition-colors"
+              >
+                <Send size={11} />
+                Ouvrir sa conversation
+              </Link>
+            )}
             <CopyButton text={template.body} />
           </div>
         </div>
@@ -211,15 +238,19 @@ function TemplateCard({
 
 export default function NoteTemplates({
   clientName,
+  clientId,
 }: {
   clientName: string;
+  /** Si fourni, chaque modèle propose d'ouvrir directement la conversation du membre. */
+  clientId?: string;
 }) {
   const templates = buildTemplates(clientName);
+  const conversationHref = clientId ? `/dashboard/coach/messages/${clientId}` : null;
 
   return (
     <div className="space-y-3">
       {templates.map((template) => (
-        <TemplateCard key={template.id} template={template} />
+        <TemplateCard key={template.id} template={template} conversationHref={conversationHref} />
       ))}
     </div>
   );

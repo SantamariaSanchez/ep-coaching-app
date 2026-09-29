@@ -51,15 +51,25 @@ export async function sendPhotoFeedback(
 
   const supabase = createAdminClient(); // admin bypasses RLS for cross-user writes
 
-  const { error } = await supabase
+  // Le garde ci-dessus vérifie que clientId est bien un membre de CE coach,
+  // mais pas que la photo lui appartient : filtrer sur l'id seul permettait
+  // d'écrire un retour sur la photo de n'importe quel membre de la
+  // plateforme en passant l'un de ses propres clientId. Le filtre client_id
+  // lie la photo au membre vérifié, et l'absence de ligne touchée est
+  // refusée au lieu d'être présentée comme un succès.
+  const { data: updated, error } = await supabase
     .from("photo_updates")
     .update({
       coach_feedback,
       coach_replied_at: new Date().toISOString(),
     })
-    .eq("id", photoId);
+    .eq("id", photoId)
+    .eq("client_id", clientId)
+    .select("id")
+    .maybeSingle();
 
   if (error) return { error: "Erreur lors de l'envoi du retour." };
+  if (!updated) return { error: "Photo introuvable pour ce membre." };
 
   // Notify client
   const { data: profile } = await supabase

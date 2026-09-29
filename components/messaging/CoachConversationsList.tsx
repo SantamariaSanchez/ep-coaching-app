@@ -44,15 +44,18 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
   const unreadCount = rows.filter((r) => r.unread > 0).length;
   // Membres à qui le coach n'a jamais écrit et qui n'ont jamais écrit non
   // plus : les plus faciles à oublier, alors que ce sont souvent ceux qu'il
-  // faut relancer en premier.
-  const silentCount = rows.filter((r) => !r.lastContent).length;
+  // faut relancer en premier. Basé sur la présence d'un horodatage et pas
+  // sur l'aperçu : une conversation dont le dernier message est une photo
+  // n'a pas de texte, mais on a bel et bien échangé.
+  const isSilent = (r: ConversationRow) => r.lastTime == null;
+  const silentCount = rows.filter(isSilent).length;
 
   const visible = useMemo(() => {
     const q = normalize(query.trim());
     return rows.filter((r) => {
       if (q && !normalize(r.fullName ?? "").includes(q)) return false;
       if (filter === "unread") return r.unread > 0;
-      if (filter === "silent") return !r.lastContent;
+      if (filter === "silent") return isSilent(r);
       return true;
     });
   }, [rows, query, filter]);
@@ -178,15 +181,22 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
 
                 {/* Info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6 }}>
-                    {row.fullName ?? "Client"}
-                    <RoleBadge label={row.badge} />
+                  <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#F5EDED", display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+                    {/* Nom tronqué plutôt que de pousser le badge hors de la
+                        carte sur un écran de 390px. */}
+                    <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {row.fullName ?? "Membre"}
+                    </span>
+                    <span style={{ flexShrink: 0, display: "inline-flex" }}>
+                      <RoleBadge label={row.badge} />
+                    </span>
                   </p>
-                  {row.lastContent ? (
+                  {!isSilent(row) && row.lastContent ? (
                     <p style={{
                       margin: "2px 0 0",
                       fontSize: 11,
-                      color: "rgba(245,237,237,0.35)",
+                      color: row.unread > 0 ? "rgba(245,237,237,0.7)" : "rgba(245,237,237,0.35)",
+                      fontWeight: row.unread > 0 ? 600 : 400,
                       whiteSpace: "nowrap",
                       overflow: "hidden",
                       textOverflow: "ellipsis",
