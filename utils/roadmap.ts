@@ -193,7 +193,14 @@ export async function applyRoadmapForClient(
   const roadmapId = (roadmap as { id: string }).id;
 
   const restoreDates = async () => {
-    if (!prev) return;
+    if (!prev) {
+      // Première sauvegarde ratée : on retire la road map tout juste créée
+      // plutôt que de laisser une coquille sans phases, qui s'afficherait
+      // ensuite comme une road map existante mais vide.
+      const { error } = await supabase.from("roadmaps").delete().eq("id", roadmapId);
+      if (error) console.error("applyRoadmapForClient cleanup new roadmap error:", error);
+      return;
+    }
     const { error } = await supabase
       .from("roadmaps")
       .update({ start_date: prev.start_date, end_date: prev.end_date })

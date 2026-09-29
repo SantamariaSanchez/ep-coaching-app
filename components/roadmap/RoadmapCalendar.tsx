@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { X, AlertCircle, RotateCw } from "lucide-react";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
 import {
@@ -143,14 +144,20 @@ function WeekDetailModal({
   const perf: PerformanceKey = isFuture ? "future" : stat?.performanceKey ?? "empty";
   const perfData = WEEK_PERFORMANCE_COLORS[perf];
 
-  // Fermeture au clavier (Échap) et focus sur le bouton Fermer à l'ouverture.
+  // Fermeture au clavier (Échap), focus sur le bouton Fermer à l'ouverture,
+  // puis retour du focus sur la semaine touchée à la fermeture (sinon le
+  // clavier repart du haut de la page).
   useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     closeRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      opener?.focus();
+    };
   }, [onClose]);
 
   const days = Array.from({ length: 7 }, (_, i) => addDaysIso(week.weekStart, i));
@@ -181,7 +188,14 @@ function WeekDetailModal({
   const weightDelta =
     stat?.avgWeight != null && prevStat?.avgWeight != null ? stat.avgWeight - prevStat.avgWeight : null;
 
-  return (
+  // Portail vers <body> : le calendrier est toujours rendu dans une .ep-card
+  // (backdrop-filter + overflow hidden) sous .page-transition (transform
+  // laissé par l'animation). Les deux font de l'ancêtre le repère d'un
+  // position: fixed : la feuille s'ouvrait en bas de la CARTE, rognée, souvent
+  // hors écran sur mobile, et sous la nav du bas (même raison que
+  // components/client/ExercisePicker.tsx). La modale n'existe qu'après un
+  // clic, donc document est toujours défini ici.
+  return createPortal(
     <div
       style={{
         position: "fixed",
@@ -398,7 +412,8 @@ function WeekDetailModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

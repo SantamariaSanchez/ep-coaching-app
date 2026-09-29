@@ -265,7 +265,10 @@ export async function getWeekStats(
         .eq("is_completed", true)
         .gte("session_date", rangeStart)
         .lte("session_date", rangeEnd)
+        // Tri stable (plusieurs séances le même jour) : sans id, la
+        // pagination pourrait sauter ou doubler une ligne entre deux pages.
         .order("session_date")
+        .order("id")
         .range(from, to)
     ),
     // Bonus pour un éventuel client accompagné qui remplit son check-in hebdo.

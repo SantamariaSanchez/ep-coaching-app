@@ -5,6 +5,7 @@ import { applyRoadmapForClient } from "@/utils/roadmap";
 import type { RoadmapApplyInput } from "@/utils/roadmap";
 import { enforceRateLimit, PRESETS } from "@/lib/rate-limit";
 import { validateRoadmapInput } from "@/lib/roadmap-validation";
+import { isValidIsoDate } from "@/lib/roadmap-weeks";
 
 // Un coach ne peut agir que sur SES propres clients — jamais sur ceux d'un
 // autre coach, même en connaissant leur id.
@@ -123,7 +124,9 @@ function parseBody(body: unknown): RoadmapApplyInput | null {
         description: strOrNull(o.description),
         term: str(o.term) as "short" | "medium" | "long",
         is_achieved: achieved,
-        achieved_at: achieved ? strOrNull(o.achieved_at) : null,
+        // Colonne date : une valeur mal formée ferait échouer toute la
+        // sauvegarde avec un message générique, on la ramène à null.
+        achieved_at: achieved && typeof o.achieved_at === "string" && isValidIsoDate(o.achieved_at) ? o.achieved_at : null,
       };
     }),
   };
