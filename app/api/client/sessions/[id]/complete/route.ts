@@ -73,7 +73,11 @@ export async function POST(
   }
 
   // 1. Update session as completed
-  const { error: updateError } = await supabase
+  // Conditionné à is_completed=false : deux envois quasi simultanés (nouvel
+  // essai lancé pendant que le premier est encore en route) passaient tous
+  // les deux le test ci-dessus. Seul celui qui fait réellement basculer la
+  // séance écrit ensuite PR, volume et points.
+  const { data: updatedRows, error: updateError } = await supabase
     .from("sessions")
     .update({
       is_completed: true,
@@ -84,7 +88,9 @@ export async function POST(
       notes: body.notes || null,
     })
     .eq("id", sessionId)
-    .eq("client_id", guard.userId);
+    .eq("client_id", guard.userId)
+    .eq("is_completed", false)
+    .select("id");
 
   // L'erreur n'était jamais testée : la séance restait "en cours" en base
   // pendant que l'écran confirmait la sauvegarde. On s'arrête ici, avant
@@ -92,6 +98,9 @@ export async function POST(
   if (updateError) {
     console.error("POST complete: mise à jour de la séance impossible:", updateError);
     return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
+  if (!updatedRows || updatedRows.length === 0) {
+    return NextResponse.json({ ok: true, alreadyCompleted: true });
   }
 
   // 2. Insert PRs : un seul par exercice (le plus lourd), et seulement s'il

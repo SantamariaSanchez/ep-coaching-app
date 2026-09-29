@@ -264,7 +264,9 @@ export default function SessionHistoryCard({
       {expanded && (
         <div className="border-t border-[#890404]/15 px-4 py-3 space-y-3">
           {/* Feeling row */}
-          {(session.general_feeling || session.energy_level || session.pump) && (
+          {/* != null plutôt qu'un test de vérité : une note à 0 aurait
+              affiché un "0" isolé à la place de la ligne. */}
+          {(session.general_feeling != null || session.energy_level != null || session.pump != null) && (
             <div className="flex gap-4">
               {session.general_feeling != null && (
                 <div>
