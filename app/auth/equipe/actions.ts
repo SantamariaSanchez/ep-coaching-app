@@ -11,7 +11,8 @@ import { cleanText, escapeHtml, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { notifyAdmin } from "@/lib/admin-notify";
 import { getRoleCard, isStaffRoleKey } from "@/lib/staff-roles";
-import { STAFF_TERMS_VERSION } from "@/lib/staff-contract";
+import { STAFF_TERMS_VERSION, EXTERNAL_CONTRACT_VERSION } from "@/lib/staff-contract";
+import { isFounder } from "@/lib/team-owner";
 import { sendStaffVerificationEmail } from "@/lib/staff";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -51,6 +52,8 @@ async function claimInvite(
   termsAccepted: boolean
 ): Promise<string | null> {
   const now = new Date().toISOString();
+  // Équipe d'un autre coach : pas de contrat EP Coaching à signer.
+  const external = !(await isFounder(invite.owner_id));
   const { error } = await admin.from("staff_members").insert({
     user_id: userId,
     owner_id: invite.owner_id,
@@ -60,6 +63,7 @@ async function claimInvite(
     application_id: invite.application_id,
     terms_accepted_at: termsAccepted ? now : null,
     terms_version: termsAccepted ? STAFF_TERMS_VERSION : null,
+    ...(external ? { contract_signed_at: now, contract_version: EXTERNAL_CONTRACT_VERSION } : {}),
   });
   if (error) return error.message;
   await admin.from("staff_invites").update({ used_at: now, used_by: userId }).eq("id", invite.id);

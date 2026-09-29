@@ -2,7 +2,8 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Workflow, CalendarDays, Users, CheckCircle2, CircleDashed, MessagesSquare, FolderOpen, ChevronRight } from "lucide-react";
 import { getUnreadBySender } from "@/lib/staff-team";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
+import { isTeamOwner } from "@/lib/team-owner";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getRoleCard, KINDS } from "@/lib/staff-roles";
 import { computeKpis, currentMonthKey, parisDate, stageDate, type StaffRecord } from "@/lib/staff-kpis";
@@ -26,8 +27,8 @@ interface MemberRow {
 export default async function TeamCockpitPage() {
   const user = await getUser();
   if (!user) redirect("/");
-  const profile = await getProfile(user.id);
-  if (!profile?.is_platform_owner) redirect("/dashboard/coach");
+  // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
+  if (!(await isTeamOwner(user.id))) redirect("/dashboard/coach/mon-equipe");
 
   const admin = createAdminClient();
   const { data: memberData } = await admin

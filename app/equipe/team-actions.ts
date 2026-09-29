@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requirePlatformOwner } from "@/lib/auth-guards";
+import { requireTeamOwner } from "@/lib/team-owner";
 import { cleanText, safeExternalUrl, LIMITS } from "@/lib/sanitize";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { requireStaff } from "@/lib/staff";
@@ -13,18 +13,19 @@ import { assignTask, sendTeamMessage } from "@/lib/staff-team";
 
 type Result = { ok: true } | { error: string };
 
-// Qui appelle : une recrue active sous contrat, ou le fondateur.
+// Qui appelle : une recrue active sous contrat, ou le responsable de
+// l'équipe (le fondateur ou un coach en mode entreprise).
 async function caller(): Promise<{ userId: string; ownerId: string; name: string; isFounder: boolean; roleKey: string | null } | { error: string }> {
   const staff = await requireStaff();
   if (staff.ok) {
     if (!isContractSigned(staff.member)) return { error: "Signe ton contrat avant de commencer." };
     return { userId: staff.userId, ownerId: staff.member.owner_id, name: staff.member.full_name, isFounder: false, roleKey: staff.member.role_key };
   }
-  const owner = await requirePlatformOwner();
+  const owner = await requireTeamOwner();
   if (!owner.ok) return { error: owner.error };
   const admin = createAdminClient();
   const { data } = await admin.from("profiles").select("full_name").eq("id", owner.userId).maybeSingle();
-  return { userId: owner.userId, ownerId: owner.userId, name: (data?.full_name as string) || "Fondateur", isFounder: true, roleKey: null };
+  return { userId: owner.userId, ownerId: owner.userId, name: (data?.full_name as string) || "Responsable", isFounder: true, roleKey: null };
 }
 
 function refreshAll() {

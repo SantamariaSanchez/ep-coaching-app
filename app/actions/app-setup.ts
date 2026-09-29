@@ -34,3 +34,29 @@ export async function saveAppSetupAction(answers: Record<string, unknown>): Prom
   revalidatePath("/dashboard", "layout");
   return {};
 }
+
+// Change seulement la façon de travailler d'un coach (page Mon équipe) :
+// les autres réponses sont gardées, les modules recalculés, et un
+// questionnaire pas encore terminé le reste (la bannière reste proposée).
+export async function updateCareerModeAction(mode: string): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const profile = await getProfile(user.id);
+  if (profile?.role !== "coach") return { error: "Réservé aux coachs." };
+  const careerQ = COACH_QUESTIONS.find((q) => q.key === "career_mode");
+  if (!careerQ?.options.some((o) => o.value === mode)) return { error: "Choix invalide." };
+
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("user_app_setup").select("answers, completed_at").eq("user_id", user.id).maybeSingle();
+  const answers = { ...((row?.answers as Record<string, unknown>) ?? {}), career_mode: mode };
+  const modules = modulesFromAnswers([...COACH_QUESTIONS, ...MEMBER_QUESTIONS], answers);
+  const { error } = await admin
+    .from("user_app_setup")
+    .upsert({ user_id: user.id, answers, modules, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) {
+    console.error("updateCareerModeAction error:", error);
+    return { error: "Enregistrement impossible, réessaie." };
+  }
+  revalidatePath("/dashboard", "layout");
+  return {};
+}

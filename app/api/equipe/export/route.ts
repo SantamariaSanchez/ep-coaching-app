@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isTeamOwner } from "@/lib/team-owner";
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { requireStaff } from "@/lib/staff";
@@ -40,8 +41,8 @@ export async function GET(req: Request) {
   let who = "";
 
   if (memberParam && memberParam !== user.id) {
-    const { data: profile } = await admin.from("profiles").select("is_platform_owner").eq("id", user.id).maybeSingle();
-    if (profile?.is_platform_owner !== true) return NextResponse.json({ error: "Accès non autorisé." }, { status: 403 });
+    // Responsable d'équipe (fondateur ou coach en mode entreprise), sur SON équipe.
+    if (!(await isTeamOwner(user.id))) return NextResponse.json({ error: "Accès non autorisé." }, { status: 403 });
     const { data: row } = await admin
       .from("staff_members")
       .select("user_id, full_name")

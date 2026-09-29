@@ -200,7 +200,10 @@ export async function runOnboarding(today: string): Promise<{ sent: number }> {
     .from("staff_members")
     .select("user_id, owner_id, role_key, full_name, email, contract_signed_at")
     .eq("status", "actif")
-    .not("contract_signed_at", "is", null);
+    .not("contract_signed_at", "is", null)
+    // Parcours d'intégration EP Coaching : équipe du fondateur uniquement
+    // (les équipes des autres coachs n'ont pas de contrat EP).
+    .neq("contract_version", "hors-ep");
   const members = (data ?? []) as Member[];
   let sent = 0;
 

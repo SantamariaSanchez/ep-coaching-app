@@ -56,6 +56,9 @@ async function activeMembers(admin: Admin, roleKeys: string[]): Promise<Member[]
     .select("user_id, owner_id, role_key, full_name")
     .eq("status", "actif")
     .not("contract_signed_at", "is", null)
+    // Les leads et ventes EP Coaching ne vont qu'à l'équipe du fondateur,
+    // jamais à l'équipe d'un autre coach.
+    .neq("contract_version", "hors-ep")
     .in("role_key", roleKeys);
   return (data as Member[]) ?? [];
 }

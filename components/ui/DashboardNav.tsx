@@ -10,7 +10,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -143,7 +143,7 @@ const COACH_TABS: TabItem[] = [
     // jamais dans mobileSubItems (aucun onglet ne le revendiquait comme
     // frère) alors que le desktop affiche la sidebar complète sans ce
     // filtre — bug uniquement mobile, invisible sur ordi.
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes", "stats-reseaux"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes", "stats-reseaux", "mon-equipe"],
   },
   {
     label: "Communauté",
@@ -203,6 +203,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Mon business",
     items: [
       { label: "Développer mon business", icon: Rocket, segment: "business" },
+      // Parcours modulable du coach (2026-09-29) : à son compte, pour une
+      // marque, en binôme ou à la tête d'une équipe (coachs + staff).
+      { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
       // Non-négociables quotidiens + les 5 catégories de données hebdo du
       // Mastermind ThePrepDad (lecture, pleine conscience, objectifs,
       // création, outreach — agrégées avec coach_scripts/leads/sales_calls

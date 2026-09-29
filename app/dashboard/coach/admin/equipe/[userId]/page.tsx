@@ -1,7 +1,8 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, ListChecks, MessagesSquare, GraduationCap, FileBarChart, FolderOpen, AlertCircle, Table } from "lucide-react";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
+import { isTeamOwner } from "@/lib/team-owner";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { allowedKinds, getRoleCard, KINDS, STAFF_ROLES, type RecordKind } from "@/lib/staff-roles";
 import { computeKpis, type StaffRecord, type TeamMemberData } from "@/lib/staff-kpis";
@@ -37,8 +38,8 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
   const { userId } = await params;
   const user = await getUser();
   if (!user) redirect("/");
-  const profile = await getProfile(user.id);
-  if (!profile?.is_platform_owner) redirect("/dashboard/coach");
+  // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
+  if (!(await isTeamOwner(user.id))) redirect("/dashboard/coach/mon-equipe");
 
   const admin = createAdminClient();
   const { data: memberRow } = await admin

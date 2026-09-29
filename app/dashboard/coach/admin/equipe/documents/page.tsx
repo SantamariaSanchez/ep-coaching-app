@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, FileSignature, FileText, FolderOpen } from "lucide-react";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
+import { isTeamOwner } from "@/lib/team-owner";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getDocumentsForOwner, getTeamDirectory } from "@/lib/staff-team";
 import { getApplicationsForHr } from "@/lib/staff";
@@ -19,8 +20,8 @@ export const dynamic = "force-dynamic";
 export default async function FounderTeamDocumentsPage() {
   const user = await getUser();
   if (!user) redirect("/");
-  const profile = await getProfile(user.id);
-  if (!profile?.is_platform_owner) redirect("/dashboard/coach");
+  // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
+  if (!(await isTeamOwner(user.id))) redirect("/dashboard/coach/mon-equipe");
 
   const admin = createAdminClient();
   const [documents, people, applications, { data: memberRows }] = await Promise.all([

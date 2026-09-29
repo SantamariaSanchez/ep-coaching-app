@@ -15,6 +15,12 @@ import { escapeHtml } from "@/lib/sanitize";
 // des parties : une nouvelle signature est alors demandée à la connexion
 // suivante (voir app/equipe/layout.tsx).
 export const STAFF_CONTRACT_VERSION = "2026-09-25";
+/**
+ * Équipe d'un autre coach que le fondateur (2026-09-29) : pas de contrat EP
+ * Coaching à signer, ce coach gère ses propres documents. Posé à l'arrivée
+ * de la recrue (contract_signature reste vide : rien n'a été signé ici).
+ */
+export const EXTERNAL_CONTRACT_VERSION = "hors-ep";
 
 /** Version des Conditions de collaboration (/legal/equipe). */
 export const STAFF_TERMS_VERSION = "2026-09-25";

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { getUser, getProfile } from "@/utils/auth";
+import { getUser } from "@/utils/auth";
+import { isTeamOwner } from "@/lib/team-owner";
 import { getChannel, getTeamDirectory, getThread, getUnreadBySender } from "@/lib/staff-team";
 import TeamChat from "@/components/staff/TeamChat";
 
@@ -13,8 +14,8 @@ export default async function FounderTeamMessagesPage({ searchParams }: { search
   const { avec } = await searchParams;
   const user = await getUser();
   if (!user) redirect("/");
-  const profile = await getProfile(user.id);
-  if (!profile?.is_platform_owner) redirect("/dashboard/coach");
+  // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
+  if (!(await isTeamOwner(user.id))) redirect("/dashboard/coach/mon-equipe");
 
   const people = await getTeamDirectory(user.id);
   const active = avec === "general" || people.some((p) => p.id === avec && p.id !== user.id) ? (avec as string) : "general";

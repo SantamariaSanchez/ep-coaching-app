@@ -5,7 +5,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { isStrongSession } from "@/lib/mfa";
 import { getStaffMember, type StaffMember } from "@/lib/staff";
 import { getRoleCard, getStaffRoleConfig, type RoleCard, type StaffRoleConfig } from "@/lib/staff-roles";
-import { STAFF_CONTRACT_VERSION } from "@/lib/staff-contract";
+import { STAFF_CONTRACT_VERSION, EXTERNAL_CONTRACT_VERSION } from "@/lib/staff-contract";
 import type { Pole } from "@/components/ui/OrganisationView";
 
 export interface StaffContext {
@@ -20,7 +20,7 @@ export interface StaffContext {
 }
 
 export function isContractSigned(member: Pick<StaffMember, "contract_signed_at" | "contract_version">): boolean {
-  return !!member.contract_signed_at && member.contract_version === STAFF_CONTRACT_VERSION;
+  return !!member.contract_signed_at && (member.contract_version === STAFF_CONTRACT_VERSION || member.contract_version === EXTERNAL_CONTRACT_VERSION);
 }
 
 // Résout la personne connectée dans l'espace équipe, sans rediriger. Utilisé
