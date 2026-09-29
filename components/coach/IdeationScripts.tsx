@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, useTransition } from "react";
-import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera } from "lucide-react";
+import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw } from "lucide-react";
 import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
 import Teleprompter from "@/components/coach/Teleprompter";
 import { fuzzyMatchAny } from "@/lib/fuzzy-search";
@@ -25,7 +25,16 @@ const STATUS_CYCLE: Record<ScriptStatus, ScriptStatus> = { a_tourner: "tourne", 
 const STATUS_TITLES: Record<ScriptStatus, string> = {
   a_tourner: "Cliquer une fois tourné",
   tourne: "Cliquer une fois posté",
-  publie: "Terminé — cliquer pour rouvrir si erreur",
+  publie: "Terminé, cliquer pour rouvrir en cas d'erreur",
+};
+// Retour direct 2026-09-29 : "le bouton tourner à tourner et poster est trop
+// peu explicite pour qu'on sache qu'il est cliquable". L'étiquette de statut
+// reste un simple badge, et l'étape suivante devient un vrai bouton
+// d'action (verbe + icône, fond plein) : on voit tout de suite quoi taper.
+const STATUS_ACTIONS: Record<ScriptStatus, { label: string; color: string; filled: boolean }> = {
+  a_tourner: { label: "J'ai tourné", color: "#60a5fa", filled: true },
+  tourne: { label: "J'ai posté", color: "#4ade80", filled: true },
+  publie: { label: "Rouvrir", color: "rgba(245,237,237,0.55)", filled: false },
 };
 
 function formatDuration(seconds: number | null): string | null {
@@ -62,6 +71,8 @@ function formatDuration(seconds: number | null): string | null {
 // Windsor.ai invalide, confirmé côté API au moment de ce retour), Facebook
 // reste la chaîne de diffusion disponible. Traité comme Instagram/YouTube
 // (filmé, pas écrit) : un Reel Facebook se tourne pareil qu'un Reel Insta.
+// Instagram de retour le 2026-09-29 (nouveau compte @santamariasanchezep),
+// Threads aussi : toutes ces plateformes restent disponibles.
 export const PLATFORM_LABELS: Record<string, { label: string; color: string }> = {
   instagram: { label: "Instagram Reel", color: "#E1306C" },
   facebook: { label: "Facebook Reel", color: "#1877F2" },
@@ -242,13 +253,10 @@ function MyScripts({
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [format, setFormat] = useState<ScriptFormat>("court");
-  // Retour direct 2026-09-22 : "on s'est encore fait bannir le Insta donc
-  // on a encore Facebook" — le compte Instagram est inaccessible pour
-  // l'instant (confirmé : jeton Windsor.ai invalide au moment de ce
-  // retour), Facebook reste postable. Défaut changé pour suivre la
-  // réalité opérationnelle actuelle ; Instagram reste choisissable dans le
-  // menu pour préparer du contenu en attendant que le compte revienne.
-  const [newPlatform, setNewPlatform] = useState("facebook");
+  // Plateforme par défaut à la création. Facebook pendant le ban Instagram
+  // (2026-09-22), Instagram de nouveau depuis le 2026-09-29 : nouveau compte
+  // propre @santamariasanchezep. Elle ne se change plus après la création.
+  const [newPlatform, setNewPlatform] = useState("instagram");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -529,22 +537,6 @@ function MyScripts({
     setCaptionOpenId(null);
     startTransition(async () => {
       const result = await updateScript(id, { caption: captionDraft });
-      if (result.error) {
-        setScripts(backup);
-        setError(result.error);
-      }
-    });
-  }
-
-  // Retour direct 2026-09-16 : élargir les plateformes disponibles ne sert
-  // à rien si un script déjà écrit reste coincé sur "instagram" (valeur par
-  // défaut à la création) sans façon de le retagger. Même mécanisme
-  // optimiste que cycleStatus.
-  function updatePlatform(id: string, platform: string) {
-    const backup = scripts;
-    setScripts((prev) => prev.map((s) => (s.id === id ? { ...s, platform } : s)));
-    startTransition(async () => {
-      const result = await updateScript(id, { platform });
       if (result.error) {
         setScripts(backup);
         setError(result.error);
@@ -943,24 +935,20 @@ function MyScripts({
     return (
             <div key={script.id} className="ep-card" style={{ padding: 16 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                <select
-                  value={script.platform}
-                  onChange={(e) => updatePlatform(script.id, e.target.value)}
-                  aria-label="Plateforme du script"
-                  title="Changer la plateforme"
+                {/* Plateforme figée une fois le script créé (retour direct
+                    2026-09-29) : elle se choisit à la création, jamais après. */}
+                <span
+                  title="Plateforme choisie à la création du script"
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
-                    padding: "3px 6px", borderRadius: 999, cursor: "pointer",
+                    padding: "3px 8px", borderRadius: 999,
                     background: `${(platformInfo ?? { color: "#F5EDED" }).color}22`,
                     color: (platformInfo ?? { color: "#F5EDED" }).color,
                     border: `1px solid ${(platformInfo ?? { color: "#F5EDED" }).color}44`,
                   }}
                 >
-                  {!platformInfo && <option value={script.platform}>{script.platform}</option>}
-                  {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
-                    <option key={id} value={id}>{label}</option>
-                  ))}
-                </select>
+                  {platformInfo?.label ?? script.platform}
+                </span>
                 <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
@@ -991,18 +979,37 @@ function MyScripts({
                     ⏳ {Math.floor(stageDays)}j
                   </span>
                 )}
-                <button
-                  type="button"
-                  onClick={() => cycleStatus(script.id, script.status)}
-                  title={STATUS_TITLES[script.status]}
+                <span
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em",
-                    padding: "3px 8px", borderRadius: 999, cursor: "pointer", border: `1px solid ${statusInfo.color}55`,
-                    background: "transparent", color: statusInfo.color,
+                    padding: "3px 8px", borderRadius: 999, border: `1px solid ${statusInfo.color}55`, color: statusInfo.color,
                   }}
                 >
                   {statusInfo.label}
-                </button>
+                </span>
+                {(() => {
+                  const action = STATUS_ACTIONS[script.status] ?? STATUS_ACTIONS.a_tourner;
+                  const Icon = script.status === "a_tourner" ? Clapperboard : script.status === "tourne" ? Send : RotateCcw;
+                  return (
+                    <button
+                      type="button"
+                      onClick={() => cycleStatus(script.id, script.status)}
+                      title={STATUS_TITLES[script.status]}
+                      className="transition-transform active:scale-95 hover:brightness-110"
+                      style={{
+                        display: "inline-flex", alignItems: "center", gap: 5,
+                        fontSize: 11, fontWeight: 800, letterSpacing: "0.02em",
+                        padding: action.filled ? "6px 12px" : "4px 10px", borderRadius: 999, cursor: "pointer",
+                        border: `1px solid ${action.filled ? action.color : "rgba(245,237,237,0.18)"}`,
+                        background: action.filled ? action.color : "transparent",
+                        color: action.filled ? "#0D0000" : action.color,
+                        boxShadow: action.filled ? `0 0 14px ${action.color}55` : "none",
+                      }}
+                    >
+                      <Icon size={12} strokeWidth={2.5} /> {action.label}
+                    </button>
+                  );
+                })()}
                 <button
                   type="button"
                   onClick={() => {

@@ -1,3 +1,4 @@
+import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { redirect } from "next/navigation";
 import { getUser, getProfile, getActiveCoachesForDiscovery } from "@/utils/auth";
 import CoachDiscoveryList from "@/components/client/CoachDiscoveryList";
@@ -21,7 +22,7 @@ export default async function ClientCoachsPage() {
           sur Instagram si tu préfères qu&apos;il te suive personnellement.
         </p>
         <a
-          href="https://instagram.com/santamariasanchez_"
+          href={INSTAGRAM_URL}
           target="_blank"
           rel="noopener noreferrer"
           className="ep-btn-primary"

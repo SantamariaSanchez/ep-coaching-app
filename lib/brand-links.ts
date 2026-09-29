@@ -2,16 +2,26 @@
 // vitrine globale). Utilisé par /bio (lien en bio Insta/TikTok) et par le
 // générateur de contenu (lib/social-content.ts) pour signer les visuels.
 //
-// À REMPLIR : ces URLs sont des espaces réservés, à remplacer par les vrais
-// comptes/numéro avant de mettre le lien en bio en avant sur les réseaux.
+// Instagram et Threads : nouveau compte propre @santamariasanchezep depuis
+// le 2026-09-29 (retour direct : "Instagram on a re enfin, nouveau compte
+// propre santamariasanchezep", "on a re Threads"). Threads reprend toujours
+// l'identifiant Instagram.
+export const INSTAGRAM_HANDLE = "santamariasanchezep";
+export const INSTAGRAM_URL = `https://instagram.com/${INSTAGRAM_HANDLE}`;
+export const THREADS_URL = `https://www.threads.net/@${INSTAGRAM_HANDLE}`;
+
 export const BRAND_SOCIALS = {
   instagram: {
-    handle: "@ep.coaching",
-    url: "https://instagram.com/ep.coaching",
+    handle: `@${INSTAGRAM_HANDLE}`,
+    url: INSTAGRAM_URL,
+  },
+  threads: {
+    handle: `@${INSTAGRAM_HANDLE}`,
+    url: THREADS_URL,
   },
   tiktok: {
-    handle: "@ep.coaching",
-    url: "https://tiktok.com/@ep.coaching",
+    handle: "@santamariasanchez_",
+    url: "https://www.tiktok.com/@santamariasanchez_",
   },
   // Format wa.me : numéro complet, sans le "+" ni espaces (ex "33612345678"
   // pour un numéro français). Retour direct 2026-08-16 : contact humain
@@ -29,7 +39,8 @@ export const BRAND_SOCIALS = {
 // Google/l'IA, il faut qu'on ressorte") pour que ces deux pages ne dérivent
 // jamais l'une de l'autre au fil des modifications futures.
 export const SANTAMARIA_SOCIALS = [
-  "https://instagram.com/santamariasanchez_",
+  INSTAGRAM_URL,
+  THREADS_URL,
   "https://www.tiktok.com/@santamariasanchez_",
   "https://www.youtube.com/@santamaria_sanchez",
 ] as const;

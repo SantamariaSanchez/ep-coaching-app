@@ -1,3 +1,4 @@
+import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
@@ -197,7 +198,7 @@ function NoCoachBanner() {
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <a
-            href="https://instagram.com/santamariasanchez_"
+            href={INSTAGRAM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="ep-btn-primary"
