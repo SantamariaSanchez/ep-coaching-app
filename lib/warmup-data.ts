@@ -260,7 +260,12 @@ function roundToPlate(weight: number): number {
 
 export function buildMovementPreps(
   exercises: { name: string; reps: string | null; position: number }[],
-  prevWeights: Record<string, { weight: number | null }>
+  prevWeights: Record<string, { weight: number | null }>,
+  // Toutes les séries de la dernière fois (même clé en minuscules). Sans
+  // elles, la base des rampes était prevWeights, c'est-à-dire la DERNIÈRE
+  // série enregistrée : la série de back-off (ex. 30 kg au développé incliné
+  // après une série lourde à 32 kg), donc une montée calée trop bas.
+  prevSets?: Record<string, { weight: number | null }[]>
 ): MovementPrep[] {
   // Les mouvements principaux sont, par convention de programmation, en
   // tête de séance (position la plus basse) — on se limite aux 3 premiers
@@ -268,7 +273,12 @@ export function buildMovementPreps(
   const mains = [...exercises].sort((a, b) => a.position - b.position).slice(0, 3);
 
   return mains.map((ex) => {
-    const lastWeight = prevWeights[ex.name.toLowerCase()]?.weight ?? null;
+    const key = ex.name.toLowerCase();
+    const heaviest = (prevSets?.[key] ?? []).reduce<number | null>(
+      (max, s) => (s.weight != null && s.weight > 0 && (max == null || s.weight > max) ? s.weight : max),
+      null
+    );
+    const lastWeight = heaviest ?? prevWeights[key]?.weight ?? null;
     const ramps: RampSet[] =
       lastWeight && lastWeight > 0
         ? [

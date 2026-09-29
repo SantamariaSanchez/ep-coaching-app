@@ -14,13 +14,11 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  ChevronDown,
-  ChevronUp,
   HeartPulse,
 } from "lucide-react";
 import type { SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
-import { safeExternalUrl } from "@/lib/sanitize";
+import SessionHistoryCard from "@/components/ui/SessionHistoryCard";
 
 interface Props {
   clientId: string;
@@ -32,18 +30,6 @@ interface Props {
   // rapprochées dans la même vue pour que le coach fasse le lien lui-même.
   declaredInjuries: string | null;
   declaredHealthIssues: string | null;
-}
-
-// Repère les notes de set qui mentionnent probablement une gêne physique,
-// pour les distinguer visuellement des notes techniques ("pause en bas",
-// "tempo lent"...) au milieu de toutes les autres. Volontairement une
-// simple liste de mots-clés côté client, pas une analyse "intelligente" —
-// un faux négatif reste visible (la note s'affiche quand même), un faux
-// positif ne fait que la mettre en rouge à tort.
-const PAIN_KEYWORDS = /douleur|douloureux|mal au|mal à|mal aux|gêne|gene|tirai|craqu|brûl|brul|bless|pinc|inconfort/i;
-
-function isPainNote(note: string): boolean {
-  return PAIN_KEYWORDS.test(note);
 }
 
 const TOOLTIP_STYLE = {
@@ -64,22 +50,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
       {children}
     </p>
-  );
-}
-
-function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">···</span>;
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: max }).map((_, i) => (
-        <div
-          key={i}
-          className={`w-2 h-2 rounded-full ${
-            i < value ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"
-          }`}
-        />
-      ))}
-    </div>
   );
 }
 
@@ -296,183 +266,6 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
-  );
-}
-
-// ── Session History ───────────────────────────────────────────────────────────
-
-function SessionHistoryCard({ session }: { session: SessionWithSets }) {
-  const [expanded, setExpanded] = useState(false);
-
-  // Group sets by exercise
-  const byExercise: Record<string, typeof session.sets> = {};
-  for (const set of session.sets) {
-    if (!byExercise[set.exercise_name]) byExercise[set.exercise_name] = [];
-    byExercise[set.exercise_name].push(set);
-  }
-
-  const totalSets = session.sets.length;
-  const prCount = session.sets.filter((s) => s.is_pr).length;
-
-  return (
-    <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setExpanded((v) => !v)}
-        aria-expanded={expanded}
-        className="w-full flex items-center gap-3 px-4 py-3.5 text-left hover:bg-[#890404]/5 transition-colors"
-      >
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-black text-white truncate">
-              {session.day_label}
-            </p>
-            {prCount > 0 && (
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/25 flex-shrink-0">
-                🏆 {prCount} PR
-              </span>
-            )}
-          </div>
-          <p className="text-[10px] text-[#F5EDED]/35 mt-0.5">
-            {new Intl.DateTimeFormat("fr-FR", {
-              weekday: "short",
-              day: "numeric",
-              month: "long",
-            }).format(
-              new Date(session.session_date + "T12:00:00")
-            )}
-            {session.duration_minutes != null &&
-              ` · ${session.duration_minutes} min`}
-            {` · ${totalSets} sets`}
-          </p>
-        </div>
-        <div className="flex items-center gap-3 flex-shrink-0">
-          {session.general_feeling != null && (
-            <div className="hidden sm:flex flex-col items-end gap-0.5">
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      i < (session.general_feeling ?? 0)
-                        ? "bg-[#E01E1E]"
-                        : "bg-[#F5EDED]/15"
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
-                feeling
-              </span>
-            </div>
-          )}
-          {expanded ? (
-            <ChevronUp size={14} className="text-[#F5EDED]/30" />
-          ) : (
-            <ChevronDown size={14} className="text-[#F5EDED]/30" />
-          )}
-        </div>
-      </button>
-
-      {expanded && (
-        <div className="border-t border-[#890404]/15 px-4 py-3 space-y-3">
-          {/* Feeling row */}
-          {(session.general_feeling || session.energy_level || session.pump) && (
-            <div className="flex gap-4">
-              {session.general_feeling != null && (
-                <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Feeling</p>
-                  <FeelingDots value={session.general_feeling} />
-                </div>
-              )}
-              {session.energy_level != null && (
-                <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Énergie</p>
-                  <FeelingDots value={session.energy_level} />
-                </div>
-              )}
-              {session.pump != null && (
-                <div>
-                  <p className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider mb-0.5">Pump</p>
-                  <FeelingDots value={session.pump} />
-                </div>
-              )}
-            </div>
-          )}
-
-          {session.notes && (
-            <p className="text-xs text-[#F5EDED]/50 italic leading-relaxed">
-              {session.notes}
-            </p>
-          )}
-
-          {/* Exercises */}
-          {Object.entries(byExercise).map(([name, sets]) => {
-            // Item 29 : notes laissées par le client sur un set précis —
-            // invisibles nulle part avant ce chantier (ni ici, ni ailleurs
-            // dans l'app), alors qu'elles peuvent signaler une gêne sur un
-            // exercice précis ("genou qui tire sur le dernier squat").
-            const notedSets = sets.filter((s) => s.notes);
-            return (
-              <div key={name}>
-                <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                  {name}
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {sets.map((s, i) => (
-                    <span
-                      key={i}
-                      className={`text-[10px] font-bold px-2 py-1 rounded-lg border ${
-                        s.is_pr
-                          ? "bg-amber-500/15 text-amber-300 border-amber-500/25"
-                          : "bg-[#890404]/10 text-[#F5EDED]/60 border-[#890404]/20"
-                      }`}
-                    >
-                      {s.weight_kg != null ? `${s.weight_kg}kg` : "···"}
-                      {" × "}
-                      {s.reps_actual ?? "···"}
-                      {s.rir_actual != null && ` RIR${s.rir_actual}`}
-                      {s.is_pr && " 🏆"}
-                      {s.video_url && (
-                        <a
-                          href={safeExternalUrl(s.video_url) ?? "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
-                          className="ml-1.5 text-[#E01E1E]"
-                          title="Voir la vidéo du set"
-                        >
-                          🎥
-                        </a>
-                      )}
-                    </span>
-                  ))}
-                </div>
-                {notedSets.length > 0 && (
-                  <div className="mt-1.5 space-y-1">
-                    {notedSets.map((s, i) => {
-                      const pain = isPainNote(s.notes as string);
-                      return (
-                        <p
-                          key={i}
-                          className={`text-[10.5px] leading-relaxed px-2 py-1 rounded-lg ${
-                            pain
-                              ? "bg-red-500/10 text-red-300 border border-red-500/25"
-                              : "text-[#F5EDED]/40 italic"
-                          }`}
-                        >
-                          {pain && <AlertCircle size={10} className="inline mr-1 -mt-0.5" />}
-                          {s.notes}
-                        </p>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
     </div>
   );
 }

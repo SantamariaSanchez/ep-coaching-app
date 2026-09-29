@@ -5,10 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Dumbbell,
-  Sparkles,
-  Zap,
   ChevronRight,
-  Calendar,
   Plus,
   Upload,
   CheckCircle2,
@@ -21,6 +18,7 @@ import { Play } from "lucide-react";
 import ExerciseProgressionChart from "@/components/ui/ExerciseProgressionChart";
 import HighlightsStrip from "@/components/ui/HighlightsStrip";
 import ClientProgressCharts from "@/components/ui/ClientProgressCharts";
+import SessionHistoryCard from "@/components/ui/SessionHistoryCard";
 
 interface Props {
   program: ProgramWithDays | null;
@@ -31,6 +29,12 @@ interface Props {
   activeSession?: Session | null;
   /** Poids/adherence issus des check-ins — fusionne l'ancienne page Progression ici */
   checkins?: CheckIn[];
+  /** Limite de séances chargées par la page (10 par défaut, plus avec ?historique=tout). */
+  historyLimit?: number;
+  /** true quand la page a chargé tout l'historique (?historique=tout). */
+  showingAllHistory?: boolean;
+  /** L'historique complet a été demandé mais n'a pas pu être lu. */
+  historyError?: boolean;
 }
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -38,22 +42,6 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
     <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
       {children}
     </p>
-  );
-}
-
-function FeelingDots({ value, max = 5 }: { value: number | null; max?: number }) {
-  if (value == null) return <span className="text-[#F5EDED]/25">···</span>;
-  return (
-    <div className="flex gap-0.5">
-      {Array.from({ length: max }).map((_, i) => (
-        <div
-          key={i}
-          className={`w-1.5 h-1.5 rounded-full ${
-            i < value ? "bg-[#E01E1E]" : "bg-[#F5EDED]/15"
-          }`}
-        />
-      ))}
-    </div>
   );
 }
 
@@ -332,7 +320,18 @@ function ImportLogbookButton() {
     </div>
   );
 }
-export default function LogbookClient({ program, sessions, records, isFree, subNavScope = "client", activeSession, checkins = [] }: Props) {
+export default function LogbookClient({
+  program,
+  sessions,
+  records,
+  isFree,
+  subNavScope = "client",
+  activeSession,
+  checkins = [],
+  historyLimit = 10,
+  showingAllHistory = false,
+  historyError = false,
+}: Props) {
   const router = useRouter();
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -439,85 +438,67 @@ export default function LogbookClient({ program, sessions, records, isFree, subN
       </section>
 
       {/* ── Mes dernières séances ── */}
+      {/* Dépliage sur place (séries, PR, notes, ressentis) plutôt qu'un
+          simple lien : retrouver ce qui a été fait une séance passée ne
+          demande plus d'ouvrir une autre page. Le récap complet reste à un
+          tap ("Ouvrir le récap"). */}
       {sessions.length > 0 && (
         <section className="mb-8">
-          <SectionLabel>Mes dernières séances</SectionLabel>
+          <SectionLabel>{showingAllHistory ? "Tout mon historique" : "Mes dernières séances"}</SectionLabel>
           <div className="space-y-2">
-            {sessions.map((s) => {
-              const totalSets = s.sets.length;
-              return (
-                <Link
-                  key={s.id}
-                  href={`${sessionBasePath}/session/${s.id}`}
-                  className="flex items-center gap-3 bg-[#1f0101] border border-[#890404]/20 hover:border-[#890404]/40 rounded-xl px-4 py-3.5 transition-colors group"
-                >
-                  <div className="w-9 h-9 rounded-lg bg-[#890404]/10 flex items-center justify-center flex-shrink-0">
-                    <Calendar size={15} className="text-[#890404]" strokeWidth={1.8} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-black text-white truncate">
-                      {s.day_label}
-                    </p>
-                    <p className="text-[10px] text-[#F5EDED]/35">
-                      {new Intl.DateTimeFormat("fr-FR", {
-                        weekday: "long",
-                        day: "numeric",
-                        month: "long",
-                      }).format(new Date(s.session_date + "T12:00:00"))}
-                      {s.duration_minutes != null &&
-                        ` · ${s.duration_minutes} min`}
-                      {totalSets > 0 && ` · ${totalSets} set${totalSets > 1 ? "s" : ""}`}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    {s.general_feeling != null && (
-                      <div className="flex flex-col items-end gap-0.5">
-                        <FeelingDots value={s.general_feeling} />
-                        <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
-                          feeling
-                        </span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      {/* Retour direct 2026-09-09 : "mieux organiser, plus
-                          simple à comprendre" — energy/pump n'avaient qu'une
-                          icône et un chiffre, sans légende (contrairement à
-                          "feeling" juste à côté) : ambigu au premier coup
-                          d'oeil. Même traitement label pour les 3. L'icône
-                          Horloge (aucun rapport avec la congestion
-                          musculaire) est aussi corrigée en Sparkles. */}
-                      {s.energy_level != null && (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <Zap size={11} className="text-amber-400" />
-                          <span className="text-[9px] font-black text-amber-400">
-                            {s.energy_level}
-                          </span>
-                          <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
-                            energy
-                          </span>
-                        </div>
-                      )}
-                      {s.pump != null && (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <Sparkles size={11} className="text-[#60a5fa]" />
-                          <span className="text-[9px] font-black text-[#60a5fa]">
-                            {s.pump}
-                          </span>
-                          <span className="text-[8px] text-[#F5EDED]/25 uppercase tracking-wider">
-                            pump
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <ChevronRight
-                      size={14}
-                      className="text-[#F5EDED]/25 group-hover:text-[#F5EDED]/50 transition-colors"
-                    />
-                  </div>
-                </Link>
-              );
-            })}
+            {sessions.map((s) => (
+              <SessionHistoryCard
+                key={s.id}
+                session={s}
+                recapHref={`${sessionBasePath}/session/${s.id}`}
+              />
+            ))}
           </div>
+          {/* La liste était plafonnée à 10 séances sans aucun moyen de
+              remonter plus loin. Le lien n'apparaît que si la limite est
+              atteinte : moins de séances, tout est déjà affiché. */}
+          {/* Historique complet demandé mais illisible : on le dit, les
+              dernières séances restent affichées juste au-dessus. */}
+          {historyError && (
+            <div className="mt-3 flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3">
+              <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-red-300">
+                  Impossible de charger tout ton historique pour le moment. Tes dernières séances sont affichées.
+                </p>
+                <Link
+                  href={`${sessionBasePath}?historique=tout`}
+                  className="inline-block mt-1.5 text-[10px] font-bold uppercase tracking-widest text-red-300 hover:text-red-200 transition-colors"
+                >
+                  Réessayer
+                </Link>
+              </div>
+            </div>
+          )}
+          {!showingAllHistory && !historyError && sessions.length >= historyLimit && (
+            <Link
+              href={`${sessionBasePath}?historique=tout`}
+              className="mt-3 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/60 rounded-xl px-4 py-3 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/75 transition-colors"
+            >
+              Voir tout l&apos;historique
+              <ChevronRight size={13} />
+            </Link>
+          )}
+          {showingAllHistory && (
+            <div className="mt-3 flex flex-col items-center gap-1">
+              {sessions.length >= historyLimit && (
+                <p className="text-[10px] text-[#F5EDED]/30 text-center">
+                  Les {historyLimit} séances les plus récentes sont affichées.
+                </p>
+              )}
+              <Link
+                href={sessionBasePath}
+                className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/65 transition-colors py-2"
+              >
+                Revenir aux dernières séances
+              </Link>
+            </div>
+          )}
         </section>
       )}
 

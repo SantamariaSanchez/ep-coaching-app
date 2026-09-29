@@ -23,6 +23,7 @@ import {
   Backpack,
   ExternalLink,
   RotateCcw,
+  ClipboardList,
 } from "lucide-react";
 import {
   BarChart,
@@ -52,6 +53,17 @@ import type { Session, SessionSet } from "@/utils/sessions";
 import { safeExternalUrl } from "@/lib/sanitize";
 import { todayInParis } from "@/lib/dates";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
+import { SessionSetsBreakdown } from "@/components/ui/SessionHistoryCard";
+import { TENSION_FOCUS_LABELS } from "@/lib/exercise-library-content";
+import {
+  parseRepScheme,
+  rangeForSet,
+  suggestSet,
+  formatRange,
+  formatRest,
+  formatKg,
+  type RepRange,
+} from "@/lib/set-targets";
 
 // Texte pré-rempli du post Victoire depuis un PR détecté en fin de séance
 // (voir le bouton "Partager en Victoire") — le client reste libre de le
@@ -109,6 +121,9 @@ interface InitData {
   // Note libre persistante par exercice (client_exercise_notes), clé = nom
   // exact — voir migration 20260917e.
   exerciseNotes: Record<string, string>;
+  // Séance terminée : set id → URL signée de la vidéo (récap, "Détail des
+  // séries"). Optionnel : absent d'une réponse d'avant ce champ.
+  videoUrlsBySetId?: Record<string, string>;
 }
 
 interface SetState {
@@ -297,6 +312,208 @@ function applyExerciseOrder(exercises: Exercise[], order: string[]): Exercise[] 
   // Exercices non couverts par l'ordre sauvegardé (nouveaux ajouts) — à la suite.
   ordered.push(...byId.values());
   return ordered;
+}
+
+// Exercice reconstruit côté serveur à partir de séries déjà enregistrées
+// (voir syntheticExercisesFor dans app/api/client/sessions/[id]/route.ts).
+function isSyntheticExercise(ex: Exercise): boolean {
+  return ex.id.startsWith("local-set-");
+}
+
+// Chrono de repos persistant. Il ne vivait qu'en state React : la PWA est
+// régulièrement tuée quand le téléphone se verrouille entre deux séries, et
+// au retour le chrono avait disparu (d'où rest_duration_seconds rempli sur
+// seulement 45 séries sur 145). setDbId sert à retrouver la série après un
+// rechargement, où son localId devient son id en base. exerciseName +
+// setNumber prennent le relais si l'appli a été tuée avant la réponse du
+// serveur (la série est bien en base, mais son id n'a jamais été noté ici).
+interface StoredRestTimer extends RestTimer {
+  setDbId: string | null;
+  exerciseName: string | null;
+  setNumber: number | null;
+}
+
+// Au-delà, ce n'est plus un repos entre deux séries mais une séance
+// abandonnée puis rouverte : on ne ressuscite pas un chrono de 2 heures.
+const REST_TIMER_MAX_AGE_MS = 30 * 60 * 1000;
+
+function restTimerKey(sessionId: string) {
+  return `ep-rest-timer-${sessionId}`;
+}
+
+function saveRestTimer(sessionId: string, stored: StoredRestTimer) {
+  try {
+    localStorage.setItem(restTimerKey(sessionId), JSON.stringify(stored));
+  } catch {}
+}
+
+function loadRestTimer(sessionId: string): StoredRestTimer | null {
+  try {
+    const raw = localStorage.getItem(restTimerKey(sessionId));
+    if (!raw) return null;
+    const t = JSON.parse(raw) as Partial<StoredRestTimer>;
+    if (
+      typeof t.startedAt !== "number" ||
+      typeof t.suggestedSeconds !== "number" ||
+      typeof t.suggestedLabel !== "string" ||
+      typeof t.setLocalId !== "string"
+    ) {
+      return null;
+    }
+    return {
+      startedAt: t.startedAt,
+      suggestedSeconds: t.suggestedSeconds,
+      suggestedLabel: t.suggestedLabel,
+      setLocalId: t.setLocalId,
+      setDbId: typeof t.setDbId === "string" ? t.setDbId : null,
+      exerciseName: typeof t.exerciseName === "string" ? t.exerciseName : null,
+      setNumber: typeof t.setNumber === "number" ? t.setNumber : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearRestTimer(sessionId: string) {
+  try {
+    localStorage.removeItem(restTimerKey(sessionId));
+  } catch {}
+}
+
+// L'id en base n'arrive qu'après l'aller-retour réseau, le chrono est déjà
+// lancé : on le complète dès qu'il est connu, seulement si le chrono
+// mémorisé concerne toujours cette série.
+function attachRestTimerDbId(sessionId: string, setLocalId: string, dbId: string) {
+  const stored = loadRestTimer(sessionId);
+  if (stored && stored.setLocalId === setLocalId && stored.setDbId !== dbId) {
+    saveRestTimer(sessionId, { ...stored, setDbId: dbId });
+  }
+}
+
+// Série à laquelle rattacher un chrono mémorisé, après un rechargement.
+function findRestTimerSet(exStates: ExerciseState[], stored: StoredRestTimer): SetState | undefined {
+  if (stored.setDbId) {
+    for (const ex of exStates) {
+      const hit = ex.sets.find((st) => st.localId === stored.setDbId);
+      if (hit) return hit;
+    }
+  }
+  if (stored.exerciseName != null && stored.setNumber != null) {
+    const ex = exStates.find((e) => e.exercise.name === stored.exerciseName);
+    return ex?.sets.find((st) => st.validated && st.setNumber === stored.setNumber);
+  }
+  return undefined;
+}
+
+// ── Records de séance ─────────────────────────────────────────────────────────
+//
+// Le seuil PR combinait prMap (figé au chargement, alimenté seulement par
+// /complete) et un state React perdu à chaque rechargement. Or la PWA est
+// souvent tuée écran verrouillé : au retour, les séries déjà validées de la
+// séance ne comptaient plus. Constaté le 23/09 : "Crunch poulie haute" série
+// 3 à 35 kg marquée PR après la série 1 à 37,5 kg, "Tirage horizontal assis
+// uni" marqué PR deux fois à 60 kg. Tout est désormais recalculé à partir
+// des séries VALIDÉES à l'écran, qui reviennent validées après un
+// rechargement (buildExerciseState) : le calcul survit donc au rechargement.
+
+function setWeight(s: SetState): number | null {
+  const w = parseFloat(s.weightKg);
+  return Number.isFinite(w) && w > 0 ? w : null;
+}
+
+/**
+ * Seuil à battre pour un exercice : le meilleur entre l'historique en base
+ * (prMap) et les séries déjà validées de cette séance, hors `excludeLocalId`
+ * (la série qu'on évalue : la revalider ne doit pas lui retirer son PR).
+ */
+function computeThreshold(
+  exercises: ExerciseState[],
+  prMap: Record<string, number>,
+  exerciseName: string,
+  excludeLocalId?: string
+): number | null {
+  const key = exerciseName.toLowerCase();
+  let best: number | null = prMap[key] ?? null;
+  for (const ex of exercises) {
+    if (ex.exercise.name.toLowerCase() !== key) continue;
+    for (const s of ex.sets) {
+      if (!s.validated || s.localId === excludeLocalId) continue;
+      const w = setWeight(s);
+      if (w != null && (best == null || w > best)) best = w;
+    }
+  }
+  return best;
+}
+
+interface SessionRecord {
+  localId: string;
+  exerciseName: string;
+  weightKg: number;
+  reps: number | null;
+}
+
+/**
+ * Un seul record par exercice (nom en minuscules) : la série validée la plus
+ * lourde (la première en cas d'égalité), et seulement si elle bat le record
+ * déjà en base. Sert au badge des séries validées, au trophée de la carte et
+ * à la liste envoyée à /complete.
+ */
+function computeSessionRecords(
+  exercises: ExerciseState[],
+  prMap: Record<string, number>
+): Map<string, SessionRecord> {
+  const best = new Map<string, SessionRecord>();
+  for (const ex of exercises) {
+    const key = ex.exercise.name.toLowerCase();
+    for (const s of ex.sets) {
+      if (!s.validated) continue;
+      const w = setWeight(s);
+      if (w == null) continue;
+      const current = best.get(key);
+      if (!current || w > current.weightKg) {
+        const reps = parseInt(s.repsActual, 10);
+        best.set(key, {
+          localId: s.localId,
+          exerciseName: ex.exercise.name,
+          weightKg: w,
+          reps: Number.isFinite(reps) ? reps : null,
+        });
+      }
+    }
+  }
+  for (const [key, rec] of best) {
+    const previous = prMap[key];
+    if (previous != null && rec.weightKg <= previous) best.delete(key);
+  }
+  return best;
+}
+
+/**
+ * Séance déjà terminée : prMap contient ses propres records, on ne peut donc
+ * plus les "battre". On relit les séries marquées PR en base, réduites à une
+ * par exercice (la plus lourde) pour ne plus afficher les doublons historiques.
+ */
+function recordsFromFlags(exercises: ExerciseState[]): SessionRecord[] {
+  const best = new Map<string, SessionRecord>();
+  for (const ex of exercises) {
+    const key = ex.exercise.name.toLowerCase();
+    for (const s of ex.sets) {
+      if (!s.validated || !s.isPR) continue;
+      const w = setWeight(s);
+      if (w == null) continue;
+      const current = best.get(key);
+      if (!current || w > current.weightKg) {
+        const reps = parseInt(s.repsActual, 10);
+        best.set(key, {
+          localId: s.localId,
+          exerciseName: ex.exercise.name,
+          weightKg: w,
+          reps: Number.isFinite(reps) ? reps : null,
+        });
+      }
+    }
+  }
+  return [...best.values()];
 }
 
 function buildExerciseState(
@@ -695,7 +912,12 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
   const beepedRef = useRef(false);
 
   useEffect(() => {
-    beepedRef.current = false;
+    // Chrono restauré après un rechargement alors que le repos est déjà
+    // écoulé : le bip a eu lieu (ou n'a plus de sens), il ne doit pas
+    // sonner à tort au retour dans l'appli. Chrono neuf : 0 s écoulée, donc
+    // false comme avant.
+    beepedRef.current =
+      Math.floor((Date.now() - timer.startedAt) / 1000) >= timer.suggestedSeconds;
     const interval = setInterval(() => {
       const s = Math.floor((Date.now() - timer.startedAt) / 1000);
       setElapsed(s);
@@ -725,8 +947,8 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
       >
         {formatTime(elapsed)}
       </span>
-      <span className="text-[8px] font-bold uppercase tracking-wider text-[#F5EDED]/35">
-        repos
+      <span className="text-[8px] font-bold uppercase tracking-wider text-[#F5EDED]/35 whitespace-nowrap">
+        repos {timer.suggestedLabel}
       </span>
     </div>
   );
@@ -734,12 +956,30 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
 
 // ── Session Step ──────────────────────────────────────────────────────────────
 
+// "32 kg × 5 · RIR 0" : une série de référence en une ligne. Poids du corps
+// (pas de charge) : juste les reps.
+function formatPrevSet(p: PrevWeight): string {
+  const parts: string[] = [];
+  if (p.weight != null && p.reps != null) parts.push(`${formatKg(p.weight)} kg × ${p.reps}`);
+  else if (p.weight != null) parts.push(`${formatKg(p.weight)} kg`);
+  else if (p.reps != null) parts.push(`${p.reps} reps`);
+  if (p.rir != null) parts.push(`RIR ${p.rir}`);
+  return parts.join(" · ");
+}
+
+const RIR_CHOICES = [0, 1, 2, 3, 4, 5] as const;
+const SCORE_CHOICES = [1, 2, 3, 4, 5] as const;
+
 function SetRow({
   set,
   position,
   exercise,
   prevWeight,
+  prevSet,
+  targetRange,
+  prevInSession,
   prThreshold,
+  isSessionRecord,
   sessionId,
   onChange,
   onValidate,
@@ -752,7 +992,15 @@ function SetRow({
   position: number;
   exercise: Exercise;
   prevWeight: PrevWeight | null;
+  /** La même série (même rang) la dernière fois, voir InitData.prevSets. */
+  prevSet: PrevWeight | null;
+  /** Fourchette de reps du programme pour CETTE série, null si illisible. */
+  targetRange: RepRange | null;
+  /** Dernière série validée au-dessus de celle-ci, dans la même carte. */
+  prevInSession: SetState | null;
   prThreshold: number | null;
+  /** Série validée qui détient le record de la séance pour cet exercice. */
+  isSessionRecord: boolean;
   sessionId: string;
   onChange: (patch: Partial<SetState>) => void;
   onValidate: () => void;
@@ -769,12 +1017,38 @@ function SetRow({
   // pendant la saisie.
   const isPRCandidate =
     weight > 0 && (prThreshold == null || weight > prThreshold);
+  // Série validée : le badge suit le record réel de la séance (un seul par
+  // exercice), pas le drapeau enregistré au moment de la validation, qui
+  // peut être périmé après une correction ou un rechargement.
+  const showPR = set.validated ? isSessionRecord : isPRCandidate;
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [videoError, setVideoError] = useState<string | null>(null);
 
   const suggestedWeight = suggestNextWeight(prevWeight, exercise.rir ?? null);
   const suggestionDiffersFromLast =
     suggestedWeight != null && prevWeight?.weight != null && suggestedWeight !== prevWeight.weight;
+
+  // Séance guidée : objectif de double progression calculé depuis la même
+  // série de la dernière fois et la fourchette du programme. Sans fourchette
+  // lisible ou sans série de référence, on retombe sur l'affichage d'avant
+  // (suggestNextWeight en placeholder).
+  const suggestion = targetRange
+    ? suggestSet({ range: targetRange, prev: prevSet, targetRir: exercise.rir ?? null })
+    : null;
+  const lastRef = prevSet ?? prevWeight;
+  const hasLastRef = lastRef != null && (lastRef.weight != null || lastRef.reps != null);
+  const weightPlaceholder = suggestion
+    ? `${suggestion.weightKg} kg`
+    : suggestedWeight != null
+    ? `${suggestedWeight} kg`
+    : "0";
+  const repsPlaceholder = targetRange
+    ? formatRange(targetRange)
+    : exercise.reps ?? (prevWeight?.reps != null ? prevWeight.reps : "0");
+  const copyableWeight =
+    prevInSession && prevInSession.weightKg && prevInSession.weightKg !== set.weightKg
+      ? prevInSession.weightKg
+      : null;
 
   async function handleVideoSelect(file: File) {
     setVideoError(null);
@@ -833,7 +1107,7 @@ function SetRow({
         {set.validated && (
           <CheckCircle2 size={12} className="text-green-400" />
         )}
-        {(set.isPR || isPRCandidate) && (
+        {showPR && (
           <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
             🏆 PR !
           </span>
@@ -943,41 +1217,78 @@ function SetRow({
         </div>
       ) : (
         <div className="space-y-2">
+          {/* Séance guidée : ce qui a été fait sur CETTE série la dernière
+              fois, et l'objectif du jour (double progression dans la
+              fourchette du programme). "Remplir" pré-remplit poids et reps
+              en un tap, rien n'est jamais imposé. */}
+          {(hasLastRef || suggestion) && (
+            <div className="rounded-lg bg-[#150000] border border-[#890404]/20 px-2.5 py-1.5 space-y-1">
+              {hasLastRef && lastRef && (
+                <p className="text-[10px] text-[#F5EDED]/50 leading-tight break-words">
+                  <span className="text-[#F5EDED]/30">Dernière fois : </span>
+                  {formatPrevSet(lastRef)}
+                </p>
+              )}
+              {suggestion && (
+                <div className="flex items-center gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11px] font-bold text-white leading-tight">
+                      <span className="text-[#E01E1E]">Objectif : </span>
+                      {formatKg(suggestion.weightKg)} kg × {suggestion.reps}
+                    </p>
+                    <p className="text-[9.5px] text-[#F5EDED]/35 leading-tight mt-0.5 break-words">
+                      {suggestion.reason}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      onChange({
+                        weightKg: String(suggestion.weightKg),
+                        repsActual: String(suggestion.reps),
+                      })
+                    }
+                    className="flex-shrink-0 min-h-[36px] px-3 rounded-lg text-[10px] font-black uppercase tracking-widest bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/30 hover:bg-[#E01E1E]/25 transition-colors"
+                    aria-label={`Remplir ${formatKg(suggestion.weightKg)} kg et ${suggestion.reps} reps`}
+                  >
+                    Remplir
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Weight + Reps row */}
           <div className="flex gap-2">
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Poids (kg)
               </label>
               <input aria-label="Poids (kg)"
                 type="number"
                 inputMode="decimal"
-                placeholder={
-                  suggestedWeight != null
-                    ? `${suggestedWeight} kg`
-                    : "0"
-                }
+                placeholder={weightPlaceholder}
                 value={set.weightKg}
                 onChange={(e) => onChange({ weightKg: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
               />
-              {suggestionDiffersFromLast && !set.weightKg && (
+              {!suggestion && suggestionDiffersFromLast && !set.weightKg && (
                 <p className="text-[8.5px] text-[#F5EDED]/30 mt-1 leading-tight">
                   💡 {suggestedWeight}kg suggéré (RIR {prevWeight!.rir} la dernière fois pour une cible {exercise.rir})
                 </p>
               )}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Reps
               </label>
+              {/* Placeholder = la fourchette de CETTE série ("6-8"), plus
+                  jamais le schéma complet du programme ("1x12-15, 2x10-12")
+                  écrasé dans un petit champ numérique. */}
               <input aria-label="Reps"
                 type="number"
                 inputMode="numeric"
-                placeholder={
-                  exercise.reps ??
-                  (prevWeight?.reps != null ? prevWeight.reps : "0")
-                }
+                placeholder={repsPlaceholder}
                 value={set.repsActual}
                 onChange={(e) => onChange({ repsActual: e.target.value })}
                 className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50"
@@ -985,44 +1296,83 @@ function SetRow({
             </div>
           </div>
 
-          {/* RIR + Score row */}
-          <div className="flex gap-2">
-            <div className="flex-1">
-              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+          {/* Même charge que la série juste au-dessus, en un tap. */}
+          {copyableWeight && (
+            <button
+              type="button"
+              onClick={() => onChange({ weightKg: copyableWeight })}
+              className="inline-flex items-center min-h-[36px] px-3 rounded-lg text-[10px] font-bold text-[#F5EDED]/55 hover:text-[#F5EDED]/80 border border-[#890404]/25 hover:border-[#890404]/50 transition-colors"
+            >
+              = Série précédente ({copyableWeight.replace(".", ",")} kg)
+            </button>
+          )}
+
+          {/* RIR + Exécution en pastilles : un tap au lieu de deux menus
+              déroulants natifs par série (143 séries sur 146 renseignées,
+              c'était la saisie la plus répétée de la séance). Re-taper la
+              pastille choisie la vide. Même valeur texte qu'avant dans
+              SetState, persistSet ne change pas. */}
+          <div>
+            <div className="flex items-baseline justify-between gap-2 mb-1">
+              <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 RIR réel
-              </label>
-              <select aria-label="RIR réel"
-                value={set.rirActual}
-                onChange={(e) => onChange({ rirActual: e.target.value })}
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
-              >
-                <option value="">Non renseigné</option>
-                {[0, 1, 2, 3, 4, 5].map((v) => (
-                  <option key={v} value={v}>
-                    RIR {v}
-                    {v === 0 ? " (échec)" : v >= 4 ? " (facile)" : ""}
-                  </option>
-                ))}
-              </select>
+              </span>
+              <span className="text-[8.5px] text-[#F5EDED]/25">0 = échec · 5 = facile</span>
             </div>
-            <div className="flex-1">
-              <label className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
+            <div className="flex gap-1" role="group" aria-label="RIR réel">
+              {RIR_CHOICES.map((v) => {
+                const selected = set.rirActual === String(v);
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={selected}
+                    aria-label={`RIR ${v}${v === 0 ? " (échec)" : v >= 4 ? " (facile)" : ""}`}
+                    onClick={() => onChange({ rirActual: selected ? "" : String(v) })}
+                    className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
+                      selected
+                        ? "bg-[#E01E1E] border-[#E01E1E] text-white"
+                        : "bg-[#150000] border-[#890404]/30 text-[#F5EDED]/55 hover:border-[#E01E1E]/50"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-baseline justify-between gap-2 mb-1">
+              <span className="text-[8px] text-[#F5EDED]/30 uppercase tracking-wider">
                 Exécution
-              </label>
-              <select aria-label="Exécution"
-                value={set.standardizationScore}
-                onChange={(e) =>
-                  onChange({ standardizationScore: e.target.value })
-                }
-                className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-sm font-bold text-white focus:outline-none focus:border-[#E01E1E]/50"
-              >
-                <option value="">Non renseigné</option>
-                {[1, 2, 3, 4, 5].map((v) => (
-                  <option key={v} value={v}>
-                    {v} : {STANDARDIZATION_LABELS[String(v)]}
-                  </option>
-                ))}
-              </select>
+              </span>
+              <span className="text-[8.5px] text-[#F5EDED]/35 truncate">
+                {set.standardizationScore
+                  ? STANDARDIZATION_LABELS[set.standardizationScore]
+                  : "1 = approximative · 5 = parfaite"}
+              </span>
+            </div>
+            <div className="flex gap-1" role="group" aria-label="Exécution">
+              {SCORE_CHOICES.map((v) => {
+                const selected = set.standardizationScore === String(v);
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    aria-pressed={selected}
+                    aria-label={`${v} : ${STANDARDIZATION_LABELS[String(v)]}`}
+                    title={STANDARDIZATION_LABELS[String(v)]}
+                    onClick={() => onChange({ standardizationScore: selected ? "" : String(v) })}
+                    className={`flex-1 min-w-[36px] h-9 rounded-lg border text-sm font-black tabular-nums transition-colors ${
+                      selected
+                        ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
+                        : "bg-[#150000] border-[#890404]/30 text-[#F5EDED]/55 hover:border-amber-500/40"
+                    }`}
+                  >
+                    {v}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -1089,7 +1439,8 @@ function ExerciseCard({
   exState,
   prevWeight,
   prevSets,
-  prThreshold,
+  getPrThreshold,
+  recordHolderId,
   sessionId,
   libraryTip,
   onUpdate,
@@ -1107,7 +1458,10 @@ function ExerciseCard({
   prevWeight: PrevWeight | null;
   /** Tous les sets de la dernière fois, pas juste le dernier — voir InitData.prevSets. */
   prevSets: PrevWeight[];
-  prThreshold: number | null;
+  /** Seuil PR de l'exercice, hors la série donnée (voir computeThreshold). */
+  getPrThreshold: (excludeLocalId: string) => number | null;
+  /** localId de la série qui détient le record de la séance, sinon null. */
+  recordHolderId: string | null;
   sessionId: string;
   libraryTip?: LibraryTip;
   onUpdate: (patch: Partial<ExerciseState>) => void;
@@ -1137,7 +1491,23 @@ function ExerciseCard({
   // effet, aucun risque sur la validation/PR/timer live.
   const validatedCount = exState.sets.filter((s) => s.validated).length;
   const totalSets = exState.sets.length;
-  const hasPR = exState.sets.some((s) => s.isPR);
+  const hasPR = recordHolderId != null && exState.sets.some((s) => s.localId === recordHolderId);
+
+  // Schéma du programme découpé série par série ("1x12-15, 2x10-12" →
+  // 12-15, 10-12, 10-12). null si illisible : l'en-tête et les champs
+  // retombent alors exactement sur l'affichage d'avant.
+  const ranges = parseRepScheme(exState.exercise.reps, exState.exercise.sets);
+  const rangesDiffer =
+    ranges != null && ranges.some((r) => r.min !== ranges[0].min || r.max !== ranges[0].max);
+  const restSeconds = exState.exercise.rest_seconds;
+  // Consigne écrite dans le programme pour cet exercice (distincte de la
+  // note perso du membre, client_exercise_notes) et zone de tension visée :
+  // jamais affichées en séance jusqu'ici, alors que c'est ce que le coach a
+  // écrit pour CETTE séance.
+  const programNotes = exState.exercise.notes?.trim() || null;
+  const tensionFocus = exState.exercise.tension_focus;
+  const tensionLabel = tensionFocus ? TENSION_FOCUS_LABELS[tensionFocus] ?? null : null;
+  const [programNotesOpen, setProgramNotesOpen] = useState(false);
 
   return (
     <div className="bg-[#1a0000] border border-[#890404]/25 rounded-xl overflow-hidden">
@@ -1159,12 +1529,34 @@ function ExerciseCard({
                 {exState.exercise.muscle_group}
               </span>
             )}
+            {tensionLabel && (
+              <span
+                className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#E01E1E]/10 text-[#E01E1E]/80 border border-[#E01E1E]/20"
+                title="Zone de tension visée sur cet exercice"
+              >
+                Focus : {tensionLabel}
+              </span>
+            )}
             {!isCustomExercise && exState.exercise.sets && (
               <span className="text-[9px] text-[#F5EDED]/30">
-                {exState.exercise.sets} séries
-                {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
+                {/* Fourchettes différentes selon la série : une par série
+                    ("12-15 · 10-12 · 10-12 reps") au lieu de "3 séries ×
+                    1x12-15, 2x10-12 reps". Fourchette unique : "3 séries ×
+                    10-12 reps" (même pour un schéma écrit "3x10-12").
+                    Schéma illisible : texte d'avant, tel quel. */}
+                {ranges && rangesDiffer ? (
+                  `${ranges.map(formatRange).join(" · ")} reps`
+                ) : ranges ? (
+                  `${exState.exercise.sets} séries × ${formatRange(ranges[0])} reps`
+                ) : (
+                  <>
+                    {exState.exercise.sets} séries
+                    {exState.exercise.reps && ` × ${exState.exercise.reps} reps`}
+                  </>
+                )}
                 {exState.exercise.rir != null &&
                   ` · RIR ${exState.exercise.rir}`}
+                {restSeconds != null && restSeconds > 0 && ` · repos ${formatRest(restSeconds)}`}
               </span>
             )}
             <span
@@ -1262,6 +1654,28 @@ function ExerciseCard({
 
       {!exState.collapsed && (
       <>
+      {/* Consigne du programme : 2 lignes, dépliable au tap pour tout lire. */}
+      {programNotes && (
+        <button
+          type="button"
+          onClick={() => setProgramNotesOpen((v) => !v)}
+          aria-expanded={programNotesOpen}
+          className="w-full text-left border-t border-[#890404]/20 px-4 py-2.5 flex items-start gap-2 hover:bg-[#890404]/5 transition-colors"
+        >
+          <ClipboardList size={12} className="text-[#E01E1E]/70 mt-0.5 flex-shrink-0" />
+          <span className="min-w-0 flex-1">
+            <span className="ep-label block mb-0.5">Consigne du programme</span>
+            <span
+              className={`block text-[11px] text-[#F5EDED]/65 leading-snug whitespace-pre-wrap break-words ${
+                programNotesOpen ? "" : "line-clamp-2"
+              }`}
+            >
+              {programNotes}
+            </span>
+          </span>
+        </button>
+      )}
+
       {/* Notes panel */}
       {exState.showNotes && (
         <div className="border-t border-[#890404]/20 bg-[#1f0101] px-4 py-3">
@@ -1373,7 +1787,16 @@ function ExerciseCard({
             position={idx + 1}
             exercise={exState.exercise}
             prevWeight={prevWeight}
-            prThreshold={prThreshold}
+            // Même rang que la dernière fois (prevSets est trié par numéro
+            // de série) : la série lourde se compare à la série lourde, plus
+            // au dernier set enregistré qui était souvent le back-off.
+            prevSet={prevSets[idx] ?? null}
+            targetRange={rangeForSet(ranges, idx)}
+            prevInSession={
+              [...exState.sets.slice(0, idx)].reverse().find((s) => s.validated) ?? null
+            }
+            prThreshold={getPrThreshold(set.localId)}
+            isSessionRecord={set.localId === recordHolderId}
             sessionId={sessionId}
             onChange={(patch) => {
               const newSets = [...exState.sets];
@@ -1481,6 +1904,7 @@ export default function SessionView({
   // Init state
   const [loading, setLoading] = useState(true);
   const [initData, setInitData] = useState<InitData | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   // Session state
   const [step, setStep] = useState<Step>("warmup");
@@ -1506,16 +1930,34 @@ export default function SessionView({
   const [pump, setPump] = useState(3);
   const [sessionNotes, setSessionNotes] = useState("");
   const [saving, setSaving] = useState(false);
+  const [completeError, setCompleteError] = useState<string | null>(null);
 
   // Fetch initial data
   useEffect(() => {
     fetch(`/api/client/sessions/${sessionId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        // Une réponse d'erreur ({ error }) était traitée comme des données :
+        // l'écran plantait sur data.exercises au lieu d'afficher "Séance
+        // introuvable".
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data: InitData) => {
         setInitData(data);
+        // Exercices ajoutés en cours de séance (localStorage) : celui qui
+        // porte le même nom qu'un exercice synthétique renvoyé par le
+        // serveur le remplace (même exercice, et son id garde l'ordre
+        // mémorisé des cartes) ; celui qui double un exercice du programme
+        // est ignoré (même nom = mêmes séries en base, deux cartes se
+        // seraient écrasé leurs séries l'une l'autre).
         const customExercises = loadCustomExercises(sessionId);
+        const customNames = new Set(customExercises.map((e) => e.name));
+        const serverExercises = data.exercises.filter(
+          (e) => !(isSyntheticExercise(e) && customNames.has(e.name))
+        );
+        const serverNames = new Set(serverExercises.map((e) => e.name));
         const combined = applyExerciseOrder(
-          [...data.exercises, ...customExercises],
+          [...serverExercises, ...customExercises.filter((e) => !serverNames.has(e.name))],
           loadExerciseOrder(sessionId)
         );
         const exStates = buildExerciseState(
@@ -1524,6 +1966,27 @@ export default function SessionView({
           data.exerciseNotes
         );
         setExercises(exStates);
+
+        // Chrono de repos en cours avant le rechargement (voir
+        // saveRestTimer) : on le reprend là où il en était, rattaché à sa
+        // série par son id en base (le localId d'une série rechargée).
+        if (!data.session.is_completed && data.session.warmup_validated) {
+          const stored = loadRestTimer(sessionId);
+          if (stored) {
+            const age = Date.now() - stored.startedAt;
+            const target = findRestTimerSet(exStates, stored);
+            if (target && age >= 0 && age < REST_TIMER_MAX_AGE_MS) {
+              setRestTimer({
+                startedAt: stored.startedAt,
+                suggestedSeconds: stored.suggestedSeconds,
+                suggestedLabel: stored.suggestedLabel,
+                setLocalId: target.localId,
+              });
+            } else {
+              clearRestTimer(sessionId);
+            }
+          }
+        }
 
         // Determine starting step
         if (data.session.is_completed) {
@@ -1543,7 +2006,13 @@ export default function SessionView({
 
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch((e) => {
+        // 404 : la séance n'existe pas (ou plus) pour ce compte. Tout le
+        // reste (réseau coupé en salle, serveur indisponible) ne doit pas
+        // se faire passer pour une séance perdue.
+        setLoadFailed(!(e instanceof Error && e.message === "HTTP 404"));
+        setLoading(false);
+      });
   }, [sessionId]);
 
   // Session timer
@@ -1660,38 +2129,18 @@ export default function SessionView({
   // exigeait un prThreshold déjà existant (initData.prMap, dérivé de
   // personal_records) — sur un exercice jamais fait avant, ce seuil est
   // toujours null, donc AUCUN poids ne peut jamais devenir un premier PR.
-  // Bloque tout le monde en permanence sur tout exercice tout juste ajouté
-  // à un programme, pas seulement lui. sessionBestWeightRef complète le
-  // seuil serveur (figé au chargement de la page, jamais mis à jour par les
-  // sets déjà validés PENDANT la séance) : premier poids validé sur un
-  // exercice sans historique = PR (c'est littéralement son seul record),
-  // et relève la barre pour les sets suivants de la même séance — pas de
-  // faux PR répété à chaque set fait à poids identique.
-  // State (pas une ref) : la lire pendant le rendu — pour le badge "PR !"
-  // live ci-dessous — est interdit par les règles strictes de ce projet
-  // (react-hooks/refs, "Cannot access refs during render") avec une ref.
-  const [sessionBestWeights, setSessionBestWeights] = useState<Record<string, number>>({});
-
-  // Seuil réel pour un exercice donné : le plus haut entre l'historique déjà
-  // en base (initData.prMap) et ce qui a déjà été battu PENDANT cette séance
-  // (sessionBestWeights, jamais reflété par prMap qui reste figé au
-  // chargement). Partagée entre persistSet (calcul du vrai isPR sauvegardé)
-  // et le badge "🏆 PR !" affiché en direct pendant la saisie, pour que les
-  // deux racontent toujours la même histoire — sans ça, le badge live
-  // n'apparaissait jamais sur un exercice sans historique (prThreshold
-  // toujours null), alors que le premier poids validé devient bien un PR
-  // une fois enregistré : le badge sautait à l'existence après coup au lieu
-  // d'anticiper, au lieu d'avoir été là dès la saisie.
+  // Premier poids validé sur un exercice sans historique = PR (c'est
+  // littéralement son seul record), et il relève la barre pour les sets
+  // suivants de la même séance.
+  // Le seuil se recalcule désormais à partir des séries validées à l'écran
+  // (computeThreshold) au lieu d'un state "meilleur poids de la séance"
+  // perdu à chaque rechargement : partagé entre persistSet (vrai isPR
+  // sauvegardé) et le badge "🏆 PR !" affiché pendant la saisie, pour que
+  // les deux racontent toujours la même histoire.
   const getEffectiveThreshold = useCallback(
-    (exerciseName: string): number | null => {
-      const exKey = exerciseName.toLowerCase();
-      const serverThreshold = initData?.prMap[exKey] ?? null;
-      const sessionBest = sessionBestWeights[exKey] ?? null;
-      return serverThreshold != null && sessionBest != null
-        ? Math.max(serverThreshold, sessionBest)
-        : serverThreshold ?? sessionBest;
-    },
-    [initData, sessionBestWeights]
+    (exerciseName: string, excludeLocalId?: string): number | null =>
+      computeThreshold(exercises, initData?.prMap ?? {}, exerciseName, excludeLocalId),
+    [exercises, initData]
   );
 
   // Envois en vol, par set : un double-tap sur "Valider le set" partait en
@@ -1729,12 +2178,10 @@ export default function SessionView({
         initData?.prevWeights[ex.name.toLowerCase()] ?? null;
 
       const weight = parseFloat(set.weightKg) || null;
-      const exKey = ex.name.toLowerCase();
-      const effectiveThreshold = getEffectiveThreshold(ex.name);
+      // Hors la série elle-même : la revalider (après correction) ne doit
+      // pas lui retirer son PR parce qu'elle "égale" son propre poids.
+      const effectiveThreshold = getEffectiveThreshold(ex.name, set.localId);
       const isPR = weight != null && (effectiveThreshold == null || weight > effectiveThreshold);
-      if (isPR && weight != null) {
-        setSessionBestWeights((prev) => ({ ...prev, [exKey]: weight }));
-      }
 
       // Retrouve le set par son localId plutot que par son index : entre le
       // depart de la requete et sa reponse, l'utilisateur a pu retirer une
@@ -1794,6 +2241,7 @@ export default function SessionView({
       }
 
       savingSetsRef.current.delete(set.localId);
+      if (dbId) attachRestTimerDbId(sessionId, set.localId, dbId);
 
       // Update local state — le geste de l'utilisateur est conserve meme si
       // le reseau a laché, mais le set porte alors un avertissement visible
@@ -1888,18 +2336,33 @@ export default function SessionView({
 
       // Chrono de repos ouvert immediatement : il doit demarrer quand la
       // serie se termine, pas a la fin de l'aller-retour reseau.
+      // Repos du programme en priorité (45 s aux élévations latérales, 60 s
+      // au pec deck...) : avant, seul le RIR comptait, et avec un RIR 0
+      // partout le bip sonnait toujours à 3:00. Le barème par RIR reste pour
+      // un exercice sans repos programmé (séance libre, exercice ajouté).
       const rir = set.rirActual ? parseInt(set.rirActual) : 2;
-      const suggested = getSuggestedRest(rir);
-      setRestTimer({
+      const programmedRest = exercises[exIdx]?.exercise.rest_seconds;
+      const suggested =
+        programmedRest != null && programmedRest > 0
+          ? { seconds: programmedRest, label: formatRest(programmedRest) }
+          : getSuggestedRest(rir);
+      const timer: RestTimer = {
         startedAt: Date.now(),
         suggestedSeconds: suggested.seconds,
         suggestedLabel: suggested.label,
         setLocalId: set.localId,
+      };
+      setRestTimer(timer);
+      saveRestTimer(sessionId, {
+        ...timer,
+        setDbId: set.dbId,
+        exerciseName: exercises[exIdx]?.exercise.name ?? null,
+        setNumber: set.setNumber,
       });
 
       void persistSet(exIdx, setIdx);
     },
-    [exercises, persistSet, restTimer, closeRestTimer]
+    [exercises, persistSet, restTimer, closeRestTimer, sessionId]
   );
 
   const handleRetrySaveSet = useCallback(
@@ -1911,6 +2374,40 @@ export default function SessionView({
 
   const handleAddExercise = useCallback(
     (input: { name: string; muscleGroup: string | null }) => {
+      // Exercice déjà présent sous ce nom exact : une seconde carte
+      // partagerait les mêmes séries en base (le POST est idempotent sur
+      // exercice + numéro de série) et sa "Set 1" écraserait celle déjà
+      // faite. On ajoute plutôt une série à la carte existante.
+      const existingIdx = exercises.findIndex((e) => e.exercise.name === input.name);
+      if (existingIdx !== -1) {
+        setExercises((prev) =>
+          prev.map((e, i) => {
+            if (i !== existingIdx) return e;
+            const nextNumber = e.sets.reduce((max, st) => Math.max(max, st.setNumber), 0) + 1;
+            return {
+              ...e,
+              collapsed: false,
+              sets: [
+                ...e.sets,
+                {
+                  localId: newLocalId(),
+                  setNumber: nextNumber,
+                  weightKg: "",
+                  repsActual: "",
+                  rirActual: "",
+                  standardizationScore: "",
+                  validated: false,
+                  isPR: false,
+                  dbId: null,
+                  restDuration: null,
+                  hasVideo: false,
+                },
+              ],
+            };
+          })
+        );
+        return;
+      }
       // 1 set pour démarrer — "Ajouter un set" permet d'en rajouter autant
       // que voulu, mais imposer 3 d'office ne laissait aucun moyen de
       // choisir moins pour une séance libre.
@@ -1956,7 +2453,7 @@ export default function SessionView({
       ]);
       saveCustomExercises(sessionId, [...loadCustomExercises(sessionId), newExercise]);
     },
-    [exercises.length, sessionId]
+    [exercises, sessionId]
   );
 
   // Retirer un exercice de la séance — n'affecte que la vue locale, les
@@ -2090,16 +2587,15 @@ export default function SessionView({
         validatedSets.length
       : null;
 
-  // PRs from this session
-  const sessionPRs = exercises.flatMap((ex) =>
-    ex.sets
-      .filter((s) => s.isPR && s.validated)
-      .map((s) => ({
-        exerciseName: ex.exercise.name,
-        weightKg: parseFloat(s.weightKg),
-        reps: s.repsActual ? parseInt(s.repsActual) : null,
-      }))
-  );
+  // PRs from this session : un seul par exercice (la série la plus lourde),
+  // et seulement s'il bat le record en base. Avant, TOUTES les séries
+  // marquées PR partaient à /complete, d'où les doublons dans
+  // personal_records. Séance déjà terminée : ses propres records sont dans
+  // prMap, on relit donc les drapeaux enregistrés (dédoublonnés).
+  const sessionRecords = computeSessionRecords(exercises, initData?.prMap ?? {});
+  const sessionPRs = (
+    initData?.session.is_completed ? recordsFromFlags(exercises) : [...sessionRecords.values()]
+  ).map((r) => ({ exerciseName: r.exerciseName, weightKg: r.weightKg, reps: r.reps }));
 
   const [canceling, setCanceling] = useState(false);
 
@@ -2118,6 +2614,7 @@ export default function SessionView({
     localStorage.removeItem(`ep-warmup-start-${sessionId}`);
     localStorage.removeItem(customExercisesKey(sessionId));
     localStorage.removeItem("ep-active-session-id");
+    clearRestTimer(sessionId);
     router.push(returnPath);
   }, [sessionId, returnPath, router, confirm]);
 
@@ -2149,7 +2646,8 @@ export default function SessionView({
         };
       });
 
-      await fetch(`/api/client/sessions/${sessionId}/complete`, {
+      setCompleteError(null);
+      const res = await fetch(`/api/client/sessions/${sessionId}/complete`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2158,17 +2656,38 @@ export default function SessionView({
           energy_level: energy,
           pump,
           notes: sessionNotes,
-          prs: sessionPRs,
+          // Recalculé ici depuis les séries validées plutôt que lu dans
+          // sessionPRs : même résultat (un record par exercice, au-dessus
+          // de prMap), sans dépendre d'une valeur dérivée d'une Map.
+          prs: [...computeSessionRecords(exercises, initData?.prMap ?? {}).values()].map((r) => ({
+            exerciseName: r.exerciseName,
+            weightKg: r.weightKg,
+            reps: r.reps,
+          })),
           workoutData,
         }),
       });
+      // La réponse n'était jamais lue : sur une erreur serveur, l'écran
+      // effaçait la séance en cours et repartait au logbook comme si tout
+      // était sauvegardé. On reste sur le récap, rien n'est perdu.
+      if (!res.ok) {
+        setCompleteError("La séance n'a pas pu être sauvegardée. Réessaie.");
+        setSaving(false);
+        return;
+      }
 
-      localStorage.removeItem(`ep-session-start-${sessionId}`);
-      localStorage.removeItem(`ep-warmup-start-${sessionId}`);
-      localStorage.removeItem(customExercisesKey(sessionId));
-      localStorage.removeItem("ep-active-session-id");
+      // Séance sauvegardée : un stockage local inaccessible ne doit pas
+      // faire croire le contraire (le catch plus bas parle de connexion).
+      try {
+        localStorage.removeItem(`ep-session-start-${sessionId}`);
+        localStorage.removeItem(`ep-warmup-start-${sessionId}`);
+        localStorage.removeItem(customExercisesKey(sessionId));
+        localStorage.removeItem("ep-active-session-id");
+      } catch {}
+      clearRestTimer(sessionId);
       router.push(returnPath);
     } catch {
+      setCompleteError("Pas de connexion, la séance n'est pas encore sauvegardée. Réessaie.");
       setSaving(false);
     }
   }, [
@@ -2179,7 +2698,7 @@ export default function SessionView({
     energy,
     pump,
     sessionNotes,
-    sessionPRs,
+    initData,
     router,
     returnPath,
   ]);
@@ -2227,7 +2746,24 @@ export default function SessionView({
   if (!initData) {
     return (
       <div className="px-6 py-8 text-center">
-        <p className="text-[#F5EDED]/40">Séance introuvable</p>
+        {loadFailed ? (
+          <>
+            <p className="text-[#F5EDED]/60 text-sm mb-1">Impossible de charger la séance.</p>
+            <p className="text-[#F5EDED]/35 text-xs mb-4">
+              Vérifie ta connexion : tes séries déjà validées sont enregistrées.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="ep-btn-primary"
+              style={{ padding: "12px 22px", fontSize: 12, borderRadius: 12 }}
+            >
+              Réessayer
+            </button>
+          </>
+        ) : (
+          <p className="text-[#F5EDED]/40">Séance introuvable</p>
+        )}
       </div>
     );
   }
@@ -2240,7 +2776,7 @@ export default function SessionView({
     return (
       <WarmupStep
         sessionId={sessionId}
-        movementPreps={buildMovementPreps(initData.exercises, initData.prevWeights)}
+        movementPreps={buildMovementPreps(initData.exercises, initData.prevWeights, initData.prevSets)}
         dayLabel={session.day_label}
         muscleGroups={muscleGroups}
         onValidate={handleWarmupValidate}
@@ -2262,6 +2798,28 @@ export default function SessionView({
             acc + parseInt(s.standardizationScore) / arr.length,
           0
         ) || 0;
+
+    const recapBreakdownSets = session.is_completed
+      ? initData.existingSets
+      : exercises.flatMap((ex) =>
+          ex.sets
+            .filter((st) => st.validated)
+            .map((st) => {
+              const reps = parseInt(st.repsActual, 10);
+              const rirValue = parseInt(st.rirActual, 10);
+              return {
+                id: st.localId,
+                exercise_name: ex.exercise.name,
+                set_number: st.setNumber,
+                weight_kg: setWeight(st),
+                reps_actual: Number.isFinite(reps) ? reps : null,
+                rir_actual: Number.isFinite(rirValue) ? rirValue : null,
+                is_pr: sessionRecords.get(ex.exercise.name.toLowerCase())?.localId === st.localId,
+                notes: null,
+                video_url: null,
+              };
+            })
+        );
 
     const volumeData = Object.entries(volumeByMuscle).map(([mg, sets]) => {
       const lm = VOLUME_LANDMARKS[mg] ?? { mev: 8, mav: 16, mrv: 22 };
@@ -2296,13 +2854,20 @@ export default function SessionView({
           </p>
           <h1 className="text-2xl font-black uppercase">{session.day_label}</h1>
           <p className="text-xs text-[#F5EDED]/35 mt-1">
+            {/* Séance passée : SA date et SA durée enregistrée. Avant, le
+                récap d'une séance terminée affichait la date du jour et
+                "00:00" (le chrono de séance ne tourne que pendant
+                l'entraînement). Séance en cours : aujourd'hui + chrono. */}
             {new Intl.DateTimeFormat("fr-FR", {
               weekday: "long",
               day: "numeric",
               month: "long",
-            }).format(new Date())}
-            {" · "}
-            {formatTime(sessionElapsed)} de séance
+            }).format(
+              session.is_completed ? new Date(session.session_date + "T12:00:00") : new Date()
+            )}
+            {session.is_completed
+              ? session.duration_minutes != null && ` · ${session.duration_minutes} min de séance`
+              : ` · ${formatTime(sessionElapsed)} de séance`}
           </p>
         </div>
 
@@ -2398,7 +2963,36 @@ export default function SessionView({
               </div>
             </div>
           )}
+          {/* Les notes libres saisies en fin de séance n'étaient visibles
+              nulle part dans le récap. */}
+          {session.is_completed && session.notes && (
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
+                Notes libres
+              </p>
+              <p className="text-sm text-[#F5EDED]/70 leading-relaxed whitespace-pre-wrap break-words">
+                {session.notes}
+              </p>
+            </div>
+          )}
         </div>
+
+        {/* Détail des séries : ce qui a vraiment été fait, exercice par
+            exercice (poids × reps, RIR, PR, vidéo). Le récap ne montrait
+            que 3 graphiques. Séance terminée : les séries enregistrées en
+            base ; séance en cours : les séries validées à l'écran, pour
+            relire avant de sauvegarder. */}
+        {recapBreakdownSets.length > 0 && (
+          <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-5">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
+              Détail des séries
+            </p>
+            <SessionSetsBreakdown
+              sets={recapBreakdownSets}
+              videoUrlFor={(s) => initData.videoUrlsBySetId?.[s.id] ?? null}
+            />
+          </div>
+        )}
 
         {/* Charts */}
         {volumeData.length > 0 && (
@@ -2488,6 +3082,12 @@ export default function SessionView({
         {/* Save button */}
         {!session.is_completed && (
           <>
+            {completeError && (
+              <div className="flex items-start gap-2 bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 mb-3">
+                <AlertCircle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-300">{completeError}</p>
+              </div>
+            )}
             <button
               onClick={handleCompleteSession}
               disabled={saving || canceling}
@@ -2678,7 +3278,12 @@ export default function SessionView({
               initData.prevWeights[exState.exercise.name.toLowerCase()] ?? null
             }
             prevSets={initData.prevSets[exState.exercise.name.toLowerCase()] ?? []}
-            prThreshold={getEffectiveThreshold(exState.exercise.name)}
+            getPrThreshold={(excludeLocalId) =>
+              getEffectiveThreshold(exState.exercise.name, excludeLocalId)
+            }
+            recordHolderId={
+              sessionRecords.get(exState.exercise.name.toLowerCase())?.localId ?? null
+            }
             libraryTip={initData.libraryByName[exState.exercise.name.toLowerCase()]}
             sessionId={sessionId}
             onUpdate={(patch) =>
@@ -2716,6 +3321,7 @@ export default function SessionView({
               if (restTimer) {
                 closeRestTimer(restTimer, Math.floor((Date.now() - restTimer.startedAt) / 1000));
                 setRestTimer(null);
+                clearRestTimer(sessionId);
               }
               setStep("recap");
             }}
