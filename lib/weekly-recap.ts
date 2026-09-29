@@ -1,5 +1,7 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import type { WeeklyRecapStats } from "@/lib/weekly-recap-format";
+import { todayInParis } from "@/lib/dates";
+import { addDaysToDate, countDistinctSessions } from "@/lib/weekly-review-helpers";
 
 export type { WeeklyRecapStats } from "@/lib/weekly-recap-format";
 export { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
@@ -28,26 +30,46 @@ function avg(vals: (number | null)[]): number | null {
 export async function getMyWeeklyRecap(clientId: string): Promise<WeeklyRecapStats | null> {
   try {
     const supabase = await createServerSupabase();
-    const now = new Date();
-    const weekAgo = new Date(now);
-    weekAgo.setDate(now.getDate() - 7);
-    const twoWeeksAgo = new Date(now);
-    twoWeeksAgo.setDate(now.getDate() - 14);
-    const weekAgoIso = weekAgo.toISOString();
-    const weekAgoDateStr = weekAgo.toISOString().split("T")[0];
-    const twoWeeksAgoDateStr = twoWeeksAgo.toISOString().split("T")[0];
+    // Fenêtre de 7 jours glissants AUJOURD'HUI INCLUS, en dates de Paris
+    // (audit 2026-09-29) : l'ancien calcul partait de new Date() en UTC, et
+    // regroupait les repas par created_at.slice(0, 10), donc en date UTC.
+    // Un repas noté entre 0h et 2h (heure de Paris) tombait sur la veille.
+    // food_logs.logged_at et workout_logs.logged_at sont des colonnes date
+    // déjà écrites en heure de Paris : on les utilise directement.
+    const today = todayInParis();
+    const weekAgoDateStr = addDaysToDate(today, -6);
+    const twoWeeksAgoDateStr = addDaysToDate(today, -13);
 
-    const [{ data: workouts }, { data: foodLogs }, { data: dailyLogs }] = await Promise.all([
-      supabase.from("workout_logs").select("created_at").eq("client_id", clientId).gte("created_at", weekAgoIso),
-      supabase.from("food_logs").select("created_at").eq("client_id", clientId).gte("created_at", weekAgoIso),
+    const [sessionsRes, workoutsRes, foodRes, dailyRes] = await Promise.all([
+      supabase
+        .from("sessions")
+        .select("id, session_date")
+        .eq("client_id", clientId)
+        .eq("is_completed", true)
+        .gte("session_date", weekAgoDateStr)
+        .lte("session_date", today),
+      supabase
+        .from("workout_logs")
+        .select("session_id, logged_at")
+        .eq("client_id", clientId)
+        .gte("logged_at", weekAgoDateStr)
+        .lte("logged_at", today),
+      supabase.from("food_logs").select("logged_at").eq("client_id", clientId).gte("logged_at", weekAgoDateStr).lte("logged_at", today),
       supabase.from("daily_logs").select("log_date, weight_morning").eq("client_id", clientId).gte("log_date", twoWeeksAgoDateStr),
     ]);
+    const firstError = sessionsRes.error ?? workoutsRes.error ?? foodRes.error ?? dailyRes.error;
+    if (firstError) throw firstError;
 
-    const sessions = (workouts ?? []).length;
+    // Une séance = une séance, pas une ligne par exercice (voir
+    // countDistinctSessions : c'est ce qui donnait "32 séances").
+    const sessions = countDistinctSessions(
+      (sessionsRes.data ?? []) as { id: string; session_date: string | null }[],
+      (workoutsRes.data ?? []) as { session_id: string | null; logged_at: string | null }[],
+    );
 
-    const foodDaysSet = new Set(((foodLogs ?? []) as { created_at: string }[]).map((f) => f.created_at.slice(0, 10)));
+    const foodDaysSet = new Set(((foodRes.data ?? []) as { logged_at: string }[]).map((f) => f.logged_at.slice(0, 10)));
 
-    const weights = (dailyLogs ?? []) as { log_date: string; weight_morning: number | null }[];
+    const weights = (dailyRes.data ?? []) as { log_date: string; weight_morning: number | null }[];
     const thisWeekWeights = weights.filter((w) => w.log_date >= weekAgoDateStr).map((w) => w.weight_morning);
     const lastWeekWeights = weights.filter((w) => w.log_date < weekAgoDateStr).map((w) => w.weight_morning);
     const avgWeight = avg(thisWeekWeights);
@@ -55,7 +77,8 @@ export async function getMyWeeklyRecap(clientId: string): Promise<WeeklyRecapSta
     const weightDeltaKg = avgWeight != null && avgWeightPrev != null ? Math.round((avgWeight - avgWeightPrev) * 10) / 10 : null;
 
     return { sessions, foodDays: foodDaysSet.size, weightDeltaKg, avgWeight };
-  } catch {
+  } catch (e) {
+    console.error("getMyWeeklyRecap error:", e);
     return null;
   }
 }

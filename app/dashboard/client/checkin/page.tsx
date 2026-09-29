@@ -12,15 +12,14 @@ import {
 import { getClientDailyLogs, computeWeeklyAverages } from "@/utils/daily-logs";
 import { safeExternalUrl } from "@/lib/sanitize";
 import CheckinForm from "@/components/ui/CheckinForm";
+import WeeklyReview from "@/components/ui/WeeklyReview";
+import { getWeeklyReview } from "@/lib/weekly-review";
+import { resolveWeekStart, trainingSummary } from "@/lib/weekly-review-helpers";
+import { nowInParis, todayInParis } from "@/lib/dates";
 import CoachOnlyGate from "@/components/ui/CoachOnlyGate";
 import { CheckCircle2, Clock, Star, ExternalLink, CalendarDays } from "lucide-react";
 
 const DAY_NAMES = ["", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
-
-function isoWeekday(date: Date): number {
-  const d = date.getDay();
-  return d === 0 ? 7 : d;
-}
 
 function BilanRating({ rating }: { rating: number }) {
   return (
@@ -214,7 +213,17 @@ export default async function CheckinPage() {
   const weekNum = getISOWeek(new Date(getWeekStart()));
   const avgWeight = computeWeeklyAverages(recentLogs).weight;
   const checkinDay = profile?.checkin_day ?? 1;
-  const isCheckinDay = isoWeekday(new Date()) === checkinDay;
+  // Jour en heure de Paris : new Date().getDay() donnait le jour UTC du
+  // serveur, donc la veille entre minuit et 2h (heure de Paris).
+  const isCheckinDay = nowInParis().isoDow === checkinDay;
+
+  // Revue de la semaine affichée au-dessus du formulaire, le jour du
+  // check-in seulement : le membre a ses chiffres sous les yeux au moment
+  // de répondre, au lieu de devoir les retrouver de mémoire. Le lundi,
+  // c'est la semaine qui vient de se terminer qui compte.
+  const today = todayInParis();
+  const reviewWeekStart = resolveWeekStart(null, today);
+  const weekReview = !existing && isCheckinDay ? await getWeeklyReview(user.id, reviewWeekStart, today) : null;
 
   return (
     <div className="page-transition" style={{ padding: "32px 20px 100px", maxWidth: 560, margin: "0 auto" }}>
@@ -362,8 +371,23 @@ export default async function CheckinPage() {
           )}
         </div>
       ) : isCheckinDay ? (
-        <div className="ep-card">
-          <CheckinForm weightAvgFromLogs={avgWeight} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {weekReview && (
+            <>
+              <WeeklyReview data={weekReview} basePath={null} today={today} canGoNext={false} canGoPrev={false} />
+              {/* Point de départ pour la question "Performances entraînement"
+                  du formulaire : le résumé factuel, prêt à être complété. */}
+              <div className="ep-card" style={{ padding: "12px 16px" }}>
+                <p className="ep-label" style={{ margin: "0 0 4px", fontSize: 9 }}>Pour la question entraînement</p>
+                <p style={{ margin: 0, fontSize: 13, color: "rgba(245,237,237,0.75)", lineHeight: 1.5 }}>
+                  {trainingSummary(weekReview)}
+                </p>
+              </div>
+            </>
+          )}
+          <div className="ep-card">
+            <CheckinForm weightAvgFromLogs={avgWeight} />
+          </div>
         </div>
       ) : (
         <div className="ep-card" style={{ padding: "24px 20px", textAlign: "center" }}>

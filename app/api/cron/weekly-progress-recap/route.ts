@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser } from "@/lib/notify";
 import { formatWeeklyRecapLine } from "@/lib/weekly-recap-format";
-import { nowInParis, addMinutesToHhmm } from "@/lib/dates";
+import { nowInParis, addMinutesToHhmm, todayInParis } from "@/lib/dates";
+import { addDaysToDate, countDistinctSessions } from "@/lib/weekly-review-helpers";
 
 // Item 23 (récap hebdo personnalisé) : cible chaque dimanche 18h00
 // (Europe/Paris). Ferme la boucle sur séances + nutrition + poids en un
@@ -49,22 +50,29 @@ export async function GET(req: Request) {
   }
 
   const admin = createAdminClient();
-  const now = new Date();
-  const weekAgo = new Date(now);
-  weekAgo.setDate(now.getDate() - 7);
-  const twoWeeksAgo = new Date(now);
-  twoWeeksAgo.setDate(now.getDate() - 14);
-  const weekAgoIso = weekAgo.toISOString();
-  const weekAgoDateStr = weekAgo.toISOString().split("T")[0];
-  const twoWeeksAgoIso = twoWeeksAgo.toISOString();
-  const twoWeeksAgoDateStr = twoWeeksAgo.toISOString().split("T")[0];
+  // Bornes en dates de Paris (audit 2026-09-29) : 7 jours AUJOURD'HUI
+  // INCLUS, donc du lundi au dimanche puisque ce cron tourne le dimanche.
+  // L'ancien calcul (new Date() - 7 jours, en UTC) débordait sur le
+  // dimanche précédent et regroupait les repas par date UTC.
+  const today = todayInParis();
+  const weekAgoDateStr = addDaysToDate(today, -6);
+  const twoWeeksAgoDateStr = addDaysToDate(today, -13);
 
-  const [{ data: workouts }, { data: foodLogs }, { data: dailyLogs }, { data: profiles }] = await Promise.all([
-    admin.from("workout_logs").select("client_id, created_at").gte("created_at", weekAgoIso),
-    admin.from("food_logs").select("client_id, created_at").gte("created_at", twoWeeksAgoIso),
+  const [sessionsRes, workoutsRes, foodRes, dailyRes, profilesRes] = await Promise.all([
+    admin.from("sessions").select("id, client_id, session_date").eq("is_completed", true).gte("session_date", weekAgoDateStr).lte("session_date", today),
+    admin.from("workout_logs").select("client_id, session_id, logged_at").gte("logged_at", weekAgoDateStr).lte("logged_at", today),
+    admin.from("food_logs").select("client_id, logged_at").gte("logged_at", weekAgoDateStr).lte("logged_at", today),
     admin.from("daily_logs").select("client_id, log_date, weight_morning").gte("log_date", twoWeeksAgoDateStr),
     admin.from("profiles").select("id, role, subscription_status"),
   ]);
+  // Un récap faux est pire que pas de récap : si une requête échoue, on
+  // n'envoie rien plutôt qu'un "0 séance" à toute la base.
+  const firstError = sessionsRes.error ?? workoutsRes.error ?? foodRes.error ?? dailyRes.error ?? profilesRes.error;
+  if (firstError) {
+    console.error("weekly-progress-recap query error:", firstError);
+    return NextResponse.json({ error: "Lecture des données impossible" }, { status: 500 });
+  }
+  const profiles = profilesRes.data;
 
   // Brainstorm "2 avatars" (2026-09-10) : ce filtre excluait les membres
   // gratuits alors que tout ce dont ce récap a besoin (séances, nutrition,
@@ -78,22 +86,37 @@ export async function GET(req: Request) {
       .map((p) => p.id)
   );
 
+  // Séances : workout_logs contient UNE LIGNE PAR EXERCICE, les compter
+  // une par une annonçait "32 séances" pour 2 ou 3 réelles. On regroupe par
+  // client puis on compte les séances distinctes (countDistinctSessions,
+  // même règle que la carte "Ta semaine" et la page Ma semaine).
+  const completedByClient = new Map<string, { id: string; session_date: string | null }[]>();
+  for (const s of (sessionsRes.data ?? []) as { id: string; client_id: string; session_date: string | null }[]) {
+    const arr = completedByClient.get(s.client_id) ?? [];
+    arr.push(s);
+    completedByClient.set(s.client_id, arr);
+  }
+  const logsByClient = new Map<string, { session_id: string | null; logged_at: string | null }[]>();
+  for (const w of (workoutsRes.data ?? []) as { client_id: string; session_id: string | null; logged_at: string | null }[]) {
+    const arr = logsByClient.get(w.client_id) ?? [];
+    arr.push(w);
+    logsByClient.set(w.client_id, arr);
+  }
   const sessionsThisWeek = new Map<string, number>();
-  for (const w of (workouts ?? []) as { client_id: string; created_at: string }[]) {
-    sessionsThisWeek.set(w.client_id, (sessionsThisWeek.get(w.client_id) ?? 0) + 1);
+  for (const clientId of new Set([...completedByClient.keys(), ...logsByClient.keys()])) {
+    const n = countDistinctSessions(completedByClient.get(clientId) ?? [], logsByClient.get(clientId) ?? []);
+    if (n > 0) sessionsThisWeek.set(clientId, n);
   }
 
   const foodDaysByClient = new Map<string, Set<string>>();
-  for (const f of (foodLogs ?? []) as { client_id: string; created_at: string }[]) {
-    if (f.created_at < weekAgoIso) continue; // seulement cette semaine pour l'adhérence
-    const day = f.created_at.slice(0, 10);
+  for (const f of (foodRes.data ?? []) as { client_id: string; logged_at: string }[]) {
     const set = foodDaysByClient.get(f.client_id) ?? new Set<string>();
-    set.add(day);
+    set.add(f.logged_at.slice(0, 10));
     foodDaysByClient.set(f.client_id, set);
   }
 
   const weightsByClient = new Map<string, { log_date: string; weight_morning: number | null }[]>();
-  for (const d of (dailyLogs ?? []) as { client_id: string; log_date: string; weight_morning: number | null }[]) {
+  for (const d of (dailyRes.data ?? []) as { client_id: string; log_date: string; weight_morning: number | null }[]) {
     const arr = weightsByClient.get(d.client_id) ?? [];
     arr.push(d);
     weightsByClient.set(d.client_id, arr);
@@ -129,7 +152,9 @@ export async function GET(req: Request) {
     });
 
     const isCoachSelf = (profiles as { id: string; role: string }[] | null)?.find((p) => p.id === clientId)?.role === "coach";
-    const url = isCoachSelf ? "/dashboard/coach/moi/bilan" : "/dashboard/client/bilan";
+    // Le push mène à la revue complète de la semaine (séances, sommeil,
+    // poids, questions de recul) plutôt qu'au simple bilan du jour.
+    const url = isCoachSelf ? "/dashboard/coach/moi/semaine" : "/dashboard/client/semaine";
 
     await notifyUser(clientId, {
       type: "weekly_progress_recap",
