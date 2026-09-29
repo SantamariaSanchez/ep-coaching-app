@@ -15,7 +15,7 @@ import {
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
   AlertTriangle, Wallet, Network, HeartPulse, Rocket, Bot, FileText, PhoneCall, Megaphone,
-  BookOpenCheck, Gauge, Award,
+  BookOpenCheck, Gauge, Award, CalendarCheck,
 } from "lucide-react";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { EPLogo } from "@/components/ui/EPLogo";
@@ -70,7 +70,7 @@ const CLIENT_TABS: TabItem[] = [
     label: "Suivi",
     icon: TrendingUp,
     href: "/dashboard/client/bilan",
-    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda", "cycle"],
+    matchSegments: ["photos", "nutrition", "progress", "roadmap", "bilan", "steps", "tracking", "mindset", "agenda", "cycle", "semaine"],
   },
   {
     label: "Coach",
@@ -294,6 +294,10 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // techniquement accessible en 2 taps. 3e position = visible d'emblée,
       // juste après Bilan et Nutrition, sans scroll.
       { label: "Agenda",         icon: CalendarDays,   segment: "moi/agenda" },
+      // Revue de la semaine (audit 2026-09-29) : le rituel de pilotage perso
+      // du dimanche, placé juste après l'agenda pour rester visible sans
+      // scroll sur mobile, comme lui.
+      { label: "Ma semaine",     icon: CalendarCheck,  segment: "moi/semaine" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
       // Manquait entièrement (trouvé en audit 2026-08-19) : un coach était
@@ -346,6 +350,9 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       // alors en max 2 clics à accéder") — même correctif que côté coach
       // ci-dessus : 4e pastille sur 9 = hors écran, scroll nécessaire.
       { label: "Agenda",         icon: CalendarDays,    segment: "agenda" },
+      // Revue de la semaine, ouverte à tous (gratuit compris) : contrairement
+      // au check-in, personne n'a besoin d'un coach pour la lire.
+      { label: "Ma semaine",     icon: CalendarCheck,   segment: "semaine" },
       { label: "Road Map",       icon: Map,             segment: "roadmap" },
       { label: "Steps",          icon: Footprints,      segment: "steps" },
       { label: "Sommeil",       icon: Watch,           segment: "tracking" },
