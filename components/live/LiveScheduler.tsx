@@ -5,6 +5,7 @@ import { Loader2, AlertCircle, X, ArrowLeft, ArrowRight, Check } from "lucide-re
 import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, isOneToOneType, type LiveType } from "@/lib/live-types";
 import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import type { CreateLiveEventInput } from "@/app/dashboard/coach/live/actions";
+import { parisWallClockToIso } from "@/lib/live-time";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
@@ -83,23 +84,35 @@ export default function LiveScheduler({
       setError("La date et l'heure sont requises.");
       return;
     }
+    // Date et heure saisies = heure de Paris, quel que soit le fuseau de
+    // l'appareil (coach en déplacement) : c'est l'heure que verront les
+    // clients et qu'annonceront les notifs.
+    const startsAt = parisWallClockToIso(date, time);
+    if (!startsAt) {
+      setError("Date ou heure invalide.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
-    const startsAt = new Date(`${date}T${time}:00`).toISOString();
-    const res = await onCreate({
-      title,
-      description,
-      type,
-      invitedClientId: isOneToOneType(type) ? clientId || null : null,
-      guestName: type === "atelier" ? guestName.trim() || null : null,
-      startsAt,
-      durationMinutes: parseInt(duration) || 30,
-    });
-    setSubmitting(false);
-    if (res.error) {
-      setError(res.error);
-    } else {
-      resetAll();
+    try {
+      const res = await onCreate({
+        title,
+        description,
+        type,
+        invitedClientId: isOneToOneType(type) ? clientId || null : null,
+        guestName: type === "atelier" ? guestName.trim() || null : null,
+        startsAt,
+        durationMinutes: parseInt(duration) || 30,
+      });
+      if (res.error) {
+        setError(res.error);
+      } else {
+        resetAll();
+      }
+    } catch {
+      setError("Programmation impossible pour le moment, réessaie.");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -312,7 +325,7 @@ export default function LiveScheduler({
           </div>
 
           <div>
-            <p className="ep-label" style={{ marginBottom: 6 }}>Date, heure et durée</p>
+            <p className="ep-label" style={{ marginBottom: 6 }}>Date, heure (Paris) et durée</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className={inputCls} />
               <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className={inputCls} />

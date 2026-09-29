@@ -1,20 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import {
-  Users, Clock, Trash2, Ban, Pencil, Check, FileText, GraduationCap,
+  Users, Clock, Trash2, Ban, Pencil, Check, FileText, GraduationCap, AlertCircle,
 } from "lucide-react";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveEvent } from "@/lib/live-types";
 import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
 import LiveEditForm from "@/components/live/LiveEditForm";
+import { capitalize, formatLiveDateTime } from "@/lib/live-time";
 
+// Fuseau Europe/Paris fixé : sans lui, la carte était rendue en UTC côté
+// serveur puis réhydratée à l'heure locale du navigateur (horaire qui
+// saute de 2 h au chargement, et écart d'hydratation React).
 function formatDateTime(iso: string): string {
-  const s = new Intl.DateTimeFormat("fr-FR", {
-    weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-  }).format(new Date(iso));
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return capitalize(formatLiveDateTime(iso));
 }
 
 function useJoinWindow(startsAt: string, durationMinutes: number) {
@@ -44,6 +45,7 @@ export default function LiveEventCard({
   onUpdate,
   onToggleRsvp,
   onSaveRecap,
+  autoOpenRecap = false,
 }: {
   event: LiveEvent;
   basePath: string;
@@ -54,6 +56,8 @@ export default function LiveEventCard({
   onUpdate?: (id: string, input: UpdateLiveEventInput) => Promise<{ error?: string }>;
   onToggleRsvp?: (id: string) => Promise<{ error?: string; rsvped?: boolean }>;
   onSaveRecap?: (id: string, recap: string) => Promise<{ error?: string }>;
+  /** Le coach revient de "Terminer le live" : la saisie des notes s'ouvre directement. */
+  autoOpenRecap?: boolean;
 }) {
   const { canJoin, isPast, isSoon } = useJoinWindow(event.starts_at, event.duration_minutes);
   const Icon = LIVE_TYPE_ICONS[event.type];
@@ -63,31 +67,52 @@ export default function LiveEventCard({
   const [rsvped, setRsvped] = useState(!!event.has_rsvped);
   const [rsvpCount, setRsvpCount] = useState(event.rsvp_count ?? 0);
   const [rsvpPending, startRsvpTransition] = useTransition();
-  const [editingRecap, setEditingRecap] = useState(false);
+  const [editingRecap, setEditingRecap] = useState(autoOpenRecap && isCoach && !!onSaveRecap);
   const [recapDraft, setRecapDraft] = useState(event.recap ?? "");
   const [savingRecap, startRecapTransition] = useTransition();
+  const [actionError, setActionError] = useState<string | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  // Retour de la salle après "Terminer le live" : on amène la carte à
+  // l'écran, la zone de notes est déjà ouverte (voir editingRecap).
+  useEffect(() => {
+    if (autoOpenRecap) cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [autoOpenRecap]);
 
   function handleToggleRsvp() {
     if (!onToggleRsvp) return;
+    setActionError(null);
     startRsvpTransition(async () => {
-      const res = await onToggleRsvp(event.id);
-      if (!res.error && res.rsvped !== undefined) {
-        setRsvped(res.rsvped);
-        setRsvpCount((c) => (res.rsvped ? c + 1 : Math.max(0, c - 1)));
+      try {
+        const res = await onToggleRsvp(event.id);
+        if (res.error) {
+          setActionError(res.error);
+        } else if (res.rsvped !== undefined) {
+          setRsvped(res.rsvped);
+          setRsvpCount((c) => (res.rsvped ? c + 1 : Math.max(0, c - 1)));
+        }
+      } catch {
+        setActionError("Action impossible pour le moment, réessaie.");
       }
     });
   }
 
   function handleSaveRecap() {
     if (!onSaveRecap) return;
+    setActionError(null);
     startRecapTransition(async () => {
-      const res = await onSaveRecap(event.id, recapDraft);
-      if (!res.error) setEditingRecap(false);
+      try {
+        const res = await onSaveRecap(event.id, recapDraft);
+        if (res.error) setActionError(res.error);
+        else setEditingRecap(false);
+      } catch {
+        setActionError("Notes non enregistrées, réessaie.");
+      }
     });
   }
 
   return (
-    <div className={`bg-[#1f0101] border rounded-xl p-4 ${cancelled ? "border-[#890404]/10 opacity-50" : "border-[#890404]/20"}`}>
+    <div ref={cardRef} className={`bg-[#1f0101] border rounded-xl p-4 ${cancelled ? "border-[#890404]/10 opacity-50" : "border-[#890404]/20"}`}>
       <div className="flex items-start gap-3">
         <div className="w-10 h-10 rounded-xl bg-[#E01E1E]/10 border border-[#E01E1E]/20 flex items-center justify-center flex-shrink-0">
           <Icon size={17} className="text-[#E01E1E]" strokeWidth={1.8} />
@@ -234,6 +259,12 @@ export default function LiveEventCard({
               </button>
             )}
           </div>
+
+          {actionError && (
+            <p role="alert" className="flex items-center gap-1.5 text-[11px] font-semibold text-red-400 mt-2">
+              <AlertCircle size={11} className="flex-shrink-0" /> {actionError}
+            </p>
+          )}
 
           {editing && onUpdate && (
             <LiveEditForm

@@ -4,7 +4,8 @@ import { requireCoach } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { revalidatePath } from "next/cache";
 import { generateRoomSlug, isOneToOneType, LIVE_TYPE_LABELS, type LiveType } from "@/lib/live-types";
-import { notifyClientNewLiveEvent } from "@/app/actions/notifications";
+import { formatLiveDateTime } from "@/lib/live-time";
+import { sendLiveScheduledEmail } from "@/lib/live-notify";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
 
@@ -67,10 +68,10 @@ export async function createLiveEvent(
 
     if (error || !data) return { error: "Erreur lors de la création." };
 
-    // Notify the relevant audience — best effort, non-blocking.
-    const dateLabel = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-    }).format(new Date(input.startsAt));
+    // Prévient l'audience concernée, best effort, non bloquant. Horaire
+    // toujours formaté en heure de Paris : sans fuseau, le serveur (UTC)
+    // annonçait 16:00 pour un live à 18:00.
+    const dateLabel = formatLiveDateTime(input.startsAt);
 
     if (isOneToOneType(input.type) && input.invitedClientId) {
       const { data: client } = await admin
@@ -79,7 +80,12 @@ export async function createLiveEvent(
         .eq("id", input.invitedClientId)
         .single();
       if (client?.email) {
-        notifyClientNewLiveEvent(client.email, client.full_name ?? "", input.title.trim(), input.startsAt).catch(() => {});
+        sendLiveScheduledEmail({
+          to: client.email,
+          clientName: client.full_name ?? "",
+          title: input.title.trim(),
+          startsAt: input.startsAt,
+        }).catch(() => {});
       }
       notifyUser(input.invitedClientId, {
         type: "live_scheduled",
@@ -140,7 +146,7 @@ export async function updateLiveEvent(
     const admin = createAdminClient();
     const { data: existing } = await admin
       .from("live_events")
-      .select("type, title, invited_client_id")
+      .select("type, title, invited_client_id, starts_at")
       .eq("id", id)
       .eq("host_id", guard.userId)
       .single();
@@ -164,6 +170,12 @@ export async function updateLiveEvent(
       }
     }
 
+    // Horaire déplacé : les rappels (veille et quelques minutes avant) déjà
+    // partis pour l'ancien horaire ne doivent pas empêcher ceux du nouveau.
+    // Sans cette remise à zéro, un live reporté d'une semaine après son
+    // rappel de la veille n'était plus jamais rappelé.
+    const moved = new Date(existing.starts_at).getTime() !== new Date(input.startsAt).getTime();
+
     const { error } = await admin
       .from("live_events")
       .update({
@@ -172,6 +184,7 @@ export async function updateLiveEvent(
         invited_client_id: isOneToOneType(existing.type) ? input.invitedClientId : null,
         starts_at: input.startsAt,
         duration_minutes: input.durationMinutes,
+        ...(moved ? { reminder_sent_at: null, reminder_24h_sent_at: null } : {}),
       })
       .eq("id", id)
       .eq("host_id", guard.userId);
@@ -179,9 +192,7 @@ export async function updateLiveEvent(
     if (error) return { error: "Erreur lors de la mise à jour." };
 
     // Notifie l'audience concernée du changement — best effort.
-    const dateLabel = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit",
-    }).format(new Date(input.startsAt));
+    const dateLabel = formatLiveDateTime(input.startsAt);
     const params = {
       type: "live_scheduled",
       title: "🔄 Live modifié",
@@ -206,6 +217,36 @@ export async function updateLiveEvent(
   }
 }
 
+interface CancellableLive {
+  title: string;
+  type: LiveType;
+  invited_client_id: string | null;
+  starts_at: string;
+}
+
+// Prévient les participants qu'un live n'aura pas lieu : le client invité
+// pour un tête-à-tête, les clients du coach pour un live de groupe. Partagé
+// entre l'annulation et la suppression : supprimer un live futur le faisait
+// disparaître sans que personne ne soit prévenu, contrairement à l'annulation.
+// Non exporté : dans un fichier "use server", un export deviendrait une
+// server action appelable depuis le navigateur.
+function notifyLiveCancelled(event: CancellableLive, hostId: string) {
+  const params = {
+    type: "live_cancelled",
+    title: "❌ Live annulé",
+    body: `${event.title} : ${formatLiveDateTime(event.starts_at)}`,
+    url: "/dashboard/client/live",
+    senderId: hostId,
+  };
+  if (isOneToOneType(event.type) && event.invited_client_id) {
+    notifyUser(event.invited_client_id, params).catch(() => {});
+  } else if (!isOneToOneType(event.type)) {
+    getClients(hostId)
+      .then((clients) => notifyUsers(clients.map((c) => c.id), params))
+      .catch(() => {});
+  }
+}
+
 export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
   const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
@@ -214,10 +255,12 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
     const admin = createAdminClient();
     const { data: event } = await admin
       .from("live_events")
-      .select("title, type, invited_client_id")
+      .select("title, type, invited_client_id, starts_at, status")
       .eq("id", id)
       .eq("host_id", guard.userId)
-      .single();
+      .maybeSingle();
+    if (!event) return { error: "Live introuvable." };
+    if (event.status === "cancelled") return {};
 
     const { error } = await admin
       .from("live_events")
@@ -227,22 +270,7 @@ export async function cancelLiveEvent(id: string): Promise<{ error?: string }> {
 
     if (error) return { error: "Erreur lors de l'annulation." };
 
-    if (event) {
-      const params = {
-        type: "live_cancelled",
-        title: "❌ Live annulé",
-        body: event.title,
-        url: "/dashboard/client/live",
-        senderId: guard.userId,
-      };
-      if (isOneToOneType(event.type) && event.invited_client_id) {
-        notifyUser(event.invited_client_id, params).catch(() => {});
-      } else {
-        getClients(guard.userId)
-          .then((clients) => notifyUsers(clients.map((c) => c.id), params))
-          .catch(() => {});
-      }
-    }
+    notifyLiveCancelled(event as CancellableLive, guard.userId);
 
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
@@ -286,6 +314,14 @@ export async function deleteLiveEvent(id: string): Promise<{ error?: string }> {
 
   try {
     const admin = createAdminClient();
+    const { data: event } = await admin
+      .from("live_events")
+      .select("title, type, invited_client_id, starts_at, status")
+      .eq("id", id)
+      .eq("host_id", guard.userId)
+      .maybeSingle();
+    if (!event) return { error: "Live introuvable." };
+
     const { error } = await admin
       .from("live_events")
       .delete()
@@ -293,6 +329,13 @@ export async function deleteLiveEvent(id: string): Promise<{ error?: string }> {
       .eq("host_id", guard.userId);
 
     if (error) return { error: "Erreur lors de la suppression." };
+
+    // Un live encore à venir disparaît du planning des participants : ils
+    // sont prévenus exactement comme pour une annulation. Un live passé ou
+    // déjà annulé est supprimé sans nouvelle notif.
+    if (event.status === "scheduled" && new Date(event.starts_at).getTime() > Date.now()) {
+      notifyLiveCancelled(event as CancellableLive, guard.userId);
+    }
 
     revalidatePath("/dashboard/coach/live");
     revalidatePath("/dashboard/client/live");
@@ -521,7 +564,8 @@ export async function scheduleFlashCall(
   notifyUser(request.client_id, {
     type: "live_scheduled",
     title: "⚡ Ton point flash est programmé",
-    body: new Intl.DateTimeFormat("fr-FR", { weekday: "long", hour: "2-digit", minute: "2-digit" }).format(new Date(startsAt)),
+    // Heure de Paris : sans fuseau, le serveur (UTC) décalait de 1 à 2 h.
+    body: formatLiveDateTime(startsAt),
     url: "/dashboard/client/live",
     senderId: guard.userId,
   }).catch(() => {});

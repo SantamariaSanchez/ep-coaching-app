@@ -4,19 +4,10 @@ import { useState } from "react";
 import { Loader2, AlertCircle, X } from "lucide-react";
 import { isOneToOneType, type LiveEvent } from "@/lib/live-types";
 import type { UpdateLiveEventInput } from "@/app/dashboard/coach/live/actions";
+import { parisDateKey, parisHhmm, parisWallClockToIso } from "@/lib/live-time";
 
 const inputCls =
   "w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 transition-colors";
-
-function toLocalDate(iso: string) {
-  const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function toLocalTime(iso: string) {
-  const d = new Date(iso);
-  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-}
 
 export default function LiveEditForm({
   event,
@@ -32,8 +23,10 @@ export default function LiveEditForm({
   const [title, setTitle] = useState(event.title);
   const [description, setDescription] = useState(event.description ?? "");
   const [clientId, setClientId] = useState(event.invited_client_id ?? "");
-  const [date, setDate] = useState(toLocalDate(event.starts_at));
-  const [time, setTime] = useState(toLocalTime(event.starts_at));
+  // Champs pré-remplis et relus en heure de Paris, comme à la création
+  // (LiveScheduler) : même heure affichée partout, quel que soit l'appareil.
+  const [date, setDate] = useState(parisDateKey(event.starts_at));
+  const [time, setTime] = useState(parisHhmm(event.starts_at));
   const [duration, setDuration] = useState(String(event.duration_minutes));
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,9 +36,13 @@ export default function LiveEditForm({
       setError("Titre, date et heure sont requis.");
       return;
     }
+    const startsAt = parisWallClockToIso(date, time);
+    if (!startsAt) {
+      setError("Date ou heure invalide.");
+      return;
+    }
     setSubmitting(true);
     setError(null);
-    const startsAt = new Date(`${date}T${time}:00`).toISOString();
     const res = await onUpdate(event.id, {
       title,
       description,
@@ -88,9 +85,11 @@ export default function LiveEditForm({
         className={`${inputCls} resize-none`}
       />
 
-      <div className="grid grid-cols-3 gap-2">
+      {/* Une colonne sur mobile : à 390 px, trois champs date/heure/durée
+          côte à côte dans une carte débordaient. */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
         <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className={inputCls} />
-        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className={inputCls} />
+        <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure (Paris)" className={inputCls} />
         <select value={duration} onChange={(e) => setDuration(e.target.value)} aria-label="Durée" className={inputCls}>
           <option value="15">15 min</option>
           <option value="30">30 min</option>

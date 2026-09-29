@@ -1,6 +1,10 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
 import type { LiveEvent } from "@/lib/live-types";
+import { todayInParis } from "@/lib/dates";
+import {
+  addDaysToDateStr, isoWeekdayOfDateStr, hhmmToMinutes, minutesToHhmm, parisWallClockToIso,
+} from "@/lib/live-time";
 
 export type { LiveType, LiveStatus, LiveEvent } from "@/lib/live-types";
 export { LIVE_TYPE_LABELS, generateRoomSlug } from "@/lib/live-types";
@@ -48,6 +52,8 @@ async function attachRsvps(
   }));
 }
 
+const UPCOMING_LOOKBACK_MS = 6 * 60 * 60 * 1000;
+
 // All events visible to a given client: group events (webinaire/qna) hébergés
 // par SON coach, plus les 1:1 spécifiquement adressés à lui — jamais les
 // group events d'un autre coach de la plateforme.
@@ -58,10 +64,16 @@ export async function getUpcomingLiveEventsForClient(clientId: string, coachId: 
     // au client — jamais les group events, faute de savoir lesquels sont
     // "les siens".
     const groupClause = coachId ? `and(type.neq.1to1,host_id.eq.${coachId})` : "type.eq.__none__";
+    // Borne basse : un live "scheduled" que l'hôte n'a jamais clôturé avec
+    // "Terminer" restait indéfiniment dans les "à venir" (et apparaissait en
+    // double avec les passés). 6 h couvrent un live encore en cours, même
+    // long ; au delà, il relève de getPastLiveEventsForClient.
+    const since = new Date(Date.now() - UPCOMING_LOOKBACK_MS).toISOString();
     const { data } = await admin
       .from("live_events")
       .select("*")
       .eq("status", "scheduled")
+      .gte("starts_at", since)
       .or(`${groupClause},invited_client_id.eq.${clientId}`)
       .order("starts_at", { ascending: true });
 
@@ -98,6 +110,21 @@ export async function getPastLiveEventsForClient(clientId: string, coachId: stri
   }
 }
 
+// Les deux requêtes ci-dessus se chevauchent volontairement (un live en
+// cours depuis plus de 30 min est à la fois "à venir" et "passé") : sans
+// dédoublonnage, la même carte s'affichait deux fois, avec la même key React.
+// La version "à venir" est prioritaire (elle porte l'état du RSVP à jour).
+export function mergeLiveEvents(upcoming: LiveEvent[], past: LiveEvent[]): LiveEvent[] {
+  const seen = new Set<string>();
+  const merged: LiveEvent[] = [];
+  for (const event of [...upcoming, ...past]) {
+    if (seen.has(event.id)) continue;
+    seen.add(event.id);
+    merged.push(event);
+  }
+  return merged;
+}
+
 // Un coach ne doit voir que les lives qu'il héberge lui-même — jamais ceux
 // d'un autre coach, même s'ils partagent la même plateforme.
 export async function getAllLiveEventsForCoach(hostId: string): Promise<LiveEvent[]> {
@@ -128,12 +155,73 @@ export async function getLiveEventById(id: string): Promise<LiveEvent | null> {
   }
 }
 
-// Réservation en libre-service d'un créneau de disponibilité 1:1 — renvoie
-// les créneaux libres des N prochains jours en soustrayant les créneaux déjà
-// pris par un live_event de type 1to1 pour ce coach.
+// Réservation en libre-service d'un créneau de disponibilité : renvoie les
+// créneaux libres des N prochains jours, en heure de Paris, en soustrayant
+// TOUT ce que le coach a déjà au planning (1:1, suivi hebdo, audit, point
+// flash, atelier, webinaire...). Avant, seuls les 1:1 étaient soustraits :
+// un client pouvait réserver par-dessus un audit ou un webinaire.
 export interface AvailabilitySlot {
   startsAt: string; // ISO
   durationMinutes: number;
+}
+
+// Plus longue durée proposable pour un live (2 h dans LiveScheduler) plus
+// une marge : un live commencé jusqu'à 4 h avant un instant peut encore
+// l'occuper.
+const MAX_LIVE_LOOKBACK_MS = 4 * 60 * 60 * 1000;
+// Délai minimal entre la réservation et le début du créneau.
+const MIN_BOOKING_NOTICE_MS = 60 * 60 * 1000;
+
+type AdminClient = ReturnType<typeof createAdminClient>;
+
+interface BusyRange {
+  start: number;
+  end: number;
+}
+
+async function getHostBusyRanges(
+  admin: AdminClient,
+  hostId: string,
+  fromMs: number,
+  toMs: number
+): Promise<BusyRange[]> {
+  const { data, error } = await admin
+    .from("live_events")
+    .select("starts_at, duration_minutes")
+    .eq("host_id", hostId)
+    .neq("status", "cancelled")
+    .gte("starts_at", new Date(fromMs - MAX_LIVE_LOOKBACK_MS).toISOString())
+    .lt("starts_at", new Date(toMs).toISOString());
+  // Lecture impossible : on ne prétend jamais qu'un créneau est libre sans
+  // l'avoir vérifié. L'appelant ne propose alors aucun créneau, ou refuse
+  // la réservation, plutôt que de risquer un doublon.
+  if (error) throw error;
+  return ((data ?? []) as { starts_at: string; duration_minutes: number }[]).map((b) => {
+    const start = new Date(b.starts_at).getTime();
+    return { start, end: start + b.duration_minutes * 60 * 1000 };
+  });
+}
+
+function overlapsAny(start: number, end: number, ranges: BusyRange[]): boolean {
+  return ranges.some((b) => start < b.end && end > b.start);
+}
+
+/**
+ * Le coach a-t-il déjà un live (non annulé, quel que soit le type) qui
+ * chevauche [startIso, startIso + durée] ? Sert à la réservation récurrente,
+ * dont les dernières semaines sortent de l'horizon des créneaux calculés.
+ * Lève une erreur si la lecture échoue (jamais de "libre" par défaut).
+ */
+export async function hasHostConflict(
+  admin: AdminClient,
+  hostId: string,
+  startIso: string,
+  durationMinutes: number
+): Promise<boolean> {
+  const start = new Date(startIso).getTime();
+  const end = start + durationMinutes * 60 * 1000;
+  const busy = await getHostBusyRanges(admin, hostId, start, end);
+  return overlapsAny(start, end, busy);
 }
 
 export async function getAvailableSlotsForCoach(coachId: string, daysAhead = 14): Promise<AvailabilitySlot[]> {
@@ -145,27 +233,22 @@ export async function getAvailableSlotsForCoach(coachId: string, daysAhead = 14)
       .eq("coach_id", coachId);
     if (!rules || rules.length === 0) return [];
 
-    const now = new Date();
-    const horizon = new Date(now.getTime() + daysAhead * 24 * 60 * 60 * 1000);
+    const nowMs = Date.now();
+    const earliest = nowMs + MIN_BOOKING_NOTICE_MS;
+    const today = todayInParis();
+    // +1 jour : le dernier jour de l'horizon est couvert en entier.
+    const horizonMs = nowMs + (daysAhead + 1) * 24 * 60 * 60 * 1000;
+    const busy = await getHostBusyRanges(admin, coachId, nowMs, horizonMs);
 
-    const { data: booked } = await admin
-      .from("live_events")
-      .select("starts_at, duration_minutes")
-      .eq("host_id", coachId)
-      .eq("type", "1to1")
-      .neq("status", "cancelled")
-      .gte("starts_at", now.toISOString())
-      .lte("starts_at", horizon.toISOString());
+    // Dédoublonnage par instant : deux règles qui se chevauchent (ou l'heure
+    // qui n'existe pas au passage à l'heure d'été) ne doivent jamais
+    // proposer deux fois le même créneau.
+    const slotsByStart = new Map<string, AvailabilitySlot>();
 
-    const bookedRanges = ((booked ?? []) as { starts_at: string; duration_minutes: number }[]).map((b) => ({
-      start: new Date(b.starts_at).getTime(),
-      end: new Date(b.starts_at).getTime() + b.duration_minutes * 60 * 1000,
-    }));
-
-    const slots: AvailabilitySlot[] = [];
     for (let dayOffset = 0; dayOffset <= daysAhead; dayOffset++) {
-      const day = new Date(now.getTime() + dayOffset * 24 * 60 * 60 * 1000);
-      const isoWeekday = day.getDay() === 0 ? 7 : day.getDay(); // 1=lundi...7=dimanche
+      // Jours calendaires de Paris, jamais le getDay() du serveur (UTC).
+      const dateStr = addDaysToDateStr(today, dayOffset);
+      const isoWeekday = isoWeekdayOfDateStr(dateStr); // 1=lundi...7=dimanche
 
       for (const rule of rules as {
         day_of_week: number;
@@ -174,32 +257,52 @@ export async function getAvailableSlotsForCoach(coachId: string, daysAhead = 14)
         slot_duration_minutes: number;
       }[]) {
         if (rule.day_of_week !== isoWeekday) continue;
+        const step = rule.slot_duration_minutes;
+        if (!step || step <= 0) continue;
 
-        const [startH, startM] = rule.start_time.split(":").map(Number);
-        const [endH, endM] = rule.end_time.split(":").map(Number);
-        const dayStart = new Date(day);
-        dayStart.setHours(startH, startM, 0, 0);
-        const dayEnd = new Date(day);
-        dayEnd.setHours(endH, endM, 0, 0);
-
-        for (
-          let slotStart = dayStart.getTime();
-          slotStart + rule.slot_duration_minutes * 60 * 1000 <= dayEnd.getTime();
-          slotStart += rule.slot_duration_minutes * 60 * 1000
-        ) {
-          const slotEnd = slotStart + rule.slot_duration_minutes * 60 * 1000;
-          if (slotStart < now.getTime() + 60 * 60 * 1000) continue; // au moins 1h de délai
-
-          const overlaps = bookedRanges.some((b) => slotStart < b.end && slotEnd > b.start);
-          if (!overlaps) {
-            slots.push({ startsAt: new Date(slotStart).toISOString(), durationMinutes: rule.slot_duration_minutes });
+        // On avance en minutes "murales" de Paris, puis chaque début est
+        // converti en instant réel : 04:00 reste 04:00 à Paris, été comme
+        // hiver, quel que soit le fuseau du serveur.
+        const ruleStart = hhmmToMinutes(rule.start_time);
+        const ruleEnd = hhmmToMinutes(rule.end_time);
+        for (let minute = ruleStart; minute + step <= ruleEnd; minute += step) {
+          const startIso = parisWallClockToIso(dateStr, minutesToHhmm(minute));
+          if (!startIso) continue;
+          const slotStart = new Date(startIso).getTime();
+          const slotEnd = slotStart + step * 60 * 1000;
+          if (slotStart < earliest) continue; // au moins 1h de délai
+          if (overlapsAny(slotStart, slotEnd, busy)) continue;
+          if (!slotsByStart.has(startIso)) {
+            slotsByStart.set(startIso, { startsAt: startIso, durationMinutes: step });
           }
         }
       }
     }
 
-    return slots.sort((a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime());
-  } catch {
+    return [...slotsByStart.values()].sort(
+      (a, b) => new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
+    );
+  } catch (e) {
+    console.error("getAvailableSlotsForCoach error:", e);
     return [];
   }
+}
+
+/**
+ * Le créneau demandé fait-il bien partie des créneaux libres calculés à
+ * l'instant ? La réservation n'accepte plus n'importe quel horaire ni
+ * n'importe quelle durée envoyés par le navigateur, et refuse tout
+ * chevauchement avec un live déjà au planning du coach.
+ */
+export async function isSlotStillAvailable(
+  coachId: string,
+  startsAt: string,
+  durationMinutes: number
+): Promise<boolean> {
+  const target = new Date(startsAt).getTime();
+  if (Number.isNaN(target)) return false;
+  const slots = await getAvailableSlotsForCoach(coachId);
+  return slots.some(
+    (s) => new Date(s.startsAt).getTime() === target && s.durationMinutes === durationMinutes
+  );
 }

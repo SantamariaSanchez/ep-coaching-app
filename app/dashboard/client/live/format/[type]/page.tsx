@@ -3,7 +3,7 @@ import Link from "next/link";
 import { MessageCircle } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import {
-  getUpcomingLiveEventsForClient, getPastLiveEventsForClient, getAvailableSlotsForCoach,
+  getUpcomingLiveEventsForClient, getPastLiveEventsForClient, getAvailableSlotsForCoach, mergeLiveEvents,
 } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, isLiveType, isOneToOneType, type LiveType } from "@/lib/live-types";
 import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
@@ -40,7 +40,8 @@ export default async function LiveTypeDetailPage({
     needsSlots && coachId ? getAvailableSlotsForCoach(coachId) : Promise.resolve([]),
   ]);
 
-  const typeEvents = [...upcoming, ...past].filter((e) => e.type === type);
+  // Dédoublonné : un live en cours est renvoyé par les deux requêtes.
+  const typeEvents = mergeLiveEvents(upcoming, past).filter((e) => e.type === type);
   const isGroup = !isOneToOneType(type);
 
   return (

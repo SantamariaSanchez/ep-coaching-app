@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Video } from "lucide-react";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
-import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient } from "@/utils/live-events";
+import { getUpcomingLiveEventsForClient, getPastLiveEventsForClient, mergeLiveEvents } from "@/utils/live-events";
 import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, type LiveType } from "@/lib/live-types";
 import { LIVE_TYPE_ICONS } from "@/components/live/live-icons";
 import LiveEventsList from "@/components/live/LiveEventsList";
@@ -67,7 +67,9 @@ export default async function ClientLivePage() {
     getUpcomingLiveEventsForClient(user.id, profile?.coach_id ?? null),
     getPastLiveEventsForClient(user.id, profile?.coach_id ?? null),
   ]);
-  const events = [...upcoming, ...past];
+  // Un live en cours (ou jamais clôturé par l'hôte) est renvoyé par les deux
+  // requêtes : dédoublonné pour ne jamais afficher deux fois la même carte.
+  const events = mergeLiveEvents(upcoming, past);
 
   return (
     <div className="px-6 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
