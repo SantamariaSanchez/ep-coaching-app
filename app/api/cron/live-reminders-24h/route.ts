@@ -3,6 +3,8 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { notifyUser, notifyUsers } from "@/lib/notify";
 import { getClients } from "@/utils/auth";
 import { LIVE_TYPE_LABELS, isOneToOneType, type LiveType } from "@/lib/live-types";
+import { todayInParis } from "@/lib/dates";
+import { addDaysToDateStr, formatLiveDateTime, formatLiveTime, parisDateKey } from "@/lib/live-time";
 
 // Rappel "à J-1" (distinct du rappel "dans quelques minutes" de
 // live-reminders) — déclenché toutes les heures par Supabase pg_cron (voir
@@ -32,15 +34,24 @@ export async function GET(req: Request) {
 
   let reminded = 0;
 
+  // "Demain" au sens du calendrier de Paris : la fenêtre 23 h à 25 h peut
+  // tomber sur le surlendemain (rappel envoyé à 23:30 pour un live à 00:15).
+  // Horaire formaté en heure de Paris : sans fuseau, le serveur (UTC)
+  // annonçait 16:00 pour un live à 18:00.
+  const tomorrow = addDaysToDateStr(todayInParis(), 1);
+
   for (const event of events ?? []) {
-    const dateLabel = new Intl.DateTimeFormat("fr-FR", {
-      weekday: "long", hour: "2-digit", minute: "2-digit",
-    }).format(new Date(event.starts_at as string));
+    const startsAt = event.starts_at as string;
+    const isTomorrow = parisDateKey(startsAt) === tomorrow;
+    const whenLabel = isTomorrow
+      ? `demain à ${formatLiveTime(startsAt)}`
+      : formatLiveDateTime(startsAt);
+    const dayWord = isTomorrow ? "demain" : "bientôt";
 
     const params = {
       type: "live_reminder_24h",
-      title: "📅 Live demain",
-      body: `${event.title} : demain ${dateLabel}`,
+      title: `📅 Live ${dayWord}`,
+      body: `${event.title} : ${whenLabel}`,
       url: "/dashboard/client/live",
     };
 
@@ -50,7 +61,7 @@ export async function GET(req: Request) {
       const clients = await getClients(event.host_id as string);
       await notifyUsers(clients.map((c) => c.id), {
         ...params,
-        title: `📅 ${LIVE_TYPE_LABELS[event.type as LiveType]} demain`,
+        title: `📅 ${LIVE_TYPE_LABELS[event.type as LiveType]} ${dayWord}`,
       });
     }
 

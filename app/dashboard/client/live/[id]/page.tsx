@@ -1,8 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import { getUser, getProfile, isSubscribed, isClientCapable } from "@/utils/auth";
 import { getLiveEventById } from "@/utils/live-events";
-import { isWithinJoinWindow, isOneToOneType } from "@/lib/live-types";
-import JitsiRoom from "@/components/live/JitsiRoom";
+import { isWithinJoinWindow, isOneToOneType, LIVE_TYPE_LABELS } from "@/lib/live-types";
+import LiveRoomLobby from "@/components/live/LiveRoomLobby";
 
 export default async function ClientLiveRoomPage({
   params,
@@ -34,5 +34,19 @@ export default async function ClientLiveRoomPage({
   // pour qui la connaît (lien partagé, favori, retour en arrière...).
   if (!isWithinJoinWindow(event)) redirect("/dashboard/client/live");
 
-  return <JitsiRoom roomSlug={event.room_slug} title={event.title} backHref="/dashboard/client/live" />;
+  // Salle d'attente avec lien vers la visio plutôt qu'une visio embarquée :
+  // meet.jit.si coupe toute réunion embarquée au bout de 5 minutes (voir
+  // components/live/LiveRoomLobby.tsx).
+  return (
+    <LiveRoomLobby
+      eventId={event.id}
+      roomSlug={event.room_slug}
+      title={event.title}
+      typeLabel={LIVE_TYPE_LABELS[event.type]}
+      startsAt={event.starts_at}
+      durationMinutes={event.duration_minutes}
+      backHref="/dashboard/client/live"
+      displayName={profile?.full_name?.split(" ")[0] ?? null}
+    />
+  );
 }

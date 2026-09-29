@@ -4,7 +4,16 @@ import { requireClient } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { generateRoomSlug, isOneToOneType } from "@/lib/live-types";
 import { notifyUser } from "@/lib/notify";
+import { hasHostConflict, isSlotStillAvailable } from "@/utils/live-events";
+import {
+  addDaysToDateStr, formatLiveDateTime, formatLiveTime, formatParis, parisDateKey, parisHhmm,
+  parisWallClockToIso,
+} from "@/lib/live-time";
 import { revalidatePath } from "next/cache";
+
+const SLOT_TAKEN_ERROR = "Ce créneau n'est plus disponible, choisis-en un autre.";
+const DEFAULT_WEEKLY_OCCURRENCES = 8;
+const MAX_WEEKLY_OCCURRENCES = 12;
 
 // Confirmer/annuler sa présence à un live de groupe (webinaire/qna) — pas
 // disponible sur un 1:1, qui n'a qu'un seul invité déjà déterminé.
@@ -68,17 +77,15 @@ export async function bookAvailabilitySlot(input: {
     .single();
   if (myProfile?.coach_id !== input.coachId) return { error: "Ce n'est pas ton coach." };
 
-  // Reconfirme que le créneau est toujours libre (protège contre une
-  // double réservation quasi simultanée sur le même créneau).
-  const { data: conflict } = await admin
-    .from("live_events")
-    .select("id")
-    .eq("host_id", input.coachId)
-    .eq("type", "1to1")
-    .neq("status", "cancelled")
-    .eq("starts_at", input.startsAt)
-    .maybeSingle();
-  if (conflict) return { error: "Ce créneau vient d'être réservé, choisis-en un autre." };
+  // Recalcule les créneaux libres et exige une correspondance exacte
+  // (horaire ET durée). Avant, seule une égalité stricte avec un autre 1:1
+  // était testée : un audit ou un webinaire au même moment laissait passer
+  // la réservation, un créneau décalé de 15 min chevauchait sans être vu,
+  // et n'importe quel horaire hors disponibilités envoyé par le navigateur
+  // était accepté tel quel.
+  if (!(await isSlotStillAvailable(input.coachId, input.startsAt, input.durationMinutes))) {
+    return { error: SLOT_TAKEN_ERROR };
+  }
 
   const { data, error } = await admin
     .from("live_events")
@@ -98,7 +105,7 @@ export async function bookAvailabilitySlot(input: {
   notifyUser(input.coachId, {
     type: "live_booked",
     title: "📅 Nouveau 1:1 réservé",
-    body: `${myProfile?.full_name ?? "Un client"} a réservé un créneau.`,
+    body: `${myProfile?.full_name ?? "Un client"} a réservé un créneau : ${formatLiveDateTime(input.startsAt)}.`,
     url: "/dashboard/coach/live",
     senderId: guard.userId,
   }).catch(() => {});
@@ -108,16 +115,16 @@ export async function bookAvailabilitySlot(input: {
   return { id: data.id };
 }
 
-// Réservation récurrente hebdomadaire ("Suivi hebdomadaire dédié") — crée
+// Réservation récurrente hebdomadaire ("Suivi hebdomadaire dédié") : crée
 // plusieurs occurrences d'un coup (8 semaines), au choix du client. Les
-// semaines en conflit sont simplement ignorées plutôt que de faire échouer
-// toute la réservation.
+// semaines en conflit sont ignorées plutôt que de faire échouer toute la
+// réservation, et renvoyées au client pour qu'il sache lesquelles manquent.
 export async function bookWeeklyCheckin(input: {
   coachId: string;
   startsAt: string;
   durationMinutes: number;
   weeks?: number;
-}): Promise<{ error?: string; created?: number }> {
+}): Promise<{ error?: string; created?: number; skipped?: string[]; failed?: string[] }> {
   const guard = await requireClient();
   if (!guard.ok) return { error: guard.error };
 
@@ -129,20 +136,45 @@ export async function bookWeeklyCheckin(input: {
     .single();
   if (myProfile?.coach_id !== input.coachId) return { error: "Ce n'est pas ton coach." };
 
-  const weeks = input.weeks ?? 8;
+  // La première séance doit être un vrai créneau libre des disponibilités,
+  // comme une réservation simple : sinon n'importe quel horaire (et
+  // n'importe quelle durée) envoyé par le navigateur partait en série.
+  if (!(await isSlotStillAvailable(input.coachId, input.startsAt, input.durationMinutes))) {
+    return { error: SLOT_TAKEN_ERROR };
+  }
+
+  const requested = Number.isFinite(input.weeks) ? Math.floor(input.weeks as number) : DEFAULT_WEEKLY_OCCURRENCES;
+  const weeks = Math.min(MAX_WEEKLY_OCCURRENCES, Math.max(1, requested));
+
+  // Même heure "murale" de Paris chaque semaine : on avance de 7 jours
+  // calendaires puis on reconvertit. Ajouter 7 x 24 h en millisecondes
+  // faisait glisser d'une heure toutes les séances après le passage à
+  // l'heure d'hiver (18:00 devenait 17:00 dès le 25 octobre).
+  const firstDate = parisDateKey(input.startsAt);
+  const hhmm = parisHhmm(input.startsAt);
+
   let created = 0;
-  const base = new Date(input.startsAt).getTime();
+  const skipped: string[] = [];
+  const failed: string[] = [];
 
   for (let i = 0; i < weeks; i++) {
-    const startsAt = new Date(base + i * 7 * 24 * 60 * 60 * 1000).toISOString();
-    const { data: conflict } = await admin
-      .from("live_events")
-      .select("id")
-      .eq("host_id", input.coachId)
-      .neq("status", "cancelled")
-      .eq("starts_at", startsAt)
-      .maybeSingle();
-    if (conflict) continue;
+    const startsAt = parisWallClockToIso(addDaysToDateStr(firstDate, 7 * i), hhmm);
+    if (!startsAt) continue;
+
+    // Chevauchement réel avec N'IMPORTE QUEL live du coach (audit, atelier,
+    // point flash...), pas seulement une égalité stricte d'horaire.
+    let conflict: boolean;
+    try {
+      conflict = await hasHostConflict(admin, input.coachId, startsAt, input.durationMinutes);
+    } catch (e) {
+      console.error("bookWeeklyCheckin conflict check error:", e);
+      failed.push(startsAt);
+      continue;
+    }
+    if (conflict) {
+      skipped.push(startsAt);
+      continue;
+    }
 
     const { error } = await admin.from("live_events").insert({
       host_id: input.coachId,
@@ -153,22 +185,33 @@ export async function bookWeeklyCheckin(input: {
       starts_at: startsAt,
       duration_minutes: input.durationMinutes,
     });
-    if (!error) created++;
+    if (error) {
+      console.error("bookWeeklyCheckin insert error:", error);
+      failed.push(startsAt);
+    } else {
+      created++;
+    }
   }
 
-  if (created === 0) return { error: "Aucun créneau n'a pu être réservé (conflits)." };
+  if (created === 0) {
+    return {
+      error: failed.length > 0
+        ? "La réservation n'a pas pu être enregistrée, réessaie dans un instant."
+        : "Aucune séance n'a pu être réservée : ces horaires sont déjà pris chez ton coach.",
+    };
+  }
 
   notifyUser(input.coachId, {
     type: "live_booked",
     title: "📅 Suivi hebdomadaire activé",
-    body: `${myProfile?.full_name ?? "Un client"} a réservé un suivi hebdomadaire.`,
+    body: `${myProfile?.full_name ?? "Un client"} a réservé un suivi hebdo : ${created} séance${created > 1 ? "s" : ""}, chaque ${formatParis(input.startsAt, { weekday: "long" })} à ${formatLiveTime(input.startsAt)}.`,
     url: "/dashboard/coach/live",
     senderId: guard.userId,
   }).catch(() => {});
 
   revalidatePath("/dashboard/client/live");
   revalidatePath("/dashboard/coach/live");
-  return { created };
+  return { created, skipped, failed };
 }
 
 // ── Accès direct : demande de point flash (15 min, décision clé) ────────
