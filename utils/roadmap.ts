@@ -49,15 +49,21 @@ export async function getClientRoadmap(clientId: string): Promise<RoadmapWithDat
   try {
     const supabase = await createServerSupabase();
 
-    const { data: roadmap } = await supabase
+    // Lecture seule pour des écrans d'appoint (nutrition, édition de
+    // programme) et la détection des objectifs de poids : une erreur y reste
+    // non bloquante, mais elle est journalisée au lieu d'être avalée en
+    // silence (audit 2026-09-28). Les vues road map, elles, passent par
+    // utils/phase-pilot.ts qui distingue "erreur" de "pas de road map".
+    const { data: roadmap, error: roadmapError } = await supabase
       .from("roadmaps")
       .select("*")
       .eq("client_id", clientId)
       .maybeSingle();
+    if (roadmapError) console.error("getClientRoadmap roadmap error:", roadmapError);
 
     if (!roadmap) return { roadmap: null, phases: [], objectives: [] };
 
-    const [{ data: phases }, { data: objectives }] = await Promise.all([
+    const [{ data: phases, error: phasesError }, { data: objectives, error: objectivesError }] = await Promise.all([
       supabase
         .from("roadmap_phases")
         .select("*")
@@ -69,13 +75,17 @@ export async function getClientRoadmap(clientId: string): Promise<RoadmapWithDat
         .eq("roadmap_id", roadmap.id)
         .order("target_date"),
     ]);
+    if (phasesError || objectivesError) {
+      console.error("getClientRoadmap phases/objectives error:", phasesError ?? objectivesError);
+    }
 
     return {
       roadmap: roadmap as Roadmap,
       phases: (phases as RoadmapPhase[]) ?? [],
       objectives: (objectives as RoadmapObjective[]) ?? [],
     };
-  } catch {
+  } catch (e) {
+    console.error("getClientRoadmap error:", e);
     return { roadmap: null, phases: [], objectives: [] };
   }
 }
@@ -94,12 +104,72 @@ export interface RoadmapApplyInput {
   objectives: Omit<RoadmapObjective, "id" | "roadmap_id">[];
 }
 
+// Sécurité des données (audit 2026-09-28) : l'ancienne version supprimait
+// TOUTES les phases puis les réinsérait. Si l'insertion échouait après la
+// suppression (base saturée, contrainte, coupure), la road map se retrouvait
+// vide : les 6 phases de la prépa WNBF du fondateur pouvaient disparaître sur
+// un simple incident. Pas de vraie transaction possible sans fonction SQL
+// (donc sans migration) : on inverse l'ordre pour que chaque échec laisse
+// l'ancienne version intacte.
+//   1. on lit l'état actuel (dates + ids des phases et objectifs existants) ;
+//   2. on INSÈRE d'abord les nouvelles lignes ;
+//   3. on ne supprime les anciennes (par id) qu'une fois tout inséré ;
+//   4. à chaque échec, on retire ce qu'on vient d'ajouter et on remet les
+//      dates d'avant (au mieux, journalisé si ça échoue aussi).
+// Les champs écrits sont listés un par un : un id ou un roadmap_id envoyé
+// par le navigateur n'atteint jamais la base.
+
+type PhaseInput = RoadmapApplyInput["phases"][number];
+type ObjectiveInput = RoadmapApplyInput["objectives"][number];
+
+function phaseRow(p: PhaseInput, roadmapId: string, position: number) {
+  return {
+    roadmap_id: roadmapId,
+    type: p.type,
+    label: p.label,
+    start_date: p.start_date,
+    end_date: p.end_date,
+    notes: p.notes ?? null,
+    position,
+  };
+}
+
+function objectiveRow(o: ObjectiveInput, roadmapId: string) {
+  return {
+    roadmap_id: roadmapId,
+    type: o.type,
+    label: o.label,
+    target_date: o.target_date,
+    target_value: o.target_value ?? null,
+    target_unit: o.target_unit ?? null,
+    description: o.description ?? null,
+    term: o.term,
+    is_achieved: !!o.is_achieved,
+    achieved_at: o.is_achieved ? o.achieved_at ?? null : null,
+  };
+}
+
 export async function applyRoadmapForClient(
   supabase: SupabaseClient,
   clientId: string,
   createdBy: string,
   input: RoadmapApplyInput
 ): Promise<{ roadmapId?: string; error?: string }> {
+  const UNTOUCHED = " La version précédente de la road map est intacte.";
+
+  // 1. État actuel. Une lecture ratée ici = on n'écrit rien du tout.
+  const { data: previous, error: prevErr } = await supabase
+    .from("roadmaps")
+    .select("id, start_date, end_date")
+    .eq("client_id", clientId)
+    .maybeSingle();
+  if (prevErr) {
+    console.error("applyRoadmapForClient read error:", prevErr);
+    return { error: "Lecture de la road map actuelle impossible, rien n'a été modifié." };
+  }
+  const prev = previous as { id: string; start_date: string; end_date: string } | null;
+  const untouched = prev ? UNTOUCHED : "";
+
   const { data: roadmap, error: rmErr } = await supabase
     .from("roadmaps")
     .upsert(
@@ -117,27 +187,95 @@ export async function applyRoadmapForClient(
 
   if (rmErr || !roadmap) {
     console.error("applyRoadmapForClient upsert error:", rmErr);
-    return { error: "Erreur lors de la sauvegarde de la road map." };
+    return { error: "Erreur lors de la sauvegarde de la road map." + untouched };
   }
 
   const roadmapId = (roadmap as { id: string }).id;
 
-  const { error: delPhasesError } = await supabase.from("roadmap_phases").delete().eq("roadmap_id", roadmapId);
-  if (delPhasesError) return { error: "Erreur lors du remplacement des phases." };
-  if (input.phases.length > 0) {
+  const restoreDates = async () => {
+    if (!prev) {
+      // Première sauvegarde ratée : on retire la road map tout juste créée
+      // plutôt que de laisser une coquille sans phases, qui s'afficherait
+      // ensuite comme une road map existante mais vide.
+      const { error } = await supabase.from("roadmaps").delete().eq("id", roadmapId);
+      if (error) console.error("applyRoadmapForClient cleanup new roadmap error:", error);
+      return;
+    }
     const { error } = await supabase
+      .from("roadmaps")
+      .update({ start_date: prev.start_date, end_date: prev.end_date })
+      .eq("id", prev.id);
+    if (error) console.error("applyRoadmapForClient restore dates error:", error);
+  };
+  const removeIds = async (table: "roadmap_phases" | "roadmap_objectives", ids: string[]) => {
+    if (ids.length === 0) return;
+    const { error } = await supabase.from(table).delete().in("id", ids);
+    if (error) console.error(`applyRoadmapForClient cleanup ${table} error:`, error);
+  };
+
+  // 2. Ids existants, pour ne supprimer QUE l'ancienne version à la fin.
+  const [oldPhasesRes, oldObjectivesRes] = await Promise.all([
+    supabase.from("roadmap_phases").select("id").eq("roadmap_id", roadmapId),
+    supabase.from("roadmap_objectives").select("id").eq("roadmap_id", roadmapId),
+  ]);
+  if (oldPhasesRes.error || oldObjectivesRes.error) {
+    console.error("applyRoadmapForClient snapshot error:", oldPhasesRes.error ?? oldObjectivesRes.error);
+    await restoreDates();
+    return { error: "Erreur lors de la lecture des phases actuelles." + untouched };
+  }
+  const oldPhaseIds = ((oldPhasesRes.data ?? []) as { id: string }[]).map((r) => r.id);
+  const oldObjectiveIds = ((oldObjectivesRes.data ?? []) as { id: string }[]).map((r) => r.id);
+
+  // 3. Nouvelles lignes d'abord.
+  let newPhaseIds: string[] = [];
+  if (input.phases.length > 0) {
+    const { data, error } = await supabase
       .from("roadmap_phases")
-      .insert(input.phases.map((p, i) => ({ ...p, roadmap_id: roadmapId, position: i })));
-    if (error) return { error: "Erreur lors de l'ajout des phases." };
+      .insert(input.phases.map((p, i) => phaseRow(p, roadmapId, i)))
+      .select("id");
+    if (error) {
+      console.error("applyRoadmapForClient insert phases error:", error);
+      await restoreDates();
+      return { error: "Erreur lors de l'ajout des phases." + untouched };
+    }
+    newPhaseIds = ((data ?? []) as { id: string }[]).map((r) => r.id);
   }
 
-  const { error: delObjectivesError } = await supabase.from("roadmap_objectives").delete().eq("roadmap_id", roadmapId);
-  if (delObjectivesError) return { error: "Erreur lors du remplacement des objectifs." };
+  let newObjectiveIds: string[] = [];
   if (input.objectives.length > 0) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from("roadmap_objectives")
-      .insert(input.objectives.map((o) => ({ ...o, roadmap_id: roadmapId })));
-    if (error) return { error: "Erreur lors de l'ajout des objectifs." };
+      .insert(input.objectives.map((o) => objectiveRow(o, roadmapId)))
+      .select("id");
+    if (error) {
+      console.error("applyRoadmapForClient insert objectives error:", error);
+      await removeIds("roadmap_phases", newPhaseIds);
+      await restoreDates();
+      return { error: "Erreur lors de l'ajout des objectifs." + untouched };
+    }
+    newObjectiveIds = ((data ?? []) as { id: string }[]).map((r) => r.id);
+  }
+
+  // 4. Tout est inséré : on retire l'ancienne version.
+  if (oldPhaseIds.length > 0) {
+    const { error } = await supabase.from("roadmap_phases").delete().in("id", oldPhaseIds);
+    if (error) {
+      console.error("applyRoadmapForClient delete old phases error:", error);
+      await removeIds("roadmap_phases", newPhaseIds);
+      await removeIds("roadmap_objectives", newObjectiveIds);
+      await restoreDates();
+      return { error: "Erreur lors du remplacement des phases." + untouched };
+    }
+  }
+  if (oldObjectiveIds.length > 0) {
+    const { error } = await supabase.from("roadmap_objectives").delete().in("id", oldObjectiveIds);
+    if (error) {
+      // Les phases sont déjà remplacées : on garde les anciens objectifs
+      // (retrait des nouveaux) plutôt que de les avoir en double.
+      console.error("applyRoadmapForClient delete old objectives error:", error);
+      await removeIds("roadmap_objectives", newObjectiveIds);
+      return { error: "Phases enregistrées, mais les objectifs n'ont pas pu être mis à jour. Réessaie." };
+    }
   }
 
   return { roadmapId };

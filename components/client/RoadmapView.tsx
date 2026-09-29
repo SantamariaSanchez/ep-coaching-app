@@ -1,195 +1,57 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createClientSupabase } from "@/lib/supabase-client";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { MapPin } from "lucide-react";
 import RoadmapCalendar from "@/components/roadmap/RoadmapCalendar";
 import RoadmapEditor from "@/components/roadmap/RoadmapEditor";
-import {
-  PHASE_COLORS,
-  OBJECTIVE_TERM_COLORS,
-} from "@/lib/roadmap-colors";
-import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
-import { getAccessType, type Profile } from "@/utils/auth-client";
-import { Target, MapPin } from "lucide-react";
-import { todayInParis } from "@/lib/dates";
+import PhasePilotCard from "@/components/roadmap/PhasePilotCard";
+import RoadmapLoadError from "@/components/roadmap/RoadmapLoadError";
+import { RoadmapObjectivesSummary, RoadmapStatusLine } from "@/components/roadmap/RoadmapSummary";
+import type { RoadmapPageData } from "@/utils/phase-pilot";
 
-// Pure ISO week helper (no server imports) — exportée pour CoachMoiRoadmapView.
-export function getISOWeek(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-  const dayNum = d.getUTCDay() || 7;
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
-}
+// Road map d'un membre (/dashboard/client/roadmap).
+//
+// Audit 2026-09-28 :
+// - les données (road map + pilote de phase) sont lues côté serveur
+//   (app/dashboard/client/roadmap/page.tsx, utils/phase-pilot.ts) au lieu
+//   d'un fetch ici qui ne vérifiait pas res.ok : une erreur de chargement
+//   s'affichait "Ton coach n'a pas encore configuré ta road map" ;
+// - le membre gratuit (le seul type de membre aujourd'hui) n'avait QUE
+//   l'éditeur, sans aucun résumé : il a maintenant la même vue d'ensemble
+//   (semaine de la road map, pilote de phase, objectifs) au-dessus ;
+// - "Semaine {n}" était la semaine ISO de l'année, sans rapport avec la
+//   road map (voir components/roadmap/RoadmapSummary.tsx).
 
-export interface RoadmapData {
-  roadmap: Roadmap;
-  phases: RoadmapPhase[];
-  objectives: RoadmapObjective[];
-}
+const BASE_PATH = "/dashboard/client";
 
-// Exporté pour CoachMoiRoadmapView : un coach sur sa propre Road Map n'a
-// jamais eu ce résumé (phase active + progression des objectifs), voir le
-// commentaire là-bas — même carte, jamais raison de la dupliquer.
-export function ObjectiveCard({
-  obj,
-  roadmapStart,
+export default function RoadmapView({
+  userId,
+  isFree,
+  today,
+  data,
 }: {
-  obj: RoadmapObjective;
-  roadmapStart: string;
+  userId: string;
+  isFree: boolean;
+  today: string;
+  data: RoadmapPageData;
 }) {
-  const color = OBJECTIVE_TERM_COLORS[obj.term];
-  const termLabel = obj.term === "short" ? "Court terme" : obj.term === "medium" ? "Moyen terme" : "Long terme";
-
-  // MASTERCLASS.md Axe E : lazy useState(Date.now()) plutôt que Date.now()
-  // direct au rendu (impur) — une carte d'objectif n'a de toute façon pas
-  // besoin d'être plus fraîche que le rendu initial de l'écran.
-  const [now] = useState(() => Date.now());
-
-  // Progress bar if quantifiable
-  let progressPct: number | null = null;
-  // For date-based progress
-  if (!obj.is_achieved) {
-    const start = new Date(roadmapStart).getTime();
-    const target = new Date(obj.target_date).getTime();
-    if (target > start) {
-      progressPct = Math.min(100, ((now - start) / (target - start)) * 100);
-    }
-  }
-
-  const daysLeft = obj.is_achieved
-    ? 0
-    : Math.ceil((new Date(obj.target_date).getTime() - now) / 86400000);
-
-  return (
-    <div
-      style={{
-        background: "linear-gradient(135deg, #1A0101 0%, #0D0000 100%)",
-        border: `1px solid ${obj.is_achieved ? "rgba(74,222,128,0.2)" : "rgba(224,30,30,0.12)"}`,
-        borderRadius: 12,
-        padding: 16,
-        opacity: obj.is_achieved ? 0.7 : 1,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: 0, left: 0, right: 0,
-          height: 2,
-          background: `linear-gradient(90deg, transparent, ${color}, transparent)`,
-        }}
-      />
-
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-        <div>
-          <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: "0.15em",
-            textTransform: "uppercase", color,
-          }}>
-            {termLabel}
-          </span>
-          <p style={{
-            fontSize: 15, fontWeight: 700, color: obj.is_achieved ? "#4ade80" : "#F5EDED",
-            margin: "4px 0 0", letterSpacing: "-0.01em",
-          }}>
-            {obj.is_achieved ? "✓ " : ""}{obj.label}
-          </p>
-        </div>
-        {obj.target_value && (
-          <div style={{ textAlign: "right" }}>
-            <p style={{ fontSize: 18, fontWeight: 800, color, margin: 0, letterSpacing: "-0.03em" }}>
-              {obj.target_value}
-              <span style={{ fontSize: 11, fontWeight: 500, color: "rgba(245,237,237,0.4)" }}>
-                {" "}{obj.target_unit ?? ""}
-              </span>
-            </p>
-          </div>
-        )}
-      </div>
-
-      {progressPct !== null && (
-        <div style={{ marginBottom: 8 }}>
-          <div style={{ height: 4, background: "rgba(0,0,0,0.4)", borderRadius: 2, overflow: "hidden" }}>
-            <div style={{
-              height: "100%",
-              width: `${progressPct}%`,
-              background: color,
-              borderRadius: 2,
-              transition: "width 0.8s ease",
-            }} />
-          </div>
-        </div>
-      )}
-
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        {obj.is_achieved && obj.achieved_at && (
-          <span style={{ fontSize: 10, color: "rgba(74,222,128,0.7)" }}>
-            ✓ Atteint le{" "}
-            {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(
-              new Date(obj.achieved_at + "T12:00:00")
-            )}
-          </span>
-        )}
-        {!obj.is_achieved && (
-          <span style={{ fontSize: 10, color: "rgba(245,237,237,0.35)" }}>
-            {daysLeft > 0
-              ? `Dans ${daysLeft} jour${daysLeft > 1 ? "s" : ""}`
-              : daysLeft === 0
-              ? "Aujourd'hui !"
-              : `Dépassé de ${Math.abs(daysLeft)} jour${Math.abs(daysLeft) > 1 ? "s" : ""}`}
-          </span>
-        )}
-        <span style={{ fontSize: 10, color: "rgba(245,237,237,0.2)", marginLeft: "auto" }}>
-          {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", year: "numeric" }).format(
-            new Date(obj.target_date + "T12:00:00")
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-export default function RoadmapView() {
   const router = useRouter();
-  const [data, setData] = useState<RoadmapData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [isFree, setIsFree] = useState(false);
+  // Après une sauvegarde de l'éditeur, on relit la page côté serveur pour
+  // que le résumé et le pilote suivent (l'état de l'éditeur est conservé).
+  const refresh = useCallback(() => router.refresh(), [router]);
 
-  useEffect(() => {
-    const supabase = createClientSupabase();
-    supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) {
-        router.replace("/auth/client");
-        return;
-      }
-      setUserId(user.id);
+  const { roadmap, phases, objectives, pilot, pilotError, error } = data;
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("subscription_status, role")
-        .eq("id", user.id)
-        .single();
-      // Item 37 : dérivation centralisée (utils/auth-client.ts) plutôt que
-      // de recomposer la condition ici — évite qu'elle diverge de la même
-      // logique utilisée partout ailleurs (isSubscribed, roleBadge...).
-      const p = profile as Pick<Profile, "subscription_status" | "role"> | null;
-      setIsFree(getAccessType(p) === "membre_gratuit");
+  const overview = roadmap ? (
+    <>
+      <PhasePilotCard pilot={pilot} error={pilotError} basePath={BASE_PATH} />
+      <RoadmapObjectivesSummary roadmap={roadmap} objectives={objectives} today={today} weights={pilot?.weights} />
+    </>
+  ) : null;
 
-      const res = await fetch(`/api/roadmap/${user.id}`);
-      const json = await res.json();
-      if (json.roadmap) setData(json as RoadmapData);
-      setLoading(false);
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Free community members build and edit their own road map — no coach review.
-  if (!loading && isFree && userId) {
+  // Membre en autonomie : il construit et modifie lui-même sa road map.
+  if (isFree) {
     return (
       <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 900, margin: "0 auto" }}>
         <div style={{ marginBottom: 20 }}>
@@ -197,31 +59,36 @@ export default function RoadmapView() {
             Road Map : Communauté
           </span>
           <h1 className="ep-h1" style={{ margin: "4px 0 6px" }}>Ma Road Map</h1>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>
             Construis toi-même tes phases et tes objectifs, en autonomie, sans suivi coach.
           </p>
+          {roadmap && <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />}
         </div>
-        <RoadmapEditor clientId={userId} />
+
+        {error && (
+          <RoadmapLoadError
+            message="Impossible de charger le résumé de ta road map pour l'instant."
+            hint="Ne modifie rien plus bas avant d'avoir rechargé."
+          />
+        )}
+        {overview}
+
+        <RoadmapEditor clientId={userId} onSaved={refresh} />
       </div>
     );
   }
 
-  if (loading) {
+  // Client accompagné : lecture seule, c'est son coach qui construit.
+  if (error) {
     return (
-      <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto" }}>
-        <Skeleton className="h-4 w-24 mb-2" />
-        <Skeleton className="h-8 w-48 mb-8" />
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 24 }}>
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-        </div>
-        <Skeleton className="h-96" />
+      <div className="page-transition" style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto" }}>
+        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 16px" }}>Ma Road Map</h1>
+        <RoadmapLoadError message="Impossible de charger ta road map pour l'instant." />
       </div>
     );
   }
 
-  if (!data) {
+  if (!roadmap) {
     return (
       <div style={{ padding: "32px 20px", maxWidth: 700, margin: "0 auto", textAlign: "center" }}>
         <MapPin size={40} style={{ color: "rgba(224,30,30,0.3)", margin: "0 auto 16px" }} strokeWidth={1.5} />
@@ -235,75 +102,18 @@ export default function RoadmapView() {
     );
   }
 
-  const { roadmap, phases, objectives } = data;
-  // MASTERCLASS.md Axe L : UTC, pas Paris — entre minuit et 1h/2h du matin,
-  // la mauvaise phase (celle d'hier) pouvait rester affichée comme active
-  // pile au moment d'une transition de phase.
-  const today = todayInParis();
-
-  // Active phase
-  const activePhase = phases.find(
-    (p) => p.start_date <= today && p.end_date >= today
-  );
-  const activePhaseCols = activePhase
-    ? PHASE_COLORS[activePhase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom
-    : null;
-
-  const weekNumber = getISOWeek(new Date());
-
-  // Motivation message based on recent perf (use first pending obj)
-  const pendingObjectives = objectives.filter((o) => !o.is_achieved);
-  const nextShort = pendingObjectives.find((o) => o.term === "short");
-  const nextMedium = pendingObjectives.find((o) => o.term === "medium");
-  const nextLong = pendingObjectives.find((o) => o.term === "long");
-
   return (
     <div className="page-transition" style={{ padding: "24px 20px 80px", maxWidth: 700, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 20 }}>
         <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)" }}>
           Road Map
         </span>
         <h1 className="ep-h1" style={{ fontSize: 28, margin: "4px 0 6px" }}>Ma Road Map</h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 12, color: "rgba(245,237,237,0.4)" }}>
-            Semaine {weekNumber}
-          </span>
-          {activePhaseCols && (
-            <span style={{
-              background: activePhaseCols.bg,
-              border: `1px solid ${activePhaseCols.border}`,
-              color: activePhaseCols.solid,
-              borderRadius: 20,
-              padding: "2px 10px",
-              fontSize: 10,
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-            }}>
-              {activePhaseCols.icon} {activePhase?.label ?? activePhaseCols.label}
-            </span>
-          )}
-        </div>
+        <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />
       </div>
 
-      {/* Objectives summary — 3 columns */}
-      {(nextShort || nextMedium || nextLong) && (
-        <section style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(224,30,30,0.6)", marginBottom: 10 }}>
-            <Target size={11} style={{ display: "inline", marginRight: 5, verticalAlign: "middle" }} />
-            Mes objectifs
-          </p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 10 }}>
-            {[nextShort, nextMedium, nextLong].map((obj) => {
-              if (!obj) return null;
-              return (
-                <ObjectiveCard key={obj.id} obj={obj} roadmapStart={roadmap.start_date} />
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {overview}
 
       {/* Calendar */}
       <section>
@@ -311,14 +121,7 @@ export default function RoadmapView() {
           Calendrier
         </p>
         <div className="ep-card" style={{ padding: 16 }}>
-          {userId && (
-            <RoadmapCalendar
-              roadmap={roadmap}
-              phases={phases}
-              objectives={objectives}
-              clientId={userId}
-            />
-          )}
+          <RoadmapCalendar roadmap={roadmap} phases={phases} objectives={objectives} clientId={userId} />
         </div>
       </section>
     </div>

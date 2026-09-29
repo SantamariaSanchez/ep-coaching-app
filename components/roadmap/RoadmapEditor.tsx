@@ -1,11 +1,14 @@
 "use client";
 
-import { useEffect, useState, isValidElement, cloneElement } from "react";
-import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown, AlertCircle } from "lucide-react";
+import { useEffect, useMemo, useState, isValidElement, cloneElement } from "react";
+import { Plus, Trash2, Save, Eye, EyeOff, Target, CalendarRange, ChevronDown, AlertCircle, AlertTriangle, RotateCw } from "lucide-react";
 import { PHASE_COLORS, OBJECTIVE_TERM_COLORS } from "@/lib/roadmap-colors";
 import RoadmapCalendar from "@/components/roadmap/RoadmapCalendar";
 import CollapsibleSection from "@/components/ui/CollapsibleSection";
 import type { Roadmap, RoadmapPhase, RoadmapObjective } from "@/utils/roadmap";
+import { validateRoadmapInput } from "@/lib/roadmap-validation";
+import { addDaysIso, diffDaysIso, isValidIsoDate } from "@/lib/roadmap-weeks";
+import { todayInParis } from "@/lib/dates";
 
 // ── Local form types ──────────────────────────────────────────────────────────
 
@@ -384,7 +387,8 @@ function ObjectiveCard({
                   checked={obj.is_achieved}
                   onChange={(e) => onChange({
                     is_achieved: e.target.checked,
-                    achieved_at: e.target.checked ? new Date().toISOString().split("T")[0] : null,
+                    // Heure de Paris : toISOString() donnait la veille entre 0 h et 2 h.
+                    achieved_at: e.target.checked ? todayInParis() : null,
                   })}
                   style={{ accentColor: "#4ade80" }}
                 />
@@ -411,9 +415,9 @@ function ObjectiveCard({
 
 function durationLabel(start: string, end: string): string {
   if (!start || !end) return "";
-  const days = Math.round(
-    (new Date(end).getTime() - new Date(start).getTime()) / 86400000
-  );
+  // Dates encore en cours de saisie (année "0002"...) : pas de calcul absurde.
+  if (!isValidIsoDate(start) || !isValidIsoDate(end)) return "Dates invalides";
+  const days = diffDaysIso(start, end);
   if (days < 0) return "Dates invalides";
   const weeks = Math.round(days / 7);
   const months = (days / 30.44).toFixed(1);
@@ -432,29 +436,21 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
   startDate: string;
   endDate: string;
 }) {
-  // MASTERCLASS.md Axe E : lazy useState(Date.now()) plutôt que Date.now()
-  // direct au rendu (impur) — un repère "aujourd'hui" n'a de toute façon
-  // pas besoin d'être plus frais que le rendu initial de l'écran.
-  const [now] = useState(() => Date.now());
-  if (!startDate || !endDate || phases.length === 0) return null;
-  const totalDays = Math.max(
-    1,
-    (new Date(endDate).getTime() - new Date(startDate).getTime()) / 86400000
-  );
-  const todayOffset = (now - new Date(startDate).getTime()) / 86400000;
+  // Même repère "aujourd'hui" que le reste de la road map : jour calendaire
+  // de Paris (lib/dates.ts) et écarts en jours via lib/roadmap-weeks.ts, au
+  // lieu d'un Date.now() comparé à un minuit UTC. Lazy useState : calculé une
+  // fois au montage (MASTERCLASS.md Axe E, pas d'appel impur au rendu).
+  const [today] = useState(() => todayInParis());
+  if (!isValidIsoDate(startDate) || !isValidIsoDate(endDate) || phases.length === 0) return null;
+  const totalDays = Math.max(1, diffDaysIso(startDate, endDate));
+  const todayOffset = diffDaysIso(startDate, today);
   const todayPct = todayOffset >= 0 && todayOffset <= totalDays ? (todayOffset / totalDays) * 100 : null;
   return (
     <div style={{ position: "relative" }}>
       <div style={{ display: "flex", height: 24, borderRadius: 6, overflow: "hidden" }}>
-        {phases.map((phase) => {
-          const pStart = Math.max(
-            0,
-            (new Date(phase.start_date).getTime() - new Date(startDate).getTime()) / 86400000
-          );
-          const pEnd = Math.min(
-            totalDays,
-            (new Date(phase.end_date).getTime() - new Date(startDate).getTime()) / 86400000
-          );
+        {phases.filter((p) => isValidIsoDate(p.start_date) && isValidIsoDate(p.end_date)).map((phase) => {
+          const pStart = Math.max(0, diffDaysIso(startDate, phase.start_date));
+          const pEnd = Math.min(totalDays, diffDaysIso(startDate, phase.end_date));
           const width = Math.max(0, ((pEnd - pStart) / totalDays) * 100);
           const c = PHASE_COLORS[phase.type as keyof typeof PHASE_COLORS] ?? PHASE_COLORS.custom;
           return (
@@ -485,7 +481,14 @@ function PhaseTimelineBar({ phases, startDate, endDate }: {
 
 // ── Editor body — shared by the coach editor and the client self-serve editor ──
 
-export default function RoadmapEditor({ clientId }: { clientId: string }) {
+export default function RoadmapEditor({
+  clientId,
+  onSaved,
+}: {
+  clientId: string;
+  /** Appelé après une sauvegarde réussie (ex. router.refresh() pour le pilote de phase). */
+  onSaved?: () => void;
+}) {
   const [loading, setLoading] = useState(true);
   // Repasse "petit détail utile" (2026-09-10) : sans ça, un échec réseau au
   // chargement laissait existingRoadmap à null exactement comme "pas encore
@@ -493,9 +496,13 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   // client a pourtant déjà une roadmap, avec le risque d'en créer une
   // deuxième en double sans s'en rendre compte.
   const [loadError, setLoadError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  // Passe à true au premier clic sur "Sauvegarder" : les erreurs de
+  // validation s'affichent alors même si la période n'est pas encore saisie.
+  const [saveAttempted, setSaveAttempted] = useState(false);
   // Vue globale visible par defaut — avant, la vraie vision multi-mois
   // (blocs de phase sur les semaines) etait cachee derriere un toggle et
   // seule la liste plate des cartes de phase etait visible d'emblee.
@@ -515,9 +522,17 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   const [openPhaseId, setOpenPhaseId] = useState<string | null>(null);
   const [openObjectiveId, setOpenObjectiveId] = useState<string | null>(null);
 
+  // Audit 2026-09-28 : r.ok n'était pas vérifié. Un 403 ou un 500 renvoyait
+  // { error } et donc data.roadmap undefined : l'éditeur affichait le
+  // formulaire de CRÉATION vide, et l'enregistrer écrasait la vraie road map
+  // (la route GET répond maintenant 500 sur une panne base au lieu de
+  // { roadmap: null }). Toute réponse non OK est une erreur de chargement.
   useEffect(() => {
     fetch(`/api/roadmap/${clientId}`)
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`GET /api/roadmap ${r.status}`);
+        return r.json();
+      })
       .then((data) => {
         if (data.roadmap) {
           setExistingRoadmap(data.roadmap);
@@ -532,17 +547,24 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         }
         setLoading(false);
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error("RoadmapEditor load error:", e);
         setLoadError(true);
         setLoading(false);
       });
-  }, [clientId]);
+  }, [clientId, reloadKey]);
+
+  function retryLoad() {
+    setLoading(true);
+    setLoadError(false);
+    setReloadKey((k) => k + 1);
+  }
 
   function addPhase() {
     const lastEnd = phases[phases.length - 1]?.end_date ?? startDate;
-    const nextStart = lastEnd
-      ? new Date(new Date(lastEnd).getTime() + 86400000).toISOString().split("T")[0]
-      : startDate;
+    // Lendemain de la dernière phase, calculé sur la date calendaire (UTC
+    // sur la chaîne) : aucun décalage possible avec le fuseau du navigateur.
+    const nextStart = isValidIsoDate(lastEnd) ? addDaysIso(lastEnd, 1) : startDate;
 
     const localId = uid();
     setPhases((prev) => [
@@ -569,7 +591,7 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
         type: "weight",
         term: "medium",
         label: "",
-        target_date: endDate || new Date().toISOString().split("T")[0],
+        target_date: endDate || todayInParis(),
         target_value: null,
         target_unit: "kg",
         description: null,
@@ -580,10 +602,24 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
     setOpenObjectiveId(localId);
   }
 
+  // Validation (lib/roadmap-validation.ts, la même que la route POST) :
+  // avant, deux phases qui se chevauchaient étaient enregistrées et l'une
+  // disparaissait du calendrier sans un mot. Calculée en direct pour que les
+  // chevauchements se voient pendant la saisie, pas seulement au clic.
+  const issues = useMemo(
+    () => validateRoadmapInput({ start_date: startDate, end_date: endDate, phases, objectives }),
+    [startDate, endDate, phases, objectives]
+  );
+  // Sur un formulaire de création encore vide, "renseigne les dates" dès
+  // l'ouverture serait du bruit : on attend que la période soit saisie ou
+  // qu'un enregistrement soit tenté.
+  const showIssues = saveAttempted || (!!startDate && !!endDate);
+
   async function handleSave() {
     setSaveError(null);
-    if (!startDate || !endDate) {
-      setSaveError("Renseigne les dates de début et de fin.");
+    setSaveAttempted(true);
+    if (issues.errors.length > 0) {
+      setSaveError("Corrige les points signalés ci-dessus avant d'enregistrer.");
       return;
     }
     setSaving(true);
@@ -598,16 +634,29 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
           objectives: objectives.map(({ localId: _l, ...o }) => o),
         }),
       });
-      const data = await res.json();
-      if (data.ok) {
+      const data = (await res.json().catch(() => null)) as { ok?: boolean; roadmapId?: string; error?: string } | null;
+      if (res.ok && data?.ok) {
         setSaved(true);
         setTimeout(() => setSaved(false), 2000);
+        // Avant, existingRoadmap restait null après la toute première
+        // sauvegarde : l'écran restait en mode création. On bascule sur la
+        // vue d'ensemble, avec les dates tout juste enregistrées.
+        setExistingRoadmap((prev) => ({
+          id: data.roadmapId ?? prev?.id ?? "",
+          client_id: clientId,
+          created_by: prev?.created_by ?? null,
+          start_date: startDate,
+          end_date: endDate,
+          created_at: prev?.created_at ?? "",
+          updated_at: new Date().toISOString(),
+        }));
+        onSaved?.();
       } else {
-        setSaveError(data.error ?? "Erreur inconnue.");
+        setSaveError(data?.error ?? `Erreur de sauvegarde (code ${res.status}). Réessaie.`);
       }
     } catch (e) {
       console.error(e);
-      setSaveError("Erreur de sauvegarde.");
+      setSaveError("Connexion perdue pendant la sauvegarde : recharge la page pour vérifier ce qui a été enregistré, puis réessaie si besoin.");
     }
     setSaving(false);
   }
@@ -622,14 +671,24 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
   }
 
   if (loadError) {
+    // Texte neutre (lu par un membre, par le fondateur sur sa propre road
+    // map ou par un coach) et SANS formulaire : rien ne doit pouvoir être
+    // enregistré par-dessus une road map qu'on n'a pas réussi à lire.
     return (
-      <div className="ep-card" style={{ padding: "20px", display: "flex", alignItems: "center", gap: 12 }}>
-        <AlertCircle size={18} style={{ color: "rgba(245,237,237,0.35)", flexShrink: 0 }} />
-        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, margin: 0 }}>
-          Impossible de charger la road map de ce client pour l&apos;instant. Recharge la page avant de
-          continuer — une road map existe peut-être déjà, mieux vaut ne pas risquer d&apos;en créer une
-          deuxième en double.
+      <div role="alert" className="ep-card" style={{ padding: "20px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+        <AlertCircle size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
+        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0, flex: "1 1 220px" }}>
+          Impossible de charger la road map pour l&apos;instant. Ne modifie rien avant de recharger : si une
+          road map existe déjà, l&apos;enregistrer maintenant l&apos;écraserait.
         </p>
+        <button
+          type="button"
+          onClick={retryLoad}
+          className="ep-btn-secondary"
+          style={{ fontSize: 12, display: "flex", alignItems: "center", gap: 6 }}
+        >
+          <RotateCw size={13} /> Réessayer
+        </button>
       </div>
     );
   }
@@ -796,6 +855,33 @@ export default function RoadmapEditor({ clientId }: { clientId: string }) {
           ))}
         </div>
       </section>
+
+      {/* Points de validation : erreurs (bloquantes) puis avertissements */}
+      {showIssues && (issues.errors.length > 0 || issues.warnings.length > 0) && (
+        <div
+          role={saveAttempted && issues.errors.length > 0 ? "alert" : undefined}
+          style={{
+            marginTop: 24,
+            background: issues.errors.length > 0 ? "rgba(224,30,30,0.07)" : "rgba(251,191,36,0.06)",
+            border: `1px solid ${issues.errors.length > 0 ? "rgba(224,30,30,0.25)" : "rgba(251,191,36,0.25)"}`,
+            borderRadius: 10,
+            padding: "12px 14px",
+          }}
+        >
+          <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: issues.errors.length > 0 ? "#E01E1E" : "#fbbf24", margin: "0 0 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <AlertTriangle size={12} />
+            {issues.errors.length > 0 ? "À corriger avant d'enregistrer" : "À vérifier (n'empêche pas d'enregistrer)"}
+          </p>
+          <ul style={{ margin: 0, paddingLeft: 18, display: "flex", flexDirection: "column", gap: 4 }}>
+            {issues.errors.map((m, i) => (
+              <li key={`e-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "#FDC4C4", overflowWrap: "anywhere" }}>{m}</li>
+            ))}
+            {issues.warnings.map((m, i) => (
+              <li key={`w-${i}`} style={{ fontSize: 12.5, lineHeight: 1.5, color: "rgba(251,191,36,0.85)", overflowWrap: "anywhere" }}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* Save footer */}
       <div style={{ marginTop: 32, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>

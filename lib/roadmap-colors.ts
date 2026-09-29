@@ -90,25 +90,49 @@ export const OBJECTIVE_TERM_COLORS = {
   long:   "#eab308",
 } as const;
 
-export function getWeekPerformanceColor(
-  checkinExists: boolean,
-  nutritionDays: number,
-  sessionsDone: number,
-  sessionsPlanned: number,
-  isFuture: boolean
-): PerformanceKey {
+// Couleur d'une semaine du calendrier de road map (lib/roadmap-stats.ts).
+//
+// Refonte 2026-09-28 : 30 points reposaient uniquement sur check_ins, une
+// table vide depuis toujours (aucun écran de check-in côté coach "Moi"), donc
+// chaque semaine plafonnait à "Bonne semaine" quoi qu'il arrive. Et "séances
+// prévues" comptait les séances DÉMARRÉES : 2 faites sur 2 démarrées donnait
+// un sans-faute même avec 5 séances au programme. Désormais :
+//   suivi 30 pts        : bilans quotidiens (daily_logs), ou un check-in hebdo
+//   nutrition 40 pts    : jours avec au moins un aliment logué
+//   entraînement 30 pts : séances terminées vs fréquence du programme
+// Les bilans et la nutrition visent 5 jours sur 7 (au prorata des jours déjà
+// écoulés pour la semaine en cours), les séances visent le plan au prorata.
+export interface WeekScoreInput {
+  checkinExists: boolean;
+  bilanDays: number;
+  nutritionDays: number;
+  sessionsDone: number;
+  /** Séances prévues sur une semaine pleine, null si aucun plan connu. */
+  sessionsPlanned: number | null;
+  /** Jours écoulés de la semaine (7 pour une semaine passée). */
+  daysElapsed: number;
+  isFuture: boolean;
+}
+
+export const WEEK_SCORE_LEGEND =
+  "Couleur de la semaine : bilans quotidiens (30 pts), jours de nutrition logués (40 pts), séances faites vs programme (30 pts).";
+
+export function getWeekPerformanceColor(input: WeekScoreInput): PerformanceKey {
+  const { checkinExists, bilanDays, nutritionDays, sessionsDone, sessionsPlanned, isFuture } = input;
   if (isFuture) return "future";
-  if (!checkinExists && nutritionDays === 0 && sessionsDone === 0) return "empty";
+  if (!checkinExists && bilanDays === 0 && nutritionDays === 0 && sessionsDone === 0) return "empty";
 
-  let score = 0;
-  if (checkinExists) score += 30;
-  score += Math.min((nutritionDays / 7) * 40, 40);
-  if (sessionsPlanned > 0) {
-    score += Math.min((sessionsDone / sessionsPlanned) * 30, 30);
-  } else {
-    score += 30;
-  }
+  const days = Math.min(7, Math.max(1, input.daysElapsed));
+  const dailyTarget = Math.min(5, days);
 
+  const suivi = Math.max(checkinExists ? 30 : 0, Math.min(bilanDays / dailyTarget, 1) * 30);
+  const nutrition = Math.min(nutritionDays / dailyTarget, 1) * 40;
+  const training =
+    sessionsPlanned && sessionsPlanned > 0
+      ? Math.min(sessionsDone / ((sessionsPlanned * days) / 7), 1) * 30
+      : 30;
+
+  const score = suivi + nutrition + training;
   if (score >= 85) return "excellent";
   if (score >= 65) return "good";
   if (score >= 40) return "average";
