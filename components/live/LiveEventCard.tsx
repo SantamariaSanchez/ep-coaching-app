@@ -217,7 +217,10 @@ export default function LiveEventCard({
           )}
 
           <div className="flex items-center gap-2 mt-3 flex-wrap">
-            {!cancelled && !isPast && (
+            {/* Un live terminé ("Terminer le live") garde sa fenêtre horaire,
+                mais sa salle renvoie une 404 (pages [id] : status "scheduled"
+                exigé) : plus de bouton "Rejoindre" qui mène dans le vide. */}
+            {!cancelled && !isPast && event.status === "scheduled" && (
               <Link
                 href={canJoin ? `${basePath}/live/${event.id}` : "#"}
                 aria-disabled={!canJoin}
