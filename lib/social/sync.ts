@@ -453,7 +453,7 @@ export async function runSocialSync(opts: {
   const from = shift(to, -Math.max(30, opts.days ?? 30));
   clearFieldCache();
 
-  let q = admin.from("social_accounts").select("*").eq("active", true);
+  let q = admin.from("social_accounts").select("*").eq("active", true).eq("source", "windsor");
   if (opts.platform) q = q.eq("platform", opts.platform);
   const { data: accounts, error } = await q;
   if (error) throw new Error(`social_accounts : ${error.message}`);

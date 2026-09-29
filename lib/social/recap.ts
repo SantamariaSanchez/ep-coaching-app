@@ -66,7 +66,7 @@ function parisHour(iso: string): number {
 
 export async function buildWeeklyRecap(admin: Admin, weekStart: string): Promise<WeeklyRecap> {
   const weekEnd = shift(weekStart, 6);
-  const { data: accounts } = await admin.from("social_accounts").select("id, platform").eq("active", true);
+  const { data: accounts } = await admin.from("social_accounts").select("id, platform").eq("active", true).eq("source", "windsor");
   const accs = (accounts ?? []) as { id: string; platform: Platform }[];
 
   const followers: WeeklyRecap["followers"] = [];
@@ -99,6 +99,7 @@ export async function buildWeeklyRecap(admin: Admin, weekStart: string): Promise
   const { data: weekPosts } = await admin
     .from("social_posts")
     .select("id, platform, caption, published_at, url, views, impressions, reach, engagement_rate, completion_rate, script_id")
+    .in("account_id", accs.map((a) => a.id))
     .gte("published_at", `${shift(weekStart, -1)}T00:00:00Z`)
     .lte("published_at", `${shift(weekEnd, 1)}T23:59:59Z`);
   // Fenêtre élargie d'un jour puis filtre sur la date à Paris : exact quel
@@ -119,6 +120,7 @@ export async function buildWeeklyRecap(admin: Admin, weekStart: string): Promise
   const { data: recent } = await admin
     .from("social_posts")
     .select("published_at, views, impressions, reach")
+    .in("account_id", accs.map((a) => a.id))
     .gte("published_at", `${shift(weekEnd, -90)}T00:00:00Z`)
     .not("published_at", "is", null);
   const byHour = new Map<number, number[]>();

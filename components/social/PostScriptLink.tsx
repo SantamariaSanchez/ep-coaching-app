@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { linkPostToScriptAction } from "@/app/dashboard/coach/admin/stats-reseaux/actions";
+import { linkPostToScriptAction } from "@/app/dashboard/coach/stats-reseaux/actions";
 
 // Relier une publication au script du Studio créatif dont elle vient (ou
 // corriger un lien automatique). Un lien fait ici n'est jamais écrasé.

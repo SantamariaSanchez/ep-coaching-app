@@ -77,7 +77,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
     return `/dashboard/coach/admin/stats-reseaux?${q.toString()}`;
   };
 
-  const data = await getSocialDashboard({ platform, days, sort, type });
+  const data = await getSocialDashboard({ ownerId: user.id, platform, days, sort, type });
   const hasKey = windsorConfigured();
 
   return (

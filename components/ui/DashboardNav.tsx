@@ -143,7 +143,7 @@ const COACH_TABS: TabItem[] = [
     // jamais dans mobileSubItems (aucun onglet ne le revendiquait comme
     // frère) alors que le desktop affiche la sidebar complète sans ce
     // filtre — bug uniquement mobile, invisible sur ordi.
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes"],
+    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes", "stats-reseaux"],
   },
   {
     label: "Communauté",
@@ -228,6 +228,8 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       // Formations (destiné aux clients) : BookOpenCheck reste distinct.
       { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
+      // Stats réseaux de chaque coach (2026-09-29) : abonnés, portée, publications.
+      { label: "Mes stats réseaux", icon: BarChart3, segment: "stats-reseaux" },
       // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
       // fichiers perso, notes — jamais précisé jusqu'ici.
       { label: "Documents & notes", icon: FileText, segment: "documents" },

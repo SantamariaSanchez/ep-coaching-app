@@ -2,7 +2,6 @@
 
 import { revalidatePath } from "next/cache";
 import { getUser, getProfile } from "@/utils/auth";
-import { createAdminClient } from "@/lib/supabase-admin";
 import { runSocialSync } from "@/lib/social/sync";
 import type { Platform } from "@/lib/social/platforms";
 
@@ -40,24 +39,4 @@ export async function syncNowAction(platform: string | null, backfill: boolean):
     console.error("syncNowAction error:", e);
     return { error: e instanceof Error ? e.message : "Synchro impossible." };
   }
-}
-
-export async function linkPostToScriptAction(postId: string, scriptId: string | null): Promise<{ error?: string }> {
-  const guard = await requireOwner();
-  if (!guard.ok) return { error: guard.error };
-  const admin = createAdminClient();
-  if (scriptId) {
-    const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();
-    const { data: script } = await admin.from("coach_scripts").select("id").eq("id", scriptId).eq("coach_id", owner?.id ?? "").maybeSingle();
-    if (!script) return { error: "Script introuvable." };
-  }
-  const { error } = await admin
-    .from("social_posts")
-    // "manuel" même pour un retrait : le rapprochement automatique ne
-    // reliera plus jamais cette publication de lui-même.
-    .update({ script_id: scriptId, script_link_source: "manuel" })
-    .eq("id", postId);
-  if (error) return { error: "Lien impossible pour le moment." };
-  revalidatePath("/dashboard/coach/admin/stats-reseaux");
-  return {};
 }

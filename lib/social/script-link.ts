@@ -68,8 +68,13 @@ export function scoreScript(caption: string, s: Script): number {
 export async function linkPostsToScripts(admin: Admin): Promise<number> {
   const { data: owner } = await admin.from("profiles").select("id").eq("is_platform_owner", true).limit(1).maybeSingle();
   if (!owner?.id) return 0;
+  // Seulement les publications des comptes du fondateur (synchro Windsor) :
+  // jamais celles des autres coachs, reliées à leurs propres scripts.
+  const { data: accs } = await admin.from("social_accounts").select("id").eq("owner_id", owner.id);
+  const accountIds = ((accs ?? []) as { id: string }[]).map((a) => a.id);
+  if (!accountIds.length) return 0;
   const [{ data: posts }, { data: scripts }] = await Promise.all([
-    admin.from("social_posts").select("id, caption").is("script_id", null).is("script_link_source", null).not("caption", "is", null).limit(2000),
+    admin.from("social_posts").select("id, caption").in("account_id", accountIds).is("script_id", null).is("script_link_source", null).not("caption", "is", null).limit(2000),
     admin.from("coach_scripts").select("id, title, hook, instagram_caption, content").eq("coach_id", owner.id).limit(2000),
   ]);
   const list = (scripts ?? []) as Script[];
