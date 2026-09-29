@@ -10,6 +10,7 @@ import { awardPoints, POINTS } from "@/lib/gamification";
 import { getCoachForClient } from "@/utils/insert-notification";
 import { notifyUser } from "@/lib/notify";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
+import { escapeHtml } from "@/lib/sanitize";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -55,7 +56,7 @@ export async function POST(
   // Verify ownership
   const { data: session } = await supabase
     .from("sessions")
-    .select("client_id, day_label")
+    .select("client_id, day_label, is_completed")
     .eq("id", sessionId)
     .single();
 
@@ -63,8 +64,16 @@ export async function POST(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  // Déjà terminée (double envoi, nouvel essai après une réponse perdue en
+  // salle) : rien à refaire. Sans ce garde, un second envoi réinsérait le
+  // volume (workout_logs) et redonnait les points. Une séance rouverte
+  // (voir ../reopen) repasse à is_completed=false et reste terminable.
+  if ((session as { is_completed: boolean }).is_completed) {
+    return NextResponse.json({ ok: true, alreadyCompleted: true });
+  }
+
   // 1. Update session as completed
-  await supabase
+  const { error: updateError } = await supabase
     .from("sessions")
     .update({
       is_completed: true,
@@ -74,12 +83,63 @@ export async function POST(
       pump: body.pump,
       notes: body.notes || null,
     })
-    .eq("id", sessionId);
+    .eq("id", sessionId)
+    .eq("client_id", guard.userId);
 
-  // 2. Insert PRs
-  if (body.prs.length > 0) {
-    await supabase.from("personal_records").insert(
-      body.prs.map((pr) => ({
+  // L'erreur n'était jamais testée : la séance restait "en cours" en base
+  // pendant que l'écran confirmait la sauvegarde. On s'arrête ici, avant
+  // d'écrire le moindre PR ou volume rattaché à une séance non terminée.
+  if (updateError) {
+    console.error("POST complete: mise à jour de la séance impossible:", updateError);
+    return NextResponse.json({ error: "Erreur serveur, réessaie." }, { status: 500 });
+  }
+
+  // 2. Insert PRs : un seul par exercice (le plus lourd), et seulement s'il
+  // bat vraiment le meilleur record déjà en base. Avant, toutes les séries
+  // marquées PR côté écran étaient insérées telles quelles : 5 couples
+  // (séance, exercice) sur 22 en double dans personal_records, et des faux
+  // PR après un rechargement de la page en pleine séance.
+  const bestByExercise = new Map<string, PR>();
+  for (const pr of Array.isArray(body.prs) ? body.prs : []) {
+    if (typeof pr?.exerciseName !== "string" || !pr.exerciseName.trim()) continue;
+    const weight = Number(pr.weightKg);
+    if (!Number.isFinite(weight) || weight <= 0) continue;
+    const key = pr.exerciseName.toLowerCase();
+    const current = bestByExercise.get(key);
+    if (!current || weight > current.weightKg) {
+      bestByExercise.set(key, {
+        exerciseName: pr.exerciseName,
+        weightKg: weight,
+        reps: typeof pr.reps === "number" && Number.isFinite(pr.reps) ? pr.reps : null,
+      });
+    }
+  }
+
+  let prsToInsert: PR[] = [];
+  if (bestByExercise.size > 0) {
+    const { data: existingRecords, error: recordsError } = await supabase
+      .from("personal_records")
+      .select("exercise_name, weight_kg")
+      .eq("client_id", guard.userId);
+    if (recordsError) {
+      // Sans la liste des records existants, impossible de savoir ce qui est
+      // vraiment nouveau : on n'écrit rien plutôt que de risquer des faux PR.
+      console.error("POST complete: lecture des records impossible:", recordsError);
+    } else {
+      const bestExisting: Record<string, number> = {};
+      for (const r of (existingRecords as { exercise_name: string; weight_kg: number }[]) ?? []) {
+        const key = r.exercise_name.toLowerCase();
+        if (!(key in bestExisting) || r.weight_kg > bestExisting[key]) bestExisting[key] = r.weight_kg;
+      }
+      prsToInsert = [...bestByExercise.entries()]
+        .filter(([key, pr]) => !(key in bestExisting) || pr.weightKg > bestExisting[key])
+        .map(([, pr]) => pr);
+    }
+  }
+
+  if (prsToInsert.length > 0) {
+    const { error: prError } = await supabase.from("personal_records").insert(
+      prsToInsert.map((pr) => ({
         client_id: guard.userId,
         exercise_name: pr.exerciseName,
         weight_kg: pr.weightKg,
@@ -88,6 +148,10 @@ export async function POST(
         achieved_at: todayInParis(),
       }))
     );
+    if (prError) {
+      console.error("POST complete: insertion des PR impossible:", prError);
+      prsToInsert = [];
+    }
   }
 
   // 3. Insert workout_logs for volume tracking
@@ -156,11 +220,13 @@ export async function POST(
   const profile = await getProfile(guard.userId);
   const clientName = profile?.full_name ?? "Un client";
   const dayLabel = (session as { day_label: string }).day_label;
+  // Les PR réellement enregistrés, pas ceux envoyés par l'écran : le coach
+  // ne doit pas lire un record qui n'en est pas un.
   const prLine =
-    body.prs.length > 0
-      ? `<p>🏆 <strong>${body.prs.length} nouveau${body.prs.length > 1 ? "x" : ""} PR</strong> : ${body.prs.map((p) => `${p.exerciseName} ${p.weightKg}kg`).join(", ")}</p>`
+    prsToInsert.length > 0
+      ? `<p>🏆 <strong>${prsToInsert.length} nouveau${prsToInsert.length > 1 ? "x" : ""} PR</strong> : ${prsToInsert.map((p) => `${escapeHtml(p.exerciseName)} ${p.weightKg}kg`).join(", ")}</p>`
       : "";
-  const prSummary = body.prs.length > 0 ? ` 🏆 ${body.prs.length} nouveau${body.prs.length > 1 ? "x" : ""} PR.` : "";
+  const prSummary = prsToInsert.length > 0 ? ` 🏆 ${prsToInsert.length} nouveau${prsToInsert.length > 1 ? "x" : ""} PR.` : "";
 
   const coach = await getCoachForClient(guard.userId);
 

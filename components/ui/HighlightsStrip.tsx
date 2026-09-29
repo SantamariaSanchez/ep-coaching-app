@@ -7,6 +7,30 @@ function fmtDate(dateStr: string) {
   );
 }
 
+// Ne garde que les records qui battent vraiment le meilleur précédent du
+// même exercice. personal_records contient des doublons historiques (ex.
+// Crunch poulie haute 35 kg enregistré après 37,5 kg le même jour, Tirage
+// horizontal marqué deux fois à 60 kg) : ils polluaient le bandeau. Filtre
+// d'affichage uniquement, rien n'est modifié en base. Dans une même
+// journée, le plus lourd passe en premier : un record plus léger du même
+// jour n'en est pas un.
+function trueRecords(records: PersonalRecord[]): PersonalRecord[] {
+  const chronological = [...records].sort((a, b) => {
+    const byDate = a.achieved_at.localeCompare(b.achieved_at);
+    return byDate !== 0 ? byDate : b.weight_kg - a.weight_kg;
+  });
+  const bestByExercise = new Map<string, number>();
+  const kept: PersonalRecord[] = [];
+  for (const r of chronological) {
+    const key = r.exercise_name.toLowerCase();
+    const best = bestByExercise.get(key);
+    if (best != null && r.weight_kg <= best) continue;
+    bestByExercise.set(key, r.weight_kg);
+    kept.push(r);
+  }
+  return kept;
+}
+
 // Item 26 : chronologie de progression "highlight" — les records personnels
 // méritaient une frise qui se voit d'un coup d'œil, plutôt que d'être
 // enterrés dans le graphique par exercice plus bas sur la même page.
@@ -14,7 +38,7 @@ function fmtDate(dateStr: string) {
 // LogbookClient sans nouvelle requête) ; les photos de progression restent
 // pour l'instant consultables dans leur propre onglet Photos.
 export default function HighlightsStrip({ records }: { records: PersonalRecord[] }) {
-  const recent = [...records]
+  const recent = trueRecords(records)
     .sort((a, b) => b.achieved_at.localeCompare(a.achieved_at))
     .slice(0, 12);
 
