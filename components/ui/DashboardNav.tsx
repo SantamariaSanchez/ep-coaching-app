@@ -8,7 +8,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -436,6 +436,8 @@ const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   // pas entrer en collision avec /formations, le catalogue "Academie EP"
   // deja existant (visible cote coach/client, produit paye).
   { label: "Tournage", icon: Video, segment: "admin/tournage" },
+  // Stats de tous les réseaux synchronisées via Windsor (2026-09-29).
+  { label: "Stats réseaux", icon: BarChart3, segment: "admin/stats-reseaux" },
 ];
 
 // ── Hook ────────────────────────────────────────────────────────────────────

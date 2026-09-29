@@ -8,7 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "contracts:generate": "tsx --tsconfig ./tsconfig.json scripts/generate-contract-pdfs.ts",
-    "contracts:upload": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/upload-contract-templates.ts"
+    "contracts:upload": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/upload-contract-templates.ts",
+    "social:sync": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-sync.ts",
+    "social:report": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-report.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",

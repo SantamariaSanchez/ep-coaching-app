@@ -53,6 +53,8 @@ scripts/*
 # Sauf les scripts des contrats d'équipe (npm run contracts:generate / contracts:upload)
 !scripts/generate-contract-pdfs.ts
 !scripts/upload-contract-templates.ts
+!scripts/social-sync.ts
+!scripts/social-report.ts
 .claude/
 
 # Ruflo local secrets and runtime data
