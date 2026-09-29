@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { getPersonalPhotos } from "@/utils/personal-photos";
 import { getClientMeasurements } from "@/utils/measurements";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { isOn } from "@/lib/app-setup";
 import PersonalPhotosView from "@/components/ui/PersonalPhotosView";
 import { uploadPersonalPhoto, deletePersonalPhoto, logPersonalMeasurement } from "./personal-actions";
 import { createAdminClient } from "@/lib/supabase-admin";
@@ -23,7 +25,7 @@ export default async function CoachMonPhotosPage() {
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
 
-  const [photos, competitionRow, measurements] = await Promise.all([
+  const [photos, competitionRow, measurements, appSetup] = await Promise.all([
     getPersonalPhotos(user.id).catch(() => []),
     // Nouveau (retour direct 2026-09-09, "moi" — "prends et fais ce que tu
     // veux") : competition_category/competition_date sont déjà remplis via
@@ -41,6 +43,7 @@ export default async function CoachMonPhotosPage() {
     // (BeforeAfterComparator) mais aucun chemin d'écriture nulle part dans
     // l'appli, voir components/ui/MeasurementsSection.tsx.
     getClientMeasurements(user.id),
+    getAppSetup(user.id),
   ]);
   const competition = competitionRow.data as { competition_category: string | null; competition_date: string | null } | null;
 
@@ -53,6 +56,8 @@ export default async function CoachMonPhotosPage() {
       competitionDate={competition?.competition_date ?? null}
       measurements={measurements}
       logMeasurement={logPersonalMeasurement}
+      showCircumferences={isOn(appSetup, "mensurations")}
+      showBodyFat={isOn(appSetup, "masse_grasse")}
     />
   );
 }

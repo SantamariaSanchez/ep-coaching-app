@@ -10,7 +10,11 @@ import { getPersonalPhotos } from "@/utils/personal-photos";
 import ClientPhotosView from "@/components/ui/ClientPhotosView";
 import PersonalPhotosView from "@/components/ui/PersonalPhotosView";
 import { submitPhotoUpdate } from "./actions";
-import { uploadPersonalPhoto, deletePersonalPhoto } from "./personal-actions";
+import { uploadPersonalPhoto, deletePersonalPhoto, logClientMeasurement } from "./personal-actions";
+import { getClientMeasurements } from "@/utils/measurements";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { isOn } from "@/lib/app-setup";
+import MeasurementsSection from "@/components/ui/MeasurementsSection";
 
 export default async function ClientPhotosPage() {
   const user = await getUser();
@@ -25,6 +29,14 @@ export default async function ClientPhotosPage() {
   // Membres gratuits : pas de coach pour relire ces photos, pas de catégorie
   // de compétition, pas de raison de passer par un lien Drive externe — un
   // simple suivi perso avec upload direct suffit largement.
+  // Mensurations et masse grasse (2026-09-29) : saisissables par tout le
+  // monde, affichées selon "Mon appli" (masquées si ni mensurations ni
+  // masse grasse ne sont suivies).
+  const [measurements, appSetup] = await Promise.all([getClientMeasurements(user.id), getAppSetup(user.id)]);
+  const showCircumferences = isOn(appSetup, "mensurations");
+  const showBodyFat = isOn(appSetup, "masse_grasse");
+  const showMeasures = showCircumferences || showBodyFat;
+
   if (!isSubscribed(profile)) {
     const photos = await getPersonalPhotos(user.id).catch(() => []);
     return (
@@ -32,6 +44,10 @@ export default async function ClientPhotosPage() {
         photos={photos}
         uploadPersonalPhoto={uploadPersonalPhoto}
         deletePersonalPhoto={deletePersonalPhoto}
+        measurements={measurements}
+        logMeasurement={showMeasures ? logClientMeasurement : undefined}
+        showCircumferences={showCircumferences}
+        showBodyFat={showBodyFat}
       />
     );
   }
@@ -57,6 +73,7 @@ export default async function ClientPhotosPage() {
   const alreadySubmitted = frequency === "weekly" ? !!weekUpdate : !!dayUpdate;
 
   return (
+    <>
     <ClientPhotosView
       today={today}
       profile={profile}
@@ -64,5 +81,11 @@ export default async function ClientPhotosPage() {
       alreadySubmitted={alreadySubmitted}
       submitPhotoUpdate={submitPhotoUpdate}
     />
+    {showMeasures && (
+      <div className="px-6 max-w-2xl mx-auto pb-24 md:pb-8">
+        <MeasurementsSection measurements={measurements} logMeasurement={logClientMeasurement} showCircumferences={showCircumferences} showBodyFat={showBodyFat} />
+      </div>
+    )}
+    </>
   );
 }

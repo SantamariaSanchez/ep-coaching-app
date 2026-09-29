@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireCoach } from "@/lib/auth-guards";
 import { todayInParis } from "@/lib/dates";
 import { invalidateSignedUrlCache } from "@/utils/signed-url-cache";
+import { saveOwnMeasurement } from "@/lib/measurements-write";
+import type { LogMeasurementInput } from "@/components/ui/MeasurementsSection";
 
 // Miroir de app/dashboard/client/photos/personal-actions.ts pour le coach
 // qui suit ses propres photos (aucun coach au-dessus de lui pour les
@@ -77,57 +79,14 @@ export async function uploadPersonalPhoto(
 // une prépa physique) : mêmes champs que la table, saisie optionnelle
 // (aucun champ obligatoire hors la date), pour ne jamais forcer une mesure
 // qu'on n'a pas sous la main.
-export async function logPersonalMeasurement(input: {
-  measuredAt: string;
-  weight: number | null;
-  waist: number | null;
-  hips: number | null;
-  chest: number | null;
-  shoulders: number | null;
-  armRelaxed: number | null;
-  armFlexed: number | null;
-  forearm: number | null;
-  thigh: number | null;
-  calf: number | null;
-  abdomen: number | null;
-  neck: number | null;
-  notes: string | null;
-}): Promise<{ error?: string }> {
+export async function logPersonalMeasurement(input: LogMeasurementInput): Promise<{ error?: string }> {
   try {
     const guard = await requireCoach();
     if (!guard.ok) return { error: guard.error };
-    const supabase = await createServerSupabase();
-
-    // Upsert, pas insert brut (migration 20260909f, une seule prise par
-    // client et par jour) : un double-tap sur "Enregistrer", ou re-sauvegarder
-    // le même jour après correction d'une valeur, créait une ligne en plus au
-    // lieu de remplacer l'existante — faussait silencieusement l'historique
-    // et le comparateur avant/après (deux entrées pour un même jour).
-    const { error } = await supabase.from("measurements").upsert(
-      {
-        client_id: guard.userId,
-        measured_at: input.measuredAt,
-        weight: input.weight,
-        waist: input.waist,
-        hips: input.hips,
-        chest: input.chest,
-        shoulders: input.shoulders,
-        arm_relaxed: input.armRelaxed,
-        arm_flexed: input.armFlexed,
-        forearm: input.forearm,
-        thigh: input.thigh,
-        calf: input.calf,
-        abdomen: input.abdomen,
-        neck: input.neck,
-        notes: input.notes?.trim() || null,
-      },
-      { onConflict: "client_id,measured_at" }
-    );
-    if (error) {
-      console.error("logPersonalMeasurement upsert error:", error);
-      return { error: "Échec de l'enregistrement." };
-    }
-
+    // Upsert (une seule prise par jour, migration 20260909f) : écriture
+    // partagée avec le côté client, voir lib/measurements-write.ts.
+    const res = await saveOwnMeasurement(guard.userId, input);
+    if (res.error) return res;
     revalidatePath("/dashboard/coach/moi/photos");
     return {};
   } catch (e) {

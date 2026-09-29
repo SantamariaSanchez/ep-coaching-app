@@ -1,0 +1,24 @@
+import type { AppSetup } from "@/lib/app-setup";
+
+// Réponses pré-cochées quand le questionnaire n'a jamais été rempli : tout
+// ce que l'appli fait déjà aujourd'hui (rien ne disparaît sans le vouloir),
+// sauf les nouveautés optionnelles et le cycle, proposé seulement aux femmes.
+export function defaultAnswers(setup: AppSetup, opts: { role: "coach" | "client"; isWoman: boolean }): Record<string, unknown> {
+  if (setup.completed) return setup.answers;
+  const member = {
+    corps: ["poids", "mensurations", "photos"],
+    bilan: ["sommeil", "pas", "stress", "digestion", "faim"],
+    entrainement: "salle",
+    nutrition: "tracker",
+    extras: [...(opts.isWoman ? ["cycle"] : []), "mindset"],
+  };
+  if (opts.role === "client") return member;
+  return {
+    career_mode: "independant",
+    objectifs: ["coacher", "contenu", "formations", "lives", "business"],
+    plateformes: ["instagram"],
+    clients_count: "0",
+    suivi_perso: "oui",
+    ...member,
+  };
+}

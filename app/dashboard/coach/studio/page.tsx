@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { coachPlatforms } from "@/lib/app-setup";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
@@ -21,7 +23,7 @@ export default async function CoachStudioPage() {
   const profile = await getProfile(user.id);
   if (!profile || profile.role === "client") redirect("/dashboard/client");
 
-  const [ideas, notes, inspirations, scripts, canvas] = await Promise.all([
+  const [ideas, notes, inspirations, scripts, canvas, appSetup] = await Promise.all([
     getCoachContentIdeas(user.id),
     getIdeationNotes(user.id),
     getInspirations(user.id),
@@ -31,6 +33,7 @@ export default async function CoachStudioPage() {
     // business" pour qui l'a fait) sert de contexte auto-injecté devant
     // chaque prompt copié, voir IdeationScripts.tsx/buildCoachContext.
     getBusinessCanvas(user.id),
+    getAppSetup(user.id),
   ]);
   // Le texte intégral des guides (générateur de prompts SocialGenerator,
   // ≈1,6 Mo pour 482 guides publiés) n'est plus chargé ici — voir
@@ -62,6 +65,7 @@ export default async function CoachStudioPage() {
         initialScripts={scripts}
         canvas={canvas}
         realLeadsByScriptId={realLeadsByScriptId}
+        platforms={appSetup.completed ? coachPlatforms(appSetup) : undefined}
       />
     </div>
   );

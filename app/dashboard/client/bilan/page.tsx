@@ -3,6 +3,7 @@ import { createServerSupabase } from "@/lib/supabase-server";
 import { getClientDailyLogs } from "@/utils/daily-logs";
 import { getTodayLogs, getActiveDietPlan } from "@/utils/nutrition";
 import BilanDayPicker from "@/components/ui/BilanDayPicker";
+import { getAppSetup } from "@/lib/app-setup-server";
 import { isWithinBilanBackfillWindow } from "@/lib/dates";
 import { getTodayStepsActual } from "@/utils/steps";
 import DailyBilanForm from "@/components/ui/DailyBilanForm";
@@ -43,11 +44,12 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
   // oubli avec exactement le même formulaire.
   const { jour } = await searchParams;
   const date = jour && /^\d{4}-\d{2}-\d{2}$/.test(jour) && isWithinBilanBackfillWindow(jour) ? jour : today;
-  const [allLogs, dayFoodLogs, autoSteps, activePlan] = await Promise.all([
+  const [allLogs, dayFoodLogs, autoSteps, activePlan, appSetup] = await Promise.all([
     getClientDailyLogs(user.id, 90),
     getTodayLogs(user.id, date),
     date === today ? getTodayStepsActual(user.id) : Promise.resolve(null),
     getActiveDietPlan(user.id),
+    getAppSetup(user.id),
   ]);
   const todayLog = allLogs.find((l) => l.log_date === date) ?? null;
   const todayFoodLogs = dayFoodLogs;
@@ -77,7 +79,7 @@ export default async function ClientBilanPage({ searchParams }: { searchParams: 
       <BilanDayPicker basePath="/dashboard/client/bilan" today={today} selected={date} logs={allLogs} />
 
       <div className="animate-scale-in" style={{ marginBottom: 32 }}>
-        <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/client/nutrition" : `/dashboard/client/nutrition?jour=${date}`} />
+        <DailyBilanForm key={date} today={date} existing={todayLog} action={upsertDailyLog} nutritionTotals={nutritionTotals} autoSteps={autoSteps} plan={activePlan ? { name: activePlan.name, mode: activePlan.mode } : null} trackerHref={date === today ? "/dashboard/client/nutrition" : `/dashboard/client/nutrition?jour=${date}`} setup={appSetup} />
       </div>
 
       <BilanProgressView logs={allLogs} exportHref={`/api/export/daily-logs/${user.id}`} />

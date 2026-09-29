@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { hiddenSegments, isOn, type AppSetup, type Modules } from "@/lib/app-setup";
+import AppSetupPrompt from "@/components/setup/AppSetupPrompt";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
@@ -8,7 +10,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -314,6 +316,8 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Compte",
     items: [
       { label: "Mon profil", icon: User, segment: "profile" },
+      // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
+      { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
     ],
   },
@@ -407,6 +411,8 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     group: "Compte",
     items: [
       { label: "Mon profil", icon: User, segment: "profile" },
+      // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
+      { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
     ],
   },
@@ -442,7 +448,7 @@ const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 
-function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: boolean) {
+function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: boolean, hidden: Set<string> = new Set()) {
   const pathname = usePathname();
   const isCoach = pathname.startsWith("/dashboard/coach");
   const base = isCoach ? "/dashboard/coach" : "/dashboard/client";
@@ -456,9 +462,12 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
   // L'onglet "Cycle" n'a de sens que pour une cliente dont la fiche indique
   // le genre "Femme" — retiré du rendu tant qu'on ne le sait pas, plutôt que
   // de le masquer en CSS (la page /cycle redirige de toute façon sinon).
-  const withoutCycle = showCycle
-    ? rawSidebar
-    : rawSidebar.map((g) => ({ ...g, items: g.items.filter((item) => item.segment !== "cycle") }));
+  // Personnalisation "Mon appli" : les rubriques que la personne a coupées
+  // quittent le menu (voir hiddenSegments dans lib/app-setup.ts).
+  const isHidden = (segment: string) => hidden.has(segment) || (hidden.has("moi/*") && segment.startsWith("moi/"));
+  const withoutCycle = rawSidebar
+    .map((g) => ({ ...g, items: g.items.filter((item) => (showCycle || item.segment !== "cycle") && !isHidden(item.segment)) }))
+    .filter((g) => g.items.length > 0);
   const sidebarWithAdmin =
     isCoach && isPlatformOwner
       ? [{ group: "Administration", items: ADMIN_SIDEBAR_ITEMS }, ...withoutCycle]
@@ -549,8 +558,14 @@ export default function DashboardNav({
   const [isFreeTier, setIsFreeTier] = useState(initialIsFreeTier);
   const [showCycleTab, setShowCycleTab] = useState(false);
   const [isPlatformOwner, setIsPlatformOwner] = useState(false);
+  const [appSetup, setAppSetup] = useState<AppSetup | null>(null);
+  const pathForSetup = usePathname();
+  const hidden = useMemo(
+    () => hiddenSegments(appSetup, pathForSetup.startsWith("/dashboard/coach") ? "coach" : "client"),
+    [appSetup, pathForSetup]
+  );
   const { isCoach, base, tabs, sidebar, isTabActive, isSidebarActive, mobileSubItems } =
-    useNavState(isFreeTier, showCycleTab, isPlatformOwner);
+    useNavState(isFreeTier, showCycleTab || (!!appSetup?.completed && isOn(appSetup, "cycle")), isPlatformOwner, hidden);
   const router = useRouter();
 
   // Aplati tabs + sidebar en une seule liste {label, href} pour la palette
@@ -716,6 +731,15 @@ export default function DashboardNav({
             setUserRole(role);
             setHasPersonalCoach(role === "coach" && !!(data as { coach_id: string | null }).coach_id);
             setIsPlatformOwner(!!(data as { is_platform_owner: boolean | null }).is_platform_owner);
+            supabase
+              .from("user_app_setup")
+              .select("answers, modules, completed_at")
+              .eq("user_id", user.id)
+              .maybeSingle()
+              .then(({ data: setup }) => {
+                const row = setup as { answers: Record<string, unknown> | null; modules: Modules | null; completed_at: string | null } | null;
+                setAppSetup(row ? { answers: row.answers ?? {}, modules: row.modules ?? {}, completed: !!row.completed_at } : { answers: {}, modules: {}, completed: false });
+              });
             setIsFreeTier(
               role === "client" &&
                 (data as { subscription_status: string }).subscription_status !== "active"
@@ -1191,6 +1215,7 @@ export default function DashboardNav({
           </nav>
         )}
 
+        {appSetup && !appSetup.completed && !pathname.includes("/mon-appli") && <AppSetupPrompt href={`${base}/mon-appli`} />}
         {children}
       </main>
 

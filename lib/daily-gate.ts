@@ -1,6 +1,8 @@
 import { createServerSupabase } from "@/lib/supabase-server";
 import { todayInParis } from "@/lib/dates";
 import { MEAL_SLOT_TIMES, MEAL_SLOT_LABELS, timeToMinutes, parisNow } from "@/lib/meal-slots";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { isOn } from "@/lib/app-setup";
 
 // Bilan en 2 temps + repas obligatoires (demande explicite, 2026-08-15) :
 // tant que le bilan du matin (poids + sommeil) n'est pas fait, ou qu'un
@@ -112,7 +114,7 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
     const supabase = await createServerSupabase();
     const today = todayInParis();
 
-    const [logRes, profileRes] = await Promise.all([
+    const [logRes, profileRes, setup] = await Promise.all([
       supabase
         .from("daily_logs")
         .select("weight_morning, sleep_hours, sleep_rating, steps, digestion, stress, hunger")
@@ -120,17 +122,22 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
         .eq("log_date", today)
         .maybeSingle(),
       supabase.from("profiles").select("target_bedtime").eq("id", userId).maybeSingle(),
+      getAppSetup(userId),
     ]);
+    // Personnalisation "Mon appli" : on n'exige que les champs choisis.
+    const on = (k: Parameters<typeof isOn>[1]) => isOn(setup, k);
 
     const log = logRes.data;
 
     // Matin : poids + sommeil, priorité absolue sur tout le reste — voir
     // components/ui/DailyBilanForm.tsx (carte SleepCard).
+    const morningNeeded = on("poids") || on("sommeil");
     const morningDone =
-      !!log && log.weight_morning != null && log.sleep_hours != null && log.sleep_rating != null;
+      !morningNeeded ||
+      (!!log && (!on("poids") || log.weight_morning != null) && (!on("sommeil") || (log.sleep_hours != null && log.sleep_rating != null)));
     if (!morningDone) return { active: "morning" };
 
-    const pendingMeal = await getPendingMeal(supabase, userId, today);
+    const pendingMeal = on("nutrition") ? await getPendingMeal(supabase, userId, today) : null;
     if (pendingMeal) return { active: "meal", pendingMeal };
 
     const targetBedtime = (profileRes.data?.target_bedtime as string | null | undefined) || DEFAULT_BEDTIME;
@@ -142,8 +149,14 @@ export async function getDailyGateStatus(userId: string): Promise<DailyGateStatu
     // matin du lendemain reprend la main dès l'ouverture suivante.
     const eveningDue = dueAt >= 0 && nowMinutes >= dueAt;
     if (eveningDue) {
+      const eveningNeeded = on("pas") || on("digestion") || on("stress") || on("faim");
       const eveningDone =
-        !!log && log.steps != null && log.digestion != null && log.stress != null && log.hunger != null;
+        !eveningNeeded ||
+        (!!log &&
+          (!on("pas") || log.steps != null) &&
+          (!on("digestion") || log.digestion != null) &&
+          (!on("stress") || log.stress != null) &&
+          (!on("faim") || log.hunger != null));
       if (!eveningDone) return { active: "evening" };
     }
 

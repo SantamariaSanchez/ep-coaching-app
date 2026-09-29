@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import type { DailyLog } from "@/utils/daily-logs";
+import { isOn, type AppSetup } from "@/lib/app-setup";
 import { Check, Scale, Dumbbell, Moon, Apple, Footprints, BedDouble, Pencil, Sun, MoonStar } from "lucide-react";
 
 export type BilanAction = (
@@ -322,12 +323,14 @@ export function LifestyleCard({
   action,
   autoSteps,
   onSaved,
+  show = { pas: true, digestion: true, stress: true },
 }: {
   today: string;
   existing: DailyLog | null;
   action: BilanAction;
   autoSteps?: number | null;
   onSaved?: () => void;
+  show?: { pas: boolean; digestion: boolean; stress: boolean };
 }) {
   const [state, formAction, pending] = useActionState(action, null);
 
@@ -345,6 +348,7 @@ export function LifestyleCard({
       <input type="hidden" name="log_date" value={today} />
       <CardShell icon={Moon} title="Lifestyle" saved={!!state?.success}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {show.pas && (
           <div>
             <label className={lbl}>Pas dans la journée</label>
             <input name="steps" type="number" min="0" max="100000" defaultValue={prefillSteps ?? ""} placeholder="8500" aria-label="8500" className={inp} />
@@ -355,14 +359,19 @@ export function LifestyleCard({
                 : "Regarde dans l'app Santé (iPhone) ou Google Fit / Fit (Android) de ton téléphone, pas besoin d'inventer."}
             </p>
           </div>
+          )}
+          {show.digestion && (
           <div>
             <label className={lbl}>Digestion</label>
             <input name="digestion" defaultValue={existing?.digestion ?? ""} placeholder="OK, Ballonné, Lourd…" aria-label="OK, Ballonné, Lourd…" className={inp} />
           </div>
+          )}
+          {show.stress && (
           <div>
             <label className={lbl}>Stress</label>
             <TriScale name="stress" defaultValue={existing?.stress} />
           </div>
+          )}
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
@@ -379,9 +388,9 @@ export type BilanPlan = { name: string; mode: "fixed" | "flexible" | "fixed_flex
 // une seule question : diète suivie ? "Oui" ajoute les repas du plan encore
 // vides ce jour-là. Saisie manuelle seulement sans plan ni tracker.
 export function NutritionCard({
-  today, existing, action, nutritionTotals, plan, trackerHref, onSaved,
+  today, existing, action, nutritionTotals, plan, trackerHref, onSaved, showNutrition = true, showHunger = true,
 }: {
-  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null; plan?: BilanPlan | null; trackerHref?: string; onSaved?: () => void;
+  today: string; existing: DailyLog | null; action: BilanAction; nutritionTotals?: NutritionTotals | null; plan?: BilanPlan | null; trackerHref?: string; onSaved?: () => void; showNutrition?: boolean; showHunger?: boolean;
 }) {
   const [state, formAction, pending] = useActionState(action, null);
   const [followed, setFollowed] = useState<"oui" | "non" | null>(null);
@@ -410,9 +419,9 @@ export function NutritionCard({
     <form action={formAction}>
       <input type="hidden" name="log_date" value={today} />
       {followed === "oui" && <input type="hidden" name="diet_followed" value="oui" />}
-      <CardShell icon={Apple} title="Nutrition" saved={!!state?.success}>
+      <CardShell icon={Apple} title={showNutrition ? "Nutrition" : "Faim"} saved={!!state?.success}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {plan && (
+          {showNutrition && plan && (
             <div>
               <label className={lbl}>Diète suivie ?</label>
               <div style={{ display: "flex", gap: 8 }}>
@@ -436,7 +445,7 @@ export function NutritionCard({
             </div>
           )}
 
-          {nutritionTotals ? (
+          {!showNutrition ? null : nutritionTotals ? (
             <div style={{ borderRadius: 10, border: "1px solid rgba(74,222,128,0.25)", background: "rgba(74,222,128,0.06)", padding: "10px 12px" }}>
               <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(74,222,128,0.8)", margin: "0 0 6px" }}>
                 Depuis ton tracker
@@ -459,7 +468,7 @@ export function NutritionCard({
             )
           )}
 
-          {!nutritionTotals && (
+          {showNutrition && !nutritionTotals && (
             <details>
               <summary style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", cursor: "pointer" }}>Saisir les chiffres à la main</summary>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 10 }}>
@@ -483,10 +492,12 @@ export function NutritionCard({
             </details>
           )}
 
-          <div>
-            <label className={lbl}>Faim ressentie</label>
-            <TriScale name="hunger" defaultValue={existing?.hunger} />
-          </div>
+          {showHunger && (
+            <div>
+              <label className={lbl}>Faim ressentie</label>
+              <TriScale name="hunger" defaultValue={existing?.hunger} />
+            </div>
+          )}
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
         <SaveButton pending={pending} />
@@ -535,14 +546,18 @@ function MorningSummary({ existing, onEdit }: { existing: DailyLog; onEdit: () =
         <Sun size={16} style={{ color: "#4ade80" }} strokeWidth={2} />
       </div>
       <div style={{ flex: 1, display: "flex", gap: 20 }}>
-        <div>
-          <p style={summaryStat}>Poids</p>
-          <p style={summaryValue}>{existing.weight_morning} kg</p>
-        </div>
-        <div>
-          <p style={summaryStat}>Sommeil</p>
-          <p style={summaryValue}>{existing.sleep_hours} h · {existing.sleep_rating}%</p>
-        </div>
+        {existing.weight_morning != null && (
+          <div>
+            <p style={summaryStat}>Poids</p>
+            <p style={summaryValue}>{existing.weight_morning} kg</p>
+          </div>
+        )}
+        {existing.sleep_hours != null && (
+          <div>
+            <p style={summaryStat}>Sommeil</p>
+            <p style={summaryValue}>{existing.sleep_hours} h{existing.sleep_rating != null ? ` · ${existing.sleep_rating}%` : ""}</p>
+          </div>
+        )}
       </div>
       <EditButton onClick={onEdit} />
     </div>
@@ -595,6 +610,7 @@ export default function DailyBilanForm({
   autoSteps,
   plan,
   trackerHref,
+  setup,
 }: {
   today: string;
   existing: DailyLog | null;
@@ -603,13 +619,32 @@ export default function DailyBilanForm({
   autoSteps?: number | null;
   plan?: BilanPlan | null;
   trackerHref?: string;
+  setup?: AppSetup | null;
 }) {
+  // Personnalisation "Mon appli" : seuls les champs choisis sont demandés,
+  // et "bilan fait" ne dépend que d'eux.
+  const on = {
+    poids: isOn(setup, "poids"),
+    sommeil: isOn(setup, "sommeil"),
+    pas: isOn(setup, "pas"),
+    stress: isOn(setup, "stress"),
+    digestion: isOn(setup, "digestion"),
+    faim: isOn(setup, "faim"),
+    nutrition: isOn(setup, "nutrition"),
+    entrainement: isOn(setup, "entrainement"),
+  };
   // Même formulaire côté membre et côté coach (Moi) : les liens suivent l'espace.
   const isCoach = trackerHref?.startsWith("/dashboard/coach") ?? false;
   const sleepHref = isCoach ? "/dashboard/coach/moi/tracking" : "/dashboard/client/tracking";
   const logbookHref = isCoach ? "/dashboard/coach/moi/logbook" : "/dashboard/client/logbook";
-  const morningDone = !!existing && existing.weight_morning != null && existing.sleep_hours != null && existing.sleep_rating != null;
-  const eveningDone = !!existing && existing.steps != null && existing.digestion != null && existing.stress != null && existing.hunger != null;
+  const morningDone =
+    !!existing && (!on.poids || existing.weight_morning != null) && (!on.sommeil || (existing.sleep_hours != null && existing.sleep_rating != null));
+  const eveningDone =
+    !!existing &&
+    (!on.pas || existing.steps != null) &&
+    (!on.digestion || existing.digestion != null) &&
+    (!on.stress || existing.stress != null) &&
+    (!on.faim || existing.hunger != null);
 
   const [editingMorning, setEditingMorning] = useState(!morningDone);
   const [editingEvening, setEditingEvening] = useState(!eveningDone);
@@ -627,12 +662,12 @@ export default function DailyBilanForm({
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      {morningDone && !editingMorning ? (
+      {!on.poids && !on.sommeil ? null : morningDone && !editingMorning ? (
         <MorningSummary existing={existing} onEdit={() => setEditingMorning(true)} />
       ) : (
         <>
-          <WeightCard today={today} existing={existing} action={action} />
-          <SleepCard today={today} existing={existing} action={action} sleepHref={sleepHref} />
+          {on.poids && <WeightCard today={today} existing={existing} action={action} />}
+          {on.sommeil && <SleepCard today={today} existing={existing} action={action} sleepHref={sleepHref} />}
         </>
       )}
 
@@ -640,9 +675,13 @@ export default function DailyBilanForm({
         <EveningSummary existing={existing} onEdit={() => setEditingEvening(true)} />
       ) : (
         <>
-          <TrainingCard today={today} existing={existing} action={action} logbookHref={logbookHref} />
-          <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} />
-          <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} plan={plan} trackerHref={trackerHref} />
+          {on.entrainement && <TrainingCard today={today} existing={existing} action={action} logbookHref={logbookHref} />}
+          {(on.pas || on.digestion || on.stress) && (
+            <LifestyleCard today={today} existing={existing} action={action} autoSteps={autoSteps} show={{ pas: on.pas, digestion: on.digestion, stress: on.stress }} />
+          )}
+          {(on.nutrition || on.faim) && (
+            <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} plan={plan} trackerHref={trackerHref} showNutrition={on.nutrition} showHunger={on.faim} />
+          )}
         </>
       )}
     </div>

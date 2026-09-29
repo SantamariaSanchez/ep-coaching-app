@@ -78,6 +78,7 @@ export const PLATFORM_LABELS: Record<string, { label: string; color: string }> =
   facebook: { label: "Facebook Reel", color: "#1877F2" },
   threads: { label: "Threads", color: "#F5EDED" },
   youtube: { label: "YouTube", color: "#FF0000" },
+  tiktok: { label: "TikTok", color: "#25F4EE" },
   linkedin: { label: "LinkedIn", color: "#0A66C2" },
 };
 
@@ -109,10 +110,13 @@ export default function IdeationScripts({
   initialScripts,
   canvas,
   realLeadsByScriptId,
+  platforms,
 }: {
   initialScripts: CoachScript[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  /** Plateformes choisies dans "Mon appli" (toutes si non renseigné). */
+  platforms?: string[];
 }) {
   const [subTab, setSubTab] = useState<Tab>("mes-scripts");
 
@@ -153,7 +157,7 @@ export default function IdeationScripts({
         coûte rien. Seule la visibilité change désormais.
       */}
       <div hidden={subTab !== "mes-scripts"}>
-        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} />
+        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} platforms={platforms} />
       </div>
       <div hidden={subTab !== "prompts"}>
         <PromptLibrary canvas={canvas} />
@@ -232,10 +236,14 @@ const selectStyle: React.CSSProperties = {
 function MyScripts({
   initialScripts,
   realLeadsByScriptId,
+  platforms,
 }: {
   initialScripts: CoachScript[];
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  platforms?: string[];
 }) {
+  // Seules les plateformes où le coach publie (réglage "Mon appli").
+  const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => !platforms?.length || platforms.includes(id));
   const [scripts, setScripts] = useState(initialScripts);
   useEffect(() => {
     setScripts(initialScripts);
@@ -256,7 +264,7 @@ function MyScripts({
   // Plateforme par défaut à la création. Facebook pendant le ban Instagram
   // (2026-09-22), Instagram de nouveau depuis le 2026-09-29 : nouveau compte
   // propre @santamariasanchezep. Elle ne se change plus après la création.
-  const [newPlatform, setNewPlatform] = useState("instagram");
+  const [newPlatform, setNewPlatform] = useState(() => (platformOptions.some(([id]) => id === "instagram") ? "instagram" : platformOptions[0]?.[0] ?? "instagram"));
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
@@ -649,7 +657,7 @@ function MyScripts({
               aria-label="Plateforme du script"
               style={{ ...inputStyle, width: "auto", padding: "7px 10px" }}
             >
-              {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
+              {(platformOptions.length ? platformOptions : Object.entries(PLATFORM_LABELS)).map(([id, { label }]) => (
                 <option key={id} value={id}>{label}</option>
               ))}
             </select>

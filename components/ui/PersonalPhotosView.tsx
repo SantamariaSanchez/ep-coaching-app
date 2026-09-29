@@ -51,6 +51,9 @@ interface Props {
       mais aucun chemin d'écriture nulle part dans l'appli, voir MeasurementsSection. */
   measurements?: Measurement[];
   logMeasurement?: (input: LogMeasurementInput) => Promise<{ error?: string }>;
+  /** Personnalisation "Mon appli". */
+  showCircumferences?: boolean;
+  showBodyFat?: boolean;
 }
 
 export default function PersonalPhotosView({
@@ -61,6 +64,8 @@ export default function PersonalPhotosView({
   competitionDate = null,
   measurements = [],
   logMeasurement,
+  showCircumferences = true,
+  showBodyFat = false,
 }: Props) {
   const router = useRouter();
   const confirm = useConfirm();
@@ -263,7 +268,7 @@ export default function PersonalPhotosView({
 
       {/* Mensurations */}
       {logMeasurement && (
-        <MeasurementsSection measurements={measurements} logMeasurement={logMeasurement} />
+        <MeasurementsSection measurements={measurements} logMeasurement={logMeasurement} showCircumferences={showCircumferences} showBodyFat={showBodyFat} />
       )}
 
       {/* Comparaison avant/après */}

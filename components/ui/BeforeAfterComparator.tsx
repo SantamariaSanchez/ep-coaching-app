@@ -5,6 +5,7 @@ import PhotoCompareSlider from "./PhotoCompareSlider";
 
 const FIELDS: { key: keyof Measurement; label: string }[] = [
   { key: "weight", label: "Poids" },
+  { key: "body_fat", label: "Masse grasse %" },
   { key: "waist", label: "Taille" },
   { key: "hips", label: "Hanches" },
   { key: "abdomen", label: "Abdomen" },

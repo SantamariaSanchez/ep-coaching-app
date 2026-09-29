@@ -17,6 +17,9 @@ export interface Measurement {
   calf: number | null;
   abdomen: number | null;
   neck: number | null;
+  /** Taux de masse grasse en % (migration 20260929b). */
+  body_fat?: number | null;
+  body_fat_method?: string | null;
   notes: string | null;
 }
 

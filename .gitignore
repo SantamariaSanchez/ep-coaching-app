@@ -67,3 +67,6 @@ scripts/*
 
 # Modèles PDF des contrats d'équipe (vont dans Supabase Storage, jamais sur GitHub)
 contracts-templates/
+
+# Supabase CLI (lien local au projet)
+supabase/.temp/

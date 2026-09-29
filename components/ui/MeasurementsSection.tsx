@@ -19,8 +19,21 @@ import { todayInParis } from "@/lib/dates";
 // BeforeAfterComparator masque déjà proprement son curseur photo sans
 // check-ins, ne montre que le tableau d'écarts).
 
-const FIELDS: { key: keyof Omit<Measurement, "id" | "client_id" | "measured_at" | "notes">; label: string; unit: string }[] = [
-  { key: "weight", label: "Poids", unit: "kg" },
+type FieldKey = Exclude<keyof Measurement, "id" | "client_id" | "measured_at" | "notes" | "body_fat_method">;
+
+const WEIGHT_FIELD: { key: FieldKey; label: string; unit: string } = { key: "weight", label: "Poids", unit: "kg" };
+const BODY_FAT_FIELD: { key: FieldKey; label: string; unit: string } = { key: "body_fat", label: "Masse grasse", unit: "%" };
+
+// Méthodes de mesure : un 15 % à la balance et un 15 % au DEXA ne se
+// comparent pas, on garde donc la méthode avec chaque prise.
+const BODY_FAT_METHODS = [
+  { value: "balance", label: "Balance" },
+  { value: "pince", label: "Pince" },
+  { value: "dexa", label: "DEXA" },
+  { value: "estimation", label: "Estimation" },
+];
+
+const CIRCUMFERENCE_FIELDS: { key: FieldKey; label: string; unit: string }[] = [
   { key: "waist", label: "Taille", unit: "cm" },
   { key: "hips", label: "Hanches", unit: "cm" },
   { key: "abdomen", label: "Abdomen", unit: "cm" },
@@ -52,17 +65,27 @@ export type LogMeasurementInput = {
   calf: number | null;
   abdomen: number | null;
   neck: number | null;
+  bodyFat?: number | null;
+  bodyFatMethod?: string | null;
   notes: string | null;
 };
 
 export default function MeasurementsSection({
   measurements,
   logMeasurement,
+  showCircumferences = true,
+  showBodyFat = false,
 }: {
   /** Triées du plus récent au plus ancien. */
   measurements: Measurement[];
   logMeasurement: (input: LogMeasurementInput) => Promise<{ error?: string }>;
+  /** Personnalisation "Mon appli" : tours de taille, bras... */
+  showCircumferences?: boolean;
+  /** Personnalisation "Mon appli" : taux de masse grasse. */
+  showBodyFat?: boolean;
 }) {
+  const FIELDS = [WEIGHT_FIELD, ...(showBodyFat ? [BODY_FAT_FIELD] : []), ...(showCircumferences ? CIRCUMFERENCE_FIELDS : [])];
+  const [bodyFatMethod, setBodyFatMethod] = useState(measurements.find((m) => m.body_fat_method)?.body_fat_method ?? "balance");
   const router = useRouter();
   const [showForm, setShowForm] = useState(measurements.length === 0);
   const [showHistory, setShowHistory] = useState(false);
@@ -101,6 +124,8 @@ export default function MeasurementsSection({
       calf: toNumOrNull(values.calf ?? ""),
       abdomen: toNumOrNull(values.abdomen ?? ""),
       neck: toNumOrNull(values.neck ?? ""),
+      bodyFat: showBodyFat ? toNumOrNull(values.body_fat ?? "") : undefined,
+      bodyFatMethod: showBodyFat && values.body_fat?.trim() ? bodyFatMethod : undefined,
       notes: notes.trim() || null,
     });
     setSaving(false);
@@ -124,7 +149,7 @@ export default function MeasurementsSection({
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-6">
       <div className="flex items-center justify-between mb-1">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 flex items-center gap-1.5">
-          <Ruler size={12} className="text-[#E01E1E]" /> Mensurations
+          <Ruler size={12} className="text-[#E01E1E]" /> {showCircumferences ? "Mensurations" : "Mesures"}
         </p>
         {saved && (
           <span className="flex items-center gap-1 text-[10px] font-bold text-green-400">
@@ -137,6 +162,7 @@ export default function MeasurementsSection({
         <p className="text-[11px] text-[#F5EDED]/35 mb-3">
           Dernière prise : {fmtDate(measurements[0].measured_at)}
           {measurements[0].weight != null && ` · ${measurements[0].weight}kg`}
+          {showBodyFat && measurements[0].body_fat != null && ` · ${measurements[0].body_fat}% MG`}
           {measurements[0].waist != null && ` · taille ${measurements[0].waist}cm`}
         </p>
       )}
@@ -179,6 +205,23 @@ export default function MeasurementsSection({
               </div>
             ))}
           </div>
+          {showBodyFat && (
+            <div>
+              <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Masse grasse mesurée avec</label>
+              <div className="flex flex-wrap gap-1.5">
+                {BODY_FAT_METHODS.map((m) => (
+                  <button
+                    key={m.value}
+                    type="button"
+                    onClick={() => setBodyFatMethod(m.value)}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-bold border transition-colors ${bodyFatMethod === m.value ? "bg-[#E01E1E]/15 border-[#E01E1E]/60 text-white" : "border-[#890404]/30 text-[#F5EDED]/45"}`}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1.5">Notes</label>
             <input
@@ -218,7 +261,7 @@ export default function MeasurementsSection({
           onClick={() => setShowForm(true)}
           className="text-[11px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
         >
-          + Nouvelle prise de mensurations
+          + Nouvelle prise {showCircumferences ? "de mensurations" : "de mesures"}
         </button>
       )}
 
@@ -239,6 +282,7 @@ export default function MeasurementsSection({
                   <span className="text-[10.5px] text-[#F5EDED]/35">
                     {[
                       m.weight != null ? `${m.weight}kg` : null,
+                      showBodyFat && m.body_fat != null ? `${m.body_fat}% MG` : null,
                       m.waist != null ? `taille ${m.waist}` : null,
                       m.arm_flexed != null ? `bras ${m.arm_flexed}` : null,
                     ].filter(Boolean).join(" · ") || "N/A"}

@@ -39,6 +39,7 @@ export default function IdeationHub({
   initialScripts,
   canvas,
   realLeadsByScriptId,
+  platforms,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
@@ -46,6 +47,7 @@ export default function IdeationHub({
   initialScripts: CoachScript[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  platforms?: string[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
   // Perf (retour direct 2026-09-18, voir studio/page.tsx et
@@ -113,7 +115,7 @@ export default function IdeationHub({
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} />
+        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} platforms={platforms} />
       </div>
       <div hidden={tab !== "notes"}>
         <IdeationNotes initialNotes={initialNotes} />

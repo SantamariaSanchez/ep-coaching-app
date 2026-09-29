@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { requireClient } from "@/lib/auth-guards";
 import { todayInParis } from "@/lib/dates";
 import { invalidateSignedUrlCache } from "@/utils/signed-url-cache";
+import { saveOwnMeasurement } from "@/lib/measurements-write";
+import type { LogMeasurementInput } from "@/components/ui/MeasurementsSection";
 
 // Suivi photo perso (membres gratuits) : upload direct, aucune notification
 // coach, aucun lien Drive à gérer soi-même — juste une photo pour se
@@ -86,6 +88,23 @@ export async function deletePersonalPhoto(
     return {};
   } catch (e) {
     console.error("deletePersonalPhoto error:", e);
+    return { error: "Erreur inattendue." };
+  }
+}
+
+// Mensurations et masse grasse côté client/membre (2026-09-29) : jusque-là
+// seul le coach pouvait saisir les siennes, alors que "Mon appli" propose
+// de les suivre à tout le monde.
+export async function logClientMeasurement(input: LogMeasurementInput): Promise<{ error?: string }> {
+  try {
+    const guard = await requireClient();
+    if (!guard.ok) return { error: guard.error };
+    const res = await saveOwnMeasurement(guard.userId, input);
+    if (res.error) return res;
+    revalidatePath("/dashboard/client/photos");
+    return {};
+  } catch (e) {
+    console.error("logClientMeasurement error:", e);
     return { error: "Erreur inattendue." };
   }
 }
