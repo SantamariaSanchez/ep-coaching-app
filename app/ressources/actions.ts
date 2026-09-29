@@ -8,6 +8,7 @@ import { getLeadMagnet } from "@/lib/lead-magnets";
 import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { maybeSendLeadQualification } from "@/lib/lead-qualification";
 import { headers } from "next/headers";
+import { escapeHtml } from "@/lib/sanitize";
 
 // Liste Brevo "Newsletter EP Coaching" (grand public, contenu de valeur
 // récurrent) — voir lib/brevo-mailing.ts pour la liste dédiée aux membres de
@@ -103,14 +104,18 @@ export async function submitLead(
 
     if (trimmedEmail) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+      // Titre injecté dans du HTML : échappé (un titre de lead magnet de
+      // coach tiers est une saisie libre). Le sujet reste du texte brut.
+      const safeTitle = escapeHtml(magnet.title);
+      const magnetUrl = `${appUrl}/ressources/${encodeURIComponent(slug)}`;
       sendBrevoEmail({
         to: trimmedEmail,
         subject: `${magnet.title} : ton contenu EP Coaching`,
         htmlContent: wrapBrandedEmail(`
           <p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E01E1E;">Ton contenu</p>
-          <h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">${magnet.title}</h1>
+          <h1 style="margin:0 0 16px;font-size:20px;font-weight:800;color:#ffffff;line-height:1.3;">${safeTitle}</h1>
           <p style="margin:0 0 4px;">Merci de t'être inscrit(e). Ton contenu est débloqué directement sur la page, tu peux aussi y revenir quand tu veux avec ce lien :</p>
-          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0;"><tr><td style="border-radius:10px;background:#E01E1E;"><a href="${appUrl}/ressources/${slug}" style="display:inline-block;padding:13px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:10px;">Retrouver le contenu</a></td></tr></table>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:16px 0;"><tr><td style="border-radius:10px;background:#E01E1E;"><a href="${magnetUrl}" style="display:inline-block;padding:13px 30px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#ffffff;text-decoration:none;border-radius:10px;">Retrouver le contenu</a></td></tr></table>
           <p style="margin:0 0 4px;color:rgba(245,237,237,0.75);">À partir de maintenant tu vas aussi recevoir d'autres contenus gratuits comme celui-ci par email (nutrition, entraînement, récupération, mental), sourcés sur la vraie littérature scientifique. Tu peux te désabonner à tout moment depuis n'importe lequel de ces emails.</p>
           <p style="margin:16px 0 4px;">Et si tu veux aller plus loin avec un vrai suivi personnalisé, l'appli EP Coaching t'attend :</p>
           <table role="presentation" cellpadding="0" cellspacing="0" style="margin:8px 0 0;"><tr><td style="border-radius:10px;border:1px solid #E01E1E;"><a href="${appUrl}/auth/client" style="display:inline-block;padding:12px 28px;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#E01E1E;text-decoration:none;border-radius:10px;">Créer mon compte</a></td></tr></table>

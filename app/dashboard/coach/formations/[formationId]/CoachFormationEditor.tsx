@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle } from "lucide-react";
+import { Video, Check, ChevronDown, ChevronUp, ArrowUp, ArrowDown, Plus, Eye, EyeOff, Save, Layers, Pencil, Trash2, Copy, CheckSquare, AlertTriangle, ClipboardPaste } from "lucide-react";
 import type { FormationWithModules, FormationLesson } from "@/utils/formations";
 import { onKeyActivate } from "@/lib/a11y";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
@@ -26,6 +26,7 @@ import {
   publishSectionLessons,
   duplicateModule,
 } from "../actions";
+import { BulkVideoImport, RecalcDurationsButton } from "./BulkVideoImport";
 
 // ── Titre modifiable inline ─────────────────────────────────────────────────
 // Cliquer sur un titre (formation, module, section ou vidéo) le transforme en
@@ -133,8 +134,8 @@ function AddItemButton({
   iconSize?: number;
   style?: React.CSSProperties;
   /** Quand fourni, le déclencheur utilise cette classe (ex. "ep-btn-secondary")
-   * au lieu du style pointillé par défaut — pour le bouton racine "Ajouter un
-   * module", visuellement plus important que les ajouts imbriqués. */
+   * au lieu du style pointillé par défaut, pour le bouton racine "Ajouter une
+   * section", visuellement plus important que les ajouts imbriqués. */
   className?: string;
 }) {
   const [editing, setEditing] = useState(false);
@@ -241,6 +242,8 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
   // changé. runAction() centralise la vérification pour ne plus avoir à y
   // penser à chaque nouvel handler.
   const [actionError, setActionError] = useState<string | null>(null);
+  // Module (formation_sections) dont le panneau "Coller les vidéos" est ouvert.
+  const [pasteOpen, setPasteOpen] = useState<string | null>(null);
 
   async function runAction<T extends { error?: string }>(fn: () => Promise<T>): Promise<T> {
     const res = await fn();
@@ -329,19 +332,20 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
     return res;
   }
 
-  // handleDeleteModule/handleDeleteSection avaient leurs messages de
-  // confirmation inversés (2026-09-08, même bug que les libellés des
-  // boutons "Ajouter..." plus haut) : supprimer un module affichait "la
-  // section", et inversement — corrigé ici en même temps que le passage à
-  // useConfirm().
+  // Terminologie de référence : celle AFFICHÉE à l'écran. formation_modules
+  // = la "Section" (S1, S2...), formation_sections = le "Module" (M1, M2...)
+  // à l'intérieur. Le "correctif" du 2026-09-08 avait raisonné sur les noms
+  // de tables et inversé libellés et confirmations : supprimer une Section
+  // parlait d'un module, et le bouton racine "Ajouter un module" créait en
+  // fait une Section. Tout est aligné ici sur ce que le fondateur lit.
   async function handleDeleteModule(moduleId: string, title: string) {
-    if (!(await confirm(`Supprimer le module "${title}" et tout son contenu (sections, vidéos) ?`))) return;
+    if (!(await confirm(`Supprimer la section "${title}" et tout son contenu (modules, vidéos) ?`))) return;
     const res = await runAction(() => deleteModule(moduleId));
     if (!res.error) router.refresh();
   }
 
   async function handleDeleteSection(sectionId: string, title: string) {
-    if (!(await confirm(`Supprimer la section "${title}" et ses vidéos ?`))) return;
+    if (!(await confirm(`Supprimer le module "${title}" et ses vidéos ?`))) return;
     const res = await runAction(() => deleteSection(sectionId));
     if (!res.error) router.refresh();
   }
@@ -458,11 +462,11 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
           />
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+          <div style={{ flex: "1 1 180px", minWidth: 0 }}>
             <p className="ep-label" style={{ marginBottom: 4 }}>Statut publication</p>
             <p style={{ fontSize: 13, fontWeight: 700, color: formation.is_published ? "#4ade80" : "rgba(245,237,237,0.4)", margin: 0 }}>
-              {formation.is_published ? "✓ Publiée, visible par les clients" : "Brouillon, non visible"}
+              {formation.is_published ? "✓ Publiée : visible par les membres" : "Brouillon : les membres ne voient que le titre, en Bientôt disponible"}
             </p>
           </div>
           <div style={{ display: "flex", gap: 8 }}>
@@ -488,6 +492,11 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
             </button>
           </div>
         </div>
+
+        <RecalcDurationsButton
+          lessons={formation.modules.flatMap((m) => m.sections.flatMap((s) => s.lessons))}
+          onSaved={() => router.refresh()}
+        />
       </div>
 
       {/* Sections */}
@@ -605,6 +614,17 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         </span>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPasteOpen((cur) => (cur === sec.id ? null : sec.id));
+                          }}
+                          title="Coller les vidéos de ce module" aria-label="Coller les vidéos de ce module"
+                          aria-expanded={pasteOpen === sec.id}
+                          style={{ display: "flex", background: "none", border: "none", cursor: "pointer", padding: 2 }}
+                        >
+                          <ClipboardPaste size={12} style={{ color: pasteOpen === sec.id ? "#E01E1E" : "rgba(245,237,237,0.3)" }} />
+                        </button>
                         {sec.lessons.some((l) => l.youtube_id) && (
                           <button
                             onClick={(e) => {
@@ -648,12 +668,27 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                       </div>
                     </div>
 
+                    {pasteOpen === sec.id && (
+                      <div style={{ paddingTop: 10 }}>
+                        <BulkVideoImport
+                          section={sec}
+                          onClose={() => setPasteOpen(null)}
+                          onSaved={() => router.refresh()}
+                        />
+                      </div>
+                    )}
+
                     {/* Lessons in section */}
                     {openSections.has(sec.id) && (
                       <div>
                         {sec.lessons.map((lesson, li) => (
                           <LessonEditor
-                            key={lesson.id}
+                            // La clé inclut vidéo et durée : après un import en
+                            // masse ou un recalcul des durées (écritures faites
+                            // hors de cette ligne), la ligne se remonte avec les
+                            // vraies valeurs. Sans ça, son champ URL restait
+                            // vide, et l'enregistrer effaçait la vidéo importée.
+                            key={`${lesson.id}-${lesson.youtube_id ?? ""}-${lesson.duration_min}`}
                             lesson={lesson}
                             index={li + 1}
                             saving={saving}
@@ -681,15 +716,12 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                   </div>
                 ))}
 
-                {/* Ajouter une section dans ce module. Le libellé de ce
-                    bouton disait "Ajouter un module" avant ce fix
-                    (2026-09-08) — inversé avec celui juste en dessous, un
-                    coach cliquait "Ajouter un module" en pensant en créer un
-                    nouveau et se retrouvait avec une section de plus dans
-                    l'existant. */}
+                {/* Ajouter un module (formation_sections) dans cette section
+                    (formation_modules) : voir la terminologie au-dessus de
+                    handleDeleteModule. */}
                 <div style={{ padding: "10px 18px" }}>
                   <AddItemButton
-                    label="Ajouter une section"
+                    label="Ajouter un module"
                     dashed={false}
                     onAdd={(title) => handleAddSection(mod.id, mod.sections.length, title)}
                   />
@@ -700,10 +732,9 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
         );
       })}
 
-      {/* Ajouter un module à la formation (voir le commentaire ci-dessus sur
-          l'inversion des deux libellés). */}
+      {/* Ajouter une section (formation_modules) à la formation. */}
       <AddItemButton
-        label="Ajouter un module"
+        label="Ajouter une section"
         iconSize={14}
         onAdd={handleAddModule}
         className="ep-btn-secondary"

@@ -39,7 +39,7 @@ export default async function CoachRessourcesPage() {
         </p>
         <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
         <p className="text-sm text-[#F5EDED]/45 mt-2">
-          Visibles par tous les clients, gratuits et payants.
+          Bibliothèque ouverte à tes clients accompagnés. Les membres gratuits y accèdent seulement par lien direct.
         </p>
       </div>
 

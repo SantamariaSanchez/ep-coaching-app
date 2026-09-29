@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
-import { getFormationWithModules, getUserProgress, countLessons } from "@/utils/formations";
+import { getFormationWithModules, getUserProgress, countLessons, formatDuration, isLessonWatchable } from "@/utils/formations";
 import { ChevronLeft, PlayCircle, CheckCircle2, Clock, Lock, Crown, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -29,11 +29,16 @@ export default async function FormationDetailPage({
   ]);
 
   if (!formation) notFound();
+  // Formation en brouillon : invisible pour un membre, même par lien direct
+  // (le catalogue n'en montre qu'un teaser "Bientôt disponible").
+  if (!formation.is_published) notFound();
 
-  const { published, totalMin } = countLessons(formation.modules);
+  const { published, publishedMin } = countLessons(formation.modules);
+  // Seules les leçons regardables comptent : une leçon terminée puis
+  // dépubliée ne doit pas faire dépasser 100 %.
   const completedCount = formation.modules
     .flatMap((m) => m.sections.flatMap((s) => s.lessons))
-    .filter((l) => completed.has(l.id)).length;
+    .filter((l) => isLessonWatchable(l) && completed.has(l.id)).length;
   const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
 
   return (
@@ -87,10 +92,10 @@ export default async function FormationDetailPage({
         )}
 
         {/* Stats row */}
-        <div style={{ display: "flex", gap: 16, marginBottom: 16 }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px 16px", marginBottom: 16 }}>
           {[
             { icon: PlayCircle, label: `${published} vidéo${published !== 1 ? "s" : ""}` },
-            { icon: Clock, label: `${Math.round(totalMin / 60)}h${totalMin % 60 > 0 ? ` ${totalMin % 60}min` : ""}` },
+            ...(publishedMin > 0 ? [{ icon: Clock, label: formatDuration(publishedMin) }] : []),
             { icon: CheckCircle2, label: `${completedCount} terminée${completedCount !== 1 ? "s" : ""}` },
           ].map(({ icon: Icon, label }) => (
             <div key={label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -158,7 +163,7 @@ export default async function FormationDetailPage({
         ) : (
           formation.modules.map((mod, mi) => {
             const allModLessons = mod.sections.flatMap((s) => s.lessons);
-            const modCompleted = allModLessons.filter((l) => completed.has(l.id)).length;
+            const modCompleted = allModLessons.filter((l) => isLessonWatchable(l) && completed.has(l.id)).length;
             const modPublished = allModLessons.filter((l) => l.is_published && l.youtube_id).length;
 
             return (

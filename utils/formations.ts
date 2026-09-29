@@ -156,10 +156,15 @@ export interface ResumeLesson {
 }
 
 // Dernière leçon vue mais pas encore terminée, en repartant des vues les
-// plus récentes — s'arrête à la première leçon toujours valide (publiée,
-// avec une vidéo) pour ne jamais proposer de reprendre une leçon retirée
-// depuis.
-export async function getResumeLesson(userId: string): Promise<ResumeLesson | null> {
+// plus récentes. S'arrête à la première leçon toujours valide (publiée,
+// avec une vidéo, dans une formation publiée) pour ne jamais proposer de
+// reprendre une leçon retirée depuis, ni une leçon d'une formation encore en
+// brouillon. includeDrafts : réservé au fondateur, qui prévisualise ses
+// brouillons depuis son espace Moi.
+export async function getResumeLesson(
+  userId: string,
+  options: { includeDrafts?: boolean } = {}
+): Promise<ResumeLesson | null> {
   try {
     const supabase = await createServerSupabase();
     const { data: views } = await supabase
@@ -185,11 +190,14 @@ export async function getResumeLesson(userId: string): Promise<ResumeLesson | nu
         title: string;
         is_published: boolean;
         youtube_id: string | null;
-        formation_sections: { formation_modules: { formations: { id: string; title: string; emoji: string } } };
+        formation_sections: {
+          formation_modules: { formations: { id: string; title: string; emoji: string; is_published: boolean } };
+        };
       };
       if (!lesson.is_published || !lesson.youtube_id) continue;
       const formation = lesson.formation_sections?.formation_modules?.formations;
       if (!formation) continue;
+      if (!formation.is_published && !options.includeDrafts) continue;
       return {
         lessonId: lesson.id,
         lessonTitle: lesson.title,
@@ -213,22 +221,44 @@ export async function getUserProgress(userId: string): Promise<Set<string>> {
   return new Set((data ?? []).map((r: { lesson_id: string }) => r.lesson_id));
 }
 
+// Une leçon n'est regardable que publiée ET avec une vidéo : même règle
+// partout (catalogue, détail, page leçon, progression).
+export function isLessonWatchable(lesson: Pick<FormationLesson, "is_published" | "youtube_id">): boolean {
+  return !!(lesson.is_published && lesson.youtube_id);
+}
+
+// publishedMin ne cumule QUE les leçons regardables. L'ancien totalMin
+// additionnait la durée de toutes les leçons (brouillons compris, toutes à
+// 10 min par défaut) : le catalogue affichait "0 vidéo" à côté de "6h50min".
 export function countLessons(modules: FormationModule[]): {
   total: number;
   published: number;
-  totalMin: number;
+  publishedMin: number;
 } {
   let total = 0;
   let published = 0;
-  let totalMin = 0;
+  let publishedMin = 0;
   for (const mod of modules) {
     for (const sec of mod.sections) {
       for (const lesson of sec.lessons) {
         total++;
-        if (lesson.is_published && lesson.youtube_id) published++;
-        totalMin += lesson.duration_min;
+        if (isLessonWatchable(lesson)) {
+          published++;
+          publishedMin += lesson.duration_min;
+        }
       }
     }
   }
-  return { total, published, totalMin };
+  return { total, published, publishedMin };
+}
+
+// Durée lisible : "45 min", "1h", "5h50". Remplace les formules inline en
+// Math.round(min / 60) qui arrondissaient les heures au supérieur (350 min
+// s'affichait "6h50min" au lieu de 5h50).
+export function formatDuration(min: number): string {
+  const total = Math.max(0, Math.round(min));
+  if (total < 60) return `${total} min`;
+  const hours = Math.floor(total / 60);
+  const rest = total % 60;
+  return `${hours}h${rest ? String(rest).padStart(2, "0") : ""}`;
 }

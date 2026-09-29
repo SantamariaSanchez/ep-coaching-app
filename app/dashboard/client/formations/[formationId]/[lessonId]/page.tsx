@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getLesson, getFormationWithModules, getUserProgress, recordLessonView } from "@/utils/formations";
+import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable } from "@/utils/formations";
 import VideoPlayer, { VideoComingSoon } from "@/components/formations/VideoPlayer";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 
@@ -29,13 +29,23 @@ export default async function LessonPage({
     getUserProgress(user.id),
   ]);
 
-  // Alimente "Reprendre" sur le catalogue (app/dashboard/client/formations/
-  // page.tsx). Attendu (pas fire-and-forget) : sur Vercel, une fonction
-  // serverless peut se terminer avant qu'une promesse non attendue ait fini
-  // d'écrire — la fonction elle-même ne lève jamais (best-effort interne).
-  await recordLessonView(user.id, lessonId);
-
   if (!lesson || !formation) notFound();
+  // Formation en brouillon : aucune de ses leçons n'est accessible à un
+  // membre, même publiée (le fondateur la teste avant d'ouvrir l'accès).
+  if (!formation.is_published) notFound();
+  // La leçon doit appartenir à la formation de l'URL : sinon on afficherait
+  // une leçon d'une autre formation (brouillon compris) sous ce titre.
+  const belongsToFormation = formation.modules.some((m) =>
+    m.sections.some((s) => s.lessons.some((l) => l.id === lessonId))
+  );
+  if (!belongsToFormation) notFound();
+
+  // Alimente "Reprendre" sur le catalogue (app/dashboard/client/formations/
+  // page.tsx), seulement pour une leçon réellement regardable. Attendu (pas
+  // fire-and-forget) : sur Vercel, une fonction serverless peut se terminer
+  // avant qu'une promesse non attendue ait fini d'écrire. La fonction
+  // elle-même ne lève jamais (best-effort interne).
+  if (isLessonWatchable(lesson)) await recordLessonView(user.id, lessonId);
 
   // Flatten all lessons across modules → sections. Précédent/Suivant ne
   // doit sauter que vers des leçons réellement accessibles — même règle
@@ -43,8 +53,12 @@ export default async function LessonPage({
   // que l'utilisateur ne peut normalement même pas cliquer depuis la liste).
   const allLessons = formation.modules
     .flatMap((m) => m.sections.flatMap((s) => s.lessons))
-    .filter((l) => l.is_published && l.youtube_id);
+    .filter(isLessonWatchable);
   const currentIndex = allLessons.findIndex((l) => l.id === lessonId);
+  // "Formation terminée" ne s'affiche plus sur la dernière vidéo par simple
+  // position : seulement quand toutes les vidéos regardables sont terminées.
+  const toFinish = allLessons.filter((l) => !completed.has(l.id)).length;
+  const formationDone = allLessons.length > 0 && toFinish === 0;
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex >= 0 && currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
@@ -179,7 +193,7 @@ export default async function LessonPage({
             </div>
             <ChevronRight size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
           </Link>
-        ) : (
+        ) : formationDone ? (
           <Link
             href={`/dashboard/client/formations/${formationId}`}
             style={{
@@ -204,6 +218,34 @@ export default async function LessonPage({
               </p>
             </div>
             <ListVideo size={15} style={{ color: "rgba(74,222,128,0.5)", flexShrink: 0 }} />
+          </Link>
+        ) : (
+          <Link
+            href={`/dashboard/client/formations/${formationId}`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 8,
+              padding: "12px 14px",
+              background: "rgba(16,1,1,0.60)",
+              backdropFilter: "blur(20px)",
+              WebkitBackdropFilter: "blur(20px)",
+              border: "1px solid rgba(224,30,30,0.12)",
+              borderRadius: "var(--radius-lg)",
+              textDecoration: "none",
+              textAlign: "right",
+            }}
+          >
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.25)", margin: "0 0 2px" }}>
+                {currentIndex >= 0 ? "Dernière vidéo" : "Programme"}
+              </p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.65)", margin: 0 }}>
+                Retour au programme{toFinish > 0 ? ` (${toFinish} à terminer)` : ""}
+              </p>
+            </div>
+            <ListVideo size={15} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
           </Link>
         )}
       </div>

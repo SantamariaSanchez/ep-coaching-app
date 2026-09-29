@@ -14,6 +14,10 @@ export default async function CoachScienceBibliothequePage() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/bibliotheque");
+  // Curation de la bibliothèque partagée (import, correction, suppression)
+  // réservée au fondateur, comme les actions serveur : un coach tiers la
+  // consulte en lecture seule.
+  const canCurate = profile?.is_platform_owner === true;
 
   const [articles, counts] = await Promise.all([getScienceArticles(), getScienceCounts(user.id)]);
 
@@ -36,12 +40,12 @@ export default async function CoachScienceBibliothequePage() {
 
       <ArticleListView
         articles={articles}
-        isCoach
+        isCoach={canCurate}
         emptyLabel="La bibliothèque scientifique est vide pour l'instant."
-        showSeedButton
-        seedAction={seedScienceLibrary}
-        updateArticle={updateArticle}
-        deleteArticle={deleteArticle}
+        showSeedButton={canCurate}
+        seedAction={canCurate ? seedScienceLibrary : undefined}
+        updateArticle={canCurate ? updateArticle : undefined}
+        deleteArticle={canCurate ? deleteArticle : undefined}
       />
     </div>
   );

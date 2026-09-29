@@ -1,7 +1,7 @@
 "use server";
 
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requireAuth, requireClient, requireCoach } from "@/lib/auth-guards";
+import { requireAuth, requireClient, requireCoach, requirePlatformOwner } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import type { ScienceArticleType } from "@/utils/science";
 import { SCIENCE_LIBRARY_SEED } from "@/lib/science-library-seed";
@@ -14,11 +14,19 @@ function revalidateScience() {
   revalidatePath("/dashboard/coach/science", "layout");
 }
 
+// La bibliothèque Science (articles, actualité) est partagée par TOUS les
+// membres de la plateforme : sa curation (import, correction, suppression)
+// est réservée au fondateur. Avec requireCoach(), n'importe quel coach
+// inscrit librement pouvait vider les 431 articles via le client admin, sans
+// aucun contrôle de propriété. Les études (createStudy/updateStudy/
+// deleteStudy plus bas) restent ouvertes à tout coach : elles sont déjà
+// cloisonnées par created_by.
+
 // Importe l'archive officielle extraite de PubMed (lib/science-library-seed.ts)
-// au lieu de coller des centaines de lignes SQL — même logique que
+// au lieu de coller des centaines de lignes SQL, même logique que
 // seedOfficialExercises. Idempotent : ignore les pmid déjà en base.
 export async function seedScienceLibrary(): Promise<{ error?: string; inserted?: number }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   try {
@@ -81,7 +89,7 @@ export interface ImportArticleInput {
 // Permet au coach de faire passer un résultat de recherche live (onglet
 // Recherche) directement dans la bibliothèque / l'actualité, sans ressaisie.
 export async function importArticle(input: ImportArticleInput): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
   if (!input.topic) return { error: "Choisis un thème." };
 
@@ -131,7 +139,7 @@ export interface UpdateArticleInput {
 // action possible sur ces entrées était de les supprimer. Permet au coach
 // de les compléter/reclasser après coup plutôt que de perdre le contenu.
 export async function updateArticle(id: string, input: UpdateArticleInput): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
   if (!input.topic) return { error: "Choisis un thème." };
 
@@ -158,7 +166,7 @@ export async function updateArticle(id: string, input: UpdateArticleInput): Prom
 }
 
 export async function deleteArticle(id: string): Promise<{ error?: string }> {
-  const guard = await requireCoach();
+  const guard = await requirePlatformOwner();
   if (!guard.ok) return { error: guard.error };
 
   try {

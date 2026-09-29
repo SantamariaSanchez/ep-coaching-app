@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson } from "@/utils/formations";
+import { getFormations, getUserProgress, getFormationWithModules, countLessons, getResumeLesson, formatDuration, isLessonWatchable } from "@/utils/formations";
 import { BookOpen, PlayCircle, ChevronRight, Clock, Play } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -34,25 +34,33 @@ export default async function CoachMoiFormationsPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client/formations");
+  // Le fondateur prévisualise ici ses formations en brouillon (badge
+  // "Brouillon, aperçu") ; un coach tiers a exactement la vue d'un membre :
+  // un brouillon n'est qu'un teaser "Bientôt disponible".
+  const isOwner = profile?.is_platform_owner === true;
 
   const [formations, completed, resumeLesson] = await Promise.all([
     getFormations(),
     getUserProgress(user.id),
-    getResumeLesson(user.id),
+    getResumeLesson(user.id, { includeDrafts: isOwner }),
   ]);
 
   const formationData = await Promise.all(
     formations.map(async (f) => {
+      const isDraft = !f.is_published;
+      if (isDraft && !isOwner) {
+        return { formation: f, isDraft, isTeaser: true, total: 0, published: 0, publishedMin: 0, completedCount: 0 };
+      }
       const withModules = await getFormationWithModules(f.id);
-      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, totalMin: 0 };
+      const counts = withModules ? countLessons(withModules.modules) : { total: 0, published: 0, publishedMin: 0 };
       const completedCount = withModules
-        ? withModules.modules.flatMap(m => m.sections.flatMap(s => s.lessons)).filter(l => completed.has(l.id)).length
+        ? withModules.modules.flatMap(m => m.sections.flatMap(s => s.lessons)).filter(l => isLessonWatchable(l) && completed.has(l.id)).length
         : 0;
-      return { formation: f, ...counts, completedCount };
+      return { formation: f, isDraft, isTeaser: false, ...counts, completedCount };
     })
   );
 
-  const totalMin = formationData.reduce((s, d) => s + d.totalMin, 0);
+  const totalMin = formationData.reduce((s, d) => s + d.publishedMin, 0);
   const totalLessons = formationData.reduce((s, d) => s + d.published, 0);
   const totalCompleted = formationData.reduce((s, d) => s + d.completedCount, 0);
 
@@ -68,8 +76,8 @@ export default async function CoachMoiFormationsPage() {
           Formations
         </h1>
         <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)", fontWeight: 500 }}>
-          {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponibles
-          {totalMin > 0 && ` · ${Math.round(totalMin / 60)}h de contenu`}
+          {totalLessons} vidéo{totalLessons !== 1 ? "s" : ""} disponible{totalLessons !== 1 ? "s" : ""}
+          {totalMin > 0 && ` · ${formatDuration(totalMin)} de contenu`}
         </p>
       </div>
 
@@ -139,10 +147,12 @@ export default async function CoachMoiFormationsPage() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {formationData.map(({ formation, published, completedCount, totalMin: fMin }, i) => {
+          {formationData.map(({ formation, isDraft, isTeaser, published, completedCount, publishedMin: fMin }, i) => {
             const pct = published > 0 ? Math.round((completedCount / published) * 100) : 0;
             const col = FORMATION_COLORS[i % FORMATION_COLORS.length];
-            const isAvailable = published > 0;
+            // Aperçu du fondateur : un brouillon reste ouvrable même sans
+            // vidéo publiée, pour vérifier la structure avant de publier.
+            const isAvailable = !isTeaser && (published > 0 || isDraft);
 
             return (
               <Link
@@ -185,9 +195,12 @@ export default async function CoachMoiFormationsPage() {
                     </div>
 
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: `${col.from}`, margin: "0 0 2px" }}>
-                        Formation {i + 1}
-                      </p>
+                      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 2 }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: `${col.from}`, margin: 0 }}>
+                          Formation {i + 1}
+                        </p>
+                        {isDraft && !isTeaser && <span className="ep-badge-subtle">Brouillon, aperçu</span>}
+                      </div>
                       <h3 style={{ fontSize: 16, fontWeight: 900, letterSpacing: "-0.03em", color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.2 }}>
                         {formation.title}
                       </h3>
@@ -197,18 +210,20 @@ export default async function CoachMoiFormationsPage() {
                         </p>
                       )}
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
-                          <PlayCircle size={10} />
-                          {published} vidéo{published !== 1 ? "s" : ""}
-                        </span>
-                        {fMin > 0 && (
+                      {!isTeaser && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                           <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
-                            <Clock size={10} />
-                            {Math.round(fMin / 60)}h{fMin % 60 > 0 ? `${fMin % 60}min` : ""}
+                            <PlayCircle size={10} />
+                            {published} vidéo{published !== 1 ? "s" : ""}
                           </span>
-                        )}
-                      </div>
+                          {fMin > 0 && (
+                            <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)" }}>
+                              <Clock size={10} />
+                              {formatDuration(fMin)}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {isAvailable && (
@@ -216,7 +231,7 @@ export default async function CoachMoiFormationsPage() {
                     )}
                   </div>
 
-                  {isAvailable && (
+                  {isAvailable && published > 0 && (
                     <div style={{ marginTop: 14 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
                         <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.25)", letterSpacing: "0.08em" }}>

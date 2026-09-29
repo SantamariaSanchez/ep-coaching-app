@@ -14,6 +14,10 @@ export default async function CoachScienceActualitePage() {
 
   const profile = await getProfile(user.id);
   if (profile?.role === "client") redirect("/dashboard/client/science/actualite");
+  // Curation de la bibliothèque partagée (import, correction, suppression)
+  // réservée au fondateur, comme les actions serveur : un coach tiers la
+  // consulte en lecture seule.
+  const canCurate = profile?.is_platform_owner === true;
 
   const [articles, counts] = await Promise.all([
     getScienceArticles({ actualiteOnly: true }),
@@ -39,10 +43,10 @@ export default async function CoachScienceActualitePage() {
 
       <ArticleListView
         articles={articles}
-        isCoach
+        isCoach={canCurate}
         emptyLabel="Aucune actualité scientifique pour l'instant."
-        updateArticle={updateArticle}
-        deleteArticle={deleteArticle}
+        updateArticle={canCurate ? updateArticle : undefined}
+        deleteArticle={canCurate ? deleteArticle : undefined}
       />
     </div>
   );

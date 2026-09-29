@@ -18,6 +18,9 @@ export default async function CoachFormationDetailPage({
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
   const { formationId } = await params;
+  // Éditeur réservé au fondateur (voir actions.ts) : un coach tiers est
+  // renvoyé vers la vue lecture de cette même formation.
+  if (!profile?.is_platform_owner) redirect(`/dashboard/coach/moi/formations/${formationId}`);
 
   const formation = await getFormationWithModules(formationId);
   if (!formation) notFound();
