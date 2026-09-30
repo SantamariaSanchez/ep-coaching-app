@@ -46,10 +46,17 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 ## Semaine 4 (21/10 au 30/10) : finition et publication
 
 - [ ] Passe design complète écran par écran (cohérence, espacements, états vides, chargements)
+  - [x] Premier passage sur les captures : Nutrition, Messages (zone d'écriture), accueil client,
+        stats réseaux, Studio, Mon équipe, Plus
 - [ ] Accessibilité (tailles, contrastes, lecteurs d'écran, zones tactiles 44 px)
 - [ ] Performances (temps de chargement, images, cache)
 - [ ] Zéro contenu périmé dans l'appli (prix, noms, textes)
 - [ ] Fiche App Store : captures, textes, politique de confidentialité, compte de démo
+  - [x] Comptes de démo coach + client avec données (scripts/demo-accounts.ts)
+  - [x] Captures iPhone automatiques (scripts/screenshots.ts)
+  - [x] Suppression du compte dans l'appli (déjà en place)
+  - [x] Achats numériques masqués dans l'appli iOS (règle 3.1.1), coaching humain conservé
+  - [ ] Adresse pro support@<domaine> à la place de l'e-mail perso (légal, support, expéditeur des e-mails)
 - [ ] Envoi en revue Apple
 
 ## En parallèle
