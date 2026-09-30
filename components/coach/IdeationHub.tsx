@@ -10,7 +10,7 @@ import SocialGenerator from "@/components/coach/SocialGenerator";
 import type { ContentIdea } from "@/lib/content-ideas";
 import type { IdeationNote, Inspiration, CoachScript } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
-import type { SlugLeadCounts } from "@/lib/content-leads-tracking";
+import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
 
 type Tab = "idees" | "scripts" | "notes" | "inspirations" | "generateur";
 
@@ -39,6 +39,7 @@ export default function IdeationHub({
   initialScripts,
   canvas,
   realLeadsByScriptId,
+  leadTracking,
   platforms,
 }: {
   initialIdeas: ContentIdea[];
@@ -47,6 +48,7 @@ export default function IdeationHub({
   initialScripts: CoachScript[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  leadTracking?: LeadTracking;
   platforms?: string[];
 }) {
   const [tab, setTab] = useState<Tab>("idees");
@@ -115,7 +117,7 @@ export default function IdeationHub({
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} platforms={platforms} />
+        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "notes"}>
         <IdeationNotes initialNotes={initialNotes} />

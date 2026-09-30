@@ -41,11 +41,13 @@ function formatDate(iso: string): string {
 function LeadRow({
   lead,
   magnetTitle,
+  originLabel,
   updateLeadStatus,
   updateLeadNote,
 }: {
   lead: Lead;
   magnetTitle: string;
+  originLabel: string | null;
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<{ error?: string }>;
   updateLeadNote: (leadId: string, note: string) => Promise<{ error?: string }>;
 }) {
@@ -74,6 +76,14 @@ function LeadRow({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <p className="text-sm font-bold text-white truncate">{magnetTitle}</p>
+            {originLabel && (
+              <span
+                title={lead.origin_referrer ? `Arrivé depuis ${lead.origin_referrer}` : undefined}
+                className="inline-flex items-center text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E01E1E]/10 text-[#F5EDED]/70 border border-[#890404]/35 max-w-[220px] truncate"
+              >
+                {originLabel}
+              </span>
+            )}
             {lead.qualification_sent_at && (
               <span
                 title={`Email de qualification envoyé le ${formatDate(lead.qualification_sent_at)}`}
@@ -173,11 +183,14 @@ function LeadRow({
 export default function LeadsPipeline({
   leads,
   magnetTitleBySlug,
+  originLabelById,
   updateLeadStatus,
   updateLeadNote,
 }: {
   leads: Lead[];
   magnetTitleBySlug: Record<string, string>;
+  /** Origine lisible par lead (plateforme, et titre du contenu si lien suivi). */
+  originLabelById?: Record<string, string>;
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<{ error?: string }>;
   updateLeadNote: (leadId: string, note: string) => Promise<{ error?: string }>;
 }) {
@@ -195,10 +208,10 @@ export default function LeadsPipeline({
     return leads.filter((l) => {
       if (statusFilter !== "all" && l.status !== statusFilter) return false;
       if (!q) return true;
-      const haystack = `${l.email ?? ""} ${l.phone ?? ""} ${magnetTitleBySlug[l.lead_magnet_slug] ?? ""}`.toLowerCase();
+      const haystack = `${l.email ?? ""} ${l.phone ?? ""} ${magnetTitleBySlug[l.lead_magnet_slug] ?? ""} ${originLabelById?.[l.id] ?? ""}`.toLowerCase();
       return haystack.includes(q);
     });
-  }, [leads, query, statusFilter, magnetTitleBySlug]);
+  }, [leads, query, statusFilter, magnetTitleBySlug, originLabelById]);
 
   return (
     <div>
@@ -264,6 +277,7 @@ export default function LeadsPipeline({
               key={lead.id}
               lead={lead}
               magnetTitle={magnetTitleBySlug[lead.lead_magnet_slug] ?? lead.lead_magnet_slug}
+              originLabel={originLabelById?.[lead.id] ?? null}
               updateLeadStatus={updateLeadStatus}
               updateLeadNote={updateLeadNote}
             />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Check, Mail, Phone, ChevronRight, Sparkles, ArrowRight, Clock, Zap,
@@ -9,6 +9,7 @@ import {
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { LeadMagnet, LeadMagnetSummary, GuideMagnet, ChecklistMagnet, QuizMagnet } from "@/lib/lead-magnets";
 import { getMagnetIcon } from "@/components/ressources/lead-magnet-icons";
+import { normalizeLeadPlatform, UUID_RE, type LeadOriginInput } from "@/lib/lead-origin";
 
 const UNLOCK_PREFIX = "ep-unlocked-";
 // Retour d'usage attendu (jamais mesuré jusqu'ici, mais visible dans le
@@ -60,6 +61,46 @@ function rememberContact(email: string, phone: string) {
   } catch {
     // stockage indisponible, tant pis, juste pas de déblocage auto la prochaine fois
   }
+}
+
+// Origine du visiteur (voir lib/lead-origin.ts), mémorisée pour la session :
+// quelqu'un arrivé par le lien suivi d'une vidéo puis qui ouvre un guide
+// suggéré reste crédité à cette vidéo. Un nouveau lien suivi explicite
+// remplace l'ancien, un simple referrer ne remplace jamais rien.
+const ORIGIN_KEY = "ep-lead-origin";
+
+function captureLeadOrigin(): LeadOriginInput | null {
+  if (typeof window === "undefined") return null;
+  let stored: LeadOriginInput | null = null;
+  try {
+    const raw = sessionStorage.getItem(ORIGIN_KEY);
+    stored = raw ? (JSON.parse(raw) as LeadOriginInput) : null;
+  } catch {
+    stored = null;
+  }
+  const params = new URLSearchParams(window.location.search);
+  const platform = normalizeLeadPlatform(params.get("src") ?? params.get("utm_source"));
+  const rawScript = params.get("c") ?? params.get("utm_content");
+  const scriptId = rawScript && UUID_RE.test(rawScript) ? rawScript : null;
+  let referrer: string | null = null;
+  try {
+    referrer = document.referrer ? new URL(document.referrer).hostname : null;
+  } catch {
+    referrer = null;
+  }
+  if (referrer === window.location.hostname) referrer = null;
+
+  let next = stored;
+  if (platform || scriptId) next = { platform, scriptId, referrer: referrer ?? stored?.referrer ?? null };
+  else if (!stored && referrer) next = { platform: null, scriptId: null, referrer };
+  if (next && next !== stored) {
+    try {
+      sessionStorage.setItem(ORIGIN_KEY, JSON.stringify(next));
+    } catch {
+      // stockage indisponible : l'origine reste lue depuis l'URL de cette page
+    }
+  }
+  return next;
 }
 
 // ── CTA final, identique sur les 3 formats une fois le contenu débloqué ──
@@ -580,10 +621,19 @@ export default function LeadMagnetLanding({
   relatedMagnets = [],
 }: {
   magnet: LeadMagnet;
-  submitLead: (slug: string, email: string, phone: string) => Promise<{ error?: string }>;
+  submitLead: (slug: string, email: string, phone: string, origin?: LeadOriginInput | null) => Promise<{ error?: string }>;
   relatedMagnets?: LeadMagnetSummary[];
 }) {
   const Icon = getMagnetIcon(magnet.icon);
+  // Lu dès l'arrivée (pas seulement à l'envoi) : le lien suivi et le
+  // referrer sont gardés même si le visiteur passe d'abord par un autre guide.
+  useEffect(() => {
+    captureLeadOrigin();
+  }, []);
+  const submitLeadWithOrigin = useCallback(
+    (slug: string, email: string, phone: string) => submitLead(slug, email, phone, captureLeadOrigin()),
+    [submitLead]
+  );
   const [storedUnlock, setStoredUnlock] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isCoach, setIsCoach] = useState(false);
@@ -636,7 +686,7 @@ export default function LeadMagnetLanding({
     if (!remembered) return;
     let cancelled = false;
     setAutoUnlocking(true);
-    submitLead(magnet.slug, remembered.email, remembered.phone).then((res) => {
+    submitLeadWithOrigin(magnet.slug, remembered.email, remembered.phone).then((res) => {
       if (cancelled) return;
       setAutoUnlocking(false);
       if (!res.error) {
@@ -647,7 +697,7 @@ export default function LeadMagnetLanding({
     return () => {
       cancelled = true;
     };
-  }, [authChecked, isLoggedIn, storedUnlock, magnet.slug, submitLead]);
+  }, [authChecked, isLoggedIn, storedUnlock, magnet.slug, submitLeadWithOrigin]);
 
   const unlocked = isLoggedIn || storedUnlock;
 
@@ -655,7 +705,7 @@ export default function LeadMagnetLanding({
     return (
       <div className="page-transition" style={{ padding: "32px 20px 80px", maxWidth: 600, margin: "0 auto" }}>
         <Header magnet={magnet} Icon={Icon} showKeyword={isCoach} />
-        <QuizFlow magnet={magnet} submitLead={submitLead} skipCapture={isLoggedIn} isCoach={isCoach} relatedMagnets={relatedMagnets} />
+        <QuizFlow magnet={magnet} submitLead={submitLeadWithOrigin} skipCapture={isLoggedIn} isCoach={isCoach} relatedMagnets={relatedMagnets} />
       </div>
     );
   }
@@ -703,7 +753,7 @@ export default function LeadMagnetLanding({
               </p>
             )}
           </div>
-          <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Débloquer gratuitement" />
+          <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Débloquer gratuitement" />
         </div>
       )}
     </div>

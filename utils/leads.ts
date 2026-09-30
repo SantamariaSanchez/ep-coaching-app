@@ -15,6 +15,10 @@ export interface Lead {
   status: LeadStatus;
   coach_note: string | null;
   status_updated_at: string | null;
+  /** Origine réelle (20260930i_leads_origin.sql, lib/lead-origin.ts) — null pour les leads plus anciens ou sans signal. */
+  origin_platform: string | null;
+  origin_script_id: string | null;
+  origin_referrer: string | null;
 }
 
 // Donnée plateforme (pas des clients d'un coach en particulier) — lue avec
@@ -25,7 +29,7 @@ export async function getAllLeads(): Promise<Lead[]> {
     const admin = createAdminClient();
     const { data, error } = await admin
       .from("leads")
-      .select("id, lead_magnet_slug, email, phone, source, created_at, qualification_sent_at, status, coach_note, status_updated_at")
+      .select("id, lead_magnet_slug, email, phone, source, created_at, qualification_sent_at, status, coach_note, status_updated_at, origin_platform, origin_script_id, origin_referrer")
       .order("created_at", { ascending: false });
     // Bug réel trouvé le 2026-08-31 : cette erreur n'était jamais vérifiée,
     // donc une colonne manquante (qualification_sent_at, voir migration

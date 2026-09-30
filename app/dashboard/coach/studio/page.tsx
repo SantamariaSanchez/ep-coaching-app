@@ -5,7 +5,7 @@ import { coachPlatforms } from "@/lib/app-setup";
 import { getCoachContentIdeas } from "@/lib/content-ideas";
 import { getIdeationNotes, getInspirations, getCoachScripts } from "@/lib/coach-ideation";
 import { getBusinessCanvas } from "@/lib/coach-business-canvas";
-import { getRealLeadsByScriptId } from "@/lib/content-leads-tracking";
+import { getRealLeadsByScriptId, getLeadMagnetSlugByScriptId, getTrackedLeadsByScriptId } from "@/lib/content-leads-tracking";
 import IdeationHub from "@/components/coach/IdeationHub";
 
 // Idéation (ex "Idées & brouillons", renommé le 2026-08-15) : espace de
@@ -43,7 +43,13 @@ export default async function CoachStudioPage() {
   // cette page transportait ce poids sur CHAQUE visite de Studio créatif.
   // Dépend de `scripts` (résout leur source_reference), donc après le
   // Promise.all ci-dessus plutôt que dans le même lot.
-  const realLeadsByScriptId = await getRealLeadsByScriptId(scripts);
+  // Lien suivi par script + leads qu'il a réellement amenés (voir
+  // lib/lead-origin.ts) : l'attribution exacte, à côté de l'estimation par numéro.
+  const [realLeadsByScriptId, leadSlugByScriptId, trackedLeadsByScriptId] = await Promise.all([
+    getRealLeadsByScriptId(scripts),
+    getLeadMagnetSlugByScriptId(scripts),
+    getTrackedLeadsByScriptId(scripts.map((s) => s.id)),
+  ]);
 
   return (
     <div className="px-6 py-8 max-w-3xl mx-auto pb-24 md:pb-8 page-transition">
@@ -65,6 +71,7 @@ export default async function CoachStudioPage() {
         initialScripts={scripts}
         canvas={canvas}
         realLeadsByScriptId={realLeadsByScriptId}
+        leadTracking={{ slugByScriptId: leadSlugByScriptId, trackedByScriptId: trackedLeadsByScriptId }}
         platforms={appSetup.completed ? coachPlatforms(appSetup) : undefined}
       />
     </div>

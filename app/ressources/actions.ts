@@ -9,6 +9,7 @@ import { checkRateLimit, PRESETS } from "@/lib/rate-limit";
 import { maybeSendLeadQualification } from "@/lib/lead-qualification";
 import { headers } from "next/headers";
 import { escapeHtml } from "@/lib/sanitize";
+import { LEAD_ORIGIN_PLATFORMS, normalizeLeadPlatform, platformFromReferrerHost, UUID_RE, type LeadOriginInput, type LeadOriginPlatform } from "@/lib/lead-origin";
 
 // Liste Brevo "Newsletter EP Coaching" (grand public, contenu de valeur
 // récurrent) — voir lib/brevo-mailing.ts pour la liste dédiée aux membres de
@@ -39,6 +40,31 @@ async function callerIp(): Promise<string> {
   }
 }
 
+// Origine envoyée par la page publique (voir lib/lead-origin.ts) : donnée
+// venue du navigateur, donc jamais crue telle quelle. Plateforme ramenée à
+// la liste connue, script vérifié en base (un id inventé est ignoré), hôte
+// du referrer tronqué.
+async function resolveOrigin(
+  supabase: ReturnType<typeof createAdminClient>,
+  origin: LeadOriginInput | null | undefined
+): Promise<{ origin_platform: string | null; origin_script_id: string | null; origin_referrer: string | null }> {
+  const referrer = typeof origin?.referrer === "string" && /^[a-z0-9.-]{1,120}$/i.test(origin.referrer) ? origin.referrer.toLowerCase() : null;
+  let scriptId: string | null = null;
+  let scriptPlatform: string | null = null;
+  if (typeof origin?.scriptId === "string" && UUID_RE.test(origin.scriptId)) {
+    const { data } = await supabase.from("coach_scripts").select("id, platform").eq("id", origin.scriptId).maybeSingle();
+    if (data) {
+      scriptId = data.id as string;
+      scriptPlatform = (data.platform as string | null) ?? null;
+    }
+  }
+  const platform =
+    normalizeLeadPlatform(typeof origin?.platform === "string" ? origin.platform : null) ??
+    normalizeLeadPlatform(scriptPlatform) ??
+    platformFromReferrerHost(referrer);
+  return { origin_platform: platform, origin_script_id: scriptId, origin_referrer: referrer };
+}
+
 // Capture email/téléphone avant de débloquer un lead magnet (voir
 // lib/lead-magnets.ts et components/ressources/LeadMagnetLanding.tsx) —
 // écrit directement en base avec le client admin puisqu'il n'y a aucune
@@ -46,7 +72,8 @@ async function callerIp(): Promise<string> {
 export async function submitLead(
   slug: string,
   email: string,
-  phone: string
+  phone: string,
+  origin?: LeadOriginInput | null
 ): Promise<{ error?: string }> {
   // Masterclass Axe P : action publique, sans authentification, qui insère
   // en base via le client admin (RLS contournée) ET déclenche un envoi
@@ -77,6 +104,7 @@ export async function submitLead(
 
   try {
     const supabase = createAdminClient();
+    const originFields = await resolveOrigin(supabase, origin);
     const { data: leadRow, error } = await supabase
       .from("leads")
       .insert({
@@ -84,6 +112,7 @@ export async function submitLead(
         email: trimmedEmail || null,
         phone: normalizedPhone,
         source: "ressources_public",
+        ...originFields,
       })
       .select("id")
       .single();
@@ -99,7 +128,7 @@ export async function submitLead(
       email: trimmedEmail || null,
       phone: normalizedPhone,
       stage: "nouveau",
-      summary: `A téléchargé le guide gratuit "${magnet.title}".`,
+      summary: `A téléchargé le guide gratuit "${magnet.title}".${originFields.origin_platform ? ` Arrivé depuis : ${LEAD_ORIGIN_PLATFORMS[originFields.origin_platform as LeadOriginPlatform] ?? originFields.origin_platform}.` : ""}`,
     });
 
     if (trimmedEmail) {

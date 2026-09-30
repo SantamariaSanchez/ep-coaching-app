@@ -28,7 +28,8 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 - [x] Agenda : un bloc ouvre la bonne page (repas → nutrition du jour, contenu → scripts prêts à
       tourner, séance → programme du jour, live → salle, appel → fiche client/lead)
 - [x] Journée en retard : bouton « réorganiser ma journée » en 1 tap
-- [ ] Leads : origine par contenu (vidéo YouTube, reel) visible en 1 écran
+- [x] Leads : origine par contenu (vidéo YouTube, reel) visible en 1 écran (lien suivi par script
+      dans Studio, plateforme détectée à l'arrivée, écran Leads > « D'où viennent tes leads »)
 - [x] Équipe : rémunération (fixe + commissions) calculée par membre et par mois
 
 ## Semaine 3 (14/10 au 20/10) : notes et savoir, tutoriels

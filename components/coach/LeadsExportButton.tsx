@@ -8,9 +8,9 @@ function csvEscape(value: string): string {
   return value;
 }
 
-export default function LeadsExportButton({ leads }: { leads: Lead[] }) {
+export default function LeadsExportButton({ leads, originLabelById = {} }: { leads: Lead[]; originLabelById?: Record<string, string> }) {
   function handleExport() {
-    const header = ["Date", "Lead magnet", "Email", "Téléphone", "Statut", "Note"];
+    const header = ["Date", "Lead magnet", "Email", "Téléphone", "Statut", "Note", "Origine"];
     const rows = leads.map((l) => [
       new Date(l.created_at).toISOString().split("T")[0],
       l.lead_magnet_slug,
@@ -18,6 +18,7 @@ export default function LeadsExportButton({ leads }: { leads: Lead[] }) {
       l.phone ?? "",
       l.status,
       l.coach_note ?? "",
+      originLabelById[l.id] ?? "",
     ]);
     const csv = [header, ...rows].map((r) => r.map(csvEscape).join(",")).join("\n");
     const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });

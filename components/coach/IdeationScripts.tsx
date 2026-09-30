@@ -8,7 +8,8 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/lib/content-library";
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
-import type { SlugLeadCounts } from "@/lib/content-leads-tracking";
+import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
+import { buildTrackedLeadLink } from "@/lib/lead-origin";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -110,11 +111,13 @@ export default function IdeationScripts({
   initialScripts,
   canvas,
   realLeadsByScriptId,
+  leadTracking,
   platforms,
 }: {
   initialScripts: CoachScript[];
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  leadTracking?: LeadTracking;
   /** Plateformes choisies dans "Mon appli" (toutes si non renseigné). */
   platforms?: string[];
 }) {
@@ -157,7 +160,7 @@ export default function IdeationScripts({
         coûte rien. Seule la visibilité change désormais.
       */}
       <div hidden={subTab !== "mes-scripts"}>
-        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} platforms={platforms} />
+        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={subTab !== "prompts"}>
         <PromptLibrary canvas={canvas} />
@@ -176,6 +179,8 @@ export default function IdeationScripts({
 }
 
 // ── Copie presse-papier générique ──────────────────────────────────────
+
+const TRACKED_LINK_BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -236,10 +241,12 @@ const selectStyle: React.CSSProperties = {
 function MyScripts({
   initialScripts,
   realLeadsByScriptId,
+  leadTracking,
   platforms,
 }: {
   initialScripts: CoachScript[];
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
+  leadTracking?: LeadTracking;
   platforms?: string[];
 }) {
   // Seules les plateformes où le coach publie (réglage "Mon appli").
@@ -1141,6 +1148,33 @@ function MyScripts({
                   {realLeadsByScriptId[script.id].last30Days > 0 && ` (${realLeadsByScriptId[script.id].last30Days} sur les 30 derniers jours)`}
                 </p>
               )}
+
+              {/* Lien suivi (LANCEMENT.md semaine 2, lib/lead-origin.ts) :
+                  collé en description ou en bio, c'est le seul signal qui
+                  crédite un lead à CE contenu, contrairement au comptage
+                  par numéro juste au-dessus. */}
+              {leadTracking?.slugByScriptId[script.id] && (() => {
+                const link = buildTrackedLeadLink(TRACKED_LINK_BASE, leadTracking.slugByScriptId[script.id], script.platform, script.id);
+                const tracked = leadTracking.trackedByScriptId[script.id];
+                return (
+                  <div style={{ marginTop: 8, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(250,204,21,0.18)", borderRadius: 10, padding: "8px 10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div style={{ minWidth: 0 }}>
+                        <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#facc15" }}>
+                          Lien suivi du guide
+                        </span>
+                        <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.6)" }}>
+                          {tracked
+                            ? `${tracked.total} lead${tracked.total > 1 ? "s" : ""} arrivé${tracked.total > 1 ? "s" : ""} par ce lien${tracked.last30Days > 0 ? ` (${tracked.last30Days} sur 30 jours)` : ""}`
+                            : "À coller en description ou en bio : chaque lead arrivé par ce lien est crédité à ce contenu."}
+                        </p>
+                      </div>
+                      <CopyButton text={link} />
+                    </div>
+                    <p style={{ margin: "4px 0 0", fontSize: 10, color: "rgba(245,237,237,0.3)", overflowWrap: "anywhere" }}>{link}</p>
+                  </div>
+                );
+              })()}
 
               {/* Description à poster avec la vidéo — distincte du script
                   parlé ci-dessus. Même colonne "instagram_caption" réutilisée

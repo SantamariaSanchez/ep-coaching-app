@@ -3,11 +3,13 @@ import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getAllLeads } from "@/utils/leads";
 import { getAllLeadMagnets } from "@/lib/lead-magnets";
+import { getLeadOriginReport } from "@/lib/content-leads-tracking";
+import { LEAD_ORIGIN_PLATFORMS } from "@/lib/lead-origin";
 import LeadsExportButton from "@/components/coach/LeadsExportButton";
 import LeadsPipeline from "@/components/coach/LeadsPipeline";
 import { updateLeadStatus, updateLeadNote } from "./actions";
 import { todayInParis } from "@/lib/dates";
-import { ChevronLeft, ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { ChevronLeft, ArrowUp, ArrowDown, Minus, Link2 } from "lucide-react";
 
 // Réservé au propriétaire de la plateforme, même garde que
 // app/dashboard/coach/admin — les leads captés sur /ressources sont une
@@ -21,6 +23,10 @@ export default async function LeadsAdminPage() {
 
   const [leads, leadMagnets] = await Promise.all([getAllLeads(), getAllLeadMagnets()]);
   const magnetsBySlug = new Map(leadMagnets.map((m) => [m.slug, m]));
+  // Origine en un écran (LANCEMENT.md semaine 2) : plateformes, contenus
+  // crédités par leur lien suivi, et pistes pour le reste.
+  const origin = await getLeadOriginReport(leads);
+  const maxPlatform = Math.max(1, ...origin.byPlatform.map((p) => p.total));
 
   const byMagnet = new Map<string, number>();
   for (const l of leads) byMagnet.set(l.lead_magnet_slug, (byMagnet.get(l.lead_magnet_slug) ?? 0) + 1);
@@ -67,7 +73,7 @@ export default async function LeadsAdminPage() {
             Emails et numéros captés sur les lead magnets de /ressources.
           </p>
         </div>
-        <LeadsExportButton leads={leads} />
+        <LeadsExportButton leads={leads} originLabelById={origin.labelById} />
       </div>
 
       <div className="flex items-center gap-2 overflow-x-auto pb-1 mb-8" style={{ WebkitOverflowScrolling: "touch" }}>
@@ -116,8 +122,96 @@ export default async function LeadsAdminPage() {
         })}
       </div>
 
+      <section className="ep-card mb-8" style={{ padding: "18px 18px 16px" }} aria-labelledby="leads-origine">
+        <h2 id="leads-origine" className="text-sm font-black uppercase tracking-wide mb-1">D&apos;où viennent tes leads</h2>
+        <p className="text-[11.5px] text-[#F5EDED]/45 mb-4">
+          Plateforme détectée à l&apos;arrivée, et contenu exact quand le visiteur est passé par le lien suivi d&apos;un script
+          (bouton « Lien suivi du guide » dans Studio créatif, à coller en description ou en bio).
+        </p>
+
+        {leads.length === 0 ? (
+          <p className="text-xs text-[#F5EDED]/35">Aucun lead pour l&apos;instant.</p>
+        ) : (
+          <>
+            <div className="space-y-1.5 mb-5">
+              {origin.byPlatform.map((p) => (
+                <div key={p.platform} className="flex items-center gap-3">
+                  <span className="text-[11px] font-semibold text-[#F5EDED]/70 w-32 flex-shrink-0 truncate">{p.label}</span>
+                  <div className="flex-1 h-2 rounded-full bg-[#F5EDED]/5 overflow-hidden">
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.round((p.total / maxPlatform) * 100)}%`,
+                        background: p.platform === "inconnue" ? "rgba(245,237,237,0.2)" : "linear-gradient(90deg, #890404, #E01E1E)",
+                        boxShadow: p.platform === "inconnue" ? "none" : "0 0 8px rgba(224,30,30,0.35)",
+                      }}
+                    />
+                  </div>
+                  <span className="text-[11px] font-black text-white w-8 text-right">{p.total}</span>
+                  <span className="text-[10px] text-[#F5EDED]/35 w-16 text-right hidden sm:inline">{p.last30Days} / 30 j</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#facc15] mb-2">Contenus qui amènent des leads (lien suivi)</p>
+            {origin.byContent.length === 0 ? (
+              <p className="text-xs text-[#F5EDED]/40 mb-4">
+                Aucun lead encore arrivé par un lien suivi. Copie le lien d&apos;un script dans{" "}
+                <Link href="/dashboard/coach/studio" className="text-[#E01E1E] font-semibold">Studio créatif</Link> et colle-le sous ta
+                prochaine vidéo : les leads s&apos;afficheront ici, contenu par contenu.
+              </p>
+            ) : (
+              <ol className="space-y-1.5 mb-4">
+                {origin.byContent.slice(0, 10).map((c, i) => {
+                  const pl = c.platform ? (LEAD_ORIGIN_PLATFORMS as Record<string, string>)[c.platform] ?? null : null;
+                  return (
+                    <li key={c.scriptId} className="flex items-center gap-3 rounded-lg bg-[#1f0101] border border-[#890404]/20 px-3 py-2">
+                      <span className="text-[10px] font-black text-[#F5EDED]/30 w-4">{i + 1}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-white truncate">{c.title}</p>
+                        <p className="text-[10px] text-[#F5EDED]/40">
+                          {pl}
+                          {pl && " · "}
+                          {c.last30Days} sur 30 jours{c.converted > 0 && ` · ${c.converted} converti${c.converted > 1 ? "s" : ""}`}
+                        </p>
+                      </div>
+                      <span className="text-sm font-black text-white">{c.total}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+
+            {origin.untrackedTotal > 0 && (
+              <details className="group">
+                <summary className="cursor-pointer text-[11px] font-semibold text-[#F5EDED]/55 flex items-center gap-1.5">
+                  <Link2 size={12} /> {origin.untrackedTotal} lead{origin.untrackedTotal > 1 ? "s" : ""} sans lien suivi : pistes par guide
+                </summary>
+                <p className="text-[10.5px] text-[#F5EDED]/35 mt-2 mb-2">
+                  Scripts dont le CTA cite le même guide. Ce sont des pistes, pas une attribution : plusieurs contenus peuvent citer le même numéro.
+                </p>
+                <ul className="space-y-2">
+                  {origin.untracked.map((u) => (
+                    <li key={u.slug} className="text-[11px]">
+                      <span className="font-bold text-white">{magnetsBySlug.get(u.slug)?.title ?? u.slug}</span>
+                      <span className="text-[#F5EDED]/40"> · {u.total} lead{u.total > 1 ? "s" : ""}</span>
+                      <p className="text-[10.5px] text-[#F5EDED]/45 mt-0.5">
+                        {u.candidateScripts.length > 0
+                          ? u.candidateScripts.map((s) => s.title).join(" · ")
+                          : "Aucun script ne cite ce guide (arrivée directe, partage ou recherche)."}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            )}
+          </>
+        )}
+      </section>
+
       <LeadsPipeline
         leads={leads}
+        originLabelById={origin.labelById}
         magnetTitleBySlug={Object.fromEntries(leadMagnets.map((m) => [m.slug, m.title]))}
         updateLeadStatus={updateLeadStatus}
         updateLeadNote={updateLeadNote}
