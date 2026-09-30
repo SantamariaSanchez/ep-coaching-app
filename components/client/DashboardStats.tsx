@@ -104,7 +104,8 @@ function DailyTaskRow({ task }: { task: DailyTask }) {
   );
 }
 
-export default function ClientDashboardStats() {
+// "show" : personnalisation Mon appli, seuls les suivis choisis apparaissent.
+export default function ClientDashboardStats({ show = { poids: true, nutrition: true, entrainement: true, sommeil: true } }: { show?: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean } }) {
   const [stats, setStats] = useState<Stats | null>(null);
 
   useEffect(() => {
@@ -170,7 +171,14 @@ export default function ClientDashboardStats() {
     },
   ];
 
-  const doneCount = dailyTasks.filter((t) => t.done).length;
+  const hiddenTasks = new Set<string>([
+    ...(show.poids ? [] : ["Pesée"]),
+    ...(show.nutrition ? [] : ["/dashboard/client/nutrition"]),
+    ...(show.entrainement ? [] : ["/dashboard/client/logbook"]),
+  ]);
+  const tasks = dailyTasks.filter((t) => !hiddenTasks.has(t.href) && !(t.icon === Scale && hiddenTasks.has("Pesée")));
+  const doneCount = tasks.filter((t) => t.done).length;
+  const ringCount = 1 + (show.nutrition ? 1 : 0) + (show.sommeil ? 1 : 0);
 
   return (
     <>
@@ -186,15 +194,15 @@ export default function ClientDashboardStats() {
           <span style={{
             fontSize: 10,
             fontWeight: 700,
-            color: doneCount === dailyTasks.length ? "#4ade80" : "rgba(245,237,237,0.3)",
+            color: doneCount === tasks.length ? "#4ade80" : "rgba(245,237,237,0.3)",
             letterSpacing: "0.06em",
             textTransform: "uppercase",
           }}>
-            {doneCount === dailyTasks.length ? "✓ Tout fait" : `${doneCount}/${dailyTasks.length} actions`}
+            {doneCount === tasks.length ? "✓ Tout fait" : `${doneCount}/${tasks.length} actions`}
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          {dailyTasks.map((task) => (
+          {tasks.map((task) => (
             <DailyTaskRow key={task.href} task={task} />
           ))}
         </div>
@@ -231,12 +239,12 @@ export default function ClientDashboardStats() {
 
         <div style={{
           display: "grid",
-          gridTemplateColumns: "1fr 1fr 1fr",
+          gridTemplateColumns: `repeat(${ringCount}, 1fr)`,
           gap: 8,
           alignItems: "end",
           justifyItems: "center",
         }}>
-          <ProgressRing
+          {show.nutrition && <ProgressRing
             value={calPct}
             max={100}
             size={110}
@@ -247,7 +255,7 @@ export default function ClientDashboardStats() {
             unit="%"
             sublabel={`${stats.consumedCals} / ${stats.targetCals} kcal`}
             delay={0}
-          />
+          />}
           <ProgressRing
             value={stats.adherence}
             max={100}
@@ -260,7 +268,7 @@ export default function ClientDashboardStats() {
             sublabel={`${stats.daysWithLogs}/7 jours`}
             delay={100}
           />
-          <SleepDisplay value={stats.sleepDisplay} />
+          {show.sommeil && <SleepDisplay value={stats.sleepDisplay} />}
         </div>
       </div>
 

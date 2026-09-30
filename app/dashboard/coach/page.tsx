@@ -21,6 +21,10 @@ import ClientsSection from "@/components/ui/ClientsSection";
 import DashboardStats from "@/components/coach/DashboardStats";
 import UrgentAlertsSection from "@/components/coach/UrgentAlertsSection";
 import MyDayCard, { timeAwareGreeting } from "@/components/coach/MyDayCard";
+import CoachShortcuts from "@/components/coach/CoachShortcuts";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { messagePreview } from "@/components/messaging/message-format";
+import { getAllMessageableMembers } from "@/utils/auth";
 
 export default async function CoachDashboard() {
   const user = await getUser();
@@ -84,7 +88,7 @@ export default async function CoachDashboard() {
   const todayStr = todayInParis();
   const { isoDow, hhmm } = nowInParis();
   const supabase = await createServerSupabase();
-  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, accessoriesByName, unreadMsgs] = await Promise.all([
+  const [todayLog, nutritionProfile, todayFoodLogs, scheduleBlocks, liveEvents, todayProgram, stepSettings, todaySteps, accessoriesByName, unreadMsgs, appSetup, messageable] = await Promise.all([
     getTodayLog(user.id),
     getNutritionProfile(user.id),
     getTodayLogs(user.id, todayStr),
@@ -105,6 +109,10 @@ export default async function CoachDashboard() {
       .eq("receiver_id", user.id)
       .eq("is_read", false)
       .order("created_at", { ascending: false }),
+    getAppSetup(user.id),
+    // Membres gratuits compris : sinon leur message non lu s'affichait
+    // "Membre" au lieu de leur nom.
+    getAllMessageableMembers(user.id).catch(() => []),
   ]);
 
   const nutritionLogged = todayFoodLogs.reduce((s, l) => s + (l.calories ?? 0), 0);
@@ -153,7 +161,7 @@ export default async function CoachDashboard() {
     .filter((e) => e.status === "scheduled" && new Date(e.starts_at).getTime() > nowMs)
     .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())[0] ?? null;
 
-  const clientNameById = new Map(clients.map((c) => [c.id, c.full_name ?? "Client"]));
+  const clientNameById = new Map([...messageable, ...clients].map((c) => [c.id, c.full_name ?? "Client"]));
   // Audit friction coach (2026-09-16) : chaque ligne pointait vers la liste
   // générale des conversations (/dashboard/coach/messages) au lieu de la
   // conversation déjà identifiée par son nom sur la carte — un clic de plus
@@ -166,7 +174,7 @@ export default async function CoachDashboard() {
     id: m.id,
     clientId: m.conversation_id,
     senderName: clientNameById.get(m.conversation_id) ?? "Membre",
-    content: m.type === "voice" ? "🎤 Message vocal" : (m.content ?? "").slice(0, 60),
+    content: messagePreview(m.type, m.content, 60),
     createdAt: m.created_at,
   }));
 
@@ -192,6 +200,15 @@ export default async function CoachDashboard() {
           peu de temps — elle ne doit pas attendre après ses propres infos
           personnelles (nutrition, sommeil) pour apparaître. */}
       <UrgentAlertsSection />
+
+      {/* Raccourcis selon les objectifs du coach (Mon appli). */}
+      <CoachShortcuts
+        configured={appSetup.completed}
+        objectives={[
+          ...(Array.isArray(appSetup.answers.objectifs) ? (appSetup.answers.objectifs as string[]) : []),
+          ...(appSetup.modules.equipe === true ? ["equipe"] : []),
+        ]}
+      />
 
       {/* ── Ma journée ───────────────────────────────────────────────────────
           Idée #18 : juste après les alertes, avant la gestion clients — c'est

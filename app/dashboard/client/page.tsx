@@ -1,4 +1,6 @@
 import { INSTAGRAM_URL } from "@/lib/brand-links";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { isOn } from "@/lib/app-setup";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
@@ -570,7 +572,7 @@ export default async function ClientDashboard({
   const intake = await getClientIntake(user.id);
   if (!intake) redirect("/onboarding/intake");
 
-  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft] = await Promise.all([
+  const [thisWeekCheckin, latestNote, victoryPostedThisWeek, activityStreak, totalPoints, periodLogsCount, trialDaysLeft, appSetup] = await Promise.all([
     getThisWeekCheckin(user.id),
     getLatestCoachNote(user.id),
     (async () => {
@@ -597,6 +599,7 @@ export default async function ClientDashboard({
     // Item 43 : null pour la quasi-totalité des clients (coaching payant
     // classique, pas d'essai en cours) — juste une lecture ciblée en plus.
     getTrialDaysLeft(user.id),
+    getAppSetup(user.id),
   ]);
   // Bilan de la semaine déjà envoyé mais rien partagé à la communauté :
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
@@ -674,10 +677,10 @@ export default async function ClientDashboard({
       <RegularityCard streakDays={activityStreak} points={totalPoints} />
 
       {/* ── Relance suivi de cycle (item 32) ─────────────────────────────────── */}
-      {intake.gender === "Femme" && periodLogsCount === 0 && <CycleTrackingNudge />}
+      {intake.gender === "Femme" && periodLogsCount === 0 && isOn(appSetup, "cycle") && <CycleTrackingNudge />}
 
       {/* ── Today stats rings (client-side fetch) ───────────────────────────── */}
-      <ClientDashboardStats />
+      <ClientDashboardStats show={{ poids: isOn(appSetup, "poids"), nutrition: isOn(appSetup, "nutrition"), entrainement: isOn(appSetup, "entrainement"), sommeil: isOn(appSetup, "sommeil") }} />
 
       {/* ── Aujourd'hui ─────────────────────────────────────────────────────── */}
       <Link
