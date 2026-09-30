@@ -95,9 +95,23 @@ export async function searchNotes(ownerId: string, q: string, limit = 6): Promis
     .limit(limit);
   let rows = (data ?? []) as { id: string; title: string; body: string }[];
   if (!rows.length) {
-    const like = `%${q.replace(/[%_]/g, "")}%`;
+    const like = `%${q.replace(/[%_,()*]/g, " ").trim()}%`;
     const { data: fallback } = await admin.from("notes").select("id, title, body").eq("owner_id", ownerId).or(`title.ilike.${like},body.ilike.${like}`).limit(limit);
     rows = (fallback ?? []) as typeof rows;
   }
   return rows.map((r) => ({ id: r.id, title: r.title || deriveTitle(r.body) || "Note", excerpt: r.body.replace(/\s+/g, " ").slice(0, 90) }));
+}
+
+/** Création d'une note hors session (connecteur Claude, automatisations). */
+export async function insertNote(ownerId: string, input: { text: string; tags?: string[]; title?: string; kind?: NoteKind; sourceUrl?: string | null }): Promise<string | null> {
+  const text = input.text.slice(0, 50000).trim();
+  if (!text) return null;
+  const admin = createAdminClient();
+  const tags = [...new Set([...parseTags(text), ...(input.tags ?? []).map(normalizeTag)].filter(Boolean))];
+  const { data } = await admin
+    .from("notes")
+    .insert({ owner_id: ownerId, title: (input.title ?? "").slice(0, 200) || deriveTitle(text), body: text, tags, kind: input.kind ?? "note", source_url: input.sourceUrl ?? null })
+    .select("id")
+    .single();
+  return (data?.id as string) ?? null;
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/lib/auth-guards";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { autoTags, deriveTitle, normalizeTag, parseTags, type NoteKind } from "@/lib/notes";
+import { hashToken, newToken } from "@/lib/api-tokens";
 
 // Notes (2026-09-30) : chacun écrit uniquement dans SES notes, l'identité
 // vient toujours de la session.
@@ -118,6 +119,31 @@ export async function setTagColorAction(name: string, color: string): Promise<Re
   if (!tag || !/^#[0-9a-fA-F]{6}$/.test(color)) return { error: "Tag ou couleur invalide." };
   const { error } = await createAdminClient().from("note_tags").upsert({ owner_id: guard.userId, name: tag, color }, { onConflict: "owner_id,name" });
   if (error) return { error: "Impossible." };
+  refresh();
+  return {};
+}
+
+// ── Connecteur Claude (MCP) ────────────────────────────────────────────
+
+export async function createApiTokenAction(name: string): Promise<{ error?: string; url?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const admin = createAdminClient();
+  const { count } = await admin.from("api_tokens").select("id", { count: "exact", head: true }).eq("owner_id", guard.userId);
+  if ((count ?? 0) >= 10) return { error: "10 clés maximum : supprime une ancienne clé." };
+  const token = newToken();
+  const { error } = await admin.from("api_tokens").insert({ owner_id: guard.userId, name: (name || "Claude").slice(0, 60), token_hash: hashToken(token) });
+  if (error) return { error: "Clé impossible à créer." };
+  refresh();
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
+  return { url: `${appUrl}/api/mcp?key=${token}` };
+}
+
+export async function revokeApiTokenAction(id: string): Promise<{ error?: string }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const { error } = await createAdminClient().from("api_tokens").delete().eq("id", id).eq("owner_id", guard.userId);
+  if (error) return { error: "Suppression impossible." };
   refresh();
   return {};
 }

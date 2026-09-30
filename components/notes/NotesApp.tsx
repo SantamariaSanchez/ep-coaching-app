@@ -34,7 +34,7 @@ function matches(n: Note, q: string): boolean {
 
 type SpeechRec = { lang: string; continuous: boolean; interimResults: boolean; start: () => void; stop: () => void; onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
 
-export default function NotesApp({ initialNotes, tags }: { initialNotes: Note[]; tags: NoteTag[] }) {
+export default function NotesApp({ initialNotes, tags, connect }: { initialNotes: Note[]; tags: NoteTag[]; connect?: React.ReactNode }) {
   const router = useRouter();
   const params = useSearchParams();
   const [notes, setNotes] = useState(initialNotes);
@@ -157,6 +157,8 @@ export default function NotesApp({ initialNotes, tags }: { initialNotes: Note[];
       <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 14px" }}>
         Jette tout ici : idées, liens, captures, dictées. Ajoute des #tags pour ranger, relie des notes avec [[Titre]].
       </p>
+
+      {connect}
 
       {/* Capture rapide */}
       <div className="ep-card-hero" style={{ padding: 12, marginBottom: 14 }}>
