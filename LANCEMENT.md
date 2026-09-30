@@ -16,7 +16,7 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
   - [x] Page « Plus » claire, groupée, avec recherche
 - [x] Recherche globale : pages, clients, bibliothèque + réponses rapides (reste : notes, scripts)
 - [x] Réponses en 1 geste : poids, calories, sommeil, pas, séances, clients, bilans, leads
-- [ ] Réponse « combien payer mon Head of Sales » (paie de l'équipe)
+- [x] Réponse « combien payer mon Head of Sales » (paie de l'équipe)
 - [ ] Coquille native (Capacitor) : icône, écran de démarrage, barre d'état, retour haptique,
       notifications push natives, lien profond, pas de chrome web visible
 - [x] Onglet Tournage (fondateur) remis au propre : entrée claire, plus de section vide
@@ -28,7 +28,7 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
       tourner, séance → programme du jour, live → salle, appel → fiche client/lead)
 - [x] Journée en retard : bouton « réorganiser ma journée » en 1 tap
 - [ ] Leads : origine par contenu (vidéo YouTube, reel) visible en 1 écran
-- [ ] Équipe : rémunération (fixe + commissions) calculée par membre et par mois
+- [x] Équipe : rémunération (fixe + commissions) calculée par membre et par mois
 
 ## Semaine 3 (14/10 au 20/10) : notes et savoir, tutoriels
 
