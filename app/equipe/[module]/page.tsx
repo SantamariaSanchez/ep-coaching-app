@@ -118,7 +118,17 @@ export default async function StaffModulePage({
       break;
     }
     case "offres":
-      body = <OffersPanel />;
+      // Offres EP Coaching : seulement pour l'équipe du fondateur. Une autre
+      // équipe retrouve les offres de son responsable dans ses documents.
+      body =
+        member.contract_version === "hors-ep" ? (
+          <div className="ep-card" style={{ padding: "16px 18px" }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: "0 0 4px" }}>Les offres de ton entreprise</p>
+            <p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", margin: 0, lineHeight: 1.6 }}>Ton responsable partage ses offres, prix et liens de paiement dans l&apos;onglet Documents. Demande-lui dans la messagerie s&apos;il manque quelque chose.</p>
+          </div>
+        ) : (
+          <OffersPanel />
+        );
       break;
     case "calendrier":
       body = <EditorialCalendar records={records} />;
