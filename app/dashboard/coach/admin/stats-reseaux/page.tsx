@@ -159,7 +159,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                   <p style={{ fontSize: 26, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.1 }}>{fmt(a.followers)}</p>
                   <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>abonnés{a.followersDate ? ` au ${new Date(`${a.followersDate}T12:00:00`).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}` : ""}</p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
-                    {(["d7", "d30", "d90"] as const).map((k) => (
+                    {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
                       <span key={k} style={{ color: (a.growth[k] ?? 0) > 0 ? "#4ade80" : (a.growth[k] ?? 0) < 0 ? "#fca5a5" : "rgba(245,237,237,0.5)" }}>
                         {signed(a.growth[k])} <span style={{ color: "rgba(245,237,237,0.35)" }}>{k.slice(1)} j</span>
                       </span>

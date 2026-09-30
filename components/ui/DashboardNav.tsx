@@ -1173,7 +1173,8 @@ export default function DashboardNav({
           mobile. */}
       <div
         style={{
-          display: isDesktop ? "none" : "flex",
+          // Page Plus : la recherche est déjà en tête, pas de bouton en double.
+          display: isDesktop || pathname.endsWith("/plus") ? "none" : "flex",
           position: "fixed",
           bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
           right: 14,

@@ -154,7 +154,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                     {a.source === "windsor" ? " · synchro auto" : ""}
                   </p>
                   <div style={{ display: "flex", gap: 10, fontSize: 11.5, marginBottom: 8 }}>
-                    {(["d7", "d30", "d90"] as const).map((k) => (
+                    {(["d7", "d30", "d90"] as const).filter((k) => a.growth[k] !== null).map((k) => (
                       <span key={k} style={{ color: (a.growth[k] ?? 0) > 0 ? "#4ade80" : (a.growth[k] ?? 0) < 0 ? "#fca5a5" : "rgba(245,237,237,0.5)" }}>
                         {signed(a.growth[k])} <span style={{ color: "rgba(245,237,237,0.35)" }}>{k.slice(1)} j</span>
                       </span>

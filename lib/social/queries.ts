@@ -170,6 +170,9 @@ export async function getSocialDashboard(opts: { ownerId: string; platform: Plat
       if (last) {
         const past = totalAt(shift(last.date, -n));
         if (past !== null) return Number(last.followers_total) - past;
+        // Historique plus court que la période : écart depuis la première
+        // valeur connue (plutôt qu'un « ? »).
+        if (withTotal.length > 1) return Number(last.followers_total) - Number(withTotal[0].followers_total);
       }
       const win = mine.filter((r) => r.date > shift(today, -n));
       if (!win.some((r) => r.followers_gained !== null)) return null;
