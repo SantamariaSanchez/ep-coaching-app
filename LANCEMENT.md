@@ -1,0 +1,68 @@
+# Lancement App Store (objectif : ~30 octobre 2026)
+
+Mandat du fondateur (30/09/2026) : en 1 mois, une appli pro, cohérente, fluide, sans brouillon ni
+contenu périmé, prête pour l'App Store puis proposée à des coachs. Objectif : la référence n°1 du
+coaching en ligne (contenu, accompagnement, business, suivi perso).
+
+Règle de travail : quand le fondateur écrit seulement « go », reprendre ici à la première case non
+cochée, commit + push à chaque étape, cocher au fil de l'eau.
+
+## Semaine 1 (30/09 au 06/10) : fondations appli mobile + navigation
+
+- [ ] Architecture des onglets repensée pour le téléphone (5 onglets max, logique claire)
+  - [ ] Coach : Aujourd'hui · Clients · Business · Moi · Plus (Business = Studio, stats réseaux,
+        formations, ventes, équipe, compta, pilotage)
+  - [ ] Client : Aujourd'hui · Training · Suivi · Coach · Plus (Live, formations, communauté dans Plus)
+  - [ ] Page « Plus » claire, groupée, avec recherche
+- [ ] Recherche globale (barre en haut + raccourci) : pages, clients, notes, scripts, aliments
+- [ ] Réponses en 1 geste : « poids de la semaine », « calories de la semaine », « leads par vidéo »,
+      « combien payer mon Head of Sales »
+- [ ] Coquille native (Capacitor) : icône, écran de démarrage, barre d'état, retour haptique,
+      notifications push natives, lien profond, pas de chrome web visible
+- [ ] Onglet Tournage (fondateur) remis au propre : entrée claire, plus de section vide
+
+## Semaine 2 (07/10 au 13/10) : agenda vivant + écosystème relié
+
+- [ ] Agenda : déplacer un bloc décale automatiquement la suite de la journée (mode « ripple »)
+- [ ] Agenda : un bloc ouvre la bonne page (repas → nutrition du jour, contenu → scripts prêts à
+      tourner, séance → programme du jour, live → salle, appel → fiche client/lead)
+- [ ] Journée en retard : bouton « réorganiser ma journée » en 1 tap
+- [ ] Leads : origine par contenu (vidéo YouTube, reel) visible en 1 écran
+- [ ] Équipe : rémunération (fixe + commissions) calculée par membre et par mois
+
+## Semaine 3 (14/10 au 20/10) : notes et savoir, tutoriels
+
+- [ ] Notes façon Obsidian/Tana : notes, captures, transcriptions audio, supertags, liens entre notes,
+      recherche plein texte
+- [ ] Tutoriel d'accueil par profil (coach, client, membre, métier) + aide contextuelle par écran
+- [ ] Tutos pas à pas : connecter Instagram/YouTube/TikTok (stats automatiques), relier Notion et
+      Claude, installer l'appli, activer les notifications
+- [ ] Intégration Notion + Claude (alimenter l'appli depuis Notion) avec tuto
+
+## Semaine 4 (21/10 au 30/10) : finition et publication
+
+- [ ] Passe design complète écran par écran (cohérence, espacements, états vides, chargements)
+- [ ] Accessibilité (tailles, contrastes, lecteurs d'écran, zones tactiles 44 px)
+- [ ] Performances (temps de chargement, images, cache)
+- [ ] Zéro contenu périmé dans l'appli (prix, noms, textes)
+- [ ] Fiche App Store : captures, textes, politique de confidentialité, compte de démo
+- [ ] Envoi en revue Apple
+
+## En parallèle
+
+- [ ] Notion : supprimer tout le contenu barré ou périmé (anciens prix, anciens prénoms...)
+- [ ] Workflow d'améliorations (sommeil/pas, bilan tendances, agenda prévu/réel, cockpit acquisition,
+      compte à rebours business) : relire et fusionner
+
+## Après la sortie
+
+- Site vitrine sur nom de domaine, modèle theprepdad.com (captures et série de prompts du fondateur)
+
+## Fait
+
+- [x] Mon appli : questionnaire de personnalisation (membres, clients, coachs)
+- [x] Stats réseaux pour tous les coachs
+- [x] Mon équipe : parcours coach modulable, équipe de coachs et staff
+- [x] Formations pour tous les coachs (création, vente, accès)
+- [x] Bilan « Forme du jour » (énergie, moral, eau, courbatures, FC repos, VFC)
+- [x] Accueils coach et client personnalisés, Ma semaine personnalisée
