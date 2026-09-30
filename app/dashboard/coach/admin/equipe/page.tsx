@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ChevronLeft, Workflow, CalendarDays, Users, CheckCircle2, CircleDashed, MessagesSquare, FolderOpen, ChevronRight } from "lucide-react";
 import { getUnreadBySender } from "@/lib/staff-team";
 import { getUser } from "@/utils/auth";
-import { isTeamOwner } from "@/lib/team-owner";
+import { isTeamOwner, isFounder } from "@/lib/team-owner";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getRoleCard, KINDS } from "@/lib/staff-roles";
 import { computeKpis, currentMonthKey, parisDate, stageDate, type StaffRecord } from "@/lib/staff-kpis";
@@ -29,6 +29,8 @@ export default async function TeamCockpitPage() {
   if (!user) redirect("/");
   // Fondateur ou coach en mode entreprise : chacun ne voit que SON équipe.
   if (!(await isTeamOwner(user.id))) redirect("/dashboard/coach/mon-equipe");
+  // Automatisations EP (leads du site, Calendly, Stripe) : équipe du fondateur seulement.
+  const founder = await isFounder(user.id);
 
   const admin = createAdminClient();
   const { data: memberData } = await admin
@@ -90,10 +92,10 @@ export default async function TeamCockpitPage() {
 
   return (
     <div className="px-6 py-8 max-w-4xl mx-auto pb-24 md:pb-8 page-transition">
-      <Link href="/dashboard/coach" className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
+      <Link href={founder ? "/dashboard/coach" : "/dashboard/coach/mon-equipe"} className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors mb-6">
         <ChevronLeft size={13} /> Retour
       </Link>
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Administration</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">{founder ? "Administration" : "Mon équipe"}</p>
       <h1 className="text-3xl font-black uppercase tracking-tight">Pilotage de l&apos;équipe</h1>
       <div className="flex flex-wrap gap-2 mt-4">
         <Link href="/dashboard/coach/admin/equipe/messages" className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-white bg-[#E01E1E] rounded-lg px-3 py-2">
@@ -104,10 +106,11 @@ export default async function TeamCockpitPage() {
         </Link>
       </div>
       <p className="text-sm text-[#F5EDED]/45 mt-4 mb-6 leading-relaxed">
-        Tout ce que fait l&apos;équipe, en un seul endroit. Les accès, liens de connexion et contrats se gèrent dans{" "}
-        <Link href="/dashboard/coach/admin/organisation" className="text-[#E01E1E] font-bold">Organisation</Link>.
+        Tout ce que fait l&apos;équipe, en un seul endroit. Les accès se gèrent dans{" "}
+        <Link href={founder ? "/dashboard/coach/admin/organisation" : "/dashboard/coach/mon-equipe"} className="text-[#E01E1E] font-bold">{founder ? "Organisation" : "Mon équipe"}</Link>.
       </p>
 
+      {founder && (
       <section className="ep-card" style={{ padding: "16px 18px", marginBottom: 16 }}>
         <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}><Workflow size={12} /> Automatisations</p>
         {flows.map((f) => (
@@ -120,6 +123,7 @@ export default async function TeamCockpitPage() {
           </div>
         ))}
       </section>
+      )}
 
       <div className="grid gap-3 mb-4" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
         <section className="ep-card" style={{ padding: "16px 18px" }}>
