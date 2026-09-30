@@ -21,6 +21,8 @@ function detectPlatform(): Platform {
     window.matchMedia("(display-mode: standalone)").matches ||
     (window.navigator as Navigator & { standalone?: boolean }).standalone === true;
   if (isStandalone) return null;
+  // Déjà dans l'appli native (App Store / Play Store) : rien à installer.
+  if ((window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) return null;
   if (!/Mobi|Android|iPhone|iPad|iPod/.test(ua)) return null;
   if (/iPad|iPhone|iPod/.test(ua)) return "ios";
   return "android";

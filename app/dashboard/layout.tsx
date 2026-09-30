@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import DashboardNav from "@/components/ui/DashboardNav";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
+import NativeBridge from "@/components/native/NativeBridge";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 import AlarmPlayer from "@/components/ui/AlarmPlayer";
 import PermissionsPrimer from "@/components/ui/PermissionsPrimer";
@@ -154,6 +155,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div style={{ minHeight: "100vh", background: "#0D0000" }}>
       <ServiceWorkerRegister />
+      <NativeBridge />
       <AlarmPlayer />
       {/* Demande les vraies autorisations systeme au premier lancement : sans
           appel effectif aux API du navigateur, le telephone n'affiche aucune

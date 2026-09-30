@@ -5,6 +5,7 @@ import { loadStaffContext } from "@/lib/staff-page";
 import { MODULES, navGroups } from "@/lib/staff-roles";
 import { getUnreadBySender } from "@/lib/staff-team";
 import StaffShell from "@/components/staff/StaffShell";
+import NativeBridge from "@/components/native/NativeBridge";
 import ServiceWorkerRegister from "@/components/ui/ServiceWorkerRegister";
 
 // Espace métier des recrues (demande directe 2026-09-25 : "pour chaque
@@ -33,6 +34,7 @@ export default async function EquipeLayout({ children }: { children: React.React
       unlocked={unlocked}
     >
       <ServiceWorkerRegister />
+      <NativeBridge />
       {children}
     </StaffShell>
   );

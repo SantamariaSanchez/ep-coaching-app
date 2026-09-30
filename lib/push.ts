@@ -1,6 +1,7 @@
 import webpush from "web-push";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { isWithinQuietHours } from "@/lib/quiet-hours";
+import { sendNativePush } from "@/lib/native-push";
 
 function initVapid() {
   if (
@@ -53,8 +54,13 @@ export async function sendPushToUser(
       .eq("user_id", userId)
       .maybeSingle();
 
+    // Appli native (iOS/Android) : envoyée en plus du push web, en
+    // respectant les mêmes heures de silence (sauf réveil).
+    const quiet = type !== "alarm" && !!data && isWithinQuietHours(data.quiet_hours_start, data.quiet_hours_end);
+    const nativeSent = quiet ? 0 : await sendNativePush(userId, { title, body, url, type, blockId }).catch(() => 0);
+
     if (!data?.subscription) {
-      return { ok: false, reason: "no subscription" };
+      return nativeSent > 0 ? { ok: true } : { ok: false, reason: "no subscription" };
     }
 
     // Item 50 : coupe uniquement le push (qui sonne/vibre) — la notif
