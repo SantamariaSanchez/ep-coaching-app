@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { getFormations, getFormationWithModules, countLessons } from "@/utils/formations";
-import { BookOpen, ChevronRight, PlayCircle, Eye, EyeOff } from "lucide-react";
+import { ChevronRight, PlayCircle, Eye, EyeOff } from "lucide-react";
 import NewFormationButton from "./NewFormationButton";
 
 export const dynamic = "force-dynamic";
@@ -40,13 +40,10 @@ export default async function CoachFormationsPage() {
     >
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 28 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Gestion</p>
-        <h1 className="ep-h1" style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <BookOpen size={26} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
-          Formations
-        </h1>
-        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)" }}>
-          {formations.length} formation{formations.length !== 1 ? "s" : ""} · Clique pour gérer le contenu
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{isFounder ? "Académie EP" : "Business"}</p>
+        <h1 className="ep-h1">{isFounder ? "Formations" : "Mes formations"}</h1>
+        <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.4)" }}>
+          {formations.length} formation{formations.length !== 1 ? "s" : ""}
         </p>
         {!isFounder && (
           <p style={{ marginTop: 8, fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6 }}>

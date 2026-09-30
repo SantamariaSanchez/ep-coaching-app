@@ -28,7 +28,7 @@ export default function MesocycleStatusBanner({
         style={{ color: status.isOverdue || status.isDeloadWeek ? "#fbbf24" : "rgba(245,237,237,0.55)" }}
       >
         {status.isOverdue
-          ? "Bloc terminé — ton coach va bientôt en démarrer un nouveau."
+          ? "Bloc terminé : ton coach va bientôt en démarrer un nouveau."
           : status.isDeloadWeek
           ? `Semaine ${status.currentWeek}/${status.totalWeeks} de ton bloc · semaine de décharge, volume réduit`
           : `Semaine ${status.currentWeek}/${status.totalWeeks} de ton bloc`}

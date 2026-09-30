@@ -200,7 +200,7 @@ export default function NonNegotiablesTracker({
         </div>
 
         <p className="text-xs mb-3" style={{ color: DIM }}>
-          Le pilier &laquo; pas &raquo; du Mastermind est déjà suivi ailleurs (onglet Steps) — pas besoin de le
+          Tes pas sont déjà suivis ailleurs (onglet Steps), pas besoin de les
           resaisir ici.
         </p>
 
@@ -290,7 +290,7 @@ export default function NonNegotiablesTracker({
         </h2>
         <p className="text-xs mb-3" style={{ color: DIM }}>
           Du {new Date(weeklyStats.from + "T12:00:00").toLocaleDateString("fr-FR")} au{" "}
-          {new Date(weeklyStats.to + "T12:00:00").toLocaleDateString("fr-FR")} — chiffres déjà présents
+          {new Date(weeklyStats.to + "T12:00:00").toLocaleDateString("fr-FR")} : chiffres déjà présents
           dans l&apos;appli, rien à ressaisir.
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">

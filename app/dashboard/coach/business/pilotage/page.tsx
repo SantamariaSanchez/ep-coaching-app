@@ -61,7 +61,7 @@ export default async function BusinessPilotagePage() {
         <h1 className="text-3xl font-black uppercase tracking-tight">Pilotage</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
           Tes non-négociables quotidiens, tes objectifs du mois, et les chiffres de la semaine
-          (audience, contenu, leads, ventes) — inspiré du système du Mastermind, adapté à ta réalité.
+          (audience, contenu, leads, ventes).
         </p>
       </div>
 

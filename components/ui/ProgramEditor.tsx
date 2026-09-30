@@ -248,7 +248,7 @@ function VolumeBudgetReviewPanel({
         >
           <p className="text-[11px] font-bold">
             {mesoStatus.isOverdue
-              ? "Bloc déjà terminé selon les dates renseignées — à relancer."
+              ? "Bloc déjà terminé selon les dates renseignées, à relancer."
               : mesoStatus.isDeloadWeek
               ? `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · décharge (~50% du budget plein)`
               : `Semaine ${mesoStatus.currentWeek}/${mesoStatus.totalWeeks} · budgets ci-dessous ajustés à ~${Math.round(mesoStatus.volumeFactor * 100)}%`}
@@ -1653,7 +1653,7 @@ export default function ProgramEditor({
             <>
               <p className="mt-2 text-[10.5px] text-[#F5EDED]/30 leading-relaxed max-w-2xl">
                 Le budget de volume ci-dessous (phase Livraison) sert de cible pour l&apos;avant-dernière
-                semaine du bloc — la première semaine démarre plus bas, la dernière est une décharge
+                semaine du bloc : la première semaine démarre plus bas, la dernière est une décharge
                 automatique à ~50%. Un repère de calcul, jamais une réécriture des séries : à toi d&apos;ajuster.
               </p>
               <div className="mt-3 flex flex-wrap items-end gap-4">
@@ -1690,7 +1690,7 @@ export default function ProgramEditor({
                   return (
                     <p className="text-[10.5px] text-[#F5EDED]/45 pb-1.5">
                       {status.isOverdue
-                        ? "Bloc déjà terminé selon ces dates — il est temps d'en démarrer un nouveau."
+                        ? "Bloc déjà terminé selon ces dates, il est temps d'en démarrer un nouveau."
                         : status.isDeloadWeek
                         ? `Semaine ${status.currentWeek}/${status.totalWeeks} · décharge`
                         : `Semaine ${status.currentWeek}/${status.totalWeeks} · volume à ~${Math.round(status.volumeFactor * 100)}% de la cible`}

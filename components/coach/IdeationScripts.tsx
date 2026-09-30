@@ -983,7 +983,7 @@ function MyScripts({
                 <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120 }}>{script.title}</p>
                 {isStale && (
                   <span
-                    title={`Dans cette étape depuis ${Math.floor(stageDays)} jour${Math.floor(stageDays) > 1 ? "s" : ""} — au-delà du délai normal`}
+                    title={`Dans cette étape depuis ${Math.floor(stageDays)} jour${Math.floor(stageDays) > 1 ? "s" : ""}, au-delà du délai normal`}
                     style={{
                       fontSize: 9, fontWeight: 800, padding: "3px 7px", borderRadius: 999,
                       background: isVeryStale ? "rgba(248,113,113,0.18)" : "rgba(250,204,21,0.15)",

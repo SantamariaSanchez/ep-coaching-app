@@ -158,7 +158,7 @@ function NewCampaignForm({
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de la campagne (ex : Meta — Leads programme été)"
+        placeholder="Nom de la campagne (ex : Meta, leads programme été)"
         aria-label="Nom de la campagne"
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         autoFocus
@@ -199,7 +199,7 @@ function NewCampaignForm({
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Notes (ciblage, créa testée, angle...) — optionnel"
+        placeholder="Notes (ciblage, créa testée, angle...), optionnel"
         rows={2}
         aria-label="Notes"
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
@@ -290,7 +290,7 @@ function MetricsEditForm({
           <input value={leads} onChange={(e) => setLeads(e.target.value)} inputMode="numeric" className={fieldStyle} />
         </div>
         <div className="col-span-2">
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Revenu généré (€, optionnel — pour le ROAS)</label>
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Revenu généré (€, optionnel, pour le ROAS)</label>
           <input value={revenue} onChange={(e) => setRevenue(e.target.value)} inputMode="decimal" className={fieldStyle} placeholder="Laisser vide si inconnu" />
         </div>
       </div>
@@ -400,7 +400,7 @@ function CampaignCard({
         <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 8, padding: "7px 10px" }}>
           <AlertTriangle size={13} style={{ color: "#f87171", flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 11, color: "#f87171", fontWeight: 600 }}>
-            Dépense depuis {days} jours sans le moindre lead — à couper ou à revoir.
+            Dépense depuis {days} jours sans le moindre lead : à couper ou à revoir.
           </p>
         </div>
       )}

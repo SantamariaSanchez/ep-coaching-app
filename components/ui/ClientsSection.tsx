@@ -77,7 +77,10 @@ export default function ClientsSection({
   intakeComplete = {},
   weeklyConsistency = {},
   relaunchMember,
+  hideTitle = false,
 }: {
+  /** Page Clients : le titre de la page suffit, pas de « Mes clients » en double. */
+  hideTitle?: boolean;
   clients: Profile[];
   ouraEligibleIds?: string[];
   phaseOverview?: Record<string, CoachingPhaseSummary>;
@@ -157,7 +160,7 @@ export default function ClientsSection({
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, gap: 12, flexWrap: "wrap" }}>
         <div>
-          <span className="ep-section-title" style={{ marginBottom: 2 }}>Mes clients</span>
+          {!hideTitle && <span className="ep-section-title" style={{ marginBottom: 2 }}>Mes clients</span>}
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.3)", margin: 0 }}>
             {visible.length === clients.length
               ? `${clients.length} client${clients.length !== 1 ? "s" : ""}`
