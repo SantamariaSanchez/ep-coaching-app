@@ -204,3 +204,28 @@ export async function setStaffStatusAction(userId: string, status: "actif" | "su
   revalidatePath("/dashboard/coach/admin/equipe");
   return {};
 }
+
+// ── Paie ────────────────────────────────────────────────────────────────
+
+export async function updatePayConfigAction(userId: string, input: { fixed_eur?: string | number | null; rate_pct?: string | number | null; base?: string; piece_eur?: string | number | null }): Promise<Result> {
+  const guard = await requireTeamOwner();
+  if (!guard.ok) return { error: guard.error };
+  const n = (v: unknown, max: number) => {
+    if (v === null || v === undefined || v === "") return null;
+    const x = Number(String(v).replace(",", "."));
+    return Number.isFinite(x) && x >= 0 && x <= max ? x : NaN;
+  };
+  const fixed = n(input.fixed_eur, 100000);
+  const rate = n(input.rate_pct, 100);
+  const piece = n(input.piece_eur, 100000);
+  if ([fixed, rate, piece].some((v) => Number.isNaN(v))) return { error: "Montant ou pourcentage invalide." };
+  const base = ["aucun", "ventes_perso", "ventes_equipe", "setter", "piece"].includes(input.base ?? "") ? input.base : "aucun";
+  const { error } = await createAdminClient()
+    .from("staff_members")
+    .update({ pay_config: { fixed_eur: fixed, rate_pct: rate, base, piece_eur: piece } })
+    .eq("user_id", userId)
+    .eq("owner_id", guard.userId);
+  if (error) return { error: "Enregistrement impossible." };
+  revalidatePath(PATH);
+  return {};
+}

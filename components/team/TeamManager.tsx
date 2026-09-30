@@ -13,6 +13,7 @@ import {
   inviteStaffAction,
   revokeStaffInviteAction,
   setStaffStatusAction,
+  updatePayConfigAction,
 } from "@/app/dashboard/coach/mon-equipe/actions";
 
 // Briques client de la page Mon équipe : mode de travail, invitations,
@@ -299,5 +300,47 @@ export function StaffStatus({ userId, status }: { userId: string; status: string
       )}
       {note}
     </span>
+  );
+}
+
+// ── Paie ────────────────────────────────────────────────────────────────
+
+const BASES: { value: string; label: string }[] = [
+  { value: "aucun", label: "Fixe uniquement" },
+  { value: "ventes_perso", label: "% de ses ventes" },
+  { value: "ventes_equipe", label: "% des ventes de l'équipe sales" },
+  { value: "setter", label: "Setter (4 % / 7 %)" },
+  { value: "piece", label: "Forfait par livrable" },
+];
+
+export function PayConfigEditor({ userId, config }: { userId: string; config: { fixed_eur?: number | null; rate_pct?: number | null; base?: string; piece_eur?: number | null } }) {
+  const [open, setOpen] = useState(false);
+  const [base, setBase] = useState(config.base ?? "aucun");
+  const [fixed, setFixed] = useState(config.fixed_eur == null ? "" : String(config.fixed_eur));
+  const [rate, setRate] = useState(config.rate_pct == null ? "" : String(config.rate_pct));
+  const [piece, setPiece] = useState(config.piece_eur == null ? "" : String(config.piece_eur));
+  const { pending, run, note } = useAction();
+  if (!open) {
+    return (
+      <button type="button" style={ghost} onClick={() => setOpen(true)}>
+        <Pencil size={11} /> Rémunération
+      </button>
+    );
+  }
+  return (
+    <div style={{ width: "100%", marginTop: 8, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>
+      <select style={{ ...input, gridColumn: "1 / -1" }} value={base} onChange={(e) => setBase(e.target.value)} aria-label="Type de rémunération">
+        {BASES.map((b) => (
+          <option key={b.value} value={b.value}>{b.label}</option>
+        ))}
+      </select>
+      <input style={input} inputMode="decimal" value={fixed} onChange={(e) => setFixed(e.target.value)} placeholder="Fixe (€/mois)" aria-label="Fixe mensuel" />
+      {(base === "ventes_perso" || base === "ventes_equipe") && <input style={input} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Taux (%)" aria-label="Taux" />}
+      {base === "piece" && <input style={input} inputMode="decimal" value={piece} onChange={(e) => setPiece(e.target.value)} placeholder="€ par livrable" aria-label="Forfait par livrable" />}
+      <button type="button" disabled={pending} style={{ ...primary, gridColumn: "1 / -1" }} onClick={() => run(() => updatePayConfigAction(userId, { base, fixed_eur: fixed, rate_pct: rate, piece_eur: piece }), "Enregistré.", () => setOpen(false))}>
+        Enregistrer
+      </button>
+      <div style={{ gridColumn: "1 / -1" }}>{note}</div>
+    </div>
   );
 }

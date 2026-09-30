@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Users, MessagesSquare, FolderOpen, LayoutDashboard, Briefcase } from "lucide-react";
+import { Users, MessagesSquare, FolderOpen, LayoutDashboard, Briefcase, Wallet } from "lucide-react";
 import { getUser, getProfile } from "@/utils/auth";
 import { createAdminClient } from "@/lib/supabase-admin";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -10,6 +10,7 @@ import { getOwnedCoachTeam, getMyCoachMemberships, getStaffOverview } from "@/li
 import { POLES } from "@/lib/org-roles";
 import { STAFF_ROLE_KEYS, getRoleCard } from "@/lib/staff-roles";
 import { getStaffMember } from "@/lib/staff";
+import { computePayroll } from "@/lib/staff-pay";
 import {
   CareerPicker,
   InviteResponse,
@@ -19,6 +20,7 @@ import {
   InviteStaffForm,
   RevokeStaffInvite,
   StaffStatus,
+  PayConfigEditor,
   type CareerOption,
 } from "@/components/team/TeamManager";
 
@@ -63,7 +65,7 @@ export default async function MyTeamPage() {
     getStaffMember(user.id),
   ]);
   const memberships = await getMyCoachMemberships(user.id, (me?.email as string | null) ?? null);
-  const [team, staff] = owner ? await Promise.all([getOwnedCoachTeam(user.id), getStaffOverview(user.id)]) : [null, null];
+  const [team, staff, payroll] = owner ? await Promise.all([getOwnedCoachTeam(user.id), getStaffOverview(user.id), computePayroll(user.id)]) : [null, null, null];
 
   const mode = typeof setup.answers.career_mode === "string" ? setup.answers.career_mode : null;
   const options: CareerOption[] = CAREER_MODES.map((o) => ({ ...o, unlocks: UNLOCKS[o.value] ?? "" }));
@@ -217,6 +219,34 @@ export default async function MyTeamPage() {
             </div>
             <InviteStaffForm roles={roleGroups} />
           </section>
+
+          {payroll && payroll.lines.length > 0 && (
+            <section style={{ marginBottom: 20 }}>
+              <p className="ep-label" style={{ marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                <Wallet size={12} /> Paie du mois ({new Date(`${payroll.month}-15T12:00:00`).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })})
+              </p>
+              <div className="ep-card-hero" style={{ padding: "14px 16px", marginBottom: 8 }}>
+                <p style={{ fontSize: 24, fontWeight: 900, color: "#F5EDED", margin: 0 }}>{Math.round(payroll.total).toLocaleString("fr-FR")} €</p>
+                <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "2px 0 0" }}>à verser à ton staff pour ce mois, calculé sur leurs vraies ventes et livraisons</p>
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {payroll.lines.map((l) => (
+                  <div key={l.userId} className="ep-card" style={{ padding: "12px 14px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "flex-start" }}>
+                      <div style={{ minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{l.name}</p>
+                        <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: "2px 0 0" }}>{l.roleTitle} · {l.detail}</p>
+                      </div>
+                      <p style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED", margin: 0, flexShrink: 0 }}>{Math.round(l.total).toLocaleString("fr-FR")} €</p>
+                    </div>
+                    <div style={{ marginTop: 8 }}>
+                      <PayConfigEditor userId={l.userId} config={l.config} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
         </>
       )}
     </div>

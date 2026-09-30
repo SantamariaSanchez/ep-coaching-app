@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis } from "@/lib/dates";
+import { computePayroll } from "@/lib/staff-pay";
 
 // Réponses rapides de la recherche (2026-09-30, "si je veux savoir mon
 // poids sur la semaine, bam c'est hyper simple") : quelques chiffres clés
@@ -134,6 +135,24 @@ export async function getQuickAnswers(userId: string, role: "coach" | "client", 
       detail: null,
       href: "/dashboard/coach/prioritaires",
     });
+  }
+
+  // Paie de l'équipe (staff), si le coach en a une.
+  try {
+    const pay = await computePayroll(userId);
+    if (pay.lines.length) {
+      const top = [...pay.lines].sort((a, b) => b.total - a.total).slice(0, 3);
+      out.push({
+        key: "paie",
+        keywords: ["paie", "payer", "salaire", "rémunération", "remuneration", "commission", "head", "closer", "setter", "équipe", "equipe"],
+        title: "Paie de l'équipe ce mois",
+        value: `${fr(pay.total)} € au total`,
+        detail: top.map((l) => `${l.name} (${l.roleTitle}) : ${fr(l.total)} €`).join(" · "),
+        href: "/dashboard/coach/mon-equipe",
+      });
+    }
+  } catch {
+    // Pas d'équipe ou lecture impossible : pas de réponse rapide.
   }
 
   if (isFounder) {
