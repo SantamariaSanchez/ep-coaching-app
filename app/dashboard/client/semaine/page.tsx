@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { getAppSetup } from "@/lib/app-setup-server";
+import { isOn } from "@/lib/app-setup";
 import { redirect } from "next/navigation";
 import { CalendarCheck, AlertTriangle, ArrowRight } from "lucide-react";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
@@ -29,7 +31,7 @@ export default async function ClientSemainePage({
   const today = todayInParis();
   const weekStart = resolveWeekStart(param, today);
   const currentMonday = mondayOf(today);
-  const data = await getWeeklyReview(user.id, weekStart, today);
+  const [data, appSetup] = await Promise.all([getWeeklyReview(user.id, weekStart, today), getAppSetup(user.id)]);
 
   return (
     <div className="px-5 py-8 max-w-2xl mx-auto pb-24 md:pb-8 page-transition">
@@ -47,6 +49,7 @@ export default async function ClientSemainePage({
       {data ? (
         <div className="flex flex-col gap-3">
           <WeeklyReview
+            show={{ entrainement: isOn(appSetup, "entrainement"), nutrition: isOn(appSetup, "nutrition"), pas: isOn(appSetup, "pas"), sommeil: isOn(appSetup, "sommeil"), poids: isOn(appSetup, "poids") }}
             data={data}
             basePath="/dashboard/client/semaine"
             today={today}

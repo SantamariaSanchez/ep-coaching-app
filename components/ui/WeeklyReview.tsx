@@ -96,7 +96,10 @@ export default function WeeklyReview({
   today,
   canGoNext,
   canGoPrev = true,
+  show = { entrainement: true, nutrition: true, pas: true, sommeil: true, poids: true },
 }: {
+  /** Personnalisation Mon appli : tuiles des seuls suivis choisis. */
+  show?: { entrainement: boolean; nutrition: boolean; pas: boolean; sommeil: boolean; poids: boolean };
   data: WeeklyReviewData;
   /** Page qui porte la navigation ?semaine=. Null : pas de navigation (check-in). */
   basePath: string | null;
@@ -164,6 +167,7 @@ export default function WeeklyReview({
 
       {/* Tuiles chiffrées */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        {show.entrainement && (
         <Tile
           icon={Dumbbell}
           label="Séances"
@@ -177,6 +181,7 @@ export default function WeeklyReview({
           }
           tone={sessionsTone}
         />
+        )}
         <Tile
           icon={ClipboardCheck}
           label="Bilans"
@@ -184,12 +189,15 @@ export default function WeeklyReview({
           sub={d.isCurrentWeek ? "jours écoulés" : "jours"}
           tone={d.bilanDays >= days ? "good" : "neutral"}
         />
+        {show.nutrition && (
         <Tile
           icon={Apple}
           label="Nutrition"
           value={`${d.nutritionDays}/${days}`}
           sub={d.avgKcal != null ? `${fr(d.avgKcal)} kcal moy.${d.kcalTarget ? ` / ${fr(d.kcalTarget)}` : ""}` : "jours avec repas notés"}
         />
+        )}
+        {show.pas && (
         <Tile
           icon={Footprints}
           label="Pas"
@@ -197,18 +205,23 @@ export default function WeeklyReview({
           sub={d.avgSteps != null ? (d.stepGoal ? `moy. / objectif ${fr(d.stepGoal)}` : "par jour en moyenne") : null}
           tone={d.avgSteps != null && d.stepGoal && d.avgSteps >= d.stepGoal ? "good" : "neutral"}
         />
+        )}
+        {show.sommeil && (
         <Tile
           icon={Moon}
           label="Sommeil"
           value={d.avgSleep != null ? formatSleepHours(d.avgSleep) : "Non noté"}
           sub={d.bedtime ? `coucher moyen ${d.bedtime.avg}` : d.avgSleep != null ? "par nuit en moyenne" : null}
         />
+        )}
+        {show.poids && (
         <Tile
           icon={Scale}
           label="Poids moyen"
           value={d.avgWeight != null ? `${fr(d.avgWeight, 1)} kg` : "Non noté"}
           sub={d.weightDelta != null ? `${formatWeightDelta(d.weightDelta)} vs semaine d'avant` : null}
         />
+        )}
       </div>
 
       {/* Ce que disent les chiffres */}
