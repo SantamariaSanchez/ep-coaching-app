@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import NotInIOSApp from "@/components/native/NotInIOSApp";
 import { getUser, getProfile } from "@/utils/auth";
 import { COACH_PLATFORM_PLANS } from "@/lib/coach-platform-plan";
 import { Crown } from "lucide-react";
@@ -34,6 +35,7 @@ export default async function CoachPendingPage() {
           Ton compte coach est créé. Active ton abonnement plateforme
           pour accéder à ton espace et commencer à suivre tes propres clients.
         </p>
+        <NotInIOSApp fallback={<p style={{ fontSize: 13, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, margin: 0 }}>Ton abonnement se gère depuis ton espace sur le web. Une fois actif, reviens ici : tout sera prêt.</p>}>
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {COACH_PLATFORM_PLANS.map((plan) => (
             <a
@@ -47,6 +49,7 @@ export default async function CoachPendingPage() {
             </a>
           ))}
         </div>
+        </NotInIOSApp>
         <div style={{ marginTop: 20 }}>
           <SignOutButton />
         </div>

@@ -33,3 +33,10 @@ liens externes dans le navigateur intégré (components/native/NativeBridge.tsx)
 Les points natifs qui comptent : push natif, haptique, caméra (prompteur, photos), partage natif,
 aucune page qui ressemble à un site (pas de bandeau « installer l'appli », pas de sélection de
 texte sur l'interface). Prévoir un compte de démonstration coach + client pour les testeurs Apple.
+
+## Achats dans l'appli iOS (règle 3.1.1)
+
+Dans l'appli iOS, aucun achat numérique ne passe par Stripe : l'inscription coach payante
+(abonnement à l'appli) et l'achat d'une formation sont masqués (composant `NotInIOSApp`,
+`lib/use-native.ts`). Ils restent sur le site et sur Android. Le coaching humain (appel,
+accompagnement de personne à personne) garde son paiement habituel (règle 3.1.3(d)).

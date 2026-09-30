@@ -7,6 +7,7 @@ import { EPLogo } from "@/components/ui/EPLogo";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { loginCoach } from "./actions";
+import { useIsIOSApp } from "@/lib/use-native";
 import CoachSignupFlow from "./CoachSignupFlow";
 
 function ForgotPassword({ initialEmail, onDone }: { initialEmail: string; onDone: () => void }) {
@@ -75,7 +76,11 @@ export default function CoachLoginPage() {
   const [state, formAction, pending] = useActionState(loginCoach, null);
   const [email, setEmail] = useState("");
   const [forgotOpen, setForgotOpen] = useState(false);
-  const [tab, setTab] = useState<"connexion" | "inscription">("inscription");
+  const [tabChoice, setTab] = useState<"connexion" | "inscription">("inscription");
+  // Appli iOS : l'abonnement coach (achat numérique) se prend sur le site,
+  // l'appli ne propose que la connexion (règles App Store).
+  const iosApp = useIsIOSApp();
+  const tab = iosApp ? "connexion" : tabChoice;
 
   return (
     <div
@@ -140,7 +145,7 @@ export default function CoachLoginPage() {
           </div>
 
           {/* Tabs */}
-          <div className="animate-fade-up stagger-2" style={{ display: "flex", gap: 8, marginBottom: 24 }}>
+          <div className="animate-fade-up stagger-2" style={{ display: iosApp ? "none" : "flex", gap: 8, marginBottom: 24 }}>
             {(["inscription", "connexion"] as const).map((t) => (
               <button
                 key={t}

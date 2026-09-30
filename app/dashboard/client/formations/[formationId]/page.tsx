@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import NotInIOSApp from "@/components/native/NotInIOSApp";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
@@ -142,9 +143,11 @@ export default async function FormationDetailPage({
             Tu peux parcourir tout le programme. Les vidéos se débloquent dès que ton coach t&apos;a donné l&apos;accès.
           </p>
           {formation.payment_url && (
-            <a href={formation.payment_url} target="_blank" rel="noopener noreferrer" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
-              Acheter la formation
-            </a>
+            <NotInIOSApp>
+              <a href={formation.payment_url} target="_blank" rel="noopener noreferrer" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
+                Acheter la formation
+              </a>
+            </NotInIOSApp>
           )}
         </div>
       )}
