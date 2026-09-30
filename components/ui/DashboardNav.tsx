@@ -10,7 +10,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid, NotebookPen,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -154,7 +154,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
       { label: "Publicité", icon: Megaphone, segment: "business/ads" },
       { label: "Développer mon business", icon: Rocket, segment: "business" },
-      { label: "Documents & notes", icon: FileText, segment: "documents" },
+      { label: "Documents", icon: FileText, segment: "documents" },
       { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
     ],
   },
@@ -166,6 +166,10 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Revenus & dépenses", icon: Wallet, segment: "compta" },
     ],
+  },
+  {
+    group: "Mes notes",
+    items: [{ label: "Notes", icon: NotebookPen, segment: "notes" }],
   },
   {
     group: "Bibliothèque",
@@ -291,6 +295,10 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Check-in", icon: ClipboardList, segment: "checkin", freeLocked: true },
       { label: "Coaching live", icon: Video,   segment: "live", freeLocked: true },
     ],
+  },
+  {
+    group: "Mes notes",
+    items: [{ label: "Notes", icon: NotebookPen, segment: "notes" }],
   },
   {
     group: "Contenu",

@@ -7,8 +7,8 @@ import { COACH_SIDEBAR, CLIENT_SIDEBAR, ADMIN_SIDEBAR_ITEMS, type SidebarGroup }
 // Onglet « Plus » (navigation téléphone, 2026-09-30) : tout ce qui n'a pas
 // son propre onglet, rangé par rubrique, avec la recherche en tête.
 
-const COACH_GROUPS = ["Bibliothèque", "Science", "Communauté", "Compte"];
-const CLIENT_GROUPS = ["Contenu", "Science", "Communauté", "Compte"];
+const COACH_GROUPS = ["Mes notes", "Bibliothèque", "Science", "Communauté", "Compte"];
+const CLIENT_GROUPS = ["Mes notes", "Contenu", "Science", "Communauté", "Compte"];
 
 export default function PlusMenu({ space, hidden, isFounder, isFreeTier }: { space: "coach" | "client"; hidden: string[]; isFounder: boolean; isFreeTier: boolean }) {
   const base = `/dashboard/${space}`;

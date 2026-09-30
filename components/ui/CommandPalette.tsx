@@ -73,6 +73,7 @@ export default function CommandPalette({
   const [loadingClients, setLoadingClients] = useState(false);
   const [libraryResults, setLibraryResults] = useState<LibraryResult[]>([]);
   const [answers, setAnswers] = useState<QuickAnswer[] | null>(null);
+  const [noteResults, setNoteResults] = useState<{ id: string; title: string; excerpt: string }[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -164,6 +165,10 @@ export default function CommandPalette({
         .then((r) => r.json())
         .then((d) => setLibraryResults(d.results ?? []))
         .catch(() => setLibraryResults([]));
+      fetch(`/api/notes/search?q=${encodeURIComponent(q)}`)
+        .then((r) => r.json())
+        .then((d) => setNoteResults(d.results ?? []))
+        .catch(() => setNoteResults([]));
     }, 250);
     return () => clearTimeout(t);
   }, [open, query]);
@@ -195,6 +200,12 @@ export default function CommandPalette({
       label: c.full_name ?? "Sans nom",
       sub: "Client",
       href: `/dashboard/coach/clients/${c.id}`,
+    })),
+    ...(q.length >= 2 ? noteResults : []).map((n) => ({
+      key: `note-${n.id}`,
+      label: n.title,
+      sub: "Note",
+      href: `${isCoach ? "/dashboard/coach" : "/dashboard/client"}/notes?note=${n.id}`,
     })),
     ...shownLibraryResults.map((r) => ({
       key: r.key,
