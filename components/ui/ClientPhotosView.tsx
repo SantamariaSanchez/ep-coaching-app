@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import { Camera, Video, CheckCircle2, Clock, ExternalLink, AlertCircle, X, Loader2, Sparkles } from "lucide-react";
+import { Camera, Video, CheckCircle2, Clock, ExternalLink, X, Loader2, Sparkles } from "lucide-react";
 import { POSING_CATEGORIES, CATEGORIES_BY_GENDER, TYPE_LABELS, type SubmissionType } from "@/lib/posing-data";
 import { createClientSupabase } from "@/lib/supabase-client";
 import type { Profile } from "@/utils/auth";
@@ -241,7 +241,11 @@ function SubmissionForm({
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Type selector */}
       <div className="grid grid-cols-2 gap-2">
-        {TYPES.map(({ key, label, icon: Icon, desc }) => (
+        {/* Sans catégorie de compétition : de simples photos de progression,
+            pas de routine de posing (réservée aux compétiteurs). */}
+        {TYPES.filter((t) => posingData || t.key === "mandatory_poses").map(({ key, label: rawLabel, icon: Icon, desc }) => {
+          const label = !posingData && key === "mandatory_poses" ? "Photos de progression" : rawLabel;
+          return (
           <button
             key={key}
             type="button"
@@ -256,7 +260,8 @@ function SubmissionForm({
             <span className="text-[9px] font-black uppercase tracking-widest leading-tight">{label}</span>
             <span className="text-[8px] text-[#F5EDED]/30 leading-tight hidden sm:block">{desc}</span>
           </button>
-        ))}
+          );
+        })}
       </div>
 
       {/* Type-specific content */}
@@ -284,17 +289,26 @@ function SubmissionForm({
       )}
 
       {!posingData && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-          <div className="flex items-center gap-2">
-            <AlertCircle size={14} className="text-amber-400 flex-shrink-0" />
-            <p className="text-xs text-amber-400">
-              {isSelfTracking
-                ? "Catégorie non définie. Choisis-la ci-dessous."
-                : "Catégorie non définie. Ton coach va la configurer prochainement."}
-            </p>
+        <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
+          <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">Les 3 photos de la semaine</p>
+          <div className="space-y-1.5">
+            {["Face, bras le long du corps, relâché", "Profil (côté droit), relâché", "Dos, bras le long du corps, relâché"].map((pose, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-4 h-4 rounded border border-[#890404]/30 bg-[#890404]/10 flex-shrink-0 flex items-center justify-center">
+                  <span className="text-[8px] text-[#F5EDED]/40">{i + 1}</span>
+                </div>
+                <span className="text-xs text-[#F5EDED]/70">{pose}</span>
+              </div>
+            ))}
           </div>
+          <p className="mt-3 text-[10px] text-[#F5EDED]/35 border-t border-[#890404]/15 pt-2">
+            Même endroit, même lumière, même heure (idéalement le matin à jeun) : c&apos;est ce qui rend la comparaison fiable.
+          </p>
           {isSelfTracking && saveCompetitionSettings && (
-            <SelfCategoryPicker coachId={profile.id} save={saveCompetitionSettings} />
+            <div className="mt-3 pt-3 border-t border-[#890404]/15">
+              <p className="text-[10px] text-[#F5EDED]/45 mb-2">Tu prépares une compétition ? Choisis ta catégorie pour avoir tes poses imposées.</p>
+              <SelfCategoryPicker coachId={profile.id} save={saveCompetitionSettings} />
+            </div>
           )}
         </div>
       )}
