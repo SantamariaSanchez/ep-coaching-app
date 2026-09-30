@@ -17,8 +17,9 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 - [x] Recherche globale : pages, clients, bibliothèque + réponses rapides (reste : notes, scripts)
 - [x] Réponses en 1 geste : poids, calories, sommeil, pas, séances, clients, bilans, leads
 - [x] Réponse « combien payer mon Head of Sales » (paie de l'équipe)
-- [ ] Coquille native (Capacitor) : icône, écran de démarrage, barre d'état, retour haptique,
-      notifications push natives, lien profond, pas de chrome web visible
+- [x] Coquille native (Capacitor) : barre d'état, haptique, push natif (clés Firebase à poser),
+      liens profonds, bouton retour, pas de chrome web visible (voir NATIVE.md)
+- [ ] Icônes et écran de démarrage natifs (icône 1024 px)
 - [x] Onglet Tournage (fondateur) remis au propre : entrée claire, plus de section vide
 
 ## Semaine 2 (07/10 au 13/10) : agenda vivant + écosystème relié
