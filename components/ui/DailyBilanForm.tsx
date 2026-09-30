@@ -46,6 +46,31 @@ function TriScale({ name, defaultValue }: { name: string; defaultValue?: string 
   );
 }
 
+// Échelle de 1 à 5 (énergie, moral, courbatures), même rendu que TriScale.
+function FiveScale({ name, defaultValue, low, high }: { name: string; defaultValue?: number | null; low: string; high: string }) {
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 5 }}>
+        {[1, 2, 3, 4, 5].map((v) => (
+          <label key={v} style={{ flex: 1, cursor: "pointer" }}>
+            <input type="radio" name={name} value={v} defaultChecked={defaultValue === v} className="sr-only peer" />
+            <span
+              style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 38, borderRadius: 8, border: "1px solid rgba(137,4,4,0.3)", fontSize: 13, fontWeight: 800, color: "rgba(245,237,237,0.45)", cursor: "pointer", transition: "background 0.15s, border-color 0.15s, color 0.15s" }}
+              className="peer-checked:bg-[#E01E1E] peer-checked:border-[#E01E1E] peer-checked:text-white"
+            >
+              {v}
+            </span>
+          </label>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "rgba(245,237,237,0.3)", marginTop: 4 }}>
+        <span>{low}</span>
+        <span>{high}</span>
+      </div>
+    </div>
+  );
+}
+
 // Retour direct 2026-09-09 : "le sommeil faut qu'on puisse le log en
 // heure... c'est juste un chiffre à virgule avec qu'un nombre" — saisir
 // "7.5" au clavier numérique est pénible et pas comment on pense sa nuit
@@ -380,6 +405,75 @@ export function LifestyleCard({
   );
 }
 
+// Forme du jour (2026-09-30) : énergie, moral, hydratation, courbatures,
+// FC de repos et VFC, chacun activé à part dans Mon appli.
+export function FormeCard({
+  today,
+  existing,
+  action,
+  onSaved,
+  show,
+}: {
+  today: string;
+  existing: DailyLog | null;
+  action: BilanAction;
+  onSaved?: () => void;
+  show: { energie: boolean; humeur: boolean; hydratation: boolean; courbatures: boolean; cardio_repos: boolean };
+}) {
+  const [state, formAction, pending] = useActionState(action, null);
+  useEffect(() => {
+    if (state?.success) onSaved?.();
+  }, [state, onSaved]);
+  return (
+    <form action={formAction}>
+      <input type="hidden" name="log_date" value={today} />
+      <CardShell icon={Sun} title="Forme du jour" saved={!!state?.success}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {show.energie && (
+            <div>
+              <label className={lbl}>Énergie</label>
+              <FiveScale name="energy" defaultValue={existing?.energy} low="À plat" high="Au top" />
+            </div>
+          )}
+          {show.humeur && (
+            <div>
+              <label className={lbl}>Moral</label>
+              <FiveScale name="mood" defaultValue={existing?.mood} low="Bas" high="Excellent" />
+            </div>
+          )}
+          {show.courbatures && (
+            <div>
+              <label className={lbl}>Courbatures</label>
+              <FiveScale name="soreness" defaultValue={existing?.soreness} low="Aucune" high="Très fortes" />
+            </div>
+          )}
+          {show.hydratation && (
+            <div>
+              <label className={lbl}>Eau bue (litres)</label>
+              <input name="water_l" type="number" inputMode="decimal" step="0.1" min="0" max="15" defaultValue={existing?.water_l ?? ""} placeholder="2.5" aria-label="Eau bue en litres" className={inp} />
+            </div>
+          )}
+          {show.cardio_repos && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+              <div>
+                <label className={lbl}>FC de repos (bpm)</label>
+                <input name="resting_hr" type="number" inputMode="numeric" min="25" max="220" defaultValue={existing?.resting_hr ?? ""} placeholder="58" aria-label="Fréquence cardiaque de repos" className={inp} />
+              </div>
+              <div>
+                <label className={lbl}>VFC (ms)</label>
+                <input name="hrv" type="number" inputMode="numeric" min="5" max="300" defaultValue={existing?.hrv ?? ""} placeholder="65" aria-label="Variabilité de la fréquence cardiaque" className={inp} />
+              </div>
+              <p className={hint} style={{ gridColumn: "1 / -1" }}>Relevés du matin sur ta montre ou ta bague (Apple Santé, Garmin, Whoop, Oura...).</p>
+            </div>
+          )}
+        </div>
+        {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
+        <SaveButton pending={pending} />
+      </CardShell>
+    </form>
+  );
+}
+
 export type NutritionTotals = { calories: number; proteins: number; carbs: number; fats: number };
 export type BilanPlan = { name: string; mode: "fixed" | "flexible" | "fixed_flexible" };
 
@@ -632,6 +726,11 @@ export default function DailyBilanForm({
     faim: isOn(setup, "faim"),
     nutrition: isOn(setup, "nutrition"),
     entrainement: isOn(setup, "entrainement"),
+    energie: isOn(setup, "energie"),
+    humeur: isOn(setup, "humeur"),
+    hydratation: isOn(setup, "hydratation"),
+    courbatures: isOn(setup, "courbatures"),
+    cardio_repos: isOn(setup, "cardio_repos"),
   };
   // Même formulaire côté membre et côté coach (Moi) : les liens suivent l'espace.
   const isCoach = trackerHref?.startsWith("/dashboard/coach") ?? false;
@@ -681,6 +780,9 @@ export default function DailyBilanForm({
           )}
           {(on.nutrition || on.faim) && (
             <NutritionCard today={today} existing={existing} action={action} nutritionTotals={nutritionTotals} plan={plan} trackerHref={trackerHref} showNutrition={on.nutrition} showHunger={on.faim} />
+          )}
+          {(on.energie || on.humeur || on.hydratation || on.courbatures || on.cardio_repos) && (
+            <FormeCard today={today} existing={existing} action={action} show={{ energie: on.energie, humeur: on.humeur, hydratation: on.hydratation, courbatures: on.courbatures, cardio_repos: on.cardio_repos }} />
           )}
         </>
       )}

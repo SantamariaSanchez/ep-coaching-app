@@ -12,7 +12,9 @@ export function defaultAnswers(setup: AppSetup, opts: { role: "coach" | "client"
     nutrition: "tracker",
     extras: [...(opts.isWoman ? ["cycle"] : []), "mindset"],
   };
-  if (opts.role === "client") return member;
+  // Réponses déjà données ailleurs (ex. mode de travail choisi dans Mon
+  // équipe) : gardées par-dessus les valeurs par défaut.
+  if (opts.role === "client") return { ...member, ...setup.answers };
   return {
     career_mode: "independant",
     objectifs: ["coacher", "contenu", "formations", "lives", "business"],
@@ -20,5 +22,6 @@ export function defaultAnswers(setup: AppSetup, opts: { role: "coach" | "client"
     clients_count: "0",
     suivi_perso: "oui",
     ...member,
+    ...setup.answers,
   };
 }

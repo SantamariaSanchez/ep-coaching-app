@@ -30,6 +30,13 @@ export interface DailyLog {
   fats_g: number | null;
   calories_kcal: number | null;
   hunger: "low" | "medium" | "high" | null;
+  /** Forme du jour (migration 20260930c), modules optionnels de Mon appli. */
+  energy?: number | null;
+  mood?: number | null;
+  soreness?: number | null;
+  water_l?: number | null;
+  resting_hr?: number | null;
+  hrv?: number | null;
   // Meta
   created_at: string;
   updated_at: string;

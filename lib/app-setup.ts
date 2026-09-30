@@ -21,6 +21,12 @@ export type ModuleKey =
   | "faim"
   | "pas"
   | "cycle"
+  // Forme du jour (optionnel)
+  | "energie"
+  | "humeur"
+  | "hydratation"
+  | "courbatures"
+  | "cardio_repos"
   // Pratique
   | "entrainement"
   | "nutrition"
@@ -46,7 +52,7 @@ export interface AppSetup {
 export const EMPTY_SETUP: AppSetup = { answers: {}, modules: {}, completed: false };
 
 /** Modules désactivés par défaut (nouveautés qu'on ne force sur personne). */
-const OFF_BY_DEFAULT: ModuleKey[] = ["masse_grasse", "competition"];
+const OFF_BY_DEFAULT: ModuleKey[] = ["masse_grasse", "competition", "energie", "humeur", "hydratation", "courbatures", "cardio_repos"];
 
 export function isOn(setup: AppSetup | null | undefined, key: ModuleKey): boolean {
   const v = setup?.modules?.[key];
@@ -104,6 +110,20 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
       { value: "faim", label: "Ma faim" },
     ],
     toModules: (a) => ({ sommeil: has(a, "sommeil"), pas: has(a, "pas"), stress: has(a, "stress"), digestion: has(a, "digestion"), faim: has(a, "faim") }),
+  },
+  {
+    key: "forme",
+    title: "Tu veux aller plus loin dans ton suivi ?",
+    subtitle: "Optionnel : ajoute ce qui t'aide vraiment à comprendre ta forme.",
+    multi: true,
+    options: [
+      { value: "energie", label: "Mon énergie", hint: "Note de 1 à 5" },
+      { value: "humeur", label: "Mon moral", hint: "Note de 1 à 5" },
+      { value: "hydratation", label: "Mon hydratation", hint: "Litres d'eau bus" },
+      { value: "courbatures", label: "Mes courbatures", hint: "Récupération musculaire" },
+      { value: "cardio_repos", label: "Mon cardio au repos", hint: "FC de repos et VFC (montre, bague)" },
+    ],
+    toModules: (a) => ({ energie: has(a, "energie"), humeur: has(a, "humeur"), hydratation: has(a, "hydratation"), courbatures: has(a, "courbatures"), cardio_repos: has(a, "cardio_repos") }),
   },
   {
     key: "entrainement",

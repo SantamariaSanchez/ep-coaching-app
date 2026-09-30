@@ -11,6 +11,17 @@ import { isWithinBilanBackfillWindow, BILAN_BACKFILL_DAYS } from "@/lib/dates";
 import { isFirstEverAction, celebrateFirstAction } from "@/lib/first-action-celebration";
 import { afterBilanSaved } from "@/lib/nutrition-sync";
 
+// Forme du jour (2026-09-30) : bornes identiques aux contraintes SQL
+// (migration 20260930c), une valeur hors bornes est ignorée.
+const FORME_RANGES: Record<string, [number, number]> = {
+  energy: [1, 5],
+  mood: [1, 5],
+  soreness: [1, 5],
+  water_l: [0, 15],
+  resting_hr: [25, 220],
+  hrv: [5, 300],
+};
+
 function num(v: FormDataEntryValue | null): number | null {
   if (!v || v === "") return null;
   const n = parseFloat(v as string);
@@ -77,6 +88,12 @@ export async function upsertDailyLog(
       { key: "fats_g", kind: "num" },
       { key: "calories_kcal", kind: "num" },
       { key: "hunger", kind: "txt" },
+      { key: "energy", kind: "num" },
+      { key: "mood", kind: "num" },
+      { key: "soreness", kind: "num" },
+      { key: "water_l", kind: "num" },
+      { key: "resting_hr", kind: "num" },
+      { key: "hrv", kind: "num" },
     ];
 
     const payload: Record<string, unknown> = {
@@ -87,6 +104,9 @@ export async function upsertDailyLog(
     for (const f of FIELD_SPEC) {
       if (formData.has(f.key)) {
         payload[f.key] = f.kind === "num" ? num(formData.get(f.key)) : txt(formData.get(f.key));
+        const range = FORME_RANGES[f.key];
+        const v = payload[f.key];
+        if (range && typeof v === "number" && (v < range[0] || v > range[1])) payload[f.key] = null;
       }
     }
 

@@ -124,6 +124,42 @@ function DayRow({ log }: { log: DailyLog }) {
             <p style={val}>{log.cardio}</p>
           </div>
         )}
+        {log.energy != null && (
+          <div>
+            <p style={lbl}>Énergie</p>
+            <p style={val}>{log.energy}/5</p>
+          </div>
+        )}
+        {log.mood != null && (
+          <div>
+            <p style={lbl}>Moral</p>
+            <p style={val}>{log.mood}/5</p>
+          </div>
+        )}
+        {log.soreness != null && (
+          <div>
+            <p style={lbl}>Courbatures</p>
+            <p style={val}>{log.soreness}/5</p>
+          </div>
+        )}
+        {log.water_l != null && (
+          <div>
+            <p style={lbl}>Eau</p>
+            <p style={val}>{log.water_l} L</p>
+          </div>
+        )}
+        {log.resting_hr != null && (
+          <div>
+            <p style={lbl}>FC repos</p>
+            <p style={val}>{log.resting_hr} bpm</p>
+          </div>
+        )}
+        {log.hrv != null && (
+          <div>
+            <p style={lbl}>VFC</p>
+            <p style={val}>{log.hrv} ms</p>
+          </div>
+        )}
         {stress && (
           <div>
             <p style={lbl}>Stress</p>
