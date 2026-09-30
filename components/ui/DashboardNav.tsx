@@ -10,7 +10,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -35,7 +35,7 @@ type TabItem = {
   badge?: BadgeKey;
 };
 
-type SidebarGroup = {
+export type SidebarGroup = {
   group: string;
   items: Array<{
     label: string;
@@ -52,12 +52,14 @@ type SidebarGroup = {
 
 // ── Navigation data ─────────────────────────────────────────────────────────
 
+// Navigation téléphone repensée (lancement App Store, 2026-09-30) : 5
+// onglets max, chacun avec une logique claire, le reste dans « Plus ».
 const CLIENT_TABS: TabItem[] = [
   {
     label: "Aujourd'hui",
     icon: Home,
     href: "/dashboard/client",
-    matchSegments: ["profile", "parametres"],
+    matchSegments: [],
     exactMatch: true,
   },
   {
@@ -76,26 +78,14 @@ const CLIENT_TABS: TabItem[] = [
     label: "Coach",
     icon: MessageCircle,
     href: "/dashboard/client/messages",
-    matchSegments: ["messages", "checkin", "reminders", "tasks"],
+    matchSegments: ["messages", "checkin", "reminders", "tasks", "coach", "live"],
     badge: "messages",
   },
   {
-    label: "Live",
-    icon: Video,
-    href: "/dashboard/client/live",
-    matchSegments: ["live"],
-  },
-  {
-    label: "Contenu",
-    icon: GraduationCap,
-    href: "/dashboard/client/formations",
-    matchSegments: ["formations", "ressources", "recettes", "science"],
-  },
-  {
-    label: "Communauté",
-    icon: Heart,
-    href: "/dashboard/client/communaute",
-    matchSegments: ["communaute", "abonnement"],
+    label: "Plus",
+    icon: LayoutGrid,
+    href: "/dashboard/client/plus",
+    matchSegments: ["plus", "formations", "ressources", "recettes", "science", "communaute", "abonnement", "profile", "parametres", "mon-appli", "notes", "aide"],
   },
 ];
 
@@ -104,27 +94,21 @@ const COACH_TABS: TabItem[] = [
     label: "Aujourd'hui",
     icon: Home,
     href: "/dashboard/coach",
-    matchSegments: ["profile", "parametres"],
+    matchSegments: [],
     exactMatch: true,
   },
   {
-    // Section Clients regroupée : Clients + Modèles + Messages vivent
-    // ensemble (la bibliothèque de modèles est le point de départ du
-    // travail fait dans la fiche d'un client, et les messages concernent
-    // ces mêmes clients) — un seul onglet en bas plutôt que Clients et
-    // Messages séparés, Messages reste accessible via la bande de
-    // sous-onglets qui s'affiche une fois sur "Clients".
     label: "Clients",
     icon: Users,
     href: "/dashboard/coach/clients",
-    matchSegments: ["clients", "programmation", "messages", "prioritaires", "mailing", "assistant"],
+    matchSegments: ["clients", "programmation", "messages", "prioritaires", "mailing", "assistant", "inbox", "live"],
     badge: "clientsGroup",
   },
   {
-    label: "Live",
-    icon: Video,
-    href: "/dashboard/coach/live",
-    matchSegments: ["live"],
+    label: "Business",
+    icon: Rocket,
+    href: "/dashboard/coach/studio",
+    matchSegments: ["studio", "stats-reseaux", "formations", "admin/ventes", "admin/equipe", "business", "mon-equipe", "compta", "documents", "masterclass"],
   },
   {
     label: "Moi",
@@ -133,28 +117,15 @@ const COACH_TABS: TabItem[] = [
     matchSegments: ["moi"],
   },
   {
-    label: "Contenu",
-    icon: GraduationCap,
-    href: "/dashboard/coach/formations",
-    // Retour direct 2026-09-18 : "l'onglet appel de vente est sur l'ordi
-    // mais pas sur mon tel" — "admin/ventes" (groupe sidebar "Mon
-    // business", au même niveau que "business"/"studio"/"masterclass"/
-    // "documents" ci-dessous) manquait de ce tableau, donc n'apparaissait
-    // jamais dans mobileSubItems (aucun onglet ne le revendiquait comme
-    // frère) alors que le desktop affiche la sidebar complète sans ce
-    // filtre — bug uniquement mobile, invisible sur ordi.
-    matchSegments: ["formations", "ressources", "recettes", "exercises", "gyms", "science", "studio", "compta", "contraintes", "business", "documents", "masterclass", "admin/ventes", "stats-reseaux", "mon-equipe"],
-  },
-  {
-    label: "Communauté",
-    icon: Heart,
-    href: "/dashboard/coach/communaute",
-    matchSegments: ["communaute"],
+    label: "Plus",
+    icon: LayoutGrid,
+    href: "/dashboard/coach/plus",
+    matchSegments: ["plus", "ressources", "recettes", "exercises", "gyms", "science", "contraintes", "communaute", "profile", "parametres", "mon-appli", "finance", "admin", "notes", "aide"],
     badge: "questions",
   },
 ];
 
-const COACH_SIDEBAR: SidebarGroup[] = [
+export const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "",
     items: [{ label: "Tableau de bord", icon: Home, segment: "" }],
@@ -163,84 +134,28 @@ const COACH_SIDEBAR: SidebarGroup[] = [
     group: "Clients",
     items: [
       { label: "Clients",  icon: Users,          segment: "clients",   badge: "pending" },
-      // Axe 3 (VISION.md) : vue consolidée "qui a besoin de moi", tous les
-      // signaux triés par priorité en une seule page.
       { label: "Priorités", icon: AlertTriangle, segment: "prioritaires" },
-      // Axe 10 (VISION.md) : relance + audit qualité automatiques chaque
-      // jour (app/api/cron/coach-assistant), accessible à tout coach.
-      { label: "Mon assistant", icon: Bot, segment: "assistant" },
-      // Item 8 du chantier 50 idées : bilans/corrections/photos en attente
-      // de réponse, regroupés en une seule vue triée par ancienneté.
-      { label: "Boîte de réception", icon: Inbox, segment: "inbox" },
-      // Juste sous Clients : la conception d'un programme ou d'une diète se
-      // fait dans la fiche du client, et cette bibliothèque est le stock de
-      // points de départ réutilisables de ce travail. Elle était auparavant
-      // dans un groupe "Espace coach" isolé, sans lien avec les clients.
-      { label: "Modèles",  icon: LayoutTemplate, segment: "programmation" },
       { label: "Messages", icon: MessageCircle,  segment: "messages",  badge: "messages" },
-      // Axe 2 (VISION.md) : mailing groupé à tous ses clients actifs
-      // (segmentation par tag Brevo, pas de sous-compte par coach).
+      { label: "Boîte de réception", icon: Inbox, segment: "inbox" },
+      { label: "Coaching live", icon: Video, segment: "live" },
+      { label: "Modèles",  icon: LayoutTemplate, segment: "programmation" },
+      { label: "Mon assistant", icon: Bot, segment: "assistant" },
       { label: "Mailing", icon: Mail, segment: "mailing" },
     ],
   },
   {
-    group: "Contenu",
-    items: [
-      { label: "Formations", icon: GraduationCap, segment: "formations" },
-      { label: "Ressources", icon: BookOpen, segment: "ressources" },
-      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
-    ],
-  },
-  {
-    // Axe 2 (VISION.md) : espace personnel du coach pour poser des idées de
-    // contenu (Insta/YouTube/LinkedIn) — distinct du groupe "Contenu"
-    // ci-dessus qui est la bibliothèque destinée aux clients.
-    //
-    // Axe 6 (VISION.md, réactivé 2026-08-19) : "Développer mon business"
-    // ajouté ici — le cadre (funnel TOF/MOF/BOF, checklist de marque
-    // personnelle) qui manquait par-dessus le Studio créatif, déjà scopé
-    // par coach depuis le début (chaque coach a son propre espace privé).
     group: "Mon business",
     items: [
-      { label: "Développer mon business", icon: Rocket, segment: "business" },
-      // Parcours modulable du coach (2026-09-29) : à son compte, pour une
-      // marque, en binôme ou à la tête d'une équipe (coachs + staff).
-      { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
-      // Non-négociables quotidiens + les 5 catégories de données hebdo du
-      // Mastermind ThePrepDad (lecture, pleine conscience, objectifs,
-      // création, outreach — agrégées avec coach_scripts/leads/sales_calls
-      // déjà existants, voir lib/business-non-negotiables.ts). Demande
-      // directe 2026-09-22, contenu Mastermind fourni verbatim. Même
-      // schéma que "Publicité" juste en dessous : sa propre page, pas une
-      // section de BusinessHub.
-      { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
-      // Outil de pilotage manuel de la pub payante (Google/Meta/TikTok
-      // Ads) — demande directe du fondateur, aucun outil de ce type
-      // n'existait. Pas d'intégration API régie, juste une saisie manuelle
-      // des chiffres avec les métriques de décision calculées (voir
-      // lib/ad-campaigns.ts). Segment "business/ads" comme "Appels de
-      // vente" (admin/ventes) : sa propre page, rattachée au groupe par le
-      // chemin plutôt que par une section dans BusinessHub.
-      { label: "Publicité", icon: Megaphone, segment: "business/ads" },
-      // Tutoriels texte pas à pas sur un outil/système business (Notion,
-      // Stripe, Claude...), avec de vraies étapes à suivre pour repartir
-      // avec un résultat réel, pas juste avoir lu — demande directe du
-      // fondateur (2026-09-16). Contenu statique partagé par tous les
-      // coachs (lib/masterclass-guides.ts), seule la progression par
-      // étape vit en base et par coach. GraduationCap déjà pris par
-      // Formations (destiné aux clients) : BookOpenCheck reste distinct.
-      { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
       { label: "Studio créatif", icon: Sparkles, segment: "studio" },
-      // Stats réseaux de chaque coach (2026-09-29) : abonnés, portée, publications.
       { label: "Mes stats réseaux", icon: BarChart3, segment: "stats-reseaux" },
-      // Axe 2 (VISION.md, cadré 2026-08-19) : modèles/contrats types,
-      // fichiers perso, notes — jamais précisé jusqu'ici.
-      { label: "Documents & notes", icon: FileText, segment: "documents" },
-      // TODO Notion #13 (synthèse webinaire Matis Clouet) : tableau simple
-      // de suivi des appels de vente (show up, closing, CA), scopé par
-      // coach (coach_id = auth.uid()), pas une donnée plateforme, donc ici
-      // et pas dans le groupe Administration.
+      { label: "Mes formations", icon: GraduationCap, segment: "formations" },
       { label: "Appels de vente", icon: PhoneCall, segment: "admin/ventes" },
+      { label: "Pilotage", icon: Gauge, segment: "business/pilotage" },
+      { label: "Mon équipe", icon: UsersRound, segment: "mon-equipe" },
+      { label: "Publicité", icon: Megaphone, segment: "business/ads" },
+      { label: "Développer mon business", icon: Rocket, segment: "business" },
+      { label: "Documents & notes", icon: FileText, segment: "documents" },
+      { label: "Masterclass", icon: BookOpenCheck, segment: "masterclass" },
     ],
   },
   {
@@ -255,10 +170,9 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   {
     group: "Bibliothèque",
     items: [
+      { label: "Ressources", icon: BookOpen, segment: "ressources" },
+      { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
       { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
-      // Axe 8 (VISION.md) : blessures, maladies chroniques, handicap,
-      // grossesse, ménopause, TCA — contenu de référence pour construire
-      // un programme, jamais confié à un coach IA (lib/ai-coaches.ts).
       { label: "Contraintes & populations", icon: HeartPulse, segment: "contraintes" },
     ],
   },
@@ -279,10 +193,6 @@ const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Mot du coach", icon: MessageSquareText, segment: "communaute/coach" },
       { label: "Membres", icon: Heart, segment: "communaute/membres" },
     ],
-  },
-  {
-    group: "Live",
-    items: [{ label: "Coaching live", icon: Video, segment: "live" }],
   },
   {
     group: "Mon Suivi",
@@ -332,7 +242,7 @@ const COACH_SIDEBAR: SidebarGroup[] = [
   },
 ];
 
-const CLIENT_SIDEBAR: SidebarGroup[] = [
+export const CLIENT_SIDEBAR: SidebarGroup[] = [
   {
     group: "",
     items: [{ label: "Aujourd'hui", icon: Home, segment: "" }],
@@ -367,16 +277,6 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
     ],
   },
   {
-    // Descendu sous Suivi (retour direct 2026-09-02, "hiérarchise mieux
-    // l'ordre des onglets, du plus important/utilisé au moins important") :
-    // une bibliothèque de référence consultée ponctuellement, pas un suivi
-    // quotidien comme les groupes du dessus.
-    group: "Bibliothèque",
-    items: [
-      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
-    ],
-  },
-  {
     group: "Coach",
     items: [
       // Item 25 : qui est ton coach, comment le joindre, ce qui est inclus —
@@ -398,6 +298,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
       { label: "Formations", icon: GraduationCap, segment: "formations" },
       { label: "Ressources", icon: BookOpen, segment: "ressources" },
       { label: "Recettes", icon: UtensilsCrossed, segment: "recettes" },
+      { label: "Exercices & salles", icon: LibraryBig, segment: "exercises" },
     ],
   },
   {
@@ -434,7 +335,7 @@ const CLIENT_SIDEBAR: SidebarGroup[] = [
 // Paramètres → section Administration → bouton (3 niveaux pour une action
 // consultée souvent). Un groupe de nav dédié y accède en un geste, sans
 // pour autant ajouter d'onglet en bas (voir useNavState/mobileSubItems).
-const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
+export const ADMIN_SIDEBAR_ITEMS: SidebarGroup["items"] = [
   { label: "Finance", icon: TrendingUp, segment: "finance" },
   { label: "Coachs", icon: Shield, segment: "admin" },
   // Leads captés sur la page publique /ressources (voir lib/lead-magnets.ts)
@@ -469,7 +370,6 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
   // sens qu'avec un coach humain (checkin, tasks, live) restent listées avec
   // un badge "freeLocked" pour un membre gratuit, et affichent leur propre
   // message d'explication (CoachOnlyGate) au clic plutôt qu'un blocage muet.
-  const tabs = isCoach ? COACH_TABS : CLIENT_TABS;
   const rawSidebar = isCoach ? COACH_SIDEBAR : CLIENT_SIDEBAR;
   // L'onglet "Cycle" n'a de sens que pour une cliente dont la fiche indique
   // le genre "Femme" — retiré du rendu tant qu'on ne le sait pas, plutôt que
@@ -480,6 +380,17 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
   const withoutCycle = rawSidebar
     .map((g) => ({ ...g, items: g.items.filter((item) => (showCycle || item.segment !== "cycle") && !isHidden(item.segment)) }))
     .filter((g) => g.items.length > 0);
+  // Onglets selon Mon appli : Business ouvre le premier outil actif, un
+  // onglet dont toutes les pages sont coupées disparaît (ex. Moi pour un
+  // coach qui ne se suit pas, Training sans entraînement).
+  const firstVisible = (group: string) => {
+    const item = withoutCycle.find((g) => g.group === group)?.items[0];
+    return item ? `${base}/${item.segment}` : null;
+  };
+  const tabs = (isCoach ? COACH_TABS : CLIENT_TABS)
+    .filter((t) => !(t.label === "Moi" && hidden.has("moi/*")))
+    .filter((t) => !(t.label === "Training" && isHidden("program") && isHidden("logbook")))
+    .map((t) => (t.label === "Business" ? { ...t, href: firstVisible("Mon business") ?? t.href } : t));
   const sidebarWithAdmin =
     isCoach && isPlatformOwner
       ? [{ group: "Administration", items: ADMIN_SIDEBAR_ITEMS }, ...withoutCycle]
@@ -527,11 +438,13 @@ function useNavState(isFreeTier: boolean, showCycle: boolean, isPlatformOwner: b
     // plateforme : le seul point d'entrée cohérent vers ces pages, qui n'ont
     // de rapport avec aucun onglet de contenu (Moi, Communauté...) où elles
     // vivaient auparavant.
-    if (activeTab.exactMatch) {
-      return [
-        ...(sidebar.find((g) => g.group === "Administration")?.items ?? []),
-        ...(sidebar.find((g) => g.group === "Compte")?.items ?? []),
-      ];
+    if (activeTab.exactMatch) return [];
+    // « Plus » : seulement les pages sœurs de la rubrique ouverte (ex. les 4
+    // pages Science), jamais tout le contenu de Plus d'un coup.
+    if (activeTab.href.endsWith("/plus")) {
+      const group = sidebar.find((g) => g.items.some((item) => item.segment && isSidebarActive(item.segment)));
+      // Science a déjà sa propre bande (ScienceSubNav).
+      return group && group.group !== "Science" ? group.items : [];
     }
     return [
       ...flatSidebarItems.filter(
