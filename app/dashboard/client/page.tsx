@@ -1,4 +1,5 @@
 import { INSTAGRAM_URL } from "@/lib/brand-links";
+import { timeAwareGreeting, nowInParis } from "@/lib/dates";
 import { getAppSetup } from "@/lib/app-setup-server";
 import { isOn } from "@/lib/app-setup";
 import { redirect } from "next/navigation";
@@ -605,7 +606,10 @@ export default async function ClientDashboard({
   // moment naturel pour relancer, sans être insistant (une fois par semaine).
   const showVictoryNudge = !!thisWeekCheckin && !victoryPostedThisWeek;
 
-  const firstName = profile?.full_name?.split(" ")[0]?.toUpperCase() ?? "";
+  // Même salutation que l'accueil coach : selon l'heure, prénom normal.
+  const rawFirst = profile?.full_name?.split(" ")[0] ?? "";
+  const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase() : "";
+  const greeting = timeAwareGreeting(Number(nowInParis().hhmm.split(":")[0]));
   const today = new Date();
   const formattedDate = (() => {
     const s = new Intl.DateTimeFormat("fr-FR", {
@@ -660,7 +664,7 @@ export default async function ClientDashboard({
         <p className="ep-section-title" style={{ marginBottom: 4 }}>
           {formattedDate}
         </p>
-        <h1 className="ep-h1">Bonjour {firstName}</h1>
+        <h1 className="ep-h1">{greeting}{firstName ? `, ${firstName}` : ""}</h1>
         {weeksSinceStart != null && (
           <p style={{
             marginTop: 6,

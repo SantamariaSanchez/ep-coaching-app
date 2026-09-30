@@ -28,7 +28,7 @@ const PAGES: Record<"coach" | "client", string[]> = {
 
 async function login(page: Page, space: "coach" | "client") {
   const email = space === "coach" ? "demo.coach@epcoaching.app" : "demo.client@epcoaching.app";
-  await page.goto(`${BASE}/auth/${space}`, { waitUntil: "domcontentloaded" });
+  await page.goto(`${BASE}/auth/${space}${space === "client" ? "?mode=login" : ""}`, { waitUntil: "domcontentloaded" });
   if (space === "coach") await page.getByRole("button", { name: /^connexion$/i }).click();
   await page.fill('input[name="email"]', email);
   await page.fill('input[name="password"]', password);

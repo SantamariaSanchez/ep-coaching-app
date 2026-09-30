@@ -711,7 +711,7 @@
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 40;
-    background: rgba(5, 0, 0, 0.92);
+    background: rgba(5, 0, 0, 0.97);
     backdrop-filter: var(--blur-nav);
     -webkit-backdrop-filter: var(--blur-nav);
     border-top: 1px solid rgba(224,30,30,0.18);
