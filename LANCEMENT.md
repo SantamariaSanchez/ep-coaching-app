@@ -38,7 +38,7 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 - [x] Visite d'accueil par profil (coach, client) + Aide et tutoriels (12 guides pas à pas)
 - [x] Visite d'accueil pour l'espace métier (/equipe)
 - [x] Raccourcis hors appli (appui long sur l'icône) + bouton flottant note rapide
-- [ ] Tutos pas à pas : connecter Instagram/YouTube/TikTok (stats automatiques), relier Notion et
+- [x] Tutos pas à pas : stats réseaux (où trouver les chiffres), relier Notion et
       Claude, installer l'appli, activer les notifications
 - [x] Intégration Notion + Claude : connecteur MCP perso (testé en ligne) + tuto dans Notes
 

@@ -388,16 +388,7 @@ export default function TrackingClient({
             Connecter →
           </span>
         </a>
-      ) : canConnectOura && !ouraConfigured ? (
-        <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
-          <Watch size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
-          <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
-            {isCoachView
-              ? "Connexion Oura Ring bientôt disponible. Il reste une clé d'application à configurer côté serveur (voir message ci-dessus)."
-              : "Connexion Oura Ring bientôt disponible ici. En attendant, log tes données à la main ci-dessous."}
-          </p>
-        </div>
-      ) : (
+      ) : canConnectOura && !ouraConfigured ? null /* connexion Oura pas encore activée : rien d'affiché plutôt qu'un « bientôt » */ : (
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl px-4 py-3 flex items-start gap-2.5">
           <Lock size={15} className="text-[#F5EDED]/30 flex-shrink-0 mt-0.5" />
           <p className="text-[11px] text-[#F5EDED]/45 leading-relaxed">
