@@ -95,7 +95,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
 
   return (
     <div className="px-4 sm:px-6 py-8 max-w-5xl mx-auto pb-24 md:pb-8 page-transition">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Contenu</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">Business</p>
       <h1 className="text-3xl font-black uppercase tracking-tight mb-1">Mes stats réseaux</h1>
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 18px" }}>
         Tes vrais chiffres, pour savoir quoi refaire.
@@ -289,6 +289,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
                     {p.completion_rate !== null ? ` · vues complètes ${pct(p.completion_rate)}` : ""}
                     {p.avg_watch_seconds !== null ? ` · ${Math.round(p.avg_watch_seconds)} s regardées en moyenne` : ""}
                     {p.new_followers !== null ? ` · +${fmt(p.new_followers)} abonnés` : ""}
+                    {p.leads !== null ? <strong style={{ color: "#4ade80" }}>{` · ${fmt(p.leads)} lead${p.leads > 1 ? "s" : ""}`}</strong> : null}
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                     {!p.manual && <PostScriptLink postId={p.id} scriptId={p.script_id} source={p.script_link_source} scripts={data.scripts} />}

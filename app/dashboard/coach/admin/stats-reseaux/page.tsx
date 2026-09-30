@@ -223,6 +223,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                         {p.completion_rate !== null ? ` · vues complètes ${pct(p.completion_rate)}` : ""}
                         {p.avg_watch_seconds !== null ? ` · ${Math.round(p.avg_watch_seconds)} s regardées en moyenne` : ""}
                         {p.new_followers !== null ? ` · ${fmt(p.new_followers)} nouveaux abonnés` : ""}
+                    {p.leads !== null ? <strong style={{ color: "#4ade80" }}>{` · ${fmt(p.leads)} lead${p.leads > 1 ? "s" : ""}`}</strong> : null}
                       </p>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}>
                         <PostScriptLink postId={p.id} scriptId={p.script_id} source={p.script_link_source} scripts={data.scripts} />

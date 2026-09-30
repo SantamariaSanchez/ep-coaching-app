@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase-admin";
 import { todayInParis } from "@/lib/dates";
 import { PLATFORM_LABELS, configFor, type Platform } from "@/lib/social/platforms";
+import { getRealLeadsByScriptId } from "@/lib/content-leads-tracking";
 
 // Lectures du tableau de bord Stats réseaux (service role, appelées
 // uniquement après vérification du propriétaire dans la page).
@@ -53,6 +54,8 @@ export interface PostRow {
   scriptTitle: string | null;
   /** Publication saisie à la main (modifiable par le coach). */
   manual: boolean;
+  /** Leads captés par la ressource citée dans le script lié (total). */
+  leads: number | null;
   duration_seconds: number | null;
 }
 
@@ -232,10 +235,18 @@ export async function getSocialDashboard(opts: { ownerId: string; platform: Plat
   const { data: typeRows } = await admin.from("social_posts").select("post_type").in("account_id", safeIds).not("post_type", "is", null).limit(1000);
   const types = [...new Set(((typeRows ?? []) as { post_type: string }[]).map((t) => t.post_type))].sort();
 
-  const { data: scripts } = await admin.from("coach_scripts").select("id, title, status, platform").eq("coach_id", opts.ownerId).order("updated_at", { ascending: false }).limit(300);
-  const scriptList = (scripts ?? []) as { id: string; title: string; status: string; platform: string | null }[];
+  const { data: scripts } = await admin.from("coach_scripts").select("id, title, status, platform, source_reference").eq("coach_id", opts.ownerId).order("updated_at", { ascending: false }).limit(300);
+  const scriptList = (scripts ?? []) as { id: string; title: string; status: string; platform: string | null; source_reference: string | null }[];
   const scriptTitle = new Map(scriptList.map((s) => [s.id, s.title]));
-  const posts: PostRow[] = postsRaw.map(({ account_id, external_post_id, ...p }) => ({ ...p, manual: sourceOf.get(account_id) === "manuel" || external_post_id.startsWith("manuel:"), scriptTitle: p.script_id ? scriptTitle.get(p.script_id) ?? null : null }));
+  // Leads par vidéo : script relié → ressource citée → leads captés.
+  const linkedScripts = scriptList.filter((sc) => postsRaw.some((p) => p.script_id === sc.id));
+  const leadsByScript = linkedScripts.length ? await getRealLeadsByScriptId(linkedScripts as unknown as Parameters<typeof getRealLeadsByScriptId>[0]).catch(() => ({})) : {};
+  const posts: PostRow[] = postsRaw.map(({ account_id, external_post_id, ...p }) => ({
+    ...p,
+    manual: sourceOf.get(account_id) === "manuel" || external_post_id.startsWith("manuel:"),
+    scriptTitle: p.script_id ? scriptTitle.get(p.script_id) ?? null : null,
+    leads: p.script_id ? (leadsByScript as Record<string, { total: number }>)[p.script_id]?.total ?? null : null,
+  }));
 
   // Ce qui marche (90 jours, toutes plateformes ou celle filtrée).
   let iq = admin
