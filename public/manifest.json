@@ -28,28 +28,54 @@
   ],
   "shortcuts": [
     {
+      "name": "Note rapide",
+      "short_name": "Note",
+      "description": "Noter une idée tout de suite",
+      "url": "/go/note",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "Bilan du jour",
       "short_name": "Bilan",
-      "url": "/dashboard/client/bilan",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "url": "/go/bilan",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
-      "name": "Nutrition",
-      "short_name": "Nutrition",
-      "url": "/dashboard/client/nutrition",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "name": "Mon agenda",
+      "short_name": "Agenda",
+      "url": "/go/agenda",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     },
     {
-      "name": "Pas et routine",
-      "short_name": "Pas",
-      "url": "/dashboard/client/steps",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
-    },
-    {
-      "name": "Messages",
-      "short_name": "Messages",
-      "url": "/dashboard/client/messages",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" }]
+      "name": "Rechercher",
+      "short_name": "Recherche",
+      "description": "Poids, calories, clients, notes...",
+      "url": "/go/recherche",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

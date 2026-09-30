@@ -1189,6 +1189,11 @@ export default function DashboardNav({
           transition: "opacity 200ms ease, transform 200ms ease",
         }}
       >
+        {!pathname.endsWith("/notes") && (
+          <Link href={`${base}/notes?capture=1`} aria-label="Note rapide" className="ep-btn-icon" style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <NotebookPen size={16} strokeWidth={1.8} style={{ color: "rgba(245,237,237,0.5)" }} />
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => window.dispatchEvent(new Event("ep:open-search"))}

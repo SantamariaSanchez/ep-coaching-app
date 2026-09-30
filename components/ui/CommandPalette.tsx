@@ -110,9 +110,13 @@ export default function CommandPalette({
     // sur desktop.
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("ep:open-search", openPalette);
+    // Raccourci d'icône « Rechercher » (/go/recherche → ?recherche=1).
+    const fromShortcut = new URLSearchParams(window.location.search).get("recherche") === "1";
+    const t = fromShortcut ? setTimeout(() => window.dispatchEvent(new Event("ep:open-search")), 300) : null;
     return () => {
       window.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("ep:open-search", openPalette);
+      if (t) clearTimeout(t);
     };
   }, []);
 

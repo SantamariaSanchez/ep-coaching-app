@@ -171,6 +171,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
           placeholder={listening ? "Je t'écoute..." : "Une idée, un lien, une tâche ([ ] ...), #tag..."}
           rows={draft.split("\n").length > 2 ? 5 : 2}
           aria-label="Nouvelle note"
+          autoFocus={params.get("capture") === "1"}
           style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.5, fontFamily: "inherit" }}
         />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
