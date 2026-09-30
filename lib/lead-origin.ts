@@ -52,6 +52,7 @@ const PLATFORM_ALIASES: Record<string, LeadOriginPlatform> = {
   newsletter: "email",
   brevo: "email",
   whatsapp: "whatsapp",
+  site: "site",
   wa: "whatsapp",
 };
 
