@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
-import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable } from "@/utils/formations";
+import { getLesson, getFormationWithModules, getUserProgress, recordLessonView, isLessonWatchable, hasFormationAccess } from "@/utils/formations";
 import VideoPlayer, { VideoComingSoon } from "@/components/formations/VideoPlayer";
 import { ChevronLeft, ChevronRight, ListVideo } from "lucide-react";
 
@@ -21,7 +21,6 @@ export default async function LessonPage({
   // [lessonId] existe) plutôt que de retomber sur le dashboard générique —
   // même trou trouvé sur plusieurs pages client en auditant public/manifest.json.
   if (profile?.role === "coach") redirect(`/dashboard/coach/moi/formations/${formationId}/${lessonId}`);
-  if (profile?.subscription_status !== "active") redirect("/dashboard/client/abonnement");
 
   const [lesson, formation, completed] = await Promise.all([
     getLesson(lessonId),
@@ -33,6 +32,10 @@ export default async function LessonPage({
   // Formation en brouillon : aucune de ses leçons n'est accessible à un
   // membre, même publiée (le fondateur la teste avant d'ouvrir l'accès).
   if (!formation.is_published) notFound();
+  // Académie EP : clients coachés ; formation d'un coach : selon son mode
+  // d'accès (voir hasFormationAccess).
+  const allowed = await hasFormationAccess(formation, { id: user.id, coach_id: profile?.coach_id ?? null, subscription_status: profile?.subscription_status ?? null });
+  if (!allowed) redirect(formation.owner_id ? `/dashboard/client/formations/${formationId}` : "/dashboard/client/abonnement");
   // La leçon doit appartenir à la formation de l'URL : sinon on afficherait
   // une leçon d'une autre formation (brouillon compris) sous ce titre.
   const belongsToFormation = formation.modules.some((m) =>

@@ -10,15 +10,12 @@ export const dynamic = "force-dynamic";
 export default async function CoachFormationsPage() {
   const user = await getUser();
   if (!user) redirect("/");
-  // getFormations() ne dépend pas de profile (contenu partagé, pas
-  // sensible à pré-charger) : lancée en parallèle plutôt qu'après la
-  // vérification de rôle, ça évite une requête en cascade pour rien.
-  const [profile, formations] = await Promise.all([getProfile(user.id), getFormations()]);
+  const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
-  // L'Académie EP est un contenu de plateforme : seul le fondateur l'édite
-  // (même règle que les actions, voir actions.ts). Un coach tiers garde
-  // l'accès en lecture à ses formations dans son espace Moi.
-  if (!profile?.is_platform_owner) redirect("/dashboard/coach/moi/formations");
+  // Le fondateur édite l'Académie EP ; chaque autre coach crée et gère SES
+  // formations (2026-09-30), incluses dans son coaching ou vendues.
+  const isFounder = profile?.is_platform_owner === true;
+  const formations = await getFormations({ onlyOwner: isFounder ? null : user.id });
 
   const formationData = await Promise.all(
     formations.map(async (f) => {
@@ -51,6 +48,11 @@ export default async function CoachFormationsPage() {
         <p style={{ marginTop: 6, fontSize: 12, color: "rgba(245,237,237,0.3)" }}>
           {formations.length} formation{formations.length !== 1 ? "s" : ""} · Clique pour gérer le contenu
         </p>
+        {!isFounder && (
+          <p style={{ marginTop: 8, fontSize: 12.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.6 }}>
+            Tes propres formations : vidéos YouTube (même non répertoriées), rangées en sections et modules. Inclus-les à ton coaching ou vends-les avec ton lien de paiement. L&apos;Académie EP reste disponible dans ton espace Moi.
+          </p>
+        )}
       </div>
 
       {totalReadyNotPublished > 0 && (

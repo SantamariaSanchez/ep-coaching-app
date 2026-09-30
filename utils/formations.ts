@@ -11,6 +11,11 @@ export interface Formation {
   order_index: number;
   is_published: boolean;
   created_at: string;
+  /** null = Académie EP ; sinon le coach propriétaire (migration 20260930b). */
+  owner_id?: string | null;
+  access_mode?: "inclus" | "payant";
+  price_eur?: number | null;
+  payment_url?: string | null;
 }
 
 export interface FormationSection {
@@ -51,13 +56,48 @@ export interface FormationWithModules extends Formation {
   modules: FormationModule[];
 }
 
-export async function getFormations(): Promise<Formation[]> {
+/**
+ * Catalogue : l'Académie EP (owner_id null) + les formations des coachs
+ * donnés (ownerIds). `onlyOwner` : uniquement celles d'un propriétaire
+ * (null = seulement l'Académie), pour l'éditeur.
+ */
+export async function getFormations(opts: { ownerIds?: string[]; onlyOwner?: string | null } = {}): Promise<Formation[]> {
   const supabase = await createServerSupabase();
-  const { data } = await supabase
-    .from("formations")
-    .select("*")
-    .order("order_index");
+  let q = supabase.from("formations").select("*");
+  if (opts.onlyOwner !== undefined) {
+    q = opts.onlyOwner === null ? q.is("owner_id", null) : q.eq("owner_id", opts.onlyOwner);
+  } else {
+    const owners = (opts.ownerIds ?? []).filter((id) => /^[0-9a-f-]{36}$/i.test(id));
+    q = owners.length ? q.or(`owner_id.is.null,owner_id.in.(${owners.join(",")})`) : q.is("owner_id", null);
+  }
+  const { data } = await q.order("order_index");
   return (data ?? []) as Formation[];
+}
+
+/**
+ * Droit de regarder les vidéos d'une formation.
+ * - Académie EP : clients coachés (abonnement actif), comme avant.
+ * - Formation d'un coach : le coach lui-même ; en mode "inclus" ses
+ *   clients ; en mode "payant" les personnes à qui il a donné l'accès.
+ */
+export async function hasFormationAccess(
+  formation: Pick<Formation, "id" | "owner_id" | "access_mode">,
+  viewer: { id: string; coach_id?: string | null; subscription_status?: string | null }
+): Promise<boolean> {
+  if (!formation.owner_id) return viewer.subscription_status === "active";
+  if (formation.owner_id === viewer.id) return true;
+  if ((formation.access_mode ?? "inclus") === "inclus" && viewer.coach_id === formation.owner_id) return true;
+  const supabase = await createServerSupabase();
+  const { data } = await supabase.from("formation_access").select("formation_id").eq("formation_id", formation.id).eq("user_id", viewer.id).maybeSingle();
+  return !!data;
+}
+
+/** Formations de coachs auxquelles la personne a un accès donné (achat). */
+export async function getGrantedFormationOwners(userId: string): Promise<string[]> {
+  const supabase = await createServerSupabase();
+  const { data } = await supabase.from("formation_access").select("formations(owner_id)").eq("user_id", userId);
+  const owners = ((data ?? []) as unknown as { formations: { owner_id: string | null } | null }[]).map((r) => r.formations?.owner_id).filter((id): id is string => !!id);
+  return [...new Set(owners)];
 }
 
 export async function getFormation(id: string): Promise<Formation | null> {

@@ -4,6 +4,8 @@ import { getFormationWithModules } from "@/utils/formations";
 import { getUser, getProfile } from "@/utils/auth";
 import { redirect } from "next/navigation";
 import CoachFormationEditor from "./CoachFormationEditor";
+import FormationSalesPanel from "./FormationSalesPanel";
+import { getFormationSales } from "@/lib/formation-sales";
 import { ChevronLeft } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +20,14 @@ export default async function CoachFormationDetailPage({
   const profile = await getProfile(user.id);
   if (profile?.role !== "coach") redirect("/dashboard/client");
   const { formationId } = await params;
-  // Éditeur réservé au fondateur (voir actions.ts) : un coach tiers est
-  // renvoyé vers la vue lecture de cette même formation.
-  if (!profile?.is_platform_owner) redirect(`/dashboard/coach/moi/formations/${formationId}`);
 
   const formation = await getFormationWithModules(formationId);
   if (!formation) notFound();
+  // Éditeur : le propriétaire de la formation, ou le fondateur pour
+  // l'Académie EP (même règle que actions.ts et la RLS). Sinon, vue lecture.
+  const canEdit = formation.owner_id ? formation.owner_id === user.id : profile?.is_platform_owner === true;
+  if (!canEdit) redirect(`/dashboard/coach/moi/formations/${formationId}`);
+  const sales = formation.owner_id ? await getFormationSales(formation.id, user.id) : null;
 
   return (
     <div
@@ -46,6 +50,17 @@ export default async function CoachFormationDetailPage({
         <p className="ep-section-title" style={{ marginBottom: 4 }}>{formation.emoji} Formation</p>
         <h1 className="ep-h1">{formation.title}</h1>
       </div>
+
+      {sales && (
+        <FormationSalesPanel
+          formationId={formation.id}
+          accessMode={formation.access_mode ?? "inclus"}
+          price={formation.price_eur ?? null}
+          paymentUrl={formation.payment_url ?? null}
+          granted={sales.granted}
+          clients={sales.clients}
+        />
+      )}
 
       <CoachFormationEditor formation={formation} />
     </div>

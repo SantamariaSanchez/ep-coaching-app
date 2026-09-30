@@ -2,7 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { getUser, getProfile } from "@/utils/auth";
 import { isSubscribed } from "@/utils/auth-client";
-import { getFormationWithModules, getUserProgress, countLessons, formatDuration, isLessonWatchable } from "@/utils/formations";
+import { getFormationWithModules, getUserProgress, countLessons, formatDuration, isLessonWatchable, hasFormationAccess } from "@/utils/formations";
 import { ChevronLeft, PlayCircle, CheckCircle2, Clock, Lock, Crown, ChevronRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -32,6 +32,12 @@ export default async function FormationDetailPage({
   // Formation en brouillon : invisible pour un membre, même par lien direct
   // (le catalogue n'en montre qu'un teaser "Bientôt disponible").
   if (!formation.is_published) notFound();
+  // Formation d'un coach (2026-09-30) : visible par ses clients et par les
+  // personnes à qui il a donné l'accès ; vidéos selon le mode d'accès.
+  const coachFormation = !!formation.owner_id;
+  const hasAccess = await hasFormationAccess(formation, { id: user.id, coach_id: profile?.coach_id ?? null, subscription_status: profile?.subscription_status ?? null });
+  if (coachFormation && !hasAccess && profile?.coach_id !== formation.owner_id) notFound();
+  const locked = coachFormation ? !hasAccess : isFreeTier;
 
   const { published, publishedMin } = countLessons(formation.modules);
   // Seules les leçons regardables comptent : une leçon terminée puis
@@ -126,8 +132,25 @@ export default async function FormationDetailPage({
         </div>
       </div>
 
+      {/* Formation payante d'un coach, pas encore achetée */}
+      {locked && coachFormation && (
+        <div className="ep-card animate-fade-up" style={{ padding: "16px 18px", marginBottom: 20, background: "linear-gradient(135deg, rgba(224,30,30,0.1) 0%, rgba(137,4,4,0.04) 100%)", border: "1px solid rgba(224,30,30,0.25)" }}>
+          <p style={{ fontSize: 12, fontWeight: 800, color: "#F5EDED", margin: "0 0 6px", display: "flex", alignItems: "center", gap: 8 }}>
+            <Lock size={13} style={{ color: "#E01E1E" }} /> Formation proposée par ton coach{formation.price_eur ? ` · ${formation.price_eur} €` : ""}
+          </p>
+          <p style={{ fontSize: 11, color: "rgba(245,237,237,0.5)", margin: "0 0 10px", lineHeight: 1.5 }}>
+            Tu peux parcourir tout le programme. Les vidéos se débloquent dès que ton coach t&apos;a donné l&apos;accès.
+          </p>
+          {formation.payment_url && (
+            <a href={formation.payment_url} target="_blank" rel="noopener noreferrer" className="ep-btn-primary" style={{ fontSize: 11, textDecoration: "none" }}>
+              Acheter la formation
+            </a>
+          )}
+        </div>
+      )}
+
       {/* Free tier upsell */}
-      {isFreeTier && (
+      {locked && !coachFormation && (
         <div
           className="ep-card animate-fade-up"
           style={{
@@ -244,8 +267,8 @@ export default async function FormationDetailPage({
                         {/* Lessons */}
                         {sec.lessons.map((lesson, li) => {
                           const isPublished = !!(lesson.is_published && lesson.youtube_id);
-                          const isAvailable = isPublished && !isFreeTier;
-                          const isPremiumLocked = isPublished && isFreeTier;
+                          const isAvailable = isPublished && !locked;
+                          const isPremiumLocked = isPublished && locked;
                           const isDone = completed.has(lesson.id);
 
                           return (

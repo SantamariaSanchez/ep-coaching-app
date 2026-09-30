@@ -2,7 +2,7 @@
 
 import { createServerSupabase } from "@/lib/supabase-server";
 import { createAdminClient } from "@/lib/supabase-admin";
-import { requirePlatformOwner } from "@/lib/auth-guards";
+import { requireCoach } from "@/lib/auth-guards";
 import { revalidatePath } from "next/cache";
 import { notifyUsers } from "@/lib/notify";
 import {
@@ -37,6 +37,50 @@ function revalidateAllFormations() {
 }
 
 type ServerSupabase = Awaited<ReturnType<typeof createServerSupabase>>;
+
+// ── Qui peut éditer quoi (2026-09-30) ──────────────────────────────────────
+// Chaque coach crée et édite SES formations (owner_id = lui) ; l'Académie EP
+// (owner_id null) reste réservée au fondateur. La RLS applique la même règle
+// (can_edit_formation, migration 20260930b) : double protection.
+
+type Admin = ReturnType<typeof createAdminClient>;
+
+async function formationIdOf(admin: Admin, t: { formationId?: string; moduleId?: string; sectionId?: string; lessonId?: string }): Promise<string | null> {
+  if (t.formationId) return t.formationId;
+  let sectionId = t.sectionId;
+  if (t.lessonId) {
+    const { data } = await admin.from("formation_lessons").select("section_id").eq("id", t.lessonId).maybeSingle();
+    sectionId = (data?.section_id as string | undefined) ?? undefined;
+    if (!sectionId) return null;
+  }
+  let moduleId = t.moduleId;
+  if (sectionId) {
+    const { data } = await admin.from("formation_sections").select("module_id").eq("id", sectionId).maybeSingle();
+    moduleId = (data?.module_id as string | undefined) ?? undefined;
+    if (!moduleId) return null;
+  }
+  if (!moduleId) return null;
+  const { data } = await admin.from("formation_modules").select("formation_id").eq("id", moduleId).maybeSingle();
+  return (data?.formation_id as string | undefined) ?? null;
+}
+
+async function canEdit(admin: Admin, userId: string, formationId: string): Promise<boolean> {
+  const [{ data: f }, { data: me }] = await Promise.all([
+    admin.from("formations").select("owner_id").eq("id", formationId).maybeSingle(),
+    admin.from("profiles").select("is_platform_owner").eq("id", userId).maybeSingle(),
+  ]);
+  if (!f) return false;
+  return f.owner_id ? f.owner_id === userId : me?.is_platform_owner === true;
+}
+
+async function requireEditor(t: { formationId?: string; moduleId?: string; sectionId?: string; lessonId?: string }): Promise<{ ok: true; userId: string; formationId: string } | { ok: false; error: string }> {
+  const guard = await requireCoach();
+  if (!guard.ok) return guard;
+  const admin = createAdminClient();
+  const formationId = await formationIdOf(admin, t);
+  if (!formationId || !(await canEdit(admin, guard.userId, formationId))) return { ok: false, error: "Tu ne peux modifier que tes propres formations." };
+  return { ok: true, userId: guard.userId, formationId };
+}
 
 function cleanTitle(title: string): string | null {
   const trimmed = typeof title === "string" ? title.trim() : "";
@@ -132,14 +176,19 @@ async function notifyNewFormationPublished(formationId: string, titleOverride?: 
     title = formation?.title ?? "Une nouvelle formation";
   }
 
-  const { data: clients } = await admin.from("profiles").select("id").eq("role", "client");
+  // Formation d'un coach : seuls ses clients sont prévenus. Académie EP :
+  // tous les membres.
+  const { data: f } = await admin.from("formations").select("owner_id").eq("id", formationId).maybeSingle();
+  let q = admin.from("profiles").select("id").eq("role", "client");
+  if (f?.owner_id) q = q.eq("coach_id", f.owner_id as string);
+  const { data: clients } = await q;
   const clientIds = (clients ?? []).map((c) => c.id as string);
   if (clientIds.length === 0) return;
 
   await notifyUsers(clientIds, {
     type: "new_formation_published",
     title: "🎓 Nouvelle formation disponible",
-    body: `« ${title} » vient d'être publiée dans l'Académie EP.`,
+    body: f?.owner_id ? `« ${title} » vient d'être publiée par ton coach.` : `« ${title} » vient d'être publiée dans l'Académie EP.`,
     url: `/dashboard/client/formations/${formationId}`,
   });
 }
@@ -147,7 +196,7 @@ async function notifyNewFormationPublished(formationId: string, titleOverride?: 
 // ── Leçon : vidéo et publication ────────────────────────────────────────────
 
 export async function updateLessonYoutube(lessonId: string, youtubeInput: string, isPublished: boolean) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ lessonId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -182,14 +231,28 @@ export async function updateFormation(formationId: string, data: {
   description?: string;
   emoji?: string;
   is_published?: boolean;
+  access_mode?: "inclus" | "payant";
+  price_eur?: number | null;
+  payment_url?: string | null;
 }) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ formationId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
   // Liste blanche : une server action reçoit ce que le navigateur envoie,
   // jamais d'autre colonne (slug, order_index...) ne doit passer par ici.
-  const patch: Record<string, string | boolean> = {};
+  const patch: Record<string, string | boolean | number | null> = {};
+  if (data.access_mode === "inclus" || data.access_mode === "payant") patch.access_mode = data.access_mode;
+  if (data.price_eur !== undefined) {
+    const price = data.price_eur === null ? null : Number(data.price_eur);
+    if (price !== null && (!Number.isFinite(price) || price < 0 || price > 100000)) return { error: "Prix invalide." };
+    patch.price_eur = price;
+  }
+  if (data.payment_url !== undefined) {
+    const url = typeof data.payment_url === "string" ? data.payment_url.trim() : "";
+    if (url && !/^https:\/\//i.test(url)) return { error: "Le lien de paiement doit commencer par https://" };
+    patch.payment_url = url ? url.slice(0, 500) : null;
+  }
   if (data.title !== undefined) {
     const title = cleanTitle(data.title);
     if (!title) return { error: "Le titre ne peut pas être vide." };
@@ -238,7 +301,7 @@ export async function updateFormation(formationId: string, data: {
 }
 
 export async function updateModuleTitle(moduleId: string, title: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ moduleId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -255,7 +318,7 @@ export async function updateModuleTitle(moduleId: string, title: string) {
 }
 
 export async function updateSectionTitle(sectionId: string, title: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -272,7 +335,7 @@ export async function updateSectionTitle(sectionId: string, title: string) {
 }
 
 export async function updateLessonTitle(lessonId: string, title: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ lessonId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -316,7 +379,7 @@ async function swapOrder(
 }
 
 export async function moveModule(formationId: string, moduleId: string, direction: "up" | "down") {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ formationId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -334,7 +397,7 @@ export async function moveModule(formationId: string, moduleId: string, directio
 }
 
 export async function moveSection(moduleId: string, sectionId: string, direction: "up" | "down") {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ moduleId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -352,7 +415,7 @@ export async function moveSection(moduleId: string, sectionId: string, direction
 }
 
 export async function moveLesson(sectionId: string, lessonId: string, direction: "up" | "down") {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -379,7 +442,7 @@ export async function updateLessonDetails(
   lessonId: string,
   data: { description?: string; duration_min?: number }
 ) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ lessonId });
   if (!guard.ok) return { error: guard.error };
 
   const patch: { description?: string; duration_min?: number } = {};
@@ -405,7 +468,7 @@ export async function updateLessonDetails(
 // module qui ont déjà une vidéo YouTube renseignée (jamais celles qui n'en
 // ont pas : publier une leçon sans vidéo casserait son affichage membre).
 export async function publishSectionLessons(sectionId: string, publish: boolean) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -454,7 +517,7 @@ async function fetchYoutubeOembed(id: string): Promise<YoutubePreview> {
 export async function previewYoutubeVideos(
   ids: string[]
 ): Promise<{ error?: string; results?: YoutubePreview[] }> {
-  const guard = await requirePlatformOwner();
+  const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
   if (!Array.isArray(ids)) return { error: "Liste de vidéos invalide." };
 
@@ -490,7 +553,7 @@ export async function bulkAssignLessonVideos(
   items: BulkLessonVideo[],
   publish: boolean
 ): Promise<{ error?: string; updated?: number }> {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   if (!Array.isArray(items) || items.length === 0) return { error: "Aucune vidéo à enregistrer." };
   if (items.length > MAX_YOUTUBE_LINES) return { error: `${MAX_YOUTUBE_LINES} vidéos maximum par collage.` };
@@ -558,10 +621,22 @@ export async function bulkAssignLessonVideos(
 export async function bulkUpdateLessonDurations(
   items: { lessonId: string; durationMin: number }[]
 ): Promise<{ error?: string; updated?: number }> {
-  const guard = await requirePlatformOwner();
+  const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
   if (!Array.isArray(items) || items.length === 0) return { error: "Aucune durée à enregistrer." };
   if (items.length > 300) return { error: "Trop de leçons d'un coup." };
+  // Toutes les leçons doivent appartenir à une formation que ce coach édite.
+  {
+    const admin = createAdminClient();
+    const ids = [...new Set(items.map((i) => i?.lessonId).filter((id): id is string => typeof id === "string"))];
+    const checked = new Map<string, boolean>();
+    for (const id of ids) {
+      const fid = await formationIdOf(admin, { lessonId: id });
+      if (!fid) return { error: "Leçon introuvable." };
+      if (!checked.has(fid)) checked.set(fid, await canEdit(admin, guard.userId, fid));
+      if (!checked.get(fid)) return { error: "Tu ne peux modifier que tes propres formations." };
+    }
+  }
 
   const supabase = await createServerSupabase();
   let updated = 0;
@@ -591,7 +666,7 @@ export async function bulkUpdateLessonDurations(
 // sont jamais copiées (youtube_id reste vide sur les leçons dupliquées), pas
 // de contenu publié par erreur.
 export async function duplicateModule(moduleId: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ moduleId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -654,7 +729,7 @@ export async function duplicateModule(moduleId: string) {
 // Terminologie : formation_modules = la "Section" affichée (S1, S2...),
 // formation_sections = le "Module" affiché (M1, M2...) à l'intérieur.
 export async function addModule(formationId: string, title: string, orderIndex: number) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ formationId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -670,7 +745,7 @@ export async function addModule(formationId: string, title: string, orderIndex: 
 }
 
 export async function addSection(moduleId: string, title: string, orderIndex: number) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ moduleId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -686,7 +761,7 @@ export async function addSection(moduleId: string, title: string, orderIndex: nu
 }
 
 export async function addLesson(sectionId: string, title: string, orderIndex: number) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
@@ -704,7 +779,7 @@ export async function addLesson(sectionId: string, title: string, orderIndex: nu
 // Suppressions : les modules/leçons enfants sont détruits automatiquement
 // par les ON DELETE CASCADE côté DB (voir supabase/migrations/add_formation_sections.sql).
 export async function deleteModule(moduleId: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ moduleId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -716,7 +791,7 @@ export async function deleteModule(moduleId: string) {
 }
 
 export async function deleteSection(sectionId: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ sectionId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -728,7 +803,7 @@ export async function deleteSection(sectionId: string) {
 }
 
 export async function deleteLesson(lessonId: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ lessonId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
@@ -753,19 +828,24 @@ export async function createFormation(
   title: string,
   emoji: string
 ): Promise<{ error?: string; id?: string }> {
-  const guard = await requirePlatformOwner();
+  const guard = await requireCoach();
   if (!guard.ok) return { error: guard.error };
   const clean = cleanTitle(title);
   if (!clean) return { error: "Le titre ne peut pas être vide." };
   const supabase = await createServerSupabase();
 
-  const { count } = await supabase
-    .from("formations")
-    .select("id", { count: "exact", head: true });
+  // Le fondateur crée dans l'Académie EP, tout autre coach crée SA formation.
+  const admin = createAdminClient();
+  const { data: me } = await admin.from("profiles").select("is_platform_owner").eq("id", guard.userId).maybeSingle();
+  const ownerId = me?.is_platform_owner === true ? null : guard.userId;
+  let countQuery = supabase.from("formations").select("id", { count: "exact", head: true });
+  countQuery = ownerId ? countQuery.eq("owner_id", ownerId) : countQuery.is("owner_id", null);
+  const { count } = await countQuery;
 
   const { data, error } = await supabase
     .from("formations")
     .insert({
+      owner_id: ownerId,
       title: clean,
       slug: `${slugify(clean)}-${Date.now().toString(36)}`,
       emoji: (typeof emoji === "string" && emoji.trim().slice(0, 16)) || "📚",
@@ -782,7 +862,7 @@ export async function createFormation(
 }
 
 export async function deleteFormation(formationId: string) {
-  const guard = await requirePlatformOwner();
+  const guard = await requireEditor({ formationId });
   if (!guard.ok) return { error: guard.error };
   const supabase = await createServerSupabase();
 
