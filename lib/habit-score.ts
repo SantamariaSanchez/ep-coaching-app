@@ -1,3 +1,4 @@
+import { isBlockOnDate } from "@/lib/agenda-day";
 import { createAdminClient } from "@/lib/supabase-admin";
 
 // Score du jour façon jeu vidéo — demande explicite du 2026-08-15 : "un
@@ -123,7 +124,7 @@ export async function getDailyHabitScore(userId: string, date: string): Promise<
       supabase.from("food_logs").select("id", { count: "exact", head: true }).eq("client_id", userId).eq("logged_at", date),
       supabase.from("step_settings").select("daily_goal").eq("client_id", userId).maybeSingle(),
       supabase.from("step_logs").select("steps_actual").eq("client_id", userId).eq("log_date", date).maybeSingle(),
-      supabase.from("schedule_blocks").select("id, tasks, day_of_week").eq("owner_id", userId),
+      supabase.from("schedule_blocks").select("id, tasks, day_of_week, specific_date, skipped_dates").eq("owner_id", userId),
       supabase.from("schedule_block_task_logs").select("completed_keys").eq("owner_id", userId).eq("log_date", date).maybeSingle(),
     ]);
 
@@ -147,8 +148,8 @@ export async function getDailyHabitScore(userId: string, date: string): Promise<
     }
 
     const dow = isoWeekdayFromDate(date);
-    const todaysBlocks = ((blocksRes.data as { id: string; tasks: string[] | null; day_of_week: number }[]) ?? []).filter(
-      (b) => b.day_of_week === dow && b.tasks && b.tasks.length > 0
+    const todaysBlocks = ((blocksRes.data as { id: string; tasks: string[] | null; day_of_week: number; specific_date: string | null; skipped_dates: string[] | null }[]) ?? []).filter(
+      (b) => isBlockOnDate(b, date, dow) && b.tasks && b.tasks.length > 0
     );
     const totalTasks = todaysBlocks.reduce((sum, b) => sum + (b.tasks?.length ?? 0), 0);
     if (totalTasks > 0) {

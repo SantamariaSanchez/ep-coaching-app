@@ -14,6 +14,7 @@ import {
   duplicateDayBlocks,
   clearDayBlocks,
   saveScheduleBlockTaskCompletion,
+  shiftDayFromBlock,
 } from "@/app/dashboard/client/agenda/actions";
 import { CalendarDays } from "lucide-react";
 
@@ -63,6 +64,8 @@ export default async function CoachMoiAgendaPage() {
         today={today}
         initialCompletedTaskKeys={completedTaskKeys}
         saveTaskCompletion={saveScheduleBlockTaskCompletion}
+        shiftDayFromBlock={shiftDayFromBlock}
+        space="coach"
       />
     </div>
   );

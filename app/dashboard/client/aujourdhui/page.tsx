@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, isSubscribed } from "@/utils/auth";
 import { getScheduleBlocks } from "@/utils/agenda";
 import { getHabitLogs } from "@/utils/mindset";
@@ -72,7 +73,7 @@ export default async function AujourdhuiPage() {
   const activeSupplements = allSupplements.filter((s) => s.status === "active");
 
   const todayBlocks = allBlocks
-    .filter((b) => b.day_of_week === isoDow)
+    .filter((b) => isBlockOnDate(b, todayStr, isoDow))
     .sort((a, b) => a.start_time.localeCompare(b.start_time));
 
   const latestBiometric = biometricLogs.length > 0 ? biometricLogs[biometricLogs.length - 1] : null;

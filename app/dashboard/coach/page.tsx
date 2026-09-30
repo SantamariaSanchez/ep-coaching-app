@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { isBlockOnDate } from "@/lib/agenda-day";
 import { getUser, getProfile, getClients, isSubscribed } from "@/utils/auth";
 import { getPointsMap } from "@/lib/gamification";
 import { isEligibleForLegendReward } from "@/lib/gamification-types";
@@ -128,7 +129,7 @@ export default async function CoachDashboard() {
   // live, formation ou séance — l'info qu'on a vraiment envie de voir d'un
   // coup d'oeil.
   const nextBlock = scheduleBlocks
-    .filter((b) => b.day_of_week === isoDow && b.start_time >= hhmm && b.icon !== "travail")
+    .filter((b) => isBlockOnDate(b, todayStr, isoDow) && b.start_time >= hhmm && b.icon !== "travail")
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
 
   // Retour direct : "c'est mieux si ça dit le créneau actuel comme ça je
@@ -137,7 +138,7 @@ export default async function CoachDashboard() {
   // qu'il y a à faire là, tout de suite (même du montage), c'est ça qu'il
   // faut afficher, pas le sauter pour une projection plus "intéressante".
   const currentBlock = scheduleBlocks
-    .filter((b) => b.day_of_week === isoDow && b.start_time <= hhmm && b.end_time > hhmm)
+    .filter((b) => isBlockOnDate(b, todayStr, isoDow) && b.start_time <= hhmm && b.end_time > hhmm)
     .sort((a, b) => a.start_time.localeCompare(b.start_time))[0] ?? null;
 
   // Idée "onglet Aujourd'hui, suite" : le nom de séance dans l'agenda
@@ -146,7 +147,7 @@ export default async function CoachDashboard() {
   // "Logbook" mais nulle part sur le tableau de bord, alors que c'est
   // justement le moment où on planifie sa journée, avant de partir.
   const todaySeanceBlock = scheduleBlocks.find(
-    (b) => b.day_of_week === isoDow && b.icon === "salle"
+    (b) => isBlockOnDate(b, todayStr, isoDow) && b.icon === "salle"
   );
   const todaySeanceLabel = todaySeanceBlock?.label.replace(/^Séance\s*:\s*/i, "").trim() ?? null;
   const todayProgramDay = todaySeanceLabel

@@ -14,6 +14,7 @@ import {
   duplicateDayBlocks,
   clearDayBlocks,
   saveScheduleBlockTaskCompletion,
+  shiftDayFromBlock,
 } from "./actions";
 import { CalendarDays } from "lucide-react";
 
@@ -61,6 +62,7 @@ export default async function ClientAgendaPage() {
         today={today}
         initialCompletedTaskKeys={completedTaskKeys}
         saveTaskCompletion={saveScheduleBlockTaskCompletion}
+        shiftDayFromBlock={shiftDayFromBlock}
       />
     </div>
   );

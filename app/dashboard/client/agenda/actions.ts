@@ -261,3 +261,84 @@ export async function saveScheduleBlockTaskCompletion(
   revalidateAgendaPaths();
   return {};
 }
+
+// ── Réorganiser la journée (2026-09-30) ────────────────────────────────────
+// "Si c'est le rush et que les blocs sautent, je bouge un bloc et le reste
+// s'ajuste." Décale un bloc ET tous ceux qui le suivent ce jour-là.
+//   scope "jour"     : aujourd'hui seulement. Les blocs récurrents sont
+//                      masqués à cette date (skipped_dates) et remplacés par
+//                      une copie datée décalée : la semaine type ne bouge pas.
+//   scope "toujours" : la semaine type elle-même est décalée.
+function toMin(t: string): number {
+  const [h, m] = t.slice(0, 5).split(":").map(Number);
+  return h * 60 + m;
+}
+function toTime(min: number): string {
+  const c = Math.max(0, Math.min(23 * 60 + 59, Math.round(min)));
+  return `${String(Math.floor(c / 60)).padStart(2, "0")}:${String(c % 60).padStart(2, "0")}:00`;
+}
+
+export async function shiftDayFromBlock(input: {
+  blockId: string;
+  deltaMinutes: number;
+  scope: "jour" | "toujours";
+  /** Date concernée (YYYY-MM-DD, heure de Paris) pour le scope "jour". */
+  date: string;
+}): Promise<{ error?: string; moved?: number }> {
+  const guard = await requireAuth();
+  if (!guard.ok) return { error: guard.error };
+  const delta = Math.round(Number(input.deltaMinutes));
+  if (!Number.isFinite(delta) || delta === 0 || Math.abs(delta) > 12 * 60) return { error: "Décalage invalide." };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.date)) return { error: "Date invalide." };
+
+  const supabase = createAdminClient();
+  const { data: anchor } = await supabase.from("schedule_blocks").select("*").eq("id", input.blockId).eq("owner_id", guard.userId).maybeSingle();
+  if (!anchor) return { error: "Bloc introuvable." };
+  const a = anchor as ScheduleBlock;
+
+  const { data: dayRows } = await supabase.from("schedule_blocks").select("*").eq("owner_id", guard.userId).eq("day_of_week", a.day_of_week);
+  const sameDay = ((dayRows ?? []) as ScheduleBlock[]).filter((b) =>
+    input.scope === "toujours"
+      ? !b.specific_date
+      : b.specific_date ? b.specific_date === input.date : !(b.skipped_dates ?? []).includes(input.date)
+  );
+  const following = sameDay.filter((b) => b.start_time >= a.start_time).sort((x, y) => x.start_time.localeCompare(y.start_time));
+  if (!following.length) return { moved: 0 };
+
+  let moved = 0;
+  for (const b of following) {
+    const start = toTime(toMin(b.start_time) + delta);
+    const end = toTime(Math.max(toMin(b.end_time) + delta, toMin(start) + 5));
+    if (input.scope === "toujours" || b.specific_date) {
+      const { error } = await supabase.from("schedule_blocks").update({ start_time: start, end_time: end }).eq("id", b.id).eq("owner_id", guard.userId);
+      if (!error) moved++;
+      continue;
+    }
+    // Aujourd'hui seulement : copie datée décalée, puis le modèle récurrent
+    // est masqué à cette date.
+    const { error: insErr } = await supabase.from("schedule_blocks").insert({
+      owner_id: guard.userId,
+      day_of_week: b.day_of_week,
+      start_time: start,
+      end_time: end,
+      label: b.label,
+      color: b.color,
+      icon: b.icon,
+      notes: b.notes,
+      tasks: b.tasks ?? [],
+      notify: b.notify,
+      specific_date: input.date,
+      last_notified_at: initialLastNotifiedAt(b.day_of_week, start),
+    });
+    if (insErr) continue;
+    await supabase
+      .from("schedule_blocks")
+      .update({ skipped_dates: [...new Set([...(b.skipped_dates ?? []), input.date])] })
+      .eq("id", b.id)
+      .eq("owner_id", guard.userId);
+    moved++;
+  }
+  revalidateAgendaPaths();
+  revalidatePath("/dashboard/coach");
+  return { moved };
+}

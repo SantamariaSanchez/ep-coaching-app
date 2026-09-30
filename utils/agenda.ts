@@ -27,6 +27,8 @@ export interface ScheduleBlock {
   // automatiquement une fois passé (voir app/api/cron/schedule-block-notify
   // et la routine cloud "Sync Google Calendar").
   specific_date: string | null;
+  /** Dates où ce bloc récurrent est remplacé par une copie décalée. */
+  skipped_dates?: string[] | null;
 }
 
 export const DAY_LABELS = ["", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];

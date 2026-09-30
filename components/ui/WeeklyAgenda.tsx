@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Plus, Trash2, X, Bell, Copy, MoreHorizontal, ChevronLeft, ChevronRight,
   AlertTriangle, Timer, Check, AlarmClock,
@@ -96,8 +98,16 @@ function currentWeekBounds(now: Date): { start: string; end: string } {
 // La grille n'a pas de vraie navigation multi-semaine (voir shiftDay plus
 // bas, purement cyclique 1-7) : "cette semaine" est donc toujours celle de
 // `now`, jamais une autre.
+function dateOfDow(weekStart: string, dow: number): string {
+  const d = new Date(`${weekStart}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + dow - 1);
+  return d.toISOString().slice(0, 10);
+}
+
 function isRelevantThisWeek(block: ScheduleBlock, weekBounds: { start: string; end: string } | null): boolean {
-  if (!block.specific_date) return true;
+  // Bloc récurrent remplacé ce jour-là par une copie décalée (voir
+  // shiftDayFromBlock) : seule la copie s'affiche.
+  if (!block.specific_date) return !weekBounds || !(block.skipped_dates ?? []).includes(dateOfDow(weekBounds.start, block.day_of_week));
   if (!weekBounds) return true; // now pas encore connu (avant montage) : ne rien cacher à tort
   return block.specific_date >= weekBounds.start && block.specific_date <= weekBounds.end;
 }
@@ -285,6 +295,31 @@ function DaySwitcher({
 
 // ── Main component ──────────────────────────────────────────────────────────
 
+// Un bloc ouvre la bonne page (2026-09-30) : repas → nutrition, séance →
+// programme du jour, création de contenu → scripts prêts à tourner...
+function destinationFor(block: ScheduleBlock, space: "coach" | "client"): { label: string; href: string } | null {
+  const me = space === "coach" ? "/dashboard/coach/moi" : "/dashboard/client";
+  const text = `${block.label} ${block.notes ?? ""}`;
+  if (space === "coach" && /(contenu|tourn|script|montage|reel|vid[ée]o|post|story|youtube|tiktok|insta)/i.test(text)) return { label: "Voir mes scripts à tourner", href: "/dashboard/coach/studio" };
+  if (/live/i.test(text)) return { label: "Ouvrir les lives", href: space === "coach" ? "/dashboard/coach/live" : "/dashboard/client/live" };
+  if (space === "coach" && /(appel|call|closing|vente|découverte|decouverte)/i.test(text)) return { label: "Ouvrir mes appels de vente", href: "/dashboard/coach/admin/ventes" };
+  switch (block.icon) {
+    case "salle":
+      return { label: "Voir ma séance du jour", href: space === "coach" ? `${me}/programme` : "/dashboard/client/program" };
+    case "repas":
+      return { label: "Voir ce que je mange", href: `${me}/nutrition` };
+    case "sommeil":
+      return { label: "Ouvrir mon sommeil", href: `${me}/tracking` };
+    case "pas":
+      return { label: "Ouvrir mes pas", href: `${me}/steps` };
+    case "etude":
+      return { label: "Ouvrir mes formations", href: `${me}/formations` };
+  }
+  if (/(repas|déjeuner|dejeuner|dîner|diner|petit[- ]déj|collation|manger)/i.test(text)) return { label: "Voir ce que je mange", href: `${me}/nutrition` };
+  if (/(séance|seance|training|muscu|jambes|push|pull|upper|lower)/i.test(text)) return { label: "Voir ma séance du jour", href: space === "coach" ? `${me}/programme` : "/dashboard/client/program" };
+  return null;
+}
+
 export default function WeeklyAgenda({
   blocks: initialBlocks,
   editable,
@@ -297,7 +332,12 @@ export default function WeeklyAgenda({
   today,
   initialCompletedTaskKeys,
   saveTaskCompletion,
+  space = "client",
+  shiftDayFromBlock,
 }: {
+  /** Espace de la personne (liens des blocs vers la bonne page). */
+  space?: "coach" | "client";
+  shiftDayFromBlock?: (input: { blockId: string; deltaMinutes: number; scope: "jour" | "toujours"; date: string }) => Promise<{ error?: string; moved?: number }>;
   blocks: ScheduleBlock[];
   editable: boolean;
   addScheduleBlock?: (data: BlockFormData) => Promise<{ error?: string; block?: ScheduleBlock }>;
@@ -313,6 +353,13 @@ export default function WeeklyAgenda({
   saveTaskCompletion?: (date: string, completedKeys: string[]) => Promise<{ error?: string }>;
 }) {
   const [blocks, setBlocks] = useState(initialBlocks);
+  // Fiche d'action d'un bloc : ouvrir la bonne page, décaler la suite de la
+  // journée, commencer maintenant, modifier.
+  const [actionBlock, setActionBlock] = useState<ScheduleBlock | null>(null);
+  const [shiftScope, setShiftScope] = useState<"jour" | "toujours">("jour");
+  const [shiftBusy, setShiftBusy] = useState(false);
+  const [shiftError, setShiftError] = useState<string | null>(null);
+  const router = useRouter();
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
   // initialBlocks change (même piège que todayLogs dans ClientNutritionView —
@@ -484,8 +531,10 @@ export default function WeeklyAgenda({
   }
 
   function openBlock(block: ScheduleBlock) {
-    if (editable) openEdit(block);
-    else setViewingBlock(block);
+    if (editable) {
+      setActionBlock(block);
+      setShiftError(null);
+    } else setViewingBlock(block);
   }
 
   function quickStart(preset: AgendaPreset) {
@@ -1035,6 +1084,93 @@ export default function WeeklyAgenda({
           </div>
         </div>
       )}
+
+      {actionBlock && (() => {
+        const b = actionBlock;
+        const dest = destinationFor(b, space);
+        const Icon = b.icon ? AGENDA_ICON_MAP[b.icon] : null;
+        const blockDate = weekBounds ? dateOfDow(weekBounds.start, b.day_of_week) : null;
+        const isToday = todayDow === b.day_of_week;
+        const nowMin = now ? now.getHours() * 60 + now.getMinutes() : null;
+        const startMin = timeToMinutes(b.start_time.slice(0, 5));
+        const startNowDelta = nowMin !== null ? Math.round((nowMin - startMin) / 5) * 5 : 0;
+        async function shift(delta: number) {
+          if (!shiftDayFromBlock || !blockDate || delta === 0) return;
+          setShiftBusy(true);
+          setShiftError(null);
+          const res = await shiftDayFromBlock({ blockId: b.id, deltaMinutes: delta, scope: isToday ? shiftScope : "toujours", date: blockDate });
+          setShiftBusy(false);
+          if (res.error) return setShiftError(res.error);
+          setActionBlock(null);
+          router.refresh();
+        }
+        return (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3">
+            <div className="ep-modal-overlay absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setActionBlock(null)} />
+            <div className="ep-modal-panel relative w-full max-w-sm bg-[#150000] border border-[#890404]/40 rounded-2xl p-5" style={{ paddingBottom: "calc(20px + env(safe-area-inset-bottom, 0px))" }}>
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {Icon && <Icon size={16} style={{ color: b.color, flexShrink: 0 }} strokeWidth={2} />}
+                  <p className="text-sm font-black uppercase tracking-widest text-white truncate">{b.label}</p>
+                </div>
+                <button onClick={() => setActionBlock(null)} aria-label="Fermer" className="text-[#F5EDED]/40 hover:text-white flex-shrink-0">
+                  <X size={18} />
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "4px 0 14px" }}>
+                {DAY_LABELS[b.day_of_week]} · {b.start_time.slice(0, 5)} à {b.end_time.slice(0, 5)}
+                {b.specific_date ? " · aujourd'hui seulement" : ""}
+              </p>
+
+              {dest && (
+                <Link href={dest.href} onClick={() => setActionBlock(null)} className="flex items-center justify-center gap-2 w-full rounded-xl bg-[#E01E1E] text-white text-xs font-black uppercase tracking-widest py-3 mb-3">
+                  {dest.label} <ChevronRight size={14} />
+                </Link>
+              )}
+
+              {shiftDayFromBlock && (
+                <div style={{ background: "rgba(0,0,0,0.3)", border: "1px solid rgba(245,237,237,0.06)", borderRadius: 12, padding: 12, marginBottom: 10 }}>
+                  <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "0 0 8px" }}>
+                    Décaler ce bloc et toute la suite
+                  </p>
+                  {isToday && startNowDelta !== 0 && (
+                    <button type="button" disabled={shiftBusy} onClick={() => shift(startNowDelta)} className="w-full rounded-lg border border-[#E01E1E]/60 bg-[#E01E1E]/15 text-white text-xs font-bold py-2.5 mb-2">
+                      Commencer maintenant ({startNowDelta > 0 ? "+" : ""}{startNowDelta} min pour la suite)
+                    </button>
+                  )}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                    {[-15, 15, 30, 60].map((d) => (
+                      <button key={d} type="button" disabled={shiftBusy} onClick={() => shift(d)} className="rounded-lg border border-[#890404]/40 text-[#F5EDED] text-xs font-bold py-2.5">
+                        {d > 0 ? "+" : "−"}{Math.abs(d)} min
+                      </button>
+                    ))}
+                  </div>
+                  {isToday && (
+                    <div style={{ display: "flex", gap: 6, marginTop: 8 }}>
+                      {(["jour", "toujours"] as const).map((sc) => (
+                        <button
+                          key={sc}
+                          type="button"
+                          onClick={() => setShiftScope(sc)}
+                          className="flex-1 rounded-lg text-[11px] font-bold py-2"
+                          style={{ border: `1px solid ${shiftScope === sc ? "rgba(224,30,30,0.6)" : "rgba(137,4,4,0.3)"}`, background: shiftScope === sc ? "rgba(224,30,30,0.12)" : "transparent", color: shiftScope === sc ? "#fff" : "rgba(245,237,237,0.5)" }}
+                        >
+                          {sc === "jour" ? "Aujourd'hui seulement" : "Toutes les semaines"}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {shiftError && <p style={{ fontSize: 11, color: "#fca5a5", margin: "8px 0 0" }}>{shiftError}</p>}
+                </div>
+              )}
+
+              <button type="button" onClick={() => { const blk = b; setActionBlock(null); openEdit(blk); }} className="w-full rounded-xl border border-[#890404]/45 text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest py-3">
+                Modifier le bloc
+              </button>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Détail en lecture seule (fiche client vue par le coach) */}
       {viewingBlock && (
