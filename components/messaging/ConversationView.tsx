@@ -737,8 +737,31 @@ export default function ConversationView({
     [conversationId, userId, peerId]
   );
 
+  // La conversation occupe exactement l'espace entre son haut et la barre
+  // du bas (téléphone) : la zone d'écriture reste toujours visible, sans
+  // défiler (bug vu sur iPhone : elle passait sous la barre d'onglets).
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [fitHeight, setFitHeight] = useState<number | null>(null);
+  useEffect(() => {
+    const fit = () => {
+      const el = rootRef.current;
+      if (!el) return;
+      const nav = document.querySelector(".ep-bottom-nav") as HTMLElement | null;
+      const navH = nav && getComputedStyle(nav).display !== "none" ? nav.offsetHeight : 0;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      setFitHeight(Math.max(320, window.innerHeight - top - navH));
+    };
+    fit();
+    window.addEventListener("resize", fit);
+    window.visualViewport?.addEventListener("resize", fit);
+    return () => {
+      window.removeEventListener("resize", fit);
+      window.visualViewport?.removeEventListener("resize", fit);
+    };
+  }, []);
+
   return (
-    <div className="flex flex-col h-[calc(100dvh-56px)] md:h-[calc(100dvh-0px)] max-h-[800px]">
+    <div ref={rootRef} className="flex flex-col" style={{ height: fitHeight ?? "calc(100dvh - 56px)", maxHeight: 800 }}>
       {/* Barre de recherche — repliée par défaut pour ne rien changer à
           l'usage courant, juste un bouton discret pour l'ouvrir. */}
       {messages.length > 0 && (

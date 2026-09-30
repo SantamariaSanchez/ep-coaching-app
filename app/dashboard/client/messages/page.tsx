@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 import { PushPermission } from "@/components/messaging/PushPermission";
 import ConversationView from "@/components/messaging/ConversationView";
 import RoleBadge from "@/components/ui/RoleBadge";
-import { Mail, ChevronRight, Users, Bot } from "lucide-react";
+import { ChevronRight, Users, Bot } from "lucide-react";
 import Link from "next/link";
 
 // Les membres gratuits ne peuvent pas écrire en premier au coach — seulement
@@ -81,7 +81,6 @@ export default async function ClientMessagesPage() {
       is_platform_owner: boolean;
     } | null
   );
-  const coachIsFounder = coachProfile?.is_platform_owner === true;
 
   // conversation_id is always the client's ID
   const conversationId = user.id;
@@ -112,15 +111,7 @@ export default async function ClientMessagesPage() {
               Réponses automatiques par IA, disponible 24/7.
             </p>
           )}
-          {!coachIsFounder && (
-            <a
-              href="mailto:peccoux.manu@gmail.com"
-              className="text-[10px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 flex items-center gap-1 mt-0.5"
-            >
-              <Mail size={9} />
-              Une question pour le support ? peccoux.manu@gmail.com
-            </a>
-          )}
+
         </div>
       </div>
 

@@ -1174,7 +1174,7 @@ export default function DashboardNav({
       <div
         style={{
           // Page Plus : la recherche est déjà en tête, pas de bouton en double.
-          display: isDesktop || pathname.endsWith("/plus") ? "none" : "flex",
+          display: isDesktop || pathname.endsWith("/plus") || pathname.includes("/messages") ? "none" : "flex",
           position: "fixed",
           bottom: "calc(80px + env(safe-area-inset-bottom, 0px))",
           right: 14,

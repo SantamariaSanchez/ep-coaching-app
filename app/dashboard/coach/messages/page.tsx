@@ -141,11 +141,11 @@ export default async function CoachMessagesPage() {
         </div>
         {!profile?.is_platform_owner && (
           <a
-            href="mailto:peccoux.manu@gmail.com"
-            style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(245,237,237,0.35)", fontSize: 11, textDecoration: "none" }}
+            href="/dashboard/coach/aide"
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 10, color: "rgba(245,237,237,0.4)", fontSize: 11, textDecoration: "none" }}
           >
             <Mail size={11} />
-            Une question pour le support ? peccoux.manu@gmail.com
+            Besoin d&apos;aide ? Aide et tutoriels
           </a>
         )}
       </div>
