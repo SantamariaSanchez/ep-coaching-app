@@ -10,7 +10,7 @@ import {
   Home, Users, ClipboardCheck, LogOut, Dumbbell, Apple,
   ClipboardList, TrendingUp, User, Image, BookOpen,
   MessageCircle, Map, GraduationCap, Activity, Footprints, Watch,
-  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid, NotebookPen,
+  ListChecks, Heart, Trophy, HelpCircle, Crown, Lock, UtensilsCrossed, Video, BarChart3, SlidersHorizontal, UsersRound, LayoutGrid, NotebookPen, LifeBuoy,
   Brain, MessageSquareText, LibraryBig,
   Search, Newspaper, FlaskConical, Microscope, Bell, CalendarDays, Droplet,
   ArrowLeftRight, Settings, Shield, LayoutTemplate, Mail, Inbox, Sparkles,
@@ -242,6 +242,7 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
       { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
+      { label: "Aide et tutoriels", icon: LifeBuoy, segment: "aide" },
     ],
   },
 ];
@@ -335,6 +336,7 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
       // Questionnaire de personnalisation (2026-09-29) : ce que chacun suit.
       { label: "Mon appli", icon: SlidersHorizontal, segment: "mon-appli" },
       { label: "Paramètres", icon: Settings, segment: "parametres" },
+      { label: "Aide et tutoriels", icon: LifeBuoy, segment: "aide" },
     ],
   },
 ];
