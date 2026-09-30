@@ -55,6 +55,8 @@ scripts/*
 !scripts/upload-contract-templates.ts
 !scripts/social-sync.ts
 !scripts/social-report.ts
+!scripts/demo-accounts.ts
+!scripts/screenshots.ts
 .claude/
 
 # Ruflo local secrets and runtime data

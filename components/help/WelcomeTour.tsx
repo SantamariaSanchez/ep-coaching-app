@@ -59,6 +59,7 @@ export default function WelcomeTour() {
       // rien
     }
     setOpen(false);
+    window.dispatchEvent(new Event("ep:tour-done"));
   }
 
   return (

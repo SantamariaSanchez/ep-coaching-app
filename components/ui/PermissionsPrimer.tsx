@@ -44,7 +44,16 @@ export default function PermissionsPrimer() {
         localStorage.setItem(STORAGE_KEY, "1");
         return;
       }
-      setShow(true);
+      // Premier lancement : la visite d'accueil passe d'abord, les
+      // autorisations s'ouvrent quand elle se ferme (jamais les deux en même temps).
+      const space = window.location.pathname.startsWith("/equipe") ? "staff" : window.location.pathname.startsWith("/dashboard/coach") ? "coach" : "client";
+      if (localStorage.getItem(`ep-tour-done-v1-${space}`) === "1") {
+        setShow(true);
+        return;
+      }
+      const onTourDone = () => setShow(true);
+      window.addEventListener("ep:tour-done", onTourDone, { once: true });
+      return () => window.removeEventListener("ep:tour-done", onTourDone);
     } catch {
       // localStorage indisponible (navigation privée stricte) : on n'insiste pas.
     }

@@ -10,7 +10,9 @@
     "contracts:generate": "tsx --tsconfig ./tsconfig.json scripts/generate-contract-pdfs.ts",
     "contracts:upload": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/upload-contract-templates.ts",
     "social:sync": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-sync.ts",
-    "social:report": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-report.ts"
+    "social:report": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/social-report.ts",
+    "demo:accounts": "tsx --tsconfig ./tsconfig.json --env-file=.env.local scripts/demo-accounts.ts",
+    "screenshots": "tsx scripts/screenshots.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.109.0",
@@ -58,6 +60,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "pdfkit": "^0.20.2",
+    "playwright": "^1.63.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5"
