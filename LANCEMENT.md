@@ -9,24 +9,24 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
 
 ## Semaine 1 (30/09 au 06/10) : fondations appli mobile + navigation
 
-- [ ] Architecture des onglets repensée pour le téléphone (5 onglets max, logique claire)
-  - [ ] Coach : Aujourd'hui · Clients · Business · Moi · Plus (Business = Studio, stats réseaux,
+- [x] Architecture des onglets repensée pour le téléphone (5 onglets max, logique claire)
+  - [x] Coach : Aujourd'hui · Clients · Business · Moi · Plus (Business = Studio, stats réseaux,
         formations, ventes, équipe, compta, pilotage)
-  - [ ] Client : Aujourd'hui · Training · Suivi · Coach · Plus (Live, formations, communauté dans Plus)
-  - [ ] Page « Plus » claire, groupée, avec recherche
-- [ ] Recherche globale (barre en haut + raccourci) : pages, clients, notes, scripts, aliments
-- [ ] Réponses en 1 geste : « poids de la semaine », « calories de la semaine », « leads par vidéo »,
-      « combien payer mon Head of Sales »
+  - [x] Client : Aujourd'hui · Training · Suivi · Coach · Plus (Live, formations, communauté dans Plus)
+  - [x] Page « Plus » claire, groupée, avec recherche
+- [x] Recherche globale : pages, clients, bibliothèque + réponses rapides (reste : notes, scripts)
+- [x] Réponses en 1 geste : poids, calories, sommeil, pas, séances, clients, bilans, leads
+- [ ] Réponse « combien payer mon Head of Sales » (paie de l'équipe)
 - [ ] Coquille native (Capacitor) : icône, écran de démarrage, barre d'état, retour haptique,
       notifications push natives, lien profond, pas de chrome web visible
-- [ ] Onglet Tournage (fondateur) remis au propre : entrée claire, plus de section vide
+- [x] Onglet Tournage (fondateur) remis au propre : entrée claire, plus de section vide
 
 ## Semaine 2 (07/10 au 13/10) : agenda vivant + écosystème relié
 
-- [ ] Agenda : déplacer un bloc décale automatiquement la suite de la journée (mode « ripple »)
-- [ ] Agenda : un bloc ouvre la bonne page (repas → nutrition du jour, contenu → scripts prêts à
+- [x] Agenda : déplacer un bloc décale automatiquement la suite de la journée (mode « ripple »)
+- [x] Agenda : un bloc ouvre la bonne page (repas → nutrition du jour, contenu → scripts prêts à
       tourner, séance → programme du jour, live → salle, appel → fiche client/lead)
-- [ ] Journée en retard : bouton « réorganiser ma journée » en 1 tap
+- [x] Journée en retard : bouton « réorganiser ma journée » en 1 tap
 - [ ] Leads : origine par contenu (vidéo YouTube, reel) visible en 1 écran
 - [ ] Équipe : rémunération (fixe + commissions) calculée par membre et par mois
 
