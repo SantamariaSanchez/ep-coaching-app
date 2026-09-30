@@ -9,7 +9,6 @@ import { CONTENT_PROMPTS, HOOK_BANK, CTA_EXAMPLES, TECHNICAL_SHEETS } from "@/li
 import type { CoachScript, ScriptFormat, ScriptStatus } from "@/lib/coach-ideation";
 import type { BusinessCanvas } from "@/lib/coach-business-canvas";
 import type { LeadTracking, SlugLeadCounts } from "@/lib/content-leads-tracking";
-import { buildTrackedLeadLink } from "@/lib/lead-origin";
 import Link from "next/link";
 
 const STATUS_LABELS: Record<ScriptStatus, { label: string; color: string }> = {
@@ -1149,24 +1148,24 @@ function MyScripts({
                 </p>
               )}
 
-              {/* Lien suivi (LANCEMENT.md semaine 2, lib/lead-origin.ts) :
-                  collé en description ou en bio, c'est le seul signal qui
-                  crédite un lead à CE contenu, contrairement au comptage
-                  par numéro juste au-dessus. */}
+              {/* Lien du guide, nu et lisible (retour direct 2026-09-30 :
+                  plus de paramètres « à rallonge »). La plateforme d'origine
+                  reste détectée par le referrer (lib/lead-origin.ts) ; les
+                  leads arrivés par d'anciens liens suivis restent comptés. */}
               {leadTracking?.slugByScriptId[script.id] && (() => {
-                const link = buildTrackedLeadLink(TRACKED_LINK_BASE, leadTracking.slugByScriptId[script.id], script.platform, script.id);
+                const link = `${TRACKED_LINK_BASE}/ressources/${encodeURIComponent(leadTracking.slugByScriptId[script.id])}`;
                 const tracked = leadTracking.trackedByScriptId[script.id];
                 return (
                   <div style={{ marginTop: 8, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(250,204,21,0.18)", borderRadius: 10, padding: "8px 10px" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ minWidth: 0 }}>
                         <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#facc15" }}>
-                          Lien suivi du guide
+                          Lien du guide
                         </span>
                         <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.6)" }}>
                           {tracked
                             ? `${tracked.total} lead${tracked.total > 1 ? "s" : ""} arrivé${tracked.total > 1 ? "s" : ""} par ce lien${tracked.last30Days > 0 ? ` (${tracked.last30Days} sur 30 jours)` : ""}`
-                            : "À coller en description ou en bio : chaque lead arrivé par ce lien est crédité à ce contenu."}
+                            : "À coller en description ou en bio. La plateforme d'origine de chaque lead est détectée toute seule."}
                         </p>
                       </div>
                       <CopyButton text={link} />
