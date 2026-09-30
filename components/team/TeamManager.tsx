@@ -62,9 +62,10 @@ export interface CareerOption {
 
 export function CareerPicker({ current, options }: { current: string | null; options: CareerOption[] }) {
   const { pending, run, note } = useAction();
+  const active = options.find((o) => o.value === current) ?? null;
   return (
-    <div>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 8 }}>
+    <div className="ep-card" style={{ padding: 12 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 6 }}>
         {options.map((o) => {
           const on = current === o.value;
           return (
@@ -74,23 +75,30 @@ export function CareerPicker({ current, options }: { current: string | null; opt
               disabled={pending || on}
               onClick={() => run(() => updateCareerModeAction(o.value), "Mode mis à jour.")}
               style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
                 textAlign: "left",
-                padding: "13px 14px",
-                borderRadius: 14,
+                padding: "10px 11px",
+                minHeight: 48,
+                borderRadius: 12,
                 cursor: on ? "default" : "pointer",
-                border: `1px solid ${on ? "rgba(224,30,30,0.7)" : "rgba(137,4,4,0.35)"}`,
+                border: `1px solid ${on ? "rgba(224,30,30,0.7)" : "rgba(137,4,4,0.3)"}`,
                 background: on ? "rgba(224,30,30,0.14)" : "rgba(0,0,0,0.25)",
+                color: "#F5EDED",
+                fontSize: 12.5,
+                fontWeight: 800,
+                lineHeight: 1.25,
               }}
             >
-              <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 14, fontWeight: 800, color: "#F5EDED" }}>
-                {on && <Check size={14} color="#E01E1E" />} {o.label}
-              </span>
-              {o.hint && <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.5)", marginTop: 2 }}>{o.hint}</span>}
-              <span style={{ display: "block", fontSize: 11.5, color: "rgba(245,237,237,0.7)", marginTop: 6, lineHeight: 1.5 }}>{o.unlocks}</span>
+              {on && <Check size={13} color="#E01E1E" style={{ flexShrink: 0 }} />} {o.label}
             </button>
           );
         })}
       </div>
+      <p style={{ fontSize: 12, color: "rgba(245,237,237,0.6)", margin: "10px 2px 0", lineHeight: 1.5 }}>
+        {active ? active.unlocks : "Choisis comment tu travailles : l'appli s'adapte, et tu peux changer à tout moment."}
+      </p>
       {note}
     </div>
   );

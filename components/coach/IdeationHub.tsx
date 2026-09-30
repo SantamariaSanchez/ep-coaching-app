@@ -111,7 +111,7 @@ export default function IdeationHub({
         montés en permanence, seule la visibilité change.
       */}
       <div hidden={tab !== "idees"}>
-        <ContentStudio initialIdeas={initialIdeas} />
+        <ContentStudio initialIdeas={initialIdeas} platforms={platforms} />
       </div>
       <div hidden={tab !== "generateur"}>
         <SocialGenerator active={hasOpenedGenerator} />

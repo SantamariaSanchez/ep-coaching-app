@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase-admin";
 // Axe 2 (VISION.md) : espace de création de contenu du coach. Table
 // entièrement scopée par coach_id — chaque coach ne voit et ne modifie que
 // ses propres idées (RLS + garde applicative, voir studio/actions.ts).
-export const CONTENT_PLATFORMS = ["instagram", "youtube", "linkedin", "general"] as const;
+export const CONTENT_PLATFORMS = ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads", "general"] as const;
 export type ContentPlatform = (typeof CONTENT_PLATFORMS)[number];
 
 export const CONTENT_STATUSES = ["idee", "brouillon", "pret", "publie"] as const;

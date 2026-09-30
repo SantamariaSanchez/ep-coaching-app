@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition, useEffect } from "react";
-import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion } from "lucide-react";
+import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion, Music2, Users, AtSign } from "lucide-react";
 import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/dashboard/coach/studio/actions";
 import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-ideas";
 
@@ -10,8 +10,11 @@ import type { ContentIdea, ContentPlatform, ContentStatus } from "@/lib/content-
 // place ailleurs dans l'app (ex. AtSign pour instagram_handle).
 const PLATFORM_META: Record<ContentPlatform, { label: string; icon: React.ElementType; color: string }> = {
   instagram: { label: "Instagram", icon: Camera, color: "#E1306C" },
+  tiktok: { label: "TikTok", icon: Music2, color: "#25F4EE" },
   youtube: { label: "YouTube", icon: Video, color: "#FF0000" },
+  facebook: { label: "Facebook", icon: Users, color: "#1877F2" },
   linkedin: { label: "LinkedIn", icon: Briefcase, color: "#0A66C2" },
+  threads: { label: "Threads", icon: AtSign, color: "#F5EDED" },
   general: { label: "Général", icon: Sparkles, color: "#E01E1E" },
 };
 
@@ -26,7 +29,11 @@ const STATUS_META: Record<ContentStatus, { label: string; color: string }> = {
 // mûrir des idées de contenu (Insta/YouTube/LinkedIn) au lieu de les
 // perdre. Statut = "où j'en suis", pas un vrai kanban drag-and-drop — plus
 // simple à utiliser vite entre deux clients qu'un board à glisser-déposer.
-export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentIdea[] }) {
+export default function ContentStudio({ initialIdeas, platforms }: { initialIdeas: ContentIdea[]; platforms?: string[] }) {
+  // Plateformes du coach (Mon appli) + Général, et toujours celles déjà utilisées.
+  const CONTENT_PLATFORM_ORDER = ALL_PLATFORM_ORDER.filter(
+    (p) => p === "general" || !platforms?.length || platforms.includes(p) || initialIdeas.some((i) => i.platform === p)
+  );
   const [ideas, setIdeas] = useState(initialIdeas);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -38,7 +45,7 @@ export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentI
   const [platformFilter, setPlatformFilter] = useState<ContentPlatform | "all">("all");
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
-  const [platform, setPlatform] = useState<ContentPlatform>("instagram");
+  const [platform, setPlatform] = useState<ContentPlatform>(CONTENT_PLATFORM_ORDER[0] ?? "general");
   const [notes, setNotes] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -285,7 +292,7 @@ export default function ContentStudio({ initialIdeas }: { initialIdeas: ContentI
   );
 }
 
-const CONTENT_PLATFORM_ORDER: ContentPlatform[] = ["instagram", "youtube", "linkedin", "general"];
+const ALL_PLATFORM_ORDER: ContentPlatform[] = ["instagram", "tiktok", "youtube", "facebook", "linkedin", "threads", "general"];
 const CONTENT_STATUS_ORDER: ContentStatus[] = ["idee", "brouillon", "pret", "publie"];
 
 const inputStyle: React.CSSProperties = {
