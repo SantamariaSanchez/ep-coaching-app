@@ -10,11 +10,11 @@ import { tourFor, type HelpSpace } from "@/lib/help-content";
 // comprendre l'appli, puis plus jamais (sauf « Revoir la visite » dans
 // Aide et tutoriels). Mémorisé sur l'appareil.
 
-const KEY = "ep-tour-done-v1";
+const KEY_BASE = "ep-tour-done-v1";
 
 export function restartTour() {
   try {
-    localStorage.removeItem(KEY);
+    for (const sp of ["coach", "client", "staff"]) localStorage.removeItem(`${KEY_BASE}-${sp}`);
   } catch {
     // stockage indisponible : la visite s'ouvre quand même via l'événement
   }
@@ -23,7 +23,7 @@ export function restartTour() {
 
 export default function WelcomeTour() {
   const pathname = usePathname();
-  const space: HelpSpace = pathname.startsWith("/dashboard/coach") ? "coach" : "client";
+  const space: HelpSpace = pathname.startsWith("/equipe") ? "staff" : pathname.startsWith("/dashboard/coach") ? "coach" : "client";
   const [open, setOpen] = useState(false);
   const [i, setI] = useState(0);
 
@@ -34,18 +34,18 @@ export default function WelcomeTour() {
     };
     let seen = true;
     try {
-      seen = localStorage.getItem(KEY) === "1";
+      seen = localStorage.getItem(`${KEY_BASE}-${space}`) === "1";
     } catch {
       seen = true;
     }
     // Pas pendant un parcours d'accueil ou un questionnaire déjà ouvert.
-    const t = !seen && !/onboarding|mon-appli/.test(window.location.pathname) ? setTimeout(show, 1200) : null;
+    const t = !seen && !/onboarding|mon-appli|contrat|verifier/.test(window.location.pathname) ? setTimeout(show, 1200) : null;
     window.addEventListener("ep:open-tour", show);
     return () => {
       if (t) clearTimeout(t);
       window.removeEventListener("ep:open-tour", show);
     };
-  }, []);
+  }, [space]);
 
   if (!open) return null;
   const steps = tourFor(space);
@@ -54,7 +54,7 @@ export default function WelcomeTour() {
 
   function close() {
     try {
-      localStorage.setItem(KEY, "1");
+      localStorage.setItem(`${KEY_BASE}-${space}`, "1");
     } catch {
       // rien
     }

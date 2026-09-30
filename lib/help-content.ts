@@ -2,7 +2,7 @@
 // Fichier pur, sans accès serveur : importable partout. Textes simples,
 // tutoiement, pas de tiret long.
 
-export type HelpSpace = "coach" | "client";
+export type HelpSpace = "coach" | "client" | "staff";
 
 export interface TourStep {
   title: string;
@@ -21,6 +21,15 @@ export interface Guide {
 }
 
 export function tourFor(space: HelpSpace): TourStep[] {
+  if (space === "staff") {
+    return [
+      { title: "Bienvenue dans ton espace", body: "Tout ce qu'il te faut pour ton poste, au même endroit : tes tâches, tes outils, tes documents et la messagerie de l'équipe." },
+      { title: "Ta journée", body: "L'accueil te montre quoi faire en priorité, tes rendez-vous du jour et ce qui est en retard. Chaque matin, un briefing t'arrive aussi par email.", href: "/equipe", cta: "Voir" },
+      { title: "Tes outils de poste", body: "Le menu est adapté à ton métier (prospects, rendez-vous, livrables, campagnes...). Chaque fiche se met à jour en un geste." },
+      { title: "Messages et documents", body: "Échange avec ton responsable et l'équipe, retrouve ta fiche de poste, ton contrat et tes documents." },
+      { title: "Ta formation", body: "Ton parcours de formation te guide pas à pas les premières semaines. Avance à ton rythme, tout est suivi." },
+    ];
+  }
   if (space === "coach") {
     return [
       { title: "Bienvenue sur EP Coaching", body: "Tout ton business de coach au même endroit : tes clients, ton contenu, tes ventes, ton équipe et ton propre suivi. Voici l'essentiel en 5 écrans." },
