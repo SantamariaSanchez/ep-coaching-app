@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search, X } from "lucide-react";
+import type { QuickAnswer } from "@/lib/quick-answers";
 import { fuzzyMatch } from "@/lib/fuzzy-search";
 
 export interface NavShortcut {
@@ -71,6 +72,7 @@ export default function CommandPalette({
   const [clients, setClients] = useState<ClientResult[] | null>(null);
   const [loadingClients, setLoadingClients] = useState(false);
   const [libraryResults, setLibraryResults] = useState<LibraryResult[]>([]);
+  const [answers, setAnswers] = useState<QuickAnswer[] | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -136,6 +138,16 @@ export default function CommandPalette({
     }
   }, [open, isCoach, clients, loadingClients]);
 
+  // Réponses rapides (2026-09-30) : chargées une fois à la première
+  // ouverture, filtrées ensuite au clavier sans réseau.
+  useEffect(() => {
+    if (!open || answers !== null) return;
+    fetch("/api/quick-answers")
+      .then((r) => r.json())
+      .then((d) => setAnswers(d.answers ?? []))
+      .catch(() => setAnswers([]));
+  }, [open, answers]);
+
   // Item 38 : recherche dans les bibliothèques de contenu (aliments,
   // exercices, salles, science) — débattue à 250ms pour ne pas taper
   // l'API à chaque frappe, coupée en dessous de 2 caractères comme côté
@@ -170,6 +182,12 @@ export default function CommandPalette({
   // dernière recherche (voir l'effet ci-dessus) plutôt que de le vider via
   // un setState synchrone dans l'effet.
   const shownLibraryResults = q.length >= 2 ? libraryResults : [];
+
+  // Réponse rapide : un mot-clé qui commence par ce qui est tapé (poids,
+  // calories, leads...). Sans saisie, les 2 premières (poids, calories).
+  const shownAnswers = (answers ?? []).filter((a) =>
+    q ? a.keywords.some((k) => k.startsWith(q) || q.split(/\s+/).some((w) => w.length >= 3 && k.startsWith(w))) : false
+  ).slice(0, 3);
 
   const results: Result[] = [
     ...matchedClients.map((c) => ({
@@ -231,7 +249,7 @@ export default function CommandPalette({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={onKeyDownInput}
-            placeholder={isCoach ? "Un client, une page, un exercice..." : "Une page, un exercice, un aliment..."}
+            placeholder={isCoach ? "Un client, une page, « poids », « leads »..." : "Une page, un aliment, « poids », « calories »..."}
             aria-label="Rechercher"
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
           />
@@ -245,7 +263,18 @@ export default function CommandPalette({
         </div>
 
         <div style={{ maxHeight: "50vh", overflowY: "auto", padding: 6 }}>
-          {results.length === 0 && (
+          {shownAnswers.map((a) => (
+            <button
+              key={`qa-${a.key}`}
+              onClick={() => go(a.href)}
+              style={{ display: "block", width: "100%", textAlign: "left", padding: "12px 14px", marginBottom: 6, borderRadius: 10, border: "1px solid rgba(224,30,30,0.35)", background: "linear-gradient(135deg, rgba(224,30,30,0.14), rgba(137,4,4,0.06))", cursor: "pointer", color: "#F5EDED" }}
+            >
+              <span style={{ display: "block", fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.5)" }}>{a.title}</span>
+              <span style={{ display: "block", fontSize: 17, fontWeight: 900, marginTop: 2 }}>{a.value}</span>
+              {a.detail && <span style={{ display: "block", fontSize: 12, color: "rgba(245,237,237,0.6)", marginTop: 2 }}>{a.detail}</span>}
+            </button>
+          ))}
+          {results.length === 0 && shownAnswers.length === 0 && (
             <p style={{ padding: "20px 14px", fontSize: 12.5, color: "rgba(245,237,237,0.35)", textAlign: "center", margin: 0 }}>
               {loadingClients ? "Chargement des clients..." : "Aucun résultat"}
             </p>
