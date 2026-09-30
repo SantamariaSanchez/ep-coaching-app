@@ -1676,45 +1676,43 @@ export default function ClientNutritionView({
   return (
     <div className="px-6 py-8 ep-page-medium">
       {/* Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            Nutrition
-          </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight flex items-center gap-3">
-            Mon suivi
+      <div className="flex items-start justify-between gap-3 mb-6">
+        <div className="min-w-0">
+          <h1 className="text-3xl font-black uppercase tracking-tight">Nutrition</h1>
+          <div className="mt-1.5 flex items-center gap-2 flex-wrap">
+            <p className="text-xs text-[#F5EDED]/40 first-letter:uppercase">
+              {new Intl.DateTimeFormat("fr-FR", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+              }).format(new Date(today + "T12:00:00"))}
+            </p>
             {seasonMode && <SeasonModeBadge mode={seasonMode} />}
-          </h1>
-          <p className="mt-1 text-xs text-[#F5EDED]/30">
-            {new Intl.DateTimeFormat("fr-FR", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-            }).format(new Date(today + "T12:00:00"))}
-          </p>
+          </div>
         </div>
         <button
           onClick={() => openCreateFood("", null)}
-          className="inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[10px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors"
+          aria-label="Créer un aliment"
+          className="flex-shrink-0 inline-flex items-center gap-1.5 bg-[#E01E1E]/10 border border-[#E01E1E]/30 hover:bg-[#E01E1E]/20 text-[#E01E1E] text-[11px] font-bold px-3 py-2.5 rounded-xl transition-colors"
         >
-          <Plus size={11} />
-          Créer un aliment
+          <Plus size={13} />
+          Aliment
         </button>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
+      <div className="flex gap-1 mb-6 border-b border-[#890404]/20">
         {(["today", "history", "courses"] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`px-4 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
+            className={`flex-1 px-2 py-3 text-xs font-bold uppercase tracking-widest transition-colors rounded-t-lg -mb-px whitespace-nowrap ${
               activeTab === tab
                 ? "text-[#E01E1E] border-b-2 border-[#E01E1E]"
                 : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
             }`}
           >
-            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique alimentaire" : "Courses"}
+            {tab === "today" ? "Aujourd'hui" : tab === "history" ? "Historique" : "Courses"}
           </button>
         ))}
       </div>
