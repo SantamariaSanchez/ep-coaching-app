@@ -48,7 +48,7 @@ export const CONTENT_PROMPTS: ContentPrompt[] = [
     title: "10 CTA différents pour la même offre",
     category: "CTA",
     prompt:
-      "Écris-moi 10 CTA différents (une phrase chacun) pour donner envie de [ACTION : s'abonner / prendre RDV / télécharger le guide / commenter]. Contrainte : jamais \"clique sur le lien en bio\" tout seul sans raison, toujours relier le CTA à un bénéfice concret évoqué juste avant. Varie le registre : urgence douce, curiosité, preuve sociale, question directe, défi.",
+      "Écris-moi 10 CTA différents (une phrase chacun) pour donner envie de [ACTION : télécharger le guide gratuit / essayer l'appli / prendre RDV]. Chaque CTA renvoie vers UN lien direct (jamais « commente tel mot »). Contrainte : jamais \"clique sur le lien en bio\" tout seul sans raison, toujours relier le CTA à un bénéfice concret évoqué juste avant. Varie le registre : urgence douce, curiosité, preuve sociale, question directe, défi.",
   },
   {
     title: "Réponse à un commentaire qui mérite un vrai contenu",
@@ -265,8 +265,12 @@ export interface CTAExample {
   goal: string;
 }
 
+// Retour direct 2026-09-30 : plus de « commente tel mot-clé », chaque
+// contenu envoie directement vers un guide gratuit ou vers l'appli (lien
+// suivi ?src= depuis le Studio). Les CTA vers un lien passent en premier.
 export const CTA_EXAMPLES: CTAExample[] = [
-  { text: "Si t'as reconnu au moins 2 de ces signes, commente \"MOI\" et je t'envoie le plan complet.", goal: "Engagement + capture" },
+  { text: "Si t'as reconnu au moins 2 de ces signes, le plan complet est gratuit, lien en bio.", goal: "Lead magnet" },
+  { text: "Tout ce que je viens de t'expliquer est déjà calculé pour toi dans l'appli, essai gratuit en bio.", goal: "Appli" },
   { text: "Abonne-toi si tu veux la suite de cette méthode la semaine prochaine.", goal: "Abonnement" },
   { text: "Le guide complet est en lien dans ma bio, gratuit, pas d'excuse.", goal: "Lead magnet" },
   { text: "Tu veux qu'on regarde ta situation ensemble ? Le lien pour un appel est en bio.", goal: "Prise de RDV" },

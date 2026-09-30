@@ -83,10 +83,9 @@ export interface CoachScript {
   // CTA PARLÉ à la caméra (distinct de instagram_caption ci-dessous), doit
   // citer le même numéro de leadmagnet que source_reference.
   cta: string | null;
-  // Description Instagram à poster avec le reel — retour direct 2026-09-02,
-  // structure 3 blocs (voir Notion Guide rédaction description Instagram) :
-  // ouverture "Abonne toi à @santamariasanchez_ et COMMENTE [numéro]", corps
-  // en "je" (confession/coût/déclic), fermeture "Commente [numéro] si...".
+  // Description à poster avec le contenu. Depuis le 2026-09-30 : plus de
+  // « commente [numéro] », la dernière ligne donne le lien direct (guide
+  // gratuit ou appli) à mettre en bio ou en description.
   instagram_caption: string | null;
   platform: string;
   status: ScriptStatus;
