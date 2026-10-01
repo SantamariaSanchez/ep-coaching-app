@@ -74,6 +74,7 @@ export default function CommandPalette({
   const [libraryResults, setLibraryResults] = useState<LibraryResult[]>([]);
   const [answers, setAnswers] = useState<QuickAnswer[] | null>(null);
   const [noteResults, setNoteResults] = useState<{ id: string; title: string; excerpt: string }[]>([]);
+  const [contentResults, setContentResults] = useState<{ id: string; label: string; kind: "script" | "idee" }[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -173,9 +174,16 @@ export default function CommandPalette({
         .then((r) => r.json())
         .then((d) => setNoteResults(d.results ?? []))
         .catch(() => setNoteResults([]));
+      // Scripts et idées du Studio créatif (coach uniquement).
+      if (isCoach) {
+        fetch(`/api/coach/content-search?q=${encodeURIComponent(q)}`)
+          .then((r) => r.json())
+          .then((d) => setContentResults(d.results ?? []))
+          .catch(() => setContentResults([]));
+      }
     }, 250);
     return () => clearTimeout(t);
-  }, [open, query]);
+  }, [open, query, isCoach]);
 
   if (!open) return null;
 
@@ -210,6 +218,16 @@ export default function CommandPalette({
       label: n.title,
       sub: "Note",
       href: `${isCoach ? "/dashboard/coach" : "/dashboard/client"}/notes?note=${n.id}`,
+    })),
+    // Ouvre Studio directement sur le bon onglet, le contenu mis en avant.
+    ...(isCoach && q.length >= 2 ? contentResults : []).map((c) => ({
+      key: `content-${c.kind}-${c.id}`,
+      label: c.label,
+      sub: c.kind === "script" ? "Script" : "Idée de contenu",
+      href:
+        c.kind === "script"
+          ? `/dashboard/coach/studio?onglet=scripts&script=${c.id}`
+          : `/dashboard/coach/studio?onglet=idees&idee=${c.id}`,
     })),
     ...shownLibraryResults.map((r) => ({
       key: r.key,

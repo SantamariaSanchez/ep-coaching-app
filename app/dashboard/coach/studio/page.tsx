@@ -16,7 +16,14 @@ import IdeationHub from "@/components/coach/IdeationHub";
 // futur post. Voir components/coach/IdeationHub.tsx pour les 5 sections
 // (Landing pages retiré le 2026-08-17, jugé inutile en usage réel ;
 // Générateur transformé en pur générateur de prompt, plus d'appel IA).
-export default async function CoachStudioPage() {
+export default async function CoachStudioPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ onglet?: string; script?: string; idee?: string }>;
+}) {
+  // Liens profonds (recherche globale, voir CommandPalette.tsx) : ouvre le
+  // bon onglet et met en avant le script ou l'idée trouvés.
+  const { onglet, script: focusScriptId, idee: focusIdeaId } = await searchParams;
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -72,6 +79,9 @@ export default async function CoachStudioPage() {
         realLeadsByScriptId={realLeadsByScriptId}
         leadTracking={{ slugByScriptId: leadSlugByScriptId, trackedByScriptId: trackedLeadsByScriptId }}
         platforms={appSetup.completed ? coachPlatforms(appSetup) : undefined}
+        initialTab={onglet}
+        focusScriptId={focusScriptId}
+        focusIdeaId={focusIdeaId}
       />
     </div>
   );

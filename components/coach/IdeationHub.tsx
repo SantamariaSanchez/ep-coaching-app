@@ -41,6 +41,9 @@ export default function IdeationHub({
   realLeadsByScriptId,
   leadTracking,
   platforms,
+  initialTab,
+  focusScriptId,
+  focusIdeaId,
 }: {
   initialIdeas: ContentIdea[];
   initialNotes: IdeationNote[];
@@ -50,8 +53,22 @@ export default function IdeationHub({
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
   platforms?: string[];
+  /** Onglet ouvert à l'arrivée (?onglet=, lien depuis la recherche globale). */
+  initialTab?: string;
+  focusScriptId?: string;
+  focusIdeaId?: string;
 }) {
-  const [tab, setTab] = useState<Tab>("idees");
+  const tabFromLink = (): Tab =>
+    TABS.some((t) => t.id === initialTab) ? (initialTab as Tab) : focusScriptId ? "scripts" : "idees";
+  const [tab, setTab] = useState<Tab>(tabFromLink);
+  // Nouvelle recherche alors qu'on est déjà sur Studio : même page, donc
+  // l'état reste ; on suit le nouveau lien (ajustement pendant le rendu).
+  const linkKey = `${initialTab ?? ""}|${focusScriptId ?? ""}|${focusIdeaId ?? ""}`;
+  const [seenLinkKey, setSeenLinkKey] = useState(linkKey);
+  if (linkKey !== seenLinkKey) {
+    setSeenLinkKey(linkKey);
+    if (initialTab || focusScriptId || focusIdeaId) setTab(tabFromLink());
+  }
   // Perf (retour direct 2026-09-18, voir studio/page.tsx et
   // SocialGenerator.tsx) : le texte intégral des guides ne se charge plus
   // qu'à la demande, la première fois que cet onglet est réellement ouvert
@@ -60,7 +77,7 @@ export default function IdeationHub({
   // si on quitte puis revient sur l'onglet (même doctrine que le montage
   // permanent des 5 sous-espaces ci-dessous : ne jamais perdre un état déjà
   // acquis).
-  const [hasOpenedGenerator, setHasOpenedGenerator] = useState(false);
+  const [hasOpenedGenerator, setHasOpenedGenerator] = useState(initialTab === "generateur");
 
   return (
     <div>
@@ -111,13 +128,13 @@ export default function IdeationHub({
         montés en permanence, seule la visibilité change.
       */}
       <div hidden={tab !== "idees"}>
-        <ContentStudio initialIdeas={initialIdeas} platforms={platforms} />
+        <ContentStudio initialIdeas={initialIdeas} platforms={platforms} focusIdeaId={focusIdeaId} />
       </div>
       <div hidden={tab !== "generateur"}>
         <SocialGenerator active={hasOpenedGenerator} />
       </div>
       <div hidden={tab !== "scripts"}>
-        <IdeationScripts initialScripts={initialScripts} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <IdeationScripts initialScripts={initialScripts} focusScriptId={focusScriptId} canvas={canvas} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={tab !== "notes"}>
         <IdeationNotes initialNotes={initialNotes} />

@@ -108,12 +108,15 @@ const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
 // partagée par tous, à copier-coller plutôt qu'à modifier.
 export default function IdeationScripts({
   initialScripts,
+  focusScriptId,
   canvas,
   realLeadsByScriptId,
   leadTracking,
   platforms,
 }: {
   initialScripts: CoachScript[];
+  /** Script à mettre en avant (lien depuis la recherche globale). */
+  focusScriptId?: string;
   canvas: BusinessCanvas | null;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
@@ -121,6 +124,11 @@ export default function IdeationScripts({
   platforms?: string[];
 }) {
   const [subTab, setSubTab] = useState<Tab>("mes-scripts");
+  const [seenFocus, setSeenFocus] = useState(focusScriptId);
+  if (focusScriptId !== seenFocus) {
+    setSeenFocus(focusScriptId);
+    if (focusScriptId) setSubTab("mes-scripts");
+  }
 
   return (
     <div>
@@ -159,7 +167,7 @@ export default function IdeationScripts({
         coûte rien. Seule la visibilité change désormais.
       */}
       <div hidden={subTab !== "mes-scripts"}>
-        <MyScripts initialScripts={initialScripts} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
+        <MyScripts initialScripts={initialScripts} focusScriptId={focusScriptId} realLeadsByScriptId={realLeadsByScriptId} leadTracking={leadTracking} platforms={platforms} />
       </div>
       <div hidden={subTab !== "prompts"}>
         <PromptLibrary canvas={canvas} />
@@ -239,11 +247,13 @@ const selectStyle: React.CSSProperties = {
 
 function MyScripts({
   initialScripts,
+  focusScriptId,
   realLeadsByScriptId,
   leadTracking,
   platforms,
 }: {
   initialScripts: CoachScript[];
+  focusScriptId?: string;
   realLeadsByScriptId: Record<string, SlugLeadCounts>;
   leadTracking?: LeadTracking;
   platforms?: string[];
@@ -251,9 +261,11 @@ function MyScripts({
   // Seules les plateformes où le coach publie (réglage "Mon appli").
   const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => !platforms?.length || platforms.includes(id));
   const [scripts, setScripts] = useState(initialScripts);
-  useEffect(() => {
+  const [seenInitial, setSeenInitial] = useState(initialScripts);
+  if (initialScripts !== seenInitial) {
+    setSeenInitial(initialScripts);
     setScripts(initialScripts);
-  }, [initialScripts]);
+  }
 
   // Tournage automatique (retour direct 2026-09-18 : "moi je veux pas un
   // bouton Prompteur sur chaque script mais un seul bouton en haut et
@@ -366,7 +378,9 @@ function MyScripts({
   // une fois publié, le script est terminé, replié par défaut plutôt que de
   // rester mélangé aux scripts encore à produire (voir avgViews plus haut,
   // qui s'appuie déjà sur ce même statut).
-  const [showPublished, setShowPublished] = useState(false);
+  const [showPublished, setShowPublished] = useState(
+    () => !!focusScriptId && initialScripts.some((s) => s.id === focusScriptId && s.status === "publie")
+  );
 
   // Retour direct 2026-09-11 ("faut une utilité de tracking derrière pour
   // prendre des décisions, rajoute une barre de recherche... pas au mot
@@ -389,6 +403,28 @@ function MyScripts({
   const [statusFilter, setStatusFilter] = useState<ScriptStatus | "all">("all");
   const [platformFilter, setPlatformFilter] = useState<string | "all">("all");
   const [pillarFilter, setPillarFilter] = useState<string | "all">("all");
+
+  // Lien depuis la recherche globale (?script=) : le script visé doit être
+  // visible, donc on lève recherche et filtres en cours, on déplie les
+  // publiés s'il en fait partie, puis on fait défiler jusqu'à lui.
+  const [seenFocusId, setSeenFocusId] = useState(focusScriptId);
+  if (focusScriptId !== seenFocusId) {
+    setSeenFocusId(focusScriptId);
+    if (focusScriptId) {
+      setSearchQuery("");
+      setStatusFilter("all");
+      setPlatformFilter("all");
+      setPillarFilter("all");
+      if (scripts.some((s) => s.id === focusScriptId && s.status === "publie")) setShowPublished(true);
+    }
+  }
+  useEffect(() => {
+    if (!focusScriptId) return;
+    const t = setTimeout(() => {
+      document.getElementById(`script-${focusScriptId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [focusScriptId]);
   const pillarOptions = useMemo(
     () => Array.from(new Set(scripts.map((s) => s.pillar).filter((p): p is string => !!p))).sort(),
     [scripts]
@@ -947,7 +983,18 @@ function MyScripts({
     const isStale = stageDays >= STALE_DAYS[script.status];
     const isVeryStale = stageDays >= STALE_DAYS[script.status] * 2;
     return (
-            <div key={script.id} className="ep-card" style={{ padding: 16 }}>
+            <div
+              key={script.id}
+              id={`script-${script.id}`}
+              className="ep-card"
+              style={{
+                padding: 16,
+                scrollMarginTop: 80,
+                ...(script.id === focusScriptId
+                  ? { borderColor: "rgba(224,30,30,0.7)", boxShadow: "0 0 0 1px rgba(224,30,30,0.45), 0 0 28px rgba(224,30,30,0.22)" }
+                  : null),
+              }}
+            >
               <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
                 {/* Plateforme figée une fois le script créé (retour direct
                     2026-09-29) : elle se choisit à la création, jamais après. */}

@@ -29,7 +29,16 @@ const STATUS_META: Record<ContentStatus, { label: string; color: string }> = {
 // mûrir des idées de contenu (Insta/YouTube/LinkedIn) au lieu de les
 // perdre. Statut = "où j'en suis", pas un vrai kanban drag-and-drop — plus
 // simple à utiliser vite entre deux clients qu'un board à glisser-déposer.
-export default function ContentStudio({ initialIdeas, platforms }: { initialIdeas: ContentIdea[]; platforms?: string[] }) {
+export default function ContentStudio({
+  initialIdeas,
+  platforms,
+  focusIdeaId,
+}: {
+  initialIdeas: ContentIdea[];
+  platforms?: string[];
+  /** Idée à mettre en avant (lien depuis la recherche globale). */
+  focusIdeaId?: string;
+}) {
   // Plateformes du coach (Mon appli) + Général, et toujours celles déjà utilisées.
   const CONTENT_PLATFORM_ORDER = ALL_PLATFORM_ORDER.filter(
     (p) => p === "general" || !platforms?.length || platforms.includes(p) || initialIdeas.some((i) => i.platform === p)
@@ -39,10 +48,27 @@ export default function ContentStudio({ initialIdeas, platforms }: { initialIdea
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
   // initialIdeas change (même piège que todayLogs dans ClientNutritionView —
   // useState ne reprend jamais un nouveau prop après le premier rendu).
-  useEffect(() => {
+  const [seenInitial, setSeenInitial] = useState(initialIdeas);
+  if (initialIdeas !== seenInitial) {
+    setSeenInitial(initialIdeas);
     setIdeas(initialIdeas);
-  }, [initialIdeas]);
+  }
   const [platformFilter, setPlatformFilter] = useState<ContentPlatform | "all">("all");
+
+  // Lien depuis la recherche globale (?idee=) : filtre levé pour que l'idée
+  // soit visible, puis défilement jusqu'à elle.
+  const [seenFocusId, setSeenFocusId] = useState(focusIdeaId);
+  if (focusIdeaId !== seenFocusId) {
+    setSeenFocusId(focusIdeaId);
+    if (focusIdeaId) setPlatformFilter("all");
+  }
+  useEffect(() => {
+    if (!focusIdeaId) return;
+    const t = setTimeout(() => {
+      document.getElementById(`idee-${focusIdeaId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 120);
+    return () => clearTimeout(t);
+  }, [focusIdeaId]);
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState("");
   const [platform, setPlatform] = useState<ContentPlatform>(CONTENT_PLATFORM_ORDER[0] ?? "general");
@@ -226,7 +252,18 @@ export default function ContentStudio({ initialIdeas, platforms }: { initialIdea
             const meta = PLATFORM_META[idea.platform];
             const Icon = meta.icon;
             return (
-              <div key={idea.id} className="ep-card" style={{ padding: 16 }}>
+              <div
+                key={idea.id}
+                id={`idee-${idea.id}`}
+                className="ep-card"
+                style={{
+                  padding: 16,
+                  scrollMarginTop: 80,
+                  ...(idea.id === focusIdeaId
+                    ? { borderColor: "rgba(224,30,30,0.7)", boxShadow: "0 0 0 1px rgba(224,30,30,0.45), 0 0 28px rgba(224,30,30,0.22)" }
+                    : null),
+                }}
+              >
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
                   <div
                     style={{

@@ -14,7 +14,8 @@ cochée, commit + push à chaque étape, cocher au fil de l'eau.
         formations, ventes, équipe, compta, pilotage)
   - [x] Client : Aujourd'hui · Training · Suivi · Coach · Plus (Live, formations, communauté dans Plus)
   - [x] Page « Plus » claire, groupée, avec recherche
-- [x] Recherche globale : pages, clients, bibliothèque + réponses rapides (reste : notes, scripts)
+- [x] Recherche globale : pages, clients, bibliothèque, notes, scripts et idées du Studio (ouverts
+      directement, mis en avant) + réponses rapides
 - [x] Réponses en 1 geste : poids, calories, sommeil, pas, séances, clients, bilans, leads
 - [x] Réponse « combien payer mon Head of Sales » (paie de l'équipe)
 - [x] Coquille native (Capacitor) : barre d'état, haptique, push natif (clés Firebase à poser),
