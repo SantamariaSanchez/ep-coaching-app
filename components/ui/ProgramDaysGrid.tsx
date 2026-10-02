@@ -9,7 +9,8 @@
 import { useState } from "react";
 import type { ProgramWithDays } from "@/utils/programs";
 import { accessoriesForSession } from "@/lib/session-accessories";
-import { Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
+import { useStartSession } from "@/hooks/useStartSession";
+import { Backpack, ExternalLink, ChevronDown, ChevronUp, Play } from "lucide-react";
 
 // "À prévoir" (lib/session-accessories.ts) existait déjà dans la séance en
 // cours (SessionView.tsx, 2026-09-08) mais nulle part en amont — retour
@@ -22,13 +23,60 @@ import { Backpack, ExternalLink, ChevronDown, ChevronUp } from "lucide-react";
 // direct") : le label du jour + les accessoires à prévoir suffisent pour un
 // coup d'oeil, la liste complète des exercices ne s'affiche qu'au clic.
 
+// Bouton "Démarrer" de chaque jour (2026-10-02) : la page "Mon programme"
+// montrait les séances sans aucun moyen d'en lancer une, il fallait savoir
+// qu'il faut passer par le Logbook. Pour un nouveau membre qui vient de
+// choisir son programme, c'était un mur juste avant la toute première séance
+// loguée. Même appel que le Logbook (hooks/useStartSession.ts) : une séance
+// déjà ouverte aujourd'hui sur ce jour est reprise, jamais dupliquée.
+function StartDayButton({
+  dayLabel,
+  programId,
+  muscleGroups,
+  sessionBasePath,
+}: {
+  dayLabel: string;
+  programId: string;
+  muscleGroups: string[];
+  sessionBasePath: string;
+}) {
+  const { start, loading, error } = useStartSession(sessionBasePath);
+  return (
+    <div style={{ marginTop: 12 }}>
+      <button
+        type="button"
+        onClick={() => start({ dayLabel, programId, muscleGroups })}
+        disabled={loading}
+        aria-label={`Démarrer la séance ${dayLabel}`}
+        className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[11px] font-bold uppercase tracking-widest py-2.5 transition-colors shadow-[0_0_18px_rgba(224,30,30,0.25)]"
+      >
+        {loading ? (
+          <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+        ) : (
+          <Play size={12} fill="currentColor" />
+        )}
+        {loading ? "Ouverture…" : "Démarrer cette séance"}
+      </button>
+      {error && <p className="text-xs text-red-400 mt-1.5">{error}</p>}
+    </div>
+  );
+}
+
 export default function ProgramDaysGrid({
   program,
   accessoriesByName,
+  sessionBasePath,
 }: {
   program: ProgramWithDays;
   /** Bagage d'accessoires choisi par exercice (exercise_library.accessories). */
   accessoriesByName?: Record<string, string[]>;
+  /**
+   * Base du logbook de la personne (client ou coach pour son propre suivi).
+   * Fourni = chaque jour affiche un bouton "Démarrer cette séance".
+   * Absent = grille en lecture seule (ex. vue d'un programme qui n'est pas
+   * celui de la personne connectée).
+   */
+  sessionBasePath?: string;
 }) {
   const [openDays, setOpenDays] = useState<Record<string, boolean>>({});
 
@@ -135,6 +183,15 @@ export default function ProgramDaysGrid({
                   </div>
                 )}
               </>
+            )}
+
+            {sessionBasePath && day.exercises.length > 0 && (
+              <StartDayButton
+                dayLabel={day.day_label}
+                programId={program.id}
+                muscleGroups={[...new Set(day.exercises.map((ex) => ex.muscle_group).filter(Boolean) as string[])]}
+                sessionBasePath={sessionBasePath}
+              />
             )}
           </div>
           );

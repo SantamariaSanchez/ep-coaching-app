@@ -65,6 +65,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ sessionId: (data as { id: string }).id });
   } catch (e) {
     console.error("Create session error:", e);
-    return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
+    return NextResponse.json({ error: "Impossible de démarrer la séance. Réessaie." }, { status: 500 });
   }
 }

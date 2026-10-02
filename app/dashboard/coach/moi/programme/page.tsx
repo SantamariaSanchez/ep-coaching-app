@@ -57,7 +57,7 @@ export default async function CoachMonProgrammePage() {
         <>
           <MesocycleStatusBanner startDate={program.mesocycle_start_date} weeks={program.mesocycle_weeks} />
           <div style={{ marginBottom: 24 }}>
-            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} />
+            <ProgramDaysGrid program={program} accessoriesByName={accessoriesByName} sessionBasePath="/dashboard/coach/moi/logbook" />
           </div>
           <VolumeIntensitySection program={program} workoutLogs={workoutLogs} sessionsThisWeek={sessionsThisWeek} />
         </>

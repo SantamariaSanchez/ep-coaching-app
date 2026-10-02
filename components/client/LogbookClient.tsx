@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { useStartSession } from "@/hooks/useStartSession";
 import type { ProgramWithDays } from "@/utils/programs";
 import type { Session, SessionWithSets, PersonalRecord } from "@/utils/sessions";
 import type { CheckIn } from "@/utils/checkins";
@@ -58,31 +59,10 @@ function StartSessionButton({
   lastSession: Session | null;
   sessionBasePath: string;
 }) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
+  const { start, loading, error: startError } = useStartSession(sessionBasePath);
 
-  async function handleStart() {
-    setLoading(true);
-    setStartError(null);
-    try {
-      const res = await fetch("/api/client/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ dayLabel, programId, muscleGroups }),
-      });
-      const json = await res.json();
-      const sessionId: string | undefined = json.sessionId;
-      if (!sessionId) {
-        setStartError(json.error ?? "Impossible de démarrer la séance. Réessaie.");
-        setLoading(false);
-        return;
-      }
-      router.push(`${sessionBasePath}/session/${sessionId}`);
-    } catch {
-      setStartError("Impossible de démarrer, vérifie ta connexion.");
-      setLoading(false);
-    }
+  function handleStart() {
+    start({ dayLabel, programId, muscleGroups });
   }
 
   return (
@@ -136,36 +116,15 @@ function StartSessionButton({
 }
 
 function FreeSessionButton({ sessionBasePath }: { sessionBasePath: string }) {
-  const router = useRouter();
   const [asking, setAsking] = useState(false);
   const [dayLabel, setDayLabel] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [startError, setStartError] = useState<string | null>(null);
+  const { start, loading, error: startError } = useStartSession(sessionBasePath);
 
-  async function handleStart() {
-    setLoading(true);
-    setStartError(null);
-    try {
-      const res = await fetch("/api/client/sessions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        // Le texte tapé sert aussi à cibler l'échauffement (voir
-        // detectWarmupTypes dans lib/warmup-data.ts) — d'où l'intérêt de
-        // demander "dos triceps" plutôt que de figer "Séance libre".
-        body: JSON.stringify({ dayLabel: dayLabel.trim() || "Séance libre", muscleGroups: [] }),
-      });
-      const json = await res.json();
-      const sessionId: string | undefined = json.sessionId;
-      if (!sessionId) {
-        setStartError(json.error ?? "Impossible de démarrer la séance. Réessaie.");
-        setLoading(false);
-        return;
-      }
-      router.push(`${sessionBasePath}/session/${sessionId}`);
-    } catch {
-      setStartError("Impossible de démarrer, vérifie ta connexion.");
-      setLoading(false);
-    }
+  function handleStart() {
+    // Le texte tapé sert aussi à cibler l'échauffement (voir
+    // detectWarmupTypes dans lib/warmup-data.ts) — d'où l'intérêt de
+    // demander "dos triceps" plutôt que de figer "Séance libre".
+    start({ dayLabel: dayLabel.trim() || "Séance libre", muscleGroups: [] });
   }
 
   if (asking) {
