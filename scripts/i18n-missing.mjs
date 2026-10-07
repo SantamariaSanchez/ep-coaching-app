@@ -22,9 +22,26 @@ for (const f of files) {
   if (f.endsWith("i18n-en.ts")) continue;
   const src = readFileSync(f, "utf8");
   if (!/useT\(|getT\(|makeT\(/.test(src)) continue;
-  for (const m of src.matchAll(new RegExp(String.raw`\bt\(\s*` + STR, "g"))) {
+  for (const m of src.matchAll(new RegExp(String.raw`\btr?\(\s*` + STR, "g"))) {
     const k = JSON.parse(`"${m[1]}"`);
     if (!keys.has(k)) missing.set(k, f);
+  }
+}
+// Fichiers de données dont les libellés (label, title, hint...) sont
+// traduits au moment de l'affichage avec t(variable).
+const DATA_FILES = [
+  "components/ui/DashboardNav.tsx",
+  "lib/notification-preferences.ts",
+  "lib/personalization.ts",
+  "lib/accessibility.ts",
+  "components/coach/MyPlatformSubscriptionCard.tsx",
+  "components/settings/LegalLinksCard.tsx",
+];
+for (const f of DATA_FILES) {
+  const src = readFileSync(f, "utf8");
+  for (const m of src.matchAll(new RegExp(String.raw`(?:label|title|description|hint|subtitle|group): ` + STR, "g"))) {
+    const k = JSON.parse(`"${m[1]}"`);
+    if (k && /[A-Za-zÀ-ÿ]{2,}/.test(k) && !keys.has(k)) missing.set(k, f);
   }
 }
 for (const [k, f] of missing) console.log(`${JSON.stringify(k)}  <- ${f}`);

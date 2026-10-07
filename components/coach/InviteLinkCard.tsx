@@ -1,10 +1,12 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Link2, Copy, Check } from "lucide-react";
 import { ensureInviteCode } from "@/app/dashboard/coach/profile/actions";
 
 export default function InviteLinkCard({ inviteCode }: { inviteCode: string | null }) {
+  const t = useT();
   const [code, setCode] = useState(inviteCode);
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -29,13 +31,12 @@ export default function InviteLinkCard({ inviteCode }: { inviteCode: string | nu
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Tes clients
+        {t("Tes clients")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Ton lien d&apos;invitation</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Ton lien d'invitation")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "0 0 12px", lineHeight: 1.6 }}>
-          Partage ce lien à tes clients pour qu&apos;ils s&apos;inscrivent et soient
-          automatiquement rattachés à toi, jamais à un autre coach de la plateforme.
+          {t("Partage ce lien à tes clients pour qu'ils s'inscrivent et soient automatiquement rattachés à toi, jamais à un autre coach de la plateforme.")}
         </p>
         {link ? (
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>

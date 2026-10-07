@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { LifeBuoy, FileText, ShieldCheck, ScrollText, ChevronRight } from "lucide-react";
 
@@ -9,10 +12,11 @@ const LINKS = [
 ];
 
 export default function LegalLinksCard() {
+  const t = useT();
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-        Assistance &amp; légal
+        {t("Assistance & légal")}
       </p>
       <div className="space-y-0.5">
         {LINKS.map(({ label, href, icon: Icon }) => (
@@ -23,7 +27,7 @@ export default function LegalLinksCard() {
           >
             <span className="flex items-center gap-2.5 text-sm text-white font-medium">
               <Icon size={14} className="text-[#F5EDED]/40" />
-              {label}
+              {t(label)}
             </span>
             <ChevronRight size={13} className="text-[#F5EDED]/20 group-hover:text-[#F5EDED]/50 transition-colors" />
           </Link>

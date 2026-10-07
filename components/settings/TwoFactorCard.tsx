@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, ShieldOff } from "lucide-react";
@@ -16,6 +17,7 @@ export default function TwoFactorCard({
   enabled: boolean;
   mandatory: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -36,7 +38,7 @@ export default function TwoFactorCard({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mt-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-        Double authentification
+        {t("Double authentification")}
       </p>
 
       <div className="flex items-start justify-between gap-3">
@@ -55,7 +57,7 @@ export default function TwoFactorCard({
 
         {enabled ? (
           <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
-            Active
+            {t("Active")}
           </span>
         ) : (
           <ShieldCheck size={16} className="text-[#E01E1E]/60 flex-shrink-0 mt-0.5" />
@@ -73,7 +75,7 @@ export default function TwoFactorCard({
               onClick={() => setOpen(true)}
               className="flex items-center justify-center gap-2 w-full bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
             >
-              <ShieldCheck size={13} /> Activer
+              <ShieldCheck size={13} />{" "}{t("Activer")}
             </button>
           )}
         </div>

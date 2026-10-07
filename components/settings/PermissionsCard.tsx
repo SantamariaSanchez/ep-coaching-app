@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bell, Footprints, ChevronRight, AlertTriangle, Moon, Camera, MapPin, Contact, Send } from "lucide-react";
@@ -31,6 +32,7 @@ export default function PermissionsCard({
   quietHoursStart?: number | null;
   quietHoursEnd?: number | null;
 }) {
+  const tr = useT();
   const [push, setPush] = useState(pushSubscribed);
   const [pushLoading, setPushLoading] = useState(false);
   const [pushError, setPushError] = useState<string | null>(null);
@@ -220,14 +222,14 @@ export default function PermissionsCard({
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">Autorisations</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{tr("Autorisations")}</p>
 
       <div className="pb-4 mb-4 border-b border-[#890404]/10">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
             <Bell size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-white">Notifications push</p>
+              <p className="text-sm font-semibold text-white">{tr("Notifications push")}</p>
               <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
                 {push ? "Activées sur cet appareil" : "Non activées"}
               </p>
@@ -235,7 +237,7 @@ export default function PermissionsCard({
           </div>
           {push ? (
             <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
-              Activées
+              {tr("Activées")}
             </span>
           ) : (
             <button
@@ -258,12 +260,12 @@ export default function PermissionsCard({
         {push && (
           <div className="flex items-center gap-2.5 mt-3.5 pt-3.5 border-t border-[#890404]/10">
             <Moon size={13} className="text-[#F5EDED]/30 flex-shrink-0" />
-            <span className="text-[11px] text-[#F5EDED]/45 flex-shrink-0">Silence de</span>
+            <span className="text-[11px] text-[#F5EDED]/45 flex-shrink-0">{tr("Silence de")}</span>
             <select
               value={quietStart}
               onChange={(e) => saveQuietHours(Number(e.target.value), quietEnd)}
               disabled={quietSaving}
-              aria-label="Heure de début du silence"
+              aria-label={tr("Heure de début du silence")}
               className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
             >
               {HOURS.map((h) => (
@@ -275,7 +277,7 @@ export default function PermissionsCard({
               value={quietEnd}
               onChange={(e) => saveQuietHours(quietStart, Number(e.target.value))}
               disabled={quietSaving}
-              aria-label="Heure de fin du silence"
+              aria-label={tr("Heure de fin du silence")}
               className="bg-black/30 border border-[#890404]/25 rounded-md px-1.5 py-1 text-[11px] text-white focus:outline-none"
             >
               {HOURS.map((h) => (
@@ -333,7 +335,7 @@ export default function PermissionsCard({
         <div className="flex items-center gap-2.5">
           <Footprints size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-white">Mouvement (podomètre)</p>
+            <p className="text-sm font-semibold text-white">{tr("Mouvement (podomètre)")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
               {pedometerEnabled ? "Activé, réglages dans Steps" : "Non activé"}
             </p>
@@ -351,7 +353,7 @@ export default function PermissionsCard({
         <div className="flex items-center gap-2.5">
           <Camera size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-white">Photos & vidéo</p>
+            <p className="text-sm font-semibold text-white">{tr("Photos & vidéo")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
               {cameraStatus === "granted"
                 ? "Autorisées sur cet appareil"
@@ -363,7 +365,7 @@ export default function PermissionsCard({
         </div>
         {cameraStatus === "granted" ? (
           <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
-            Activées
+            {tr("Activées")}
           </span>
         ) : (
           <button
@@ -380,7 +382,7 @@ export default function PermissionsCard({
         <div className="flex items-center gap-2.5">
           <MapPin size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
           <div>
-            <p className="text-sm font-semibold text-white">Localisation</p>
+            <p className="text-sm font-semibold text-white">{tr("Localisation")}</p>
             <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">
               {locationStatus === "granted"
                 ? "Autorisée sur cet appareil"
@@ -392,7 +394,7 @@ export default function PermissionsCard({
         </div>
         {locationStatus === "granted" ? (
           <span className="text-[10px] font-bold uppercase tracking-widest text-green-400 bg-green-500/10 border border-green-500/25 px-2.5 py-1 rounded-full flex-shrink-0">
-            Activée
+            {tr("Activée")}
           </span>
         ) : (
           <button
@@ -410,15 +412,15 @@ export default function PermissionsCard({
           <div className="flex items-center gap-2.5">
             <Contact size={14} className="text-[#F5EDED]/40 flex-shrink-0" />
             <div>
-              <p className="text-sm font-semibold text-white">Contacts</p>
-              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">Utilisés pour inviter un proche en parrainage</p>
+              <p className="text-sm font-semibold text-white">{tr("Contacts")}</p>
+              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5">{tr("Utilisés pour inviter un proche en parrainage")}</p>
             </div>
           </div>
           <button
             onClick={pickContact}
             className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[11px] font-bold uppercase tracking-widest px-3 py-2 rounded-lg transition-colors flex-shrink-0"
           >
-            <Contact size={12} /> Choisir
+            <Contact size={12} />{" "}{tr("Choisir")}
           </button>
         </div>
       )}

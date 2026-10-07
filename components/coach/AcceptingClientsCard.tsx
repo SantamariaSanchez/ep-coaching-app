@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { UserPlus, UserX, Check, Clock } from "lucide-react";
 import { toggleAcceptingNewClients, markWaitlistContacted } from "@/app/dashboard/coach/profile/actions";
@@ -14,6 +15,7 @@ export default function AcceptingClientsCard({
   initialAccepting: boolean;
   waitlist: WaitlistEntry[];
 }) {
+  const t = useT();
   const [accepting, setAccepting] = useState(initialAccepting);
   const [isPending, startTransition] = useTransition();
   const [contactedIds, setContactedIds] = useState<Set<string>>(
@@ -58,9 +60,9 @@ export default function AcceptingClientsCard({
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Capacité
+        {t("Capacité")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Nouveaux clients</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Nouveaux clients")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {accepting ? (
@@ -99,7 +101,7 @@ export default function AcceptingClientsCard({
         {waitlist.length > 0 && (
           <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(224,30,30,0.12)" }}>
             <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)", marginBottom: 10 }}>
-              {waitlist.length} en attente
+              {waitlist.length}{" "}{t("en attente")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {waitlist.map((entry) => {
@@ -122,7 +124,7 @@ export default function AcceptingClientsCard({
                     </div>
                     {contacted ? (
                       <span style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 10, fontWeight: 700, color: "#4ade80", flexShrink: 0 }}>
-                        <Check size={12} /> Contacté
+                        <Check size={12} />{" "}{t("Contacté")}
                       </span>
                     ) : (
                       <button
@@ -135,7 +137,7 @@ export default function AcceptingClientsCard({
                           padding: "5px 9px", cursor: "pointer",
                         }}
                       >
-                        <Clock size={11} /> Marquer contacté
+                        <Clock size={11} />{" "}{t("Marquer contacté")}
                       </button>
                     )}
                   </div>

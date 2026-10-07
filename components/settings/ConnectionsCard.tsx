@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { Watch, CheckCircle2, ChevronRight } from "lucide-react";
 
@@ -18,11 +21,12 @@ export default function ConnectionsCard({
   ouraConfigured: boolean;
   ouraHref: string;
 }) {
+  const t = useT();
   if (!ouraConfigured) return null;
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">Connexions</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{t("Connexions")}</p>
 
       <Link
         href={ouraHref}
@@ -30,15 +34,15 @@ export default function ConnectionsCard({
       >
         <div className="flex items-center gap-2.5">
           <Watch size={14} className="text-[#F5EDED]/40" />
-          <span className="text-sm text-white font-medium">Bague Oura</span>
+          <span className="text-sm text-white font-medium">{t("Bague Oura")}</span>
         </div>
         <div className="flex items-center gap-2">
           {ouraConnected ? (
             <span className="flex items-center gap-1 text-[11px] font-bold text-green-400">
-              <CheckCircle2 size={12} /> Connectée
+              <CheckCircle2 size={12} />{" "}{t("Connectée")}
             </span>
           ) : (
-            <span className="text-[11px] font-bold text-[#F5EDED]/30">Non connectée</span>
+            <span className="text-[11px] font-bold text-[#F5EDED]/30">{t("Non connectée")}</span>
           )}
           <ChevronRight size={13} className="text-[#F5EDED]/20" />
         </div>

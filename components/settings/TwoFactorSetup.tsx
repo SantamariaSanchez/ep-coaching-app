@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
@@ -41,6 +42,7 @@ export default function TwoFactorSetup({
   onDone?: () => void;
   redirectTo?: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
   const [code, setCode] = useState("");
@@ -166,8 +168,7 @@ export default function TwoFactorSetup({
   return (
     <div>
       <p className="text-[12px] text-[#F5EDED]/60 leading-relaxed mb-3">
-        Scanne ce QR code avec ton application d&apos;authentification (Google
-        Authenticator, Authy, 1Password…), puis saisis le code à 6 chiffres qu&apos;elle affiche.
+        {t("Scanne ce QR code avec ton application d'authentification (Google Authenticator, Authy, 1Password…), puis saisis le code à 6 chiffres qu'elle affiche.")}
       </p>
 
       {/* Le QR n'est qu'un raccourci : la clé affichée juste en dessous permet
@@ -177,7 +178,7 @@ export default function TwoFactorSetup({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={enrollment.qrSrc}
-            alt="QR code de double authentification"
+            alt={t("QR code de double authentification")}
             width={180}
             height={180}
             onError={() => setQrBroken(true)}
@@ -187,13 +188,12 @@ export default function TwoFactorSetup({
 
       {qrBroken && (
         <p className="text-[12px] text-[#FDC4C4] leading-relaxed mb-3">
-          Le QR code n&apos;a pas pu s&apos;afficher. Saisis la clé ci dessous à la
-          main dans ton application d&apos;authentification, ça revient exactement au même.
+          {t("Le QR code n'a pas pu s'afficher. Saisis la clé ci dessous à la main dans ton application d'authentification, ça revient exactement au même.")}
         </p>
       )}
 
       <p className="text-[10px] text-[#F5EDED]/30 text-center mb-1 uppercase tracking-widest font-bold">
-        Ou saisis cette clé à la main
+        {t("Ou saisis cette clé à la main")}
       </p>
       <p className="text-[11px] text-[#F5EDED]/55 text-center font-mono break-all mb-4">
         {enrollment.secret}

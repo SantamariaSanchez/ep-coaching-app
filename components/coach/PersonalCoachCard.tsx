@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, LogOut } from "lucide-react";
@@ -10,6 +11,7 @@ export default function PersonalCoachCard({
 }: {
   linkedCoachName: string | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
@@ -40,13 +42,13 @@ export default function PersonalCoachCard({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
-        Mon coaching personnel
+        {t("Mon coaching personnel")}
       </p>
 
       {linkedCoachName ? (
         <>
           <p className="text-sm text-[#F5EDED]/65 mb-4">
-            Tu es actuellement suivi par <strong className="text-[#F5EDED]">{linkedCoachName}</strong>.
+            {t("Tu es actuellement suivi par")}{" "}<strong className="text-[#F5EDED]">{linkedCoachName}</strong>.
           </p>
           <div className="flex flex-wrap gap-2">
             <a
@@ -54,7 +56,7 @@ export default function PersonalCoachCard({
               className="ep-btn-primary"
               style={{ textDecoration: "none", fontSize: 11 }}
             >
-              Ouvrir mon espace client
+              {t("Ouvrir mon espace client")}
               <ArrowRight size={14} />
             </a>
             <button
@@ -64,21 +66,20 @@ export default function PersonalCoachCard({
               style={{ fontSize: 11 }}
             >
               <LogOut size={13} />
-              Quitter ce coach
+              {t("Quitter ce coach")}
             </button>
           </div>
         </>
       ) : (
         <>
           <p className="text-sm text-[#F5EDED]/50 mb-4 leading-relaxed">
-            Toi aussi tu peux être suivi par un autre coach de la plateforme : renseigne son code
-            d&apos;invitation pour accéder à ton propre espace client.
+            {t("Toi aussi tu peux être suivi par un autre coach de la plateforme : renseigne son code d'invitation pour accéder à ton propre espace client.")}
           </p>
           <div className="flex gap-2">
             <input
               value={code}
               onChange={(e) => setCode(e.target.value)}
-              placeholder="Code d'invitation" aria-label="Code d'invitation"
+              placeholder={t("Code d'invitation")} aria-label={t("Code d'invitation")}
               className="ep-input"
               style={{ flex: 1 }}
             />
@@ -88,7 +89,7 @@ export default function PersonalCoachCard({
               className="ep-btn-primary"
               style={{ fontSize: 11 }}
             >
-              Rejoindre
+              {t("Rejoindre")}
             </button>
           </div>
         </>

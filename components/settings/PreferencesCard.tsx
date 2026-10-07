@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { SlidersHorizontal, Check } from "lucide-react";
@@ -21,6 +22,7 @@ export default function PreferencesCard({
 }: {
   initialPreferences: MemberPreferences | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [answers, setAnswers] = useState<Partial<MemberPreferences>>(initialPreferences ?? {});
   const [isPending, startTransition] = useTransition();
@@ -49,14 +51,12 @@ export default function PreferencesCard({
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1 flex items-center gap-1.5">
-        <SlidersHorizontal size={12} /> Ton profil
+        <SlidersHorizontal size={12} />{" "}{t("Ton profil")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Personnalisation</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Personnalisation")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <p style={{ margin: "0 0 16px", fontSize: 11, color: "rgba(245,237,237,0.45)", lineHeight: 1.5 }}>
-          Tes réponses au questionnaire de bienvenue, modifiables à tout moment. Ça change
-          l&apos;ordre de ce qui t&apos;est proposé sur ton tableau de bord et les messages que tu vois,
-          donc ça vaut le coup de les tenir à jour si ta situation évolue.
+          {t("Tes réponses au questionnaire de bienvenue, modifiables à tout moment. Ça change l'ordre de ce qui t'est proposé sur ton tableau de bord et les messages que tu vois, donc ça vaut le coup de les tenir à jour si ta situation évolue.")}
         </p>
         <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
           {PREFERENCE_QUESTIONS.map((question) => (
@@ -65,10 +65,10 @@ export default function PreferencesCard({
                 margin: "0 0 8px", fontSize: 12.5, fontWeight: 700, color: "#F5EDED",
                 display: "flex", alignItems: "center", gap: 6,
               }}>
-                {question.title}
+                {t(question.title)}
                 {savedKey === question.key && (
                   <span style={{ color: "#4ade80", fontWeight: 700, fontSize: 10.5, display: "inline-flex", alignItems: "center", gap: 3 }}>
-                    <Check size={11} /> Enregistré
+                    <Check size={11} />{" "}{t("Enregistré")}
                   </span>
                 )}
               </p>
@@ -93,7 +93,7 @@ export default function PreferencesCard({
                         transition: "background 0.15s ease, border-color 0.15s ease",
                       }}
                     >
-                      {opt.label}
+                      {t(opt.label)}
                     </button>
                   );
                 })}

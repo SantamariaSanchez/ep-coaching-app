@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import { Type, Sparkles } from "lucide-react";
 import {
@@ -16,6 +17,7 @@ import {
 // Même carte pour coach, client accompagné, membre gratuit et équipe : le
 // besoin ne dépend pas du rôle.
 export default function AccessibilityCard({ className = "mt-8" }: { className?: string }) {
+  const t = useT();
   // Valeur par défaut au premier rendu (identique serveur/client), puis
   // lecture du stockage local une fois monté.
   const [settings, setSettings] = useState<AccessibilitySettings>(DEFAULT_ACCESSIBILITY);
@@ -34,21 +36,21 @@ export default function AccessibilityCard({ className = "mt-8" }: { className?: 
   return (
     <div className={className}>
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Confort de lecture
+        {t("Confort de lecture")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Accessibilité</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Accessibilité")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 18 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
             <Type size={18} style={{ color: "#E01E1E", flexShrink: 0 }} />
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>Taille du texte</p>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{t("Taille du texte")}</p>
               <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-                Agrandit tout l&apos;affichage (textes, boutons, icônes) sur cet appareil.
+                {t("Agrandit tout l'affichage (textes, boutons, icônes) sur cet appareil.")}
               </p>
             </div>
           </div>
-          <div role="radiogroup" aria-label="Taille du texte" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+          <div role="radiogroup" aria-label={t("Taille du texte")} style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
             {TEXT_SCALE_OPTIONS.map((opt) => {
               const active = settings.textScale === opt.value;
               return (
@@ -66,8 +68,8 @@ export default function AccessibilityCard({ className = "mt-8" }: { className?: 
                     color: "#F5EDED",
                   }}
                 >
-                  <span style={{ display: "block", fontSize: 12.5, fontWeight: 800 }}>{opt.label}</span>
-                  <span style={{ display: "block", fontSize: 10.5, color: "rgba(245,237,237,0.45)", marginTop: 2 }}>{opt.hint}</span>
+                  <span style={{ display: "block", fontSize: 12.5, fontWeight: 800 }}>{t(opt.label)}</span>
+                  <span style={{ display: "block", fontSize: 10.5, color: "rgba(245,237,237,0.45)", marginTop: 2 }}>{t(opt.hint)}</span>
                 </button>
               );
             })}
@@ -79,9 +81,9 @@ export default function AccessibilityCard({ className = "mt-8" }: { className?: 
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <Sparkles size={18} style={{ color: settings.reduceMotion ? "#4ade80" : "rgba(245,237,237,0.4)", flexShrink: 0 }} />
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>Réduire les animations</p>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>{t("Réduire les animations")}</p>
             <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-              Retire les glissements, zooms et le grain animé. Les fondus restent pour signaler les changements.
+              {t("Retire les glissements, zooms et le grain animé. Les fondus restent pour signaler les changements.")}
             </p>
           </div>
           <button
@@ -89,7 +91,7 @@ export default function AccessibilityCard({ className = "mt-8" }: { className?: 
             onClick={() => update({ reduceMotion: !settings.reduceMotion })}
             role="switch"
             aria-checked={settings.reduceMotion}
-            aria-label="Réduire les animations"
+            aria-label={t("Réduire les animations")}
             style={{
               flexShrink: 0, width: 40, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
               background: settings.reduceMotion ? "#4ade80" : "rgba(245,237,237,0.15)", position: "relative", transition: "background 0.15s ease",
@@ -103,7 +105,7 @@ export default function AccessibilityCard({ className = "mt-8" }: { className?: 
         </div>
 
         <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.35)", lineHeight: 1.5 }}>
-          Ces réglages sont propres à cet appareil. Si ton téléphone demande déjà moins d&apos;animations, l&apos;appli le respecte automatiquement.
+          {t("Ces réglages sont propres à cet appareil. Si ton téléphone demande déjà moins d'animations, l'appli le respecte automatiquement.")}
         </p>
       </div>
     </div>

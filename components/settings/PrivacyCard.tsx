@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { toggleDirectoryVisible } from "@/app/dashboard/coach/profile/actions";
@@ -10,6 +11,7 @@ import { toggleDirectoryVisible } from "@/app/dashboard/coach/profile/actions";
 // réglage au sens différent (accepter ou non de nouveaux clients, pas être
 // visible ou non). Même pattern optimiste + rollback que AcceptingClientsCard.
 export default function PrivacyCard({ initialVisible }: { initialVisible: boolean }) {
+  const t = useT();
   const [visible, setVisible] = useState(initialVisible);
   const [isPending, startTransition] = useTransition();
 
@@ -30,9 +32,9 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Confidentialité
+        {t("Confidentialité")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Visibilité</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Visibilité")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {visible ? (
@@ -56,7 +58,7 @@ export default function PrivacyCard({ initialVisible }: { initialVisible: boolea
             disabled={isPending}
             role="switch"
             aria-checked={visible}
-            aria-label="Visibilité dans l'annuaire public des coachs"
+            aria-label={t("Visibilité dans l'annuaire public des coachs")}
             style={{
               flexShrink: 0, width: 40, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
               background: visible ? "#4ade80" : "rgba(245,237,237,0.15)", position: "relative", transition: "background 0.15s ease",

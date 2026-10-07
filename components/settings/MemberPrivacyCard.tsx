@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Trophy, EyeOff } from "lucide-react";
@@ -10,6 +11,7 @@ import { setLeaderboardVisible } from "@/app/actions/privacy";
 // chaque membre actif, tous coachs confondus, sans moyen de s'en retirer.
 // Même pattern optimiste + rollback que PrivacyCard.
 export default function MemberPrivacyCard({ initialVisible }: { initialVisible: boolean }) {
+  const t = useT();
   const [visible, setVisible] = useState(initialVisible);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -31,9 +33,9 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
   return (
     <div className="mt-8">
       <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-        Confidentialité
+        {t("Confidentialité")}
       </p>
-      <h2 className="text-xl font-black uppercase tracking-tight mb-4">Visibilité</h2>
+      <h2 className="text-xl font-black uppercase tracking-tight mb-4">{t("Visibilité")}</h2>
       <div className="ep-card" style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {visible ? (
@@ -57,7 +59,7 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
             disabled={isPending}
             role="switch"
             aria-checked={visible}
-            aria-label="Visibilité dans le classement communautaire"
+            aria-label={t("Visibilité dans le classement communautaire")}
             style={{
               flexShrink: 0, width: 40, height: 24, borderRadius: 999, border: "none", cursor: "pointer",
               background: visible ? "#4ade80" : "rgba(245,237,237,0.15)", position: "relative", transition: "background 0.15s ease",
@@ -73,10 +75,9 @@ export default function MemberPrivacyCard({ initialVisible }: { initialVisible: 
           <p role="alert" style={{ margin: "10px 0 0", fontSize: 11, color: "#E01E1E" }}>{error}</p>
         )}
         <p style={{ margin: "12px 0 0", fontSize: 11, color: "rgba(245,237,237,0.35)", lineHeight: 1.5 }}>
-          Ce réglage concerne uniquement le classement. Tes publications dans la communauté restent signées de
-          ton nom, et si tu es accompagné, ton coach voit toujours ton suivi.{" "}
+          {t("Ce réglage concerne uniquement le classement. Tes publications dans la communauté restent signées de ton nom, et si tu es accompagné, ton coach voit toujours ton suivi.")}{" "}
           <Link href="/dashboard/client/communaute/classement" style={{ color: "#E01E1E", fontWeight: 700 }}>
-            Voir le classement
+            {t("Voir le classement")}
           </Link>
         </p>
       </div>

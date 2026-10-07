@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Lock, LogOut, ChevronRight, Trash2, AlertTriangle, Download, ShieldOff, Mail } from "lucide-react";
@@ -18,6 +19,7 @@ export default function AccountActions({
   email: string | null;
   signOutRedirect: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const sb = createClientSupabase();
   const [resetSent, setResetSent] = useState(false);
@@ -90,7 +92,7 @@ export default function AccountActions({
 
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
-      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">Compte</p>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">{t("Compte")}</p>
 
       <button
         onClick={resetPwd}
@@ -109,7 +111,7 @@ export default function AccountActions({
         <div className="py-3 border-b border-[#890404]/10">
           {emailChangeSent ? (
             <p className="text-xs text-green-400">
-              Email de confirmation envoyé à {newEmail}. Clique sur le lien reçu pour valider le changement.
+              {t("Email de confirmation envoyé à")}{" "}{newEmail}{t(". Clique sur le lien reçu pour valider le changement.")}
             </p>
           ) : (
             <>
@@ -119,8 +121,8 @@ export default function AccountActions({
                   type="email"
                   value={newEmail}
                   onChange={(e) => setNewEmail(e.target.value)}
-                  placeholder="nouvelle.adresse@email.com"
-                  aria-label="Nouvelle adresse email"
+                  placeholder={t("nouvelle.adresse@email.com")}
+                  aria-label={t("Nouvelle adresse email")}
                   className="flex-1 bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/60"
                 />
               </div>
@@ -141,7 +143,7 @@ export default function AccountActions({
                   }}
                   className="px-3 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
                 >
-                  Annuler
+                  {t("Annuler")}
                 </button>
               </div>
             </>
@@ -154,7 +156,7 @@ export default function AccountActions({
         >
           <div className="flex items-center gap-2.5">
             <Mail size={14} className="text-[#F5EDED]/40" />
-            <span className="text-sm text-white font-medium">Changer mon email</span>
+            <span className="text-sm text-white font-medium">{t("Changer mon email")}</span>
           </div>
           <ChevronRight size={13} className="text-[#F5EDED]/20" />
         </button>
@@ -168,7 +170,7 @@ export default function AccountActions({
       >
         <div className="flex items-center gap-2.5">
           <Download size={14} className="text-[#F5EDED]/40" />
-          <span className="text-sm text-white font-medium">Exporter mes données</span>
+          <span className="text-sm text-white font-medium">{t("Exporter mes données")}</span>
         </div>
         <ChevronRight size={13} className="text-[#F5EDED]/20" />
       </a>
@@ -177,7 +179,7 @@ export default function AccountActions({
         onClick={signOut}
         className="flex items-center justify-center gap-2 w-full mt-4 bg-[#E01E1E]/10 border border-[#E01E1E]/25 hover:bg-[#E01E1E]/20 rounded-lg py-3 text-[#E01E1E] font-bold text-xs uppercase tracking-widest transition-colors"
       >
-        <LogOut size={13} /> Se déconnecter
+        <LogOut size={13} />{" "}{t("Se déconnecter")}
       </button>
 
       {/* Nouveau : coupe la session sur TOUS les appareils, pas que celui-ci
@@ -197,7 +199,7 @@ export default function AccountActions({
           <div className="flex items-start gap-2 mb-3">
             <AlertTriangle size={14} className="text-red-400 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-red-300/90 leading-relaxed">
-              Cette action est définitive : ton compte et ton accès seront supprimés, sans retour en arrière possible.
+              {t("Cette action est définitive : ton compte et ton accès seront supprimés, sans retour en arrière possible.")}
             </p>
           </div>
           {deleteError && <p className="text-xs text-red-400 mb-3">{deleteError}</p>}
@@ -217,7 +219,7 @@ export default function AccountActions({
               disabled={deleting}
               className="px-4 text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
             >
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         </div>
@@ -226,7 +228,7 @@ export default function AccountActions({
           onClick={() => setConfirmingDelete(true)}
           className="flex items-center justify-center gap-2 w-full mt-2 py-2.5 text-[#F5EDED]/25 hover:text-red-400 font-bold text-[11px] uppercase tracking-widest transition-colors"
         >
-          <Trash2 size={12} /> Supprimer mon compte
+          <Trash2 size={12} />{" "}{t("Supprimer mon compte")}
         </button>
       )}
     </div>

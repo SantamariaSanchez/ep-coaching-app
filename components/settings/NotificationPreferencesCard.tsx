@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { BellRing, ShieldCheck } from "lucide-react";
 import { MUTABLE_CATEGORIES, CATEGORY_META, type NotificationCategory } from "@/lib/notification-preferences";
@@ -15,6 +16,7 @@ export default function NotificationPreferencesCard({
   /** Catégories mutables actuellement coupées, ex. ["communaute"]. */
   initialMuted: NotificationCategory[];
 }) {
+  const t = useT();
   const [muted, setMuted] = useState<Set<NotificationCategory>>(new Set(initialMuted));
   const [isPending, startTransition] = useTransition();
 
@@ -42,14 +44,14 @@ export default function NotificationPreferencesCard({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mb-4">
       <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-        <BellRing size={12} /> Ce que tu reçois en notification
+        <BellRing size={12} />{" "}{t("Ce que tu reçois en notification")}
       </p>
 
       <div className="flex items-start gap-2.5 pb-3.5 mb-3.5 border-b border-[#890404]/10">
         <ShieldCheck size={14} className="text-[#F5EDED]/25 flex-shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-semibold text-white">{CATEGORY_META.essentiel.label}</p>
-          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{CATEGORY_META.essentiel.description}</p>
+          <p className="text-sm font-semibold text-white">{t(CATEGORY_META.essentiel.label)}</p>
+          <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{t(CATEGORY_META.essentiel.description)}</p>
         </div>
       </div>
 
@@ -59,14 +61,14 @@ export default function NotificationPreferencesCard({
         return (
           <div key={category} className="flex items-center justify-between gap-3 py-2.5">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white">{meta.label}</p>
-              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{meta.description}</p>
+              <p className="text-sm font-semibold text-white">{t(meta.label)}</p>
+              <p className="text-[11px] text-[#F5EDED]/35 mt-0.5 leading-relaxed">{t(meta.description)}</p>
             </div>
             <button
               type="button"
               role="switch"
               aria-checked={!isMuted}
-              aria-label={meta.label}
+              aria-label={t(meta.label)}
               onClick={() => toggle(category)}
               disabled={isPending}
               className="relative flex-shrink-0 w-11 h-6 rounded-full transition-colors disabled:opacity-50"

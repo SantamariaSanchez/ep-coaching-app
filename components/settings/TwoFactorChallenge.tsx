@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck, Loader2 } from "lucide-react";
@@ -9,6 +10,7 @@ import { createClientSupabase } from "@/lib/supabase-client";
 // passe seul ne donne accès à rien, le middleware renvoie ici tant que la
 // session n'est pas passée en aal2 (voir proxy.ts).
 export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string }) {
+  const t = useT();
   const router = useRouter();
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
@@ -86,7 +88,7 @@ export default function TwoFactorChallenge({ redirectTo }: { redirectTo: string 
         onClick={cancel}
         className="text-[11px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
       >
-        Utiliser un autre compte
+        {t("Utiliser un autre compte")}
       </button>
     </form>
   );
