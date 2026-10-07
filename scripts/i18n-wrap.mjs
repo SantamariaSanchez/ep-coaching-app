@@ -8,9 +8,9 @@ import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
 
 const ATTRS = new Set(["placeholder", "aria-label", "title", "alt"]);
-const ENTITIES = { "&apos;": "'", "&quot;": '"', "&amp;": "&", "&nbsp;": " ", "&lt;": "<", "&gt;": ">", "&rsquo;": "’", "&laquo;": "«", "&raquo;": "»" };
+const ENTITIES = { "&apos;": "'", "&quot;": '"', "&amp;": "&", "&nbsp;": " ", "&lt;": "<", "&gt;": ">", "&rsquo;": "’", "&laquo;": "«", "&raquo;": "»", "&ldquo;": "“", "&rdquo;": "”", "&hellip;": "…" };
 const decode = (s) => s.replace(/&[a-z]+;/g, (e) => ENTITIES[e] ?? e);
-const hasWords = (s) => /[A-Za-zÀ-ÿ]{2,}/.test(s);
+const hasWords = (s) => /[A-Za-zÀ-ÿ]{2,}/.test(s.replace(/&[a-z]+;/g, ""));
 
 for (const file of process.argv.slice(2)) {
   let src = readFileSync(file, "utf8");
@@ -59,7 +59,9 @@ for (const file of process.argv.slice(2)) {
         if (p.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && p.left === child) return false;
         continue;
       }
-      return ts.isJsxExpression(p) && (ts.isJsxElement(p.parent) || ts.isJsxFragment(p.parent));
+      if (!ts.isJsxExpression(p)) return false;
+      if (ts.isJsxElement(p.parent) && /^(style|script)$/.test(p.parent.openingElement.tagName.getText(sf))) return false;
+      return ts.isJsxElement(p.parent) || ts.isJsxFragment(p.parent);
     }
     return false;
   };
@@ -90,7 +92,7 @@ for (const file of process.argv.slice(2)) {
       }
     } else if (ts.isJsxAttribute(node) && node.initializer && ts.isStringLiteral(node.initializer)) {
       const name = node.name.getText(sf);
-      const val = node.initializer.text;
+      const val = decode(node.initializer.text);
       if (ATTRS.has(name) && hasWords(val)) {
         const comp = componentOf(node);
         if (comp) {

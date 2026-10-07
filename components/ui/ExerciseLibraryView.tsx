@@ -291,7 +291,7 @@ function ExerciseForm({
             </div>
             <div>
               <label className={labelCls}>{tr("Difficulté d'apprentissage")}</label>
-              <select aria-label={tr("Difficulté d&apos;apprentissage")} value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
+              <select aria-label={tr("Difficulté d'apprentissage")} value={learningDifficulty} onChange={(e) => setLearningDifficulty(e.target.value)} className={inputCls}>
                 <option value="">-</option>
                 {QUALITATIVE_SCALE.map((s) => (
                   <option key={s} value={s}>{s}</option>

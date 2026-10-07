@@ -473,7 +473,7 @@ export default function NutritionForm({
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div>
             <label className={labelCls}>{tr("Type d'entraînement")}</label>
-            <select aria-label={tr("Type d&apos;entraînement")}
+            <select aria-label={tr("Type d'entraînement")}
               value={form.trainingType}
               onChange={(e) => set("trainingType", e.target.value)}
               className={inputCls}

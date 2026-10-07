@@ -523,7 +523,7 @@ function RoadmapTemplateRow({
             <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 block mb-1">
               {tr("Date de démarrage à l'application")}
             </label>
-            <input aria-label={tr("Date de démarrage à l&apos;application")}
+            <input aria-label={tr("Date de démarrage à l'application")}
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}

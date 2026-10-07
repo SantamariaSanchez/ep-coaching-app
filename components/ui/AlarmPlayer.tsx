@@ -198,7 +198,12 @@ export default function AlarmPlayer() {
       >
         {t("Arrêter")}
       </button>
-      <style>{t("\n        @keyframes ep-alarm-pulse {\n          0%, 100% { transform: scale(1); }\n          50% { transform: scale(1.15); }\n        }\n      ")}</style>
+      <style>{`
+        @keyframes ep-alarm-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.15); }
+        }
+      `}</style>
     </div>
   );
 }

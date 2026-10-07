@@ -347,7 +347,7 @@ function GymCard({
             </button>
           )}
           {gym.equipment_notes && (
-            <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">{tr("&ldquo;")}{gym.equipment_notes}{tr("&rdquo;")}</p>
+            <p className="text-xs text-[#F5EDED]/45 leading-relaxed italic">&ldquo;{gym.equipment_notes}&rdquo;</p>
           )}
           {gym.website && (
             <a href={safeExternalUrl(gym.website) ?? "#"} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444] transition-colors">
