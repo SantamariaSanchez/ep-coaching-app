@@ -1,3 +1,6 @@
+"use client";
+
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { Flame } from "lucide-react";
 import { getRankForPoints } from "@/lib/gamification-types";
@@ -7,6 +10,7 @@ import { getRankForPoints } from "@/lib/gamification-types";
 // le client voit tous les jours. Carte compacte, pensée pour être visible
 // sans scroller, streak + rang côte à côte plutôt que deux blocs séparés.
 export default function RegularityCard({ streakDays, points }: { streakDays: number; points: number }) {
+  const t = useT();
   const { rank } = getRankForPoints(points);
 
   // Rien à montrer pour un compte tout neuf (0 point, 0 jour) — afficher
@@ -33,7 +37,7 @@ export default function RegularityCard({ streakDays, points }: { streakDays: num
             {streakDays}j
           </p>
           <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>
-            de régularité
+            {t("de régularité")}
           </p>
         </div>
       </div>
@@ -46,9 +50,9 @@ export default function RegularityCard({ streakDays, points }: { streakDays: num
       >
         <span style={{ fontSize: 20, lineHeight: 1 }}>{rank.emoji}</span>
         <div>
-          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#F5EDED" }}>{rank.label}</p>
+          <p style={{ margin: 0, fontSize: 12.5, fontWeight: 800, color: "#F5EDED" }}>{t(rank.label)}</p>
           <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.35)", fontWeight: 600 }}>
-            {points} pts
+            {points}{" "}{t("pts")}
           </p>
         </div>
       </Link>

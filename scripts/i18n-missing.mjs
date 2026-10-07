@@ -41,12 +41,15 @@ const DATA_FILES = [
   "lib/claude-prompts.ts",
   "lib/positioning.ts",
   "lib/disciplines.ts",
+  "lib/onboarding-checklist.ts",
+  "lib/gamification-types.ts",
+  "app/dashboard/client/page.tsx",
   "components/coach/PositioningBuilder.tsx",
   "components/ai/ClaudeHub.tsx",
 ];
 for (const f of DATA_FILES) {
   const src = readFileSync(f, "utf8");
-  for (const m of src.matchAll(new RegExp(String.raw`(?:label|menuLabel|title|description|hint|subtitle|group|help|intro|prompt|tip|placeholder): ` + STR, "g"))) {
+  for (const m of src.matchAll(new RegExp(String.raw`(?:label|menuLabel|title|desc|description|hint|subtitle|group|help|intro|prompt|tip|placeholder): ` + STR, "g"))) {
     const k = JSON.parse(`"${m[1]}"`);
     if (k && /[A-Za-zÀ-ÿ]{2,}/.test(k) && !keys.has(k)) missing.set(k, f);
   }

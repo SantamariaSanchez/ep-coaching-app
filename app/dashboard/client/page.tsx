@@ -1,4 +1,5 @@
-import { getT } from "@/lib/i18n-server";
+import { getT, getLocale } from "@/lib/i18n-server";
+import { intlLocale } from "@/lib/i18n";
 import { INSTAGRAM_URL } from "@/lib/brand-links";
 import { timeAwareGreeting, nowInParis } from "@/lib/dates";
 import { getAppSetup } from "@/lib/app-setup-server";
@@ -159,7 +160,8 @@ const GUIDE_ITEMS = [
 // soi-même — la seule relance existante vivait côté coach (fiche client),
 // invisible pour la cliente elle-même. Discret, ne s'affiche que si le
 // genre déclaré est "Femme" et qu'aucun cycle n'a encore été loggé.
-function CycleTrackingNudge() {
+async function CycleTrackingNudge() {
+  const t = await getT();
   return (
     <section className="animate-fade-up stagger-2" style={{ marginBottom: 16 }}>
       <Link
@@ -173,10 +175,10 @@ function CycleTrackingNudge() {
         <Droplet size={18} style={{ color: "#E01E1E", flexShrink: 0 }} strokeWidth={1.8} />
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            Active le suivi de ton cycle
+            {t("Active le suivi de ton cycle")}
           </p>
           <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.45)" }}>
-            Utile pour comprendre tes fluctuations d&apos;énergie, de poids d&apos;eau et de performance.
+            {t("Utile pour comprendre tes fluctuations d'énergie, de poids d'eau et de performance.")}
           </p>
         </div>
         <ChevronRight size={16} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />
@@ -185,7 +187,8 @@ function CycleTrackingNudge() {
   );
 }
 
-function NoCoachBanner() {
+async function NoCoachBanner() {
+  const t = await getT();
   return (
     <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
       <div
@@ -194,11 +197,10 @@ function NoCoachBanner() {
       >
         <div>
           <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-            Tu n&apos;as plus de coach attitré
+            {t("Tu n'as plus de coach attitré")}
           </p>
           <p style={{ margin: 0, fontSize: 12, color: "rgba(245,237,237,0.5)", lineHeight: 1.6 }}>
-            Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux
-            aussi choisir un autre coach actif sur la plateforme.
+            {t("Envie que Santamaria devienne ton coach ? Écris-lui directement sur Instagram. Tu peux aussi choisir un autre coach actif sur la plateforme.")}
           </p>
         </div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -209,14 +211,14 @@ function NoCoachBanner() {
             className="ep-btn-primary"
             style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
           >
-            Contacter Santamaria
+            {t("Contacter Santamaria")}
           </a>
           <Link
             href="/dashboard/client/coachs"
             className="ep-btn-secondary"
             style={{ textDecoration: "none", fontSize: 10.5, padding: "10px 16px" }}
           >
-            Voir les coachs actifs
+            {t("Voir les coachs actifs")}
           </Link>
         </div>
       </div>
@@ -224,7 +226,8 @@ function NoCoachBanner() {
   );
 }
 
-function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
+async function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
+  const t = await getT();
   if (items.length === 0) return null;
   const doneCount = items.filter((i) => i.done).length;
   const allDone = doneCount === items.length;
@@ -246,10 +249,10 @@ function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
           <CheckCircle2 size={20} style={{ color: "#4ade80", flexShrink: 0 }} strokeWidth={1.8} />
           <div>
             <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>
-              Bien joué, tu as pris en main l&apos;appli
+              {t("Bien joué, tu as pris en main l'appli")}
             </p>
             <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>
-              Programme, calories, bilan, communauté : tout est lancé.
+              {t("Programme, calories, bilan, communauté : tout est lancé.")}
             </p>
           </div>
         </div>
@@ -260,7 +263,7 @@ function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
   return (
     <section className="animate-fade-up stagger-1" style={{ marginBottom: 24 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", marginBottom: 8 }}>
-        <p className="ep-section-title" style={{ marginBottom: 0 }}>Pour bien démarrer</p>
+        <p className="ep-section-title" style={{ marginBottom: 0 }}>{t("Pour bien démarrer")}</p>
         <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.35)" }}>
           {doneCount}/{items.length}
         </p>
@@ -303,7 +306,7 @@ function StartChecklist({ items }: { items: OnboardingChecklistItem[] }) {
                 color: done ? "rgba(245,237,237,0.5)" : "#F5EDED",
                 textDecoration: done ? "line-through" : "none",
               }}>
-                {title}
+                {t(title)}
               </p>
               <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{description}</p>
             </div>
@@ -342,7 +345,7 @@ function upsellPitch(
   };
 }
 
-function WelcomeGuide({
+async function WelcomeGuide({
   firstName,
   goal,
   level,
@@ -363,6 +366,7 @@ function WelcomeGuide({
   totalPoints: number;
   show: { poids: boolean; nutrition: boolean; entrainement: boolean; sommeil: boolean };
 }) {
+  const t = await getT();
   const items = reorderByPriority(GUIDE_ITEMS, personalization.priorityHrefs);
   const pitch = upsellPitch(checklist, activityStreak);
   // Dès la première vraie action, l'accueil devient une routine du jour
@@ -379,8 +383,8 @@ function WelcomeGuide({
     >
       {/* Header */}
       <div className="animate-fade-up" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title" style={{ marginBottom: 4 }}>Bienvenue</p>
-        <h1 className="ep-h1">Salut {firstName} 👋</h1>
+        <p className="ep-section-title" style={{ marginBottom: 4 }}>{t("Bienvenue")}</p>
+        <h1 className="ep-h1">{t("Salut")}{" "}{firstName} 👋</h1>
         <p style={{ marginTop: 8, fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6 }}>
           {personalization.welcomeSubtitle}
         </p>
@@ -401,17 +405,17 @@ function WelcomeGuide({
       {/* État des lieux */}
       {(goal || level) && (
         <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
-          <p className="ep-section-title">Ton profil</p>
+          <p className="ep-section-title">{t("Ton profil")}</p>
           <div className="ep-card" style={{ padding: "16px 20px", display: "flex", gap: 20 }}>
             {goal && (
               <div>
-                <p className="ep-label" style={{ marginBottom: 4 }}>Objectif</p>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{t("Objectif")}</p>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{goal}</p>
               </div>
             )}
             {level && (
               <div>
-                <p className="ep-label" style={{ marginBottom: 4 }}>Niveau</p>
+                <p className="ep-label" style={{ marginBottom: 4 }}>{t("Niveau")}</p>
                 <p style={{ fontSize: 13, fontWeight: 700, color: "#F5EDED", margin: 0 }}>{level}</p>
               </div>
             )}
@@ -422,7 +426,7 @@ function WelcomeGuide({
       {/* Idées reçues, adressées direct pour les profils qui en ont besoin */}
       {personalization.mythBusters.length > 0 && (
         <section className="animate-fade-up stagger-2" style={{ marginBottom: 24 }}>
-          <p className="ep-section-title">On répond direct</p>
+          <p className="ep-section-title">{t("On répond direct")}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {personalization.mythBusters.map((m) => (
               <div
@@ -443,7 +447,7 @@ function WelcomeGuide({
 
       {/* Mini-guide */}
       <section className="animate-fade-up stagger-3" style={{ marginBottom: 24 }}>
-        <p className="ep-section-title">Ce qui est disponible</p>
+        <p className="ep-section-title">{t("Ce qui est disponible")}</p>
         <div className="ep-cols-2" style={{ gap: 8 }}>
           {items.map(({ href, icon: Icon, title, desc, locked }) => (
             <Link
@@ -466,7 +470,7 @@ function WelcomeGuide({
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{t(title)}</p>
                   {locked ? (
                     <span style={{
                       display: "inline-flex", alignItems: "center", gap: 3,
@@ -474,7 +478,7 @@ function WelcomeGuide({
                       color: "rgba(245,237,237,0.4)", border: "1px solid rgba(245,237,237,0.2)",
                       borderRadius: 999, padding: "1px 7px",
                     }}>
-                      <Lock size={9} strokeWidth={2} /> Coaching
+                      <Lock size={9} strokeWidth={2} />{" "}{t("Coaching")}
                     </span>
                   ) : (
                     <span style={{
@@ -482,11 +486,11 @@ function WelcomeGuide({
                       color: "#4ade80", border: "1px solid rgba(74,222,128,0.35)",
                       borderRadius: 999, padding: "1px 7px",
                     }}>
-                      Gratuit
+                      {t("Gratuit")}
                     </span>
                   )}
                 </div>
-                <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{t(desc)}</p>
               </div>
               <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
             </Link>
@@ -522,7 +526,8 @@ function WelcomeGuide({
 
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
-function WeightDelta({ delta, good }: { delta: number; good: boolean | null }) {
+async function WeightDelta({ delta, good }: { delta: number; good: boolean | null }) {
+  const t = await getT();
   const Icon = delta === 0 ? Minus : delta < 0 ? TrendingDown : TrendingUp;
   const color =
     good === true ? "#4ade80"
@@ -533,7 +538,7 @@ function WeightDelta({ delta, good }: { delta: number; good: boolean | null }) {
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
       <Icon size={13} style={{ color }} strokeWidth={2} />
       <span style={{ fontSize: 12, fontWeight: 700, color }}>
-        {delta > 0 ? "+" : ""}{delta} kg depuis le départ
+        {delta > 0 ? "+" : ""}{delta}{" "}{t("kg depuis le départ")}
       </span>
     </div>
   );
@@ -634,10 +639,11 @@ export default async function ClientDashboard({
   // Même salutation que l'accueil coach : selon l'heure, prénom normal.
   const rawFirst = profile?.full_name?.split(" ")[0] ?? "";
   const firstName = rawFirst ? rawFirst.charAt(0).toUpperCase() + rawFirst.slice(1).toLowerCase() : "";
-  const greeting = timeAwareGreeting(Number(nowInParis().hhmm.split(":")[0]));
+  const greeting = t(timeAwareGreeting(Number(nowInParis().hhmm.split(":")[0])));
+  const locale = await getLocale();
   const today = new Date();
   const formattedDate = (() => {
-    const s = new Intl.DateTimeFormat("fr-FR", {
+    const s = new Intl.DateTimeFormat(intlLocale(locale), {
       weekday: "long", day: "numeric", month: "long",
     }).format(today);
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -1015,8 +1021,8 @@ export default async function ClientDashboard({
                 <Icon size={16} style={{ color: "#E01E1E" }} strokeWidth={1.8} />
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{title}</p>
-                <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.4)" }}>{desc}</p>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#F5EDED" }}>{t(title)}</p>
+                <p style={{ margin: 0, fontSize: 10, color: "rgba(245,237,237,0.4)" }}>{t(desc)}</p>
               </div>
               <ChevronRight size={13} style={{ color: "rgba(245,237,237,0.2)", flexShrink: 0 }} />
             </Link>

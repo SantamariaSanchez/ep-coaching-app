@@ -193,7 +193,7 @@ export default async function CoachDashboard() {
         </p>
         {/* Idée #1 : salutation adaptée à l'heure plutôt que "Bonjour" figé
             toute la journée, y compris à 22h. */}
-        <h1 className="ep-h1">{timeAwareGreeting(Number(hhmm.split(":")[0]))}, {firstName}</h1>
+        <h1 className="ep-h1">{t(timeAwareGreeting(Number(hhmm.split(":")[0])))}, {firstName}</h1>
       </div>
 
       {/* ── Urgent alerts ─────────────────────────────────────────────────────
