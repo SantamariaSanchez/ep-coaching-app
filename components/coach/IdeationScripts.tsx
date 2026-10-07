@@ -286,6 +286,18 @@ function MyScripts({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [openId, setOpenId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  function toggleExpanded(id: string) {
+    setExpandedId((cur) => {
+      const next = cur === id ? null : id;
+      if (next) {
+        // La carte ouverte remonte en haut de l'écran, au lieu de laisser le
+        // texte s'étaler loin sous le doigt.
+        requestAnimationFrame(() => document.getElementById(`script-${id}`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+      }
+      return next;
+    });
+  }
   const [draft, setDraft] = useState("");
   // Retour direct 2026-09-11 ("on peut copier mais je veux pouvoir
   // modifier") : même schéma openId/draft que pour le script, appliqué à
@@ -982,6 +994,10 @@ function MyScripts({
     const stageDays = daysInStage(script);
     const isStale = stageDays >= STALE_DAYS[script.status];
     const isVeryStale = stageDays >= STALE_DAYS[script.status] * 2;
+    // Cartes compactes par défaut (retour direct 2026-10-07 : la liste était
+    // interminable, chaque carte affichant le script entier). Ouverte : la
+    // carte cliquée, celle en cours d'édition, ou celle ciblée par un lien.
+    const isExpanded = expandedId === script.id || openId === script.id || script.id === focusScriptId;
     return (
             <div
               key={script.id}
@@ -1026,7 +1042,14 @@ function MyScripts({
                     {script.pillar}
                   </span>
                 )}
-                <p style={{ margin: 0, fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120 }}>{script.title}</p>
+                <button
+                  type="button"
+                  onClick={() => toggleExpanded(script.id)}
+                  aria-expanded={isExpanded}
+                  style={{ margin: 0, padding: 0, background: "none", border: "none", cursor: "pointer", textAlign: "left", fontSize: 13.5, fontWeight: 800, color: "#F5EDED", flex: 1, minWidth: 120, fontFamily: "inherit" }}
+                >
+                  {script.title}
+                </button>
                 {isStale && (
                   <span
                     title={`Dans cette étape depuis ${Math.floor(stageDays)} jour${Math.floor(stageDays) > 1 ? "s" : ""}, au-delà du délai normal`}
@@ -1085,6 +1108,8 @@ function MyScripts({
                 </button>
               </div>
 
+              {isExpanded ? (
+                <>
               {/* Script mot pour mot — retour direct 2026-09-02 : "le script
                   que je dois lire mot pour mot y'a pas encore" — c'était déjà
                   là en base, mais noyé sous la description Instagram et
@@ -1392,7 +1417,26 @@ function MyScripts({
                   )}
                 </div>
               )}
-            </div>
+                  {expandedId === script.id && openId !== script.id && (
+                    <button type="button" onClick={() => toggleExpanded(script.id)} style={{ marginTop: 10, background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 800, color: "rgba(245,237,237,0.5)", padding: 0 }}>
+                      Réduire
+                    </button>
+                  )}
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => toggleExpanded(script.id)}
+                  aria-expanded={false}
+                  style={{ marginTop: 8, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
+                >
+                  <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(245,237,237,0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {script.hook || (script.content ?? "").replace(/\s+/g, " ").slice(0, 140) || "Script vide"}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#E01E1E", flexShrink: 0 }}>Ouvrir</span>
+                </button>
+              )}
+</div>
     );
   }
 }
