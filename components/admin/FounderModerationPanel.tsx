@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -13,6 +14,7 @@ export default function FounderModerationPanel({
   targetUserId: string;
   targetName: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const [error, setError] = useState("");
   const [status, setStatus] = useState<"idle" | "disconnected" | "deleted">("idle");
@@ -46,7 +48,7 @@ export default function FounderModerationPanel({
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 mt-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
         <ShieldAlert size={12} style={{ color: "#E01E1E" }} />
-        Modération (fondateur)
+        {t("Modération (fondateur)")}
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -56,7 +58,7 @@ export default function FounderModerationPanel({
           style={{ textDecoration: "none", fontSize: 11 }}
         >
           <MessageCircle size={13} />
-          Message direct
+          {t("Message direct")}
         </Link>
 
         {!confirmingDisconnect ? (
@@ -67,24 +69,24 @@ export default function FounderModerationPanel({
             style={{ fontSize: 11 }}
           >
             <LogOut size={13} />
-            Déconnecter
+            {t("Déconnecter")}
           </button>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-[#F5EDED]/60">Forcer la déconnexion de {targetName} ?</span>
+            <span className="text-[11px] text-[#F5EDED]/60">{t("Forcer la déconnexion de")}{" "}{targetName} ?</span>
             <button
               onClick={handleDisconnect}
               disabled={isPending}
               className="text-[11px] font-bold text-red-400 hover:text-red-300"
             >
-              Confirmer
+              {t("Confirmer")}
             </button>
             <button
               onClick={() => setConfirmingDisconnect(false)}
               disabled={isPending}
               className="text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/60"
             >
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         )}
@@ -97,26 +99,26 @@ export default function FounderModerationPanel({
             style={{ fontSize: 11, color: "#ff6b6b" }}
           >
             <Trash2 size={13} />
-            Supprimer le compte
+            {t("Supprimer le compte")}
           </button>
         ) : (
           <div className="flex items-center gap-2 w-full mt-1">
             <span className="text-[11px] text-[#F5EDED]/60">
-              Supprimer définitivement le compte de {targetName} ?
+              {t("Supprimer définitivement le compte de")}{" "}{targetName} ?
             </span>
             <button
               onClick={handleDelete}
               disabled={isPending}
               className="text-[11px] font-bold text-red-400 hover:text-red-300"
             >
-              Confirmer
+              {t("Confirmer")}
             </button>
             <button
               onClick={() => setConfirmingDelete(false)}
               disabled={isPending}
               className="text-[11px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/60"
             >
-              Annuler
+              {t("Annuler")}
             </button>
           </div>
         )}
@@ -124,7 +126,7 @@ export default function FounderModerationPanel({
 
       {status === "disconnected" && (
         <p className="text-[11px] text-green-400 font-semibold mt-3">
-          Session invalidée, {targetName} devra se reconnecter.
+          {t("Session invalidée,")}{" "}{targetName}{" "}{t("devra se reconnecter.")}
         </p>
       )}
       {error && <p className="text-red-400 text-[11px] font-semibold mt-3">{error}</p>}

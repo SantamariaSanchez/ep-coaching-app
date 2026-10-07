@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Save } from "lucide-react";
 import { CANVAS_BLOCKS, type BusinessCanvas } from "@/lib/coach-business-canvas";
@@ -21,6 +22,7 @@ function CanvasBlockField({
   value: string;
   onSave: (value: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [value, setValue] = useState(initialValue);
   const [saved, setSaved] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -42,7 +44,7 @@ function CanvasBlockField({
         <p className="text-[11px] font-black uppercase tracking-widest text-white">{label}</p>
         {saved && (
           <span className="flex items-center gap-1 text-[9px] font-bold text-green-400">
-            <Save size={9} /> Enregistré
+            <Save size={9} />{" "}{t("Enregistré")}
           </span>
         )}
       </div>
@@ -62,12 +64,13 @@ function CanvasBlockField({
 }
 
 export default function BusinessCanvasEditor({ canvas }: { canvas: BusinessCanvas | null }) {
+  const t = useT();
   const filledCount = CANVAS_BLOCKS.filter((b) => canvas?.[b.key]?.trim()).length;
 
   return (
     <div>
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-        {filledCount}/{CANVAS_BLOCKS.length} blocs remplis
+        {filledCount}/{CANVAS_BLOCKS.length}{" "}{t("blocs remplis")}
       </p>
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         {CANVAS_BLOCKS.map((block) => (

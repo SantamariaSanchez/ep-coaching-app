@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition, useEffect } from "react";
 import { setCoachPlatformStatus } from "@/app/dashboard/coach/admin/actions";
 
@@ -10,6 +11,7 @@ export default function CoachStatusToggle({
   coachId: string;
   status: "inactive" | "active" | "canceled";
 }) {
+  const t = useT();
   const [pending, startTransition] = useTransition();
   const [current, setCurrent] = useState(status);
   const [confirming, setConfirming] = useState(false);
@@ -42,14 +44,14 @@ export default function CoachStatusToggle({
   if (confirming) {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)" }}>Désactiver ce coach ?</span>
+        <span style={{ fontSize: 11, color: "rgba(245,237,237,0.6)" }}>{t("Désactiver ce coach ?")}</span>
         <button
           type="button"
           onClick={() => apply("canceled")}
           disabled={pending}
           style={{ fontSize: 11, fontWeight: 700, color: "#ff6b6b", background: "none", border: "none", cursor: "pointer" }}
         >
-          {pending ? "…" : "Confirmer"}
+          {pending ? "…" : t("Confirmer")}
         </button>
         <button
           type="button"
@@ -57,7 +59,7 @@ export default function CoachStatusToggle({
           disabled={pending}
           style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer" }}
         >
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
     );
@@ -76,7 +78,7 @@ export default function CoachStatusToggle({
         cursor: "pointer", whiteSpace: "nowrap",
       }}
     >
-      {pending ? "…" : current === "active" ? "Actif · désactiver" : "Activer"}
+      {pending ? "…" : current === "active" ? t("Actif · désactiver") : t("Activer")}
     </button>
   );
 }

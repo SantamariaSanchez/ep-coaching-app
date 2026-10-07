@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Plus, X, Target, Check, Trash2, ChevronDown, Minus } from "lucide-react";
 import type { BusinessGoal, GoalMetricType } from "@/lib/coach-business-goals";
@@ -44,6 +45,7 @@ function GoalCard({
   goal: BusinessGoal;
   currentValue: number;
 }) {
+  const t = useT();
   const [value, setValue] = useState(currentValue);
   const [busy, setBusy] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -112,15 +114,15 @@ function GoalCard({
         </div>
         {goal.status === "active" ? (
           <div className="flex gap-1 flex-shrink-0">
-            <button onClick={complete} title="Marquer terminé" aria-label="Marquer terminé" className="text-[#F5EDED]/25 hover:text-green-400 p-1">
+            <button onClick={complete} title={t("Marquer terminé")} aria-label={t("Marquer terminé")} className="text-[#F5EDED]/25 hover:text-green-400 p-1">
               <Check size={14} />
             </button>
-            <button onClick={abandon} title="Abandonner" aria-label="Abandonner" className="text-[#F5EDED]/25 hover:text-amber-400 p-1">
+            <button onClick={abandon} title={t("Abandonner")} aria-label={t("Abandonner")} className="text-[#F5EDED]/25 hover:text-amber-400 p-1">
               <X size={14} />
             </button>
           </div>
         ) : (
-          <button onClick={remove} title="Supprimer" aria-label="Supprimer" className="text-[#F5EDED]/20 hover:text-red-400 p-1 flex-shrink-0">
+          <button onClick={remove} title={t("Supprimer")} aria-label={t("Supprimer")} className="text-[#F5EDED]/20 hover:text-red-400 p-1 flex-shrink-0">
             <Trash2 size={13} />
           </button>
         )}
@@ -143,10 +145,10 @@ function GoalCard({
         </p>
         {editable && (
           <div className="flex items-center gap-1">
-            <button onClick={() => adjust(-1)} disabled={isPending} aria-label="Diminuer" className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(-1)} disabled={isPending} aria-label={t("Diminuer")} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
               <Minus size={11} />
             </button>
-            <button onClick={() => adjust(1)} disabled={isPending} aria-label="Augmenter" className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
+            <button onClick={() => adjust(1)} disabled={isPending} aria-label={t("Augmenter")} className="w-6 h-6 rounded-full border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white flex items-center justify-center">
               <Plus size={11} />
             </button>
           </div>
@@ -157,6 +159,7 @@ function GoalCard({
 }
 
 function NewGoalForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const [title, setTitle] = useState("");
   const [metricType, setMetricType] = useState<GoalMetricType>("clients_actifs");
   const [unit, setUnit] = useState("");
@@ -188,8 +191,8 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
       <input
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Ex. 10 clients actifs avant la fin de l'année"
-        aria-label="Titre de l'objectif"
+        placeholder={t("Ex. 10 clients actifs avant la fin de l'année")}
+        aria-label={t("Titre de l'objectif")}
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
       />
       <div className="flex gap-1.5">
@@ -216,14 +219,14 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
           value={targetValue}
           onChange={(e) => setTargetValue(e.target.value)}
           placeholder={metricType === "revenu_mois" ? "Objectif en €" : "Objectif chiffré"}
-          aria-label="Valeur cible"
+          aria-label={t("Valeur cible")}
           className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
         <input
           type="date"
           value={targetDate}
           onChange={(e) => setTargetDate(e.target.value)}
-          aria-label="Date cible (optionnel)"
+          aria-label={t("Date cible (optionnel)")}
           className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#E01E1E]/60"
         />
       </div>
@@ -231,22 +234,22 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
         <input
           value={unit}
           onChange={(e) => setUnit(e.target.value)}
-          placeholder="Unité (ex. abonnés, clients, avis)"
-          aria-label="Unité"
+          placeholder={t("Unité (ex. abonnés, clients, avis)")}
+          aria-label={t("Unité")}
           className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
       )}
       {error && <p className="text-[11px] text-red-400">{error}</p>}
       <div className="flex gap-2">
         <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
-          Annuler
+          {t("Annuler")}
         </button>
         <button
           onClick={handleSubmit}
           disabled={saving || !title.trim() || !targetValue}
           className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
         >
-          {saving ? "Création…" : "Créer l'objectif"}
+          {saving ? t("Création…") : t("Créer l'objectif")}
         </button>
       </div>
     </div>
@@ -258,6 +261,7 @@ export default function BusinessGoals({
 }: {
   goalsWithProgress: { goal: BusinessGoal; currentValue: number }[];
 }) {
+  const t = useT();
   const [formOpen, setFormOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
 
@@ -268,14 +272,14 @@ export default function BusinessGoals({
     <div>
       <div className="flex items-center justify-between mb-3">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-          {active.length} objectif{active.length !== 1 ? "s" : ""} en cours
+          {active.length}{" "}{t("objectif")}{active.length !== 1 ? "s" : ""}{" "}{t("en cours")}
         </p>
         {!formOpen && (
           <button
             onClick={() => setFormOpen(true)}
             className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444]"
           >
-            <Plus size={12} /> Nouvel objectif
+            <Plus size={12} />{" "}{t("Nouvel objectif")}
           </button>
         )}
       </div>
@@ -285,7 +289,7 @@ export default function BusinessGoals({
       {active.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 text-center">
           <Target size={22} className="text-[#F5EDED]/15 mx-auto mb-2.5" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun objectif en cours. Fixe-en un pour te donner un cap.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Aucun objectif en cours. Fixe-en un pour te donner un cap.")}</p>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 gap-2.5">
@@ -302,7 +306,7 @@ export default function BusinessGoals({
             className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <ChevronDown size={12} style={{ transform: showArchived ? "rotate(180deg)" : "none" }} />
-            {archived.length} terminé{archived.length !== 1 ? "s" : ""}/abandonné{archived.length !== 1 ? "s" : ""}
+            {archived.length}{" "}{t("terminé")}{archived.length !== 1 ? "s" : ""}{t("/abandonné")}{archived.length !== 1 ? "s" : ""}
           </button>
           {showArchived && (
             <div className="grid sm:grid-cols-2 gap-2.5 mt-2.5">

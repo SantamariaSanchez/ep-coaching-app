@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState, useTransition } from "react";
 import { Plus, Trash2, BookmarkPlus, Camera, Video, Briefcase, Sparkles, ExternalLink } from "lucide-react";
 import { createInspiration, deleteInspiration } from "@/app/dashboard/coach/studio/actions";
@@ -18,6 +19,7 @@ const PLATFORM_ORDER: InspirationPlatform[] = ["instagram", "youtube", "linkedin
 // vidéo, un carrousel — qui méritent de servir de référence plus tard,
 // plutôt que de les perdre dans les favoris du navigateur ou une conv privée.
 export default function IdeationInspirations({ initialInspirations }: { initialInspirations: Inspiration[] }) {
+  const t = useT();
   const [items, setItems] = useState(initialInspirations);
 
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
     <div>
       <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
         <button type="button" onClick={() => setShowForm((v) => !v)} style={addButtonStyle}>
-          <Plus size={14} /> Sauvegarder un lien
+          <Plus size={14} />{" "}{t("Sauvegarder un lien")}
         </button>
       </div>
 
@@ -94,8 +96,8 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
           <input
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            placeholder="https://..."
-            aria-label="Lien à sauvegarder"
+            placeholder={t("https://...")}
+            aria-label={t("Lien à sauvegarder")}
             style={inputStyle}
             autoFocus
           />
@@ -109,13 +111,13 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
           <input
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Pourquoi tu gardes ça ? (facultatif)"
-            aria-label="Pourquoi tu gardes ça"
+            placeholder={t("Pourquoi tu gardes ça ? (facultatif)")}
+            aria-label={t("Pourquoi tu gardes ça")}
             style={{ ...inputStyle, marginTop: 10 }}
           />
           {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
           <button type="button" onClick={submitNew} disabled={isPending} style={submitButtonStyle(isPending)}>
-            {isPending ? "..." : "Sauvegarder"}
+            {isPending ? "..." : t("Sauvegarder")}
           </button>
         </div>
       )}
@@ -123,7 +125,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
       {items.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <BookmarkPlus size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucune référence sauvegardée pour l&apos;instant.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Aucune référence sauvegardée pour l'instant.")}</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
@@ -154,7 +156,7 @@ export default function IdeationInspirations({ initialInspirations }: { initialI
                   <button
                     type="button"
                     onClick={() => remove(item.id)}
-                    aria-label="Supprimer"
+                    aria-label={t("Supprimer")}
                     style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 2 }}
                   >
                     <Trash2 size={12} />

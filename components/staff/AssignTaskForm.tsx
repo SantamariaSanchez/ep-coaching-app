@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus } from "lucide-react";
@@ -9,6 +10,7 @@ import { assignTaskAction } from "@/app/equipe/team-actions";
 // dans ses Tâches avec "Assignée par", il est notifié, et le fondateur est
 // prévenu quand elle passe en Fait.
 export default function AssignTaskForm({ memberId, memberName }: { memberId: string; memberName: string }) {
+  const t = useT();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [due, setDue] = useState("");
@@ -36,17 +38,17 @@ export default function AssignTaskForm({ memberId, memberName }: { memberId: str
 
   return (
     <form onSubmit={submit} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
-      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={`Tâche pour ${memberName}`} aria-label="Tâche" className="ep-input" style={{ gridColumn: "1 / -1" }} required />
-      <input type="date" value={due} onChange={(e) => setDue(e.target.value)} aria-label="Échéance" className="ep-input" />
-      <select value={priority} onChange={(e) => setPriority(e.target.value)} aria-label="Priorité" className="ep-input">
-        <option value="haute">Priorité haute</option>
-        <option value="normale">Priorité normale</option>
-        <option value="basse">Priorité basse</option>
+      <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder={`Tâche pour ${memberName}`} aria-label={t("Tâche")} className="ep-input" style={{ gridColumn: "1 / -1" }} required />
+      <input type="date" value={due} onChange={(e) => setDue(e.target.value)} aria-label={t("Échéance")} className="ep-input" />
+      <select value={priority} onChange={(e) => setPriority(e.target.value)} aria-label={t("Priorité")} className="ep-input">
+        <option value="haute">{t("Priorité haute")}</option>
+        <option value="normale">{t("Priorité normale")}</option>
+        <option value="basse">{t("Priorité basse")}</option>
       </select>
-      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Consignes (optionnel)" aria-label="Consignes" rows={2} className="ep-input" style={{ gridColumn: "1 / -1", resize: "vertical" }} />
+      <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder={t("Consignes (optionnel)")} aria-label={t("Consignes")} rows={2} className="ep-input" style={{ gridColumn: "1 / -1", resize: "vertical" }} />
       <div style={{ gridColumn: "1 / -1", display: "flex", alignItems: "center", gap: 12 }}>
         <button type="submit" disabled={pending || !title.trim()} className="ep-btn-primary" style={{ height: 40, padding: "0 16px", fontSize: 12 }}>
-          <Plus size={14} /> {pending ? "Envoi..." : "Assigner la tâche"}
+          <Plus size={14} /> {pending ? t("Envoi...") : t("Assigner la tâche")}
         </button>
         {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
       </div>

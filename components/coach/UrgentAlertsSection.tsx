@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, AlertCircle, ChevronRight, Users, CheckCircle2, WifiOff } from "lucide-react";
@@ -7,6 +8,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import type { TopAlert } from "@/lib/coach-analytics";
 
 export default function UrgentAlertsSection() {
+  const t = useT();
   const [alerts, setAlerts] = useState<TopAlert[]>([]);
   const [loading, setLoading] = useState(true);
   // Repasse "petit détail utile" (2026-09-10) : le `.catch()` d'origine
@@ -53,7 +55,7 @@ export default function UrgentAlertsSection() {
         <div className="flex items-center gap-2.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3.5">
           <WifiOff size={15} className="text-[#F5EDED]/35 flex-shrink-0" strokeWidth={1.8} />
           <p className="text-xs text-[#F5EDED]/40">
-            Impossible de vérifier les alertes pour l&apos;instant. Réessaie en rechargeant la page.
+            {t("Impossible de vérifier les alertes pour l'instant. Réessaie en rechargeant la page.")}
           </p>
         </div>
       </section>
@@ -72,7 +74,7 @@ export default function UrgentAlertsSection() {
         <div className="flex items-center gap-2.5 bg-green-500/5 border border-green-500/15 rounded-xl px-4 py-3.5">
           <CheckCircle2 size={15} className="text-green-400/70 flex-shrink-0" strokeWidth={1.8} />
           <p className="text-xs text-[#F5EDED]/45">
-            Rien à signaler. Tous tes clients suivis sont à jour.
+            {t("Rien à signaler. Tous tes clients suivis sont à jour.")}
           </p>
         </div>
       </section>
@@ -85,7 +87,7 @@ export default function UrgentAlertsSection() {
         <div className="flex items-center gap-2">
           <AlertTriangle size={14} className="text-red-400" />
           <h2 className="text-sm font-black uppercase tracking-widest text-red-400/80">
-            Alertes urgentes
+            {t("Alertes urgentes")}
           </h2>
           <span className="text-[9px] font-black px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/25">
             {alerts.length}
@@ -97,7 +99,7 @@ export default function UrgentAlertsSection() {
           href="/dashboard/coach/prioritaires"
           className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
-          Voir tout
+          {t("Voir tout")}
           <ChevronRight size={12} />
         </Link>
       </div>
@@ -115,7 +117,7 @@ export default function UrgentAlertsSection() {
               <AlertCircle size={13} className="text-amber-400 flex-shrink-0 mt-0.5" strokeWidth={2} />
             )}
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-black text-white">{item.clientName ?? "Client"}</p>
+              <p className="text-xs font-black text-white">{item.clientName ?? t("Client")}</p>
               <p className="text-[10px] text-[#F5EDED]/50 mt-0.5 leading-snug">{item.alert.label}</p>
             </div>
             <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border flex-shrink-0 ${
@@ -123,7 +125,7 @@ export default function UrgentAlertsSection() {
                 ? "bg-red-500/10 text-red-400 border-red-500/20"
                 : "bg-amber-500/10 text-amber-400 border-amber-500/20"
             }`}>
-              {item.alert.severity === "high" ? "Critique" : "Attention"}
+              {item.alert.severity === "high" ? t("Critique") : t("Attention")}
             </span>
             {/* Audit friction coach (2026-09-16) : chevron ajouté pour
                 l'affordance "ceci mène ailleurs", déjà présent sur les lignes
@@ -140,7 +142,7 @@ export default function UrgentAlertsSection() {
           className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors"
         >
           <Users size={12} />
-          Voir tous les clients
+          {t("Voir tous les clients")}
         </Link>
       </div>
     </section>

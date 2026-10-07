@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { Users, Plus, StickyNote, Trash2 } from "lucide-react";
 import type { NetworkContact, ContactCategory, ContactStatus } from "@/lib/coach-network";
@@ -41,6 +42,7 @@ const STATUS_COLORS: Record<ContactStatus, string> = {
 const STATUS_ORDER: ContactStatus[] = ["a_contacter", "en_discussion", "actif", "inactif"];
 
 function ContactRow({ contact }: { contact: NetworkContact }) {
+  const t = useT();
   const [status, setStatus] = useState(contact.status);
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState(contact.note ?? "");
@@ -97,7 +99,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
         <button
           type="button"
           onClick={() => deleteNetworkContact(contact.id)}
-          aria-label="Supprimer ce contact"
+          aria-label={t("Supprimer ce contact")}
           className="text-[#F5EDED]/15 hover:text-red-400 flex-shrink-0"
         >
           <Trash2 size={13} />
@@ -109,9 +111,9 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Note (ex. contacté le 12/09 pour un partenariat croisé, en attente de réponse)"
+            placeholder={t("Note (ex. contacté le 12/09 pour un partenariat croisé, en attente de réponse)")}
             rows={2}
-            aria-label="Note"
+            aria-label={t("Note")}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
           />
           <div className="flex gap-2">
@@ -123,7 +125,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
               }}
               className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2"
             >
-              Annuler
+              {t("Annuler")}
             </button>
             <button
               type="button"
@@ -131,7 +133,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
               disabled={savingNote}
               className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
             >
-              {savingNote ? "Enregistrement…" : "Enregistrer"}
+              {savingNote ? t("Enregistrement…") : t("Enregistrer")}
             </button>
           </div>
         </div>
@@ -142,7 +144,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
           className="flex items-center gap-1.5 mt-2 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
           <StickyNote size={11} />
-          {contact.note ? <span className="text-[#F5EDED]/55 italic truncate">{contact.note}</span> : "Ajouter une note"}
+          {contact.note ? <span className="text-[#F5EDED]/55 italic truncate">{contact.note}</span> : t("Ajouter une note")}
         </button>
       )}
     </div>
@@ -150,6 +152,7 @@ function ContactRow({ contact }: { contact: NetworkContact }) {
 }
 
 function NewContactForm({ onClose }: { onClose: () => void }) {
+  const t = useT();
   const [name, setName] = useState("");
   const [category, setCategory] = useState<ContactCategory>("partenaire");
   const [contactInfo, setContactInfo] = useState("");
@@ -173,8 +176,8 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom"
-        aria-label="Nom du contact"
+        placeholder={t("Nom")}
+        aria-label={t("Nom du contact")}
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
       />
       <div className="flex flex-wrap gap-1.5">
@@ -197,21 +200,21 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
       <input
         value={contactInfo}
         onChange={(e) => setContactInfo(e.target.value)}
-        placeholder="Email, tél ou Instagram (optionnel)"
-        aria-label="Coordonnées"
+        placeholder={t("Email, tél ou Instagram (optionnel)")}
+        aria-label={t("Coordonnées")}
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
       />
       {error && <p className="text-[11px] text-red-400">{error}</p>}
       <div className="flex gap-2">
         <button onClick={onClose} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
-          Annuler
+          {t("Annuler")}
         </button>
         <button
           onClick={handleSubmit}
           disabled={saving || !name.trim()}
           className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
         >
-          {saving ? "Ajout…" : "Ajouter"}
+          {saving ? t("Ajout…") : t("Ajouter")}
         </button>
       </div>
     </div>
@@ -219,6 +222,7 @@ function NewContactForm({ onClose }: { onClose: () => void }) {
 }
 
 export default function NetworkTracker({ contacts }: { contacts: NetworkContact[] }) {
+  const t = useT();
   const [formOpen, setFormOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ContactStatus | "all">("all");
 
@@ -243,7 +247,7 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
               color: statusFilter === "all" ? "#E01E1E" : "rgba(245,237,237,0.45)",
             }}
           >
-            Tous {contacts.length > 0 && <span className="opacity-65">{contacts.length}</span>}
+            {t("Tous")}{" "}{contacts.length > 0 && <span className="opacity-65">{contacts.length}</span>}
           </button>
           {STATUS_ORDER.map((s) => (
             <button
@@ -265,7 +269,7 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
             onClick={() => setFormOpen(true)}
             className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
           >
-            <Plus size={12} /> Contact
+            <Plus size={12} />{" "}{t("Contact")}
           </button>
         )}
       </div>
@@ -277,8 +281,8 @@ export default function NetworkTracker({ contacts }: { contacts: NetworkContact[
           <Users size={22} className="text-[#F5EDED]/15 mx-auto mb-2.5" strokeWidth={1.5} />
           <p className="text-sm text-[#F5EDED]/35">
             {contacts.length === 0
-              ? "Aucun contact pour l'instant. Ajoute un partenaire, un affilié ou un influenceur à suivre."
-              : "Aucun contact ne correspond à ce filtre."}
+              ? t("Aucun contact pour l'instant. Ajoute un partenaire, un affilié ou un influenceur à suivre.")
+              : t("Aucun contact ne correspond à ce filtre.")}
           </p>
         </div>
       ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Search, ExternalLink, Plus, X } from "lucide-react";
 import type { PubMedSummary } from "@/lib/pubmed";
@@ -37,6 +38,7 @@ function ImportForm({ result, onImport, onCancel }: {
   onImport: (input: ImportArticleInput) => Promise<void>;
   onCancel: () => void;
 }) {
+  const tr = useT();
   const [topic, setTopic] = useState<string>(SCIENCE_TOPICS[0]);
   const [articleType, setArticleType] = useState<ScienceArticleType>(guessArticleType(result.title));
   const [titleFr, setTitleFr] = useState("");
@@ -49,12 +51,12 @@ function ImportForm({ result, onImport, onCancel }: {
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 mt-2 space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label="Thématique" className={inputCls}>
+        <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label={tr("Thématique")} className={inputCls}>
           {SCIENCE_TOPICS.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} aria-label="Type d'article" className={inputCls}>
+        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} aria-label={tr("Type d'article")} className={inputCls}>
           {Object.entries(ARTICLE_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
@@ -63,19 +65,19 @@ function ImportForm({ result, onImport, onCancel }: {
       <input
         value={titleFr}
         onChange={(e) => setTitleFr(e.target.value)}
-        placeholder="Titre en français (obligatoire, c'est ce que le client verra en premier)" aria-label="Titre en français (obligatoire, c'est ce que le client verra en premier)"
+        placeholder={tr("Titre en français (obligatoire, c'est ce que le client verra en premier)")} aria-label={tr("Titre en français (obligatoire, c'est ce que le client verra en premier)")}
         className={inputCls}
       />
       <textarea
         value={summaryFr}
         onChange={(e) => setSummaryFr(e.target.value)}
         rows={2}
-        placeholder="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…" aria-label="Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…"
+        placeholder={tr("Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…")} aria-label={tr("Résumé en langage simple, à quoi ça sert concrètement (obligatoire)…")}
         className={`${inputCls} resize-none`}
       />
       <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
         <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
-        Afficher aussi dans Actualité
+        {tr("Afficher aussi dans Actualité")}
       </label>
       <div className="flex gap-2">
         <button
@@ -102,9 +104,9 @@ function ImportForm({ result, onImport, onCancel }: {
           title={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"} aria-label={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "Ajout…" : "Confirmer l'ajout"}
+          {saving ? tr("Ajout…") : tr("Confirmer l'ajout")}
         </button>
-        <button onClick={onCancel} aria-label="Annuler" className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -117,6 +119,7 @@ function ResultCard({ result, isCoach, importArticle }: {
   isCoach: boolean;
   importArticle?: (input: ImportArticleInput) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [showImport, setShowImport] = useState(false);
   const [imported, setImported] = useState(false);
 
@@ -134,17 +137,17 @@ function ResultCard({ result, isCoach, importArticle }: {
           rel="noopener noreferrer"
           className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
         >
-          <ExternalLink size={11} /> Voir sur PubMed
+          <ExternalLink size={11} />{" "}{tr("Voir sur PubMed")}
         </a>
         {isCoach && importArticle && !imported && (
           <button
             onClick={() => setShowImport((v) => !v)}
             className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors ml-auto"
           >
-            <Plus size={11} /> Ajouter à la biblio
+            <Plus size={11} />{" "}{tr("Ajouter à la biblio")}
           </button>
         )}
-        {imported && <span className="ml-auto text-[10px] font-bold text-green-400">Ajouté ✓</span>}
+        {imported && <span className="ml-auto text-[10px] font-bold text-green-400">{tr("Ajouté ✓")}</span>}
       </div>
       {showImport && importArticle && (
         <ImportForm
@@ -167,6 +170,7 @@ export default function SearchView({ isCoach, importArticle }: {
   isCoach: boolean;
   importArticle?: (input: ImportArticleInput) => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PubMedSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -204,7 +208,7 @@ export default function SearchView({ isCoach, importArticle }: {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="Ex. creatine supplementation muscle hypertrophy…" aria-label="Rechercher un article scientifique"
+            placeholder={tr("Ex. creatine supplementation muscle hypertrophy…")} aria-label={tr("Rechercher un article scientifique")}
             className={`${inputCls} pl-9`}
           />
         </div>
@@ -213,17 +217,17 @@ export default function SearchView({ isCoach, importArticle }: {
           disabled={!query.trim() || loading}
           className="px-4 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white rounded-lg transition-colors flex-shrink-0"
         >
-          {loading ? "…" : "Rechercher"}
+          {loading ? "…" : tr("Rechercher")}
         </button>
       </div>
       <p className="text-[10px] text-[#F5EDED]/25">
-        Recherche directement sur PubMed (NCBI) en anglais, la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.
+        {tr("Recherche directement sur PubMed (NCBI) en anglais, la base de référence des publications scientifiques en santé. Consulte la source pour te faire ta propre opinion.")}
       </p>
 
       {!searched && (
         <div>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-            Pas d&apos;idée de recherche ? Sujets courants (déjà traduits pour PubMed) :
+            {tr("Pas d'idée de recherche ? Sujets courants (déjà traduits pour PubMed) :")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {QUICK_TOPICS.map((t) => (
@@ -249,7 +253,7 @@ export default function SearchView({ isCoach, importArticle }: {
           <ResultCard key={r.pmid} result={r} isCoach={isCoach} importArticle={importArticle} />
         ))}
         {searched && !loading && results.length === 0 && !error && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">Aucun résultat pour cette recherche.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{tr("Aucun résultat pour cette recherche.")}</p>
         )}
       </div>
     </div>

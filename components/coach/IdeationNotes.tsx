@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Pin, PinOff, Trash2, StickyNote, Search } from "lucide-react";
 import { createIdeationNote, updateIdeationNote, deleteIdeationNote } from "@/app/dashboard/coach/studio/actions";
@@ -11,6 +12,7 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 // un pense-bête, un brouillon de post pas encore assez mûr pour devenir
 // une "idée" formelle, une note de réunion, etc.
 export default function IdeationNotes({ initialNotes }: { initialNotes: IdeationNote[] }) {
+  const tr = useT();
   const [notes, setNotes] = useState(initialNotes);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand initialNotes
@@ -123,13 +125,13 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Chercher une note..."
-            aria-label="Chercher une note"
+            placeholder={tr("Chercher une note...")}
+            aria-label={tr("Chercher une note")}
             style={{ ...inputStyle, paddingLeft: 32 }}
           />
         </div>
         <button type="button" onClick={() => setShowForm((v) => !v)} style={addButtonStyle}>
-          <Plus size={14} /> Nouvelle note
+          <Plus size={14} />{" "}{tr("Nouvelle note")}
         </button>
       </div>
 
@@ -138,22 +140,22 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Titre de la note"
-            aria-label="Titre de la note"
+            placeholder={tr("Titre de la note")}
+            aria-label={tr("Titre de la note")}
             style={inputStyle}
             autoFocus
           />
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Le contenu de la note..."
-            aria-label="Le contenu de la note"
+            placeholder={tr("Le contenu de la note...")}
+            aria-label={tr("Le contenu de la note")}
             rows={4}
             style={{ ...inputStyle, marginTop: 10, resize: "vertical", fontFamily: "inherit" }}
           />
           {error && <p style={{ color: "#fb7185", fontSize: 12, marginTop: 8 }}>{error}</p>}
           <button type="button" onClick={submitNew} disabled={isPending} style={submitButtonStyle(isPending)}>
-            {isPending ? "..." : "Ajouter"}
+            {isPending ? "..." : tr("Ajouter")}
           </button>
         </div>
       )}
@@ -162,7 +164,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <StickyNote size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-sm text-[#F5EDED]/35">
-            {query ? "Aucune note ne correspond." : "Aucune note pour l'instant."}
+            {query ? tr("Aucune note ne correspond.") : tr("Aucune note pour l'instant.")}
           </p>
         </div>
       ) : (
@@ -178,16 +180,16 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                         value={editBody}
                         onChange={(e) => setEditBody(e.target.value)}
                         rows={3}
-                        aria-label="Modifier le contenu"
+                        aria-label={tr("Modifier le contenu")}
                         style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
                         autoFocus
                       />
                       <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
                         <button type="button" onClick={() => saveBody(note.id)} style={submitButtonStyle(false)}>
-                          Enregistrer
+                          {tr("Enregistrer")}
                         </button>
                         <button type="button" onClick={() => setEditingId(null)} style={cancelButtonStyle}>
-                          Annuler
+                          {tr("Annuler")}
                         </button>
                       </div>
                     </div>
@@ -199,7 +201,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                       }}
                       style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(245,237,237,0.45)", lineHeight: 1.5, whiteSpace: "pre-wrap", cursor: "text" }}
                     >
-                      {note.body || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
+                      {note.body || <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
                     </p>
                   )}
                 </div>
@@ -214,7 +216,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                 <button
                   type="button"
                   onClick={() => remove(note.id)}
-                  aria-label="Supprimer"
+                  aria-label={tr("Supprimer")}
                   style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
                 >
                   <Trash2 size={14} />

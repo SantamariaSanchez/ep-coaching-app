@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition } from "react";
 import { Check, Clock, ChevronDown, Target, AlertTriangle, Lightbulb } from "lucide-react";
 import type { MasterclassGuide, MasterclassBlock } from "@/lib/masterclass-guides";
@@ -51,6 +52,7 @@ export default function MasterclassGuideView({
   guide: MasterclassGuide;
   initialCompletedSteps: number[];
 }) {
+  const t = useT();
   const [completed, setCompleted] = useState<Set<number>>(new Set(initialCompletedSteps));
   const [openIndex, setOpenIndex] = useState<number>(() => {
     // Ouvre par défaut la première étape pas encore faite, pour reprendre
@@ -96,7 +98,7 @@ export default function MasterclassGuideView({
         <div className="flex items-center gap-2 mb-2">
           <span className="inline-flex items-center gap-1 text-[11px] text-[#F5EDED]/40">
             <Clock size={12} />
-            {guide.estimatedMinutes} min
+            {guide.estimatedMinutes}{" "}{t("min")}
           </span>
         </div>
         <h1 className="text-2xl font-black uppercase tracking-tight text-white leading-tight">
@@ -108,7 +110,7 @@ export default function MasterclassGuideView({
           <Target size={14} className="text-[#E01E1E] flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-              Résultat à la fin
+              {t("Résultat à la fin")}
             </p>
             <p className="text-[12.5px] text-[#F5EDED]/75 leading-relaxed">{guide.finalOutcome}</p>
           </div>
@@ -117,7 +119,7 @@ export default function MasterclassGuideView({
         <div className="mt-4">
           <div className="flex items-center justify-between mb-1.5">
             <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-              {completed.size}/{total} étapes faites
+              {completed.size}/{total}{" "}{t("étapes faites")}
             </p>
             <p className="text-[10px] font-bold text-[#F5EDED]/40">{percent}%</p>
           </div>
@@ -188,7 +190,7 @@ export default function MasterclassGuideView({
                   {step.deliverables && step.deliverables.length > 0 && (
                     <div className="mt-3 bg-[#0f0000] border border-[#890404]/15 rounded-lg p-3">
                       <p className="text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                        À avoir en main à la fin de cette étape
+                        {t("À avoir en main à la fin de cette étape")}
                       </p>
                       <ul className="space-y-1">
                         {step.deliverables.map((d, i) => (
@@ -211,7 +213,7 @@ export default function MasterclassGuideView({
                     }`}
                   >
                     <Check size={12} />
-                    {isDone ? "Marquer non fait" : "Marquer cette étape faite"}
+                    {isDone ? t("Marquer non fait") : t("Marquer cette étape faite")}
                   </button>
                 </div>
               )}

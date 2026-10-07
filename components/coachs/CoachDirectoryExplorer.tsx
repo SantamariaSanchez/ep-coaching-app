@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AtSign, UserPlus, UserX, Tags, Bot } from "lucide-react";
@@ -15,6 +16,7 @@ function initials(name: string | null): string {
 // Axe 5 (VISION.md) : filtre client-side (liste déjà petite, pas besoin
 // d'un fetch par changement de filtre) — même approche que LeadMagnetsExplorer.
 export default function CoachDirectoryExplorer({ coaches }: { coaches: CoachDirectoryEntry[] }) {
+  const tr = useT();
   const [activeTag, setActiveTag] = useState<string | null>(null);
 
   const usedTags = useMemo(() => {
@@ -40,7 +42,7 @@ export default function CoachDirectoryExplorer({ coaches }: { coaches: CoachDire
             onClick={() => setActiveTag(null)}
             style={chipStyle(activeTag === null)}
           >
-            Tous
+            {tr("Tous")}
           </button>
           {usedTags.map((tag) => (
             <button key={tag} type="button" onClick={() => setActiveTag(tag)} style={chipStyle(activeTag === tag)}>
@@ -53,7 +55,7 @@ export default function CoachDirectoryExplorer({ coaches }: { coaches: CoachDire
       {filtered.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <Tags size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun coach ne correspond à ce critère pour l&apos;instant.</p>
+          <p className="text-sm text-[#F5EDED]/35">{tr("Aucun coach ne correspond à ce critère pour l'instant.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -81,6 +83,7 @@ function chipStyle(active: boolean): React.CSSProperties {
 }
 
 function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
+  const tr = useT();
   const tags = coach.specializations.length > 0 ? coach.specializations : ["Généraliste"];
 
   return (
@@ -122,7 +125,7 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
             <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED" }}>
-              {coach.full_name ?? "Coach"}
+              {coach.full_name ?? tr("Coach")}
             </p>
             {coach.is_ai_coach && (
               <span
@@ -133,16 +136,16 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
                   border: "1px solid rgba(96,165,250,0.35)", textTransform: "uppercase", letterSpacing: "0.03em",
                 }}
               >
-                <Bot size={10} /> Coach IA
+                <Bot size={10} />{" "}{tr("Coach IA")}
               </span>
             )}
             {coach.accepting_new_clients ? (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "#4ade80" }}>
-                <UserPlus size={11} /> Places dispo
+                <UserPlus size={11} />{" "}{tr("Places dispo")}
               </span>
             ) : (
               <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: "rgba(245,237,237,0.4)" }}>
-                <UserX size={11} /> Complet
+                <UserX size={11} />{" "}{tr("Complet")}
               </span>
             )}
           </div>
@@ -184,11 +187,11 @@ function CoachCard({ coach }: { coach: CoachDirectoryEntry }) {
                   fontWeight: 800, fontSize: 12.5, letterSpacing: "0.02em", textDecoration: "none",
                 }}
               >
-                Commencer avec {coach.full_name?.split(" ")[0] ?? "ce coach"}
+                {tr("Commencer avec")}{" "}{coach.full_name?.split(" ")[0] ?? tr("ce coach")}
               </Link>
             ) : (
               <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.35)" }}>
-                Complet pour le moment, inscris-toi et rejoins sa liste d&apos;attente depuis ton espace membre.
+                {tr("Complet pour le moment, inscris-toi et rejoins sa liste d'attente depuis ton espace membre.")}
               </p>
             )}
           </div>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Plus, X, Check, Lightbulb, Save } from "lucide-react";
 import { ROADMAP_HORIZONS, ROADMAP_HORIZON_INFO, type RoadmapHorizon } from "@/lib/coach-roadmap";
@@ -24,6 +25,7 @@ export default function RoadmapPlanner({
   initialVisions: Partial<Record<RoadmapHorizon, string>>;
   initialMilestones: RoadmapMilestone[];
 }) {
+  const t = useT();
   const [horizon, setHorizon] = useState<RoadmapHorizon>("1_an");
   const [visions, setVisions] = useState(initialVisions);
   const [milestones, setMilestones] = useState(initialMilestones);
@@ -120,7 +122,7 @@ export default function RoadmapPlanner({
         <div className="flex items-center justify-end gap-1.5 mt-1.5 h-4">
           {visionSaved && (
             <span className="flex items-center gap-1 text-[10px] font-bold text-green-400">
-              <Save size={10} /> Enregistré
+              <Save size={10} />{" "}{t("Enregistré")}
             </span>
           )}
         </div>
@@ -144,7 +146,7 @@ export default function RoadmapPlanner({
       {/* Jalons de cet horizon */}
       <div className="mt-4">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2.5">
-          Jalons · {doneCount}/{horizonMilestones.length || 0}
+          {t("Jalons ·")}{" "}{doneCount}/{horizonMilestones.length || 0}
         </p>
         <div className="space-y-1.5 mb-2.5">
           {horizonMilestones.map((m) => (
@@ -169,7 +171,7 @@ export default function RoadmapPlanner({
                 type="button"
                 onClick={() => removeMilestone(m.id)}
                 className="flex-shrink-0 text-[#F5EDED]/20 hover:text-red-400 transition-colors"
-                aria-label="Supprimer ce jalon"
+                aria-label={t("Supprimer ce jalon")}
               >
                 <X size={14} />
               </button>
@@ -181,7 +183,7 @@ export default function RoadmapPlanner({
             value={newMilestone}
             onChange={(e) => setNewMilestone(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && addMilestone()}
-            placeholder="Ajouter un jalon pour cet horizon..." aria-label="Ajouter un jalon pour cet horizon..."
+            placeholder={t("Ajouter un jalon pour cet horizon...")} aria-label={t("Ajouter un jalon pour cet horizon...")}
             className="flex-1 min-w-0 bg-[#150000] border border-[#890404]/25 rounded-lg px-3.5 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
           />
           <button
@@ -190,7 +192,7 @@ export default function RoadmapPlanner({
             disabled={!newMilestone.trim() || isPending}
             className="flex-shrink-0 flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white text-[11px] font-bold uppercase tracking-widest px-4 rounded-lg transition-colors"
           >
-            <Plus size={13} /> Ajouter
+            <Plus size={13} />{" "}{t("Ajouter")}
           </button>
         </div>
       </div>

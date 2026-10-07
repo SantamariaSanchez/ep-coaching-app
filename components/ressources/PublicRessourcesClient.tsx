@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Heart, Calculator, ChevronRight, Trophy, Users } from "lucide-react";
@@ -23,6 +24,7 @@ export default function PublicRessourcesClient({
    *  "Réussites des membres" mène vers un écran vide (voir app/bio). */
   hasVictories?: boolean;
 }) {
+  const tr = useT();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(FREE_PREVIEW_SECONDS);
   const [manualOpen, setManualOpen] = useState(false);
@@ -64,7 +66,7 @@ export default function PublicRessourcesClient({
           }}
         >
           <span style={{ letterSpacing: "0.04em" }}>
-            Accès libre : {secondsLeft}s
+            {tr("Accès libre :")}{" "}{secondsLeft}s
           </span>
           <button
             onClick={() => setManualOpen(true)}
@@ -82,7 +84,7 @@ export default function PublicRessourcesClient({
               gap: 5,
             }}
           >
-            <Heart size={11} /> Rejoindre la communauté
+            <Heart size={11} />{" "}{tr("Rejoindre la communauté")}
           </button>
         </div>
       )}
@@ -90,9 +92,9 @@ export default function PublicRessourcesClient({
       <div className="px-6 py-8 max-w-2xl mx-auto pb-24">
         <div className="mb-6">
           <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-            EP Coaching
+            {tr("EP Coaching")}
           </p>
-          <h1 className="text-3xl font-black uppercase tracking-tight">Ressources</h1>
+          <h1 className="text-3xl font-black uppercase tracking-tight">{tr("Ressources")}</h1>
         </div>
 
         {leadMagnets.length > 0 && (
@@ -109,8 +111,8 @@ export default function PublicRessourcesClient({
             <Calculator size={15} className="text-[#890404]" strokeWidth={1.8} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">Calculateurs gratuits</p>
-            <p className="text-[10px] text-[#F5EDED]/35">Calories, macros, charge maximale (1RM)</p>
+            <p className="text-sm font-bold text-white">{tr("Calculateurs gratuits")}</p>
+            <p className="text-[10px] text-[#F5EDED]/35">{tr("Calories, macros, charge maximale (1RM)")}</p>
           </div>
           <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
         </Link>
@@ -126,8 +128,8 @@ export default function PublicRessourcesClient({
             <Users size={15} className="text-[#890404]" strokeWidth={1.8} />
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-white">Trouve ton coach</p>
-            <p className="text-[10px] text-[#F5EDED]/35">Annuaire des coachs, par spécialisation</p>
+            <p className="text-sm font-bold text-white">{tr("Trouve ton coach")}</p>
+            <p className="text-[10px] text-[#F5EDED]/35">{tr("Annuaire des coachs, par spécialisation")}</p>
           </div>
           <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
         </Link>
@@ -146,8 +148,8 @@ export default function PublicRessourcesClient({
               <Trophy size={15} className="text-[#890404]" strokeWidth={1.8} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-white">Réussites des membres</p>
-              <p className="text-[10px] text-[#F5EDED]/35">Ce qu&apos;ils partagent, avec leur accord</p>
+              <p className="text-sm font-bold text-white">{tr("Réussites des membres")}</p>
+              <p className="text-[10px] text-[#F5EDED]/35">{tr("Ce qu'ils partagent, avec leur accord")}</p>
             </div>
             <ChevronRight size={15} className="text-[#F5EDED]/25 flex-shrink-0" strokeWidth={1.8} />
           </Link>

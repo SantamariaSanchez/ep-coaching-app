@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +25,7 @@ export default function CoachClientRoadmapView({
   today: string;
   data: RoadmapPageData;
 }) {
+  const t = useT();
   const router = useRouter();
   const refresh = useCallback(() => router.refresh(), [router]);
   const [clientName, setClientName] = useState<string>("");
@@ -45,11 +47,11 @@ export default function CoachClientRoadmapView({
           style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(245,237,237,0.3)", textDecoration: "none", fontSize: 12, fontWeight: 600 }}
         >
           <ChevronLeft size={14} />
-          {clientName || "Client"}
+          {clientName || t("Client")}
         </Link>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="ep-section-title" style={{ margin: 0 }}>Road Map</p>
-          <h1 className="ep-h1" style={{ margin: "2px 0 0", overflowWrap: "anywhere" }}>{clientName || "Client"}</h1>
+          <p className="ep-section-title" style={{ margin: 0 }}>{t("Road Map")}</p>
+          <h1 className="ep-h1" style={{ margin: "2px 0 0", overflowWrap: "anywhere" }}>{clientName || t("Client")}</h1>
         </div>
       </div>
 
@@ -74,7 +76,7 @@ export default function CoachClientRoadmapView({
             objectives={objectives}
             today={today}
             weights={pilot?.weights}
-            title="Ses objectifs"
+            title={t("Ses objectifs")}
           />
         </>
       )}

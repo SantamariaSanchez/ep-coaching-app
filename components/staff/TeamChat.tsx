@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -38,6 +39,7 @@ export default function TeamChat({
   /** Fil seul, sans l'annuaire (fiche d'un membre côté fondateur). */
   compact?: boolean;
 }) {
+  const tr = useT();
   const router = useRouter();
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -77,24 +79,24 @@ export default function TeamChat({
     <div className="ep-card" style={{ display: "flex", flexDirection: "column", minHeight: compact ? 320 : 520, maxHeight: compact ? 480 : "70vh" }}>
       <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(245,237,237,0.06)" }}>
         <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>
-          {active === "general" ? "Canal équipe" : activePerson?.name ?? "Choisis une conversation"}
+          {active === "general" ? tr("Canal équipe") : activePerson?.name ?? tr("Choisis une conversation")}
         </p>
         <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-          {active === "general" ? "Visible par toute l'équipe et le fondateur" : activePerson?.subtitle ?? ""}
+          {active === "general" ? tr("Visible par toute l'équipe et le fondateur") : activePerson?.subtitle ?? ""}
         </p>
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 8 }}>
         {!active ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>Sélectionne une personne ou le canal équipe.</p>
+          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>{tr("Sélectionne une personne ou le canal équipe.")}</p>
         ) : messages.length === 0 ? (
-          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>Aucun message pour l&apos;instant. Lance la conversation.</p>
+          <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: "auto", textAlign: "center" }}>{tr("Aucun message pour l'instant. Lance la conversation.")}</p>
         ) : (
           messages.map((m) => {
             const mine = m.sender_id === meId;
             return (
               <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "82%" }}>
                 {!mine && active === "general" && (
-                  <p style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(245,237,237,0.45)", margin: "0 0 2px 4px" }}>{nameById[m.sender_id] ?? "Ancien membre"}</p>
+                  <p style={{ fontSize: 10.5, fontWeight: 700, color: "rgba(245,237,237,0.45)", margin: "0 0 2px 4px" }}>{nameById[m.sender_id] ?? tr("Ancien membre")}</p>
                 )}
                 <div
                   style={{
@@ -132,12 +134,12 @@ export default function TeamChat({
                 }
               }}
               rows={2}
-              placeholder="Écris ton message (Entrée pour envoyer)"
-              aria-label="Message"
+              placeholder={tr("Écris ton message (Entrée pour envoyer)")}
+              aria-label={tr("Message")}
               className="ep-input"
               style={{ flex: 1, resize: "none" }}
             />
-            <button type="button" onClick={send} disabled={pending || !text.trim()} aria-label="Envoyer" className="ep-btn-primary" style={{ height: 44, width: 44, padding: 0, flexShrink: 0 }}>
+            <button type="button" onClick={send} disabled={pending || !text.trim()} aria-label={tr("Envoyer")} className="ep-btn-primary" style={{ height: 44, width: 44, padding: 0, flexShrink: 0 }}>
               <Send size={16} />
             </button>
           </div>
@@ -158,10 +160,10 @@ export default function TeamChat({
           <span style={{ width: 32, height: 32, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(224,30,30,0.12)", color: "#E01E1E", flexShrink: 0 }}>
             <Hash size={15} />
           </span>
-          <span style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>Canal équipe</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED" }}>{tr("Canal équipe")}</span>
         </Link>
-        <p className="ep-label" style={{ margin: "10px 10px 4px" }}>Membres ({others.length})</p>
-        {others.length === 0 && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "4px 10px 8px" }}>Personne d&apos;autre dans l&apos;équipe pour l&apos;instant.</p>}
+        <p className="ep-label" style={{ margin: "10px 10px 4px" }}>{tr("Membres (")}{others.length})</p>
+        {others.length === 0 && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.4)", margin: "4px 10px 8px" }}>{tr("Personne d'autre dans l'équipe pour l'instant.")}</p>}
         {others.map((p) => (
           <Link
             key={p.id}

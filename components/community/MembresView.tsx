@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, Mail, MessageCircle, Bell, CheckCircle2, Flame, MoonStar, Sparkles } from "lucide-react";
@@ -39,6 +40,7 @@ function MemberRow({
   member: CommunityMemberWithActivity;
   onRelaunch: (id: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [relaunching, setRelaunching] = useState(false);
   const [relaunched, setRelaunched] = useState(false);
   const { activity } = member;
@@ -61,15 +63,15 @@ function MemberRow({
             <RankBadge points={activity.points} />
             {activity.isNew ? (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#D9A94E]/10 border border-[#D9A94E]/30 text-[#D9A94E]">
-                <Sparkles size={9} /> Nouveau, à accueillir
+                <Sparkles size={9} />{" "}{t("Nouveau, à accueillir")}
               </span>
             ) : activity.neverReturned ? (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#150000] border border-[#890404]/25 text-[#F5EDED]/35">
-                <MoonStar size={9} /> Jamais revenu
+                <MoonStar size={9} />{" "}{t("Jamais revenu")}
               </span>
             ) : isActive ? (
               <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-green-500/10 border border-green-500/25 text-green-300">
-                <Flame size={9} /> Actif
+                <Flame size={9} />{" "}{t("Actif")}
               </span>
             ) : null}
           </div>
@@ -80,7 +82,7 @@ function MemberRow({
           <p className="text-[10px] text-[#F5EDED]/30 mt-0.5">
             {activity.sessionCount > 0
               ? `${activity.sessionCount} séance${activity.sessionCount > 1 ? "s" : ""} · dernière ${timeAgo(activity.lastSessionAt!)}`
-              : "Aucune séance loguée"}
+              : t("Aucune séance loguée")}
             {activity.postCount > 0 && ` · ${activity.postCount} post${activity.postCount > 1 ? "s" : ""} communauté`}
           </p>
           <div className="flex flex-wrap gap-1 mt-1.5">
@@ -102,7 +104,7 @@ function MemberRow({
           href={`/dashboard/coach/messages/${member.id}`}
           className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
-          <MessageCircle size={12} /> Message
+          <MessageCircle size={12} />{" "}{t("Message")}
         </Link>
         {activity.neverReturned && (
           <button
@@ -120,11 +122,11 @@ function MemberRow({
           >
             {relaunched ? (
               <>
-                <CheckCircle2 size={12} /> Relancé
+                <CheckCircle2 size={12} />{" "}{t("Relancé")}
               </>
             ) : (
               <>
-                <Bell size={12} /> {relaunching ? "…" : "Relancer"}
+                <Bell size={12} /> {relaunching ? "…" : t("Relancer")}
               </>
             )}
           </button>
@@ -141,6 +143,7 @@ export default function MembresView({
   members: CommunityMemberWithActivity[];
   relaunchMember: (id: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [sort, setSort] = useState<Sort>("recent");
@@ -185,12 +188,11 @@ export default function MembresView({
   if (members.length === 0) {
     return (
       <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-12 px-6 text-center">
-        <p className="text-sm text-[#F5EDED]/45 font-semibold mb-1.5">Aucun membre pour l&apos;instant</p>
+        <p className="text-sm text-[#F5EDED]/45 font-semibold mb-1.5">{t("Aucun membre pour l'instant")}</p>
         {/* Item 40 : la précédente version s'arrêtait à "Aucun membre pour
             l'instant", sans dire d'où ils viennent ni ce que ça implique. */}
         <p className="text-xs text-[#F5EDED]/25 max-w-sm mx-auto leading-relaxed">
-          Les membres s&apos;inscrivent eux-mêmes depuis l&apos;appli (accès gratuit aux outils, sans coaching).
-          Ils apparaîtront ici dès leur inscription.
+          {t("Les membres s'inscrivent eux-mêmes depuis l'appli (accès gratuit aux outils, sans coaching). Ils apparaîtront ici dès leur inscription.")}
         </p>
       </div>
     );
@@ -199,7 +201,7 @@ export default function MembresView({
   return (
     <div className="space-y-4">
       <p className="text-[10px] text-[#F5EDED]/30">
-        {counts.all} membre{counts.all > 1 ? "s" : ""} gratuit{counts.all > 1 ? "s" : ""}
+        {counts.all}{" "}{t("membre")}{counts.all > 1 ? "s" : ""}{" "}{t("gratuit")}{counts.all > 1 ? "s" : ""}
         {counts.fresh > 0 && ` · ${counts.fresh} nouveau${counts.fresh > 1 ? "x" : ""}`}
         {counts.active > 0 && ` · ${counts.active} actif${counts.active > 1 ? "s" : ""}`}
         {counts.dormant > 0 && ` · ${counts.dormant} jamais revenu${counts.dormant > 1 ? "s" : ""}`}
@@ -217,9 +219,8 @@ export default function MembresView({
         >
           <Sparkles size={14} className="text-[#D9A94E] flex-shrink-0" />
           <span className="flex-1 text-[12px] text-[#F5EDED]/70">
-            <strong className="text-[#D9A94E]">{counts.fresh} nouveau{counts.fresh > 1 ? "x" : ""}</strong>
-            {" "}membre{counts.fresh > 1 ? "s" : ""} inscrit{counts.fresh > 1 ? "s" : ""} ces 3 derniers jours, encore rien fait,
-            le meilleur moment pour un message perso.
+            <strong className="text-[#D9A94E]">{counts.fresh}{" "}{t("nouveau")}{counts.fresh > 1 ? "x" : ""}</strong>
+            {" "}{t("membre")}{counts.fresh > 1 ? "s" : ""}{" "}{t("inscrit")}{counts.fresh > 1 ? "s" : ""}{" "}{t("ces 3 derniers jours, encore rien fait, le meilleur moment pour un message perso.")}
           </span>
         </button>
       )}
@@ -230,13 +231,13 @@ export default function MembresView({
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher un membre…" aria-label="Rechercher un membre…"
+            placeholder={t("Rechercher un membre…")} aria-label={t("Rechercher un membre…")}
             className={`${inputCls} pl-9`}
           />
         </div>
-        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Trier par" className={`${inputCls} sm:w-48`}>
-          <option value="recent">Plus récents</option>
-          <option value="active">Plus actifs</option>
+        <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t("Trier par")} className={`${inputCls} sm:w-48`}>
+          <option value="recent">{t("Plus récents")}</option>
+          <option value="active">{t("Plus actifs")}</option>
         </select>
       </div>
 
@@ -264,7 +265,7 @@ export default function MembresView({
           <MemberRow key={m.id} member={m} onRelaunch={handleRelaunch} />
         ))}
         {filtered.length === 0 && (
-          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">Aucun membre ne correspond à ta recherche.</p>
+          <p className="text-xs text-[#F5EDED]/25 italic text-center py-10">{t("Aucun membre ne correspond à ta recherche.")}</p>
         )}
       </div>
     </div>

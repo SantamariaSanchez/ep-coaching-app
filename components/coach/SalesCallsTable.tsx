@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Trash2, Plus } from "lucide-react";
 import type { SalesCall } from "@/lib/sales-calls";
@@ -42,6 +43,7 @@ function TriState({ value, onChange, labelYes, labelNo }: { value: boolean | nul
 }
 
 function CallRow({ call }: { call: SalesCall }) {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [revenue, setRevenue] = useState(call.revenue_amount != null ? String(call.revenue_amount) : "");
 
@@ -62,7 +64,7 @@ function CallRow({ call }: { call: SalesCall }) {
       <input
         type="number"
         inputMode="decimal"
-        placeholder="CA €" aria-label="CA €"
+        placeholder={t("CA €")} aria-label={t("CA €")}
         value={revenue}
         onChange={(e) => setRevenue(e.target.value)}
         onBlur={() => patch({ revenue_amount: revenue.trim() ? Number(revenue) : null })}
@@ -73,7 +75,7 @@ function CallRow({ call }: { call: SalesCall }) {
         type="button"
         onClick={() => startTransition(async () => { await deleteSalesCall(call.id); })}
         style={{ color: "rgba(245,237,237,0.25)", background: "none", border: "none", cursor: "pointer", padding: 4 }}
-        aria-label="Supprimer"
+        aria-label={t("Supprimer")}
       >
         <Trash2 size={14} />
       </button>
@@ -82,6 +84,7 @@ function CallRow({ call }: { call: SalesCall }) {
 }
 
 export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
+  const t = useT();
   const [leadName, setLeadName] = useState("");
   const [callDate, setCallDate] = useState(todayStr());
   const [isPending, startTransition] = useTransition();
@@ -107,7 +110,7 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
       <form onSubmit={handleAdd} className="flex items-center gap-2 mb-4 flex-wrap">
         <input
           type="text"
-          placeholder="Nom du lead" aria-label="Nom du lead"
+          placeholder={t("Nom du lead")} aria-label={t("Nom du lead")}
           value={leadName}
           onChange={(e) => setLeadName(e.target.value)}
           className="ep-input"
@@ -117,12 +120,12 @@ export default function SalesCallsTable({ calls }: { calls: SalesCall[] }) {
           type="date"
           value={callDate}
           onChange={(e) => setCallDate(e.target.value)}
-          aria-label="Date de l'appel"
+          aria-label={t("Date de l'appel")}
           className="ep-input"
           style={{ width: 140 }}
         />
         <button type="submit" disabled={isPending} className="ep-btn-primary" style={{ height: 40, padding: "0 16px", display: "flex", alignItems: "center", gap: 6 }}>
-          <Plus size={14} /> Ajouter
+          <Plus size={14} />{" "}{t("Ajouter")}
         </button>
       </form>
       {error && <p style={{ color: "#f87171", fontSize: 12, marginBottom: 12 }}>{error}</p>}

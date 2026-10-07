@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Search, X, ChevronRight, Clock, BookOpen, ListChecks, HelpCircle, LayoutGrid, SlidersHorizontal, Hash, Copy, Check, type LucideIcon } from "lucide-react";
@@ -49,6 +50,7 @@ function saveRecentSearch(term: string) {
 // logique que showKeyword) : un lead qui parcourt les ressources n'a aucune
 // raison de voir "copier le lien", il est déjà dessus.
 function CopyLinkButton({ url }: { url: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -66,7 +68,7 @@ function CopyLinkButton({ url }: { url: string }) {
           // à côté, donc rien de bloquant.
         }
       }}
-      title="Copier le lien de cette ressource"
+      title={t("Copier le lien de cette ressource")}
       style={{
         display: "flex", alignItems: "center", gap: 4, fontSize: 9, fontWeight: 700,
         color: copied ? "#4ade80" : "rgba(245,237,237,0.3)",
@@ -76,7 +78,7 @@ function CopyLinkButton({ url }: { url: string }) {
     >
       {copied ? <Check size={9} /> : <Copy size={9} />}
       <span style={{ maxWidth: 150, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-        {copied ? "Lien copié" : url.replace(/^https?:\/\//, "")}
+        {copied ? t("Lien copié") : url.replace(/^https?:\/\//, "")}
       </span>
     </button>
   );
@@ -105,6 +107,7 @@ function MagnetCard({
   showKeyword?: boolean;
   showCopyLink?: boolean;
 }) {
+  const t = useT();
   return (
     <Link
       href={`/ressources/${magnet.slug}`}
@@ -136,7 +139,7 @@ function MagnetCard({
                 display: "flex", alignItems: "center", gap: 3, fontSize: 9, fontWeight: 800,
                 letterSpacing: "0.04em", color: "rgba(245,237,237,0.3)", fontVariantNumeric: "tabular-nums",
               }}
-              title="Code à utiliser dans un reel pour renvoyer directement ici"
+              title={t("Code à utiliser dans un reel pour renvoyer directement ici")}
             >
               <Hash size={9} />{magnet.keyword}
             </span>
@@ -201,6 +204,7 @@ export default function LeadMagnetsExplorer({
   // précise.
   isCoach?: boolean;
 }) {
+  const t = useT();
   const [search, setSearch] = useState(initialQuery);
   const [category, setCategory] = useState<ResourceCategory | null>(null);
   const [subcategory, setSubcategory] = useState<string | null>(null);
@@ -304,13 +308,13 @@ export default function LeadMagnetsExplorer({
   return (
     <section style={{ marginBottom: 32 }}>
       <div className="flex items-center justify-between mb-1">
-        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">Gratuit, sans compte</p>
+        <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">{t("Gratuit, sans compte")}</p>
         {magnets.length > 0 && (
-          <span className="text-[10px] font-semibold text-[#F5EDED]/25">{magnets.length} ressources</span>
+          <span className="text-[10px] font-semibold text-[#F5EDED]/25">{magnets.length}{" "}{t("ressources")}</span>
         )}
       </div>
       <h2 style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "0 0 14px" }}>
-        Guides, checklists et quiz
+        {t("Guides, checklists et quiz")}
       </h2>
 
       {/* Recherche */}
@@ -320,13 +324,13 @@ export default function LeadMagnetsExplorer({
           value={search}
           onChange={(e) => runSearch(e.target.value)}
           placeholder={isCoach ? "Rechercher, ou taper un code (076)..." : "Rechercher un guide, une checklist, un quiz..."}
-          aria-label="Rechercher"
+          aria-label={t("Rechercher")}
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         {search && (
           <button
             onClick={() => runSearch("")}
-            aria-label="Effacer la recherche"
+            aria-label={t("Effacer la recherche")}
             className="absolute right-3 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60 transition-colors"
           >
             <X size={14} />
@@ -337,7 +341,7 @@ export default function LeadMagnetsExplorer({
       {/* Recherches récentes, visibles seulement champ vide */}
       {!search && recentSearches.length > 0 && (
         <div className="flex items-center gap-1.5 flex-wrap mb-3">
-          <span className="text-[10px] text-[#F5EDED]/25 mr-0.5">Récent :</span>
+          <span className="text-[10px] text-[#F5EDED]/25 mr-0.5">{t("Récent :")}</span>
           {recentSearches.map((term) => (
             <button
               key={term}
@@ -361,7 +365,7 @@ export default function LeadMagnetsExplorer({
             color: category === null ? "#fff" : "rgba(245,237,237,0.55)",
           }}
         >
-          Tout
+          {t("Tout")}
         </button>
         {categoriesWithContent.map((c) => (
           <button
@@ -386,7 +390,7 @@ export default function LeadMagnetsExplorer({
             color: filtersOpen || format ? "#E01E1E" : "rgba(245,237,237,0.55)",
           }}
         >
-          <SlidersHorizontal size={11} /> Format
+          <SlidersHorizontal size={11} />{" "}{t("Format")}
         </button>
       </div>
 
@@ -402,7 +406,7 @@ export default function LeadMagnetsExplorer({
               color: subcategory === null ? "#E01E1E" : "rgba(245,237,237,0.4)",
             }}
           >
-            Tous les sous-thèmes
+            {t("Tous les sous-thèmes")}
           </button>
           {subcategoriesForCurrent.map((sc) => (
             <button
@@ -453,7 +457,7 @@ export default function LeadMagnetsExplorer({
           }}
           className="text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/60 underline mb-3 inline-block"
         >
-          Réinitialiser les filtres
+          {t("Réinitialiser les filtres")}
         </button>
       )}
 
@@ -464,14 +468,14 @@ export default function LeadMagnetsExplorer({
           <p className="text-sm text-[#F5EDED]/35">
             {isCoach && normalizeKeyword(search)
               ? `Aucun lead magnet avec le code ${normalizeKeyword(search)}.`
-              : "Aucune ressource ne correspond à ces critères."}
+              : t("Aucune ressource ne correspond à ces critères.")}
           </p>
         </div>
       ) : (
         <>
           {keywordMatch && (
             <p className="text-[11px] text-[#F5EDED]/40 mb-2">
-              Résultat direct pour le code <span className="text-[#E01E1E] font-bold">{keywordMatch.keyword}</span>
+              {t("Résultat direct pour le code")}{" "}<span className="text-[#E01E1E] font-bold">{keywordMatch.keyword}</span>
             </p>
           )}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 10 }}>
@@ -497,7 +501,7 @@ export default function LeadMagnetsExplorer({
               onClick={() => setVisibleCount((v) => v + PAGE_SIZE)}
               className="w-full mt-4 text-center text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/45 hover:text-[#F5EDED]/70 bg-[#1f0101] border border-[#890404]/20 rounded-xl py-3 transition-colors"
             >
-              Voir plus ({filtered.length - visibleCount} de plus)
+              {t("Voir plus (")}{filtered.length - visibleCount}{" "}{t("de plus)")}
             </button>
           )}
         </>

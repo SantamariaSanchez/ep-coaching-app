@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState, useTransition, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { FileText, Upload, Trash2, Download, Copy, Check, ChevronDown, Plus, StickyNote } from "lucide-react";
@@ -81,6 +82,7 @@ export default function CoachDocumentsSpace({
 // ── Modèles ─────────────────────────────────────────────────────────────
 
 function TemplatesTab() {
+  const tr = useT();
   const [openSlug, setOpenSlug] = useState<string | null>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
@@ -128,7 +130,7 @@ function TemplatesTab() {
                   className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#E01E1E] transition-colors border border-[#890404]/25 rounded-lg px-3 py-2 mb-3"
                 >
                   {copiedSlug === t.slug ? <Check size={12} className="text-green-400" /> : <Copy size={12} />}
-                  {copiedSlug === t.slug ? "Copié" : "Copier le texte"}
+                  {copiedSlug === t.slug ? tr("Copié") : tr("Copier le texte")}
                 </button>
 
                 <pre className="whitespace-pre-wrap font-sans text-[11.5px] text-[#F5EDED]/70 leading-relaxed bg-[#0f0000] border border-[#890404]/15 rounded-lg p-3.5 max-h-[420px] overflow-y-auto">
@@ -146,6 +148,7 @@ function TemplatesTab() {
 // ── Mes fichiers ────────────────────────────────────────────────────────
 
 function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
+  const tr = useT();
   const router = useRouter();
   const [files, setFiles] = useState(initialFiles);
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur après le
@@ -200,7 +203,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
       <label className="flex flex-col items-center justify-center gap-2 border border-dashed border-[#890404]/30 hover:border-[#890404]/50 rounded-xl py-8 cursor-pointer transition-colors mb-4">
         <Upload size={18} className="text-[#F5EDED]/30" />
         <span className="text-xs font-bold text-[#F5EDED]/50">
-          {uploading ? "Envoi..." : "Choisis un fichier (PDF, image, Word, Excel, ZIP, 20MB max)"}
+          {uploading ? tr("Envoi...") : tr("Choisis un fichier (PDF, image, Word, Excel, ZIP, 20MB max)")}
         </span>
         <input
           ref={inputRef}
@@ -220,7 +223,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
       {files.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <FileText size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Rien encore. Dépose un premier fichier.</p>
+          <p className="text-sm text-[#F5EDED]/35">{tr("Rien encore. Dépose un premier fichier.")}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -236,7 +239,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
                   href={f.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="Télécharger"
+                  aria-label={tr("Télécharger")}
                   className="text-[#F5EDED]/30 hover:text-[#E01E1E] transition-colors flex-shrink-0 p-1"
                 >
                   <Download size={14} />
@@ -246,7 +249,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
                 type="button"
                 onClick={() => remove(f.id, f.storage_path)}
                 disabled={isPending}
-                aria-label="Supprimer"
+                aria-label={tr("Supprimer")}
                 className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0 p-1 disabled:opacity-30"
               >
                 <Trash2 size={13} />
@@ -262,6 +265,7 @@ function FilesTab({ initialFiles }: { initialFiles: CoachPersonalFile[] }) {
 // ── Notes ───────────────────────────────────────────────────────────────
 
 function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
+  const tr = useT();
   const [notes, setNotes] = useState(initialNotes);
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
   // initialNotes change (même piège que CoachFinanceTracker.tsx).
@@ -324,15 +328,15 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
           onKeyDown={(e) => {
             if (e.key === "Enter") add();
           }}
-          placeholder="Une note ou une tâche à ne pas oublier..."
-          aria-label="Nouvelle note"
+          placeholder={tr("Une note ou une tâche à ne pas oublier...")}
+          aria-label={tr("Nouvelle note")}
           className="flex-1 bg-[rgba(0,0,0,0.4)] border border-[#890404]/25 rounded-lg px-3.5 py-2.5 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
         />
         <button
           type="button"
           onClick={add}
           disabled={isPending || !content.trim()}
-          aria-label="Ajouter la note"
+          aria-label={tr("Ajouter la note")}
           className="flex items-center gap-1.5 bg-[#E01E1E] text-white px-4 py-2.5 rounded-lg text-[12px] font-bold disabled:opacity-40"
         >
           <Plus size={14} />
@@ -344,7 +348,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
       {notes.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <StickyNote size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Rien encore. Note une idée, une tâche, un pense-bête.</p>
+          <p className="text-sm text-[#F5EDED]/35">{tr("Rien encore. Note une idée, une tâche, un pense-bête.")}</p>
         </div>
       ) : (
         <div className="space-y-1.5">
@@ -366,7 +370,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
               <button
                 type="button"
                 onClick={() => remove(n.id)}
-                aria-label="Supprimer"
+                aria-label={tr("Supprimer")}
                 className="text-[#F5EDED]/25 hover:text-red-400 transition-colors flex-shrink-0 p-1"
               >
                 <Trash2 size={13} />

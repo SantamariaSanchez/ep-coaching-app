@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import Link from "next/link";
 import {
@@ -59,6 +60,7 @@ export default function BusinessHub({
   networkContacts: NetworkContact[];
   checklistDone: string[];
 }) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
 
   const activeGoals = goalsWithProgress.filter((g) => g.goal.status === "active");
@@ -122,16 +124,14 @@ export default function BusinessHub({
 
       <div hidden={activeTab !== "roadmap"}>
         <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
-          Un horizon différent appelle une question différente : dans 1 an c&apos;est l&apos;exécution,
-          dans 20 c&apos;est ce qui reste si tu t&apos;arrêtes. Écris, coche des jalons, révise régulièrement.
+          {t("Un horizon différent appelle une question différente : dans 1 an c'est l'exécution, dans 20 c'est ce qui reste si tu t'arrêtes. Écris, coche des jalons, révise régulièrement.")}
         </p>
         <RoadmapPlanner initialVisions={initialVisions} initialMilestones={initialMilestones} />
       </div>
 
       <div hidden={activeTab !== "canvas"}>
         <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4 max-w-xl">
-          Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel.
-          Chaque bloc s&apos;enregistre tout seul quand tu cliques ailleurs.
+          {t("Les 9 blocs classiques du Business Model Canvas, adaptés à un business de coach individuel. Chaque bloc s'enregistre tout seul quand tu cliques ailleurs.")}
         </p>
         <BusinessCanvasEditor canvas={canvas} />
       </div>
@@ -139,13 +139,13 @@ export default function BusinessHub({
       <div hidden={activeTab !== "funnel"}>
         <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
-            Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.
+            {t("Une idée qui te plaît ? Ajoute-la directement à ton Studio créatif pour la transformer en script.")}
           </p>
           <Link
             href="/dashboard/coach/studio"
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
           >
-            <Sparkles size={12} /> Ouvrir le Studio <ArrowRight size={11} />
+            <Sparkles size={12} />{" "}{t("Ouvrir le Studio")}{" "}<ArrowRight size={11} />
           </Link>
         </div>
         <div className="space-y-3">
@@ -171,13 +171,13 @@ export default function BusinessHub({
         <div>
           <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed max-w-xl">
-              Construis ta base : positionnement, personal branding, contenu, preuve sociale, conversion.
+              {t("Construis ta base : positionnement, personal branding, contenu, preuve sociale, conversion.")}
             </p>
             <Link
               href="/dashboard/coach/moi/formations"
               className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] flex-shrink-0"
             >
-              <GraduationCap size={12} /> ENTREPRENARIAL SECRET <ArrowRight size={11} />
+              <GraduationCap size={12} />{" "}{t("ENTREPRENARIAL SECRET")}{" "}<ArrowRight size={11} />
             </Link>
           </div>
           <BusinessChecklist initialDone={checklistDone} />

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Plus, Trash2, Megaphone, Download, AlertTriangle, Pencil, StickyNote, ChevronDown,
@@ -98,6 +99,7 @@ function ToggleButtons<T extends string>({
 function NewCampaignForm({
   onCreated, onClose,
 }: { onCreated: (c: AdCampaign) => void; onClose: () => void }) {
+  const t = useT();
   const [name, setName] = useState("");
   const [platform, setPlatform] = useState<string>("meta");
   const [objective, setObjective] = useState<string>("leads");
@@ -158,33 +160,33 @@ function NewCampaignForm({
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de la campagne (ex : Meta, leads programme été)"
-        aria-label="Nom de la campagne"
+        placeholder={t("Nom de la campagne (ex : Meta, leads programme été)")}
+        aria-label={t("Nom de la campagne")}
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         autoFocus
       />
       <div>
-        <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,237,237,0.35)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Plateforme</p>
+        <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,237,237,0.35)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>{t("Plateforme")}</p>
         <ToggleButtons options={AD_PLATFORMS} labels={PLATFORM_LABELS} value={platform as typeof AD_PLATFORMS[number]} onChange={setPlatform} />
       </div>
       <div>
-        <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,237,237,0.35)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>Objectif</p>
+        <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(245,237,237,0.35)", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>{t("Objectif")}</p>
         <ToggleButtons options={AD_OBJECTIVES} labels={OBJECTIVE_LABELS} value={objective as typeof AD_OBJECTIVES[number]} onChange={setObjective} />
       </div>
       <div className="flex gap-2 flex-wrap">
         <input
           value={budgetDaily}
           onChange={(e) => setBudgetDaily(e.target.value)}
-          placeholder="Budget quotidien (€, optionnel)"
-          aria-label="Budget quotidien"
+          placeholder={t("Budget quotidien (€, optionnel)")}
+          aria-label={t("Budget quotidien")}
           inputMode="decimal"
           className="flex-1 min-w-[160px] bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
         <input
           value={budgetTotal}
           onChange={(e) => setBudgetTotal(e.target.value)}
-          placeholder="Budget total (€, optionnel)"
-          aria-label="Budget total"
+          placeholder={t("Budget total (€, optionnel)")}
+          aria-label={t("Budget total")}
           inputMode="decimal"
           className="flex-1 min-w-[160px] bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
@@ -192,16 +194,16 @@ function NewCampaignForm({
           type="date"
           value={startDate}
           onChange={(e) => setStartDate(e.target.value)}
-          aria-label="Date de début"
+          aria-label={t("Date de début")}
           className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white outline-none focus:border-[#E01E1E]/60"
         />
       </div>
       <textarea
         value={notes}
         onChange={(e) => setNotes(e.target.value)}
-        placeholder="Notes (ciblage, créa testée, angle...), optionnel"
+        placeholder={t("Notes (ciblage, créa testée, angle...), optionnel")}
         rows={2}
-        aria-label="Notes"
+        aria-label={t("Notes")}
         className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
       />
       {error && <p style={{ color: "#fb7185", fontSize: 12 }}>{error}</p>}
@@ -211,7 +213,7 @@ function NewCampaignForm({
           onClick={onClose}
           className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2"
         >
-          Annuler
+          {t("Annuler")}
         </button>
         <button
           type="button"
@@ -219,7 +221,7 @@ function NewCampaignForm({
           disabled={isPending}
           className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2.5"
         >
-          {isPending ? "Création…" : "Créer la campagne"}
+          {isPending ? t("Création…") : t("Créer la campagne")}
         </button>
       </div>
     </div>
@@ -231,6 +233,7 @@ function NewCampaignForm({
 function MetricsEditForm({
   campaign, onSave, onCancel,
 }: { campaign: AdCampaign; onSave: (patch: Partial<AdCampaign>) => void; onCancel: () => void }) {
+  const t = useT();
   const [spend, setSpend] = useState(String(campaign.spend_total));
   const [impressions, setImpressions] = useState(String(campaign.impressions));
   const [clicks, setClicks] = useState(String(campaign.clicks));
@@ -274,30 +277,30 @@ function MetricsEditForm({
     <div style={{ marginTop: 10, background: "rgba(224,30,30,0.05)", border: "1px solid rgba(224,30,30,0.18)", borderRadius: 10, padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Dépense totale (€)</label>
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">{t("Dépense totale (€)")}</label>
           <input value={spend} onChange={(e) => setSpend(e.target.value)} inputMode="decimal" className={fieldStyle} autoFocus />
         </div>
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Impressions</label>
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">{t("Impressions")}</label>
           <input value={impressions} onChange={(e) => setImpressions(e.target.value)} inputMode="numeric" className={fieldStyle} />
         </div>
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Clics</label>
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">{t("Clics")}</label>
           <input value={clicks} onChange={(e) => setClicks(e.target.value)} inputMode="numeric" className={fieldStyle} />
         </div>
         <div>
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Leads / conversions</label>
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">{t("Leads / conversions")}</label>
           <input value={leads} onChange={(e) => setLeads(e.target.value)} inputMode="numeric" className={fieldStyle} />
         </div>
         <div className="col-span-2">
-          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">Revenu généré (€, optionnel, pour le ROAS)</label>
-          <input value={revenue} onChange={(e) => setRevenue(e.target.value)} inputMode="decimal" className={fieldStyle} placeholder="Laisser vide si inconnu" />
+          <label className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 block mb-1">{t("Revenu généré (€, optionnel, pour le ROAS)")}</label>
+          <input value={revenue} onChange={(e) => setRevenue(e.target.value)} inputMode="decimal" className={fieldStyle} placeholder={t("Laisser vide si inconnu")} />
         </div>
       </div>
       {error && <p style={{ color: "#fb7185", fontSize: 11.5 }}>{error}</p>}
       <div className="flex gap-2">
         <button type="button" onClick={onCancel} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
-          Annuler
+          {t("Annuler")}
         </button>
         <button
           type="button"
@@ -305,7 +308,7 @@ function MetricsEditForm({
           disabled={isPending}
           className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2"
         >
-          {isPending ? "Enregistrement…" : "Enregistrer"}
+          {isPending ? t("Enregistrement…") : t("Enregistrer")}
         </button>
       </div>
     </div>
@@ -322,6 +325,7 @@ function CampaignCard({
   onUpdate: (id: string, patch: Partial<AdCampaign>) => void;
   onDelete: (id: string) => void;
 }) {
+  const t = useT();
   const [editingMetrics, setEditingMetrics] = useState(false);
   const [reasonOpen, setReasonOpen] = useState(false);
   const [reasonDraft, setReasonDraft] = useState(campaign.stopped_reason ?? "");
@@ -366,7 +370,7 @@ function CampaignCard({
             </span>
           </div>
           <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>
-            {days} jour{days === 1 ? "" : "s"} en cours
+            {days}{" "}{t("jour")}{days === 1 ? "" : "s"}{" "}{t("en cours")}
             {campaign.budget_daily != null && ` · Budget ${eur(campaign.budget_daily)}/j`}
             {campaign.budget_total != null && ` · Budget total ${eur(campaign.budget_total)}`}
           </p>
@@ -389,7 +393,7 @@ function CampaignCard({
         <button
           type="button"
           onClick={() => onDelete(campaign.id)}
-          aria-label="Supprimer cette campagne"
+          aria-label={t("Supprimer cette campagne")}
           className="text-[#F5EDED]/15 hover:text-red-400 flex-shrink-0"
         >
           <Trash2 size={13} />
@@ -400,7 +404,7 @@ function CampaignCard({
         <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 8, padding: "7px 10px" }}>
           <AlertTriangle size={13} style={{ color: "#f87171", flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 11, color: "#f87171", fontWeight: 600 }}>
-            Dépense depuis {days} jours sans le moindre lead : à couper ou à revoir.
+            {t("Dépense depuis")}{" "}{days}{" "}{t("jours sans le moindre lead : à couper ou à revoir.")}
           </p>
         </div>
       )}
@@ -438,7 +442,7 @@ function CampaignCard({
           onClick={() => setEditingMetrics(true)}
           className="flex items-center gap-1.5 mt-3 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
-          <Pencil size={11} /> Mettre à jour les chiffres
+          <Pencil size={11} />{" "}{t("Mettre à jour les chiffres")}
         </button>
       )}
 
@@ -448,14 +452,14 @@ function CampaignCard({
             <textarea
               value={reasonDraft}
               onChange={(e) => setReasonDraft(e.target.value)}
-              placeholder="Pourquoi as-tu coupé cette campagne ? (ex : coût par lead trop élevé, jamais rentable après 200€)"
+              placeholder={t("Pourquoi as-tu coupé cette campagne ? (ex : coût par lead trop élevé, jamais rentable après 200€)")}
               rows={2}
-              aria-label="Raison de l'arrêt"
+              aria-label={t("Raison de l'arrêt")}
               className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
             />
             <div className="flex gap-2">
               <button type="button" onClick={() => setReasonOpen(false)} className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2">
-                Annuler
+                {t("Annuler")}
               </button>
               <button
                 type="button"
@@ -463,7 +467,7 @@ function CampaignCard({
                 disabled={savingReason}
                 className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
               >
-                {savingReason ? "Enregistrement…" : "Enregistrer"}
+                {savingReason ? t("Enregistrement…") : t("Enregistrer")}
               </button>
             </div>
           </div>
@@ -474,7 +478,7 @@ function CampaignCard({
             className="flex items-center gap-1.5 mt-2 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
           >
             <StickyNote size={11} />
-            {campaign.stopped_reason ? <span className="text-[#F5EDED]/55 italic truncate">{campaign.stopped_reason}</span> : "Pourquoi as-tu coupé cette campagne ?"}
+            {campaign.stopped_reason ? <span className="text-[#F5EDED]/55 italic truncate">{campaign.stopped_reason}</span> : t("Pourquoi as-tu coupé cette campagne ?")}
           </button>
         )
       )}
@@ -485,6 +489,7 @@ function CampaignCard({
 // ── Composant principal ──────────────────────────────────────────────────
 
 export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdCampaign[] }) {
+  const t = useT();
   const [campaigns, setCampaigns] = useState(initialCampaigns);
   const [statusFilter, setStatusFilter] = useState<AdStatus | "all">("all");
   const [sortKey, setSortKey] = useState<SortKey>("recent");
@@ -569,19 +574,19 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
       {/* Totaux agrégés — vue d'ensemble immédiate, toutes campagnes confondues */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 16 }}>
         <div className="ep-card" style={{ padding: "12px 14px" }}>
-          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>Dépense totale</p>
+          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>{t("Dépense totale")}</p>
           <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "3px 0 0" }}>{eur(totals.spend)}</p>
         </div>
         <div className="ep-card" style={{ padding: "12px 14px" }}>
-          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>Leads totaux</p>
+          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>{t("Leads totaux")}</p>
           <p style={{ fontSize: 18, fontWeight: 900, color: "#4ade80", margin: "3px 0 0" }}>{int(totals.leads)}</p>
         </div>
         <div className="ep-card" style={{ padding: "12px 14px" }}>
-          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>Coût moyen / lead</p>
+          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>{t("Coût moyen / lead")}</p>
           <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "3px 0 0" }}>{totals.avgCostPerLead !== null ? eur(totals.avgCostPerLead) : "···"}</p>
         </div>
         <div className="ep-card" style={{ padding: "12px 14px" }}>
-          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>CTR moyen</p>
+          <p style={{ margin: 0, fontSize: 9, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.4)" }}>{t("CTR moyen")}</p>
           <p style={{ fontSize: 18, fontWeight: 900, color: "#F5EDED", margin: "3px 0 0" }}>{totals.avgCtr !== null ? pct(totals.avgCtr) : "···"}</p>
         </div>
       </div>
@@ -590,7 +595,7 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 16 }}>
           <AlertTriangle size={15} style={{ color: "#f87171", flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 12.5, color: "#f87171", fontWeight: 700 }}>
-            {stagnantCount} campagne{stagnantCount > 1 ? "s" : ""} dépense{stagnantCount > 1 ? "nt" : ""} depuis plusieurs jours sans générer aucun lead.
+            {stagnantCount}{" "}{t("campagne")}{stagnantCount > 1 ? "s" : ""}{" "}{t("dépense")}{stagnantCount > 1 ? t("nt") : ""}{" "}{t("depuis plusieurs jours sans générer aucun lead.")}
           </p>
         </div>
       )}
@@ -606,7 +611,7 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
               color: statusFilter === "all" ? "#E01E1E" : "rgba(245,237,237,0.45)",
             }}
           >
-            Toutes {campaigns.length > 0 && <span className="opacity-65">{campaigns.length}</span>}
+            {t("Toutes")}{" "}{campaigns.length > 0 && <span className="opacity-65">{campaigns.length}</span>}
           </button>
           {AD_STATUSES.map((s) => (
             <button
@@ -629,7 +634,7 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
             <select
               value={sortKey}
               onChange={(e) => setSortKey(e.target.value as SortKey)}
-              aria-label="Trier par"
+              aria-label={t("Trier par")}
               style={{
                 background: "#150000", border: "1px solid rgba(137,4,4,0.3)", borderRadius: 8,
                 fontSize: 10.5, fontWeight: 700, padding: "7px 26px 7px 10px", color: "rgba(245,237,237,0.6)",
@@ -648,7 +653,7 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
             disabled={campaigns.length === 0}
             className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-30 transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
           >
-            <Download size={12} /> Export CSV
+            <Download size={12} />{" "}{t("Export CSV")}
           </button>
         </div>
       </div>
@@ -663,7 +668,7 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
             marginBottom: 16,
           }}
         >
-          <Plus size={14} /> Nouvelle campagne
+          <Plus size={14} />{" "}{t("Nouvelle campagne")}
         </button>
       )}
 
@@ -679,8 +684,8 @@ export default function AdsTracker({ initialCampaigns }: { initialCampaigns: AdC
           <Megaphone size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-sm text-[#F5EDED]/35">
             {campaigns.length === 0
-              ? "Aucune campagne suivie pour l'instant. Ajoute ta première campagne Google/Meta Ads."
-              : "Aucune campagne ne correspond à ce filtre."}
+              ? t("Aucune campagne suivie pour l'instant. Ajoute ta première campagne Google/Meta Ads.")
+              : t("Aucune campagne ne correspond à ce filtre.")}
           </p>
         </div>
       ) : (

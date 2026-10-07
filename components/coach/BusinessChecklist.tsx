@@ -1,11 +1,13 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { BUSINESS_CHECKLIST } from "@/lib/coach-business";
 import { toggleBusinessChecklistItem } from "@/app/dashboard/coach/business/actions";
 
 export default function BusinessChecklist({ initialDone }: { initialDone: string[] }) {
+  const t = useT();
   const [done, setDone] = useState<Set<string>>(new Set(initialDone));
   const [isPending, startTransition] = useTransition();
 
@@ -36,7 +38,7 @@ export default function BusinessChecklist({ initialDone }: { initialDone: string
   return (
     <div>
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-        Checklist de construction · {doneCount}/{BUSINESS_CHECKLIST.length}
+        {t("Checklist de construction ·")}{" "}{doneCount}/{BUSINESS_CHECKLIST.length}
       </p>
       <div className="space-y-5">
         {categories.map((cat) => (

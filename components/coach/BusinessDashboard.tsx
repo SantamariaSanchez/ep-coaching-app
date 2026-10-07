@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { Users, TrendingUp, Wallet, Target, Network, CheckSquare, ArrowRight } from "lucide-react";
 import type { BusinessGoal } from "@/lib/coach-business-goals";
 
@@ -72,6 +73,7 @@ export default function BusinessDashboard({
   networkTotalCount: number;
   onNavigate: (tab: string) => void;
 }) {
+  const t = useT();
   const nearestPct = nearestGoal
     ? Math.min(100, Math.round((nearestGoal.currentValue / nearestGoal.goal.target_value) * 100))
     : 0;
@@ -86,11 +88,11 @@ export default function BusinessDashboard({
         >
           <div className="flex items-center justify-between mb-2.5">
             <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40">
-              <Target size={12} className="text-[#E01E1E]" /> Prochain objectif
+              <Target size={12} className="text-[#E01E1E]" />{" "}{t("Prochain objectif")}
             </p>
             {nearestGoal.goal.target_date && (
               <span className="text-[10px] font-bold text-[#F5EDED]/35">
-                dans {daysUntil(nearestGoal.goal.target_date)}j
+                {t("dans")}{" "}{daysUntil(nearestGoal.goal.target_date)}j
               </span>
             )}
           </div>
@@ -98,7 +100,7 @@ export default function BusinessDashboard({
           <div className="h-2 bg-[#150000] rounded-full overflow-hidden">
             <div className="h-full rounded-full bg-[#E01E1E] transition-all" style={{ width: `${nearestPct}%` }} />
           </div>
-          <p className="text-[10.5px] text-[#F5EDED]/35 mt-1.5">{nearestPct}% atteint</p>
+          <p className="text-[10.5px] text-[#F5EDED]/35 mt-1.5">{nearestPct}{t("% atteint")}</p>
         </button>
       )}
 

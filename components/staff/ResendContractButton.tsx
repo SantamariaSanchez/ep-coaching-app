@@ -1,10 +1,12 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Mail } from "lucide-react";
 import { resendContractEmail } from "@/app/equipe/actions";
 
 export default function ResendContractButton() {
+  const t = useT();
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
   return (
@@ -22,7 +24,7 @@ export default function ResendContractButton() {
         style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(224,30,30,0.35)", borderRadius: 8, color: "#F5EDED", fontSize: 11.5, fontWeight: 700, padding: "7px 12px", cursor: "pointer" }}
       >
         <Mail size={13} />
-        {pending ? "Envoi..." : "Recevoir une copie par email"}
+        {pending ? t("Envoi...") : t("Recevoir une copie par email")}
       </button>
     </div>
   );

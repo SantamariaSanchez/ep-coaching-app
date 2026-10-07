@@ -1,10 +1,12 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
 import { CHANNEL_LABELS, type StaffTemplate } from "@/lib/staff-templates";
 
 function CopyButton({ text }: { text: string }) {
+  const tr = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -21,7 +23,7 @@ function CopyButton({ text }: { text: string }) {
       style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(224,30,30,0.35)", borderRadius: 8, color: copied ? "#4ade80" : "#F5EDED", fontSize: 11, fontWeight: 700, padding: "6px 10px", cursor: "pointer", flexShrink: 0 }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
-      {copied ? "Copié" : "Copier"}
+      {copied ? tr("Copié") : tr("Copier")}
     </button>
   );
 }
@@ -30,10 +32,11 @@ function CopyButton({ text }: { text: string }) {
 // modèles perso de la personne sont gérés juste en dessous, dans la liste
 // éditable habituelle.
 export default function TemplatesLibrary({ templates }: { templates: StaffTemplate[] }) {
+  const tr = useT();
   if (templates.length === 0) return null;
   return (
     <section style={{ marginBottom: 26 }}>
-      <p className="ep-label" style={{ marginBottom: 8 }}>Modèles de ton métier ({templates.length})</p>
+      <p className="ep-label" style={{ marginBottom: 8 }}>{tr("Modèles de ton métier (")}{templates.length})</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 10 }}>
         {templates.map((t) => (
           <div key={t.title} className="ep-card" style={{ padding: "13px 15px", display: "flex", flexDirection: "column" }}>

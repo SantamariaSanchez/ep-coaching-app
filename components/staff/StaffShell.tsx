@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -114,6 +115,7 @@ export default function StaffShell({
   unlocked: boolean;
   children: React.ReactNode;
 }) {
+  const t = useT();
   const pathname = usePathname();
   const router = useRouter();
   const isDesktop = useIsDesktop();
@@ -175,7 +177,7 @@ export default function StaffShell({
           <p style={{ fontSize: 13, fontWeight: 800, color: "#F5EDED", margin: "0 0 2px", lineHeight: 1.25 }}>{roleTitle}</p>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.45)", margin: 0 }}>{fullName}</p>
         </div>
-        <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, overflowY: "auto" }} aria-label="Espace équipe">
+        <nav style={{ display: "flex", flexDirection: "column", gap: 2, flex: 1, overflowY: "auto" }} aria-label={t("Espace équipe")}>
           {navGroups.map((g) => (
             <div key={g.label ?? "top"} style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 6 }}>
               {g.label && <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "rgba(245,237,237,0.28)", margin: "8px 12px 2px" }}>{g.label}</p>}
@@ -208,7 +210,7 @@ export default function StaffShell({
           onClick={logout}
           style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 12px", background: "none", border: "none", color: "rgba(245,237,237,0.35)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
         >
-          <LogOut size={14} /> Déconnexion
+          <LogOut size={14} />{" "}{t("Déconnexion")}
         </button>
       </aside>
 
@@ -221,13 +223,13 @@ export default function StaffShell({
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {unlocked && isDesktop === false && <NotificationBell variant="mobile" />}
-            <button type="button" onClick={logout} aria-label="Déconnexion" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 6 }}>
+            <button type="button" onClick={logout} aria-label={t("Déconnexion")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 6 }}>
               <LogOut size={16} />
             </button>
           </div>
         </div>
         {items.length > 0 && (
-          <nav style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 12px 10px" }} aria-label="Espace équipe">
+          <nav style={{ display: "flex", gap: 6, overflowX: "auto", padding: "0 12px 10px" }} aria-label={t("Espace équipe")}>
             {items.map(({ href, label, icon: Icon, badge }) => {
               const active = isActive(href);
               return (

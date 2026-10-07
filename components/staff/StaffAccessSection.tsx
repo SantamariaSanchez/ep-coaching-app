@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Copy, Check, ChevronDown, Link2, UserPlus, X, KeyRound, Send } from "lucide-react";
@@ -34,6 +35,7 @@ export interface StaffAccessMember {
 const STATUS_LABEL = { actif: "Actif", suspendu: "Suspendu", termine: "Terminé" } as const;
 
 function CopyLink({ url }: { url: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -50,7 +52,7 @@ function CopyLink({ url }: { url: string }) {
       className="flex-shrink-0 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1.5 rounded-lg border border-[#E01E1E]/35 text-[#F5EDED] hover:bg-[#E01E1E]/10"
     >
       {copied ? <Check size={12} className="text-[#4ade80]" /> : <Copy size={12} />}
-      {copied ? "Copié" : "Copier le lien"}
+      {copied ? t("Copié") : t("Copier le lien")}
     </button>
   );
 }
@@ -66,6 +68,7 @@ function RoleRow({
   members: StaffAccessMember[];
   contractVersion: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");
@@ -94,7 +97,7 @@ function RoleRow({
           <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: role.poleColor }} />
           <span className="text-[13px] font-bold text-white">{role.title}</span>
           <span className="text-[10.5px] text-[#F5EDED]/40">
-            {active} actif{active > 1 ? "s" : ""}
+            {active}{" "}{t("actif")}{active > 1 ? "s" : ""}
             {pendingInvites.length > 0 && ` · ${pendingInvites.length} en attente`}
           </span>
           <ChevronDown size={13} className={`text-[#F5EDED]/30 transition-transform ${open ? "rotate-180" : ""}`} />
@@ -109,7 +112,7 @@ function RoleRow({
         <div className="mt-3 pt-3 border-t border-dashed border-[#890404]/20 space-y-3">
           {members.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Accès créés</p>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{t("Accès créés")}</p>
               {members.map((m) => {
                 const signed = !!m.contract_signed_at && m.contract_version === contractVersion;
                 return (
@@ -120,8 +123,8 @@ function RoleRow({
                       {signed
                         ? `Contrat signé le ${new Date(m.contract_signed_at!).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}`
                         : m.contract_signed_at
-                          ? "Nouvelle version à signer"
-                          : "Contrat pas encore signé"}
+                          ? t("Nouvelle version à signer")
+                          : t("Contrat pas encore signé")}
                     </span>
                     <select
                       aria-label={`Statut de l'accès de ${m.full_name}`}
@@ -141,16 +144,16 @@ function RoleRow({
           )}
 
           <div className="space-y-1.5">
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Emails autorisés, accès pas encore créé</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{t("Emails autorisés, accès pas encore créé")}</p>
             {pendingInvites.length === 0 ? (
               <p className="text-[11.5px] text-[#F5EDED]/35">
-                Aucun. Une candidature passée en &quot;Acceptée&quot; ajoute son email ici automatiquement.
+                {t("Aucun. Une candidature passée en \"Acceptée\" ajoute son email ici automatiquement.")}
               </p>
             ) : (
               pendingInvites.map((i) => (
                 <div key={i.id} className="flex items-center gap-2 text-[11.5px]">
                   <span className="text-white">{i.email}</span>
-                  {i.application_id && <span className="text-[10px] text-[#F5EDED]/35">(candidature acceptée)</span>}
+                  {i.application_id && <span className="text-[10px] text-[#F5EDED]/35">{t("(candidature acceptée)")}</span>}
                   <button
                     type="button"
                     onClick={() =>
@@ -165,7 +168,7 @@ function RoleRow({
                     className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] disabled:text-[#4ade80]"
                   >
                     {sentIds.includes(i.id) ? <Check size={11} /> : <Send size={11} />}
-                    {sentIds.includes(i.id) ? "Lien envoyé" : "Envoyer le lien"}
+                    {sentIds.includes(i.id) ? t("Lien envoyé") : t("Envoyer le lien")}
                   </button>
                   <button
                     type="button"
@@ -192,12 +195,12 @@ function RoleRow({
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               type="email"
-              placeholder="email@de-la-recrue.com"
+              placeholder={t("email@de-la-recrue.com")}
               aria-label={`Autoriser un email pour ${role.title}`}
               className="flex-1 bg-black/30 border border-[#890404]/30 rounded-lg px-3 py-2 text-xs text-white placeholder-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/50"
             />
             <button type="submit" disabled={pending || !email.trim()} className="inline-flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-[10.5px] font-bold uppercase tracking-widest px-3 rounded-lg disabled:opacity-50">
-              <UserPlus size={12} /> Autoriser
+              <UserPlus size={12} />{" "}{t("Autoriser")}
             </button>
           </form>
           {error && <p className="text-[11px] text-red-400">{error}</p>}
@@ -220,22 +223,20 @@ export default function StaffAccessSection({
   contractVersion: string;
   unavailable: boolean;
 }) {
+  const t = useT();
   const totalActive = members.filter((m) => m.status === "actif").length;
   return (
     <section className="ep-card" style={{ padding: "18px 18px", marginBottom: 24 }}>
       <div className="flex items-center gap-2 mb-1">
         <KeyRound size={14} className="text-[#E01E1E]" />
-        <p className="ep-label" style={{ margin: 0 }}>Accès équipe · liens de connexion par métier</p>
+        <p className="ep-label" style={{ margin: 0 }}>{t("Accès équipe · liens de connexion par métier")}</p>
       </div>
       <p className="text-[12px] text-[#F5EDED]/50 leading-relaxed mb-3">
-        1. Passe la candidature en &quot;Acceptée&quot; (ou autorise l&apos;email à la main). 2. Envoie le lien du poste.
-        3. La recrue crée son accès, confirme son email et signe son contrat : elle reçoit alors par email son
-        contrat signé, sa fiche de poste et son parcours d&apos;intégration. {totalActive} accès actif{totalActive > 1 ? "s" : ""} aujourd&apos;hui.
+        {t("1. Passe la candidature en \"Acceptée\" (ou autorise l'email à la main). 2. Envoie le lien du poste. 3. La recrue crée son accès, confirme son email et signe son contrat : elle reçoit alors par email son contrat signé, sa fiche de poste et son parcours d'intégration.")}{" "}{totalActive}{" "}{t("accès actif")}{totalActive > 1 ? "s" : ""}{" "}{t("aujourd'hui.")}
       </p>
       {unavailable && (
         <p className="text-[11.5px] text-[#facc15] mb-3">
-          Les tables de l&apos;équipe ne sont pas encore créées : exécute la migration 20260925_staff_roles.sql dans
-          le SQL Editor de Supabase. Les liens ci-dessous fonctionneront dès que ce sera fait.
+          {t("Les tables de l'équipe ne sont pas encore créées : exécute la migration 20260925_staff_roles.sql dans le SQL Editor de Supabase. Les liens ci-dessous fonctionneront dès que ce sera fait.")}
         </p>
       )}
       <div className="space-y-2">
@@ -250,8 +251,7 @@ export default function StaffAccessSection({
         ))}
       </div>
       <p className="text-[10.5px] text-[#F5EDED]/30 mt-3 leading-relaxed">
-        Le contrat généré pour chaque poste est une base solide, à faire valider une fois par un avocat avant la
-        première signature réelle.
+        {t("Le contrat généré pour chaque poste est une base solide, à faire valider une fois par un avocat avant la première signature réelle.")}
       </p>
     </section>
   );

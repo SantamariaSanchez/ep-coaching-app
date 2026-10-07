@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { Copy, Check, Search } from "lucide-react";
 import { SALES_CALL_LIBRARY } from "@/lib/sales-call-library";
@@ -13,6 +14,7 @@ import { fuzzyMatchAny } from "@/lib/fuzzy-search";
 // question = une carte copiable, jamais un script à lire en continu.
 
 function CopyButton({ text }: { text: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -26,7 +28,7 @@ function CopyButton({ text }: { text: string }) {
           // Presse-papier indisponible, le texte reste sélectionnable à la main.
         }
       }}
-      aria-label="Copier"
+      aria-label={t("Copier")}
       style={{
         display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
         background: copied ? "rgba(74,222,128,0.15)" : "rgba(0,0,0,0.3)",
@@ -36,12 +38,13 @@ function CopyButton({ text }: { text: string }) {
       }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
-      {copied ? "Copié" : "Copier"}
+      {copied ? t("Copié") : t("Copier")}
     </button>
   );
 }
 
 export default function SalesCallScripts() {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState<string | "all">("all");
 
@@ -67,8 +70,8 @@ export default function SalesCallScripts() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Chercher une question (ex. prix, réfléchir, conjoint...)"
-          aria-label="Chercher une question de closing"
+          placeholder={t("Chercher une question (ex. prix, réfléchir, conjoint...)")}
+          aria-label={t("Chercher une question de closing")}
           style={{
             width: "100%", background: "rgba(0,0,0,0.4)", border: "1px solid rgba(224,30,30,0.2)",
             borderRadius: "var(--radius-lg)", color: "#F5EDED", padding: "12px 16px 12px 32px",
@@ -88,7 +91,7 @@ export default function SalesCallScripts() {
             color: activeCategory === "all" ? "#F5EDED" : "rgba(245,237,237,0.55)",
           }}
         >
-          Tout
+          {t("Tout")}
         </button>
         {SALES_CALL_LIBRARY.map((cat) => (
           <button
@@ -109,7 +112,7 @@ export default function SalesCallScripts() {
 
       {filtered.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
-          <p className="text-sm text-[#F5EDED]/35">Aucune question ne correspond à &quot;{query}&quot;.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Aucune question ne correspond à \"")}{query}&quot;.</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

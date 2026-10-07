@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Save, Check } from "lucide-react";
@@ -24,6 +25,7 @@ export default function DailyReport({
   reports: StaffRecord[];
   today: string;
 }) {
+  const t = useT();
   const router = useRouter();
   const byDate = useMemo(() => new Map(reports.map((r) => [r.occurred_on ?? "", r])), [reports]);
   const [date, setDate] = useState(today);
@@ -117,27 +119,27 @@ export default function DailyReport({
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 12 }}>
           <div>
             <label htmlFor="rep-win" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
-              Victoire du jour
+              {t("Victoire du jour")}
             </label>
-            <textarea id="rep-win" rows={2} value={win} onChange={(e) => setWin(e.target.value)} className="ep-input" placeholder="Ce qui a bien marché" style={{ resize: "vertical" }} />
+            <textarea id="rep-win" rows={2} value={win} onChange={(e) => setWin(e.target.value)} className="ep-input" placeholder={t("Ce qui a bien marché")} style={{ resize: "vertical" }} />
           </div>
           <div>
             <label htmlFor="rep-blocker" style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
-              Blocage ou besoin
+              {t("Blocage ou besoin")}
             </label>
-            <textarea id="rep-blocker" rows={2} value={blocker} onChange={(e) => setBlocker(e.target.value)} className="ep-input" placeholder="Ce qui t'a freiné, ce dont tu as besoin" style={{ resize: "vertical" }} />
+            <textarea id="rep-blocker" rows={2} value={blocker} onChange={(e) => setBlocker(e.target.value)} className="ep-input" placeholder={t("Ce qui t'a freiné, ce dont tu as besoin")} style={{ resize: "vertical" }} />
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 14, flexWrap: "wrap" }}>
           <button type="button" onClick={save} disabled={pending} className="ep-btn-primary" style={{ height: 42, padding: "0 20px", fontSize: 12 }}>
             <Save size={14} />
-            {pending ? "Enregistrement..." : existing ? "Mettre à jour le rapport" : "Envoyer le rapport"}
+            {pending ? t("Enregistrement...") : existing ? t("Mettre à jour le rapport") : t("Envoyer le rapport")}
           </button>
           {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
         </div>
       </div>
 
-      <p className="ep-label" style={{ marginBottom: 8 }}>Total du mois</p>
+      <p className="ep-label" style={{ marginBottom: 8 }}>{t("Total du mois")}</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10, marginBottom: 18 }}>
         {totals.map(({ metric, total }) => (
           <div key={metric.key} className="ep-card" style={{ padding: "12px 14px" }}>
@@ -147,9 +149,9 @@ export default function DailyReport({
         ))}
       </div>
 
-      <p className="ep-label" style={{ marginBottom: 8 }}>Historique</p>
+      <p className="ep-label" style={{ marginBottom: 8 }}>{t("Historique")}</p>
       {reports.length === 0 ? (
-        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>Aucun rapport envoyé pour l&apos;instant.</p>
+        <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)" }}>{t("Aucun rapport envoyé pour l'instant.")}</p>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {reports.slice(0, 30).map((r) => {
@@ -160,10 +162,10 @@ export default function DailyReport({
                   {new Date(`${r.occurred_on}T12:00:00`).toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" })}
                 </p>
                 <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.55)", margin: 0, lineHeight: 1.55 }}>
-                  {metrics.filter((m) => rm[m.key] !== undefined).map((m) => `${m.label} : ${fmt(m, rm[m.key])}`).join(" · ") || "Aucun chiffre"}
+                  {metrics.filter((m) => rm[m.key] !== undefined).map((m) => `${m.label} : ${fmt(m, rm[m.key])}`).join(" · ") || t("Aucun chiffre")}
                 </p>
-                {typeof r.data?.win === "string" && <p style={{ fontSize: 11.5, color: "#4ade80", margin: "4px 0 0" }}>Victoire : {r.data.win as string}</p>}
-                {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: "2px 0 0" }}>Blocage : {r.data.blocker as string}</p>}
+                {typeof r.data?.win === "string" && <p style={{ fontSize: 11.5, color: "#4ade80", margin: "4px 0 0" }}>{t("Victoire :")}{" "}{r.data.win as string}</p>}
+                {typeof r.data?.blocker === "string" && <p style={{ fontSize: 11.5, color: "#facc15", margin: "2px 0 0" }}>{t("Blocage :")}{" "}{r.data.blocker as string}</p>}
               </div>
             );
           })}

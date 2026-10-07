@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Calculator, Dumbbell, ArrowLeft, ArrowRight, BookOpen } from "lucide-react";
@@ -11,6 +12,7 @@ import { Calculator, Dumbbell, ArrowLeft, ArrowRight, BookOpen } from "lucide-re
 // max a une vraie question nutrition/entraînement en tête). Un seul guide
 // vraiment pertinent par calculateur plutôt qu'une liste générique.
 function ToolCta({ guideSlug, guideTitle }: { guideSlug: string; guideTitle: string }) {
+  const t = useT();
   return (
     <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 8 }}>
       <Link
@@ -27,7 +29,7 @@ function ToolCta({ guideSlug, guideTitle }: { guideSlug: string; guideTitle: str
         className="ep-btn-primary"
         style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, height: 42, fontSize: 12.5 }}
       >
-        Suivre ça automatiquement dans l&apos;appli <ArrowRight size={14} />
+        {t("Suivre ça automatiquement dans l'appli")}{" "}<ArrowRight size={14} />
       </Link>
     </div>
   );
@@ -62,6 +64,7 @@ type Tab = "calories" | "1rm";
 // partie interactive reste ici, app/outils/page.tsx redevient un composant
 // serveur fin qui porte les métadonnées.
 export default function OutilsView() {
+  const t = useT();
   const [tab, setTab] = useState<Tab>("calories");
 
   return (
@@ -71,15 +74,14 @@ export default function OutilsView() {
           href="/ressources"
           className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors mb-4"
         >
-          <ArrowLeft size={11} /> Ressources
+          <ArrowLeft size={11} />{" "}{t("Ressources")}
         </Link>
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
-          EP Coaching
+          {t("EP Coaching")}
         </p>
-        <h1 className="text-3xl font-black uppercase tracking-tight">Outils gratuits</h1>
+        <h1 className="text-3xl font-black uppercase tracking-tight">{t("Outils gratuits")}</h1>
         <p className="mt-2 text-sm text-[#F5EDED]/45">
-          Deux calculateurs rapides, sans compte. Pour un suivi qui s&apos;ajuste vraiment à toi dans la durée,
-          un coaching complet fait bien plus qu&apos;une formule figée.
+          {t("Deux calculateurs rapides, sans compte. Pour un suivi qui s'ajuste vraiment à toi dans la durée, un coaching complet fait bien plus qu'une formule figée.")}
         </p>
       </div>
 
@@ -90,7 +92,7 @@ export default function OutilsView() {
             tab === "calories" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
-          <Calculator size={13} /> Calories &amp; macros
+          <Calculator size={13} />{" "}{t("Calories & macros")}
         </button>
         <button
           onClick={() => setTab("1rm")}
@@ -98,7 +100,7 @@ export default function OutilsView() {
             tab === "1rm" ? "text-[#E01E1E] border-b-2 border-[#E01E1E]" : "text-[#F5EDED]/40 hover:text-[#F5EDED]/70"
           }`}
         >
-          <Dumbbell size={13} /> Charge maximale (1RM)
+          <Dumbbell size={13} />{" "}{t("Charge maximale (1RM)")}
         </button>
       </div>
 
@@ -108,6 +110,7 @@ export default function OutilsView() {
 }
 
 function CaloriesCalculator() {
+  const t = useT();
   const [gender, setGender] = useState<"Homme" | "Femme">("Homme");
   const [weight, setWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -146,7 +149,7 @@ function CaloriesCalculator() {
             gender === "Homme" ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Homme
+          {t("Homme")}
         </button>
         <button
           onClick={() => setGender("Femme")}
@@ -154,28 +157,28 @@ function CaloriesCalculator() {
             gender === "Femme" ? "bg-[#E01E1E]/15 border-[#E01E1E]/40 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Femme
+          {t("Femme")}
         </button>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         <div>
-          <label className={labelCls}>Poids (kg)</label>
+          <label className={labelCls}>{t("Poids (kg)")}</label>
           <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="70" aria-label="70" className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Taille (cm)</label>
+          <label className={labelCls}>{t("Taille (cm)")}</label>
           <input type="number" value={height} onChange={(e) => setHeight(e.target.value)} placeholder="175" aria-label="175" className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Âge</label>
+          <label className={labelCls}>{t("Âge")}</label>
           <input type="number" value={age} onChange={(e) => setAge(e.target.value)} placeholder="28" aria-label="28" className={inputCls} />
         </div>
       </div>
 
       <div>
-        <label className={labelCls}>Niveau d&apos;activité</label>
-        <select aria-label="Niveau d&apos;activité" value={activity} onChange={(e) => setActivity(e.target.value)} className={inputCls}>
+        <label className={labelCls}>{t("Niveau d'activité")}</label>
+        <select aria-label={t("Niveau d'activité")} value={activity} onChange={(e) => setActivity(e.target.value)} className={inputCls}>
           {ACTIVITY_MULTIPLIERS.map((m) => (
             <option key={m.key} value={m.key}>{m.label}</option>
           ))}
@@ -185,10 +188,10 @@ function CaloriesCalculator() {
       {result && (
         <div className="ep-card" style={{ padding: 20, marginTop: 4 }}>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
-            Maintenance estimée
+            {t("Maintenance estimée")}
           </p>
           <p className="text-3xl font-black text-white mb-4">
-            {result.tdee} <span className="text-sm font-normal text-[#F5EDED]/40">kcal / jour</span>
+            {result.tdee} <span className="text-sm font-normal text-[#F5EDED]/40">{t("kcal / jour")}</span>
           </p>
           <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[#890404]/15">
             {[
@@ -203,8 +206,7 @@ function CaloriesCalculator() {
             ))}
           </div>
           <p className="text-[10.5px] text-[#F5EDED]/30 mt-4 leading-relaxed">
-            Estimation de maintenance (métabolisme de base × niveau d&apos;activité). Pour prendre du muscle,
-            ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.
+            {t("Estimation de maintenance (métabolisme de base × niveau d'activité). Pour prendre du muscle, ajoute environ 200 à 400 kcal ; pour perdre du gras, retire environ 300 à 500 kcal.")}
           </p>
           <ToolCta guideSlug="guide-macros" guideTitle="Le guide des macros sans prise de tête" />
         </div>
@@ -214,6 +216,7 @@ function CaloriesCalculator() {
 }
 
 function OneRepMaxCalculator() {
+  const t = useT();
   const [weight, setWeight] = useState("");
   const [reps, setReps] = useState("");
 
@@ -239,11 +242,11 @@ function OneRepMaxCalculator() {
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className={labelCls}>Charge soulevée (kg)</label>
+          <label className={labelCls}>{t("Charge soulevée (kg)")}</label>
           <input type="number" value={weight} onChange={(e) => setWeight(e.target.value)} placeholder="80" aria-label="80" className={inputCls} />
         </div>
         <div>
-          <label className={labelCls}>Répétitions faites</label>
+          <label className={labelCls}>{t("Répétitions faites")}</label>
           <input type="number" value={reps} onChange={(e) => setReps(e.target.value)} placeholder="5" aria-label="5" className={inputCls} />
         </div>
       </div>
@@ -251,20 +254,20 @@ function OneRepMaxCalculator() {
       {result && (
         <div className="ep-card" style={{ padding: 20, marginTop: 4 }}>
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
-            Charge maximale estimée (1RM)
+            {t("Charge maximale estimée (1RM)")}
           </p>
           <p className="text-3xl font-black text-white mb-4">
-            {result.oneRm} <span className="text-sm font-normal text-[#F5EDED]/40">kg</span>
+            {result.oneRm} <span className="text-sm font-normal text-[#F5EDED]/40">{t("kg")}</span>
           </p>
           {percentages.length > 0 && (
             <div className="pt-3 border-t border-[#890404]/15">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mb-2">
-                Zones de travail
+                {t("Zones de travail")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {percentages.map((p) => (
                   <div key={p.pct} className="bg-black/20 rounded-lg py-2 text-center">
-                    <p className="text-sm font-black text-white">{p.kg}kg</p>
+                    <p className="text-sm font-black text-white">{p.kg}{t("kg")}</p>
                     <p className="text-[9px] text-[#F5EDED]/30">{p.pct}%</p>
                   </div>
                 ))}
@@ -272,8 +275,7 @@ function OneRepMaxCalculator() {
             </div>
           )}
           <p className="text-[10.5px] text-[#F5EDED]/30 mt-4 leading-relaxed">
-            Formule d&apos;Epley, fiable jusqu&apos;à 10-12 répétitions. Au delà, l&apos;estimation devient
-            moins précise.
+            {t("Formule d'Epley, fiable jusqu'à 10-12 répétitions. Au delà, l'estimation devient moins précise.")}
           </p>
           <ToolCta guideSlug="checklist-bases-avant-ajouter-poids" guideTitle="Les bases à maîtriser avant d'ajouter du poids sur la barre" />
         </div>

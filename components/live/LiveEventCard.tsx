@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
 import {
@@ -59,6 +60,7 @@ export default function LiveEventCard({
   /** Le coach revient de "Terminer le live" : la saisie des notes s'ouvre directement. */
   autoOpenRecap?: boolean;
 }) {
+  const tr = useT();
   const { canJoin, isPast, isSoon } = useJoinWindow(event.starts_at, event.duration_minutes);
   const Icon = LIVE_TYPE_ICONS[event.type];
   const cancelled = event.status === "cancelled";
@@ -125,21 +127,21 @@ export default function LiveEventCard({
             </span>
             {cancelled && (
               <span className="text-[9px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/25">
-                Annulé
+                {tr("Annulé")}
               </span>
             )}
           </div>
           <p className="text-[11px] text-[#F5EDED]/40 mt-1 flex items-center gap-1.5">
-            <Clock size={11} /> {formatDateTime(event.starts_at)} · {event.duration_minutes} min
+            <Clock size={11} /> {formatDateTime(event.starts_at)} · {event.duration_minutes}{" "}{tr("min")}
           </p>
           {isOneToOneType(event.type) && event.invited_client_name && (
             <p className="text-[11px] text-[#F5EDED]/30 flex items-center gap-1.5 mt-0.5">
-              <Users size={11} /> Avec {event.invited_client_name}
+              <Users size={11} />{" "}{tr("Avec")}{" "}{event.invited_client_name}
             </p>
           )}
           {event.guest_name && (
             <p className="text-[11px] text-[#F5EDED]/30 flex items-center gap-1.5 mt-0.5">
-              <GraduationCap size={11} /> Avec {event.guest_name}
+              <GraduationCap size={11} />{" "}{tr("Avec")}{" "}{event.guest_name}
             </p>
           )}
           {event.description && (
@@ -150,7 +152,7 @@ export default function LiveEventCard({
             <div className="mt-2.5">
               {isCoach ? (
                 <span className="inline-flex items-center gap-1.5 text-[10.5px] font-bold text-[#F5EDED]/40">
-                  <Users size={11} /> {rsvpCount} inscrit{rsvpCount !== 1 ? "s" : ""}
+                  <Users size={11} /> {rsvpCount}{" "}{tr("inscrit")}{rsvpCount !== 1 ? "s" : ""}
                 </span>
               ) : onToggleRsvp ? (
                 <button
@@ -163,7 +165,7 @@ export default function LiveEventCard({
                   }`}
                 >
                   {rsvped ? <Check size={11} /> : <Users size={11} />}
-                  {rsvped ? "J'y serai" : "Confirmer ma présence"}
+                  {rsvped ? tr("J'y serai") : tr("Confirmer ma présence")}
                   {rsvpCount > 0 && ` · ${rsvpCount}`}
                 </button>
               ) : null}
@@ -173,7 +175,7 @@ export default function LiveEventCard({
           {ended && !cancelled && (event.recap || isCoach) && (
             <div className="mt-2.5 bg-black/20 border border-[#890404]/15 rounded-lg p-2.5">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 flex items-center gap-1 mb-1.5">
-                <FileText size={10} /> Notes du live
+                <FileText size={10} />{" "}{tr("Notes du live")}
               </p>
               {editingRecap ? (
                 <div className="space-y-1.5">
@@ -181,7 +183,7 @@ export default function LiveEventCard({
                     value={recapDraft}
                     onChange={(e) => setRecapDraft(e.target.value)}
                     rows={3}
-                    placeholder="Résumé, points clés, ressources partagées..." aria-label="Résumé, points clés, ressources partagées..."
+                    placeholder={tr("Résumé, points clés, ressources partagées...")} aria-label={tr("Résumé, points clés, ressources partagées...")}
                     className="w-full bg-black/30 border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 focus:outline-none focus:border-[#E01E1E]/50 resize-none"
                   />
                   <div className="flex gap-2">
@@ -190,27 +192,27 @@ export default function LiveEventCard({
                       disabled={savingRecap}
                       className="text-[10px] font-bold text-[#E01E1E] hover:text-[#ff4444]"
                     >
-                      {savingRecap ? "..." : "Enregistrer"}
+                      {savingRecap ? "..." : tr("Enregistrer")}
                     </button>
                     <button
                       onClick={() => setEditingRecap(false)}
                       className="text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#F5EDED]/60"
                     >
-                      Annuler
+                      {tr("Annuler")}
                     </button>
                   </div>
                 </div>
               ) : event.recap ? (
                 <p className="text-xs text-[#F5EDED]/60 whitespace-pre-wrap">{event.recap}</p>
               ) : isCoach ? (
-                <p className="text-[11px] text-[#F5EDED]/25 italic">Pas de notes pour l&apos;instant</p>
+                <p className="text-[11px] text-[#F5EDED]/25 italic">{tr("Pas de notes pour l'instant")}</p>
               ) : null}
               {isCoach && onSaveRecap && !editingRecap && (
                 <button
                   onClick={() => setEditingRecap(true)}
                   className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#E01E1E] mt-1.5"
                 >
-                  <Pencil size={10} /> {event.recap ? "Modifier" : "Ajouter des notes"}
+                  <Pencil size={10} /> {event.recap ? tr("Modifier") : tr("Ajouter des notes")}
                 </button>
               )}
             </div>
@@ -230,7 +232,7 @@ export default function LiveEventCard({
                     : "bg-[#890404]/10 text-[#F5EDED]/30 cursor-not-allowed pointer-events-none"
                 }`}
               >
-                {canJoin ? "Rejoindre" : isSoon ? "Ouvre bientôt" : "Pas encore ouvert"}
+                {canJoin ? tr("Rejoindre") : isSoon ? tr("Ouvre bientôt") : tr("Pas encore ouvert")}
               </Link>
             )}
             {isCoach && !cancelled && (
@@ -240,7 +242,7 @@ export default function LiveEventCard({
                     onClick={() => setEditing((v) => !v)}
                     className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-[#E01E1E] transition-colors"
                   >
-                    <Pencil size={11} /> Modifier
+                    <Pencil size={11} />{" "}{tr("Modifier")}
                   </button>
                 )}
                 {onCancel && (
@@ -248,7 +250,7 @@ export default function LiveEventCard({
                     onClick={onCancel}
                     className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/35 hover:text-amber-400 transition-colors"
                   >
-                    <Ban size={11} /> Annuler
+                    <Ban size={11} />{" "}{tr("Annuler")}
                   </button>
                 )}
               </>
@@ -258,7 +260,7 @@ export default function LiveEventCard({
                 onClick={onDelete}
                 className="flex items-center gap-1 text-[10px] font-bold text-[#F5EDED]/25 hover:text-red-400 transition-colors"
               >
-                <Trash2 size={11} /> Supprimer
+                <Trash2 size={11} />{" "}{tr("Supprimer")}
               </button>
             )}
           </div>

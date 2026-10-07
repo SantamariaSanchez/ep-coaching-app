@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -101,6 +102,7 @@ function Composer({
   basePath: string;
   onPosted: () => void;
 }) {
+  const t = useT();
   const [content, setContent] = useState(initialContent ?? "");
   const [image, setImage] = useState<File | null>(null);
   // Item 44 : opt-in explicite, jamais coché par défaut — une victoire
@@ -171,16 +173,15 @@ function Composer({
             className="accent-[#E01E1E]"
           />
           <span className="text-[10.5px] text-[#F5EDED]/35 leading-relaxed">
-            Autoriser à afficher sur le mur public du site (prénom uniquement, sans nom de famille)
+            {t("Autoriser à afficher sur le mur public du site (prénom uniquement, sans nom de famille)")}
           </span>
         </label>
       )}
       {type === "question" && !isCoach && (
         <p className="text-[10px] text-[#F5EDED]/30 mb-2 leading-relaxed">
-          Visible par le coach et toute la communauté, quelqu&apos;un d&apos;autre a probablement la même
-          question. Pour quelque chose de plus personnel,{" "}
+          {t("Visible par le coach et toute la communauté, quelqu'un d'autre a probablement la même question. Pour quelque chose de plus personnel,")}{" "}
           <Link href={`${basePath}/messages`} className="text-[#F5EDED]/50 hover:text-[#F5EDED]/80 underline underline-offset-2">
-            écris plutôt en privé
+            {t("écris plutôt en privé")}
           </Link>
           .
         </p>
@@ -192,7 +193,7 @@ function Composer({
               ref={fileRef}
               type="file"
               accept="image/*"
-              aria-label="Ajouter une image"
+              aria-label={t("Ajouter une image")}
               className="hidden"
               onChange={(e) => setImage(e.target.files?.[0] ?? null)}
             />
@@ -201,12 +202,12 @@ function Composer({
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
             >
               <ImageIcon size={14} strokeWidth={1.8} />
-              Photo
+              {t("Photo")}
             </button>
           </>
         ) : (
           <span className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25">
-            +{pointsEarned} points à la publication
+            +{pointsEarned}{" "}{t("points à la publication")}
           </span>
         )}
         <button
@@ -219,12 +220,12 @@ function Composer({
           ) : (
             <Send size={13} strokeWidth={2} />
           )}
-          Publier
+          {t("Publier")}
         </button>
       </div>
       {type === "victory" && (
         <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/25 mt-2">
-          +{pointsEarned} points à la publication
+          +{pointsEarned}{" "}{t("points à la publication")}
         </p>
       )}
       {error && (
@@ -233,7 +234,7 @@ function Composer({
       {justPosted && (
         <p className="animate-slide-up text-[11px] font-bold text-emerald-400 mt-2 flex items-center gap-1.5">
           <CheckCircle2 size={13} strokeWidth={2} />
-          Publié ! +{pointsEarned} points, visible par la communauté et ton coach.
+          {t("Publié ! +")}{pointsEarned}{" "}{t("points, visible par la communauté et ton coach.")}
         </p>
       )}
     </div>
@@ -257,6 +258,7 @@ function CommentsThread({
   onAdded: (comment: CommunityComment) => void;
   onAutoAnswered?: () => void;
 }) {
+  const t = useT();
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -301,7 +303,7 @@ function CommentsThread({
   return (
     <>
       {loading && (
-        <p className="text-[10px] text-[#F5EDED]/30 mt-3">Chargement des réponses...</p>
+        <p className="text-[10px] text-[#F5EDED]/30 mt-3">{t("Chargement des réponses...")}</p>
       )}
       {comments?.map((c) => (
         <div key={c.id} className="flex items-start gap-2 mt-3">
@@ -342,13 +344,13 @@ function CommentsThread({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          placeholder="Répondre..." aria-label="Répondre..."
+          placeholder={t("Répondre...")} aria-label={t("Répondre...")}
           className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />
         <button
           onClick={handleSend}
           disabled={!content.trim() || sending}
-          aria-label="Envoyer"
+          aria-label={t("Envoyer")}
           className="text-[#E01E1E] disabled:opacity-30 transition-opacity"
         >
           <Send size={15} strokeWidth={2} />
@@ -392,6 +394,7 @@ function PostCard({
   onDeleted: () => void;
   onReactionToggled: (reacted: boolean, count: number) => void;
 }) {
+  const t = useT();
   const confirm = useConfirm();
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -503,11 +506,11 @@ function PostCard({
             <div className="mt-2.5">
               {post.status === "answered" ? (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/25">
-                  <CheckCircle2 size={10} /> Répondu
+                  <CheckCircle2 size={10} />{" "}{t("Répondu")}
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/25">
-                  En attente
+                  {t("En attente")}
                 </span>
               )}
               {isCoach && (
@@ -516,7 +519,7 @@ function PostCard({
                   disabled={updatingStatus}
                   className="ml-2 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors"
                 >
-                  Marquer {post.status === "answered" ? "non répondu" : "répondu"}
+                  {t("Marquer")}{" "}{post.status === "answered" ? t("non répondu") : t("répondu")}
                 </button>
               )}
               {isCoach && (
@@ -526,7 +529,7 @@ function PostCard({
                   className="ml-2 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/60 transition-colors disabled:opacity-60"
                 >
                   <Sparkles size={10} />
-                  {ideaSaved ? "Envoyé au studio" : "→ Idée de contenu"}
+                  {ideaSaved ? t("Envoyé au studio") : t("→ Idée de contenu")}
                 </button>
               )}
             </div>
@@ -541,14 +544,14 @@ function PostCard({
               style={{ color: post.reacted_by_me ? "#E01E1E" : "rgba(245,237,237,0.35)" }}
             >
               <ThumbsUp size={12} strokeWidth={1.8} fill={post.reacted_by_me ? "#E01E1E" : "none"} />
-              {post.reaction_count > 0 ? post.reaction_count : "Bravo"}
+              {post.reaction_count > 0 ? post.reaction_count : t("Bravo")}
             </button>
             <button
               onClick={onToggleExpand}
               className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/55 transition-colors"
             >
               <MessageCircle size={12} strokeWidth={1.8} />
-              {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : "Répondre"}
+              {post.comment_count > 0 ? `${post.comment_count} réponse${post.comment_count > 1 ? "s" : ""}` : t("Répondre")}
             </button>
             {canDelete && (
               <button
@@ -557,7 +560,7 @@ function PostCard({
                 className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/20 hover:text-red-400 transition-colors disabled:opacity-30"
               >
                 <Trash2 size={11} strokeWidth={1.8} />
-                Supprimer
+                {t("Supprimer")}
               </button>
             )}
           </div>
@@ -597,6 +600,7 @@ export default function CommunityFeed({
   currentUserId?: string | null;
   initialShareText?: string;
 }) {
+  const t = useT();
   const [posts, setPosts] = useState(initialPosts);
   const [nextCursor, setNextCursor] = useState(initialNextCursor);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -703,16 +707,16 @@ export default function CommunityFeed({
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 px-6 text-center">
           <Icon size={28} className="text-[#E01E1E]/70 mx-auto mb-4" strokeWidth={1.5} />
           <p className="text-base font-black uppercase tracking-tight text-white mb-2">
-            {type === "victory" ? "Sois le premier à partager" : "Sois le premier à demander"}
+            {type === "victory" ? t("Sois le premier à partager") : t("Sois le premier à demander")}
           </p>
           <p className="text-sm text-[#F5EDED]/45 max-w-sm mx-auto leading-relaxed">
             {type === "victory"
-              ? "Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil."
-              : "Aucune question n'est trop basique : celle que tu n'oses pas poser, quelqu'un d'autre se la pose aussi. Ton coach et toute la communauté peuvent y répondre ici."}
+              ? t("Une séance réussie, un kilo de perdu, un nouveau record : ta victoire motive toute la communauté et reste visible sur ton profil.")
+              : t("Aucune question n'est trop basique : celle que tu n'oses pas poser, quelqu'un d'autre se la pose aussi. Ton coach et toute la communauté peuvent y répondre ici.")}
           </p>
           <div className="inline-flex items-center gap-1.5 mt-4 text-[10px] font-bold uppercase tracking-widest text-amber-400/80 bg-amber-500/10 border border-amber-500/20 rounded-full px-3 py-1.5">
             <Trophy size={11} strokeWidth={2} />
-            +{emptyPoints} points à la première publication
+            +{emptyPoints}{" "}{t("points à la première publication")}
           </div>
         </div>
       ) : (
@@ -743,7 +747,7 @@ export default function CommunityFeed({
           )}
           {!nextCursor && posts.length > 0 && (
             <p className="text-center text-[10px] text-[#F5EDED]/20 py-4 uppercase tracking-widest font-bold">
-              Fin du fil
+              {t("Fin du fil")}
             </p>
           )}
         </>

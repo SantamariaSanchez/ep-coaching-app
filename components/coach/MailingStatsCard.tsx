@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { RefreshCw, AlertTriangle, TrendingDown } from "lucide-react";
 import { refreshMailingStatsAction } from "@/app/dashboard/coach/mailing/actions";
@@ -45,6 +46,7 @@ export default function MailingStatsCard({
   lowOpenRateWarning: boolean;
   onRefreshed: (stats: CampaignStats, fetchedAt: string) => void;
 }) {
+  const t = useT();
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -75,34 +77,34 @@ export default function MailingStatsCard({
           className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
         >
           <RefreshCw size={11} className={isPending ? "animate-spin" : ""} />
-          {isPending ? "Récupération…" : "Voir les statistiques"}
+          {isPending ? t("Récupération…") : t("Voir les statistiques")}
         </button>
       ) : (
         <div>
           <div className="flex items-center flex-wrap gap-x-4 gap-y-1">
             <span className="text-[11px] font-bold" style={{ color: rateColor(stats.openRate, OPEN_RATE_THRESHOLDS) }}>
-              {pct(stats.openRate)} ouverture
+              {pct(stats.openRate)}{" "}{t("ouverture")}
             </span>
             <span className="text-[11px] font-bold" style={{ color: rateColor(stats.clickRate, CLICK_RATE_THRESHOLDS) }}>
-              {pct(stats.clickRate)} clic
+              {pct(stats.clickRate)}{" "}{t("clic")}
             </span>
             {stats.unsubscriptions > 0 && (
               <span className="text-[11px] text-[#F5EDED]/40">
-                {stats.unsubscriptions} désabonnement{stats.unsubscriptions > 1 ? "s" : ""}
+                {stats.unsubscriptions}{" "}{t("désabonnement")}{stats.unsubscriptions > 1 ? "s" : ""}
               </span>
             )}
             {stats.hardBounces > 0 && (
               <span className="inline-flex items-center gap-1 text-[10.5px] font-bold text-amber-400">
                 <AlertTriangle size={11} />
-                {stats.hardBounces} email{stats.hardBounces > 1 ? "s" : ""} invalide{stats.hardBounces > 1 ? "s" : ""} à nettoyer
+                {stats.hardBounces}{" "}{t("email")}{stats.hardBounces > 1 ? "s" : ""}{" "}{t("invalide")}{stats.hardBounces > 1 ? "s" : ""}{" "}{t("à nettoyer")}
               </span>
             )}
             <button
               type="button"
               onClick={refresh}
               disabled={isPending}
-              aria-label="Rafraîchir les stats"
-              title="Rafraîchir les stats"
+              aria-label={t("Rafraîchir les stats")}
+              title={t("Rafraîchir les stats")}
               className="text-[#F5EDED]/25 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
             >
               <RefreshCw size={11} className={isPending ? "animate-spin" : ""} />
@@ -111,16 +113,16 @@ export default function MailingStatsCard({
           {lowOpenRateWarning && (
             <p className="mt-1 flex items-center gap-1 text-[10.5px] font-bold text-amber-400">
               <TrendingDown size={11} />
-              Taux d&apos;ouverture nettement plus bas que tes autres envois : l&apos;objet mérite peut-être d&apos;être retravaillé.
+              {t("Taux d'ouverture nettement plus bas que tes autres envois : l'objet mérite peut-être d'être retravaillé.")}
             </p>
           )}
           {fetchedAt && (
             <p className="mt-1 text-[9.5px] text-[#F5EDED]/25">
-              Stats au{" "}
+              {t("Stats au")}{" "}
               {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }).format(
                 new Date(fetchedAt)
               )}{" "}
-              (pas en temps réel)
+              {t("(pas en temps réel)")}
             </p>
           )}
         </div>

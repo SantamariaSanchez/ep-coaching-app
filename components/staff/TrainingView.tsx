@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Circle, Clock, GraduationCap } from "lucide-react";
@@ -7,6 +8,7 @@ import { PHASES, type Lesson } from "@/lib/staff-training";
 import { toggleLessonAction } from "@/app/equipe/team-actions";
 
 export default function TrainingView({ lessons, done }: { lessons: Lesson[]; done: string[] }) {
+  const t = useT();
   const router = useRouter();
   const [doneSet, setDoneSet] = useState(() => new Set(done));
   const [openKey, setOpenKey] = useState<string | null>(() => lessons.find((l) => !done.includes(l.key))?.key ?? null);
@@ -45,7 +47,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
           <GraduationCap size={18} style={{ color: "#E01E1E" }} />
           <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: 0 }}>
-            {doneSet.size} leçon{doneSet.size > 1 ? "s" : ""} sur {lessons.length}
+            {doneSet.size}{" "}{t("leçon")}{doneSet.size > 1 ? "s" : ""}{" "}{t("sur")}{" "}{lessons.length}
           </p>
           <span style={{ marginLeft: "auto", fontSize: 13, fontWeight: 800, color: pct === 100 ? "#4ade80" : "#F5EDED" }}>{pct} %</span>
         </div>
@@ -74,7 +76,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
                       {isDone ? <CheckCircle2 size={17} style={{ color: "#4ade80", flexShrink: 0 }} /> : <Circle size={17} style={{ color: "rgba(245,237,237,0.3)", flexShrink: 0 }} />}
                       <span style={{ flex: 1, fontSize: 13.5, fontWeight: 800, color: "#F5EDED" }}>{l.title}</span>
                       <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <Clock size={11} /> {l.minutes} min
+                        <Clock size={11} /> {l.minutes}{" "}{t("min")}
                       </span>
                     </button>
                     {open && (
@@ -86,7 +88,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
                         </ul>
                         {l.actions.length > 0 && (
                           <div style={{ padding: "10px 12px", borderRadius: 10, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.18)", marginBottom: 12 }}>
-                            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px" }}>À faire</p>
+                            <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "#E01E1E", margin: "0 0 6px" }}>{t("À faire")}</p>
                             {l.actions.map((a) => (
                               <p key={a} style={{ fontSize: 12.5, color: "#F5EDED", margin: "0 0 4px", lineHeight: 1.55 }}>{a}</p>
                             ))}
@@ -94,7 +96,7 @@ export default function TrainingView({ lessons, done }: { lessons: Lesson[]; don
                         )}
                         <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 12.5, fontWeight: 700, color: isDone ? "#4ade80" : "#F5EDED" }}>
                           <input type="checkbox" checked={isDone} disabled={pending} onChange={(e) => toggle(l.key, e.target.checked)} style={{ width: 16, height: 16, accentColor: "#E01E1E" }} />
-                          {isDone ? "Leçon terminée" : "J'ai terminé cette leçon"}
+                          {isDone ? t("Leçon terminée") : t("J'ai terminé cette leçon")}
                         </label>
                       </div>
                     )}

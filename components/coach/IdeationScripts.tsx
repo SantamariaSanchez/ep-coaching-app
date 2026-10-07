@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import { Plus, Trash2, Copy, Check, FileText, Lightbulb, Sparkles, Megaphone, Clapperboard, Search, ChevronDown, Camera, Send, RotateCcw } from "lucide-react";
 import { createScript, updateScript, deleteScript, type ScriptDeletionReason } from "@/app/dashboard/coach/studio/actions";
@@ -190,6 +191,7 @@ export default function IdeationScripts({
 const TRACKED_LINK_BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://ep-coaching.vercel.app";
 
 function CopyButton({ text }: { text: string }) {
+  const tr = useT();
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -205,7 +207,7 @@ function CopyButton({ text }: { text: string }) {
           // à la main juste en dessous.
         }
       }}
-      aria-label="Copier"
+      aria-label={tr("Copier")}
       style={{
         display: "flex", alignItems: "center", gap: 5, flexShrink: 0,
         background: copied ? "rgba(74,222,128,0.15)" : "rgba(0,0,0,0.3)",
@@ -215,7 +217,7 @@ function CopyButton({ text }: { text: string }) {
       }}
     >
       {copied ? <Check size={12} /> : <Copy size={12} />}
-      {copied ? "Copié" : "Copier"}
+      {copied ? tr("Copié") : tr("Copier")}
     </button>
   );
 }
@@ -258,6 +260,7 @@ function MyScripts({
   leadTracking?: LeadTracking;
   platforms?: string[];
 }) {
+  const tr = useT();
   // Seules les plateformes où le coach publie (réglage "Mon appli").
   const platformOptions = Object.entries(PLATFORM_LABELS).filter(([id]) => !platforms?.length || platforms.includes(id));
   const [scripts, setScripts] = useState(initialScripts);
@@ -664,7 +667,7 @@ function MyScripts({
             opacity: filmableScripts.length === 0 ? 0.4 : 1,
           }}
         >
-          <Camera size={14} /> Lancer le tournage{filmableScripts.length > 0 ? ` (${filmableScripts.length})` : ""}
+          <Camera size={14} />{" "}{tr("Lancer le tournage")}{filmableScripts.length > 0 ? ` (${filmableScripts.length})` : ""}
         </button>
         <button
           type="button"
@@ -675,7 +678,7 @@ function MyScripts({
             borderRadius: 999, fontWeight: 800, fontSize: 12, border: "none", cursor: "pointer",
           }}
         >
-          <Plus size={14} /> Nouveau script
+          <Plus size={14} />{" "}{tr("Nouveau script")}
         </button>
       </div>
 
@@ -684,8 +687,8 @@ function MyScripts({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Titre du script"
-            aria-label="Titre du script"
+            placeholder={tr("Titre du script")}
+            aria-label={tr("Titre du script")}
             style={inputStyle}
             autoFocus
           />
@@ -702,13 +705,13 @@ function MyScripts({
                   color: format === f ? "#F5EDED" : "rgba(245,237,237,0.55)",
                 }}
               >
-                Format {f}
+                {tr("Format")}{" "}{f}
               </button>
             ))}
             <select
               value={newPlatform}
               onChange={(e) => setNewPlatform(e.target.value)}
-              aria-label="Plateforme du script"
+              aria-label={tr("Plateforme du script")}
               style={{ ...inputStyle, width: "auto", padding: "7px 10px" }}
             >
               {(platformOptions.length ? platformOptions : Object.entries(PLATFORM_LABELS)).map(([id, { label }]) => (
@@ -727,7 +730,7 @@ function MyScripts({
               cursor: "pointer", opacity: isPending ? 0.6 : 1,
             }}
           >
-            {isPending ? "..." : "Créer"}
+            {isPending ? "..." : tr("Créer")}
           </button>
         </div>
       )}
@@ -735,19 +738,19 @@ function MyScripts({
       {scripts.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <FileText size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun script pour l&apos;instant. Pioche un prompt ou un hook dans les onglets à côté pour démarrer.</p>
+          <p className="text-sm text-[#F5EDED]/35">{tr("Aucun script pour l'instant. Pioche un prompt ou un hook dans les onglets à côté pour démarrer.")}</p>
         </div>
       ) : (
         <>
           {weeklyPerf && (
             <div className="ep-card" style={{ padding: 14, marginBottom: 14 }}>
               <p style={{ fontSize: 10, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.4)", marginBottom: 10 }}>
-                Performance de la semaine
+                {tr("Performance de la semaine")}
               </p>
               <div style={{ display: "flex", gap: 20, flexWrap: "wrap", marginBottom: weeklyPerf.missingViews > 0 ? 8 : 0 }}>
                 <div>
                   <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>{weeklyPerf.publishedCount}</p>
-                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>publié{weeklyPerf.publishedCount > 1 ? "s" : ""} cette semaine</p>
+                  <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>{tr("publié")}{weeklyPerf.publishedCount > 1 ? "s" : ""}{" "}{tr("cette semaine")}</p>
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#F5EDED" }}>
@@ -760,21 +763,21 @@ function MyScripts({
                     )}
                   </p>
                   <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)" }}>
-                    vues loguées {weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : "cette semaine"}
+                    {tr("vues loguées")}{" "}{weeklyPerf.lastWeekViews > 0 ? `(vs ${weeklyPerf.lastWeekViews.toLocaleString("fr-FR")} la semaine passée)` : tr("cette semaine")}
                   </p>
                 </div>
                 {weeklyPerf.best && (
                   <div style={{ minWidth: 0 }}>
                     <p style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#4ade80" }}>{weeklyPerf.best.views!.toLocaleString("fr-FR")}</p>
                     <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 220 }}>
-                      🔥 meilleur : {weeklyPerf.best.title}
+                      {tr("🔥 meilleur :")}{" "}{weeklyPerf.best.title}
                     </p>
                   </div>
                 )}
               </div>
               {weeklyPerf.missingViews > 0 && (
                 <p style={{ margin: 0, fontSize: 11, color: "#facc15" }}>
-                  {weeklyPerf.missingViews} script{weeklyPerf.missingViews > 1 ? "s" : ""} publié{weeklyPerf.missingViews > 1 ? "s" : ""} cette semaine sans vues loguées, ces chiffres restent incomplets tant qu&apos;ils ne sont pas remplis (bouton &laquo;&nbsp;Loguer les résultats&nbsp;&raquo; sur chaque script publié).
+                  {weeklyPerf.missingViews}{" "}{tr("script")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("publié")}{weeklyPerf.missingViews > 1 ? "s" : ""}{" "}{tr("cette semaine sans vues loguées, ces chiffres restent incomplets tant qu'ils ne sont pas remplis (bouton « Loguer les résultats » sur chaque script publié).")}
                 </p>
               )}
             </div>
@@ -785,8 +788,8 @@ function MyScripts({
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Rechercher un script (titre, texte, hook, pilier)"
-              aria-label="Rechercher un script"
+              placeholder={tr("Rechercher un script (titre, texte, hook, pilier)")}
+              aria-label={tr("Rechercher un script")}
               style={{ ...inputStyle, paddingLeft: 34 }}
             />
           </div>
@@ -800,21 +803,21 @@ function MyScripts({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as ScriptStatus | "all")}
-              aria-label="Filtrer par statut"
+              aria-label={tr("Filtrer par statut")}
               style={selectStyle}
             >
-              <option value="all">Tous les statuts</option>
-              <option value="a_tourner">À tourner</option>
-              <option value="tourne">Tourné</option>
-              <option value="publie">Publié</option>
+              <option value="all">{tr("Tous les statuts")}</option>
+              <option value="a_tourner">{tr("À tourner")}</option>
+              <option value="tourne">{tr("Tourné")}</option>
+              <option value="publie">{tr("Publié")}</option>
             </select>
             <select
               value={platformFilter}
               onChange={(e) => setPlatformFilter(e.target.value)}
-              aria-label="Filtrer par plateforme"
+              aria-label={tr("Filtrer par plateforme")}
               style={selectStyle}
             >
-              <option value="all">Toutes plateformes</option>
+              <option value="all">{tr("Toutes plateformes")}</option>
               {Object.entries(PLATFORM_LABELS).map(([id, { label }]) => (
                 <option key={id} value={id}>{label}</option>
               ))}
@@ -823,10 +826,10 @@ function MyScripts({
               <select
                 value={pillarFilter}
                 onChange={(e) => setPillarFilter(e.target.value)}
-                aria-label="Filtrer par pilier"
+                aria-label={tr("Filtrer par pilier")}
                 style={selectStyle}
               >
-                <option value="all">Tous les piliers</option>
+                <option value="all">{tr("Tous les piliers")}</option>
                 {pillarOptions.map((p) => (
                   <option key={p} value={p}>{p}</option>
                 ))}
@@ -838,7 +841,7 @@ function MyScripts({
                 onClick={() => { setStatusFilter("all"); setPlatformFilter("all"); setPillarFilter("all"); }}
                 style={{ fontSize: 11, fontWeight: 700, color: "rgba(245,237,237,0.4)", background: "none", border: "none", cursor: "pointer", padding: "0 4px" }}
               >
-                Réinitialiser
+                {tr("Réinitialiser")}
               </button>
             )}
           </div>
@@ -847,8 +850,8 @@ function MyScripts({
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
               <p className="text-sm text-[#F5EDED]/35">
                 {searchQuery.trim().length > 0
-                  ? <>Aucun script ne correspond à &quot;{searchQuery}&quot;.</>
-                  : "Aucun script ne correspond à ces filtres."}
+                  ? <>{tr("Aucun script ne correspond à \"")}{searchQuery}&quot;.</>
+                  : tr("Aucun script ne correspond à ces filtres.")}
               </p>
             </div>
           ) : (
@@ -865,7 +868,7 @@ function MyScripts({
               remonter ce qui traîne et débloquer le pipeline. */}
           {activeScripts.length === 0 && publishedScripts.length > 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center mb-3">
-              <p className="text-sm text-[#F5EDED]/35">Tout ce qui était à produire est posté. 🎉</p>
+              <p className="text-sm text-[#F5EDED]/35">{tr("Tout ce qui était à produire est posté. 🎉")}</p>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -886,7 +889,7 @@ function MyScripts({
               >
                 <Check size={12} style={{ color: "#4ade80" }} strokeWidth={3} />
                 <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "rgba(245,237,237,0.4)" }}>
-                  Publiés, terminés ({publishedScripts.length})
+                  {tr("Publiés, terminés (")}{publishedScripts.length})
                 </span>
                 <ChevronDown
                   size={13}
@@ -912,10 +915,10 @@ function MyScripts({
           />
           <div className="relative w-full sm:max-w-sm bg-[#150000] border border-[#890404]/40 rounded-t-2xl sm:rounded-2xl z-10 p-5">
             <p style={{ fontSize: 13.5, color: "#fff", lineHeight: 1.5, marginBottom: 4 }}>
-              Supprimer « {deleteTarget.title} » ?
+              {tr("Supprimer «")}{" "}{deleteTarget.title} » ?
             </p>
             <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", marginBottom: 16 }}>
-              Pourquoi ce script ne sert plus ? Ça aide à repérer les piliers/angles qui marchent le moins.
+              {tr("Pourquoi ce script ne sert plus ? Ça aide à repérer les piliers/angles qui marchent le moins.")}
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <button
@@ -923,14 +926,14 @@ function MyScripts({
                 onClick={() => remove(deleteTarget.id, "info_fausse")}
                 style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
               >
-                Information fausse ou dépassée
+                {tr("Information fausse ou dépassée")}
               </button>
               <button
                 type="button"
                 onClick={() => remove(deleteTarget.id, "sujet_nul")}
                 style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
               >
-                Sujet qui n&apos;intéresse pas / angle raté
+                {tr("Sujet qui n'intéresse pas / angle raté")}
               </button>
               {!showDeleteDetailInput ? (
                 <button
@@ -938,15 +941,15 @@ function MyScripts({
                   onClick={() => setShowDeleteDetailInput(true)}
                   style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(245,237,237,0.15)", background: "rgba(0,0,0,0.25)", color: "#F5EDED", fontSize: 12.5, fontWeight: 700, cursor: "pointer" }}
                 >
-                  Autre raison
+                  {tr("Autre raison")}
                 </button>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <textarea
                     value={deleteDetail}
                     onChange={(e) => setDeleteDetail(e.target.value)}
-                    placeholder="Précise en une phrase (optionnel)"
-                    aria-label="Autre raison"
+                    placeholder={tr("Précise en une phrase (optionnel)")}
+                    aria-label={tr("Autre raison")}
                     rows={2}
                     style={{ ...inputStyle, resize: "none" }}
                     autoFocus
@@ -956,7 +959,7 @@ function MyScripts({
                     onClick={() => remove(deleteTarget.id, "autre", deleteDetail)}
                     style={{ padding: "10px 12px", borderRadius: 10, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 800, cursor: "pointer" }}
                   >
-                    Confirmer la suppression
+                    {tr("Confirmer la suppression")}
                   </button>
                 </div>
               )}
@@ -965,7 +968,7 @@ function MyScripts({
                 onClick={() => setDeleteTarget(null)}
                 style={{ textAlign: "center", padding: "8px 12px", background: "none", border: "none", color: "rgba(245,237,237,0.4)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}
               >
-                Annuler
+                {tr("Annuler")}
               </button>
             </div>
           </div>
@@ -1015,7 +1018,7 @@ function MyScripts({
                 {/* Plateforme figée une fois le script créé (retour direct
                     2026-09-29) : elle se choisit à la création, jamais après. */}
                 <span
-                  title="Plateforme choisie à la création du script"
+                  title={tr("Plateforme choisie à la création du script")}
                   style={{
                     fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em",
                     padding: "3px 8px", borderRadius: 999,
@@ -1101,7 +1104,7 @@ function MyScripts({
                     setDeleteDetail("");
                     setShowDeleteDetailInput(false);
                   }}
-                  aria-label="Supprimer"
+                  aria-label={tr("Supprimer")}
                   style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
                 >
                   <Trash2 size={14} />
@@ -1120,7 +1123,7 @@ function MyScripts({
                   <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#E01E1E" }}>
                     {/* Retour direct 2026-09-18 : LinkedIn/Threads sont du
                         texte posté tel quel, jamais lu à voix haute. */}
-                    {WRITTEN_PLATFORMS.has(script.platform) ? "Texte du post" : "Script (mot pour mot)"}
+                    {WRITTEN_PLATFORMS.has(script.platform) ? tr("Texte du post") : tr("Script (mot pour mot)")}
                   </span>
                   {script.content && (
                     <div style={{ display: "flex", gap: 6 }}>
@@ -1134,7 +1137,7 @@ function MyScripts({
                       value={draft}
                       onChange={(e) => setDraft(e.target.value)}
                       rows={8}
-                      aria-label="Contenu du script"
+                      aria-label={tr("Contenu du script")}
                       style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
                       autoFocus
                     />
@@ -1147,7 +1150,7 @@ function MyScripts({
                           fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
                         }}
                       >
-                        Enregistrer
+                        {tr("Enregistrer")}
                       </button>
                       <button
                         type="button"
@@ -1158,7 +1161,7 @@ function MyScripts({
                           border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
                         }}
                       >
-                        Annuler
+                        {tr("Annuler")}
                       </button>
                     </div>
                   </div>
@@ -1180,7 +1183,7 @@ function MyScripts({
                       maxHeight: "33vh", overflowY: "auto",
                     }}
                   >
-                    {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>Vide, clique pour écrire.</span>}
+                    {script.content || <span style={{ color: "rgba(245,237,237,0.25)" }}>{tr("Vide, clique pour écrire.")}</span>}
                   </p>
                 )}
               </div>
@@ -1189,17 +1192,17 @@ function MyScripts({
                 <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 4 }}>
                   {script.hook && (
                     <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>Hook </span>{script.hook}
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>{tr("Hook")}{" "}</span>{script.hook}
                     </p>
                   )}
                   {script.cta && (
                     <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)" }}>
-                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>CTA parlé </span>{script.cta}
+                      <span style={{ fontWeight: 800, color: "rgba(245,237,237,0.35)" }}>{tr("CTA parlé")}{" "}</span>{script.cta}
                     </p>
                   )}
                   {script.source_reference && (
                     <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)", fontStyle: "italic" }}>
-                      Source : {script.source_reference}
+                      {tr("Source :")}{" "}{script.source_reference}
                     </p>
                   )}
                 </div>
@@ -1215,7 +1218,7 @@ function MyScripts({
                   différentes (voir lib/content-leads-tracking.ts). */}
               {realLeadsByScriptId[script.id] && (
                 <p style={{ margin: "6px 0 0", fontSize: 11, fontWeight: 700, color: "#facc15" }}>
-                  📩 {realLeadsByScriptId[script.id].total} lead{realLeadsByScriptId[script.id].total > 1 ? "s" : ""} captés sur ce numéro
+                  📩 {realLeadsByScriptId[script.id].total}{" "}{tr("lead")}{realLeadsByScriptId[script.id].total > 1 ? "s" : ""}{" "}{tr("captés sur ce numéro")}
                   {realLeadsByScriptId[script.id].last30Days > 0 && ` (${realLeadsByScriptId[script.id].last30Days} sur les 30 derniers jours)`}
                 </p>
               )}
@@ -1232,12 +1235,12 @@ function MyScripts({
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                       <div style={{ minWidth: 0 }}>
                         <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#facc15" }}>
-                          Lien du guide
+                          {tr("Lien du guide")}
                         </span>
                         <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.6)" }}>
                           {tracked
                             ? `${tracked.total} lead${tracked.total > 1 ? "s" : ""} arrivé${tracked.total > 1 ? "s" : ""} par ce lien${tracked.last30Days > 0 ? ` (${tracked.last30Days} sur 30 jours)` : ""}`
-                            : "À coller en description ou en bio. La plateforme d'origine de chaque lead est détectée toute seule."}
+                            : tr("À coller en description ou en bio. La plateforme d'origine de chaque lead est détectée toute seule.")}
                         </p>
                       </div>
                       <CopyButton text={link} />
@@ -1259,7 +1262,7 @@ function MyScripts({
                 <div style={{ marginTop: 10, background: "rgba(0,0,0,0.3)", border: "1px solid rgba(96,165,250,0.15)", borderRadius: 10, padding: "10px 12px" }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
                     <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", color: "#60a5fa" }}>
-                      Description {platformInfo?.label ?? ""}
+                      {tr("Description")}{" "}{platformInfo?.label ?? ""}
                     </span>
                     {script.instagram_caption && <CopyButton text={script.instagram_caption} />}
                   </div>
@@ -1269,7 +1272,7 @@ function MyScripts({
                         value={captionDraft}
                         onChange={(e) => setCaptionDraft(e.target.value)}
                         rows={8}
-                        aria-label="Description du script"
+                        aria-label={tr("Description du script")}
                         style={{ ...inputStyle, resize: "vertical", fontFamily: "inherit" }}
                         autoFocus
                       />
@@ -1282,7 +1285,7 @@ function MyScripts({
                             fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
                           }}
                         >
-                          Enregistrer
+                          {tr("Enregistrer")}
                         </button>
                         <button
                           type="button"
@@ -1293,7 +1296,7 @@ function MyScripts({
                             border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer",
                           }}
                         >
-                          Annuler
+                          {tr("Annuler")}
                         </button>
                       </div>
                     </div>
@@ -1327,7 +1330,7 @@ function MyScripts({
                     border: "1px dashed rgba(96,165,250,0.3)", borderRadius: 10, padding: "8px 12px", cursor: "pointer", width: "100%",
                   }}
                 >
-                  + Ajouter une description {platformInfo?.label ?? ""}
+                  {tr("+ Ajouter une description")}{" "}{platformInfo?.label ?? ""}
                 </button>
               )}
 
@@ -1344,32 +1347,32 @@ function MyScripts({
                         <input
                           type="number" min="0" inputMode="numeric"
                           value={perfViews} onChange={(e) => setPerfViews(e.target.value)}
-                          placeholder="Vues" aria-label="Vues"
+                          placeholder={tr("Vues")} aria-label={tr("Vues")}
                           style={{ ...inputStyle, width: 90, padding: "8px 10px" }}
                           autoFocus
                         />
                         <input
                           type="number" min="0" inputMode="numeric"
                           value={perfLikes} onChange={(e) => setPerfLikes(e.target.value)}
-                          placeholder="Likes (optionnel)" aria-label="Likes"
+                          placeholder={tr("Likes (optionnel)")} aria-label={tr("Likes")}
                           style={{ ...inputStyle, width: 130, padding: "8px 10px" }}
                         />
                         <input
                           type="number" min="0" inputMode="numeric"
                           value={perfComments} onChange={(e) => setPerfComments(e.target.value)}
-                          placeholder="Commentaires (optionnel)" aria-label="Commentaires"
+                          placeholder={tr("Commentaires (optionnel)")} aria-label={tr("Commentaires")}
                           style={{ ...inputStyle, width: 150, padding: "8px 10px" }}
                         />
                         <input
                           type="number" min="0" inputMode="numeric"
                           value={perfShares} onChange={(e) => setPerfShares(e.target.value)}
-                          placeholder="Partages (optionnel)" aria-label="Partages"
+                          placeholder={tr("Partages (optionnel)")} aria-label={tr("Partages")}
                           style={{ ...inputStyle, width: 130, padding: "8px 10px" }}
                         />
                         <input
                           type="number" min="0" inputMode="numeric"
                           value={perfSaves} onChange={(e) => setPerfSaves(e.target.value)}
-                          placeholder="Enregistrements (optionnel)" aria-label="Enregistrements"
+                          placeholder={tr("Enregistrements (optionnel)")} aria-label={tr("Enregistrements")}
                           style={{ ...inputStyle, width: 160, padding: "8px 10px" }}
                         />
                       </div>
@@ -1378,13 +1381,13 @@ function MyScripts({
                           type="button" onClick={() => savePerf(script.id)}
                           style={{ background: "#4ade80", color: "#0a1f0a", padding: "7px 14px", borderRadius: 8, fontWeight: 800, fontSize: 11.5, border: "none", cursor: "pointer" }}
                         >
-                          Enregistrer
+                          {tr("Enregistrer")}
                         </button>
                         <button
                           type="button" onClick={() => setPerfEditId(null)}
                           style={{ background: "transparent", color: "rgba(245,237,237,0.4)", padding: "7px 14px", borderRadius: 8, fontWeight: 700, fontSize: 11.5, border: "1px solid rgba(245,237,237,0.15)", cursor: "pointer" }}
                         >
-                          Annuler
+                          {tr("Annuler")}
                         </button>
                       </div>
                     </div>
@@ -1394,17 +1397,17 @@ function MyScripts({
                       onClick={() => openPerfEdit(script)}
                       style={{ display: "flex", alignItems: "center", gap: 10, background: "none", border: "none", padding: 0, cursor: "pointer", width: "100%", textAlign: "left" }}
                     >
-                      <span style={{ fontSize: 12, fontWeight: 800, color: "#4ade80" }}>{script.views.toLocaleString("fr-FR")} vues</span>
-                      {script.likes != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.likes.toLocaleString("fr-FR")} likes</span>}
-                      {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.comments_count.toLocaleString("fr-FR")} commentaires</span>}
-                      {script.shares != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.shares.toLocaleString("fr-FR")} partages</span>}
-                      {script.saves != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.saves.toLocaleString("fr-FR")} enreg.</span>}
+                      <span style={{ fontSize: 12, fontWeight: 800, color: "#4ade80" }}>{script.views.toLocaleString("fr-FR")}{" "}{tr("vues")}</span>
+                      {script.likes != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.likes.toLocaleString("fr-FR")}{" "}{tr("likes")}</span>}
+                      {script.comments_count != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.comments_count.toLocaleString("fr-FR")}{" "}{tr("commentaires")}</span>}
+                      {script.shares != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.shares.toLocaleString("fr-FR")}{" "}{tr("partages")}</span>}
+                      {script.saves != null && <span style={{ fontSize: 11, color: "rgba(245,237,237,0.45)" }}>{script.saves.toLocaleString("fr-FR")}{" "}{tr("enreg.")}</span>}
                       {avgViews != null && script.views > avgViews && (
                         <span style={{ fontSize: 9.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", color: "#facc15", background: "rgba(250,204,21,0.12)", padding: "2px 7px", borderRadius: 999 }}>
-                          🔥 Au-dessus de la moyenne
+                          {tr("🔥 Au-dessus de la moyenne")}
                         </span>
                       )}
-                      <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 700 }}>Modifier</span>
+                      <span style={{ marginLeft: "auto", fontSize: 10, color: "rgba(245,237,237,0.25)", fontWeight: 700 }}>{tr("Modifier")}</span>
                     </button>
                   ) : (
                     <button
@@ -1412,14 +1415,14 @@ function MyScripts({
                       onClick={() => openPerfEdit(script)}
                       style={{ fontSize: 11.5, fontWeight: 700, color: "#4ade80", background: "none", border: "none", padding: 0, cursor: "pointer" }}
                     >
-                      + Loguer les résultats (vues)
+                      {tr("+ Loguer les résultats (vues)")}
                     </button>
                   )}
                 </div>
               )}
                   {expandedId === script.id && openId !== script.id && (
                     <button type="button" onClick={() => toggleExpanded(script.id)} style={{ marginTop: 10, background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 800, color: "rgba(245,237,237,0.5)", padding: 0 }}>
-                      Réduire
+                      {tr("Réduire")}
                     </button>
                   )}
                 </>
@@ -1431,9 +1434,9 @@ function MyScripts({
                   style={{ marginTop: 8, width: "100%", textAlign: "left", background: "none", border: "none", cursor: "pointer", padding: 0, display: "flex", alignItems: "center", gap: 8 }}
                 >
                   <span style={{ flex: 1, minWidth: 0, fontSize: 12, color: "rgba(245,237,237,0.55)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {script.hook || (script.content ?? "").replace(/\s+/g, " ").slice(0, 140) || "Script vide"}
+                    {script.hook || (script.content ?? "").replace(/\s+/g, " ").slice(0, 140) || tr("Script vide")}
                   </span>
-                  <span style={{ fontSize: 11, fontWeight: 800, color: "#E01E1E", flexShrink: 0 }}>Ouvrir</span>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "#E01E1E", flexShrink: 0 }}>{tr("Ouvrir")}</span>
                 </button>
               )}
 </div>
@@ -1479,6 +1482,7 @@ function buildCoachContext(canvas: BusinessCanvas | null): string | null {
 }
 
 function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const context = useMemo(() => buildCoachContext(canvas), [canvas]);
   const filtered = useMemo(() => {
@@ -1493,24 +1497,22 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(74,222,128,0.06)", border: "1px solid rgba(74,222,128,0.2)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
           <Sparkles size={13} style={{ color: "#4ade80", flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5 }}>
-            Ces prompts sont personnalisés avec ton Business Model Canvas : le contexte sur ton activité est
-            automatiquement ajouté quand tu cliques Copier.
+            {tr("Ces prompts sont personnalisés avec ton Business Model Canvas : le contexte sur ton activité est automatiquement ajouté quand tu cliques Copier.")}
           </p>
         </div>
       ) : (
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(224,30,30,0.06)", border: "1px solid rgba(224,30,30,0.18)", borderRadius: 10, padding: "10px 12px", marginBottom: 14 }}>
           <Sparkles size={13} style={{ color: "#E01E1E", flexShrink: 0 }} />
           <p style={{ margin: 0, fontSize: 11.5, color: "rgba(245,237,237,0.55)", lineHeight: 1.5, flex: 1 }}>
-            Remplis ton{" "}
+            {tr("Remplis ton")}{" "}
             <Link href="/dashboard/coach/business" style={{ color: "#E01E1E", fontWeight: 700, textDecoration: "underline" }}>
-              Business Model Canvas
+              {tr("Business Model Canvas")}
             </Link>{" "}
-            (au moins ta clientèle cible et ta proposition de valeur) pour que ces prompts se personnalisent
-            automatiquement à ta situation au lieu de rester génériques.
+            {tr("(au moins ta clientèle cible et ta proposition de valeur) pour que ces prompts se personnalisent automatiquement à ta situation au lieu de rester génériques.")}
           </p>
         </div>
       )}
-      <LibrarySearch query={query} onChange={setQuery} placeholder="Chercher un prompt..." />
+      <LibrarySearch query={query} onChange={setQuery} placeholder={tr("Chercher un prompt...")} />
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
         {filtered.map((p, i) => (
           <div key={i} className="ep-card" style={{ padding: 16 }}>
@@ -1532,6 +1534,7 @@ function PromptLibrary({ canvas }: { canvas: BusinessCanvas | null }) {
 // ── Banque de hooks ────────────────────────────────────────────────────────
 
 function HookLibrary() {
+  const tr = useT();
   const [query, setQuery] = useState("");
   const [kindFilter, setKindFilter] = useState<"all" | "visuel" | "texte">("all");
   const filtered = useMemo(() => {
@@ -1545,7 +1548,7 @@ function HookLibrary() {
 
   return (
     <div>
-      <LibrarySearch query={query} onChange={setQuery} placeholder="Chercher un hook..." />
+      <LibrarySearch query={query} onChange={setQuery} placeholder={tr("Chercher un hook...")} />
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
         {(["all", "texte", "visuel"] as const).map((k) => (
           <button
@@ -1559,11 +1562,11 @@ function HookLibrary() {
               color: kindFilter === k ? "#F5EDED" : "rgba(245,237,237,0.55)",
             }}
           >
-            {k === "all" ? "Tous" : k === "texte" ? "Texte" : "Visuel"}
+            {k === "all" ? tr("Tous") : k === "texte" ? tr("Texte") : tr("Visuel")}
           </button>
         ))}
         <span style={{ marginLeft: "auto", fontSize: 10.5, color: "rgba(245,237,237,0.3)", alignSelf: "center" }}>
-          {filtered.length} hook{filtered.length > 1 ? "s" : ""}
+          {filtered.length}{" "}{tr("hook")}{filtered.length > 1 ? "s" : ""}
         </span>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>

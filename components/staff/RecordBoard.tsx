@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Search, ChevronDown, Trash2, ExternalLink, Save, X } from "lucide-react";
@@ -63,6 +64,7 @@ function formatField(def: FieldDef, r: StaffRecord): string | null {
 }
 
 function FieldInput({ def, value, onChange, idPrefix }: { def: FieldDef; value: string; onChange: (v: string) => void; idPrefix: string }) {
+  const t = useT();
   const id = `${idPrefix}-${def.key}`;
   const common = { id, value, className: "ep-input", style: inputStyle, "aria-label": def.label } as const;
   let control: React.ReactNode;
@@ -73,7 +75,7 @@ function FieldInput({ def, value, onChange, idPrefix }: { def: FieldDef; value: 
     case "select":
       control = (
         <select {...common} onChange={(e) => onChange(e.target.value)}>
-          <option value="">Non renseigné</option>
+          <option value="">{t("Non renseigné")}</option>
           {def.options?.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
@@ -134,6 +136,7 @@ function RecordForm({
   pending: boolean;
   error: string | null;
 }) {
+  const t = useT();
   const [values, setValues] = useState<Values>(initial);
   const [status, setStatus] = useState(initialStatus);
   return (
@@ -146,7 +149,7 @@ function RecordForm({
     >
       <div>
         <label htmlFor={`${idPrefix}-status`} style={{ display: "block", fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", marginBottom: 5 }}>
-          Étape
+          {t("Étape")}
         </label>
         <select id={`${idPrefix}-status`} value={status} onChange={(e) => setStatus(e.target.value)} className="ep-input" style={inputStyle}>
           {kind.stages.map((s) => (
@@ -163,11 +166,11 @@ function RecordForm({
       <div style={{ gridColumn: "1 / -1", display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
         <button type="submit" disabled={pending} className="ep-btn-primary" style={{ height: 42, padding: "0 20px", fontSize: 12 }}>
           <Save size={14} />
-          {pending ? "Enregistrement..." : submitLabel}
+          {pending ? t("Enregistrement...") : submitLabel}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-            Annuler
+            {t("Annuler")}
           </button>
         )}
         {onDelete && (
@@ -177,7 +180,7 @@ function RecordForm({
             disabled={pending}
             style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, background: "none", border: "1px solid rgba(248,113,113,0.3)", borderRadius: 8, color: "#f87171", fontSize: 11.5, fontWeight: 700, padding: "8px 12px", cursor: "pointer" }}
           >
-            <Trash2 size={13} /> Supprimer
+            <Trash2 size={13} />{" "}{t("Supprimer")}
           </button>
         )}
       </div>
@@ -206,6 +209,7 @@ function isLate(kind: EditableKind, r: StaffRecord, today: string, nowIso: strin
 }
 
 function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record: StaffRecord; today: string; nowIso: string }) {
+  const t = useT();
   const def = KINDS[kind];
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -243,19 +247,19 @@ function RecordRow({ kind, record, today, nowIso }: { kind: EditableKind; record
           </p>
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
             {typeof record.data?._assigned_by_name === "string" && (
-              <span style={{ color: "#facc15", fontWeight: 700 }}>Assignée par {record.data._assigned_by_name as string} · </span>
+              <span style={{ color: "#facc15", fontWeight: 700 }}>{t("Assignée par")}{" "}{record.data._assigned_by_name as string} · </span>
             )}
-            {[...summary, ...derivedMetrics(kind, record)].join(" · ") || "Aucun détail"}
-            {late && <span style={{ color: "#f87171", fontWeight: 700 }}> · En retard</span>}
+            {[...summary, ...derivedMetrics(kind, record)].join(" · ") || t("Aucun détail")}
+            {late && <span style={{ color: "#f87171", fontWeight: 700 }}>{" "}{t("· En retard")}</span>}
           </p>
         </button>
         {links[0] && (
-          <a href={links[0]} target="_blank" rel="noopener noreferrer" aria-label="Ouvrir le lien" style={{ color: "rgba(245,237,237,0.45)", padding: 4 }}>
+          <a href={links[0]} target="_blank" rel="noopener noreferrer" aria-label={t("Ouvrir le lien")} style={{ color: "rgba(245,237,237,0.45)", padding: 4 }}>
             <ExternalLink size={14} />
           </a>
         )}
         <select
-          aria-label="Changer d'étape"
+          aria-label={t("Changer d'étape")}
           value={record.status}
           disabled={pending}
           onChange={(e) => changeStatus(e.target.value)}
@@ -316,6 +320,7 @@ function dayHeading(iso: string, today: string): string {
 }
 
 export default function RecordBoard({ kind, records }: { kind: EditableKind; records: StaffRecord[] }) {
+  const t = useT();
   const def = KINDS[kind];
   const router = useRouter();
   // Un livre de comptes se lit en entier ; ailleurs on ouvre sur ce qui est
@@ -380,11 +385,11 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
           style={{ height: 40, padding: "0 16px", fontSize: 12 }}
         >
           {adding ? <X size={14} /> : <Plus size={14} />}
-          {adding ? "Fermer" : def.addLabel}
+          {adding ? t("Fermer") : def.addLabel}
         </button>
         <div style={{ position: "relative", flex: "1 1 200px", maxWidth: 320 }}>
           <Search size={13} style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "rgba(245,237,237,0.3)" }} />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Rechercher" aria-label="Rechercher" className="ep-input" style={{ paddingLeft: 32, height: 40 }} />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={t("Rechercher")} aria-label={t("Rechercher")} className="ep-input" style={{ paddingLeft: 32, height: 40 }} />
         </div>
       </div>
 
@@ -441,7 +446,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
 
       {visible.length === 0 ? (
         <div className="ep-card" style={{ padding: "22px 18px", textAlign: "center" }}>
-          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: 0 }}>{records.length === 0 ? def.emptyText : "Rien ne correspond à ce filtre."}</p>
+          <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: 0 }}>{records.length === 0 ? def.emptyText : t("Rien ne correspond à ce filtre.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -456,7 +461,7 @@ export default function RecordBoard({ kind, records }: { kind: EditableKind; rec
           })}
           {past.length > 0 && (
             <>
-              <p className="ep-label" style={{ margin: "16px 2px 6px" }}>Passés</p>
+              <p className="ep-label" style={{ margin: "16px 2px 6px" }}>{t("Passés")}</p>
               {past.map((r) => (
                 <RecordRow key={r.id} kind={kind} record={r} today={today} nowIso={nowIso} />
               ))}

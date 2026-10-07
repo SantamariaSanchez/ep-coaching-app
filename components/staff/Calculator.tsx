@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 
 const eur = (v: number) => `${Math.round(v).toLocaleString("fr-FR")} €`;
@@ -28,6 +29,7 @@ function Out({ label, value, tone }: { label: string; value: string; tone?: "goo
 // Outil du Growth Manager : ce que donne un budget, et le budget qu'il faut
 // pour un objectif de ventes, à partir de ses propres taux.
 export default function Calculator() {
+  const t = useT();
   const [budget, setBudget] = useState("500");
   const [cpl, setCpl] = useState("8");
   const [conversion, setConversion] = useState("5");
@@ -63,7 +65,7 @@ export default function Calculator() {
           <Field label="Objectif de ventes" value={goal} onChange={setGoal} suffix="" />
         </div>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.6 }}>
-          Budget nécessaire avec tes taux actuels : <strong style={{ color: "#F5EDED", fontSize: 16 }}>{eur(neededBudget)}</strong>
+          {t("Budget nécessaire avec tes taux actuels :")}{" "}<strong style={{ color: "#F5EDED", fontSize: 16 }}>{eur(neededBudget)}</strong>
         </p>
       </div>
     </div>

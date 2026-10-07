@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -108,6 +109,7 @@ function FoodGroupPicker({
   setSearch: (v: string) => void;
   onCreateFood?: (name: string, macros: { calories: number; protein: number; carbs: number; fat: number }) => Promise<void>;
 }) {
+  const tr = useT();
   const query = search.trim().toLowerCase();
   const filtered = query ? options.filter((o) => fuzzyMatchAny([o.name], query)) : options;
 
@@ -144,7 +146,7 @@ function FoodGroupPicker({
       <div className="flex items-center justify-between mb-1">
         <h3 className="text-sm font-black text-white">{label}</h3>
         {selected.size > 0 && (
-          <span className="text-[10px] font-bold text-[#E01E1E]">{selected.size} sélectionné{selected.size > 1 ? "s" : ""}</span>
+          <span className="text-[10px] font-bold text-[#E01E1E]">{selected.size}{" "}{tr("sélectionné")}{selected.size > 1 ? "s" : ""}</span>
         )}
       </div>
       <p className="text-[11px] text-[#F5EDED]/35 mb-2">{hint}</p>
@@ -154,13 +156,13 @@ function FoodGroupPicker({
           type="text"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setShowCreate(false); }}
-          placeholder="Rechercher un aliment..." aria-label="Rechercher un aliment..."
+          placeholder={tr("Rechercher un aliment...")} aria-label={tr("Rechercher un aliment...")}
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-lg pl-8 pr-8 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#890404]/60"
         />
         {search && (
           <button
             onClick={() => { setSearch(""); setShowCreate(false); }}
-            aria-label="Effacer la recherche"
+            aria-label={tr("Effacer la recherche")}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/30 hover:text-[#F5EDED]/60"
           >
             <X size={13} />
@@ -187,7 +189,7 @@ function FoodGroupPicker({
         })}
         {filtered.length === 0 && (
           <p className="col-span-2 text-xs text-[#F5EDED]/30 italic py-2">
-            {query ? "Aucun résultat pour cette recherche." : "Aucune option compatible avec ton régime/allergies."}
+            {query ? tr("Aucun résultat pour cette recherche.") : tr("Aucune option compatible avec ton régime/allergies.")}
           </p>
         )}
       </div>
@@ -196,12 +198,12 @@ function FoodGroupPicker({
           onClick={() => setShowCreate(true)}
           className="mt-2 w-full flex items-center justify-center gap-1.5 border border-dashed border-[#890404]/30 hover:border-[#890404]/55 rounded-lg px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
         >
-          + Créer &quot;{search.trim()}&quot; comme nouvel aliment
+          {tr("+ Créer \"")}{search.trim()}{tr("\" comme nouvel aliment")}
         </button>
       )}
       {showCreate && (
         <div className="mt-2 bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
-          <p className="text-[9px] text-[#F5EDED]/25">Valeurs pour 100g de &quot;{search.trim()}&quot;</p>
+          <p className="text-[9px] text-[#F5EDED]/25">{tr("Valeurs pour 100g de \"")}{search.trim()}&quot;</p>
           <div className="grid grid-cols-4 gap-1.5">
             {([
               { key: "calories", label: "Kcal" },
@@ -228,14 +230,14 @@ function FoodGroupPicker({
               onClick={() => setShowCreate(false)}
               className="flex-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 border border-[#890404]/25 rounded-lg py-2"
             >
-              Annuler
+              {tr("Annuler")}
             </button>
             <button
               onClick={handleCreate}
               disabled={creating}
               className="flex-1 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg py-2 transition-colors"
             >
-              {creating ? "Création…" : "Créer et ajouter"}
+              {creating ? tr("Création…") : tr("Créer et ajouter")}
             </button>
           </div>
         </div>
@@ -286,6 +288,7 @@ export default function MealCreatorWizard({
   presetDiet?: Diet | null;
   presetAllergens?: Allergen[] | null;
 }) {
+  const tr = useT();
   const [stepIdx, setStepIdx] = useState(0);
   const [direction, setDirection] = useState<1 | -1>(1);
 
@@ -505,32 +508,32 @@ export default function MealCreatorWizard({
         >
           {step === "meal" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Quel repas tu veux créer ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">On part de là pour calibrer les calories.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Quel repas tu veux créer ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("On part de là pour calibrer les calories.")}</p>
               <OptionGrid options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} value={meal} onSelect={setMeal} />
             </div>
           )}
 
           {step === "diet" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Ton régime alimentaire ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour ne te proposer que des aliments compatibles.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Ton régime alimentaire ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour ne te proposer que des aliments compatibles.")}</p>
               <OptionGrid options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} value={diet} onSelect={setDiet} />
             </div>
           )}
 
           {step === "phase" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Ta phase actuelle ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">On ajuste les calories et les portions en fonction.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Ta phase actuelle ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("On ajuste les calories et les portions en fonction.")}</p>
               <OptionGrid options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} value={phase} onSelect={setPhase} />
             </div>
           )}
 
           {step === "macroProfile" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Quel profil de macros ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour varier : plus riche en glucides, en protéines, ou équilibré.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Quel profil de macros ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour varier : plus riche en glucides, en protéines, ou équilibré.")}</p>
               <div className="flex flex-col gap-2.5">
                 {(Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]).map((p) => (
                   <button
@@ -552,17 +555,17 @@ export default function MealCreatorWizard({
 
           {step === "allergens" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Des allergies à éviter ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Optionnel, laisse vide si aucune.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Des allergies à éviter ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Optionnel, laisse vide si aucune.")}</p>
               <MultiChips options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={toggleAllergen} />
             </div>
           )}
 
           {step === "aliments" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Choisis tes aliments</h2>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Choisis tes aliments")}</h2>
               <p className="text-xs text-[#F5EDED]/40 mb-5">
-                Sélectionne autant d&apos;aliments que tu veux par catégorie (protéine obligatoire, le reste est optionnel).
+                {tr("Sélectionne autant d'aliments que tu veux par catégorie (protéine obligatoire, le reste est optionnel).")}
               </p>
               <div className="flex flex-col gap-6 max-h-[26rem] overflow-y-auto pr-1 -mr-1">
                 {FOOD_GROUP_ORDER.map((key) => (
@@ -588,16 +591,16 @@ export default function MealCreatorWizard({
 
           {step === "temp" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Chaud ou froid ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Pour orienter la préparation.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Chaud ou froid ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Pour orienter la préparation.")}</p>
               <OptionGrid options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} value={temp} onSelect={setTemp} />
             </div>
           )}
 
           {step === "time" && (
             <div>
-              <h2 className="text-xl font-black text-white mb-1">Combien de temps tu as ?</h2>
-              <p className="text-xs text-[#F5EDED]/40 mb-5">Dernière question avant ta recette.</p>
+              <h2 className="text-xl font-black text-white mb-1">{tr("Combien de temps tu as ?")}</h2>
+              <p className="text-xs text-[#F5EDED]/40 mb-5">{tr("Dernière question avant ta recette.")}</p>
               <div className="flex flex-col gap-2.5">
                 {(Object.keys(TIME_LABELS) as PrepTime[]).map((t) => (
                   <button
@@ -616,16 +619,16 @@ export default function MealCreatorWizard({
 
               {/* Meal prep : cuisiner une fois pour plusieurs jours. */}
               <div className="mt-5 pt-5 border-t border-[#890404]/15">
-                <p className="text-xs font-bold text-white mb-1">Tu prépares pour combien de portions ?</p>
+                <p className="text-xs font-bold text-white mb-1">{tr("Tu prépares pour combien de portions ?")}</p>
                 <p className="text-[10.5px] text-[#F5EDED]/35 mb-3">
-                  Les quantités s&apos;ajustent, la valeur nutritionnelle affichée reste toujours pour UNE portion.
+                  {tr("Les quantités s'ajustent, la valeur nutritionnelle affichée reste toujours pour UNE portion.")}
                 </p>
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
                     onClick={() => setPortions((p) => Math.max(1, p - 1))}
                     disabled={portions <= 1}
-                    aria-label="Moins de portions"
+                    aria-label={tr("Moins de portions")}
                     className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
                   >
                     <Minus size={14} />
@@ -635,13 +638,13 @@ export default function MealCreatorWizard({
                     type="button"
                     onClick={() => setPortions((p) => Math.min(6, p + 1))}
                     disabled={portions >= 6}
-                    aria-label="Plus de portions"
+                    aria-label={tr("Plus de portions")}
                     className="w-9 h-9 flex items-center justify-center rounded-lg border border-[#890404]/30 text-[#F5EDED]/60 disabled:opacity-30 hover:border-[#E01E1E]/50 transition-colors"
                   >
                     <Plus size={14} />
                   </button>
                   <span className="text-[10.5px] text-[#F5EDED]/30">
-                    {portions === 1 ? "juste pour maintenant" : `de quoi manger ${portions} fois`}
+                    {portions === 1 ? tr("juste pour maintenant") : `de quoi manger ${portions} fois`}
                   </span>
                 </div>
               </div>
@@ -653,10 +656,10 @@ export default function MealCreatorWizard({
               {!result ? (
                 <div className="text-center py-10">
                   <p className="text-sm text-[#F5EDED]/40">
-                    Aucune combinaison trouvée, essaie avec d&apos;autres choix.
+                    {tr("Aucune combinaison trouvée, essaie avec d'autres choix.")}
                   </p>
                   <button onClick={handleRestart} className="mt-4 text-xs font-bold text-[#E01E1E]">
-                    Recommencer
+                    {tr("Recommencer")}
                   </button>
                 </div>
               ) : (
@@ -664,27 +667,27 @@ export default function MealCreatorWizard({
                   <div className="flex items-center gap-2 mb-4">
                     <Sparkles size={16} className="text-[#E01E1E]" />
                     <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]">
-                      Ta recette sur mesure
+                      {tr("Ta recette sur mesure")}
                     </p>
                   </div>
                   <h2 className="text-2xl font-black text-white mb-3">{result.name}</h2>
                   <div className="flex items-center gap-3 flex-wrap mb-1">
-                    <span className="text-xs font-bold text-[#E01E1E]">{result.kcal} kcal</span>
+                    <span className="text-xs font-bold text-[#E01E1E]">{result.kcal}{" "}{tr("kcal")}</span>
                     <span className="text-xs text-[#F5EDED]/50">P {result.protein}g</span>
                     <span className="text-xs text-[#F5EDED]/50">G {result.carbs}g</span>
                     <span className="text-xs text-[#F5EDED]/50">L {result.fat}g</span>
-                    <span className="text-xs text-[#F5EDED]/40">· {result.prepMinutes} min</span>
+                    <span className="text-xs text-[#F5EDED]/40">· {result.prepMinutes}{" "}{tr("min")}</span>
                   </div>
                   <p className="text-[10.5px] text-[#F5EDED]/30 mb-4">
                     {result.portions > 1
                       ? `Valeurs pour 1 portion · ingrédients ci-dessous pour ${result.portions} portions au total`
-                      : "Pour 1 portion"}
+                      : tr("Pour 1 portion")}
                   </p>
 
                   <div className="grid md:grid-cols-2 gap-4 mb-4">
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                        Ingrédients
+                        {tr("Ingrédients")}
                       </p>
                       <ul className="space-y-1">
                         {result.ingredients.map((ing, i) => (
@@ -696,7 +699,7 @@ export default function MealCreatorWizard({
                     </div>
                     <div>
                       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-                        Préparation
+                        {tr("Préparation")}
                       </p>
                       <ol className="space-y-1">
                         {result.steps.map((s, i) => (
@@ -710,7 +713,7 @@ export default function MealCreatorWizard({
 
                   {result.allergens.length > 0 && (
                     <p className="text-[10px] text-[#F5EDED]/35 mb-3">
-                      <span className="font-bold text-[#F5EDED]/50">Allergènes : </span>
+                      <span className="font-bold text-[#F5EDED]/50">{tr("Allergènes :")}{" "}</span>
                       {result.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
                     </p>
                   )}
@@ -724,7 +727,7 @@ export default function MealCreatorWizard({
                       onClick={handleRestart}
                       className="flex-1 text-xs font-bold uppercase tracking-widest text-[#F5EDED]/50 border border-[#890404]/25 hover:border-[#890404]/50 rounded-lg px-4 py-2.5"
                     >
-                      Recommencer
+                      {tr("Recommencer")}
                     </button>
                     {onSaveRecipe && (
                       <button
@@ -736,10 +739,10 @@ export default function MealCreatorWizard({
                           <Loader2 size={13} className="animate-spin" />
                         ) : saveStatus === "saved" ? (
                           <>
-                            <Check size={13} /> Enregistrée
+                            <Check size={13} />{" "}{tr("Enregistrée")}
                           </>
                         ) : (
-                          "Enregistrer dans Recettes"
+                          tr("Enregistrer dans Recettes")
                         )}
                       </button>
                     )}
@@ -766,7 +769,7 @@ export default function MealCreatorWizard({
             {stepIdx > 0 && (
               <button
                 onClick={() => go(stepIdx - 1, -1)}
-                aria-label="Étape précédente"
+                aria-label={tr("Étape précédente")}
                 className="w-12 h-12 flex items-center justify-center rounded-xl border border-[#890404]/25 text-[#F5EDED]/40 flex-shrink-0"
               >
                 <ArrowLeft size={16} />
@@ -781,7 +784,7 @@ export default function MealCreatorWizard({
                 <Loader2 size={15} className="animate-spin" />
               ) : (
                 <>
-                  {step === "time" ? "Créer ma recette" : "Suivant"} <ArrowRight size={15} />
+                  {step === "time" ? tr("Créer ma recette") : tr("Suivant")} <ArrowRight size={15} />
                 </>
               )}
             </button>

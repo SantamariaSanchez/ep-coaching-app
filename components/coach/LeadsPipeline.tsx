@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState } from "react";
 import { Mail, Phone, Bot, Search, X, StickyNote } from "lucide-react";
 import type { Lead, LeadStatus } from "@/utils/leads";
@@ -52,6 +53,7 @@ function LeadRow({
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<{ error?: string }>;
   updateLeadNote: (leadId: string, note: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [status, setStatus] = useState<LeadStatus>(lead.status);
   const [noteOpen, setNoteOpen] = useState(false);
   const [note, setNote] = useState(lead.coach_note ?? "");
@@ -90,7 +92,7 @@ function LeadRow({
                 title={`Email de qualification envoyé le ${formatDate(lead.qualification_sent_at)}`}
                 className="inline-flex items-center gap-1 text-[8.5px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-400 border border-blue-500/35 flex-shrink-0"
               >
-                <Bot size={9} /> Setter IA
+                <Bot size={9} />{" "}{t("Setter IA")}
               </span>
             )}
           </div>
@@ -141,9 +143,9 @@ function LeadRow({
           <textarea
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Note de suivi (ex. appelé le 12/09, pas de réponse, relancer semaine prochaine)"
+            placeholder={t("Note de suivi (ex. appelé le 12/09, pas de réponse, relancer semaine prochaine)")}
             rows={2}
-            aria-label="Note de suivi"
+            aria-label={t("Note de suivi")}
             className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg px-2.5 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60 resize-none"
           />
           <div className="flex gap-2">
@@ -155,7 +157,7 @@ function LeadRow({
               }}
               className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-white px-2"
             >
-              Annuler
+              {t("Annuler")}
             </button>
             <button
               type="button"
@@ -163,7 +165,7 @@ function LeadRow({
               disabled={savingNote}
               className="bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg px-3 py-1.5"
             >
-              {savingNote ? "Enregistrement…" : "Enregistrer"}
+              {savingNote ? t("Enregistrement…") : t("Enregistrer")}
             </button>
           </div>
         </div>
@@ -174,7 +176,7 @@ function LeadRow({
           className="flex items-center gap-1.5 mt-2 text-[10.5px] text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors"
         >
           <StickyNote size={11} />
-          {lead.coach_note ? <span className="text-[#F5EDED]/55 italic truncate">{lead.coach_note}</span> : "Ajouter une note"}
+          {lead.coach_note ? <span className="text-[#F5EDED]/55 italic truncate">{lead.coach_note}</span> : t("Ajouter une note")}
         </button>
       )}
     </div>
@@ -195,6 +197,7 @@ export default function LeadsPipeline({
   updateLeadStatus: (leadId: string, status: LeadStatus) => Promise<{ error?: string }>;
   updateLeadNote: (leadId: string, note: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<LeadStatus | "all">("all");
 
@@ -226,7 +229,7 @@ export default function LeadsPipeline({
             color: statusFilter === "all" ? "#E01E1E" : "rgba(245,237,237,0.45)",
           }}
         >
-          Tous {leads.length > 0 && <span className="opacity-65">{leads.length}</span>}
+          {t("Tous")}{" "}{leads.length > 0 && <span className="opacity-65">{leads.length}</span>}
         </button>
         {STATUS_ORDER.map((s) => (
           <button
@@ -249,14 +252,14 @@ export default function LeadsPipeline({
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Chercher un email, un numéro, un lead magnet"
-          aria-label="Chercher un lead"
+          placeholder={t("Chercher un email, un numéro, un lead magnet")}
+          aria-label={t("Chercher un lead")}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg pl-9 pr-8 py-2 text-xs text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />
         {query && (
           <button
             onClick={() => setQuery("")}
-            aria-label="Effacer la recherche"
+            aria-label={t("Effacer la recherche")}
             className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[#F5EDED]/35 hover:text-white"
           >
             <X size={13} />
@@ -268,7 +271,7 @@ export default function LeadsPipeline({
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <Mail size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
           <p className="text-sm text-[#F5EDED]/35">
-            {leads.length === 0 ? "Aucun lead capté pour l'instant." : "Aucun lead ne correspond."}
+            {leads.length === 0 ? t("Aucun lead capté pour l'instant.") : t("Aucun lead ne correspond.")}
           </p>
         </div>
       ) : (

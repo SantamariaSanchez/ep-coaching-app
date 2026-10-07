@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { ExternalLink, Trash2, Pencil, X } from "lucide-react";
 import type { ScienceArticle, ScienceArticleType } from "@/utils/science-types";
@@ -35,6 +36,7 @@ function ArticleEditForm({
   onSave: (input: UpdateArticleInput) => Promise<{ error?: string }>;
   onCancel: () => void;
 }) {
+  const tr = useT();
   const [titleFr, setTitleFr] = useState(article.title_fr ?? "");
   const [summaryFr, setSummaryFr] = useState(article.summary_fr ?? "");
   const [articleType, setArticleType] = useState<ScienceArticleType>(
@@ -48,12 +50,12 @@ function ArticleEditForm({
   return (
     <div className="bg-[#150000] border border-[#890404]/30 rounded-lg p-3 space-y-2">
       <div className="grid grid-cols-2 gap-2">
-        <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label="Thématique" className={inputCls}>
+        <select value={topic} onChange={(e) => setTopic(e.target.value)} aria-label={tr("Thématique")} className={inputCls}>
           {SCIENCE_TOPICS.map((t) => (
             <option key={t} value={t}>{t}</option>
           ))}
         </select>
-        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} aria-label="Type d'article" className={inputCls}>
+        <select value={articleType} onChange={(e) => setArticleType(e.target.value as ScienceArticleType)} aria-label={tr("Type d'article")} className={inputCls}>
           {Object.entries(ARTICLE_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
@@ -62,19 +64,19 @@ function ArticleEditForm({
       <input
         value={titleFr}
         onChange={(e) => setTitleFr(e.target.value)}
-        placeholder="Titre en français" aria-label="Titre en français"
+        placeholder={tr("Titre en français")} aria-label={tr("Titre en français")}
         className={inputCls}
       />
       <textarea
         value={summaryFr}
         onChange={(e) => setSummaryFr(e.target.value)}
         rows={3}
-        placeholder="Résumé en langage simple, à quoi ça sert concrètement…" aria-label="Résumé en langage simple, à quoi ça sert concrètement…"
+        placeholder={tr("Résumé en langage simple, à quoi ça sert concrètement…")} aria-label={tr("Résumé en langage simple, à quoi ça sert concrètement…")}
         className={`${inputCls} resize-none`}
       />
       <label className="flex items-center gap-2 text-[11px] text-[#F5EDED]/50">
         <input type="checkbox" checked={asActualite} onChange={(e) => setAsActualite(e.target.checked)} />
-        Afficher aussi dans Actualité
+        {tr("Afficher aussi dans Actualité")}
       </label>
       {error && <p className="text-xs text-red-400">{error}</p>}
       <div className="flex gap-2">
@@ -89,9 +91,9 @@ function ArticleEditForm({
           disabled={saving}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
-          {saving ? "Enregistrement…" : "Enregistrer"}
+          {saving ? tr("Enregistrement…") : tr("Enregistrer")}
         </button>
-        <button onClick={onCancel} aria-label="Annuler" className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
+        <button onClick={onCancel} aria-label={tr("Annuler")} className="px-3 py-2 text-xs font-bold uppercase tracking-widest border border-[#890404]/40 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 rounded-lg transition-colors">
           <X size={14} />
         </button>
       </div>
@@ -110,6 +112,7 @@ export default function ArticleCard({
   onUpdate?: (input: UpdateArticleInput) => Promise<{ error?: string }>;
   onDelete?: () => Promise<void>;
 }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
   const [editing, setEditing] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -129,12 +132,12 @@ export default function ArticleCard({
           )}
           {article.is_actualite && (
             <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/25 text-blue-300">
-              Actualité
+              {tr("Actualité")}
             </span>
           )}
           {isCoach && !article.summary_fr && (
             <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-amber-300">
-              À relire
+              {tr("À relire")}
             </span>
           )}
         </div>
@@ -172,7 +175,7 @@ export default function ArticleCard({
           {article.summary_fr && (
             <div className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1">
-                À retenir
+                {tr("À retenir")}
               </p>
               <p className="text-sm text-[#F5EDED]/70 leading-relaxed">{article.summary_fr}</p>
             </div>
@@ -189,7 +192,7 @@ export default function ArticleCard({
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff4444] transition-colors"
             >
-              <ExternalLink size={11} /> Voir sur PubMed
+              <ExternalLink size={11} />{" "}{tr("Voir sur PubMed")}
             </a>
             {article.doi && (
               <a
@@ -198,7 +201,7 @@ export default function ArticleCard({
                 rel="noopener noreferrer"
                 className="text-[10px] font-semibold text-[#F5EDED]/30 hover:text-[#F5EDED]/55 transition-colors"
               >
-                DOI: {article.doi}
+                {tr("DOI:")}{" "}{article.doi}
               </a>
             )}
             {isCoach && onUpdate && (
@@ -206,7 +209,7 @@ export default function ArticleCard({
                 onClick={() => setEditing(true)}
                 className="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors"
               >
-                <Pencil size={11} /> Modifier
+                <Pencil size={11} />{" "}{tr("Modifier")}
               </button>
             )}
             {isCoach && onDelete && (
@@ -223,7 +226,7 @@ export default function ArticleCard({
                 disabled={deleting}
                 className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors disabled:opacity-40 ${onUpdate ? "" : "ml-auto"}`}
               >
-                <Trash2 size={11} /> {confirmDelete ? "Confirmer" : "Supprimer"}
+                <Trash2 size={11} /> {confirmDelete ? tr("Confirmer") : tr("Supprimer")}
               </button>
             )}
           </div>

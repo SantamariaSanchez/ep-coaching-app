@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition, useEffect } from "react";
 import { Plus, TrendingUp, TrendingDown, Wallet, Trash2, Download } from "lucide-react";
 import { createFinanceEntry, deleteFinanceEntry } from "@/app/dashboard/coach/compta/actions";
@@ -28,6 +29,7 @@ function csvEscape(value: string): string {
 // dédié, tout le reste (dépenses, renouvellements, coaching individuel...)
 // reste déclaratif et saisi à la main.
 export default function CoachFinanceTracker({ initialEntries }: { initialEntries: FinanceEntry[] }) {
+  const t = useT();
   const [entries, setEntries] = useState(initialEntries);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -144,7 +146,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
             padding: "9px 16px", borderRadius: 999, fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer",
           }}
         >
-          <Plus size={14} /> Nouvelle ligne
+          <Plus size={14} />{" "}{t("Nouvelle ligne")}
         </button>
         <button
           type="button"
@@ -152,7 +154,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
           disabled={entries.length === 0}
           className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-30 transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
         >
-          <Download size={12} /> Export CSV
+          <Download size={12} />{" "}{t("Export CSV")}
         </button>
       </div>
 
@@ -160,14 +162,14 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
         <div className="ep-card" style={{ padding: 16, marginBottom: 16 }}>
           <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
             <button type="button" onClick={() => changeKind("revenu")} style={toggleStyle(kind === "revenu", "#4ade80")}>
-              Revenu
+              {t("Revenu")}
             </button>
             <button type="button" onClick={() => changeKind("depense")} style={toggleStyle(kind === "depense", "#f87171")}>
-              Dépense
+              {t("Dépense")}
             </button>
           </div>
 
-          <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label="Catégorie" style={inputStyle}>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} aria-label={t("Catégorie")} style={inputStyle}>
             {categoriesFor(kind).map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -176,7 +178,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
           <input
             value={label}
             onChange={(e) => setLabel(e.target.value)}
-            placeholder="Libellé (ex : Abonnement Canva)" aria-label="Libellé (ex : Abonnement Canva)"
+            placeholder={t("Libellé (ex : Abonnement Canva)")} aria-label={t("Libellé (ex : Abonnement Canva)")}
             style={{ ...inputStyle, marginTop: 8 }}
           />
 
@@ -184,7 +186,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
             <input
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              placeholder="Montant en €" aria-label="Montant en €"
+              placeholder={t("Montant en €")} aria-label={t("Montant en €")}
               inputMode="decimal"
               style={inputStyle}
             />
@@ -192,7 +194,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
               type="date"
               value={entryDate}
               onChange={(e) => setEntryDate(e.target.value)}
-              aria-label="Date"
+              aria-label={t("Date")}
               style={inputStyle}
             />
           </div>
@@ -208,7 +210,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
               fontWeight: 800, fontSize: 12.5, border: "none", cursor: "pointer", opacity: isPending ? 0.6 : 1,
             }}
           >
-            {isPending ? "..." : "Ajouter"}
+            {isPending ? "..." : t("Ajouter")}
           </button>
         </div>
       )}
@@ -216,7 +218,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
       {entries.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <Wallet size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Rien encore. Note tes revenus et dépenses au fil de l&apos;eau.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Rien encore. Note tes revenus et dépenses au fil de l'eau.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -232,7 +234,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
                   {e.label}
                   {e.source === "stripe" && (
                     <span style={{ fontSize: 8.5, fontWeight: 800, letterSpacing: "0.04em", textTransform: "uppercase", color: "#635bff", background: "#635bff1f", border: "1px solid #635bff40", borderRadius: 999, padding: "1px 6px", flexShrink: 0 }}>
-                      Stripe
+                      {t("Stripe")}
                     </span>
                   )}
                 </p>
@@ -246,7 +248,7 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
               <button
                 type="button"
                 onClick={() => remove(e.id)}
-                aria-label="Supprimer"
+                aria-label={t("Supprimer")}
                 style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
               >
                 <Trash2 size={13} />

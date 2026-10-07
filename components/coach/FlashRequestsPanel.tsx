@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Zap, Check, X, Clock } from "lucide-react";
@@ -21,6 +22,7 @@ function waitInfo(createdAt: string, now: number): { label: string; urgency: "ok
 const URGENCY_COLOR = { ok: "rgba(245,237,237,0.35)", warn: "#facc15", late: "#E01E1E" } as const;
 
 export default function FlashRequestsPanel({ requests }: { requests: FlashRequest[] }) {
+  const t = useT();
   const router = useRouter();
   const [schedulingId, setSchedulingId] = useState<string | null>(null);
   const [date, setDate] = useState("");
@@ -66,7 +68,7 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
     <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 16 }}>
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3 flex items-center gap-1.5">
         <Zap size={12} style={{ color: "#E01E1E" }} />
-        Demandes de point flash ({requests.length})
+        {t("Demandes de point flash (")}{requests.length})
       </p>
       <div className="space-y-2.5">
         {requests.map((r) => {
@@ -74,9 +76,9 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
           return (
           <div key={r.id} className="bg-black/20 border border-[#890404]/15 rounded-lg p-3">
             <div className="flex items-start justify-between gap-2">
-              <p className="text-xs text-white font-bold">{r.client_name ?? "Client"}</p>
+              <p className="text-xs text-white font-bold">{r.client_name ?? t("Client")}</p>
               <span
-                title="Depuis combien de temps cette demande attend une réponse"
+                title={t("Depuis combien de temps cette demande attend une réponse")}
                 style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 10, fontWeight: 700, color: URGENCY_COLOR[wait.urgency], flexShrink: 0 }}
               >
                 <Clock size={10} />
@@ -88,15 +90,15 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
             {schedulingId === r.id ? (
               <div className="mt-2.5 space-y-2">
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className="ep-input" style={{ fontSize: 12 }} />
-                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className="ep-input" style={{ fontSize: 12 }} />
+                  <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label={t("Date")} className="ep-input" style={{ fontSize: 12 }} />
+                  <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label={t("Heure")} className="ep-input" style={{ fontSize: 12 }} />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => handleSchedule(r.id)} disabled={isPending} className="text-[11px] font-bold text-[#E01E1E]">
-                    Confirmer
+                    {t("Confirmer")}
                   </button>
                   <button onClick={() => setSchedulingId(null)} className="text-[11px] font-bold text-[#F5EDED]/40">
-                    Annuler
+                    {t("Annuler")}
                   </button>
                 </div>
                 {error && <p className="text-red-400 text-[11px]">{error}</p>}
@@ -107,14 +109,14 @@ export default function FlashRequestsPanel({ requests }: { requests: FlashReques
                   onClick={() => { setSchedulingId(r.id); setError(""); }}
                   className="flex items-center gap-1 text-[11px] font-bold text-green-400"
                 >
-                  <Check size={12} /> Programmer
+                  <Check size={12} />{" "}{t("Programmer")}
                 </button>
                 <button
                   onClick={() => handleDecline(r.id)}
                   disabled={isPending}
                   className="flex items-center gap-1 text-[11px] font-bold text-[#F5EDED]/35 hover:text-red-400"
                 >
-                  <X size={12} /> Refuser
+                  <X size={12} />{" "}{t("Refuser")}
                 </button>
               </div>
             )}

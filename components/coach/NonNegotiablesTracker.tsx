@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Check, Flame, Plus, X } from "lucide-react";
 import {
@@ -65,6 +66,7 @@ function DayDot({ day }: { day: NonNegotiablesDay }) {
 // comme un seuil de réussite/échec strict — Santamaria a explicitement
 // dit que ces chiffres ne sont pas à prendre au pied de la lettre.
 function StatTile({ label, value, target }: { label: string; value: string | number; target?: number }) {
+  const t = useT();
   return (
     <div className="rounded-xl px-3 py-2.5" style={{ background: "rgba(137,4,4,0.06)", border: `1px solid ${BORDER}` }}>
       <p style={{ margin: 0, fontSize: 8.5, fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", color: DIM }}>
@@ -72,7 +74,7 @@ function StatTile({ label, value, target }: { label: string; value: string | num
       </p>
       <p style={{ margin: "2px 0 0", fontSize: 17, fontWeight: 800, color: "#fff" }}>
         {value}
-        {target !== undefined && <span style={{ fontSize: 11, fontWeight: 600, color: DIM }}> / {target} visé</span>}
+        {target !== undefined && <span style={{ fontSize: 11, fontWeight: 600, color: DIM }}> / {target}{" "}{t("visé")}</span>}
       </p>
     </div>
   );
@@ -93,6 +95,7 @@ export default function NonNegotiablesTracker({
   monthlyObjectives: MonthlyObjectives;
   weeklyStats: WeeklyBusinessStats;
 }) {
+  const t = useT();
   const [form, setForm] = useState(todayLog);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -185,10 +188,10 @@ export default function NonNegotiablesTracker({
       {/* Non-négociables du jour */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-black uppercase tracking-widest text-white">Non-négociables du jour</h2>
+          <h2 className="text-sm font-black uppercase tracking-widest text-white">{t("Non-négociables du jour")}</h2>
           {streak > 0 && (
             <span className="flex items-center gap-1 text-xs font-bold" style={{ color: RED }}>
-              <Flame size={14} /> {streak} j de suite
+              <Flame size={14} /> {streak}{" "}{t("j de suite")}
             </span>
           )}
         </div>
@@ -200,8 +203,7 @@ export default function NonNegotiablesTracker({
         </div>
 
         <p className="text-xs mb-3" style={{ color: DIM }}>
-          Tes pas sont déjà suivis ailleurs (onglet Steps), pas besoin de les
-          resaisir ici.
+          {t("Tes pas sont déjà suivis ailleurs (onglet Steps), pas besoin de les resaisir ici.")}
         </p>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -214,7 +216,7 @@ export default function NonNegotiablesTracker({
 
         <div>
           <label style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: DIM, display: "block", marginBottom: 6 }}>
-            Objectifs revus (Reflect / Review / Reaffirm)
+            {t("Objectifs revus (Reflect / Review / Reaffirm)")}
           </label>
           <div className="flex gap-2 flex-wrap">
             {objectiveToggle("objectivesMorning", "Matin")}
@@ -226,7 +228,7 @@ export default function NonNegotiablesTracker({
         {error && <p className="text-xs mt-3" style={{ color: "#f87171" }}>{error}</p>}
         {saved && !error && !isPending && (
           <p className="text-xs mt-3 flex items-center gap-1" style={{ color: "#4ade80" }}>
-            <Check size={12} /> Enregistré
+            <Check size={12} />{" "}{t("Enregistré")}
           </p>
         )}
       </section>
@@ -234,7 +236,7 @@ export default function NonNegotiablesTracker({
       {/* Objectifs du mois */}
       <section>
         <h2 className="text-sm font-black uppercase tracking-widest text-white mb-3">
-          Mes 5 objectifs du mois
+          {t("Mes 5 objectifs du mois")}
         </h2>
         <div className="flex flex-col gap-2">
           {objectives.map((obj, i) => (
@@ -258,7 +260,7 @@ export default function NonNegotiablesTracker({
                   const next = objectives.filter((_, idx) => idx !== i);
                   saveObjectives(next.length > 0 ? next : [""]);
                 }}
-                aria-label="Retirer cet objectif"
+                aria-label={t("Retirer cet objectif")}
                 style={{ color: DIM }}
               >
                 <X size={16} />
@@ -272,13 +274,13 @@ export default function NonNegotiablesTracker({
               className="flex items-center gap-1.5 text-xs font-semibold self-start mt-1"
               style={{ color: RED }}
             >
-              <Plus size={14} /> Ajouter un objectif
+              <Plus size={14} />{" "}{t("Ajouter un objectif")}
             </button>
           )}
         </div>
         {objectivesSaved && (
           <p className="text-xs mt-2 flex items-center gap-1" style={{ color: "#4ade80" }}>
-            <Check size={12} /> Enregistré
+            <Check size={12} />{" "}{t("Enregistré")}
           </p>
         )}
       </section>
@@ -286,12 +288,11 @@ export default function NonNegotiablesTracker({
       {/* Pilotage hebdo — les 5 catégories du Mastermind, agrégées depuis l'appli */}
       <section>
         <h2 className="text-sm font-black uppercase tracking-widest text-white mb-1">
-          Cette semaine
+          {t("Cette semaine")}
         </h2>
         <p className="text-xs mb-3" style={{ color: DIM }}>
-          Du {new Date(weeklyStats.from + "T12:00:00").toLocaleDateString("fr-FR")} au{" "}
-          {new Date(weeklyStats.to + "T12:00:00").toLocaleDateString("fr-FR")} : chiffres déjà présents
-          dans l&apos;appli, rien à ressaisir.
+          {t("Du")}{" "}{new Date(weeklyStats.from + "T12:00:00").toLocaleDateString("fr-FR")}{" "}{t("au")}{" "}
+          {new Date(weeklyStats.to + "T12:00:00").toLocaleDateString("fr-FR")}{" "}{t(": chiffres déjà présents dans l'appli, rien à ressaisir.")}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
           <StatTile label="Scripts publiés" value={weeklyStats.scriptsPublished} />

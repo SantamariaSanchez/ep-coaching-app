@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Target, Pencil, Save } from "lucide-react";
@@ -19,6 +20,7 @@ export default function TargetsCard({
   actuals: Record<string, number>;
   monthLabel: string;
 }) {
+  const tr = useT();
   const router = useRouter();
   const [editing, setEditing] = useState(Object.keys(targets).length === 0);
   const [values, setValues] = useState<Record<string, string>>(() => Object.fromEntries(defs.map((d) => [d.key, targets[d.key] ? String(targets[d.key]) : ""])));
@@ -41,10 +43,10 @@ export default function TargetsCard({
     <section className="ep-card" style={{ padding: "15px 16px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
         <p className="ep-label" style={{ margin: 0, display: "flex", alignItems: "center", gap: 6 }}>
-          <Target size={12} /> Mes objectifs de {monthLabel}
+          <Target size={12} />{" "}{tr("Mes objectifs de")}{" "}{monthLabel}
         </p>
         {!editing && (
-          <button type="button" onClick={() => setEditing(true)} aria-label="Modifier mes objectifs" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 4 }}>
+          <button type="button" onClick={() => setEditing(true)} aria-label={tr("Modifier mes objectifs")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.45)", cursor: "pointer", padding: 4 }}>
             <Pencil size={13} />
           </button>
         )}
@@ -53,7 +55,7 @@ export default function TargetsCard({
       {editing ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: 0, lineHeight: 1.5 }}>
-            Fixe-toi un chiffre réaliste mais ambitieux pour le mois. Il s&apos;affiche en barre de progression, calculée sur ce que tu notes.
+            {tr("Fixe-toi un chiffre réaliste mais ambitieux pour le mois. Il s'affiche en barre de progression, calculée sur ce que tu notes.")}
           </p>
           {defs.map((d) => (
             <label key={d.key} style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -72,7 +74,7 @@ export default function TargetsCard({
           ))}
           {error && <p role="alert" style={{ fontSize: 12, color: "#FDC4C4", margin: 0 }}>{error}</p>}
           <button type="button" onClick={save} disabled={pending} className="ep-btn-primary" style={{ height: 40, fontSize: 12 }}>
-            <Save size={13} /> {pending ? "Enregistrement..." : "Enregistrer mes objectifs"}
+            <Save size={13} /> {pending ? tr("Enregistrement...") : tr("Enregistrer mes objectifs")}
           </button>
         </div>
       ) : (
@@ -92,7 +94,7 @@ export default function TargetsCard({
                 <div style={{ height: 6, borderRadius: 3, background: "rgba(224,30,30,0.1)", overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${goal ? pct : 0}%`, borderRadius: 3, background: pct >= 100 ? "linear-gradient(90deg,#4ade80,#22c55e)" : "linear-gradient(90deg,#890404,#E01E1E)" }} />
                 </div>
-                {!goal && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>Pas d&apos;objectif fixé.</p>}
+                {!goal && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "4px 0 0" }}>{tr("Pas d'objectif fixé.")}</p>}
               </div>
             );
           })}

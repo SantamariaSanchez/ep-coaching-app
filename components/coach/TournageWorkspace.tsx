@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition } from "react";
 import dynamic from "next/dynamic";
 import { ChevronDown, ChevronRight, Clock, FileText, Clapperboard, PlayCircle, CheckCircle2, Film } from "lucide-react";
@@ -52,6 +53,7 @@ const btn: React.CSSProperties = { display: "inline-flex", alignItems: "center",
 const ghost: React.CSSProperties = { display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 13px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.8)", fontSize: 12, fontWeight: 800, cursor: "pointer" };
 
 export default function TournageWorkspace({ formations }: { formations: FormationGroup[] }) {
+  const tr = useT();
   // Statuts gardés ici : le passage "tourné" depuis le prompteur met à jour
   // la liste tout de suite, sans recharger la page.
   const [statusById, setStatusById] = useState<Record<string, VideoStatus>>(() =>
@@ -88,10 +90,10 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
 
   return (
     <div style={{ maxWidth: 980, margin: "0 auto", padding: "24px 16px 96px" }}>
-      <p className="ep-label" style={{ marginBottom: 4 }}>Administration</p>
-      <h1 style={{ fontSize: 26, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.01em", margin: "0 0 4px" }}>Tournage des formations</h1>
+      <p className="ep-label" style={{ marginBottom: 4 }}>{tr("Administration")}</p>
+      <h1 style={{ fontSize: 26, fontWeight: 900, textTransform: "uppercase", letterSpacing: "-0.01em", margin: "0 0 4px" }}>{tr("Tournage des formations")}</h1>
       <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 18px", maxWidth: 640 }}>
-        Tes 5 formations, vidéo par vidéo : script mot pour mot, prompteur, puis lien YouTube une fois en ligne.
+        {tr("Tes 5 formations, vidéo par vidéo : script mot pour mot, prompteur, puis lien YouTube une fois en ligne.")}
       </p>
 
       {/* Chiffres clés */}
@@ -113,28 +115,28 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
       {next ? (
         <section className="ep-card-hero" style={{ padding: "16px 18px", marginBottom: 18 }}>
           <p className="ep-label" style={{ margin: "0 0 6px", display: "flex", alignItems: "center", gap: 6 }}>
-            <Clapperboard size={12} /> Prochaine vidéo à tourner
+            <Clapperboard size={12} />{" "}{tr("Prochaine vidéo à tourner")}
           </p>
           <p style={{ fontSize: 17, fontWeight: 900, color: "#F5EDED", margin: 0, lineHeight: 1.3 }}>{next.video_title}</p>
           <p style={{ fontSize: 12, color: "rgba(245,237,237,0.55)", margin: "3px 0 12px" }}>
-            Formation {next.formation_num} · {next.section_title} · environ {minutesOf(next.word_count)} min
+            {tr("Formation")}{" "}{next.formation_num} · {next.section_title}{" "}{tr("· environ")}{" "}{minutesOf(next.word_count)}{" "}{tr("min")}
           </p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button type="button" style={btn} onClick={() => setPrompter(next)}>
-              <Film size={14} /> Lancer le prompteur
+              <Film size={14} />{" "}{tr("Lancer le prompteur")}
             </button>
             <button type="button" style={ghost} onClick={() => setStatus(next.id, "tourne")}>
-              <CheckCircle2 size={14} /> Déjà tournée
+              <CheckCircle2 size={14} />{" "}{tr("Déjà tournée")}
             </button>
           </div>
           <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "10px 0 0" }}>
-            {queue.length} vidéo{queue.length > 1 ? "s" : ""} prête{queue.length > 1 ? "s" : ""} dans la file, environ {readyMinutes} min de tournage. Le prompteur enchaîne sur la suivante.
+            {queue.length}{" "}{tr("vidéo")}{queue.length > 1 ? "s" : ""}{" "}{tr("prête")}{queue.length > 1 ? "s" : ""}{" "}{tr("dans la file, environ")}{" "}{readyMinutes}{" "}{tr("min de tournage. Le prompteur enchaîne sur la suivante.")}
           </p>
         </section>
       ) : (
         <section className="ep-card" style={{ padding: "14px 16px", marginBottom: 18 }}>
-          <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>Aucune vidéo prête à tourner pour l&apos;instant.</p>
-          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "3px 0 0" }}>Termine un script puis passe-le en « Prêt à tourner » : il arrivera ici.</p>
+          <p style={{ fontSize: 13.5, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{tr("Aucune vidéo prête à tourner pour l'instant.")}</p>
+          <p style={{ fontSize: 12, color: "rgba(245,237,237,0.5)", margin: "3px 0 0" }}>{tr("Termine un script puis passe-le en « Prêt à tourner » : il arrivera ici.")}</p>
         </section>
       )}
 
@@ -162,10 +164,10 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
               >
                 {isOpen ? <ChevronDown size={18} style={{ flexShrink: 0, opacity: 0.6 }} /> : <ChevronRight size={18} style={{ flexShrink: 0, opacity: 0.6 }} />}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: "#E01E1E", textTransform: "uppercase", letterSpacing: "0.05em" }}>Formation {g.formation_num}</p>
+                  <p style={{ margin: 0, fontSize: 11, fontWeight: 800, color: "#E01E1E", textTransform: "uppercase", letterSpacing: "0.05em" }}>{tr("Formation")}{" "}{g.formation_num}</p>
                   <p style={{ margin: "2px 0 0", fontSize: 15.5, fontWeight: 800 }}>{g.formation_title}</p>
                   <p style={{ margin: "3px 0 0", fontSize: 11.5, color: "rgba(245,237,237,0.5)" }}>
-                    {ready}/{g.totalVideos} scripts prêts · {filmed} tournée{filmed > 1 ? "s" : ""}
+                    {ready}/{g.totalVideos}{" "}{tr("scripts prêts ·")}{" "}{filmed}{" "}{tr("tournée")}{filmed > 1 ? "s" : ""}
                   </p>
                 </div>
                 <div style={{ width: 64, height: 6, borderRadius: 999, background: "rgba(245,237,237,0.1)", overflow: "hidden", flexShrink: 0 }}>
@@ -175,7 +177,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
               {isOpen && (
                 <div style={{ borderTop: "1px solid rgba(245,237,237,0.08)", padding: "10px 12px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
                   {videos.length === 0 ? (
-                    <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: "6px 4px" }}>Aucune vidéo « {f.label.toLowerCase()} » dans cette formation.</p>
+                    <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: "6px 4px" }}>{tr("Aucune vidéo «")}{" "}{f.label.toLowerCase()}{" "}{tr("» dans cette formation.")}</p>
                   ) : (
                     videos.map((v) => <VideoRow key={v.id} video={v} status={statusOf(v)} onStatus={(s) => setStatus(v.id, s)} onPrompter={() => setPrompter(v)} />)
                   )}
@@ -207,6 +209,7 @@ export default function TournageWorkspace({ formations }: { formations: Formatio
 }
 
 function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideoScript; status: VideoStatus; onStatus: (s: VideoStatus) => void; onPrompter: () => void }) {
+  const tr = useT();
   const [expanded, setExpanded] = useState(false);
   const [youtubeUrl, setYoutubeUrl] = useState(video.youtube_url ?? "");
   const [notes, setNotes] = useState(video.notes ?? "");
@@ -227,7 +230,7 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
           <span style={{ color: "rgba(245,237,237,0.4)" }}>{label}</span> {video.video_title}
         </span>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, color: "rgba(245,237,237,0.45)", flexShrink: 0 }}>
-          <Clock size={12} /> {video.word_count > 0 ? `${minutesOf(video.word_count)} min` : "vide"}
+          <Clock size={12} /> {video.word_count > 0 ? `${minutesOf(video.word_count)} min` : tr("vide")}
         </span>
         {youtubeUrl && <PlayCircle size={14} style={{ color: "#FF0000", flexShrink: 0 }} />}
         <span style={{ flexShrink: 0, fontSize: 10.5, fontWeight: 800, padding: "4px 9px", borderRadius: 999, border: `1px solid ${STATUS_COLORS[status]}55`, background: `${STATUS_COLORS[status]}18`, color: STATUS_COLORS[status] }}>{STATUS_LABELS[status]}</span>
@@ -238,10 +241,10 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
             {status === "pret_a_tourner" && (
               <button type="button" style={btn} onClick={onPrompter}>
-                <Film size={13} /> Prompteur
+                <Film size={13} />{" "}{tr("Prompteur")}
               </button>
             )}
-            <select value={status} onChange={(e) => onStatus(e.target.value as VideoStatus)} aria-label="Statut de la vidéo" style={{ ...field, width: "auto", padding: "9px 10px", fontWeight: 700 }}>
+            <select value={status} onChange={(e) => onStatus(e.target.value as VideoStatus)} aria-label={tr("Statut de la vidéo")} style={{ ...field, width: "auto", padding: "9px 10px", fontWeight: 700 }}>
               {VIDEO_STATUSES.map((s) => (
                 <option key={s} value={s}>{STATUS_LABELS[s]}</option>
               ))}
@@ -250,7 +253,7 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
 
           <div>
             <label style={lbl}>
-              <FileText size={12} /> Script ({words} mots, environ {minutesOf(words)} min)
+              <FileText size={12} />{" "}{tr("Script (")}{words}{" "}{tr("mots, environ")}{" "}{minutesOf(words)}{" "}{tr("min)")}
             </label>
             <textarea
               value={scriptDraft}
@@ -262,17 +265,17 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
                 const res = await updateVideoScript(video.id, scriptDraft);
                 if (!res.error) setScriptSaved(true);
               })}
-              placeholder="Colle ou écris ici le script mot pour mot de cette vidéo."
+              placeholder={tr("Colle ou écris ici le script mot pour mot de cette vidéo.")}
               rows={10}
               style={{ ...field, lineHeight: 1.6, resize: "vertical", fontFamily: "inherit" }}
             />
-            {!scriptSaved && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>Enregistrement dès que tu quittes le champ.</p>}
+            {!scriptSaved && <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.45)", margin: "4px 0 0" }}>{tr("Enregistrement dès que tu quittes le champ.")}</p>}
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <div style={{ flex: "1 1 240px" }}>
               <label style={lbl}>
-                <PlayCircle size={12} /> Lien YouTube
+                <PlayCircle size={12} />{" "}{tr("Lien YouTube")}
               </label>
               <input
                 type="url"
@@ -283,13 +286,13 @@ function VideoRow({ video, status, onStatus, onPrompter }: { video: FounderVideo
                   // Une vidéo en ligne est publiée : un geste de moins.
                   if (youtubeUrl.trim() && status !== "publie") onStatus("publie");
                 })}
-                placeholder="https://youtube.com/..."
+                placeholder={tr("https://youtube.com/...")}
                 style={field}
               />
             </div>
             <div style={{ flex: "1 1 240px" }}>
-              <label style={lbl}>Note perso</label>
-              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => start(async () => { await updateVideoNotes(video.id, notes); })} placeholder="Ex : refaire la prise 2, plan large manquant" style={field} />
+              <label style={lbl}>{tr("Note perso")}</label>
+              <input type="text" value={notes} onChange={(e) => setNotes(e.target.value)} onBlur={() => start(async () => { await updateVideoNotes(video.id, notes); })} placeholder={tr("Ex : refaire la prise 2, plan large manquant")} style={field} />
             </div>
           </div>
         </div>

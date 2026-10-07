@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Users, TrendingUp, CalendarClock, UserPlus, ChevronRight, ArrowUp, ArrowDown, Minus } from "lucide-react";
@@ -152,6 +153,7 @@ function StatTile({
 }
 
 export default function DashboardStats() {
+  const t = useT();
   const [stats, setStats] = useState<Stats | null>(null);
   // Repasse "petit détail utile" (2026-09-10) : sans distinction, un échec
   // réseau laissait `stats` à null pour toujours — le bloc squelette
@@ -174,7 +176,7 @@ export default function DashboardStats() {
     return (
       <div className="ep-card" style={{ padding: "16px 20px", marginBottom: 24, display: "flex", alignItems: "center", gap: 10 }}>
         <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.4)", margin: 0 }}>
-          Impossible de charger tes statistiques pour l&apos;instant. Recharge la page.
+          {t("Impossible de charger tes statistiques pour l'instant. Recharge la page.")}
         </p>
       </div>
     );
@@ -236,7 +238,7 @@ export default function DashboardStats() {
       {/* Pending replies list */}
       {stats.pendingReplies.length > 0 && (
         <div id="pending-replies" style={{ marginBottom: 24, scrollMarginTop: 80 }}>
-          <p className="ep-section-title">En attente de retour</p>
+          <p className="ep-section-title">{t("En attente de retour")}</p>
           <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {stats.pendingReplies.map((c, i) => (
               <Link
@@ -281,16 +283,16 @@ export default function DashboardStats() {
 
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#F5EDED" }}>
-                    {c.profiles?.full_name ?? "Client"}
+                    {c.profiles?.full_name ?? t("Client")}
                   </p>
                   <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.35)" }}>
-                    Sem. {c.week_number} &nbsp;·&nbsp;{" "}
+                    {t("Sem.")}{" "}{c.week_number} &nbsp;·&nbsp;{" "}
                     {new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(c.created_at))}
                   </p>
                 </div>
 
                 <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  <span className="ep-badge-amber">Répondre</span>
+                  <span className="ep-badge-amber">{t("Répondre")}</span>
                   <ChevronRight size={14} style={{ color: "rgba(245,237,237,0.2)" }} />
                 </div>
               </Link>

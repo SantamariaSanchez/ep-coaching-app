@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useRef, useEffect, useTransition } from "react";
 import { Send, Trash2, Plus, Check, Circle, CircleDot, X } from "lucide-react";
 import type { AIAgent } from "@/lib/ai-agents";
@@ -29,13 +30,14 @@ function TaskRow({
   onChangeStatus: (status: AgentTaskStatus) => void;
   onDelete: () => void;
 }) {
+  const tr = useT();
   return (
     <div className="bg-[#150000] border border-[#890404]/20 rounded-lg p-3">
       <div className="flex items-start justify-between gap-2 mb-1.5">
         <p className={`text-[12.5px] font-bold ${task.status === "fait" ? "text-[#F5EDED]/35 line-through" : "text-white"}`}>
           {task.title}
         </p>
-        <button onClick={onDelete} aria-label="Supprimer la tâche" className="flex-shrink-0 text-[#F5EDED]/25 hover:text-red-400 transition-colors">
+        <button onClick={onDelete} aria-label={tr("Supprimer la tâche")} className="flex-shrink-0 text-[#F5EDED]/25 hover:text-red-400 transition-colors">
           <X size={13} />
         </button>
       </div>
@@ -75,6 +77,7 @@ export default function AgentChatView({
   initialMessages: AgentMessage[];
   initialTasks: AgentTask[];
 }) {
+  const tr = useT();
   const [messages, setMessages] = useState(initialMessages);
   const [tasks, setTasks] = useState(initialTasks);
   const [input, setInput] = useState("");
@@ -180,14 +183,14 @@ export default function AgentChatView({
       <div className="mb-5">
         <div className="flex items-center justify-between mb-2.5">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Tâches assignées {tasks.length > 0 && `(${tasks.length})`}
+            {tr("Tâches assignées")}{" "}{tasks.length > 0 && `(${tasks.length})`}
           </p>
           <button
             onClick={() => setShowTaskForm((v) => !v)}
             aria-expanded={showTaskForm}
             className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#E01E1E]"
           >
-            <Plus size={12} /> Assigner
+            <Plus size={12} />{" "}{tr("Assigner")}
           </button>
         </div>
 
@@ -196,13 +199,13 @@ export default function AgentChatView({
             <input
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder="Titre de la tâche" aria-label="Titre de la tâche"
+              placeholder={tr("Titre de la tâche")} aria-label={tr("Titre de la tâche")}
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
             />
             <textarea
               value={taskDesc}
               onChange={(e) => setTaskDesc(e.target.value)}
-              placeholder="Détails (optionnel)" aria-label="Détails (optionnel)"
+              placeholder={tr("Détails (optionnel)")} aria-label={tr("Détails (optionnel)")}
               rows={2}
               className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2 text-[12px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-none"
             />
@@ -212,7 +215,7 @@ export default function AgentChatView({
               className="ep-btn-primary disabled:opacity-50"
               style={{ height: 38, borderRadius: "var(--radius-sm)" }}
             >
-              {taskPending ? "Création…" : "Créer la tâche"}
+              {taskPending ? tr("Création…") : tr("Créer la tâche")}
             </button>
           </div>
         )}
@@ -234,13 +237,13 @@ export default function AgentChatView({
       {/* ── Discussion ── */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">Discussion</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">{tr("Discussion")}</p>
           {messages.length > 0 && (
             <button
               onClick={handleClear}
               className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-[#F5EDED]/30 hover:text-red-400 transition-colors"
             >
-              <Trash2 size={11} /> Effacer
+              <Trash2 size={11} />{" "}{tr("Effacer")}
             </button>
           )}
         </div>
@@ -248,7 +251,7 @@ export default function AgentChatView({
         <div className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3 mb-3 flex flex-col gap-2.5 max-h-[50vh] overflow-y-auto">
           {messages.length === 0 ? (
             <p className="text-[12px] text-[#F5EDED]/30 italic py-4 text-center">
-              Écris à {agent.name} pour commencer, par exemple : &laquo;&nbsp;{agent.exampleTasks[0]}&nbsp;&raquo;
+              {tr("Écris à")}{" "}{agent.name}{" "}{tr("pour commencer, par exemple : « ")}{agent.exampleTasks[0]}&nbsp;&raquo;
             </p>
           ) : (
             messages.map((m) => (
@@ -264,7 +267,7 @@ export default function AgentChatView({
           )}
           {isPending && (
             <div className="self-start bg-[#1f0101] text-[#F5EDED]/40 rounded-xl px-3 py-2 text-[12px]">
-              {agent.name} réfléchit…
+              {agent.name}{" "}{tr("réfléchit…")}
             </div>
           )}
           <div ref={bottomRef} />
@@ -292,7 +295,7 @@ export default function AgentChatView({
             disabled={isPending || !input.trim()}
             className="ep-btn-primary disabled:opacity-50 flex-shrink-0"
             style={{ height: 44, width: 44, borderRadius: "var(--radius-sm)", padding: 0 }}
-            aria-label="Envoyer"
+            aria-label={tr("Envoyer")}
           >
             <Send size={16} />
           </button>

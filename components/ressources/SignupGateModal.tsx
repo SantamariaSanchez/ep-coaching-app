@@ -1,9 +1,11 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import Link from "next/link";
 import { EPLogo } from "@/components/ui/EPLogo";
 
 export default function SignupGateModal() {
+  const t = useT();
   return (
     <div
       className="ep-modal-overlay"
@@ -40,10 +42,10 @@ export default function SignupGateModal() {
           className="ep-h2"
           style={{ marginBottom: 10, lineHeight: 1.25 }}
         >
-          Accède à toutes les ressources gratuitement.
+          {t("Accède à toutes les ressources gratuitement.")}
         </h2>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", lineHeight: 1.6, margin: "0 0 26px" }}>
-          Crée ton compte EP Coaching en 30 secondes.
+          {t("Crée ton compte EP Coaching en 30 secondes.")}
         </p>
 
         <Link
@@ -51,7 +53,7 @@ export default function SignupGateModal() {
           className="ep-btn-primary"
           style={{ display: "flex", width: "100%", height: 50, fontSize: 13, justifyContent: "center" }}
         >
-          Créer mon compte
+          {t("Créer mon compte")}
         </Link>
 
         <Link
@@ -65,7 +67,7 @@ export default function SignupGateModal() {
             textDecoration: "none",
           }}
         >
-          J&apos;ai déjà un compte
+          {t("J'ai déjà un compte")}
         </Link>
       </div>
     </div>

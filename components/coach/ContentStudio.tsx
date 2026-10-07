@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useTransition, useEffect } from "react";
 import { Plus, Camera, Video, Briefcase, Sparkles, Trash2, MessageCircleQuestion, Music2, Users, AtSign } from "lucide-react";
 import { createContentIdea, updateContentIdea, deleteContentIdea } from "@/app/dashboard/coach/studio/actions";
@@ -39,6 +40,7 @@ export default function ContentStudio({
   /** Idée à mettre en avant (lien depuis la recherche globale). */
   focusIdeaId?: string;
 }) {
+  const tr = useT();
   // Plateformes du coach (Mon appli) + Général, et toujours celles déjà utilisées.
   const CONTENT_PLATFORM_ORDER = ALL_PLATFORM_ORDER.filter(
     (p) => p === "general" || !platforms?.length || platforms.includes(p) || initialIdeas.some((i) => i.platform === p)
@@ -160,7 +162,7 @@ export default function ContentStudio({
           onClick={() => setPlatformFilter("all")}
           style={chipStyle(platformFilter === "all")}
         >
-          Tout
+          {tr("Tout")}
         </button>
         {CONTENT_PLATFORM_ORDER.map((p) => {
           const meta = PLATFORM_META[p];
@@ -191,7 +193,7 @@ export default function ContentStudio({
             cursor: "pointer",
           }}
         >
-          <Plus size={14} /> Nouvelle idée
+          <Plus size={14} />{" "}{tr("Nouvelle idée")}
         </button>
       </div>
 
@@ -200,7 +202,7 @@ export default function ContentStudio({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Le titre / l'accroche de l'idée" aria-label="Le titre / l'accroche de l'idée"
+            placeholder={tr("Le titre / l'accroche de l'idée")} aria-label={tr("Le titre / l'accroche de l'idée")}
             style={inputStyle}
             autoFocus
           />
@@ -214,7 +216,7 @@ export default function ContentStudio({
           <textarea
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Notes, script, angle... (facultatif)" aria-label="Notes, script, angle... (facultatif)"
+            placeholder={tr("Notes, script, angle... (facultatif)")} aria-label={tr("Notes, script, angle... (facultatif)")}
             rows={3}
             style={{ ...inputStyle, marginTop: 10, resize: "vertical", fontFamily: "inherit" }}
           />
@@ -236,7 +238,7 @@ export default function ContentStudio({
               opacity: isPending ? 0.6 : 1,
             }}
           >
-            {isPending ? "..." : "Ajouter"}
+            {isPending ? "..." : tr("Ajouter")}
           </button>
         </div>
       )}
@@ -244,7 +246,7 @@ export default function ContentStudio({
       {filtered.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
           <Sparkles size={22} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucune idée pour l&apos;instant. Note tout ce qui te passe par la tête.</p>
+          <p className="text-sm text-[#F5EDED]/35">{tr("Aucune idée pour l'instant. Note tout ce qui te passe par la tête.")}</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
@@ -282,7 +284,7 @@ export default function ContentStudio({
                     )}
                     {idea.source === "question" && (
                       <p style={{ margin: "6px 0 0", fontSize: 10.5, color: "rgba(245,237,237,0.3)", display: "flex", alignItems: "center", gap: 4 }}>
-                        <MessageCircleQuestion size={11} /> Depuis une question de membre
+                        <MessageCircleQuestion size={11} />{" "}{tr("Depuis une question de membre")}
                       </p>
                     )}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
@@ -314,7 +316,7 @@ export default function ContentStudio({
                   <button
                     type="button"
                     onClick={() => remove(idea.id)}
-                    aria-label="Supprimer"
+                    aria-label={tr("Supprimer")}
                     style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
                   >
                     <Trash2 size={14} />

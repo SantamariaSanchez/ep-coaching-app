@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Mail, Check } from "lucide-react";
 
@@ -16,6 +17,7 @@ export default function NewsletterSignupForm({
   source: "app_home" | "ressources";
   compact?: boolean;
 }) {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [website, setWebsite] = useState(""); // honeypot, jamais affiche
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -51,7 +53,7 @@ export default function NewsletterSignupForm({
           fontWeight: 600,
         }}
       >
-        <Check size={16} color="#E01E1E" /> Inscription confirmée, à demain !
+        <Check size={16} color="#E01E1E" />{" "}{t("Inscription confirmée, à demain !")}
       </div>
     );
   }
@@ -77,7 +79,7 @@ export default function NewsletterSignupForm({
           gap: 6,
         }}
       >
-        <Mail size={14} color="#E01E1E" /> Un mail par jour : conseils entraînement, nutrition, mindset
+        <Mail size={14} color="#E01E1E" />{" "}{t("Un mail par jour : conseils entraînement, nutrition, mindset")}
       </p>
       <div style={{ display: "flex", gap: 8, width: "100%" }}>
         {/* Honeypot anti-bot : jamais visible, jamais rempli par un humain. */}
@@ -94,7 +96,7 @@ export default function NewsletterSignupForm({
         <input
           type="email"
           required
-          placeholder="ton@email.com" aria-label="ton@email.com"
+          placeholder={t("ton@email.com")} aria-label={t("ton@email.com")}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="ep-input"
@@ -106,12 +108,12 @@ export default function NewsletterSignupForm({
           className="ep-btn-primary"
           style={{ whiteSpace: "nowrap", padding: "0 20px" }}
         >
-          {state === "loading" ? "..." : "Je m'inscris"}
+          {state === "loading" ? "..." : t("Je m'inscris")}
         </button>
       </div>
       {state === "error" && (
         <p style={{ margin: 0, fontSize: 12, color: "#FDC4C4" }}>
-          L&rsquo;inscription n&rsquo;a pas fonctionné, réessaie dans un instant.
+          {t("L’inscription n’a pas fonctionné, réessaie dans un instant.")}
         </p>
       )}
     </form>

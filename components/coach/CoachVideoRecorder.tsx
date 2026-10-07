@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { Video, Monitor, Upload, Circle, Square, Send, RotateCcw, X, Loader2 } from "lucide-react";
 
@@ -18,6 +19,7 @@ export default function CoachVideoRecorder({
   triggerLabel?: string;
   triggerClassName?: string;
 }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [phase, setPhase] = useState<Phase>("pick");
   const [elapsed, setElapsed] = useState(0);
@@ -171,8 +173,8 @@ export default function CoachVideoRecorder({
       <div className="ep-modal-overlay absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={sending ? undefined : close} />
       <div className="ep-modal-panel relative w-full max-w-lg bg-[#150000] border border-[#890404]/40 rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <p className="text-sm font-black uppercase tracking-widest text-white">Retour vidéo</p>
-          <button onClick={close} disabled={sending} aria-label="Fermer" className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
+          <p className="text-sm font-black uppercase tracking-widest text-white">{tr("Retour vidéo")}</p>
+          <button onClick={close} disabled={sending} aria-label={tr("Fermer")} className="p-1 text-[#F5EDED]/40 hover:text-white transition-colors">
             <X size={18} />
           </button>
         </div>
@@ -184,27 +186,27 @@ export default function CoachVideoRecorder({
               className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
             >
               <Video size={22} />
-              <span className="text-xs font-bold uppercase tracking-wider">Webcam</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{tr("Webcam")}</span>
             </button>
             <button
               onClick={() => pickSource("screen")}
               className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
             >
               <Monitor size={22} />
-              <span className="text-xs font-bold uppercase tracking-wider">Partage d&apos;écran</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{tr("Partage d'écran")}</span>
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
               className="flex flex-col items-center gap-2 py-6 rounded-xl border border-[#890404]/30 hover:border-[#E01E1E]/50 hover:bg-[#E01E1E]/5 text-[#F5EDED]/60 transition-colors"
             >
               <Upload size={22} />
-              <span className="text-xs font-bold uppercase tracking-wider">Importer</span>
+              <span className="text-xs font-bold uppercase tracking-wider">{tr("Importer")}</span>
             </button>
             <input
               ref={fileInputRef}
               type="file"
               accept="video/*"
-              aria-label="Importer une vidéo"
+              aria-label={tr("Importer une vidéo")}
               className="hidden"
               onChange={(e) => {
                 const file = e.target.files?.[0];
@@ -239,9 +241,9 @@ export default function CoachVideoRecorder({
               }`}
             >
               {phase === "recording" ? (
-                <span className="inline-flex items-center gap-2 justify-center"><Square size={13} /> Arrêter</span>
+                <span className="inline-flex items-center gap-2 justify-center"><Square size={13} />{" "}{tr("Arrêter")}</span>
               ) : (
-                <span className="inline-flex items-center gap-2 justify-center"><Circle size={13} /> Démarrer l&apos;enregistrement</span>
+                <span className="inline-flex items-center gap-2 justify-center"><Circle size={13} />{" "}{tr("Démarrer l'enregistrement")}</span>
               )}
             </button>
           </div>
@@ -256,7 +258,7 @@ export default function CoachVideoRecorder({
                 disabled={sending}
                 className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl border border-[#890404]/30 text-[#F5EDED]/50 hover:text-[#F5EDED]/80 text-xs font-bold uppercase tracking-widest transition-colors"
               >
-                <RotateCcw size={13} /> Recommencer
+                <RotateCcw size={13} />{" "}{tr("Recommencer")}
               </button>
               <button
                 onClick={handleSend}
@@ -264,7 +266,7 @@ export default function CoachVideoRecorder({
                 className="flex-1 inline-flex items-center justify-center gap-1.5 py-3 rounded-xl bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest transition-colors"
               >
                 {sending ? <Loader2 size={13} className="animate-spin" /> : <Send size={13} />}
-                {sending ? "Envoi…" : "Envoyer"}
+                {sending ? tr("Envoi…") : tr("Envoyer")}
               </button>
             </div>
           </div>

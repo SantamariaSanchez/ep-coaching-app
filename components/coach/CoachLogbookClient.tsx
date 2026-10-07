@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import {
   XAxis,
@@ -56,6 +57,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 // ── Weekly Overview ───────────────────────────────────────────────────────────
 
 function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
+  const t = useT();
   const today = new Date();
   const weekStart = new Date(today);
   const dow = today.getDay();
@@ -88,13 +90,13 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
       <div className="flex items-center justify-between mb-4">
         <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35">
-          7 derniers jours
+          {t("7 derniers jours")}
         </p>
         {daysSinceLastSession != null && daysSinceLastSession > 2 && (
           <div className="flex items-center gap-1.5">
             <AlertCircle size={12} className="text-red-400" />
             <span className="text-[9px] font-bold text-red-400 uppercase tracking-wider">
-              Absent depuis {daysSinceLastSession}j
+              {t("Absent depuis")}{" "}{daysSinceLastSession}j
             </span>
           </div>
         )}
@@ -134,13 +136,13 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
             {recentSessions.length}
           </p>
           <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
-            Cette semaine
+            {t("Cette semaine")}
           </p>
         </div>
         <div className="text-center">
           <p className="text-2xl font-black text-white">{sessions.length}</p>
           <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
-            Total sessions
+            {t("Total sessions")}
           </p>
         </div>
         <div className="text-center">
@@ -155,7 +157,7 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
               : "···"}
           </p>
           <p className="text-[9px] text-[#F5EDED]/30 uppercase tracking-wider">
-            Dernière
+            {t("Dernière")}
           </p>
         </div>
       </div>
@@ -166,6 +168,7 @@ function WeeklyOverview({ sessions }: { sessions: SessionWithSets[] }) {
 // ── Quality Analysis ──────────────────────────────────────────────────────────
 
 function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
+  const t = useT();
   // Build average score per exercise over last ~28 days
   const scoreByExercise: Record<string, number[]> = {};
   for (const session of sessions) {
@@ -188,7 +191,7 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
     return (
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
         <p className="text-sm text-[#F5EDED]/40">
-          Les scores de standardisation apparaîtront ici
+          {t("Les scores de standardisation apparaîtront ici")}
         </p>
       </div>
     );
@@ -203,7 +206,7 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
           <div className="flex items-center gap-2 mb-2">
             <AlertCircle size={13} className="text-amber-400" />
             <p className="text-xs font-black uppercase tracking-widest text-amber-400">
-              Technique à revoir
+              {t("Technique à revoir")}
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -221,7 +224,7 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
 
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-4">
-          Score d&apos;exécution moyen
+          {t("Score d'exécution moyen")}
         </p>
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
@@ -273,6 +276,7 @@ function QualityAnalysis({ sessions }: { sessions: SessionWithSets[] }) {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function CoachLogbookClient({ sessions, records, declaredInjuries, declaredHealthIssues }: Props) {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<"semaine" | "progression" | "qualite" | "historique">("semaine");
 
   const tabs = [
@@ -293,13 +297,13 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
           <div className="text-xs text-red-200/90 leading-relaxed">
             {declaredInjuries && (
               <p>
-                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">Blessures déclarées : </span>
+                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">{t("Blessures déclarées :")}{" "}</span>
                 {declaredInjuries}
               </p>
             )}
             {declaredHealthIssues && (
               <p className={declaredInjuries ? "mt-1" : undefined}>
-                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">Santé déclarée : </span>
+                <span className="font-bold uppercase tracking-wider text-[10px] text-red-300">{t("Santé déclarée :")}{" "}</span>
                 {declaredHealthIssues}
               </p>
             )}
@@ -330,7 +334,7 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
       {activeTab === "semaine" && (
         <div className="space-y-6">
           <section>
-            <SectionLabel>Vue de la semaine</SectionLabel>
+            <SectionLabel>{t("Vue de la semaine")}</SectionLabel>
             <WeeklyOverview sessions={sessions} />
           </section>
         </div>
@@ -339,7 +343,7 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
       {activeTab === "progression" && (
         <div className="space-y-6">
           <section>
-            <SectionLabel>Progression par exercice</SectionLabel>
+            <SectionLabel>{t("Progression par exercice")}</SectionLabel>
             <ExerciseProgressionChart sessions={sessions} records={records} />
           </section>
         </div>
@@ -348,7 +352,7 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
       {activeTab === "qualite" && (
         <div className="space-y-6">
           <section>
-            <SectionLabel>Analyse qualité</SectionLabel>
+            <SectionLabel>{t("Analyse qualité")}</SectionLabel>
             <QualityAnalysis sessions={sessions} />
           </section>
         </div>
@@ -356,18 +360,18 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
 
       {activeTab === "historique" && (
         <div className="space-y-4">
-          <SectionLabel>Historique des séances</SectionLabel>
+          <SectionLabel>{t("Historique des séances")}</SectionLabel>
           {sessions.length === 0 ? (
             <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-8 text-center">
               <Clock size={24} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
               <p className="text-sm text-[#F5EDED]/40 font-semibold mb-1">
-                Aucune séance enregistrée
+                {t("Aucune séance enregistrée")}
               </p>
               {/* Item 40 : évite de laisser croire à un problème (logbook
                   cassé, séance perdue) quand c'est juste que le client n'a
                   encore rien validé lui-même. */}
               <p className="text-xs text-[#F5EDED]/25 max-w-xs mx-auto leading-relaxed">
-                Se remplit automatiquement dès que le client valide une séance depuis son programme.
+                {t("Se remplit automatiquement dès que le client valide une séance depuis son programme.")}
               </p>
             </div>
           ) : (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 import { Send, MessageCircle, CheckCircle2, Lightbulb, Trash2 } from "lucide-react";
 import type { ResourceRequest } from "@/utils/resource-requests";
@@ -29,6 +30,7 @@ export default function ResourceRequests({
   respondToRequest: (id: string, response: string) => Promise<{ error?: string }>;
   deleteRequest: (id: string) => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [requests, setRequests] = useState(initialRequests);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -99,7 +101,7 @@ export default function ResourceRequests({
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb size={15} className="text-[#E01E1E]" />
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-          Demandes de guides
+          {t("Demandes de guides")}
         </p>
       </div>
 
@@ -108,13 +110,13 @@ export default function ResourceRequests({
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Sujet du guide souhaité (ex. Comment gérer une stagnation)" aria-label="Sujet du guide souhaité (ex. Comment gérer une stagnation)"
+            placeholder={t("Sujet du guide souhaité (ex. Comment gérer une stagnation)")} aria-label={t("Sujet du guide souhaité (ex. Comment gérer une stagnation)")}
             className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2"
           />
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="Détaille ta demande..." aria-label="Détaille ta demande..."
+            placeholder={t("Détaille ta demande...")} aria-label={t("Détaille ta demande...")}
             rows={2}
             className="w-full bg-transparent text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none resize-none mb-2"
           />
@@ -129,7 +131,7 @@ export default function ResourceRequests({
               ) : (
                 <Send size={13} strokeWidth={2} />
               )}
-              Envoyer
+              {t("Envoyer")}
             </button>
           </div>
           {error && <p className="text-[11px] text-red-400 font-semibold mt-2">⚠ {error}</p>}
@@ -139,7 +141,7 @@ export default function ResourceRequests({
       {requests.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-10 text-center">
           <MessageCircle size={22} className="text-[#F5EDED]/15 mx-auto mb-2" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucune demande pour l&apos;instant.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Aucune demande pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -154,11 +156,11 @@ export default function ResourceRequests({
                 </div>
                 {r.status === "answered" ? (
                   <span className="flex-shrink-0 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-green-500/10 text-green-400 border border-green-500/25">
-                    <CheckCircle2 size={10} /> Répondu
+                    <CheckCircle2 size={10} />{" "}{t("Répondu")}
                   </span>
                 ) : (
                   <span className="flex-shrink-0 text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/25">
-                    En attente
+                    {t("En attente")}
                   </span>
                 )}
               </div>
@@ -167,7 +169,7 @@ export default function ResourceRequests({
               {r.coach_response && (
                 <div className="mt-3 pt-3 border-t border-[#890404]/15">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] mb-1">
-                    Réponse du coach
+                    {t("Réponse du coach")}
                   </p>
                   <p className="text-xs text-[#F5EDED]/70 whitespace-pre-wrap">{r.coach_response}</p>
                 </div>
@@ -180,7 +182,7 @@ export default function ResourceRequests({
                       <textarea
                         value={responseText}
                         onChange={(e) => setResponseText(e.target.value)}
-                        placeholder="Ta réponse..." aria-label="Ta réponse..."
+                        placeholder={t("Ta réponse...")} aria-label={t("Ta réponse...")}
                         rows={2}
                         className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 mb-2 resize-none"
                       />
@@ -190,13 +192,13 @@ export default function ResourceRequests({
                           disabled={!responseText.trim() || savingResponse}
                           className="text-[10px] font-bold uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-40 text-white px-3 py-1.5 rounded-lg"
                         >
-                          Répondre
+                          {t("Répondre")}
                         </button>
                         <button
                           onClick={() => setRespondingId(null)}
                           className="text-[10px] font-bold text-[#F5EDED]/40"
                         >
-                          Annuler
+                          {t("Annuler")}
                         </button>
                       </div>
                     </div>
@@ -205,7 +207,7 @@ export default function ResourceRequests({
                       onClick={() => setRespondingId(r.id)}
                       className="text-[10px] font-bold uppercase tracking-widest text-[#E01E1E]"
                     >
-                      Répondre à cette demande
+                      {t("Répondre à cette demande")}
                     </button>
                   )}
                 </div>
@@ -216,7 +218,7 @@ export default function ResourceRequests({
                   onClick={() => handleDelete(r.id)}
                   className="flex items-center gap-1 text-[10px] text-[#F5EDED]/25 hover:text-red-400 transition-colors mt-2"
                 >
-                  <Trash2 size={10} /> Supprimer
+                  <Trash2 size={10} />{" "}{t("Supprimer")}
                 </button>
               )}
             </div>

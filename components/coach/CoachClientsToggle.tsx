@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { ChevronDown, Users } from "lucide-react";
 
@@ -21,6 +22,7 @@ const STATUS_LABELS: Record<string, string> = {
 // pas de messagerie, pas d'édition) — le cloisonnement coach/client reste
 // entier, seule la visibilité en haut de la hiérarchie change.
 export default function CoachClientsToggle({ clients }: { clients: ClientRow[] }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
@@ -35,7 +37,7 @@ export default function CoachClientsToggle({ clients }: { clients: ClientRow[] }
         }}
       >
         <Users size={12} />
-        {clients.length === 0 ? "Aucun client" : `${clients.length} client${clients.length > 1 ? "s" : ""} coaché${clients.length > 1 ? "s" : ""}`}
+        {clients.length === 0 ? t("Aucun client") : `${clients.length} client${clients.length > 1 ? "s" : ""} coaché${clients.length > 1 ? "s" : ""}`}
         {clients.length > 0 && (
           <ChevronDown
             size={12}
@@ -56,7 +58,7 @@ export default function CoachClientsToggle({ clients }: { clients: ClientRow[] }
             >
               <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#F5EDED" }}>
-                  {c.full_name ?? "Sans nom"}
+                  {c.full_name ?? t("Sans nom")}
                 </p>
                 <p style={{ margin: 0, fontSize: 10.5, color: "rgba(245,237,237,0.35)" }}>{c.email}</p>
               </div>

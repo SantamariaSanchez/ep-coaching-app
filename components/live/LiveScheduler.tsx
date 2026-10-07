@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Loader2, AlertCircle, X, ArrowLeft, ArrowRight, Check } from "lucide-react";
 import { LIVE_TYPE_LABELS, LIVE_TYPE_INFO, isOneToOneType, type LiveType } from "@/lib/live-types";
@@ -28,6 +29,7 @@ export default function LiveScheduler({
   clients: { id: string; full_name: string | null }[];
   onCreate: (input: CreateLiveEventInput) => Promise<{ error?: string; id?: string }>;
 }) {
+  const tr = useT();
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -121,7 +123,7 @@ export default function LiveScheduler({
     return (
       <div className="mb-6">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Programmer un live · étape 1 sur 3 : quel format ?
+          {tr("Programmer un live · étape 1 sur 3 : quel format ?")}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2.5">
           {TYPE_ORDER.map((t) => {
@@ -176,10 +178,10 @@ export default function LiveScheduler({
       <div className="flex items-center gap-3 mb-4">
         <button
           onClick={goBack}
-          aria-label="Revenir à l'étape précédente"
+          aria-label={tr("Revenir à l'étape précédente")}
           className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[#F5EDED]/45 hover:text-[#F5EDED] transition-colors shrink-0"
         >
-          <ArrowLeft size={14} /> Retour
+          <ArrowLeft size={14} />{" "}{tr("Retour")}
         </button>
         <div className="flex items-center gap-1.5 flex-1 justify-center">
           {STEPS.map((label, i) => (
@@ -207,7 +209,7 @@ export default function LiveScheduler({
         </div>
         <button
           onClick={resetAll}
-          aria-label="Annuler la création du live"
+          aria-label={tr("Annuler la création du live")}
           className="text-[#F5EDED]/30 hover:text-white transition-colors shrink-0"
         >
           <X size={14} />
@@ -235,7 +237,7 @@ export default function LiveScheduler({
           onClick={() => setStep(0)}
           className="text-[10px] font-bold uppercase tracking-wider text-[#E01E1E] hover:text-white transition-colors shrink-0"
         >
-          Changer
+          {tr("Changer")}
         </button>
       </div>
 
@@ -248,16 +250,16 @@ export default function LiveScheduler({
 
           {isOneToOneType(type) && (
             <div>
-              <p className="ep-label" style={{ marginBottom: 6 }}>Client concerné</p>
+              <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Client concerné")}</p>
               {clients.length === 0 ? (
                 <p style={{ fontSize: 12, color: "rgba(245,237,237,0.35)", margin: 0 }}>
-                  Aucun client actif pour l&apos;instant.
+                  {tr("Aucun client actif pour l'instant.")}
                 </p>
               ) : (
-                <select value={clientId} onChange={(e) => setClientId(e.target.value)} aria-label="Client" className={inputCls}>
-                  <option value="">Choisir un client</option>
+                <select value={clientId} onChange={(e) => setClientId(e.target.value)} aria-label={tr("Client")} className={inputCls}>
+                  <option value="">{tr("Choisir un client")}</option>
                   {clients.map((c) => (
-                    <option key={c.id} value={c.id}>{c.full_name ?? "Client"}</option>
+                    <option key={c.id} value={c.id}>{c.full_name ?? tr("Client")}</option>
                   ))}
                 </select>
               )}
@@ -266,32 +268,32 @@ export default function LiveScheduler({
 
           {type === "atelier" && (
             <div>
-              <p className="ep-label" style={{ marginBottom: 6 }}>Intervenant invité (optionnel)</p>
+              <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Intervenant invité (optionnel)")}</p>
               <input
                 value={guestName}
                 onChange={(e) => setGuestName(e.target.value)}
-                placeholder="Nom de l'intervenant" aria-label="Nom de l'intervenant"
+                placeholder={tr("Nom de l'intervenant")} aria-label={tr("Nom de l'intervenant")}
                 className={inputCls}
               />
             </div>
           )}
 
           <div>
-            <p className="ep-label" style={{ marginBottom: 6 }}>Titre / sujet</p>
+            <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Titre / sujet")}</p>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ex : point sur la phase de sèche" aria-label="Ex : point sur la phase de sèche"
+              placeholder={tr("Ex : point sur la phase de sèche")} aria-label={tr("Ex : point sur la phase de sèche")}
               className={inputCls}
             />
           </div>
 
           <div>
-            <p className="ep-label" style={{ marginBottom: 6 }}>But / description (optionnel)</p>
+            <p className="ep-label" style={{ marginBottom: 6 }}>{tr("But / description (optionnel)")}</p>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="Ce que tu veux couvrir pendant ce live" aria-label="Ce que tu veux couvrir pendant ce live"
+              placeholder={tr("Ce que tu veux couvrir pendant ce live")} aria-label={tr("Ce que tu veux couvrir pendant ce live")}
               rows={2}
               className={`${inputCls} resize-none`}
             />
@@ -301,7 +303,7 @@ export default function LiveScheduler({
             onClick={goNextFromSujet}
             className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
           >
-            Continuer <ArrowRight size={13} />
+            {tr("Continuer")}{" "}<ArrowRight size={13} />
           </button>
         </div>
       )}
@@ -310,29 +312,29 @@ export default function LiveScheduler({
       {step === 2 && (
         <div className="space-y-3">
           <div className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">
-            <p className="ep-label" style={{ marginBottom: 3 }}>Récapitulatif</p>
+            <p className="ep-label" style={{ marginBottom: 3 }}>{tr("Récapitulatif")}</p>
             <p style={{ margin: 0, fontSize: 12.5, fontWeight: 700, color: "#F5EDED" }}>{title}</p>
             {isOneToOneType(type) && (
               <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.42)" }}>
-                Avec {clients.find((c) => c.id === clientId)?.full_name ?? "un client"}
+                {tr("Avec")}{" "}{clients.find((c) => c.id === clientId)?.full_name ?? tr("un client")}
               </p>
             )}
             {type === "atelier" && guestName.trim() && (
               <p style={{ margin: "2px 0 0", fontSize: 11, color: "rgba(245,237,237,0.42)" }}>
-                Intervenant : {guestName.trim()}
+                {tr("Intervenant :")}{" "}{guestName.trim()}
               </p>
             )}
           </div>
 
           <div>
-            <p className="ep-label" style={{ marginBottom: 6 }}>Date, heure (Paris) et durée</p>
+            <p className="ep-label" style={{ marginBottom: 6 }}>{tr("Date, heure (Paris) et durée")}</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label="Date" className={inputCls} />
-              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label="Heure" className={inputCls} />
-              <select value={duration} onChange={(e) => setDuration(e.target.value)} aria-label="Durée" className={inputCls}>
-                <option value="15">15 min</option>
-                <option value="30">30 min</option>
-                <option value="45">45 min</option>
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} aria-label={tr("Date")} className={inputCls} />
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} aria-label={tr("Heure")} className={inputCls} />
+              <select value={duration} onChange={(e) => setDuration(e.target.value)} aria-label={tr("Durée")} className={inputCls}>
+                <option value="15">{tr("15 min")}</option>
+                <option value="30">{tr("30 min")}</option>
+                <option value="45">{tr("45 min")}</option>
                 <option value="60">1h</option>
                 <option value="90">1h30</option>
                 <option value="120">2h</option>
@@ -346,10 +348,10 @@ export default function LiveScheduler({
               disabled={submitting}
               className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
             >
-              {submitting ? <Loader2 size={13} className="animate-spin" /> : <><Check size={13} /> Programmer</>}
+              {submitting ? <Loader2 size={13} className="animate-spin" /> : <><Check size={13} />{" "}{tr("Programmer")}</>}
             </button>
             <button onClick={resetAll} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
-              Annuler
+              {tr("Annuler")}
             </button>
           </div>
         </div>

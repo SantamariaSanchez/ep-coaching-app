@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Lightbulb, StickyNote, BookmarkPlus, Clapperboard, Sparkles } from "lucide-react";
 import ContentStudio from "@/components/coach/ContentStudio";
@@ -58,6 +59,7 @@ export default function IdeationHub({
   focusScriptId?: string;
   focusIdeaId?: string;
 }) {
+  const tr = useT();
   const tabFromLink = (): Tab =>
     TABS.some((t) => t.id === initialTab) ? (initialTab as Tab) : focusScriptId ? "scripts" : "idees";
   const [tab, setTab] = useState<Tab>(tabFromLink);
@@ -83,7 +85,7 @@ export default function IdeationHub({
     <div>
       <div
         role="tablist"
-        aria-label="Sections Idéation"
+        aria-label={tr("Sections Idéation")}
         className="flex gap-1.5 overflow-x-auto mb-5 border-b border-[#890404]/20 pb-0.5"
       >
         {TABS.map(({ id, label, icon: Icon }) => {

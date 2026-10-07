@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Plus, CalendarClock } from "lucide-react";
@@ -40,6 +41,7 @@ function formatDuration(minutes: number): string {
 }
 
 export default function AvailabilityManager({ initialRules }: { initialRules: AvailabilityRule[] }) {
+  const tr = useT();
   const router = useRouter();
   const [selectedDays, setSelectedDays] = useState<number[]>([1]);
   const [startTime, setStartTime] = useState("09:00");
@@ -106,7 +108,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
     <div>
       <div className="ep-card" style={{ padding: "16px 18px", marginBottom: 20 }}>
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-3">
-          Ajouter un créneau récurrent
+          {tr("Ajouter un créneau récurrent")}
         </p>
 
         {/* Jours : plusieurs à la fois. Une seule saisie ouvre toute la semaine. */}
@@ -163,7 +165,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
             type="time"
             value={startTime}
             onChange={(e) => setStartTime(e.target.value)}
-            aria-label="Heure de début"
+            aria-label={tr("Heure de début")}
             className="ep-input"
             style={{ fontSize: 13 }}
           />
@@ -171,34 +173,34 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
             type="time"
             value={endTime}
             onChange={(e) => setEndTime(e.target.value)}
-            aria-label="Heure de fin"
+            aria-label={tr("Heure de fin")}
             className="ep-input"
             style={{ fontSize: 13 }}
           />
           <select
             value={slotDuration}
             onChange={(e) => setSlotDuration(Number(e.target.value))}
-            aria-label="Durée d'un créneau"
+            aria-label={tr("Durée d'un créneau")}
             className="ep-input col-span-2 sm:col-span-1"
             style={{ fontSize: 13 }}
           >
-            <option value={15}>Créneaux de 15 min</option>
-            <option value={30}>Créneaux de 30 min</option>
-            <option value={45}>Créneaux de 45 min</option>
-            <option value={60}>Créneaux de 60 min</option>
+            <option value={15}>{tr("Créneaux de 15 min")}</option>
+            <option value={30}>{tr("Créneaux de 30 min")}</option>
+            <option value={45}>{tr("Créneaux de 45 min")}</option>
+            <option value={60}>{tr("Créneaux de 60 min")}</option>
           </select>
         </div>
 
         {/* Aperçu avant validation : combien de rendez-vous cela ouvre. */}
         <p className="text-[11px] text-[#F5EDED]/40 mb-3">
           {selectedDays.length === 0 || previewSlots === 0 ? (
-            "Choisis au moins un jour et une plage horaire valide."
+            tr("Choisis au moins un jour et une plage horaire valide.")
           ) : (
             <>
               <span className="text-[#F5EDED]/70 font-bold">
-                {previewSlots * selectedDays.length} créneau{previewSlots * selectedDays.length !== 1 ? "x" : ""}
+                {previewSlots * selectedDays.length}{" "}{tr("créneau")}{previewSlots * selectedDays.length !== 1 ? "x" : ""}
               </span>{" "}
-              réservables par semaine ({previewSlots} par jour sur {selectedDays.length} jour
+              {tr("réservables par semaine (")}{previewSlots}{" "}{tr("par jour sur")}{" "}{selectedDays.length}{" "}{tr("jour")}
               {selectedDays.length !== 1 ? "s" : ""}).
             </>
           )}
@@ -210,7 +212,7 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
           className="ep-btn-primary"
           style={{ fontSize: 11, width: "100%", opacity: selectedDays.length === 0 ? 0.45 : 1 }}
         >
-          <Plus size={13} /> {isPending ? "Ajout en cours…" : "Ajouter ce créneau"}
+          <Plus size={13} /> {isPending ? tr("Ajout en cours…") : tr("Ajouter ce créneau")}
         </button>
         {error && <p className="text-red-400 text-xs font-semibold mt-2">{error}</p>}
       </div>
@@ -218,12 +220,12 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
       {/* Semaine type, groupée par jour */}
       <div className="flex items-center justify-between mb-3">
         <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-          Ma semaine type
+          {tr("Ma semaine type")}
         </p>
         {totalWeeklySlots > 0 && (
           <span className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[#E01E1E]">
             <CalendarClock size={11} />
-            {totalWeeklySlots} créneau{totalWeeklySlots !== 1 ? "x" : ""} par semaine
+            {totalWeeklySlots}{" "}{tr("créneau")}{totalWeeklySlots !== 1 ? "x" : ""}{" "}{tr("par semaine")}
           </span>
         )}
       </div>
@@ -231,10 +233,10 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
       {byDay.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/30 rounded-xl py-10 text-center">
           <p className="text-[12px] text-[#F5EDED]/35 m-0">
-            Aucune disponibilité définie pour l&apos;instant.
+            {tr("Aucune disponibilité définie pour l'instant.")}
           </p>
           <p className="text-[11px] text-[#F5EDED]/22 mt-1 m-0">
-            Tant que rien n&apos;est ouvert ici, tes clients ne peuvent pas réserver d&apos;appel 1:1 eux mêmes.
+            {tr("Tant que rien n'est ouvert ici, tes clients ne peuvent pas réserver d'appel 1:1 eux mêmes.")}
           </p>
         </div>
       ) : (
@@ -257,13 +259,13 @@ export default function AvailabilityManager({ initialRules }: { initialRules: Av
                           {rule.start_time.slice(0, 5)} à {rule.end_time.slice(0, 5)}
                         </p>
                         <p className="text-[10.5px] text-[#F5EDED]/38 m-0 mt-0.5">
-                          {count} créneau{count !== 1 ? "x" : ""} de {formatDuration(rule.slot_duration_minutes)}
+                          {count}{" "}{tr("créneau")}{count !== 1 ? "x" : ""}{" "}{tr("de")}{" "}{formatDuration(rule.slot_duration_minutes)}
                         </p>
                       </div>
                       <button
                         onClick={() => handleDelete(rule.id)}
                         disabled={isPending}
-                        aria-label="Supprimer ce créneau"
+                        aria-label={tr("Supprimer ce créneau")}
                         className="text-[#F5EDED]/25 hover:text-red-400 transition-colors shrink-0"
                       >
                         <Trash2 size={14} />

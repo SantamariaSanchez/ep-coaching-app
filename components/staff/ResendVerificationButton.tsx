@@ -1,9 +1,11 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { resendStaffVerification } from "@/app/equipe/actions";
 
 export default function ResendVerificationButton() {
+  const t = useT();
   const [message, setMessage] = useState<{ text: string; ok: boolean } | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -21,7 +23,7 @@ export default function ResendVerificationButton() {
           })
         }
       >
-        {pending ? "Envoi..." : "Renvoyer l'email"}
+        {pending ? t("Envoi...") : t("Renvoyer l'email")}
       </button>
       {message && (
         <p role="status" style={{ fontSize: 12, marginTop: 10, color: message.ok ? "#4ade80" : "#FDC4C4" }}>

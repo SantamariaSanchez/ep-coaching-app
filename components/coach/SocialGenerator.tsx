@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, Check, Wand2 } from "lucide-react";
 import type { GuideMagnet } from "@/lib/lead-magnets";
@@ -152,6 +153,7 @@ Angle : ${angle || "(à préciser)"}`;
 // passe à `true`, voir IdeationHub.tsx), jamais au chargement de Studio
 // créatif dans son ensemble.
 export default function SocialGenerator({ active }: { active: boolean }) {
+  const t = useT();
   const [guides, setGuides] = useState<GuideMagnet[] | null>(null);
   const fetchStarted = useRef(false);
 
@@ -197,7 +199,7 @@ export default function SocialGenerator({ active }: { active: boolean }) {
     return (
       <div className="flex items-center gap-2 text-[12px] text-[#F5EDED]/40">
         <div className="w-3.5 h-3.5 border-2 border-[#E01E1E]/40 border-t-[#E01E1E] rounded-full animate-spin" />
-        Chargement des guides...
+        {t("Chargement des guides...")}
       </div>
     );
   }
@@ -205,7 +207,7 @@ export default function SocialGenerator({ active }: { active: boolean }) {
   if (guides.length === 0) {
     return (
       <p className="text-[12px] text-[#F5EDED]/35 italic">
-        Aucun guide publié pour l&apos;instant, reviens ici une fois un premier guide en ligne dans Ressources.
+        {t("Aucun guide publié pour l'instant, reviens ici une fois un premier guide en ligne dans Ressources.")}
       </p>
     );
   }
@@ -213,16 +215,14 @@ export default function SocialGenerator({ active }: { active: boolean }) {
   return (
     <div>
       <p className="text-[12px] text-[#F5EDED]/40 leading-relaxed mb-4">
-        Choisis un guide déjà publié, précise le sujet et l&apos;angle si tu veux orienter le résultat, puis
-        copie le prompt et colle-le dans Claude (ici ou ailleurs) pour obtenir carrousel, légende et post
-        LinkedIn.
+        {t("Choisis un guide déjà publié, précise le sujet et l'angle si tu veux orienter le résultat, puis copie le prompt et colle-le dans Claude (ici ou ailleurs) pour obtenir carrousel, légende et post LinkedIn.")}
       </p>
 
       <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-4 mb-4 space-y-2.5">
         <select
           value={effectiveSlug}
           onChange={(e) => setSlug(e.target.value)}
-          aria-label="Guide déjà publié"
+          aria-label={t("Guide déjà publié")}
           className={inputCls}
         >
           {guides.map((g) => (
@@ -235,19 +235,19 @@ export default function SocialGenerator({ active }: { active: boolean }) {
           <input
             value={sujet}
             onChange={(e) => setSujet(e.target.value)}
-            placeholder="Sujet (optionnel, ex : la créatine chez les végétariens)" aria-label="Sujet (optionnel, ex : la créatine chez les végétariens)"
+            placeholder={t("Sujet (optionnel, ex : la créatine chez les végétariens)")} aria-label={t("Sujet (optionnel, ex : la créatine chez les végétariens)")}
             className={inputCls}
           />
           <input
             value={angle}
             onChange={(e) => setAngle(e.target.value)}
-            placeholder="Angle (optionnel, ex : mythe vs réalité)" aria-label="Angle (optionnel, ex : mythe vs réalité)"
+            placeholder={t("Angle (optionnel, ex : mythe vs réalité)")} aria-label={t("Angle (optionnel, ex : mythe vs réalité)")}
             className={inputCls}
           />
         </div>
         <div>
           <p className="text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">
-            Formats à générer
+            {t("Formats à générer")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {PLATFORM_SPECS.map((p) => {
@@ -276,14 +276,14 @@ export default function SocialGenerator({ active }: { active: boolean }) {
       <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-4">
         <div className="flex items-center justify-between mb-2">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 flex items-center gap-1.5">
-            <Wand2 size={12} className="text-[#E01E1E]" /> Prompt prêt à coller dans Claude
+            <Wand2 size={12} className="text-[#E01E1E]" />{" "}{t("Prompt prêt à coller dans Claude")}
           </p>
           <button
             onClick={copy}
             className="inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider px-2 py-1 rounded-md border border-[#890404]/30 text-[#F5EDED]/50 hover:text-white hover:border-[#E01E1E]/50 transition-colors"
           >
             {copied ? <Check size={10} className="text-green-400" /> : <Copy size={10} />}
-            {copied ? "Copié" : "Copier"}
+            {copied ? t("Copié") : t("Copier")}
           </button>
         </div>
         <p className="text-[11.5px] text-[#F5EDED]/55 leading-relaxed whitespace-pre-wrap">{prompt}</p>

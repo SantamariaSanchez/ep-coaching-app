@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -84,6 +85,7 @@ export default function LiveRoomLobby({
   /** Réservé à l'hôte : marque le live comme terminé (voir endLiveEvent). */
   onEndLive?: () => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const now = useNow();
@@ -175,7 +177,7 @@ export default function LiveRoomLobby({
           href={backHref}
           style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(245,237,237,0.5)", fontSize: 12, fontWeight: 700, textDecoration: "none", flexShrink: 0 }}
         >
-          <ChevronLeft size={14} /> Quitter
+          <ChevronLeft size={14} />{" "}{t("Quitter")}
         </Link>
         <p
           style={{
@@ -198,7 +200,7 @@ export default function LiveRoomLobby({
               {title}
             </h1>
             <p style={{ fontSize: 12, color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>
-              {capitalize(formatLiveDateTime(startsAt))} · {durationMinutes} min · heure de Paris
+              {capitalize(formatLiveDateTime(startsAt))} · {durationMinutes}{" "}{t("min · heure de Paris")}
             </p>
 
             <div
@@ -235,7 +237,7 @@ export default function LiveRoomLobby({
                 className="ep-btn-primary"
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, textDecoration: "none", width: "100%" }}
               >
-                <Video size={15} /> Ouvrir la visio
+                <Video size={15} />{" "}{t("Ouvrir la visio")}
               </a>
               <button
                 type="button"
@@ -244,12 +246,12 @@ export default function LiveRoomLobby({
                 style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, width: "100%" }}
               >
                 {copyState === "copied" ? <Check size={14} /> : <Copy size={14} />}
-                {copyState === "copied" ? "Lien copié" : "Copier le lien"}
+                {copyState === "copied" ? t("Lien copié") : t("Copier le lien")}
               </button>
               {copyState === "failed" && (
                 <div style={{ fontSize: 11.5, color: "rgba(245,237,237,0.6)", lineHeight: 1.5 }}>
                   <p style={{ margin: "0 0 4px", display: "flex", alignItems: "center", gap: 6, color: "#ff6b6b", fontWeight: 700 }}>
-                    <AlertCircle size={12} /> Copie automatique impossible, garde ce lien :
+                    <AlertCircle size={12} />{" "}{t("Copie automatique impossible, garde ce lien :")}
                   </p>
                   <p style={{ margin: 0, userSelect: "all", overflowWrap: "anywhere", fontFamily: "monospace", color: "#F5EDED" }}>
                     {roomUrl}
@@ -260,8 +262,8 @@ export default function LiveRoomLobby({
 
             <p style={{ fontSize: 12, color: "rgba(245,237,237,0.6)", lineHeight: 1.6, margin: "16px 0 0" }}>
               {isHost
-                ? "meet.jit.si peut te demander de te connecter (Google ou GitHub) pour ouvrir la salle en tant qu'hôte. Tes clients patientent dans le hall jusqu'à ton arrivée."
-                : "La visio s'ouvre dans un nouvel onglet. Si la salle affiche \"en attente de l'hôte\", ton coach arrive : reste connecté."}
+                ? t("meet.jit.si peut te demander de te connecter (Google ou GitHub) pour ouvrir la salle en tant qu'hôte. Tes clients patientent dans le hall jusqu'à ton arrivée.")
+                : t("La visio s'ouvre dans un nouvel onglet. Si la salle affiche \"en attente de l'hôte\", ton coach arrive : reste connecté.")}
             </p>
 
             <ul style={{ listStyle: "none", padding: 0, margin: "14px 0 0", display: "grid", gap: 8 }}>
@@ -287,10 +289,10 @@ export default function LiveRoomLobby({
                   }}
                 >
                   <Square size={11} />
-                  {ending ? "Clôture..." : "Terminer le live"}
+                  {ending ? t("Clôture...") : t("Terminer le live")}
                 </button>
                 <p style={{ fontSize: 10.5, color: "rgba(245,237,237,0.35)", margin: "6px 0 0", textAlign: "center" }}>
-                  Pense à raccrocher aussi dans l&apos;onglet Jitsi.
+                  {t("Pense à raccrocher aussi dans l'onglet Jitsi.")}
                 </p>
                 {endError && (
                   <p role="alert" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11.5, color: "#ff6b6b", margin: "8px 0 0" }}>
@@ -303,7 +305,7 @@ export default function LiveRoomLobby({
                 href="/dashboard/client/messages"
                 style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 16, fontSize: 11, fontWeight: 700, color: "#E01E1E", textDecoration: "none" }}
               >
-                <MessageCircle size={12} /> Un souci pour te connecter ? Écris à ton coach
+                <MessageCircle size={12} />{" "}{t("Un souci pour te connecter ? Écris à ton coach")}
               </Link>
             )}
           </div>

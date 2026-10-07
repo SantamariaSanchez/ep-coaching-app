@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useState, useEffect } from "react";
 import { Search, AlertTriangle } from "lucide-react";
 import ArticleCard from "./ArticleCard";
@@ -22,6 +23,7 @@ interface Props {
 }
 
 export default function ArticleListView({ articles: initial, isCoach, emptyLabel, showSeedButton, seedAction, updateArticle, deleteArticle }: Props) {
+  const tr = useT();
   const [articles, setArticles] = useState(initial);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -64,14 +66,14 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <p className="flex items-center gap-2 text-[11.5px] text-amber-300/90 leading-snug">
               <AlertTriangle size={14} className="flex-shrink-0" />
-              {needsReview.length} article{needsReview.length > 1 ? "s" : ""} importé{needsReview.length > 1 ? "s" : ""}{" "}
-              automatiquement sans résumé FR, juste un titre anglais et un lien pour l&apos;instant.
+              {needsReview.length}{" "}{tr("article")}{needsReview.length > 1 ? "s" : ""}{" "}{tr("importé")}{needsReview.length > 1 ? "s" : ""}{" "}
+              {tr("automatiquement sans résumé FR, juste un titre anglais et un lien pour l'instant.")}
             </p>
             <button
               onClick={() => setShowNeedsReview((v) => !v)}
               className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:text-amber-300 transition-colors"
             >
-              {showNeedsReview ? "Masquer" : "Voir la liste"}
+              {showNeedsReview ? tr("Masquer") : tr("Voir la liste")}
             </button>
           </div>
           {showNeedsReview && (
@@ -96,17 +98,17 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Rechercher dans la bibliothèque…" aria-label="Rechercher dans la bibliothèque…"
+            placeholder={tr("Rechercher dans la bibliothèque…")} aria-label={tr("Rechercher dans la bibliothèque…")}
             className={`${inputCls} pl-9`}
           />
         </div>
         <select
           value={activeType}
           onChange={(e) => setActiveType(e.target.value as ScienceArticleType | "")}
-          aria-label="Type d'article"
+          aria-label={tr("Type d'article")}
           className={`${inputCls} sm:w-56`}
         >
-          <option value="">Tous les types</option>
+          <option value="">{tr("Tous les types")}</option>
           {Object.entries(ARTICLE_TYPE_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
           ))}
@@ -120,7 +122,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
             activeTopic === null ? "bg-[#E01E1E]/20 border-[#E01E1E]/50 text-[#E01E1E]" : "border-[#890404]/25 text-[#F5EDED]/40"
           }`}
         >
-          Tout ({articles.length})
+          {tr("Tout (")}{articles.length})
         </button>
         {SCIENCE_TOPICS.filter((t) => topicCounts[t]).map((t) => (
           <button

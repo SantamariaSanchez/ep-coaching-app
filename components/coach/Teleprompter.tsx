@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useRef, useState } from "react";
 import { X, Play, Pause, Circle, Square, RotateCcw, SwitchCamera, Type } from "lucide-react";
 import { createPortal } from "react-dom";
@@ -145,6 +146,7 @@ export default function Teleprompter({
    * (ou la tentative de sauvegarde terminée), jamais sur un clic explicite. */
   onFinishedTake?: () => void;
 }) {
+  const tr = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const textScrollRef = useRef<HTMLDivElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -780,7 +782,7 @@ export default function Teleprompter({
             onClick={() => setRetryToken((t) => t + 1)}
             className="text-xs font-bold text-[#E01E1E] underline"
           >
-            Réessayer
+            {tr("Réessayer")}
           </button>
         </div>
       )}
@@ -793,7 +795,7 @@ export default function Teleprompter({
         <button
           type="button"
           onClick={handleClose}
-          aria-label="Fermer le prompteur"
+          aria-label={tr("Fermer le prompteur")}
           className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white"
         >
           <X size={18} />
@@ -814,16 +816,16 @@ export default function Teleprompter({
           <button
             type="button"
             onClick={cyclePreviewRotation}
-            aria-label="Tourner l'aperçu si l'image n'est pas droite"
+            aria-label={tr("Tourner l'aperçu si l'image n'est pas droite")}
             disabled={recording}
             className="flex items-center gap-1 bg-black/50 border border-white/15 text-white text-[10px] font-bold px-2.5 h-9 rounded-full disabled:opacity-40 flex-shrink-0"
           >
-            <RotateCcw size={14} /> Tourner
+            <RotateCcw size={14} />{" "}{tr("Tourner")}
           </button>
           <button
             type="button"
             onClick={() => setFacingMode((f) => (f === "user" ? "environment" : "user"))}
-            aria-label="Changer de caméra"
+            aria-label={tr("Changer de caméra")}
             disabled={recording}
             className="w-9 h-9 rounded-full bg-black/50 border border-white/15 flex items-center justify-center text-white disabled:opacity-40"
           >
@@ -917,7 +919,7 @@ export default function Teleprompter({
           <div className="flex justify-center items-center gap-2 mb-3 py-3">
             <div className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
             <span className="text-xs font-bold text-white/70 uppercase tracking-wide">
-              Vérification et enregistrement…
+              {tr("Vérification et enregistrement…")}
             </span>
           </div>
         ) : orientationNote ? (
@@ -927,7 +929,7 @@ export default function Teleprompter({
               onClick={resetTake}
               className="flex items-center gap-1.5 bg-[#E01E1E] text-white text-xs font-black uppercase tracking-wide px-4 py-2.5 rounded-xl"
             >
-              <RotateCcw size={14} /> Recommencer cette prise
+              <RotateCcw size={14} />{" "}{tr("Recommencer cette prise")}
             </button>
           </div>
         ) : (
@@ -955,10 +957,10 @@ export default function Teleprompter({
             className="flex items-center gap-1.5 bg-white/10 border border-white/15 text-white text-[11px] font-bold px-3 py-2 rounded-lg flex-shrink-0"
           >
             {scrolling ? <Pause size={13} /> : <Play size={13} />}
-            {scrolling ? "Pause" : "Défiler"}
+            {scrolling ? tr("Pause") : tr("Défiler")}
           </button>
           <div className="flex-1 flex items-center gap-2">
-            <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">Vitesse</span>
+            <span className="text-[9px] font-bold uppercase text-white/40 flex-shrink-0">{tr("Vitesse")}</span>
             <input
               type="range"
               min={5}
@@ -966,7 +968,7 @@ export default function Teleprompter({
               step={5}
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
-              aria-label="Vitesse de défilement"
+              aria-label={tr("Vitesse de défilement")}
               className="flex-1"
             />
           </div>
@@ -980,7 +982,7 @@ export default function Teleprompter({
             step={2}
             value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
-            aria-label="Taille du texte"
+            aria-label={tr("Taille du texte")}
             className="flex-1"
           />
           <button
@@ -988,7 +990,7 @@ export default function Teleprompter({
             onClick={() => textScrollRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
             className="text-[10px] font-bold text-white/50 uppercase flex-shrink-0"
           >
-            ↑ Début
+            {tr("↑ Début")}
           </button>
         </div>
         {trackInfo && (

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mic, MicOff, ImagePlus, Send, Search, Pin, PinOff, Trash2, X, Check, Link2, Hash, Inbox, ListChecks, FileText } from "lucide-react";
@@ -35,6 +36,7 @@ function matches(n: Note, q: string): boolean {
 type SpeechRec = { lang: string; continuous: boolean; interimResults: boolean; start: () => void; stop: () => void; onresult: ((e: { resultIndex: number; results: ArrayLike<{ isFinal: boolean; 0: { transcript: string } }> }) => void) | null; onend: (() => void) | null; onerror: (() => void) | null };
 
 export default function NotesApp({ initialNotes, tags, connect }: { initialNotes: Note[]; tags: NoteTag[]; connect?: React.ReactNode }) {
+  const tr = useT();
   const router = useRouter();
   const params = useSearchParams();
   const [notes, setNotes] = useState(initialNotes);
@@ -153,9 +155,9 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
 
   return (
     <div className="page-transition" style={{ padding: "22px 16px 120px", maxWidth: 820, margin: "0 auto" }}>
-      <h1 className="ep-h1" style={{ marginBottom: 4 }}>Notes</h1>
+      <h1 className="ep-h1" style={{ marginBottom: 4 }}>{tr("Notes")}</h1>
       <p style={{ fontSize: 13, color: "rgba(245,237,237,0.5)", margin: "0 0 14px" }}>
-        Jette tout ici : idées, liens, captures, dictées. Ajoute des #tags pour ranger, relie des notes avec [[Titre]].
+        {tr("Jette tout ici : idées, liens, captures, dictées. Ajoute des #tags pour ranger, relie des notes avec [[Titre]].")}
       </p>
 
       {connect}
@@ -170,16 +172,16 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
           }}
           placeholder={listening ? "Je t'écoute..." : "Une idée, un lien, une tâche ([ ] ...), #tag..."}
           rows={draft.split("\n").length > 2 ? 5 : 2}
-          aria-label="Nouvelle note"
+          aria-label={tr("Nouvelle note")}
           autoFocus={params.get("capture") === "1"}
           style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.5, fontFamily: "inherit" }}
         />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
           <button type="button" onClick={toggleDictation} aria-label={listening ? "Arrêter la dictée" : "Dicter"} style={{ ...chip(listening), padding: "8px 11px" }}>
-            {listening ? <MicOff size={15} /> : <Mic size={15} />} {listening ? "Stop" : "Dicter"}
+            {listening ? <MicOff size={15} /> : <Mic size={15} />} {listening ? tr("Stop") : tr("Dicter")}
           </button>
-          <button type="button" onClick={() => fileRef.current?.click()} aria-label="Ajouter une capture" style={{ ...chip(false), padding: "8px 11px" }}>
-            <ImagePlus size={15} /> Capture
+          <button type="button" onClick={() => fileRef.current?.click()} aria-label={tr("Ajouter une capture")} style={{ ...chip(false), padding: "8px 11px" }}>
+            <ImagePlus size={15} />{" "}{tr("Capture")}
           </button>
           <input
             ref={fileRef}
@@ -193,7 +195,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
             }}
           />
           <button type="button" disabled={pending || !draft.trim()} onClick={save} data-haptic style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6, padding: "9px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.04em", cursor: "pointer", opacity: pending || !draft.trim() ? 0.5 : 1 }}>
-            <Send size={13} /> Ranger
+            <Send size={13} />{" "}{tr("Ranger")}
           </button>
         </div>
         {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "8px 0 0" }}>{error}</p>}
@@ -202,9 +204,9 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
       {/* Recherche */}
       <div className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", marginBottom: 10 }}>
         <Search size={16} style={{ color: "rgba(245,237,237,0.4)" }} />
-        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Chercher dans mes notes" aria-label="Chercher dans mes notes" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }} />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={tr("Chercher dans mes notes")} aria-label={tr("Chercher dans mes notes")} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }} />
         {query && (
-          <button type="button" onClick={() => setQuery("")} aria-label="Effacer" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)" }}>
+          <button type="button" onClick={() => setQuery("")} aria-label={tr("Effacer")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.4)" }}>
             <X size={15} />
           </button>
         )}
@@ -213,16 +215,16 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
       {/* Vues + supertags */}
       <div style={{ display: "flex", gap: 6, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }} className="no-scrollbar">
         <button type="button" style={chip(view.type === "all")} onClick={() => setView({ type: "all" })}>
-          <FileText size={12} /> Tout ({notes.length})
+          <FileText size={12} />{" "}{tr("Tout (")}{notes.length})
         </button>
         <button type="button" style={chip(view.type === "inbox")} onClick={() => setView({ type: "inbox" })}>
-          <Inbox size={12} /> À ranger ({notes.filter((n) => !n.tags.length).length})
+          <Inbox size={12} />{" "}{tr("À ranger (")}{notes.filter((n) => !n.tags.length).length})
         </button>
         <button type="button" style={chip(view.type === "pinned")} onClick={() => setView({ type: "pinned" })}>
-          <Pin size={12} /> Épinglées
+          <Pin size={12} />{" "}{tr("Épinglées")}
         </button>
         <button type="button" style={chip(view.type === "tasks")} onClick={() => setView({ type: "tasks" })}>
-          <ListChecks size={12} /> Tâches
+          <ListChecks size={12} />{" "}{tr("Tâches")}
         </button>
         {tagCounts.map(([t, n]) => (
           <button key={t} type="button" style={{ ...chip(view.type === "tag" && view.tag === t), borderColor: `${colorFor(t, tags)}66` }} onClick={() => setView({ type: "tag", tag: t })}>
@@ -234,7 +236,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
       {/* Liste */}
       {shown.length === 0 ? (
         <p className="ep-card" style={{ padding: "16px", fontSize: 13, color: "rgba(245,237,237,0.5)", margin: 0 }}>
-          {notes.length === 0 ? "Aucune note pour l'instant. Écris ta première idée juste au-dessus." : "Rien ne correspond."}
+          {notes.length === 0 ? tr("Aucune note pour l'instant. Écris ta première idée juste au-dessus.") : tr("Rien ne correspond.")}
         </p>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
@@ -259,7 +261,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
                   )}
                   {n.kind === "lien" && <Link2 size={13} style={{ color: "#60a5fa", flexShrink: 0 }} />}
                   {n.kind === "dictee" && <Mic size={13} style={{ color: "#a78bfa", flexShrink: 0 }} />}
-                  <span style={{ fontSize: 14, fontWeight: 800, textDecoration: n.done ? "line-through" : "none", opacity: n.done ? 0.5 : 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title || "Sans titre"}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, textDecoration: n.done ? "line-through" : "none", opacity: n.done ? 0.5 : 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.title || tr("Sans titre")}</span>
                   {n.pinned && <Pin size={12} style={{ color: "#E01E1E", flexShrink: 0, marginLeft: "auto" }} />}
                 </span>
                 {n.body && n.body !== n.title && (
@@ -283,6 +285,7 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
 }
 
 function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: { note: Note; all: Note[]; tags: NoteTag[]; onClose: () => void; onOpen: (id: string) => void; onChange: (n: Note) => void; onDeleted: (id: string) => void }) {
+  const tr = useT();
   const router = useRouter();
   const [title, setTitle] = useState(note.title);
   const [body, setBody] = useState(note.body);
@@ -320,11 +323,11 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
       <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.7)", backdropFilter: "blur(3px)" }} />
       <div className="ep-modal-panel" style={{ position: "relative", width: "100%", maxWidth: 720, maxHeight: "92vh", overflowY: "auto", background: "#150000", border: "1px solid rgba(137,4,4,0.4)", borderRadius: "18px 18px 0 0", padding: "16px 16px calc(24px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
-          <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{saved ? "Enregistré" : "Modifications non enregistrées"}</span>
+          <span style={{ fontSize: 11, color: "rgba(245,237,237,0.4)" }}>{saved ? tr("Enregistré") : tr("Modifications non enregistrées")}</span>
           <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
             {note.kind === "tache" && (
               <button type="button" style={btn} onClick={() => persist({ done: !note.done })}>
-                <Check size={13} /> {note.done ? "À refaire" : "Fait"}
+                <Check size={13} /> {note.done ? tr("À refaire") : tr("Fait")}
               </button>
             )}
             <button type="button" style={btn} onClick={() => persist({ pinned: !note.pinned })} aria-label={note.pinned ? "Désépingler" : "Épingler"}>
@@ -333,7 +336,7 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
             <button
               type="button"
               style={btn}
-              aria-label="Supprimer"
+              aria-label={tr("Supprimer")}
               onClick={() => {
                 if (!confirm("Supprimer cette note ?")) return;
                 start(async () => {
@@ -344,7 +347,7 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
             >
               <Trash2 size={13} />
             </button>
-            <button type="button" style={btn} onClick={onClose} aria-label="Fermer">
+            <button type="button" style={btn} onClick={onClose} aria-label={tr("Fermer")}>
               <X size={14} />
             </button>
           </div>
@@ -353,12 +356,12 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
         {note.imageUrl && (
           <a href={note.imageUrl} target="_blank" rel="noopener noreferrer">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={note.imageUrl} alt="Capture" style={{ width: "100%", maxHeight: 360, objectFit: "contain", borderRadius: 12, background: "#0D0000", marginBottom: 10 }} />
+            <img src={note.imageUrl} alt={tr("Capture")} style={{ width: "100%", maxHeight: 360, objectFit: "contain", borderRadius: 12, background: "#0D0000", marginBottom: 10 }} />
           </a>
         )}
         {note.source_url && (
           <a href={note.source_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 6, color: "#60a5fa", fontSize: 13, fontWeight: 700, marginBottom: 10, wordBreak: "break-all" }}>
-            <Link2 size={13} /> Ouvrir le lien
+            <Link2 size={13} />{" "}{tr("Ouvrir le lien")}
           </a>
         )}
 
@@ -369,8 +372,8 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
             setSaved(false);
           }}
           onBlur={() => title !== note.title && persist({ title })}
-          placeholder="Titre"
-          aria-label="Titre"
+          placeholder={tr("Titre")}
+          aria-label={tr("Titre")}
           style={{ width: "100%", background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 20, fontWeight: 900, marginBottom: 8 }}
         />
         <textarea
@@ -380,8 +383,8 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
             setSaved(false);
           }}
           onBlur={() => body !== note.body && persist({ body })}
-          placeholder="Écris ici. #tag pour ranger, [[Titre d'une note]] pour relier."
-          aria-label="Contenu"
+          placeholder={tr("Écris ici. #tag pour ranger, [[Titre d'une note]] pour relier.")}
+          aria-label={tr("Contenu")}
           rows={10}
           className="ep-selectable"
           style={{ width: "100%", background: "rgba(0,0,0,0.25)", border: "1px solid rgba(245,237,237,0.08)", borderRadius: 12, outline: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.6, padding: 12, resize: "vertical", fontFamily: "inherit" }}
@@ -389,13 +392,13 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center", marginTop: 10 }}>
           {note.tags.map((t) => (
-            <button key={t} type="button" onClick={() => persist({ tags: note.tags.filter((x) => x !== t) })} title="Retirer ce tag" style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: colorFor(t, tags), background: `${colorFor(t, tags)}18`, border: "none", borderRadius: 8, padding: "5px 8px", cursor: "pointer" }}>
+            <button key={t} type="button" onClick={() => persist({ tags: note.tags.filter((x) => x !== t) })} title={tr("Retirer ce tag")} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 800, color: colorFor(t, tags), background: `${colorFor(t, tags)}18`, border: "none", borderRadius: 8, padding: "5px 8px", cursor: "pointer" }}>
               #{t} <X size={11} />
             </button>
           ))}
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, border: "1px dashed rgba(245,237,237,0.2)", borderRadius: 8, padding: "3px 8px" }}>
             <Hash size={12} style={{ color: "rgba(245,237,237,0.4)" }} />
-            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} onBlur={addTag} placeholder="ajouter" aria-label="Ajouter un tag" list="note-tags" style={{ width: 90, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 12 }} />
+            <input value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && addTag()} onBlur={addTag} placeholder={tr("ajouter")} aria-label={tr("Ajouter un tag")} list="note-tags" style={{ width: 90, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 12 }} />
             <datalist id="note-tags">
               {[...new Set(all.flatMap((n) => n.tags))].map((t) => (
                 <option key={t} value={t} />
@@ -406,20 +409,20 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
 
         {(linked.length > 0 || backlinks.length > 0) && (
           <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(245,237,237,0.07)", display: "flex", flexDirection: "column", gap: 6 }}>
-            {linked.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: 0 }}>Liens</p>}
+            {linked.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: 0 }}>{tr("Liens")}</p>}
             {linked.map((l) =>
               l.note ? (
                 <button key={l.label} type="button" onClick={() => onOpen(l.note!.id)} style={{ textAlign: "left", background: "none", border: "none", color: "#60a5fa", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
                   → {l.note.title}
                 </button>
               ) : (
-                <span key={l.label} style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>→ {l.label} (note pas encore créée)</span>
+                <span key={l.label} style={{ fontSize: 13, color: "rgba(245,237,237,0.45)" }}>→ {l.label}{" "}{tr("(note pas encore créée)")}</span>
               )
             )}
-            {backlinks.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>Mentionnée dans</p>}
+            {backlinks.length > 0 && <p style={{ fontSize: 10.5, fontWeight: 800, letterSpacing: "0.06em", textTransform: "uppercase", color: "rgba(245,237,237,0.45)", margin: "6px 0 0" }}>{tr("Mentionnée dans")}</p>}
             {backlinks.map((b) => (
               <button key={b.id} type="button" onClick={() => onOpen(b.id)} style={{ textAlign: "left", background: "none", border: "none", color: "#60a5fa", fontSize: 13, fontWeight: 700, cursor: "pointer", padding: 0 }}>
-                ← {b.title || "Sans titre"}
+                ← {b.title || tr("Sans titre")}
               </button>
             ))}
           </div>

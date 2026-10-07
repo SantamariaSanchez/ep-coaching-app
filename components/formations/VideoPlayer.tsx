@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Play, CheckCircle2, Circle } from "lucide-react";
 import { markLessonComplete, unmarkLessonComplete } from "@/app/dashboard/client/formations/actions";
@@ -21,6 +22,7 @@ export default function VideoPlayer({
   description,
   durationMin = 10,
 }: VideoPlayerProps) {
+  const t = useT();
   const [completed, setCompleted] = useState(initialCompleted);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +95,7 @@ export default function VideoPlayer({
               letterSpacing: "0.1em",
               textTransform: "uppercase",
             }}>
-              {durationMin} min
+              {durationMin}{" "}{t("min")}
             </span>
           </div>
 
@@ -123,8 +125,8 @@ export default function VideoPlayer({
             {completed
               // Petit "pop" à l'instant précis où une leçon passe à terminée —
               // un vrai jalon, pas une action répétée cent fois par jour.
-              ? <><CheckCircle2 size={15} className="animate-badge-pop" /> Terminé</>
-              : <><Circle size={15} /> Marquer</>
+              ? <><CheckCircle2 size={15} className="animate-badge-pop" />{" "}{t("Terminé")}</>
+              : <><Circle size={15} />{" "}{t("Marquer")}</>
             }
           </button>
         </div>
@@ -150,6 +152,7 @@ export default function VideoPlayer({
 
 /* Placeholder shown when no youtube_id yet */
 export function VideoComingSoon({ title, durationMin = 10 }: { title: string; durationMin?: number }) {
+  const t = useT();
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
       {/* Placeholder video area */}
@@ -180,7 +183,7 @@ export function VideoComingSoon({ title, durationMin = 10 }: { title: string; du
           <Play size={26} style={{ color: "rgba(224,30,30,0.4)" }} strokeWidth={1.5} />
         </div>
         <p style={{ fontSize: 12, color: "rgba(245,237,237,0.25)", margin: 0, fontWeight: 600 }}>
-          Vidéo bientôt disponible
+          {t("Vidéo bientôt disponible")}
         </p>
       </div>
 
@@ -189,7 +192,7 @@ export function VideoComingSoon({ title, durationMin = 10 }: { title: string; du
           {title}
         </h2>
         <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(245,237,237,0.3)", letterSpacing: "0.1em", textTransform: "uppercase" }}>
-          {durationMin} min · En cours de production
+          {durationMin}{" "}{t("min · En cours de production")}
         </span>
       </div>
     </div>

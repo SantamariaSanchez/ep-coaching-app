@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { ListChecks, MessageCircleQuestion, PhoneCall } from "lucide-react";
 import type { SalesCall } from "@/lib/sales-calls";
@@ -13,6 +14,7 @@ import SalesCallScripts from "@/components/coach/SalesCallScripts";
 type Tab = "suivi" | "closing";
 
 export default function SalesCallTabs({ calls }: { calls: SalesCall[] }) {
+  const t = useT();
   const [tab, setTab] = useState<Tab>("suivi");
 
   return (
@@ -47,7 +49,7 @@ export default function SalesCallTabs({ calls }: { calls: SalesCall[] }) {
         {calls.length === 0 ? (
           <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
             <PhoneCall size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-            <p className="text-sm text-[#F5EDED]/35">Aucun appel enregistré pour l&apos;instant.</p>
+            <p className="text-sm text-[#F5EDED]/35">{t("Aucun appel enregistré pour l'instant.")}</p>
           </div>
         ) : null}
         <SalesCallsTable calls={calls} />

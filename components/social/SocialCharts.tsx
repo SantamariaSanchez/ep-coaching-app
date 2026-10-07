@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { CartesianGrid, Legend, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 
@@ -24,6 +25,7 @@ const METRICS = [
 ] as const;
 
 export default function SocialCharts({ series, labels }: { series: Record<(typeof METRICS)[number]["key"], Point[]>; labels: Record<string, string> }) {
+  const t = useT();
   const [metric, setMetric] = useState<(typeof METRICS)[number]["key"]>("followers");
   const data = series[metric];
   const platforms = [...new Set(data.flatMap((p) => Object.keys(p).filter((k) => k !== "date")))];
@@ -53,7 +55,7 @@ export default function SocialCharts({ series, labels }: { series: Record<(typeo
         ))}
       </div>
       {data.length === 0 || platforms.length === 0 ? (
-        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "24px 0", textAlign: "center" }}>Pas encore de données sur cette période.</p>
+        <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "24px 0", textAlign: "center" }}>{t("Pas encore de données sur cette période.")}</p>
       ) : (
         <div style={{ width: "100%", height: 260 }}>
           <ResponsiveContainer>

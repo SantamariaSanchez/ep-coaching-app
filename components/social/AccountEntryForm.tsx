@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Target, HelpCircle } from "lucide-react";
@@ -84,6 +85,7 @@ export default function AccountEntryForm({
   handles: Record<string, string | null>;
   goals: Record<string, { followers: number; date: string | null } | null>;
 }) {
+  const t = useT();
   const router = useRouter();
   const [platform, setPlatform] = useState(platforms[0] ?? "instagram");
   const [date, setDate] = useState(today);
@@ -135,16 +137,16 @@ export default function AccountEntryForm({
 
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
         <div>
-          <label style={lbl}>Ton compte</label>
-          <input style={input} value={handle[platform] ?? ""} onChange={(e) => setHandle((h) => ({ ...h, [platform]: e.target.value }))} placeholder="@toncompte" aria-label="Nom du compte" />
+          <label style={lbl}>{t("Ton compte")}</label>
+          <input style={input} value={handle[platform] ?? ""} onChange={(e) => setHandle((h) => ({ ...h, [platform]: e.target.value }))} placeholder={t("@toncompte")} aria-label={t("Nom du compte")} />
         </div>
         <div>
-          <label style={lbl}>Chiffres au</label>
-          <input type="date" style={input} value={date} max={today} onChange={(e) => setDate(e.target.value)} aria-label="Date des chiffres" />
+          <label style={lbl}>{t("Chiffres au")}</label>
+          <input type="date" style={input} value={date} max={today} onChange={(e) => setDate(e.target.value)} aria-label={t("Date des chiffres")} />
         </div>
       </div>
 
-      <label style={lbl}>Les vues, portée et interactions portent sur</label>
+      <label style={lbl}>{t("Les vues, portée et interactions portent sur")}</label>
       <div style={{ display: "flex", gap: 6, marginBottom: 12, flexWrap: "wrap" }}>
         {[
           { v: 1, l: "Ce jour" },
@@ -177,9 +179,9 @@ export default function AccountEntryForm({
       </div>
 
       <button type="button" onClick={() => setShowWhere((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 5, marginTop: 10, background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.5)", fontSize: 11.5, fontWeight: 700, cursor: "pointer" }}>
-        <HelpCircle size={13} /> Où trouver ces chiffres ?
+        <HelpCircle size={13} />{" "}{t("Où trouver ces chiffres ?")}
       </button>
-      {showWhere && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.65)", margin: "6px 0 0", lineHeight: 1.6 }}>{WHERE[platform]} Mets seulement ce que tu vois, laisse vide le reste.</p>}
+      {showWhere && <p style={{ fontSize: 12, color: "rgba(245,237,237,0.65)", margin: "6px 0 0", lineHeight: 1.6 }}>{WHERE[platform]}{" "}{t("Mets seulement ce que tu vois, laisse vide le reste.")}</p>}
 
       {msg && <p style={{ fontSize: 12, color: msg.ok ? "#4ade80" : "#fca5a5", margin: "10px 0 0", display: "flex", alignItems: "center", gap: 5 }}>{msg.ok && <Check size={13} />} {msg.text}</p>}
 
@@ -188,7 +190,7 @@ export default function AccountEntryForm({
           {pending ? "..." : `Enregistrer ${LABELS[platform] ?? ""}`}
         </button>
         <button type="button" onClick={() => setShowGoal((v) => !v)} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px solid rgba(137,4,4,0.45)", background: "transparent", color: "rgba(245,237,237,0.75)", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
-          <Target size={14} /> Objectif
+          <Target size={14} />{" "}{t("Objectif")}
         </button>
       </div>
 
@@ -196,16 +198,16 @@ export default function AccountEntryForm({
         <div style={{ marginTop: 12, padding: "12px", borderRadius: 12, background: "rgba(0,0,0,0.25)", border: "1px solid rgba(137,4,4,0.25)" }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
             <div>
-              <label style={lbl}>Abonnés visés</label>
-              <input style={input} inputMode="numeric" value={g.followers} onChange={(e) => setGoal((all) => ({ ...all, [platform]: { ...g, followers: e.target.value } }))} placeholder="10000" aria-label="Abonnés visés" />
+              <label style={lbl}>{t("Abonnés visés")}</label>
+              <input style={input} inputMode="numeric" value={g.followers} onChange={(e) => setGoal((all) => ({ ...all, [platform]: { ...g, followers: e.target.value } }))} placeholder="10000" aria-label={t("Abonnés visés")} />
             </div>
             <div>
-              <label style={lbl}>Pour le</label>
-              <input type="date" style={input} value={g.date} min={today} onChange={(e) => setGoal((all) => ({ ...all, [platform]: { ...g, date: e.target.value } }))} aria-label="Date visée" />
+              <label style={lbl}>{t("Pour le")}</label>
+              <input type="date" style={input} value={g.date} min={today} onChange={(e) => setGoal((all) => ({ ...all, [platform]: { ...g, date: e.target.value } }))} aria-label={t("Date visée")} />
             </div>
           </div>
           <button type="button" disabled={pending} onClick={saveGoal} style={{ marginTop: 10, width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid rgba(224,30,30,0.6)", background: "rgba(224,30,30,0.12)", color: "#F5EDED", fontSize: 12, fontWeight: 800, cursor: "pointer" }}>
-            Enregistrer l&apos;objectif
+            {t("Enregistrer l'objectif")}
           </button>
         </div>
       )}

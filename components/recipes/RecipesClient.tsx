@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useMemo, useState } from "react";
 import Link from "next/link";
 import {
@@ -212,6 +213,7 @@ function RecipeCard({
   /** Fourni + recipe.foodsUsed non vide = bouton "Loguer aujourd'hui" affiché. */
   onLogToday?: () => Promise<{ error?: string }>;
 }) {
+  const tr = useT();
   const [logging, setLogging] = useState(false);
   const [logged, setLogged] = useState(false);
   const [logError, setLogError] = useState<string | null>(null);
@@ -238,7 +240,7 @@ function RecipeCard({
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold text-white/80 truncate">{recipe.name}</p>
           <p className="text-[10px] text-amber-300/70">
-            Recette exclusive, débloquée à {FEATURE_UNLOCK_POINTS.exclusive_recipes} pts ou avec l&apos;abonnement
+            {tr("Recette exclusive, débloquée à")}{" "}{FEATURE_UNLOCK_POINTS.exclusive_recipes}{" "}{tr("pts ou avec l'abonnement")}
           </p>
         </div>
         <Sparkles size={14} className="text-amber-500/40 flex-shrink-0" />
@@ -259,17 +261,17 @@ function RecipeCard({
               <p className="text-sm font-bold text-white">{recipe.name}</p>
               {recipe.isCommunity && (
                 <span className="text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-[#E01E1E]/15 text-[#E01E1E] border border-[#E01E1E]/25 flex-shrink-0">
-                  Communauté
+                  {tr("Communauté")}
                 </span>
               )}
               {recipe.exclusive && (
                 <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25 flex-shrink-0">
-                  <Sparkles size={9} /> Exclusive
+                  <Sparkles size={9} />{" "}{tr("Exclusive")}
                 </span>
               )}
               {recommended && (
                 <span className="inline-flex items-center gap-1 text-[8px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-green-500/15 text-green-300 border border-green-500/25 flex-shrink-0">
-                  <Sparkles size={9} /> Recommandé pour toi
+                  <Sparkles size={9} />{" "}{tr("Recommandé pour toi")}
                 </span>
               )}
             </div>
@@ -289,12 +291,12 @@ function RecipeCard({
                 ) : (
                   <span className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-[#E01E1E] to-[#890404] flex-shrink-0" />
                 )}
-                par {recipe.authorName}
+                {tr("par")}{" "}{recipe.authorName}
               </Link>
             )}
             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
               <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
-                <Clock size={11} strokeWidth={1.8} /> {recipe.prepMinutes} min
+                <Clock size={11} strokeWidth={1.8} /> {recipe.prepMinutes}{" "}{tr("min")}
               </span>
               <span className="text-[10px] text-[#F5EDED]/40 flex items-center gap-1">
                 <MapPin size={11} strokeWidth={1.8} /> {recipe.region}
@@ -304,7 +306,7 @@ function RecipeCard({
             </div>
             <div className="flex items-center gap-1.5 mt-2 flex-wrap">
               <span className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1">
-                <Flame size={11} strokeWidth={2} /> {recipe.kcal} kcal
+                <Flame size={11} strokeWidth={2} /> {recipe.kcal}{" "}{tr("kcal")}
               </span>
               <span className="text-[10px] text-[#F5EDED]/50">P {recipe.protein}g</span>
               <span className="text-[10px] text-[#F5EDED]/50">G {recipe.carbs}g</span>
@@ -352,14 +354,14 @@ function RecipeCard({
 
           {recipe.allergens.length > 0 && (
             <p className="text-[10px] text-[#F5EDED]/35 mb-3">
-              <span className="font-bold text-[#F5EDED]/50">Allergènes : </span>
+              <span className="font-bold text-[#F5EDED]/50">{tr("Allergènes :")}{" "}</span>
               {recipe.allergens.map((a) => ALLERGEN_LABELS[a]).join(", ")}
             </p>
           )}
 
           <div className="grid md:grid-cols-2 gap-4">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">Ingrédients</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">{tr("Ingrédients")}</p>
               <ul className="space-y-1">
                 {recipe.ingredients.map((ing, i) => (
                   <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
@@ -369,7 +371,7 @@ function RecipeCard({
               </ul>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">Préparation</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-1.5">{tr("Préparation")}</p>
               <ol className="space-y-1">
                 {recipe.steps.map((step, i) => (
                   <li key={i} className="text-xs text-[#F5EDED]/65 flex gap-2">
@@ -394,13 +396,13 @@ function RecipeCard({
                   handleLogToday();
                 }}
                 disabled={logging}
-                title="Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui" aria-label="Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui"
+                title={tr("Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui")} aria-label={tr("Ajoute chaque ingrédient de cette recette à ton journal alimentaire d'aujourd'hui")}
                 className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest transition-colors ${
                   logged ? "text-green-400" : "text-[#E01E1E] hover:text-[#ff4444]"
                 } disabled:opacity-50`}
               >
                 {logged ? <Check size={11} /> : <CalendarPlus size={11} />}
-                {logged ? "Ajouté au journal" : logging ? "Ajout…" : "Loguer aujourd'hui"}
+                {logged ? tr("Ajouté au journal") : logging ? tr("Ajout…") : tr("Loguer aujourd'hui")}
               </button>
             )}
             {logError && <p className="text-[10px] text-red-400">{logError}</p>}
@@ -412,7 +414,7 @@ function RecipeCard({
                 }}
                 className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 hover:text-red-400 transition-colors"
               >
-                <Trash2 size={11} /> Supprimer ma recette
+                <Trash2 size={11} />{" "}{tr("Supprimer ma recette")}
               </button>
             )}
           </div>
@@ -486,6 +488,7 @@ export default function RecipesClient({
   // filtré.
   initialSearch?: string;
 }) {
+  const tr = useT();
   const basePath = isCoach ? "/dashboard/coach" : "/dashboard/client";
   const recipesUnlocked = isCoach || hasUnlocked("exclusive_recipes", points, isSubscribed);
 
@@ -732,7 +735,7 @@ export default function RecipesClient({
               onClick={() => setShowAddForm(true)}
               className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-[#E01E1E] mb-4"
             >
-              <Plus size={13} /> Ajouter ma recette
+              <Plus size={13} />{" "}{tr("Ajouter ma recette")}
             </button>
           )}
 
@@ -742,7 +745,7 @@ export default function RecipesClient({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Rechercher une recette ou un ingrédient..." aria-label="Rechercher une recette ou un ingrédient..."
+              placeholder={tr("Rechercher une recette ou un ingrédient...")} aria-label={tr("Rechercher une recette ou un ingrédient...")}
               className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
             />
           </div>
@@ -753,7 +756,7 @@ export default function RecipesClient({
             className="flex items-center justify-between w-full bg-[#1f0101] border border-[#890404]/20 rounded-xl px-4 py-2.5 mb-3"
           >
             <span className="text-xs font-bold text-[#F5EDED]/60">
-              Filtres {activeFilterCount > 0 && `(${activeFilterCount})`}
+              {tr("Filtres")}{" "}{activeFilterCount > 0 && `(${activeFilterCount})`}
             </span>
             <div className="flex items-center gap-2">
               {activeFilterCount > 0 && (
@@ -764,7 +767,7 @@ export default function RecipesClient({
                   }}
                   className="text-[10px] font-bold text-[#E01E1E] flex items-center gap-1"
                 >
-                  <X size={11} /> Réinitialiser
+                  <X size={11} />{" "}{tr("Réinitialiser")}
                 </span>
               )}
               <ChevronDown
@@ -789,15 +792,15 @@ export default function RecipesClient({
           )}
 
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-3 flex items-center gap-1.5 flex-wrap">
-            {filtered.length} recette{filtered.length > 1 ? "s" : ""}
+            {filtered.length}{" "}{tr("recette")}{filtered.length > 1 ? "s" : ""}
             {communityRecipes.length > 0 && (
               <span className="flex items-center gap-1 text-[#E01E1E]/70">
-                <Heart size={10} /> dont {communityRecipes.length} de la communauté
+                <Heart size={10} />{" "}{tr("dont")}{" "}{communityRecipes.length}{" "}{tr("de la communauté")}
               </span>
             )}
             {recommendedCount > 0 && (
               <span className="flex items-center gap-1 text-green-400/70">
-                <Sparkles size={10} /> dont {recommendedCount} recommandées pour toi
+                <Sparkles size={10} />{" "}{tr("dont")}{" "}{recommendedCount}{" "}{tr("recommandées pour toi")}
               </span>
             )}
           </p>
@@ -805,7 +808,7 @@ export default function RecipesClient({
           {filtered.length === 0 ? (
             <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-16 text-center">
               <UtensilsCrossed size={26} className="text-[#F5EDED]/15 mx-auto mb-3" strokeWidth={1.5} />
-              <p className="text-sm text-[#F5EDED]/35">Aucune recette ne correspond à ces filtres.</p>
+              <p className="text-sm text-[#F5EDED]/35">{tr("Aucune recette ne correspond à ces filtres.")}</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3" style={{ alignItems: "start" }}>

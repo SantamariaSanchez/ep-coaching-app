@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { Plus, Trash2, Check, AlertCircle, Loader2 } from "lucide-react";
 import {
@@ -52,6 +53,7 @@ export default function AddRecipeForm({
   onCreate: (input: CommunityRecipeInput) => Promise<{ error?: string; id?: string }>;
   onDone: () => void;
 }) {
+  const t = useT();
   const [name, setName] = useState("");
   const [meal, setMeal] = useState<MealType>("dejeuner");
   const [diet, setDiet] = useState<Set<Diet>>(new Set(["omnivore"]));
@@ -128,19 +130,19 @@ export default function AddRecipeForm({
   return (
     <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl p-5 space-y-4">
       <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-        Ajouter ma recette
+        {t("Ajouter ma recette")}
       </p>
 
       <input
         value={name}
         onChange={(e) => setName(e.target.value)}
-        placeholder="Nom de la recette" aria-label="Nom de la recette"
+        placeholder={t("Nom de la recette")} aria-label={t("Nom de la recette")}
         className={inputCls}
       />
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Type de repas</p>
-        <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} aria-label="Type de repas" className={inputCls}>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Type de repas")}</p>
+        <select value={meal} onChange={(e) => setMeal(e.target.value as MealType)} aria-label={t("Type de repas")} className={inputCls}>
           {Object.entries(MEAL_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
           ))}
@@ -148,32 +150,32 @@ export default function AddRecipeForm({
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Régime(s) compatible(s)</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Régime(s) compatible(s)")}</p>
         <Chip options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diet} toggle={(v) => toggleSet(setDiet, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Phase(s)</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Phase(s)")}</p>
         <Chip options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Saison</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Saison")}</p>
         <Chip options={Object.keys(SEASON_LABELS) as Season[]} labels={SEASON_LABELS} selected={season} toggle={(v) => toggleSet(setSeason, v)} />
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Allergènes présents</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Allergènes présents")}</p>
         <Chip options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={allergens} toggle={(v) => toggleSet(setAllergens, v)} />
       </div>
 
       <div className="grid grid-cols-3 gap-2">
-        <select value={temp} onChange={(e) => setTemp(e.target.value as Temp)} aria-label="Température" className={inputCls}>
+        <select value={temp} onChange={(e) => setTemp(e.target.value as Temp)} aria-label={t("Température")} className={inputCls}>
           {Object.entries(TEMP_LABELS).map(([k, l]) => (
             <option key={k} value={k}>{l}</option>
           ))}
         </select>
-        <select value={price} onChange={(e) => setPrice(Number(e.target.value) as 1 | 2 | 3)} aria-label="Budget" className={inputCls}>
+        <select value={price} onChange={(e) => setPrice(Number(e.target.value) as 1 | 2 | 3)} aria-label={t("Budget")} className={inputCls}>
           <option value={1}>€</option>
           <option value={2}>€€</option>
           <option value={3}>€€€</option>
@@ -182,25 +184,25 @@ export default function AddRecipeForm({
           type="number"
           value={prepMinutes}
           onChange={(e) => setPrepMinutes(e.target.value)}
-          placeholder="Minutes" aria-label="Minutes"
+          placeholder={t("Minutes")} aria-label={t("Minutes")}
           className={inputCls}
         />
       </div>
 
-      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder="Région / localité" aria-label="Région / localité" className={inputCls} />
+      <input value={region} onChange={(e) => setRegion(e.target.value)} placeholder={t("Région / localité")} aria-label={t("Région / localité")} className={inputCls} />
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Valeurs nutritionnelles (optionnel)</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Valeurs nutritionnelles (optionnel)")}</p>
         <div className="grid grid-cols-4 gap-2">
-          <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder="kcal" aria-label="kcal" className={inputCls} />
-          <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder="Prot. (g)" aria-label="Prot. (g)" className={inputCls} />
-          <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Gluc. (g)" aria-label="Gluc. (g)" className={inputCls} />
-          <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder="Lip. (g)" aria-label="Lip. (g)" className={inputCls} />
+          <input type="number" value={kcal} onChange={(e) => setKcal(e.target.value)} placeholder={t("kcal")} aria-label={t("kcal")} className={inputCls} />
+          <input type="number" value={protein} onChange={(e) => setProtein(e.target.value)} placeholder={t("Prot. (g)")} aria-label={t("Prot. (g)")} className={inputCls} />
+          <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder={t("Gluc. (g)")} aria-label={t("Gluc. (g)")} className={inputCls} />
+          <input type="number" value={fat} onChange={(e) => setFat(e.target.value)} placeholder={t("Lip. (g)")} aria-label={t("Lip. (g)")} className={inputCls} />
         </div>
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Ingrédients</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Ingrédients")}</p>
         <div className="space-y-1.5">
           {ingredients.map((ing, i) => (
             <div key={i} className="flex gap-1.5">
@@ -224,12 +226,12 @@ export default function AddRecipeForm({
           onClick={() => setIngredients([...ingredients, ""])}
           className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
         >
-          <Plus size={11} /> Ajouter un ingrédient
+          <Plus size={11} />{" "}{t("Ajouter un ingrédient")}
         </button>
       </div>
 
       <div>
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">Préparation</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">{t("Préparation")}</p>
         <div className="space-y-1.5">
           {steps.map((s, i) => (
             <div key={i} className="flex gap-1.5">
@@ -253,14 +255,14 @@ export default function AddRecipeForm({
           onClick={() => setSteps([...steps, ""])}
           className="flex items-center gap-1 text-[10px] font-bold text-[#E01E1E] mt-1.5"
         >
-          <Plus size={11} /> Ajouter une étape
+          <Plus size={11} />{" "}{t("Ajouter une étape")}
         </button>
       </div>
 
       <textarea
         value={tip}
         onChange={(e) => setTip(e.target.value)}
-        placeholder="Astuce (optionnel)" aria-label="Astuce (optionnel)"
+        placeholder={t("Astuce (optionnel)")} aria-label={t("Astuce (optionnel)")}
         rows={2}
         className={`${inputCls} resize-none`}
       />
@@ -271,16 +273,16 @@ export default function AddRecipeForm({
           disabled={submitting}
           className="flex items-center gap-1.5 bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white text-xs font-bold uppercase tracking-widest px-4 py-2.5 rounded-lg transition-colors"
         >
-          {submitting ? <Loader2 size={13} className="animate-spin" /> : "Publier ma recette"}
+          {submitting ? <Loader2 size={13} className="animate-spin" /> : t("Publier ma recette")}
         </button>
         <button onClick={onDone} className="text-xs text-[#F5EDED]/40 hover:text-[#F5EDED]/70 transition-colors">
-          Annuler
+          {t("Annuler")}
         </button>
       </div>
 
       {success && (
         <div className="flex items-center gap-2 text-green-400 text-xs font-semibold">
-          <Check size={12} /> Recette publiée !
+          <Check size={12} />{" "}{t("Recette publiée !")}
         </div>
       )}
       {error && (

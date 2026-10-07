@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { Download } from "lucide-react";
 import type { Lead } from "@/utils/leads";
 
@@ -9,6 +10,7 @@ function csvEscape(value: string): string {
 }
 
 export default function LeadsExportButton({ leads, originLabelById = {} }: { leads: Lead[]; originLabelById?: Record<string, string> }) {
+  const t = useT();
   function handleExport() {
     const header = ["Date", "Lead magnet", "Email", "Téléphone", "Statut", "Note", "Origine"];
     const rows = leads.map((l) => [
@@ -36,7 +38,7 @@ export default function LeadsExportButton({ leads, originLabelById = {} }: { lea
       disabled={leads.length === 0}
       className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/40 hover:text-[#E01E1E] disabled:opacity-30 transition-colors border border-[#890404]/25 rounded-lg px-3 py-2"
     >
-      <Download size={12} /> Exporter en CSV
+      <Download size={12} />{" "}{t("Exporter en CSV")}
     </button>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Remplace l'ancien ResourceManager.tsx (upload de PDF, retiré 2026-09-02 :
 // "c'est inutile maintenant car c'est toi qui les fais"). Un coach ajoute
 // ici son propre lead magnet (distinct du catalogue officiel produit par la
@@ -21,6 +22,7 @@ import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 type Format = "guide" | "checklist";
 
 export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: CoachLeadMagnet[] }) {
+  const t = useT();
   const router = useRouter();
   const confirm = useConfirm();
   const [open, setOpen] = useState(false);
@@ -97,19 +99,18 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
         <div className="flex items-center gap-2">
           <Sparkles size={15} className="text-[#E01E1E]" />
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35">
-            Mes lead magnets
+            {t("Mes lead magnets")}
           </p>
         </div>
         <button
           onClick={() => setOpen((v) => !v)}
           className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#E01E1E] hover:text-[#ff3b3b] transition-colors"
         >
-          <Plus size={13} strokeWidth={2.5} /> {open ? "Annuler" : "Ajouter le mien"}
+          <Plus size={13} strokeWidth={2.5} /> {open ? t("Annuler") : t("Ajouter le mien")}
         </button>
       </div>
       <p className="text-[11px] text-[#F5EDED]/35 mb-4">
-        En plus du catalogue EP Coaching ci-dessus (déjà accessible à tous les coachs), tu peux ajouter
-        tes propres guides ou checklists. Ils apparaissent au même endroit, pour toi et tes clients.
+        {t("En plus du catalogue EP Coaching ci-dessus (déjà accessible à tous les coachs), tu peux ajouter tes propres guides ou checklists. Ils apparaissent au même endroit, pour toi et tes clients.")}
       </p>
 
       {open && (
@@ -117,22 +118,22 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
           <input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="Titre (ex. Ma routine d'échauffement épaules)"
-            aria-label="Titre"
+            placeholder={t("Titre (ex. Ma routine d'échauffement épaules)")}
+            aria-label={t("Titre")}
             className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
           />
           <input
             value={hook}
             onChange={(e) => setHook(e.target.value)}
-            placeholder="Accroche (une phrase, affichée avant le contenu)"
-            aria-label="Accroche"
+            placeholder={t("Accroche (une phrase, affichée avant le contenu)")}
+            aria-label={t("Accroche")}
             className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
           />
           <div className="flex items-center gap-2">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              aria-label="Catégorie"
+              aria-label={t("Catégorie")}
               className="flex-1 bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-[#E01E1E]/40"
             >
               {RESOURCE_CATEGORIES.map((c) => (
@@ -146,7 +147,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
                   format === "guide" ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/45"
                 }`}
               >
-                <BookOpen size={12} /> Guide
+                <BookOpen size={12} />{" "}{t("Guide")}
               </button>
               <button
                 onClick={() => setFormat("checklist")}
@@ -154,7 +155,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
                   format === "checklist" ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/45"
                 }`}
               >
-                <ListChecks size={12} /> Checklist
+                <ListChecks size={12} />{" "}{t("Checklist")}
               </button>
             </div>
           </div>
@@ -163,7 +164,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               value={body}
               onChange={(e) => setBody(e.target.value)}
               placeholder={format === "guide" ? "Le contenu, en paragraphes..." : "Un élément par ligne..."}
-              aria-label="Contenu"
+              aria-label={t("Contenu")}
               rows={6}
               className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 resize-y"
             />
@@ -173,15 +174,15 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
             <input
               value={sourceLabel}
               onChange={(e) => setSourceLabel(e.target.value)}
-              placeholder="Source (optionnel)"
-              aria-label="Source"
+              placeholder={t("Source (optionnel)")}
+              aria-label={t("Source")}
               className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
             />
             <input
               value={sourceUrl}
               onChange={(e) => setSourceUrl(e.target.value)}
-              placeholder="Lien de la source (optionnel)"
-              aria-label="Lien de la source"
+              placeholder={t("Lien de la source (optionnel)")}
+              aria-label={t("Lien de la source")}
               className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-xs text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
             />
           </div>
@@ -196,7 +197,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
               ) : (
                 <Plus size={13} strokeWidth={2.5} />
               )}
-              Publier
+              {t("Publier")}
             </button>
           </div>
           {error && <p className="text-xs text-red-400">{error}</p>}
@@ -206,7 +207,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
       {ownMagnets.length === 0 ? (
         <div className="bg-[#1f0101] border border-dashed border-[#890404]/25 rounded-xl py-8 text-center">
           <Sparkles size={22} className="text-[#F5EDED]/15 mx-auto mb-2" strokeWidth={1.5} />
-          <p className="text-sm text-[#F5EDED]/35">Aucun lead magnet perso pour l&apos;instant.</p>
+          <p className="text-sm text-[#F5EDED]/35">{t("Aucun lead magnet perso pour l'instant.")}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -223,7 +224,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
                 <p className="text-[10px] text-[#F5EDED]/35 flex items-center gap-2">
                   <span className="flex items-center gap-1"><Hash size={9} />{m.keyword}</span>
                   <span>{m.category}</span>
-                  {!m.published && <span className="text-amber-400">Masqué</span>}
+                  {!m.published && <span className="text-amber-400">{t("Masqué")}</span>}
                 </p>
               </div>
               <button
@@ -238,8 +239,8 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
                 onClick={() => handleDelete(m.id)}
                 disabled={busyId === m.id}
                 className="text-[#F5EDED]/25 hover:text-red-500 transition-colors p-1.5 disabled:opacity-40"
-                title="Supprimer"
-                aria-label="Supprimer"
+                title={t("Supprimer")}
+                aria-label={t("Supprimer")}
               >
                 <Trash2 size={15} strokeWidth={1.8} />
               </button>

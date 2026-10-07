@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Check, UserPlus, X, LogOut, Pencil } from "lucide-react";
@@ -61,6 +62,7 @@ export interface CareerOption {
 }
 
 export function CareerPicker({ current, options }: { current: string | null; options: CareerOption[] }) {
+  const tr = useT();
   const { pending, run, note } = useAction();
   const active = options.find((o) => o.value === current) ?? null;
   return (
@@ -97,7 +99,7 @@ export function CareerPicker({ current, options }: { current: string | null; opt
         })}
       </div>
       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.6)", margin: "10px 2px 0", lineHeight: 1.5 }}>
-        {active ? active.unlocks : "Choisis comment tu travailles : l'appli s'adapte, et tu peux changer à tout moment."}
+        {active ? active.unlocks : tr("Choisis comment tu travailles : l'appli s'adapte, et tu peux changer à tout moment.")}
       </p>
       {note}
     </div>
@@ -107,20 +109,21 @@ export function CareerPicker({ current, options }: { current: string | null; opt
 // ── Invitations reçues / équipes rejointes ─────────────────────────────
 
 export function InviteResponse({ id, ownerName, title, share }: { id: string; ownerName: string; title: string | null; share: number | null }) {
+  const tr = useT();
   const { pending, run, note } = useAction();
   return (
     <div className="ep-card-hero" style={{ padding: "14px 16px" }}>
-      <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{ownerName} t&apos;invite dans son équipe</p>
+      <p style={{ fontSize: 14, fontWeight: 800, color: "#F5EDED", margin: 0 }}>{ownerName}{" "}{tr("t'invite dans son équipe")}</p>
       <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.6)", margin: "2px 0 10px" }}>
-        Poste : {title || "Coach"}
+        {tr("Poste :")}{" "}{title || tr("Coach")}
         {share !== null ? `, ${share} % du chiffre d'affaires reversé` : ""}
       </p>
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         <button type="button" disabled={pending} style={primary} onClick={() => run(() => respondCoachInviteAction(id, true), "Bienvenue dans l'équipe.")}>
-          <Check size={14} /> Accepter
+          <Check size={14} />{" "}{tr("Accepter")}
         </button>
         <button type="button" disabled={pending} style={ghost} onClick={() => run(() => respondCoachInviteAction(id, false))}>
-          Refuser
+          {tr("Refuser")}
         </button>
       </div>
       {note}
@@ -129,6 +132,7 @@ export function InviteResponse({ id, ownerName, title, share }: { id: string; ow
 }
 
 export function LeaveTeam({ id, ownerName }: { id: string; ownerName: string }) {
+  const tr = useT();
   const { pending, run, note } = useAction();
   return (
     <span>
@@ -140,7 +144,7 @@ export function LeaveTeam({ id, ownerName }: { id: string; ownerName: string }) 
           if (confirm(`Quitter l'équipe de ${ownerName} ? Tes clients restent les tiens.`)) run(() => leaveCoachTeamAction(id));
         }}
       >
-        <LogOut size={12} /> Quitter
+        <LogOut size={12} />{" "}{tr("Quitter")}
       </button>
       {note}
     </span>
@@ -150,6 +154,7 @@ export function LeaveTeam({ id, ownerName }: { id: string; ownerName: string }) 
 // ── Coachs de mon équipe ────────────────────────────────────────────────
 
 export function InviteCoachForm() {
+  const tr = useT();
   const [email, setEmail] = useState("");
   const [title, setTitle] = useState("Coach");
   const [share, setShare] = useState("");
@@ -157,20 +162,20 @@ export function InviteCoachForm() {
   return (
     <div className="ep-card" style={{ padding: "14px 16px" }}>
       <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
-        <UserPlus size={12} /> Inviter un coach
+        <UserPlus size={12} />{" "}{tr("Inviter un coach")}
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10 }}>
         <div>
-          <label style={lbl}>Email</label>
-          <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="coach@email.com" aria-label="Email du coach" />
+          <label style={lbl}>{tr("Email")}</label>
+          <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={tr("coach@email.com")} aria-label={tr("Email du coach")} />
         </div>
         <div>
-          <label style={lbl}>Poste</label>
-          <input style={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Coach, Head coach..." aria-label="Poste" />
+          <label style={lbl}>{tr("Poste")}</label>
+          <input style={input} value={title} onChange={(e) => setTitle(e.target.value)} placeholder={tr("Coach, Head coach...")} aria-label={tr("Poste")} />
         </div>
         <div>
-          <label style={lbl}>Part reversée (%)</label>
-          <input style={input} inputMode="decimal" value={share} onChange={(e) => setShare(e.target.value)} placeholder="Optionnel" aria-label="Part reversée" />
+          <label style={lbl}>{tr("Part reversée (%)")}</label>
+          <input style={input} inputMode="decimal" value={share} onChange={(e) => setShare(e.target.value)} placeholder={tr("Optionnel")} aria-label={tr("Part reversée")} />
         </div>
       </div>
       <button
@@ -179,7 +184,7 @@ export function InviteCoachForm() {
         style={{ ...primary, marginTop: 12, width: "100%", opacity: pending || !email.trim() ? 0.6 : 1 }}
         onClick={() => run(() => inviteCoachAction({ email, title, sharePct: share }), "Invitation envoyée par email.", () => setEmail(""))}
       >
-        {pending ? "..." : "Envoyer l'invitation"}
+        {pending ? "..." : tr("Envoyer l'invitation")}
       </button>
       {note}
     </div>
@@ -187,6 +192,7 @@ export function InviteCoachForm() {
 }
 
 export function CoachLinkActions({ id, title, share, note: initialNote, pendingInvite }: { id: string; title: string | null; share: number | null; note: string | null; pendingInvite: boolean }) {
+  const tr = useT();
   const [edit, setEdit] = useState(false);
   const [t, setT] = useState(title ?? "Coach");
   const [s, setS] = useState(share === null ? "" : String(share));
@@ -197,7 +203,7 @@ export function CoachLinkActions({ id, title, share, note: initialNote, pendingI
       <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {!pendingInvite && (
           <button type="button" style={ghost} onClick={() => setEdit((v) => !v)}>
-            <Pencil size={11} /> Modifier
+            <Pencil size={11} />{" "}{tr("Modifier")}
           </button>
         )}
         <button
@@ -208,16 +214,16 @@ export function CoachLinkActions({ id, title, share, note: initialNote, pendingI
             if (confirm(pendingInvite ? "Annuler cette invitation ?" : "Retirer ce coach de ton équipe ? Ses clients restent les siens.")) run(() => endCoachLinkAction(id));
           }}
         >
-          <X size={12} /> {pendingInvite ? "Annuler" : "Retirer"}
+          <X size={12} /> {pendingInvite ? tr("Annuler") : tr("Retirer")}
         </button>
       </div>
       {edit && (
         <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 8 }}>
-          <input style={input} value={t} onChange={(e) => setT(e.target.value)} aria-label="Poste" />
-          <input style={input} value={s} inputMode="decimal" onChange={(e) => setS(e.target.value)} placeholder="Part (%)" aria-label="Part reversée" />
-          <input style={{ ...input, gridColumn: "1 / -1" }} value={n} onChange={(e) => setN(e.target.value)} placeholder="Note privée (objectifs, conditions...)" aria-label="Note" />
+          <input style={input} value={t} onChange={(e) => setT(e.target.value)} aria-label={tr("Poste")} />
+          <input style={input} value={s} inputMode="decimal" onChange={(e) => setS(e.target.value)} placeholder={tr("Part (%)")} aria-label={tr("Part reversée")} />
+          <input style={{ ...input, gridColumn: "1 / -1" }} value={n} onChange={(e) => setN(e.target.value)} placeholder={tr("Note privée (objectifs, conditions...)")} aria-label={tr("Note")} />
           <button type="button" disabled={pending} style={{ ...primary, gridColumn: "1 / -1" }} onClick={() => run(() => updateCoachLinkAction(id, { title: t, sharePct: s, note: n }), "Enregistré.", () => setEdit(false))}>
-            Enregistrer
+            {tr("Enregistrer")}
           </button>
         </div>
       )}
@@ -229,18 +235,19 @@ export function CoachLinkActions({ id, title, share, note: initialNote, pendingI
 // ── Staff ───────────────────────────────────────────────────────────────
 
 export function InviteStaffForm({ roles }: { roles: { pole: string; items: { key: string; title: string }[] }[] }) {
+  const tr = useT();
   const [roleKey, setRoleKey] = useState(roles[0]?.items[0]?.key ?? "");
   const [email, setEmail] = useState("");
   const { pending, run, note } = useAction();
   return (
     <div className="ep-card" style={{ padding: "14px 16px" }}>
       <p className="ep-label" style={{ margin: "0 0 10px", display: "flex", alignItems: "center", gap: 6 }}>
-        <UserPlus size={12} /> Recruter sur un poste
+        <UserPlus size={12} />{" "}{tr("Recruter sur un poste")}
       </p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
         <div>
-          <label style={lbl}>Poste</label>
-          <select style={input} value={roleKey} onChange={(e) => setRoleKey(e.target.value)} aria-label="Poste">
+          <label style={lbl}>{tr("Poste")}</label>
+          <select style={input} value={roleKey} onChange={(e) => setRoleKey(e.target.value)} aria-label={tr("Poste")}>
             {roles.map((g) => (
               <optgroup key={g.pole} label={g.pole}>
                 {g.items.map((r) => (
@@ -251,8 +258,8 @@ export function InviteStaffForm({ roles }: { roles: { pole: string; items: { key
           </select>
         </div>
         <div>
-          <label style={lbl}>Email de la recrue</label>
-          <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="recrue@email.com" aria-label="Email de la recrue" />
+          <label style={lbl}>{tr("Email de la recrue")}</label>
+          <input style={input} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={tr("recrue@email.com")} aria-label={tr("Email de la recrue")} />
         </div>
       </div>
       <button
@@ -261,20 +268,21 @@ export function InviteStaffForm({ roles }: { roles: { pole: string; items: { key
         style={{ ...primary, marginTop: 12, width: "100%", opacity: pending || !email.trim() ? 0.6 : 1 }}
         onClick={() => run(() => inviteStaffAction(roleKey, email), "Accès créé et lien envoyé par email.", () => setEmail(""))}
       >
-        {pending ? "..." : "Donner l'accès"}
+        {pending ? "..." : tr("Donner l'accès")}
       </button>
-      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>La recrue reçoit son lien de connexion et retrouve un espace adapté à son métier.</p>
+      <p style={{ fontSize: 11, color: "rgba(245,237,237,0.4)", margin: "8px 0 0" }}>{tr("La recrue reçoit son lien de connexion et retrouve un espace adapté à son métier.")}</p>
       {note}
     </div>
   );
 }
 
 export function RevokeStaffInvite({ id }: { id: string }) {
+  const tr = useT();
   const { pending, run, note } = useAction();
   return (
     <span>
       <button type="button" disabled={pending} style={ghost} onClick={() => run(() => revokeStaffInviteAction(id))}>
-        <X size={12} /> Retirer
+        <X size={12} />{" "}{tr("Retirer")}
       </button>
       {note}
     </span>
@@ -282,16 +290,17 @@ export function RevokeStaffInvite({ id }: { id: string }) {
 }
 
 export function StaffStatus({ userId, status }: { userId: string; status: string }) {
+  const tr = useT();
   const { pending, run, note } = useAction();
   return (
     <span style={{ display: "inline-flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
       {status === "actif" ? (
         <button type="button" disabled={pending} style={ghost} onClick={() => run(() => setStaffStatusAction(userId, "suspendu"))}>
-          Suspendre
+          {tr("Suspendre")}
         </button>
       ) : (
         <button type="button" disabled={pending} style={ghost} onClick={() => run(() => setStaffStatusAction(userId, "actif"))}>
-          Réactiver
+          {tr("Réactiver")}
         </button>
       )}
       {status !== "termine" && (
@@ -303,7 +312,7 @@ export function StaffStatus({ userId, status }: { userId: string; status: string
             if (confirm("Mettre fin à cet accès ?")) run(() => setStaffStatusAction(userId, "termine"));
           }}
         >
-          Fin de mission
+          {tr("Fin de mission")}
         </button>
       )}
       {note}
@@ -322,6 +331,7 @@ const BASES: { value: string; label: string }[] = [
 ];
 
 export function PayConfigEditor({ userId, config }: { userId: string; config: { fixed_eur?: number | null; rate_pct?: number | null; base?: string; piece_eur?: number | null } }) {
+  const tr = useT();
   const [open, setOpen] = useState(false);
   const [base, setBase] = useState(config.base ?? "aucun");
   const [fixed, setFixed] = useState(config.fixed_eur == null ? "" : String(config.fixed_eur));
@@ -331,22 +341,22 @@ export function PayConfigEditor({ userId, config }: { userId: string; config: { 
   if (!open) {
     return (
       <button type="button" style={ghost} onClick={() => setOpen(true)}>
-        <Pencil size={11} /> Rémunération
+        <Pencil size={11} />{" "}{tr("Rémunération")}
       </button>
     );
   }
   return (
     <div style={{ width: "100%", marginTop: 8, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 8 }}>
-      <select style={{ ...input, gridColumn: "1 / -1" }} value={base} onChange={(e) => setBase(e.target.value)} aria-label="Type de rémunération">
+      <select style={{ ...input, gridColumn: "1 / -1" }} value={base} onChange={(e) => setBase(e.target.value)} aria-label={tr("Type de rémunération")}>
         {BASES.map((b) => (
           <option key={b.value} value={b.value}>{b.label}</option>
         ))}
       </select>
-      <input style={input} inputMode="decimal" value={fixed} onChange={(e) => setFixed(e.target.value)} placeholder="Fixe (€/mois)" aria-label="Fixe mensuel" />
-      {(base === "ventes_perso" || base === "ventes_equipe") && <input style={input} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder="Taux (%)" aria-label="Taux" />}
-      {base === "piece" && <input style={input} inputMode="decimal" value={piece} onChange={(e) => setPiece(e.target.value)} placeholder="€ par livrable" aria-label="Forfait par livrable" />}
+      <input style={input} inputMode="decimal" value={fixed} onChange={(e) => setFixed(e.target.value)} placeholder={tr("Fixe (€/mois)")} aria-label={tr("Fixe mensuel")} />
+      {(base === "ventes_perso" || base === "ventes_equipe") && <input style={input} inputMode="decimal" value={rate} onChange={(e) => setRate(e.target.value)} placeholder={tr("Taux (%)")} aria-label={tr("Taux")} />}
+      {base === "piece" && <input style={input} inputMode="decimal" value={piece} onChange={(e) => setPiece(e.target.value)} placeholder={tr("€ par livrable")} aria-label={tr("Forfait par livrable")} />}
       <button type="button" disabled={pending} style={{ ...primary, gridColumn: "1 / -1" }} onClick={() => run(() => updatePayConfigAction(userId, { base, fixed_eur: fixed, rate_pct: rate, piece_eur: piece }), "Enregistré.", () => setOpen(false))}>
-        Enregistrer
+        {tr("Enregistrer")}
       </button>
       <div style={{ gridColumn: "1 / -1" }}>{note}</div>
     </div>

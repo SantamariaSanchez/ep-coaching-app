@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   Send, FlaskConical, Users, CheckCircle2, XCircle, Clock3, Eye, EyeOff,
@@ -69,6 +70,7 @@ export default function CoachMailingComposer({
   brevoLists: BrevoListSummary[];
   isPlatformOwner: boolean;
 }) {
+  const tr = useT();
   const [history, setHistory] = useState(initialHistory);
 
   // MASTERCLASS.md Axe E : resynchronise depuis le serveur quand
@@ -360,7 +362,7 @@ export default function CoachMailingComposer({
       {/* ── Composer ── */}
       <div className="bg-[#1f0101] border border-[#890404]/30 rounded-2xl p-5 mb-6">
         {/* Audience */}
-        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">Destinataires</p>
+        <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-2">{tr("Destinataires")}</p>
         <div className="flex flex-wrap gap-1.5 mb-3">
           {AUDIENCE_OPTIONS.filter((o) => !o.ownerOnly || isPlatformOwner).map(({ type, label, icon: Icon }) => {
             const active = audienceType === type;
@@ -385,18 +387,18 @@ export default function CoachMailingComposer({
         {audienceType === "liste_existante" && (
           <div className="mb-3">
             {brevoLists.length === 0 ? (
-              <p className="text-[11px] text-[#F5EDED]/30 italic">Aucune liste Brevo trouvée sur le compte.</p>
+              <p className="text-[11px] text-[#F5EDED]/30 italic">{tr("Aucune liste Brevo trouvée sur le compte.")}</p>
             ) : (
               <div className="relative">
                 <select
                   value={selectedListId ?? ""}
                   onChange={(e) => setSelectedListId(parseInt(e.target.value, 10))}
-                  aria-label="Liste Brevo"
+                  aria-label={tr("Liste Brevo")}
                   className="w-full appearance-none bg-[#150000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-[12.5px] text-white focus:outline-none focus:border-[#E01E1E]/60"
                 >
                   {brevoLists.map((l) => (
                     <option key={l.id} value={l.id}>
-                      {l.name} · {l.totalSubscribers} contact{l.totalSubscribers > 1 ? "s" : ""}
+                      {l.name} · {l.totalSubscribers}{" "}{tr("contact")}{l.totalSubscribers > 1 ? "s" : ""}
                     </option>
                   ))}
                 </select>
@@ -417,7 +419,7 @@ export default function CoachMailingComposer({
                 <button
                   type="button"
                   onClick={() => { setSelectedContact(null); setContactQuery(""); }}
-                  aria-label="Changer de destinataire"
+                  aria-label={tr("Changer de destinataire")}
                   className="flex-shrink-0 text-[#F5EDED]/30 hover:text-white transition-colors"
                 >
                   <X size={15} />
@@ -429,16 +431,16 @@ export default function CoachMailingComposer({
                 <input
                   value={contactQuery}
                   onChange={(e) => setContactQuery(e.target.value)}
-                  placeholder="Nom ou email de la personne"
-                  aria-label="Chercher un destinataire"
+                  placeholder={tr("Nom ou email de la personne")}
+                  aria-label={tr("Chercher un destinataire")}
                   className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg pl-8 pr-3 py-2.5 text-[12.5px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
                 />
                 {contactQuery.trim().length >= 2 && (
                   <div className="mt-1.5 bg-[#150000] border border-[#890404]/25 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
                     {contactSearching ? (
-                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30">Recherche…</p>
+                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30">{tr("Recherche…")}</p>
                     ) : contactResults.length === 0 ? (
-                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30 italic">Aucune correspondance pour ce nom/email.</p>
+                      <p className="px-3.5 py-2.5 text-[11px] text-[#F5EDED]/30 italic">{tr("Aucune correspondance pour ce nom/email.")}</p>
                     ) : (
                       contactResults.map((c) => (
                         <button
@@ -472,20 +474,20 @@ export default function CoachMailingComposer({
           onClick={() => setShowTemplates(true)}
           className="w-full mb-2 inline-flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/55 hover:text-[#E01E1E] border border-dashed border-[#890404]/35 hover:border-[#E01E1E]/50 rounded-lg py-2.5 transition-colors"
         >
-          <LayoutTemplate size={13} /> Choisir un modèle ({MAIL_TEMPLATES.length} prêts)
+          <LayoutTemplate size={13} />{" "}{tr("Choisir un modèle (")}{MAIL_TEMPLATES.length}{" "}{tr("prêts)")}
         </button>
         <input
           value={subject}
           onChange={(e) => { setSubject(e.target.value); setTestSent(false); }}
-          placeholder="Sujet"
-          aria-label="Sujet"
+          placeholder={tr("Sujet")}
+          aria-label={tr("Sujet")}
           className="w-full bg-[#150000] border border-[#890404]/30 rounded-lg px-4 py-3 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
         />
         <textarea
           value={body}
           onChange={(e) => { setBody(e.target.value); setTestSent(false); }}
-          placeholder="Ton message (HTML simple accepté : <b>, <a href>, <br>...)"
-          aria-label="Ton message"
+          placeholder={tr("Ton message (HTML simple accepté : <b>, <a href>, <br>...)")}
+          aria-label={tr("Ton message")}
           rows={8}
           className="w-full mt-2 bg-[#150000] border border-[#890404]/30 rounded-lg px-4 py-3 text-[13px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60 resize-y font-sans"
         />
@@ -496,13 +498,13 @@ export default function CoachMailingComposer({
           className="mt-2.5 inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#F5EDED]/65 transition-colors"
         >
           {showPreview ? <EyeOff size={12} /> : <Eye size={12} />}
-          {showPreview ? "Masquer l'aperçu" : "Aperçu avec la bannière de marque"}
+          {showPreview ? tr("Masquer l'aperçu") : tr("Aperçu avec la bannière de marque")}
         </button>
 
         {showPreview && (
           <div className="mt-2.5 rounded-lg overflow-hidden border border-[#890404]/25" style={{ height: 420 }}>
             <iframe
-              title="Aperçu de l'email"
+              title={tr("Aperçu de l'email")}
               srcDoc={previewHtml}
               sandbox=""
               className="w-full h-full"
@@ -522,14 +524,14 @@ export default function CoachMailingComposer({
             style={{ color: scheduleLater ? "#fbbf24" : "rgba(245,237,237,0.35)" }}
           >
             <CalendarClock size={13} />
-            {scheduleLater ? "Envoi programmé" : "Envoyer maintenant"}
+            {scheduleLater ? tr("Envoi programmé") : tr("Envoyer maintenant")}
           </button>
           {scheduleLater && (
             <input
               type="datetime-local"
               value={scheduledAtLocal}
               min={minScheduleAt}
-              aria-label="Date et heure d'envoi programmé"
+              aria-label={tr("Date et heure d'envoi programmé")}
               onChange={(e) => setScheduledAtLocal(e.target.value)}
               className="bg-[#150000] border border-[#890404]/30 rounded-lg px-2.5 py-1.5 text-[12px] text-white focus:outline-none focus:border-[#E01E1E]/60"
             />
@@ -541,8 +543,7 @@ export default function CoachMailingComposer({
         {success && <p className="text-[12px] text-green-400 mt-2.5">{success}</p>}
         {overLimit && (
           <p className="text-[11.5px] text-amber-400 mt-2.5">
-            {recipientCount} destinataires dépasse le plafond de {MAX_RECIPIENTS_PER_SEND} par envoi (compte Brevo
-            gratuit, partagé avec les emails critiques de l&apos;appli). Contacte-moi pour augmenter le plafond si besoin.
+            {recipientCount}{" "}{tr("destinataires dépasse le plafond de")}{" "}{MAX_RECIPIENTS_PER_SEND}{" "}{tr("par envoi (compte Brevo gratuit, partagé avec les emails critiques de l'appli). Contacte-moi pour augmenter le plafond si besoin.")}
           </p>
         )}
 
@@ -553,7 +554,7 @@ export default function CoachMailingComposer({
             disabled={isPending || !subject.trim() || !body.trim()}
             className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-[#F5EDED]/50 hover:text-[#F5EDED]/80 disabled:opacity-30 transition-colors border border-[#890404]/25 rounded-lg px-3 py-2.5"
           >
-            <FlaskConical size={13} /> {testSent ? "Test envoyé ✓" : "Envoyer un test (à moi)"}
+            <FlaskConical size={13} /> {testSent ? tr("Test envoyé ✓") : tr("Envoyer un test (à moi)")}
           </button>
 
           {!confirming ? (
@@ -564,12 +565,12 @@ export default function CoachMailingComposer({
               className="ep-btn-primary disabled:opacity-40"
               style={{ height: 40, borderRadius: 999, paddingInline: 18 }}
             >
-              <Send size={13} /> {scheduleLater ? "Programmer l'envoi" : "Envoyer"}
+              <Send size={13} /> {scheduleLater ? tr("Programmer l'envoi") : tr("Envoyer")}
             </button>
           ) : (
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-[11.5px] font-bold text-amber-400">
-                Confirmer {scheduleLater ? "la programmation" : "l'envoi"} à {recipientCount} destinataire{(recipientCount ?? 0) > 1 ? "s" : ""} ?
+                {tr("Confirmer")}{" "}{scheduleLater ? tr("la programmation") : tr("l'envoi")} à {recipientCount}{" "}{tr("destinataire")}{(recipientCount ?? 0) > 1 ? "s" : ""} ?
               </span>
               <button
                 type="button"
@@ -578,7 +579,7 @@ export default function CoachMailingComposer({
                 className="ep-btn-primary disabled:opacity-60"
                 style={{ height: 34, borderRadius: 999, paddingInline: 14, fontSize: 11.5 }}
               >
-                {isPending ? "…" : "Oui"}
+                {isPending ? "…" : tr("Oui")}
               </button>
               <button
                 type="button"
@@ -586,7 +587,7 @@ export default function CoachMailingComposer({
                 disabled={isPending}
                 className="text-[11.5px] font-bold text-[#F5EDED]/40 hover:text-[#F5EDED]/70 border border-[#F5EDED]/15 rounded-full px-3 py-1.5 transition-colors"
               >
-                Annuler
+                {tr("Annuler")}
               </button>
             </div>
           )}
@@ -597,7 +598,7 @@ export default function CoachMailingComposer({
       {history.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-2">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">Historique</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/30">{tr("Historique")}</p>
             <button
               type="button"
               onClick={refreshAllStats}
@@ -605,7 +606,7 @@ export default function CoachMailingComposer({
               className="inline-flex items-center gap-1.5 text-[9.5px] font-bold uppercase tracking-widest text-[#F5EDED]/35 hover:text-[#E01E1E] disabled:opacity-40 transition-colors"
             >
               <RefreshCw size={11} className={isRefreshingAll ? "animate-spin" : ""} />
-              {isRefreshingAll ? "Actualisation…" : "Rafraîchir les stats"}
+              {isRefreshingAll ? tr("Actualisation…") : tr("Rafraîchir les stats")}
             </button>
           </div>
 
@@ -615,18 +616,18 @@ export default function CoachMailingComposer({
           {recentStatsEntries.length >= 2 && avgOpenRate != null && avgClickRate != null && (
             <div className="bg-[#1f0101] border border-[#890404]/25 rounded-xl px-4 py-3 mb-3">
               <p className="text-[9px] font-bold uppercase tracking-widest text-[#F5EDED]/30 mb-1.5">
-                Moyenne sur les {recentStatsEntries.length} derniers envois consultés
+                {tr("Moyenne sur les")}{" "}{recentStatsEntries.length}{" "}{tr("derniers envois consultés")}
               </p>
               <div className="flex items-center gap-4">
                 <span className="text-[14px] font-black" style={{ color: rateColor(avgOpenRate, [0.1, 0.2]) }}>
-                  {pct(avgOpenRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">ouverture</span>
+                  {pct(avgOpenRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">{tr("ouverture")}</span>
                 </span>
                 <span className="text-[14px] font-black" style={{ color: rateColor(avgClickRate, [0.01, 0.02]) }}>
-                  {pct(avgClickRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">clic</span>
+                  {pct(avgClickRate)} <span className="text-[10px] font-bold text-[#F5EDED]/35">{tr("clic")}</span>
                 </span>
               </div>
               <p className="mt-1.5 text-[10px] text-[#F5EDED]/35">
-                Repère : un taux d&apos;ouverture correct tourne autour de 20 à 30%, un bon taux de clic autour de 2 à 5%.
+                {tr("Repère : un taux d'ouverture correct tourne autour de 20 à 30%, un bon taux de clic autour de 2 à 5%.")}
               </p>
             </div>
           )}
@@ -644,8 +645,8 @@ export default function CoachMailingComposer({
                       <button
                         type="button"
                         onClick={() => duplicateFromHistory(m)}
-                        title="Dupliquer cet envoi"
-                        aria-label="Dupliquer cet envoi"
+                        title={tr("Dupliquer cet envoi")}
+                        aria-label={tr("Dupliquer cet envoi")}
                         className="flex-shrink-0 text-[#F5EDED]/25 hover:text-[#E01E1E] transition-colors"
                       >
                         <Copy size={13} />
@@ -657,7 +658,7 @@ export default function CoachMailingComposer({
                       {describeAudience(m.audience)}
                     </span>
                     <span className="text-[10.5px]" style={{ color: meta.color }}>
-                      {m.status === "failed" ? "échec" : `${m.recipient_count} destinataire${m.recipient_count > 1 ? "s" : ""}`}
+                      {m.status === "failed" ? tr("échec") : `${m.recipient_count} destinataire${m.recipient_count > 1 ? "s" : ""}`}
                     </span>
                     <span className="text-[10px] text-[#F5EDED]/25 flex items-center gap-1">
                       <Clock3 size={10} />
@@ -697,12 +698,12 @@ export default function CoachMailingComposer({
           >
             <div className="flex items-center justify-between gap-3 px-5 pt-5 pb-3 border-b border-[#890404]/15 flex-shrink-0">
               <p className="text-sm font-black uppercase tracking-tight text-white">
-                Modèles ({MAIL_TEMPLATES.length})
+                {tr("Modèles (")}{MAIL_TEMPLATES.length})
               </p>
               <button
                 type="button"
                 onClick={() => setShowTemplates(false)}
-                aria-label="Fermer"
+                aria-label={tr("Fermer")}
                 className="text-[#F5EDED]/40 hover:text-white transition-colors"
               >
                 <X size={18} />
@@ -715,8 +716,8 @@ export default function CoachMailingComposer({
                 <input
                   value={templateSearch}
                   onChange={(e) => setTemplateSearch(e.target.value)}
-                  placeholder="Chercher un modèle (bienvenue, relance, anniversaire...)"
-                  aria-label="Chercher un modèle"
+                  placeholder={tr("Chercher un modèle (bienvenue, relance, anniversaire...)")}
+                  aria-label={tr("Chercher un modèle")}
                   autoFocus
                   className="w-full bg-[#0D0000] border border-[#890404]/30 rounded-lg pl-8 pr-3 py-2.5 text-[12.5px] text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/60"
                 />
@@ -725,7 +726,7 @@ export default function CoachMailingComposer({
 
             <div className="overflow-y-auto flex-1 px-5 py-4">
               {filteredTemplateGroups.length === 0 ? (
-                <p className="text-[12px] text-[#F5EDED]/30 italic text-center py-8">Aucun modèle ne correspond à cette recherche.</p>
+                <p className="text-[12px] text-[#F5EDED]/30 italic text-center py-8">{tr("Aucun modèle ne correspond à cette recherche.")}</p>
               ) : (
                 <div className="flex flex-col gap-5">
                   {filteredTemplateGroups.map((g) => (

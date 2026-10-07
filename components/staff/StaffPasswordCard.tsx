@@ -1,11 +1,13 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import PasswordInput from "@/components/ui/PasswordInput";
 import { createClientSupabase } from "@/lib/supabase-client";
 import { isPasswordPwned, PWNED_PASSWORD_MESSAGE } from "@/lib/pwned-password";
 
 export default function StaffPasswordCard() {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
@@ -31,11 +33,11 @@ export default function StaffPasswordCard() {
 
   return (
     <form onSubmit={save} className="ep-card" style={{ padding: "16px 16px", display: "flex", flexDirection: "column", gap: 10 }}>
-      <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Nouveau mot de passe" aria-label="Nouveau mot de passe" autoComplete="new-password" className="ep-input" />
-      <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder="Confirme le mot de passe" aria-label="Confirme le mot de passe" autoComplete="new-password" className="ep-input" />
+      <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} placeholder={t("Nouveau mot de passe")} aria-label={t("Nouveau mot de passe")} autoComplete="new-password" className="ep-input" />
+      <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} placeholder={t("Confirme le mot de passe")} aria-label={t("Confirme le mot de passe")} autoComplete="new-password" className="ep-input" />
       {message && <p role="status" style={{ fontSize: 12, margin: 0, color: message.ok ? "#4ade80" : "#FDC4C4" }}>{message.text}</p>}
       <button type="submit" disabled={busy} className="ep-btn-primary" style={{ height: 42, fontSize: 12 }}>
-        {busy ? "Mise à jour..." : "Changer mon mot de passe"}
+        {busy ? t("Mise à jour...") : t("Changer mon mot de passe")}
       </button>
     </form>
   );

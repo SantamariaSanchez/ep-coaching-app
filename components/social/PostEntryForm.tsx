@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, X } from "lucide-react";
@@ -116,6 +117,7 @@ export default function PostEntryForm({
   nowLocal: string;
   post?: EditablePost | null;
 }) {
+  const tr = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [v, setV] = useState<Record<string, string>>(() => fromPost(post, platforms, nowLocal));
@@ -151,16 +153,16 @@ export default function PostEntryForm({
     return post ? (
       <span style={{ display: "inline-flex", gap: 10 }}>
         <button type="button" onClick={() => setOpen(true)} style={{ display: "inline-flex", alignItems: "center", gap: 4, background: "none", border: "none", padding: 0, color: "#ff6b6b", fontSize: 11.5, fontWeight: 800, cursor: "pointer" }}>
-          <Pencil size={11} /> Mettre à jour
+          <Pencil size={11} />{" "}{tr("Mettre à jour")}
         </button>
-        <button type="button" onClick={remove} disabled={pending} aria-label="Supprimer" style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.4)", cursor: "pointer" }}>
+        <button type="button" onClick={remove} disabled={pending} aria-label={tr("Supprimer")} style={{ display: "inline-flex", alignItems: "center", background: "none", border: "none", padding: 0, color: "rgba(245,237,237,0.4)", cursor: "pointer" }}>
           <Trash2 size={12} />
         </button>
         {error && <span style={{ fontSize: 10.5, color: "#fca5a5" }}>{error}</span>}
       </span>
     ) : (
       <button type="button" onClick={() => setOpen(true)} style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, padding: "12px 14px", borderRadius: 12, border: "1px dashed rgba(224,30,30,0.55)", background: "rgba(224,30,30,0.06)", color: "#F5EDED", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer" }}>
-        <Plus size={15} /> Ajouter une publication
+        <Plus size={15} />{" "}{tr("Ajouter une publication")}
       </button>
     );
   }
@@ -168,49 +170,49 @@ export default function PostEntryForm({
   return (
     <div className="ep-card" style={{ padding: "14px 14px", marginTop: post ? 10 : 0, width: "100%" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-        <p className="ep-label" style={{ margin: 0 }}>{post ? "Mettre à jour la publication" : "Nouvelle publication"}</p>
-        <button type="button" onClick={() => setOpen(false)} aria-label="Fermer" style={{ background: "none", border: "none", color: "rgba(245,237,237,0.5)", cursor: "pointer" }}>
+        <p className="ep-label" style={{ margin: 0 }}>{post ? tr("Mettre à jour la publication") : tr("Nouvelle publication")}</p>
+        <button type="button" onClick={() => setOpen(false)} aria-label={tr("Fermer")} style={{ background: "none", border: "none", color: "rgba(245,237,237,0.5)", cursor: "pointer" }}>
           <X size={16} />
         </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
         <div>
-          <label style={lbl}>Plateforme</label>
-          <select style={input} value={v.platform} onChange={(e) => set("platform", e.target.value)} aria-label="Plateforme">
+          <label style={lbl}>{tr("Plateforme")}</label>
+          <select style={input} value={v.platform} onChange={(e) => set("platform", e.target.value)} aria-label={tr("Plateforme")}>
             {allPlatforms.map((p) => (
               <option key={p} value={p}>{LABELS[p] ?? p}</option>
             ))}
           </select>
         </div>
         <div>
-          <label style={lbl}>Format</label>
-          <select style={input} value={v.postType} onChange={(e) => set("postType", e.target.value)} aria-label="Format">
-            <option value="">Choisir</option>
+          <label style={lbl}>{tr("Format")}</label>
+          <select style={input} value={v.postType} onChange={(e) => set("postType", e.target.value)} aria-label={tr("Format")}>
+            <option value="">{tr("Choisir")}</option>
             {TYPES.map((t) => (
               <option key={t.value} value={t.value}>{t.label}</option>
             ))}
           </select>
         </div>
         <div>
-          <label style={lbl}>Publiée le</label>
-          <input type="datetime-local" style={input} value={v.publishedAt} max={nowLocal} onChange={(e) => set("publishedAt", e.target.value)} aria-label="Date de publication" />
+          <label style={lbl}>{tr("Publiée le")}</label>
+          <input type="datetime-local" style={input} value={v.publishedAt} max={nowLocal} onChange={(e) => set("publishedAt", e.target.value)} aria-label={tr("Date de publication")} />
         </div>
       </div>
 
       <div style={{ marginTop: 10 }}>
-        <label style={lbl}>Sujet ou accroche</label>
-        <input style={input} value={v.caption} onChange={(e) => set("caption", e.target.value)} placeholder="Ex. 3 erreurs qui bloquent ta sèche" aria-label="Sujet" />
+        <label style={lbl}>{tr("Sujet ou accroche")}</label>
+        <input style={input} value={v.caption} onChange={(e) => set("caption", e.target.value)} placeholder={tr("Ex. 3 erreurs qui bloquent ta sèche")} aria-label={tr("Sujet")} />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10, marginTop: 10 }}>
         <div>
-          <label style={lbl}>Lien</label>
-          <input style={input} value={v.url} onChange={(e) => set("url", e.target.value)} placeholder="https://" aria-label="Lien" />
+          <label style={lbl}>{tr("Lien")}</label>
+          <input style={input} value={v.url} onChange={(e) => set("url", e.target.value)} placeholder={tr("https://")} aria-label={tr("Lien")} />
         </div>
         <div>
-          <label style={lbl}>Script du Studio</label>
-          <select style={input} value={v.scriptId} onChange={(e) => set("scriptId", e.target.value)} aria-label="Script lié">
-            <option value="">Aucun</option>
+          <label style={lbl}>{tr("Script du Studio")}</label>
+          <select style={input} value={v.scriptId} onChange={(e) => set("scriptId", e.target.value)} aria-label={tr("Script lié")}>
+            <option value="">{tr("Aucun")}</option>
             {scriptOptions.map((s) => (
               <option key={s.id} value={s.id}>{s.title.slice(0, 60)}</option>
             ))}
@@ -218,7 +220,7 @@ export default function PostEntryForm({
         </div>
       </div>
 
-      <p style={{ ...lbl, marginTop: 14 }}>Chiffres (laisse vide ce que tu n&apos;as pas)</p>
+      <p style={{ ...lbl, marginTop: 14 }}>{tr("Chiffres (laisse vide ce que tu n'as pas)")}</p>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
         {METRICS.filter((m) => !m.video || isVideo).map((m) => (
           <div key={m.key}>
@@ -233,7 +235,7 @@ export default function PostEntryForm({
 
       {error && <p style={{ fontSize: 12, color: "#fca5a5", margin: "10px 0 0" }}>{error}</p>}
       <button type="button" disabled={pending} onClick={save} style={{ marginTop: 14, width: "100%", padding: "12px 14px", borderRadius: 12, border: "none", background: "#E01E1E", color: "#fff", fontSize: 12.5, fontWeight: 900, letterSpacing: "0.04em", textTransform: "uppercase", cursor: "pointer", opacity: pending ? 0.6 : 1 }}>
-        {pending ? "..." : post ? "Enregistrer les chiffres" : "Ajouter"}
+        {pending ? "..." : post ? tr("Enregistrer les chiffres") : tr("Ajouter")}
       </button>
     </div>
   );

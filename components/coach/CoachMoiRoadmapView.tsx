@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Map } from "lucide-react";
@@ -31,6 +32,7 @@ export default function CoachMoiRoadmapView({
   today: string;
   data: RoadmapPageData;
 }) {
+  const t = useT();
   const router = useRouter();
   const refresh = useCallback(() => router.refresh(), [router]);
   const { roadmap, phases, objectives, pilot, pilotError, error } = data;
@@ -43,11 +45,11 @@ export default function CoachMoiRoadmapView({
           textTransform: "uppercase", color: "rgba(224,30,30,0.6)",
           display: "flex", alignItems: "center", gap: 6, marginBottom: 4,
         }}>
-          <Map size={12} /> Mon Suivi
+          <Map size={12} />{" "}{t("Mon Suivi")}
         </span>
-        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 6px" }}>Ma Road Map</h1>
+        <h1 className="ep-h1" style={{ fontSize: 28, margin: "0 0 6px" }}>{t("Ma Road Map")}</h1>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>
-          Construis et visualise tes propres objectifs et phases de progression.
+          {t("Construis et visualise tes propres objectifs et phases de progression.")}
         </p>
         {roadmap && <RoadmapStatusLine roadmap={roadmap} phases={phases} today={today} />}
       </div>

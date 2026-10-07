@@ -1,11 +1,13 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import type { AgentTask } from "@/utils/ai-agents";
 import { markAssistantTaskDone } from "@/app/dashboard/coach/assistant/actions";
 
 export default function AssistantTaskList({ initialTasks }: { initialTasks: AgentTask[] }) {
+  const tr = useT();
   const [tasks, setTasks] = useState(initialTasks.filter((t) => t.status !== "fait"));
   const [isPending, startTransition] = useTransition();
 
@@ -21,7 +23,7 @@ export default function AssistantTaskList({ initialTasks }: { initialTasks: Agen
   if (tasks.length === 0) {
     return (
       <p className="text-[11.5px] text-[#F5EDED]/30 italic">
-        Rien à signaler pour l&apos;instant, ton assistant garde un œil dessus chaque jour.
+        {tr("Rien à signaler pour l'instant, ton assistant garde un œil dessus chaque jour.")}
       </p>
     );
   }
@@ -34,8 +36,8 @@ export default function AssistantTaskList({ initialTasks }: { initialTasks: Agen
             type="button"
             onClick={() => markDone(task.id)}
             disabled={isPending}
-            title="Marquer comme fait"
-            aria-label="Marquer comme fait"
+            title={tr("Marquer comme fait")}
+            aria-label={tr("Marquer comme fait")}
             className="flex-shrink-0 w-5 h-5 mt-0.5 rounded border border-[#890404]/40 flex items-center justify-center hover:bg-[#4ade80] hover:border-[#4ade80] transition-colors group"
           >
             <Check size={12} className="text-transparent group-hover:text-[#0a1f0a]" strokeWidth={3} />

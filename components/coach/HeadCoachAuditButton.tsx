@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useTransition } from "react";
 import { ShieldCheck } from "lucide-react";
 import { triggerHeadCoachAudit } from "@/app/dashboard/coach/admin/organisation/agents/actions";
@@ -10,6 +11,7 @@ import { triggerHeadCoachAudit } from "@/app/dashboard/coach/admin/organisation/
 // vraie tâche par problème concret, visible juste en dessous dans la
 // liste de tâches déjà existante de cette page.
 export default function HeadCoachAuditButton() {
+  const t = useT();
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState<string | null>(null);
 
@@ -33,7 +35,7 @@ export default function HeadCoachAuditButton() {
         style={{ background: "rgba(96,165,250,0.1)", borderColor: "rgba(96,165,250,0.3)", color: "#60a5fa" }}
       >
         <ShieldCheck size={13} />
-        {isPending ? "Audit en cours…" : "Lancer l'audit qualité"}
+        {isPending ? t("Audit en cours…") : t("Lancer l'audit qualité")}
       </button>
       {result && <p className="text-[11px] text-[#F5EDED]/40 mt-2">{result}</p>}
     </div>

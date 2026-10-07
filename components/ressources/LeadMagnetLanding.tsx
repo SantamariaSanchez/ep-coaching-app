@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
@@ -109,6 +110,7 @@ function captureLeadOrigin(): LeadOriginInput | null {
 // se voir proposer de créer un compte qu'il a déjà — le CTA s'adapte plutôt
 // que de traiter tout le monde comme un lead qui découvre l'appli.
 function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean }) {
+  const t = useT();
   return (
     <div
       style={{
@@ -124,34 +126,33 @@ function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean
       {isLoggedIn ? (
         <>
           <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
-            Retrouve tout ça directement dans l&apos;appli
+            {t("Retrouve tout ça directement dans l'appli")}
           </p>
           <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
-            Suivi nutrition, programme, road map de progression : tout est déjà là pour toi.
+            {t("Suivi nutrition, programme, road map de progression : tout est déjà là pour toi.")}
           </p>
           <Link
             href={isCoach ? "/dashboard/coach" : "/dashboard/client"}
             className="ep-btn-primary"
             style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", fontSize: 13 }}
           >
-            Retour à l&apos;appli <ArrowRight size={15} />
+            {t("Retour à l'appli")}{" "}<ArrowRight size={15} />
           </Link>
         </>
       ) : (
         <>
           <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>
-            Prêt(e) à passer à la vitesse supérieure ?
+            {t("Prêt(e) à passer à la vitesse supérieure ?")}
           </p>
           <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.5)", lineHeight: 1.6, margin: "0 0 18px" }}>
-            L&apos;appli EP Coaching va plus loin : suivi nutrition, programme adapté, road map de progression
-            et vrai accompagnement, gratuit pour commencer.
+            {t("L'appli EP Coaching va plus loin : suivi nutrition, programme adapté, road map de progression et vrai accompagnement, gratuit pour commencer.")}
           </p>
           <Link
             href="/auth/client"
             className="ep-btn-primary"
             style={{ display: "inline-flex", alignItems: "center", gap: 8, height: 48, padding: "0 28px", fontSize: 13 }}
           >
-            Créer mon compte gratuit <ArrowRight size={15} />
+            {t("Créer mon compte gratuit")}{" "}<ArrowRight size={15} />
           </Link>
         </>
       )}
@@ -162,11 +163,12 @@ function AppCta({ isLoggedIn, isCoach }: { isLoggedIn: boolean; isCoach: boolean
 // ── Continue ta lecture (suggestions, une fois débloqué) ──────────────────
 
 function RelatedMagnets({ items }: { items: LeadMagnetSummary[] }) {
+  const t = useT();
   if (items.length === 0) return null;
   return (
     <div style={{ marginTop: 20 }}>
       <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 10 }}>
-        Continue ta lecture
+        {t("Continue ta lecture")}
       </p>
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {items.map((m) => {
@@ -215,6 +217,7 @@ function CaptureForm({
   onUnlocked: () => void;
   ctaLabel: string;
 }) {
+  const t = useT();
   // Pré-rempli si ce visiteur a déjà laissé son contact sur un guide
   // précédent (voir CONTACT_KEY plus haut) : il n'a alors qu'à valider,
   // jamais à retaper depuis zéro. Lazy initializer, jamais recalculé au
@@ -247,7 +250,7 @@ function CaptureForm({
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Ton email" aria-label="Ton email"
+          placeholder={t("Ton email")} aria-label={t("Ton email")}
           className="ep-input"
           style={{ paddingLeft: 38 }}
         />
@@ -258,7 +261,7 @@ function CaptureForm({
           type="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          placeholder="Ou ton numéro (optionnel si email rempli)" aria-label="Ou ton numéro (optionnel si email rempli)"
+          placeholder={t("Ou ton numéro (optionnel si email rempli)")} aria-label={t("Ou ton numéro (optionnel si email rempli)")}
           className="ep-input"
           style={{ paddingLeft: 38 }}
         />
@@ -273,7 +276,7 @@ function CaptureForm({
         {submitting ? "..." : ctaLabel}
       </button>
       <p style={{ fontSize: 10, color: "rgba(245,237,237,0.25)", textAlign: "center", margin: 0 }}>
-        Aucun spam. Juste ce contenu, et rien d&apos;autre sans ton accord.
+        {t("Aucun spam. Juste ce contenu, et rien d'autre sans ton accord.")}
       </p>
     </form>
   );
@@ -378,6 +381,7 @@ function GuideContent({ magnet }: { magnet: GuideMagnet }) {
 // ── Checklist ─────────────────────────────────────────────────────────
 
 function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
+  const t = useT();
   const [checked, setChecked] = useState<Set<string>>(new Set());
 
   function toggle(key: string) {
@@ -397,7 +401,7 @@ function ChecklistContent({ magnet }: { magnet: ChecklistMagnet }) {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
         <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.3)" }}>
-          {checked.size} / {total} cochés
+          {checked.size} / {total}{" "}{t("cochés")}
         </span>
         <div style={{ width: 100, height: 5, borderRadius: 3, background: "rgba(224,30,30,0.12)", overflow: "hidden" }}>
           <div style={{ height: "100%", width: `${(checked.size / total) * 100}%`, background: "#E01E1E", transition: "width 0.3s" }} />
@@ -474,6 +478,7 @@ function QuizFlow({
   isCoach: boolean;
   relatedMagnets: LeadMagnetSummary[];
 }) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const [storedUnlock, setStoredUnlock] = useState(false);
   const [autoUnlocking, setAutoUnlocking] = useState(false);
@@ -536,7 +541,7 @@ function QuizFlow({
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)" }}>
-            Question {step + 1} / {magnet.questions.length}
+            {t("Question")}{" "}{step + 1} / {magnet.questions.length}
           </span>
         </div>
         <div style={{ height: 5, borderRadius: 3, background: "rgba(224,30,30,0.12)", overflow: "hidden", marginBottom: 20 }}>
@@ -569,7 +574,7 @@ function QuizFlow({
     if (autoUnlocking) {
       return (
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
-          Déblocage en cours...
+          {t("Déblocage en cours...")}
         </p>
       );
     }
@@ -582,9 +587,9 @@ function QuizFlow({
           }}
         >
           <Sparkles size={22} style={{ color: "#E01E1E", marginBottom: 10 }} />
-          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>Ton résultat est prêt.</p>
+          <p style={{ fontSize: 15, fontWeight: 900, color: "#F5EDED", margin: "0 0 6px" }}>{t("Ton résultat est prêt.")}</p>
           <p style={{ fontSize: 12.5, color: "rgba(245,237,237,0.45)", margin: 0 }}>
-            Laisse ton email ou ton numéro pour le débloquer.
+            {t("Laisse ton email ou ton numéro pour le débloquer.")}
           </p>
         </div>
         <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Voir mon résultat" />
@@ -602,7 +607,7 @@ function QuizFlow({
         }}
       >
         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(224,30,30,0.65)" }}>
-          Ton résultat
+          {t("Ton résultat")}
         </span>
         <p style={{ fontSize: 19, fontWeight: 900, color: "#F5EDED", margin: "6px 0 10px" }}>{result.title}</p>
         <p style={{ fontSize: 13.5, color: "rgba(245,237,237,0.65)", lineHeight: 1.7, margin: 0 }}>{result.description}</p>
@@ -624,6 +629,7 @@ export default function LeadMagnetLanding({
   submitLead: (slug: string, email: string, phone: string, origin?: LeadOriginInput | null) => Promise<{ error?: string }>;
   relatedMagnets?: LeadMagnetSummary[];
 }) {
+  const t = useT();
   const Icon = getMagnetIcon(magnet.icon);
   // Lu dès l'arrivée (pas seulement à l'envoi) : le lien suivi et le
   // referrer sont gardés même si le visiteur passe d'abord par un autre guide.
@@ -726,7 +732,7 @@ export default function LeadMagnetLanding({
         // juste un état d'attente bref plutôt qu'un flash visuel du
         // formulaire suivi immédiatement de son remplacement.
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.4)", textAlign: "center", padding: "24px 0" }}>
-          Déblocage en cours...
+          {t("Déblocage en cours...")}
         </p>
       ) : (
         <div>
@@ -737,7 +743,7 @@ export default function LeadMagnetLanding({
             }}
           >
             <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color: "rgba(245,237,237,0.35)", marginBottom: 10 }}>
-              Ce que tu vas trouver dedans
+              {t("Ce que tu vas trouver dedans")}
             </p>
             {magnet.format === "guide" ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -749,7 +755,7 @@ export default function LeadMagnetLanding({
               </div>
             ) : (
               <p style={{ fontSize: 13, color: "rgba(245,237,237,0.55)", lineHeight: 1.6, margin: 0 }}>
-                {magnet.groups.reduce((n, g) => n + g.items.length, 0)} points concrets à checker, prêts à l&apos;emploi.
+                {magnet.groups.reduce((n, g) => n + g.items.length, 0)}{" "}{t("points concrets à checker, prêts à l'emploi.")}
               </p>
             )}
           </div>
