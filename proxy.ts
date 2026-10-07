@@ -232,7 +232,12 @@ export async function proxy(request: NextRequest) {
       role = profile?.role ?? null;
     }
 
-    const dest = role === "coach" ? "/dashboard/coach" : role === "staff" ? "/equipe" : "/dashboard/client";
+    let dest = role === "coach" ? "/dashboard/coach" : role === "staff" ? "/equipe" : "/dashboard/client";
+    // Page d'ouverture choisie dans les paramètres (cookie posé par
+    // lib/device-settings.ts) : seulement au lancement de l'appli, et
+    // seulement une page de son propre espace.
+    const start = isLaunch ? request.cookies.get("ep-start")?.value : undefined;
+    if (start && role !== "staff" && /^[a-z0-9/-]{1,60}$/.test(start) && !start.includes("..")) dest = `${dest}/${start.replace(/^\/+/, "")}`;
     const res = NextResponse.redirect(new URL(dest, request.url));
     supabaseResponse.cookies.getAll().forEach((c) => res.cookies.set(c.name, c.value, c));
     return res;

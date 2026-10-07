@@ -55,6 +55,7 @@ import { todayInParis } from "@/lib/dates";
 import { useConfirm } from "@/components/ui/ConfirmDialogProvider";
 import { SessionSetsBreakdown } from "@/components/ui/SessionHistoryCard";
 import { TENSION_FOCUS_LABELS } from "@/lib/exercise-library-content";
+import { getDeviceSettings } from "@/lib/device-settings";
 import {
   parseRepScheme,
   rangeForSet,
@@ -923,8 +924,11 @@ function RestTimerBadge({ timer }: { timer: RestTimer }) {
       setElapsed(s);
       if (s >= timer.suggestedSeconds && !beepedRef.current) {
         beepedRef.current = true;
-        playBeep();
-        try { navigator.vibrate([200, 100, 200]); } catch {}
+        const prefs = getDeviceSettings();
+        if (prefs.restSound) playBeep();
+        if (prefs.restVibration) {
+          try { navigator.vibrate([200, 100, 200]); } catch {}
+        }
       }
     }, 500);
     return () => clearInterval(interval);
@@ -2342,10 +2346,15 @@ export default function SessionView({
       // un exercice sans repos programmé (séance libre, exercice ajouté).
       const rir = set.rirActual ? parseInt(set.rirActual) : 2;
       const programmedRest = exercises[exIdx]?.exercise.rest_seconds;
+      // Sans repos programmé : le repos par défaut choisi dans les
+      // paramètres de l'appareil, sinon le barème automatique par RIR.
+      const deviceRest = getDeviceSettings().restDefaultSeconds;
       const suggested =
         programmedRest != null && programmedRest > 0
           ? { seconds: programmedRest, label: formatRest(programmedRest) }
-          : getSuggestedRest(rir);
+          : deviceRest > 0
+            ? { seconds: deviceRest, label: formatRest(deviceRest) }
+            : getSuggestedRest(rir);
       const timer: RestTimer = {
         startedAt: Date.now(),
         suggestedSeconds: suggested.seconds,

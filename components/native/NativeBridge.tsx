@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { getDeviceSettings } from "@/lib/device-settings";
 
 // Pont avec l'appli native iOS/Android (Capacitor). Ne fait rien dans un
 // navigateur. Dans l'appli : barre d'état sombre, bouton retour Android,
@@ -51,7 +52,7 @@ export default function NativeBridge() {
           Browser.open({ url: a.href }).catch(() => {});
           return;
         }
-        if (el?.closest(".ep-nav-tab, .ep-btn-primary, [data-haptic]")) Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
+        if (getDeviceSettings().haptics && el?.closest(".ep-nav-tab, .ep-btn-primary, [data-haptic]")) Haptics.impact({ style: ImpactStyle.Light }).catch(() => {});
       };
       document.addEventListener("click", onClick, true);
 
