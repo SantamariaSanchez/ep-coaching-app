@@ -63,8 +63,10 @@ import type { PlanSuggestions } from "@/app/dashboard/coach/clients/[id]/autogen
 import {
   ExternalLink, User, Map, BookOpen, Dumbbell, Apple,
   ClipboardCheck, Image as ImageIcon, ClipboardList, ListChecks,
-  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass, Moon, Brain,
+  FileText, Droplet, CalendarDays, Footprints, Bell, Hourglass, Moon, Brain, Trophy,
 } from "lucide-react";
+import PerformanceHub from "@/components/performance/PerformanceHub";
+import type { DisciplineKey, PerformanceEntry } from "@/lib/disciplines";
 import SubscriptionToggle from "./SubscriptionToggle";
 
 type ActionState = { error?: string; success?: boolean } | null;
@@ -74,6 +76,7 @@ const TABS = [
   { key: "intake",    label: "Fiche client", icon: FileText },
   { key: "roadmap",   label: "Road Map",  icon: Map },
   { key: "logbook",   label: "Logbook",   icon: BookOpen },
+  { key: "performances", label: "Performances", icon: Trophy },
   { key: "programme", label: "Programme", icon: Dumbbell },
   { key: "nutrition", label: "Nutrition", icon: Apple },
   { key: "bilans",    label: "Bilans",    icon: ClipboardCheck },
@@ -198,6 +201,7 @@ export default function ClientProfileTabs({
   latestWeight,
   recentDailyLogs,
   measurements,
+  performance,
   points,
   program,
   workoutLogs,
@@ -266,6 +270,7 @@ export default function ClientProfileTabs({
   recentDailyLogs: DailyLog[];
   /** Item 13 : comparateur avant/après, voir components/ui/BeforeAfterComparator. */
   measurements: Measurement[];
+  performance?: { disciplines: DisciplineKey[]; entries: PerformanceEntry[]; bodyweightKg: number | null; isWoman: boolean } | null;
   points: number;
   program: ProgramWithDays | null;
   workoutLogs: WorkoutLog[];
@@ -418,7 +423,7 @@ export default function ClientProfileTabs({
           largeur de l'écran sur mobile, forçant à zoomer/dézoomer et
           défiler sur le côté pour juste choisir un onglet. */}
       <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 mb-6">
-        {TABS.filter(({ key }) => key !== "cycle" || intake?.gender === "Femme")
+        {TABS.filter(({ key }) => (key !== "cycle" || intake?.gender === "Femme") && (key !== "performances" || (performance && (performance.disciplines.length > 0 || performance.entries.length > 0))))
           // Onglet "Photos" = suivi de pose de préparation compétition, pas
           // les photos de check-in (gérées ailleurs). Masqué sauf pour un
           // client réellement en préparation, pour ne pas paraître cassé/vide.
@@ -850,6 +855,10 @@ export default function ClientProfileTabs({
           declaredInjuries={intake?.injuries ?? null}
           declaredHealthIssues={intake?.health_issues ?? null}
         />
+      )}
+
+      {activeTab === "performances" && performance && (
+        <PerformanceHub disciplines={performance.disciplines} entries={performance.entries} bodyweightKg={performance.bodyweightKg} isWoman={performance.isWoman} readOnly />
       )}
 
       {/*

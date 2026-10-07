@@ -32,6 +32,14 @@ export type ModuleKey =
   | "nutrition"
   | "mindset"
   | "competition"
+  | "notes"
+  // Disciplines (moteur Performances, lib/disciplines.ts)
+  | "perf_course"
+  | "perf_hyrox"
+  | "perf_crossfit"
+  | "perf_force"
+  | "perf_reeducation"
+  | "perf_sante"
   // Coach
   | "coaching_clients"
   | "contenu"
@@ -52,7 +60,25 @@ export interface AppSetup {
 export const EMPTY_SETUP: AppSetup = { answers: {}, modules: {}, completed: false };
 
 /** Modules désactivés par défaut (nouveautés qu'on ne force sur personne). */
-const OFF_BY_DEFAULT: ModuleKey[] = ["masse_grasse", "competition", "energie", "humeur", "hydratation", "courbatures", "cardio_repos"];
+const OFF_BY_DEFAULT: ModuleKey[] = [
+  "masse_grasse", "competition", "energie", "humeur", "hydratation", "courbatures", "cardio_repos",
+  "perf_course", "perf_hyrox", "perf_crossfit", "perf_force", "perf_reeducation", "perf_sante",
+];
+
+/** Disciplines du moteur Performances, avec leur module. */
+export const PERF_MODULES = {
+  course: "perf_course",
+  hyrox: "perf_hyrox",
+  crossfit: "perf_crossfit",
+  force: "perf_force",
+  reeducation: "perf_reeducation",
+  sante: "perf_sante",
+} as const satisfies Record<string, ModuleKey>;
+
+/** Disciplines actives pour cette personne (ordre fixe). */
+export function activeDisciplines(setup: AppSetup | null | undefined): (keyof typeof PERF_MODULES)[] {
+  return (Object.keys(PERF_MODULES) as (keyof typeof PERF_MODULES)[]).filter((k) => isOn(setup, PERF_MODULES[k]));
+}
 
 export function isOn(setup: AppSetup | null | undefined, key: ModuleKey): boolean {
   const v = setup?.modules?.[key];
@@ -78,12 +104,45 @@ export interface SetupQuestion {
   toModules?: (answer: string[]) => Modules;
   /** Question affichée seulement si... */
   showIf?: (answers: Record<string, unknown>) => boolean;
+  /** Ses modules s'appliquent après ceux des autres questions (priorité). */
+  applyLast?: boolean;
 }
 
 const has = (a: string[], v: string) => a.includes(v);
 
+/** Pratiques proposées aux membres (et niches proposées aux coachs). */
+export const PRACTICE_OPTIONS: ChoiceOption[] = [
+  { value: "musculation", label: "Musculation", hint: "Prise de muscle, esthétique" },
+  { value: "perte_gras", label: "Perte de gras", hint: "Sèche, remise en forme" },
+  { value: "bodybuilding_compet", label: "Bodybuilding de compétition", hint: "Prépa, posing, peak week" },
+  { value: "force", label: "Force et powerlifting", hint: "1RM, total, DOTS" },
+  { value: "course", label: "Course à pied", hint: "Allure, volume, records" },
+  { value: "hyrox", label: "Hyrox", hint: "Stations, runs, roxzone" },
+  { value: "crossfit", label: "CrossFit", hint: "WOD, benchmarks, haltéro" },
+  { value: "reeducation", label: "Rééducation, reprise après blessure", hint: "Douleur, amplitude, séances" },
+  { value: "sante", label: "Suivi santé renforcé", hint: "Tension, prises de sang" },
+];
+
 /** Questions "suivi perso" : membres, clients, et l'espace Moi des coachs. */
 export const MEMBER_QUESTIONS: SetupQuestion[] = [
+  {
+    key: "pratique",
+    title: "Qu'est-ce que tu pratiques ?",
+    subtitle: "L'appli s'adapte à ton sport : elle ajoute les bons outils et cache ceux qui ne te servent à rien.",
+    multi: true,
+    options: PRACTICE_OPTIONS,
+    applyLast: true,
+    toModules: (a) => ({
+      perf_course: has(a, "course"),
+      perf_hyrox: has(a, "hyrox"),
+      perf_crossfit: has(a, "crossfit"),
+      perf_force: has(a, "force"),
+      perf_reeducation: has(a, "reeducation"),
+      perf_sante: has(a, "sante"),
+      ...(has(a, "bodybuilding_compet") ? { competition: true, photos: true, masse_grasse: true } : {}),
+      ...(has(a, "perte_gras") ? { poids: true, pas: true } : {}),
+    }),
+  },
   {
     key: "corps",
     title: "Qu'est-ce que tu veux suivre sur ton corps ?",
@@ -155,8 +214,9 @@ export const MEMBER_QUESTIONS: SetupQuestion[] = [
       { value: "cycle", label: "Mon cycle menstruel" },
       { value: "mindset", label: "Mon mental", hint: "Habitudes, journal" },
       { value: "competition", label: "Je prépare une compétition" },
+      { value: "notes", label: "Prendre des notes", hint: "Idées, captures, dictées, relié à Claude" },
     ],
-    toModules: (a) => ({ cycle: has(a, "cycle"), mindset: has(a, "mindset"), competition: has(a, "competition") }),
+    toModules: (a) => ({ cycle: has(a, "cycle"), mindset: has(a, "mindset"), competition: has(a, "competition"), notes: has(a, "notes") }),
   },
 ];
 
@@ -185,6 +245,18 @@ export const COACH_QUESTIONS: SetupQuestion[] = [
     multi: false,
     options: CAREER_MODES,
     toModules: (a) => ({ equipe: has(a, "entreprise") }),
+  },
+  {
+    key: "niches",
+    title: "Tu coaches qui, surtout ?",
+    subtitle: "Ta ou tes niches. Tes clients auront directement les bons outils de suivi, et ton guide de positionnement part de là.",
+    multi: true,
+    options: [
+      ...PRACTICE_OPTIONS,
+      { value: "femmes", label: "Les femmes", hint: "Cycle, grossesse, post-partum" },
+      { value: "prepa", label: "Préparation physique", hint: "Sportifs d'autres disciplines" },
+      { value: "seniors", label: "Seniors, santé", hint: "Autonomie, mobilité, prévention" },
+    ],
   },
   {
     key: "objectifs",
@@ -244,7 +316,8 @@ export const COACH_QUESTIONS: SetupQuestion[] = [
 /** Calcule les modules à partir des réponses (questions visibles seulement). */
 export function modulesFromAnswers(questions: SetupQuestion[], answers: Record<string, unknown>): Modules {
   const out: Modules = {};
-  for (const q of questions) {
+  const ordered = [...questions.filter((q) => !q.applyLast), ...questions.filter((q) => q.applyLast)];
+  for (const q of ordered) {
     if (q.showIf && !q.showIf(answers)) continue;
     const raw = answers[q.key];
     const arr = Array.isArray(raw) ? (raw as string[]) : typeof raw === "string" ? [raw] : null;
@@ -267,6 +340,7 @@ const MEMBER_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
   entrainement: ["program", "logbook"],
   nutrition: ["nutrition"],
   mindset: ["mindset"],
+  notes: ["notes"],
 };
 
 const COACH_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
@@ -278,8 +352,11 @@ const COACH_SEGMENTS: Partial<Record<ModuleKey, string[]>> = {
 
 export function hiddenSegments(setup: AppSetup | null, space: "client" | "coach"): Set<string> {
   const hidden = new Set<string>();
-  if (!setup?.completed) return hidden;
   const personal = space === "client" ? "" : "moi/";
+  // Performances : visible seulement quand une discipline est choisie, même
+  // sans questionnaire rempli (rien à y montrer sinon).
+  if (activeDisciplines(setup).length === 0) hidden.add(`${personal}performances`);
+  if (!setup?.completed) return hidden;
   for (const [key, segs] of Object.entries(MEMBER_SEGMENTS)) {
     if (!isOn(setup, key as ModuleKey)) for (const s of segs ?? []) hidden.add(`${personal}${s}`);
   }
@@ -287,6 +364,9 @@ export function hiddenSegments(setup: AppSetup | null, space: "client" | "coach"
     for (const [key, segs] of Object.entries(COACH_SEGMENTS)) {
       if (!isOn(setup, key as ModuleKey)) for (const s of segs ?? []) hidden.add(s);
     }
+    // Les notes du coach vivent à /notes (pas sous Moi).
+    hidden.delete("moi/notes");
+    if (!isOn(setup, "notes")) hidden.add("notes");
     // Coach qui ne se suit pas lui-même : tout l'espace Moi disparaît du menu.
     if (setup.answers.suivi_perso === "non") hidden.add("moi/*");
   }

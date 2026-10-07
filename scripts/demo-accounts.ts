@@ -212,6 +212,25 @@ async function seedRichDemo(coachId: string, clientId: string, password: string)
     );
   }
 
+  // ── Personnalisation + performances (force et course) ────────────────
+  {
+    const { MEMBER_QUESTIONS, modulesFromAnswers } = await import("../lib/app-setup");
+    const answers = { pratique: ["musculation", "force", "course"], corps: ["poids", "mensurations", "photos"], bilan: ["sommeil", "pas", "stress", "digestion", "faim"], entrainement: "salle", nutrition: "plan", extras: ["mindset", "notes"] };
+    const now = new Date().toISOString();
+    await admin.from("user_app_setup").upsert({ user_id: clientId, answers, modules: modulesFromAnswers(MEMBER_QUESTIONS, answers), completed_at: now, updated_at: now }, { onConflict: "user_id" });
+  }
+  await admin.from("performance_entries").delete().eq("owner_id", clientId);
+  await admin.from("performance_entries").insert([
+    { owner_id: clientId, discipline: "force", kind: "serie", performed_on: daysAgo(20), data: { mouvement: "Squat", charge: 110, reps: 5, rpe: 8 } },
+    { owner_id: clientId, discipline: "force", kind: "serie", performed_on: daysAgo(13), data: { mouvement: "Squat", charge: 115, reps: 5, rpe: 8.5 } },
+    { owner_id: clientId, discipline: "force", kind: "serie", performed_on: daysAgo(12), data: { mouvement: "Développé couché", charge: 80, reps: 8, rpe: 8 } },
+    { owner_id: clientId, discipline: "force", kind: "serie", performed_on: daysAgo(10), data: { mouvement: "Soulevé de terre", charge: 150, reps: 4, rpe: 8 } },
+    { owner_id: clientId, discipline: "force", kind: "serie", performed_on: daysAgo(3), data: { mouvement: "Squat", charge: 120, reps: 4, rpe: 9 } },
+    { owner_id: clientId, discipline: "course", kind: "sortie", performed_on: daysAgo(6), data: { type: "Footing", distance_km: 6.2, duree: 2040, fc_moy: 142, rpe: 4 } },
+    { owner_id: clientId, discipline: "course", kind: "sortie", performed_on: daysAgo(2), data: { type: "Course officielle", distance_km: 10, duree: 2952, fc_moy: 171, rpe: 9 } },
+    { owner_id: clientId, discipline: "course", kind: "sortie", performed_on: daysAgo(1), data: { type: "Footing", distance_km: 5, duree: 1650, fc_moy: 138, rpe: 3 } },
+  ]);
+
   // ── Stock de courses (inventaire) ────────────────────────────────────
   await admin.from("pantry_items").delete().eq("owner_id", clientId);
   await admin.from("pantry_items").insert([

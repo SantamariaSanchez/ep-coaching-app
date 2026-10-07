@@ -52,6 +52,7 @@ import { generatePlanSuggestions } from "./autogenerate/actions";
 import { sendCorrectionFeedback } from "./checkins/actions";
 import { getClientCoachingPhase, computeCalibrationSignals, generateCoachingPhaseSuggestions } from "@/lib/coaching-phase";
 import ClientProfileTabs from "@/components/ui/ClientProfileTabs";
+import { loadPerformance } from "@/lib/performance-server";
 import { ChevronLeft, FileText, LayoutTemplate } from "lucide-react";
 
 const STATUS_BADGE = {
@@ -233,6 +234,7 @@ export default async function ClientDetailPage({
       </div>
 
       <ClientProfileTabs
+        performance={await loadPerformance(id)}
         client={client}
         latestWeight={latestWeight}
         measurements={measurements}

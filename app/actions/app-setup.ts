@@ -60,3 +60,25 @@ export async function updateCareerModeAction(mode: string): Promise<{ error?: st
   revalidatePath("/dashboard", "layout");
   return {};
 }
+
+// Active ou retire des disciplines (page Performances) sans repasser par tout
+// le questionnaire : les autres réponses sont gardées.
+export async function updatePracticeAction(practices: string[]): Promise<{ error?: string }> {
+  const user = await getUser();
+  if (!user) return { error: "Non authentifié." };
+  const profile = await getProfile(user.id);
+  const practiceQ = MEMBER_QUESTIONS.find((q) => q.key === "pratique");
+  const allowed = new Set(practiceQ?.options.map((o) => o.value) ?? []);
+  const clean = practices.filter((p) => allowed.has(p));
+  const admin = createAdminClient();
+  const { data: row } = await admin.from("user_app_setup").select("answers, completed_at").eq("user_id", user.id).maybeSingle();
+  const answers = { ...((row?.answers as Record<string, unknown>) ?? {}), pratique: clean };
+  const questions = profile?.role === "coach" ? [...COACH_QUESTIONS, ...MEMBER_QUESTIONS] : MEMBER_QUESTIONS;
+  const modules = modulesFromAnswers(questions, answers);
+  const { error } = await admin
+    .from("user_app_setup")
+    .upsert({ user_id: user.id, answers, modules, completed_at: row?.completed_at ?? null, updated_at: new Date().toISOString() }, { onConflict: "user_id" });
+  if (error) return { error: "Enregistrement impossible, réessaie." };
+  revalidatePath("/dashboard", "layout");
+  return {};
+}

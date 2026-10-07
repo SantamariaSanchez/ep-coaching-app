@@ -13,8 +13,13 @@ export default async function ClientAppSetupPage() {
   if (!user) redirect("/");
   const profile = await getProfile(user.id);
   if (profile?.role === "coach") redirect("/dashboard/coach/mon-appli");
-  const [setup, intake] = await Promise.all([getAppSetup(user.id), getClientIntake(user.id)]);
-  const initial = defaultAnswers(setup, { role: "client", isWoman: intake?.gender === "Femme" });
+  const [setup, intake, coachSetup] = await Promise.all([
+    getAppSetup(user.id),
+    getClientIntake(user.id),
+    profile?.coach_id ? getAppSetup(profile.coach_id) : Promise.resolve(null),
+  ]);
+  const coachNiches = Array.isArray(coachSetup?.answers?.niches) ? (coachSetup.answers.niches as string[]) : [];
+  const initial = defaultAnswers(setup, { role: "client", isWoman: intake?.gender === "Femme", coachNiches });
   return (
     <div className="page-transition" style={{ maxWidth: 560, margin: "0 auto", padding: "28px 16px 90px" }}>
       <h1 className="ep-h1" style={{ marginBottom: 6 }}>Mon appli</h1>

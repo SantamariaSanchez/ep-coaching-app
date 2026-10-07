@@ -217,6 +217,9 @@ export const COACH_SIDEBAR: SidebarGroup[] = [
       { label: "Ma semaine",     icon: CalendarCheck,  segment: "moi/semaine" },
       { label: "Programme",      icon: Dumbbell,       segment: "moi/programme" },
       { label: "Logbook",        icon: BookOpen,       segment: "moi/logbook" },
+      // Performances par discipline (2026-10-07) : masqué tant qu'aucune
+      // discipline n'est choisie dans Mon appli (hiddenSegments).
+      { label: "Performances",   icon: Trophy,         segment: "moi/performances" },
       // Manquait entièrement (trouvé en audit 2026-08-19) : un coach était
       // redirigé hors de toute page de lecture de formation, aucun moyen
       // de suivre son propre contenu (dont ENTREPRENARIAL SECRET, écrit
@@ -257,6 +260,7 @@ export const CLIENT_SIDEBAR: SidebarGroup[] = [
     items: [
       { label: "Programme", icon: Dumbbell,  segment: "program" },
       { label: "Logbook",   icon: BookOpen,  segment: "logbook" },
+      { label: "Performances", icon: Trophy, segment: "performances" },
     ],
   },
   {
