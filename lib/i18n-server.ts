@@ -13,13 +13,14 @@ export async function getLocale(userId?: string): Promise<Locale> {
   } catch {
     return "fr";
   }
-  if (!userId) return "fr";
-  try {
-    const { data } = await createAdminClient().from("user_settings").select("locale").eq("user_id", userId).maybeSingle();
-    return isLocale(data?.locale) ? data.locale : "fr";
-  } catch {
-    return "fr";
+  if (userId) {
+    try {
+      const { data } = await createAdminClient().from("user_settings").select("locale").eq("user_id", userId).maybeSingle();
+      if (isLocale(data?.locale)) return data.locale;
+    } catch {}
   }
+  // Aucun choix enregistré : langue du téléphone.
+  return getVisitorLocale();
 }
 
 export async function getT(): Promise<Translator> {
