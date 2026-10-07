@@ -32,7 +32,7 @@ export async function sendCoachAgentCheckin(
     const agent = getAgentByKey(agentKey);
     if (!agent) return { error: "Agent introuvable." };
 
-    if (!process.env.ANTHROPIC_API_KEY) return { error: "Clé ANTHROPIC_API_KEY manquante." };
+    if (!process.env.ANTHROPIC_API_KEY) return { error: "Assistant IA indisponible pour le moment. Tu peux préparer ta réponse avec Claude : Plus, Claude et Notion." };
 
     const [bilanCountRes, lastLogRes, programCountRes] = await Promise.all([
       admin.from("daily_logs").select("id", { count: "exact", head: true }).eq("client_id", clientId),

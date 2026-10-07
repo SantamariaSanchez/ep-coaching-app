@@ -22,7 +22,7 @@ export async function POST(request: Request) {
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return NextResponse.json(
-      { error: "Clé ANTHROPIC_API_KEY manquante dans les variables d'environnement." },
+      { error: "Analyse photo indisponible ici pour le moment. Fais-la avec Claude : Plus, Claude et Notion, « Photo de mon assiette »." },
       { status: 503 }
     );
   }

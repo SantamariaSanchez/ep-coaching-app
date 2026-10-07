@@ -95,7 +95,7 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
         <div className="ep-card" style={{ padding: "14px 16px", marginBottom: 14, borderColor: "rgba(250,204,21,0.35)", display: "flex", gap: 10 }}>
           <AlertTriangle size={16} style={{ color: "#facc15", flexShrink: 0, marginTop: 2 }} />
           <p style={{ fontSize: 13, color: "rgba(245,237,237,0.75)", margin: 0, lineHeight: 1.6 }}>
-            La clé Windsor n&apos;est pas encore configurée : ajoute <strong>WINDSOR_API_KEY</strong> dans les variables Vercel (Production, Sensitive), puis redéploie. Sans elle, aucune synchro ne peut tourner.
+            La synchro automatique des réseaux n&apos;est pas encore branchée sur ce déploiement : aucune mise à jour automatique ne peut tourner. Tu peux toujours saisir tes chiffres à la main dans Mes stats réseaux.
           </p>
         </div>
       )}
@@ -302,9 +302,9 @@ export default async function SocialStatsPage({ searchParams }: { searchParams: 
                   return (
                     <div key={i} style={{ padding: "6px 0", borderTop: i ? "1px solid rgba(245,237,237,0.06)" : "none" }}>
                       <p style={{ fontSize: 12, color: "rgba(245,237,237,0.75)", margin: 0 }}>
-                        {new Date(r.started_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {PLATFORM_LABELS[r.platform as Platform] ?? r.platform} · {r.trigger} ·{" "}
-                        <span style={{ color: r.status === "success" ? "#4ade80" : r.status === "partial" || r.status === "running" ? "#facc15" : "#fca5a5" }}>{r.status}</span> · {r.rows_written} ligne(s)
-                        {missingCount ? <span style={{ color: "rgba(245,237,237,0.45)" }}> · {missingCount} champ(s) non fournis par Windsor</span> : null}
+                        {new Date(r.started_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })} · {PLATFORM_LABELS[r.platform as Platform] ?? r.platform} · {r.trigger === "manual" || r.trigger === "manuel" ? "lancée à la main" : "automatique"} ·{" "}
+                        <span style={{ color: r.status === "success" ? "#4ade80" : r.status === "partial" || r.status === "running" ? "#facc15" : "#fca5a5" }}>{r.status === "success" ? "réussie" : r.status === "partial" ? "partielle" : r.status === "running" ? "en cours" : "échec"}</span> · {r.rows_written} chiffre(s) mis à jour
+                        {missingCount ? <span style={{ color: "rgba(245,237,237,0.45)" }}> · {missingCount} chiffre(s) non fournis par la plateforme</span> : null}
                       </p>
                       {r.error && <p style={{ fontSize: 11.5, color: "#fca5a5", margin: "2px 0 0", wordBreak: "break-word" }}>{r.error.slice(0, 400)}</p>}
                     </div>

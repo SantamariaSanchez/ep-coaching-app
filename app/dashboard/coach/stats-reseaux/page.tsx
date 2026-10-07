@@ -11,6 +11,7 @@ import SocialCharts from "@/components/social/SocialCharts";
 import PostScriptLink from "@/components/social/PostScriptLink";
 import AccountEntryForm from "@/components/social/AccountEntryForm";
 import PostEntryForm from "@/components/social/PostEntryForm";
+import ClaudePrompt from "@/components/ai/ClaudePrompt";
 
 // Mes stats réseaux (2026-09-29) : chaque coach suit ses abonnés, sa
 // portée, ses vues et ses publications, les relie à ses scripts du Studio
@@ -100,6 +101,39 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
       <p style={{ fontFamily: "var(--font-display)", fontStyle: "italic", fontWeight: 700, color: "rgba(245,237,237,0.6)", fontSize: 16, margin: "0 0 18px" }}>
         Tes vrais chiffres, pour savoir quoi refaire.
       </p>
+
+      {/* En bref (2026-10-07, « que ça soit hyper simple ») : la semaine en
+          une phrase et ce qui marche le mieux, avant le détail. */}
+      {data.overview.length > 0 && (() => {
+        const week = data.overview.reduce((sum, a) => sum + (a.growth.d7 ?? 0), 0);
+        const hasWeek = data.overview.some((a) => a.growth.d7 !== null);
+        const bestFormat = ins.byFormat[0] ? TYPE_LABELS[ins.byFormat[0].key] ?? ins.byFormat[0].key : null;
+        const bestDay = ins.byWeekday[0]?.key ?? null;
+        const bestHour = ins.byHour[0]?.key ?? null;
+        return (
+          <div className="ep-card-hero" style={{ padding: "14px 16px", marginBottom: 14 }}>
+            <p className="ep-label" style={{ marginBottom: 6 }}>En bref</p>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#F5EDED", lineHeight: 1.45 }}>
+              {hasWeek ? `${week >= 0 ? "+" : ""}${week.toLocaleString("fr-FR")} abonnés en 7 jours` : `${fmt(totalFollowers)} abonnés au total`}
+              {ins.postCount > 0 ? `, ${ins.perWeek ?? 0} publication${(ins.perWeek ?? 0) > 1 ? "s" : ""} par semaine.` : "."}
+            </p>
+            {(bestFormat || bestDay || bestHour) && (
+              <p style={{ margin: "6px 0 0", fontSize: 12.5, color: "rgba(245,237,237,0.7)", lineHeight: 1.55 }}>
+                Ce qui marche le mieux chez toi : {[bestFormat && `format ${bestFormat.toLowerCase()}`, bestDay && `le ${String(bestDay).toLowerCase()}`, bestHour && `vers ${bestHour}`].filter(Boolean).join(", ")}.
+              </p>
+            )}
+          </div>
+        );
+      })()}
+
+      <div style={{ marginBottom: 14 }}>
+        <ClaudePrompt
+          compact
+          title="Demander à Claude quoi publier cette semaine"
+          hint="Claude lit tes vraies stats (connecteur EP Coaching, Plus > Claude et Notion), compare tes meilleures et pires publications et te donne 3 choses à refaire."
+          prompt="Analyse mes stats réseaux des 30 derniers jours dans EP Coaching (outil mes_stats_reseaux) et mon positionnement (outil mon_positionnement). Compare mon top 5 et mon flop 5 : sujets, accroches, formats. Donne-moi 3 choses à refaire cette semaine, 1 chose à arrêter, et 3 idées de reels précises que j'ajouterai à mon Studio si je valide (outil ajouter_idee_contenu)."
+        />
+      </div>
 
       {profile?.is_platform_owner && (
         <Link href="/dashboard/coach/admin/stats-reseaux" className="ep-card" style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", marginBottom: 14, textDecoration: "none", fontSize: 12.5, color: "rgba(245,237,237,0.75)" }}>
