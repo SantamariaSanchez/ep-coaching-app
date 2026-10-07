@@ -32,6 +32,7 @@ export default function CoachDocumentsSpace({
   initialFiles: CoachPersonalFile[];
   initialNotes: CoachPersonalNote[];
 }) {
+  const tr = useT();
   const [tab, setTab] = useState<Tab>("modeles");
 
   return (
@@ -39,9 +40,9 @@ export default function CoachDocumentsSpace({
       <div className="flex gap-1.5 mb-6 border-b border-[#890404]/20">
         {(
           [
-            { key: "modeles", label: "Modèles" },
-            { key: "fichiers", label: "Mes fichiers" },
-            { key: "notes", label: "Notes" },
+            { key: "modeles", label: tr("Modèles") },
+            { key: "fichiers", label: tr("Mes fichiers") },
+            { key: "notes", label: tr("Notes") },
           ] as { key: Tab; label: string }[]
         ).map((t) => (
           <button
@@ -357,7 +358,7 @@ function NotesTab({ initialNotes }: { initialNotes: CoachPersonalNote[] }) {
               <button
                 type="button"
                 onClick={() => toggle(n.id, n.done)}
-                aria-label={n.done ? "Marquer non fait" : "Marquer fait"}
+                aria-label={n.done ? tr("Marquer non fait") : tr("Marquer fait")}
                 className={`flex-shrink-0 w-5 h-5 mt-0.5 rounded border flex items-center justify-center transition-colors ${
                   n.done ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
                 }`}

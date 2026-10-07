@@ -31,7 +31,7 @@ export default function PasswordInput({
         type="button"
         onClick={() => setVisible((v) => !v)}
         tabIndex={-1}
-        aria-label={visible ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+        aria-label={visible ? t("Masquer le mot de passe") : t("Afficher le mot de passe")}
         style={{
           position: "absolute",
           right: 8,

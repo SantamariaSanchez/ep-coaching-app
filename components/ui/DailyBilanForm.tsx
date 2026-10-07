@@ -211,7 +211,7 @@ export function WeightCard({ today, existing, action, onSaved }: { today: string
           </div>
         </div>
         {state?.error && <p style={{ fontSize: 11, color: "#FDC4C4", marginTop: 8 }}>{state.error}</p>}
-        <SaveButton pending={pending} label={existing?.weight_morning != null ? "Mettre à jour" : "Enregistrer le poids"} />
+        <SaveButton pending={pending} label={existing?.weight_morning != null ? t("Mettre à jour") : t("Enregistrer le poids")} />
       </CardShell>
     </form>
   );
@@ -522,7 +522,7 @@ export function NutritionCard({
     <form action={formAction}>
       <input type="hidden" name="log_date" value={today} />
       {followed === "oui" && <input type="hidden" name="diet_followed" value="oui" />}
-      <CardShell icon={Apple} title={showNutrition ? "Nutrition" : "Faim"} saved={!!state?.success}>
+      <CardShell icon={Apple} title={showNutrition ? t("Nutrition") : t("Faim")} saved={!!state?.success}>
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {showNutrition && plan && (
             <div>

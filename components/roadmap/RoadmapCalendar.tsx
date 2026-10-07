@@ -170,17 +170,17 @@ function WeekDetailModal({
   const tiles = stat
     ? [
         {
-          label: "Bilans",
+          label: t("Bilans"),
           display: `${stat.bilanDays}/7`,
           ok: stat.bilanDays >= dailyTarget || stat.checkinExists,
         },
         {
-          label: "Nutrition",
+          label: t("Nutrition"),
           display: `${stat.nutritionDays}/7`,
           ok: stat.nutritionDays >= dailyTarget,
         },
         {
-          label: "Séances",
+          label: t("Séances"),
           display: planned ? `${stat.sessionsDone}/${planned}` : `${stat.sessionsDone}`,
           ok: planned ? stat.sessionsDone >= (planned * elapsed) / 7 - 0.01 : stat.sessionsDone > 0,
         },

@@ -499,8 +499,8 @@ export default function ClientProfileTabs({
               <div className="space-y-3">
                 {(intake.goal_3_months || intake.goal_12_months) && (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <InfoRow label="Objectif 3 mois" value={intake.goal_3_months} />
-                    <InfoRow label="Objectif 12 mois" value={intake.goal_12_months} />
+                    <InfoRow label={t("Objectif 3 mois")} value={intake.goal_3_months} />
+                    <InfoRow label={t("Objectif 12 mois")} value={intake.goal_12_months} />
                   </div>
                 )}
                 <div className="flex flex-wrap gap-1.5">
@@ -555,11 +555,11 @@ export default function ClientProfileTabs({
 
           <Card title={t("Informations personnelles")}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <InfoRow label="Nom complet" value={client.full_name} />
-              <InfoRow label="Email" value={client.email} />
-              <InfoRow label="Téléphone" value={client.phone} />
+              <InfoRow label={t("Nom complet")} value={client.full_name} />
+              <InfoRow label={t("Email")} value={client.email} />
+              <InfoRow label={t("Téléphone")} value={client.phone} />
               <InfoRow
-                label="Statut"
+                label={t("Statut")}
                 value={
                   client.status === "active"
                     ? "Actif"
@@ -574,11 +574,11 @@ export default function ClientProfileTabs({
           <Card title={t("Suivi")}>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <InfoRow
-                label="Date de début"
+                label={t("Date de début")}
                 value={formatDate(client.start_date)}
               />
               <InfoRow
-                label="Poids de départ"
+                label={t("Poids de départ")}
                 value={
                   client.weight_start ? `${client.weight_start} kg` : null
                 }

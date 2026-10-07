@@ -195,9 +195,9 @@ function CaloriesCalculator() {
           </p>
           <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[#890404]/15">
             {[
-              { label: "Protéines", value: result.proteinsG, color: "#E01E1E" },
-              { label: "Glucides", value: result.carbsG, color: "#4ade80" },
-              { label: "Lipides", value: result.fatsG, color: "#fbbf24" },
+              { label: t("Protéines"), value: result.proteinsG, color: "#E01E1E" },
+              { label: t("Glucides"), value: result.carbsG, color: "#4ade80" },
+              { label: t("Lipides"), value: result.fatsG, color: "#fbbf24" },
             ].map((m) => (
               <div key={m.label} className="text-center">
                 <p className="text-lg font-black" style={{ color: m.color }}>{m.value}g</p>

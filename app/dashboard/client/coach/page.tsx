@@ -51,7 +51,7 @@ export default async function ClientMonCoachPage() {
         <div className="flex items-center gap-4 mb-4">
           {avatarSrc ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={avatarSrc} alt={coach.full_name ?? "Coach"} className="w-16 h-16 rounded-2xl object-cover flex-shrink-0" />
+            <img src={avatarSrc} alt={coach.full_name ?? t("Coach")} className="w-16 h-16 rounded-2xl object-cover flex-shrink-0" />
           ) : (
             <div
               className="w-16 h-16 rounded-2xl flex-shrink-0 flex items-center justify-center text-xl font-black text-white"

@@ -132,9 +132,9 @@ export default function CoachFinanceTracker({ initialEntries }: { initialEntries
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 20 }}>
-        <SummaryCard label="Revenus (mois)" value={eur(monthRevenue)} color="#4ade80" Icon={TrendingUp} />
-        <SummaryCard label="Dépenses (mois)" value={eur(monthExpense)} color="#f87171" Icon={TrendingDown} />
-        <SummaryCard label="Solde (mois)" value={eur(monthRevenue - monthExpense)} color="#F5EDED" Icon={Wallet} />
+        <SummaryCard label={t("Revenus (mois)")} value={eur(monthRevenue)} color="#4ade80" Icon={TrendingUp} />
+        <SummaryCard label={t("Dépenses (mois)")} value={eur(monthExpense)} color="#f87171" Icon={TrendingDown} />
+        <SummaryCard label={t("Solde (mois)")} value={eur(monthRevenue - monthExpense)} color="#F5EDED" Icon={Wallet} />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>

@@ -87,10 +87,10 @@ export default function AutoGeneratePlanButton({
                   </p>
                   <div className="grid grid-cols-4 gap-2">
                     {[
-                      { label: "Kcal", value: result.nutrition.calories },
-                      { label: "Prot.", value: `${result.nutrition.proteins}g` },
-                      { label: "Gluc.", value: `${result.nutrition.carbs}g` },
-                      { label: "Lip.", value: `${result.nutrition.fats}g` },
+                      { label: t("Kcal"), value: result.nutrition.calories },
+                      { label: t("Prot."), value: `${result.nutrition.proteins}g` },
+                      { label: t("Gluc."), value: `${result.nutrition.carbs}g` },
+                      { label: t("Lip."), value: `${result.nutrition.fats}g` },
                     ].map((m) => (
                       <div key={m.label} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-2 py-2 text-center">
                         <p className="text-sm font-black text-white">{m.value}</p>

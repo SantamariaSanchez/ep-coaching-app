@@ -360,9 +360,9 @@ export default function NutritionBilanQuiz({
         </p>
         <div className="grid grid-cols-3 gap-2 mb-5">
           {[
-            { label: "Protéines", val: summary.prot, color: "text-blue-300" },
-            { label: "Glucides",  val: summary.carbs, color: "text-amber-300" },
-            { label: "Lipides",   val: summary.fat,   color: "text-rose-300" },
+            { label: t("Protéines"), val: summary.prot, color: "text-blue-300" },
+            { label: t("Glucides"),  val: summary.carbs, color: "text-amber-300" },
+            { label: t("Lipides"),   val: summary.fat,   color: "text-rose-300" },
           ].map(({ label, val, color }) => (
             <div key={label} className="bg-[#150000] border border-[#890404]/20 rounded-xl p-3">
               <p className="text-[9px] text-[#F5EDED]/35 mb-0.5">{label}</p>
@@ -683,10 +683,10 @@ export default function NutritionBilanQuiz({
                 <p className="text-[9px] text-[#F5EDED]/25">{t("Valeurs pour 100g")}</p>
                 <div className="grid grid-cols-4 gap-1.5">
                   {([
-                    { key: "calories", label: "Kcal" },
-                    { key: "proteins", label: "Prot." },
-                    { key: "carbs", label: "Gluc." },
-                    { key: "fats", label: "Lip." },
+                    { key: "calories", label: t("Kcal") },
+                    { key: "proteins", label: t("Prot.") },
+                    { key: "carbs", label: t("Gluc.") },
+                    { key: "fats", label: t("Lip.") },
                   ] as const).map(({ key, label }) => (
                     <div key={key}>
                       <input

@@ -178,7 +178,7 @@ export default function PhasePilotCard({
   basePath: string | null;
 }) {
   const tr = useT();
-  if (error) return <RoadmapLoadError message={error} hint="La road map reste consultable plus bas." />;
+  if (error) return <RoadmapLoadError message={error} hint={tr("La road map reste consultable plus bas.")} />;
   if (!pilot) return null;
 
   const phase = pilot.activePhase;

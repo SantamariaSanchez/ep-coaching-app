@@ -157,11 +157,11 @@ export default function AddFoodSheet({
 
   const g = Math.max(0, Number(qty.replace(",", ".")) || 0);
   const tabs: { key: Tab; label: string; icon: typeof Search }[] = [
-    { key: "aliments", label: "Aliments", icon: Search },
-    ...(hasPlan ? [{ key: "plan" as Tab, label: "Plan", icon: ClipboardList }] : []),
-    { key: "recettes", label: "Recettes", icon: ChefHat },
-    ...(savedMeals.length ? [{ key: "repas" as Tab, label: "Mes repas", icon: BookOpen }] : []),
-    { key: "rapide", label: "Rapide", icon: Zap },
+    { key: "aliments", label: tr("Aliments"), icon: Search },
+    ...(hasPlan ? [{ key: "plan" as Tab, label: tr("Plan"), icon: ClipboardList }] : []),
+    { key: "recettes", label: tr("Recettes"), icon: ChefHat },
+    ...(savedMeals.length ? [{ key: "repas" as Tab, label: tr("Mes repas"), icon: BookOpen }] : []),
+    { key: "rapide", label: tr("Rapide"), icon: Zap },
   ];
 
   const dayLabel = new Intl.DateTimeFormat("fr-FR", { weekday: "long", day: "numeric", month: "long" }).format(new Date(`${date}T12:00:00`));
@@ -279,8 +279,8 @@ export default function AddFoodSheet({
       {tab === "plan" && (
         <div className="space-y-2">
           {[
-            { title: "Repas du plan aujourd'hui", list: planMealsToday },
-            { title: "Autres repas du plan", list: planMealsOther },
+            { title: tr("Repas du plan aujourd'hui"), list: planMealsToday },
+            { title: tr("Autres repas du plan"), list: planMealsOther },
           ]
             .filter((s) => s.list.length > 0)
             .map((s) => (

@@ -170,14 +170,14 @@ export default function NotesApp({ initialNotes, tags, connect }: { initialNotes
           onKeyDown={(e) => {
             if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) save();
           }}
-          placeholder={listening ? "Je t'écoute..." : "Une idée, un lien, une tâche ([ ] ...), #tag..."}
+          placeholder={listening ? tr("Je t'écoute...") : tr("Une idée, un lien, une tâche ([ ] ...), #tag...")}
           rows={draft.split("\n").length > 2 ? 5 : 2}
           aria-label={tr("Nouvelle note")}
           autoFocus={params.get("capture") === "1"}
           style={{ width: "100%", background: "transparent", border: "none", outline: "none", resize: "none", color: "#F5EDED", fontSize: 15, lineHeight: 1.5, fontFamily: "inherit" }}
         />
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 6 }}>
-          <button type="button" onClick={toggleDictation} aria-label={listening ? "Arrêter la dictée" : "Dicter"} style={{ ...chip(listening), padding: "8px 11px" }}>
+          <button type="button" onClick={toggleDictation} aria-label={listening ? tr("Arrêter la dictée") : tr("Dicter")} style={{ ...chip(listening), padding: "8px 11px" }}>
             {listening ? <MicOff size={15} /> : <Mic size={15} />} {listening ? tr("Stop") : tr("Dicter")}
           </button>
           <button type="button" onClick={() => fileRef.current?.click()} aria-label={tr("Ajouter une capture")} style={{ ...chip(false), padding: "8px 11px" }}>
@@ -330,7 +330,7 @@ function NoteEditor({ note, all, tags, onClose, onOpen, onChange, onDeleted }: {
                 <Check size={13} /> {note.done ? tr("À refaire") : tr("Fait")}
               </button>
             )}
-            <button type="button" style={btn} onClick={() => persist({ pinned: !note.pinned })} aria-label={note.pinned ? "Désépingler" : "Épingler"}>
+            <button type="button" style={btn} onClick={() => persist({ pinned: !note.pinned })} aria-label={note.pinned ? tr("Désépingler") : tr("Épingler")}>
               {note.pinned ? <PinOff size={13} /> : <Pin size={13} />}
             </button>
             <button

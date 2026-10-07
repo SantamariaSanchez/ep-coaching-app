@@ -132,7 +132,7 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
         <ClaudePrompt
           compact
           title={tr("Demander à Claude quoi publier cette semaine")}
-          hint="Claude lit tes vraies stats (connecteur EP Coaching, Plus > Claude et Notion), compare tes meilleures et pires publications et te donne 3 choses à refaire."
+          hint={tr("Claude lit tes vraies stats (connecteur EP Coaching, Plus > Claude et Notion), compare tes meilleures et pires publications et te donne 3 choses à refaire.")}
           prompt="Analyse mes stats réseaux des 30 derniers jours dans EP Coaching (outil mes_stats_reseaux) et mon positionnement (outil mon_positionnement). Compare mon top 5 et mon flop 5 : sujets, accroches, formats. Donne-moi 3 choses à refaire cette semaine, 1 chose à arrêter, et 3 idées de reels précises que j'ajouterai à mon Studio si je valide (outil ajouter_idee_contenu)."
         />
       </div>
@@ -237,9 +237,9 @@ export default async function MySocialStatsPage({ searchParams }: { searchParams
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
               {[
-                { title: "Meilleur format", rows: ins.byFormat.map((r) => ({ ...r, key: TYPE_LABELS[r.key] ?? r.key })) },
-                { title: "Meilleur jour", rows: ins.byWeekday },
-                { title: "Meilleure heure", rows: ins.byHour },
+                { title: tr("Meilleur format"), rows: ins.byFormat.map((r) => ({ ...r, key: TYPE_LABELS[r.key] ?? r.key })) },
+                { title: tr("Meilleur jour"), rows: ins.byWeekday },
+                { title: tr("Meilleure heure"), rows: ins.byHour },
               ].map((b) => (
                 <div key={b.title}>
                   <p style={{ fontSize: 10.5, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", color: "rgba(245,237,237,0.45)", margin: "0 0 6px" }}>{b.title}</p>

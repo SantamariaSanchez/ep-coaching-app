@@ -98,7 +98,7 @@ function FieldInput({ def, value, onChange, idPrefix }: { def: FieldDef; value: 
           {...common}
           type={def.type === "email" ? "email" : def.type === "phone" ? "tel" : def.type === "url" ? "url" : "text"}
           onChange={(e) => onChange(e.target.value)}
-          placeholder={def.placeholder ?? (def.type === "url" ? "https://" : undefined)}
+          placeholder={def.placeholder ?? (def.type === "url" ? t("https://") : undefined)}
         />
       );
   }

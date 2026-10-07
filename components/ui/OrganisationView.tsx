@@ -678,13 +678,13 @@ rapides pour être sûr qu'on te fasse gagner du temps :
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-6">
         {(
           [
-            { key: "coachs-ia" as const, label: "Coachs IA", icon: Bot, badge: aiCoaches.length || null },
-            { key: "candidatures" as const, label: "Candidatures", icon: Inbox, badge: newApplicationsForTab || null },
-            { key: "poles" as const, label: "Pôles & postes", icon: Building2, badge: null },
-            { key: "parcours" as const, label: "Intégration", icon: Users, badge: null },
-            { key: "formation" as const, label: "Formation", icon: GraduationCap, badge: null },
-            { key: "fiche" as const, label: "Fiche exemple", icon: FileText, badge: null },
-            { key: "contrats" as const, label: "Contrats", icon: ShieldAlert, badge: null },
+            { key: "coachs-ia" as const, label: tr("Coachs IA"), icon: Bot, badge: aiCoaches.length || null },
+            { key: "candidatures" as const, label: tr("Candidatures"), icon: Inbox, badge: newApplicationsForTab || null },
+            { key: "poles" as const, label: tr("Pôles & postes"), icon: Building2, badge: null },
+            { key: "parcours" as const, label: tr("Intégration"), icon: Users, badge: null },
+            { key: "formation" as const, label: tr("Formation"), icon: GraduationCap, badge: null },
+            { key: "fiche" as const, label: tr("Fiche exemple"), icon: FileText, badge: null },
+            { key: "contrats" as const, label: tr("Contrats"), icon: ShieldAlert, badge: null },
           ]
         ).map(({ key, label, icon: Icon, badge }) => (
           <button

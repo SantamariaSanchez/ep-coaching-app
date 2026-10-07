@@ -204,8 +204,8 @@ export default function StaffAuthCard({
 
           <div style={{ display: "flex", gap: 8, marginBottom: 22 }} role="tablist">
             {([
-              { key: "connexion", label: "Me connecter", icon: KeyRound },
-              { key: "premiere", label: "Première connexion", icon: UserPlus },
+              { key: "connexion", label: t("Me connecter"), icon: KeyRound },
+              { key: "premiere", label: t("Première connexion"), icon: UserPlus },
             ] as const).map(({ key, label, icon: Icon }) => (
               <button
                 key={key}
@@ -232,9 +232,9 @@ export default function StaffAuthCard({
 
           <div style={{ marginTop: 24, paddingTop: 16, borderTop: "1px solid rgba(245,237,237,0.07)", display: "flex", flexWrap: "wrap", gap: "6px 14px", justifyContent: "center" }}>
             {[
-              { href: "/legal/equipe", label: "Conditions de collaboration" },
-              { href: "/legal/confidentialite", label: "Confidentialité" },
-              { href: "/legal/cgu", label: "CGU de l'appli" },
+              { href: "/legal/equipe", label: t("Conditions de collaboration") },
+              { href: "/legal/confidentialite", label: t("Confidentialité") },
+              { href: "/legal/cgu", label: t("CGU de l'appli") },
             ].map((l) => (
               <Link key={l.href} href={l.href} target="_blank" style={{ fontSize: 10.5, fontWeight: 600, color: "rgba(245,237,237,0.35)", textDecoration: "none" }}>
                 {l.label}

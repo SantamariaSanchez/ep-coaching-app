@@ -635,7 +635,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                               handlePublishSection(sec.id, !sec.lessons.every((l) => l.is_published));
                             }}
                             disabled={saving === `pub-${sec.id}`}
-                            title={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"} aria-label={sec.lessons.every((l) => l.is_published) ? "Masquer toutes les vidéos de ce module" : "Publier toutes les vidéos de ce module (celles avec une URL renseignée)"}
+                            title={sec.lessons.every((l) => l.is_published) ? t("Masquer toutes les vidéos de ce module") : t("Publier toutes les vidéos de ce module (celles avec une URL renseignée)")} aria-label={sec.lessons.every((l) => l.is_published) ? t("Masquer toutes les vidéos de ce module") : t("Publier toutes les vidéos de ce module (celles avec une URL renseignée)")}
                             style={{ display: "flex", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 2 }}
                           >
                             <CheckSquare size={12} style={{ color: sec.lessons.every((l) => l.is_published) ? "#4ade80" : "rgba(245,237,237,0.3)" }} />
@@ -709,7 +709,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                         {/* Ajouter une vidéo dans cette section */}
                         <div style={{ padding: "8px 18px 8px 36px" }}>
                           <AddItemButton
-                            label="Ajouter une vidéo"
+                            label={t("Ajouter une vidéo")}
                             iconSize={10}
                             onAdd={(title) => handleAddLesson(sec.id, sec.lessons.length, title)}
                           />
@@ -724,7 +724,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
                     handleDeleteModule. */}
                 <div style={{ padding: "10px 18px" }}>
                   <AddItemButton
-                    label="Ajouter un module"
+                    label={t("Ajouter un module")}
                     dashed={false}
                     onAdd={(title) => handleAddSection(mod.id, mod.sections.length, title)}
                   />
@@ -737,7 +737,7 @@ export default function CoachFormationEditor({ formation }: { formation: Formati
 
       {/* Ajouter une section (formation_modules) à la formation. */}
       <AddItemButton
-        label="Ajouter une section"
+        label={t("Ajouter une section")}
         iconSize={14}
         onAdd={handleAddModule}
         className="ep-btn-secondary"
@@ -866,7 +866,7 @@ function LessonEditor({
 
             <button
               onClick={() => setPublished(!published)}
-              title={published ? "Masquer" : "Publier"} aria-label={published ? "Masquer" : "Publier"}
+              title={published ? t("Masquer") : t("Publier")} aria-label={published ? t("Masquer") : t("Publier")}
               style={{
                 background: published ? "rgba(74,222,128,0.1)" : "rgba(255,255,255,0.04)",
                 border: `1px solid ${published ? "rgba(74,222,128,0.25)" : "rgba(255,255,255,0.08)"}`,

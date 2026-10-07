@@ -337,10 +337,10 @@ export default function NutritionForm({
           <p className={labelCls}>{tr("Objectifs actuels")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {[
-              { label: "Calories", value: existingProfile.calories_target, unit: "kcal" },
-              { label: "Protéines", value: existingProfile.proteins_target, unit: "g" },
-              { label: "Glucides", value: existingProfile.carbs_target, unit: "g" },
-              { label: "Lipides", value: existingProfile.fats_target, unit: "g" },
+              { label: tr("Calories"), value: existingProfile.calories_target, unit: "kcal" },
+              { label: tr("Protéines"), value: existingProfile.proteins_target, unit: "g" },
+              { label: tr("Glucides"), value: existingProfile.carbs_target, unit: "g" },
+              { label: tr("Lipides"), value: existingProfile.fats_target, unit: "g" },
             ].map(({ label, value, unit }) => (
               <div key={label}>
                 <p className="text-[10px] text-[#F5EDED]/35 uppercase tracking-widest font-semibold">
@@ -628,10 +628,10 @@ export default function NutritionForm({
           {/* TDEE breakdown */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5 pb-5 border-b border-[#890404]/20">
             {[
-              { label: "BMR", value: calc.bmr },
-              { label: "EAT", value: calc.eat },
-              { label: "NEAT", value: calc.neat },
-              { label: "TEF", value: calc.tef },
+              { label: tr("BMR"), value: calc.bmr },
+              { label: tr("EAT"), value: calc.eat },
+              { label: tr("NEAT"), value: calc.neat },
+              { label: tr("TEF"), value: calc.tef },
             ].map(({ label, value }) => (
               <div
                 key={label}
@@ -689,10 +689,10 @@ export default function NutritionForm({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {(
             [
-              { key: "calories" as const, label: "Objectif calorique", unit: "kcal", color: "text-white" },
-              { key: "proteins" as const, label: "Protéines", unit: "g", color: "text-blue-300" },
-              { key: "carbs" as const, label: "Glucides", unit: "g", color: "text-amber-300" },
-              { key: "fats" as const, label: "Lipides", unit: "g", color: "text-rose-300" },
+              { key: "calories" as const, label: tr("Objectif calorique"), unit: "kcal", color: "text-white" },
+              { key: "proteins" as const, label: tr("Protéines"), unit: "g", color: "text-blue-300" },
+              { key: "carbs" as const, label: tr("Glucides"), unit: "g", color: "text-amber-300" },
+              { key: "fats" as const, label: tr("Lipides"), unit: "g", color: "text-rose-300" },
             ]
           ).map(({ key, label, unit, color }) => (
             <div key={key} className="bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2.5">

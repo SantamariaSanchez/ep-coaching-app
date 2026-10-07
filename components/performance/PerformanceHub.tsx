@@ -305,7 +305,7 @@ function FieldInput({ field, value, onChange }: { field: FieldDef; value: string
         inputMode={field.type === "number" ? "decimal" : field.type === "duration" ? "numeric" : undefined}
         step={field.step}
         min={field.min}
-        placeholder={field.placeholder ?? (field.type === "duration" ? "mm:ss ou h:mm:ss" : undefined)}
+        placeholder={field.placeholder ?? (field.type === "duration" ? t("mm:ss ou h:mm:ss") : undefined)}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-1 w-full h-11 rounded-xl bg-[#150000] border border-[#890404]/40 px-3 text-sm text-white placeholder:text-[#F5EDED]/25"

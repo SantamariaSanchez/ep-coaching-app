@@ -216,42 +216,42 @@ function NutritionalContextPanel({ intake }: { intake: ClientIntake | null }) {
   const signals: { label: string; value: string; flag?: boolean }[] = [];
   if (intake.stress_level != null) {
     signals.push({
-      label: "Niveau de stress",
+      label: tr("Niveau de stress"),
       value: `${intake.stress_level}/10${intake.stress_level >= 7 ? " (élevé)" : ""}`,
       flag: intake.stress_level >= 7,
     });
   }
   if (intake.sleep_quality != null) {
     signals.push({
-      label: "Qualité du sommeil",
+      label: tr("Qualité du sommeil"),
       value: `${intake.sleep_quality}/10${intake.sleep_quality <= 4 ? " (faible)" : ""}`,
       flag: intake.sleep_quality <= 4,
     });
   }
   if (intake.sleep_hours != null) {
-    signals.push({ label: "Sommeil", value: `${intake.sleep_hours}h/nuit en moyenne`, flag: intake.sleep_hours < 6.5 });
+    signals.push({ label: tr("Sommeil"), value: `${intake.sleep_hours}h/nuit en moyenne`, flag: intake.sleep_hours < 6.5 });
   }
   if (intake.meals_current != null || intake.meals_ideal != null) {
     signals.push({
-      label: "Nombre de repas",
+      label: tr("Nombre de repas"),
       value: `${intake.meals_current ?? "?"} actuellement${intake.meals_ideal != null ? `, ${intake.meals_ideal} visés` : ""}`,
     });
   }
   if (intake.cheat_meals_per_week != null) {
     signals.push({
-      label: "Écarts/semaine",
+      label: tr("Écarts/semaine"),
       value: `${intake.cheat_meals_per_week}${intake.cheat_meal_impact ? ` (${intake.cheat_meal_impact})` : ""}`,
     });
   }
   if (intake.known_calories != null) {
     signals.push({
-      label: "Apport actuel connu",
+      label: tr("Apport actuel connu"),
       value: `~${intake.known_calories} kcal${intake.known_protein ? ` · P ${intake.known_protein}g` : ""}${intake.known_carbs ? ` · G ${intake.known_carbs}g` : ""}${intake.known_fat ? ` · L ${intake.known_fat}g` : ""}`,
     });
   }
-  if (intake.typical_day) signals.push({ label: "Journée type", value: intake.typical_day });
+  if (intake.typical_day) signals.push({ label: tr("Journée type"), value: intake.typical_day });
   if (intake.supplement_budget != null) {
-    signals.push({ label: "Budget compléments", value: `${intake.supplement_budget}€/mois` });
+    signals.push({ label: tr("Budget compléments"), value: `${intake.supplement_budget}€/mois` });
   }
 
   const highStressPoorSleep = (intake.stress_level ?? 0) >= 7 && (intake.sleep_quality ?? 10) <= 4;
@@ -760,7 +760,7 @@ export function PlanBuilder({
         id="diet-phase-contexte"
         n={1}
         title={tr("Réflexion & contexte")}
-        subtitle="Pourquoi ce total calorique, pas juste combien : appétit, stress, habitudes déjà en place."
+        subtitle={tr("Pourquoi ce total calorique, pas juste combien : appétit, stress, habitudes déjà en place.")}
         open={openPhase === 1}
         onToggle={() => togglePhase(1)}
       />
@@ -779,7 +779,7 @@ export function PlanBuilder({
         id="diet-phase-programmation"
         n={2}
         title={tr("Programmation")}
-        subtitle="Structure de la semaine, nombre de repas, répartition macro visée, avant le moindre aliment."
+        subtitle={tr("Structure de la semaine, nombre de repas, répartition macro visée, avant le moindre aliment.")}
         open={openPhase === 2}
         onToggle={() => togglePhase(2)}
       />
@@ -929,8 +929,8 @@ export function PlanBuilder({
           </label>
           <div className="flex gap-2 mb-2">
             {[
-              { key: "daily" as const, label: "Journalier", desc: "Mêmes repas chaque jour" },
-              { key: "weekly" as const, label: "Hebdomadaire", desc: "Repas différents par jour + jour high" },
+              { key: "daily" as const, label: tr("Journalier"), desc: tr("Mêmes repas chaque jour") },
+              { key: "weekly" as const, label: tr("Hebdomadaire"), desc: tr("Repas différents par jour + jour high") },
             ].map(({ key, label }) => (
               <button
                 key={key}
@@ -1013,10 +1013,10 @@ export function PlanBuilder({
             )}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <MacroCoverage label="Calories" current={planTotals.calories} target={targets?.calories ?? 0} unit=" kcal" color="#E01E1E" />
-            <MacroCoverage label="Protéines" current={planTotals.proteins} target={targets?.proteins ?? 0} unit="g" color="#60a5fa" />
-            <MacroCoverage label="Glucides" current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="#fbbf24" />
-            <MacroCoverage label="Lipides" current={planTotals.fats} target={targets?.fats ?? 0} unit="g" color="#fb7185" />
+            <MacroCoverage label={tr("Calories")} current={planTotals.calories} target={targets?.calories ?? 0} unit=" kcal" color="#E01E1E" />
+            <MacroCoverage label={tr("Protéines")} current={planTotals.proteins} target={targets?.proteins ?? 0} unit="g" color="#60a5fa" />
+            <MacroCoverage label={tr("Glucides")} current={planTotals.carbs} target={targets?.carbs ?? 0} unit="g" color="#fbbf24" />
+            <MacroCoverage label={tr("Lipides")} current={planTotals.fats} target={targets?.fats ?? 0} unit="g" color="#fb7185" />
           </div>
 
           {targets && dayMeals.length > 0 && (
@@ -1049,7 +1049,7 @@ export function PlanBuilder({
           id="diet-phase-construction"
           n={3}
           title={tr("Construction")}
-          subtitle="Chaque aliment ajouté porte sa raison d'être, pas juste un nom et un grammage."
+          subtitle={tr("Chaque aliment ajouté porte sa raison d'être, pas juste un nom et un grammage.")}
           open={openPhase === 3}
           onToggle={() => togglePhase(3)}
         />
@@ -1174,7 +1174,7 @@ export function PlanBuilder({
         id="diet-phase-livraison"
         n={4}
         title={tr("Livraison")}
-        subtitle="Couverture des carences, liste de courses, bilan avant sauvegarde : ce que ce client recevra."
+        subtitle={tr("Couverture des carences, liste de courses, bilan avant sauvegarde : ce que ce client recevra.")}
         open={openPhase === 4}
         onToggle={() => togglePhase(4)}
       />
@@ -1297,7 +1297,7 @@ export function PlanBuilder({
                 <input aria-label={tr("Nom du modèle")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder={planName || "Ex. Sèche 2000 kcal, 4 repas"}
+                  placeholder={planName || tr("Ex. Sèche 2000 kcal, 4 repas")}
                   className={inputCls}
                 />
               </div>

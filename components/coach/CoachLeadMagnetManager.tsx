@@ -163,7 +163,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
             <textarea
               value={body}
               onChange={(e) => setBody(e.target.value)}
-              placeholder={format === "guide" ? "Le contenu, en paragraphes..." : "Un élément par ligne..."}
+              placeholder={format === "guide" ? t("Le contenu, en paragraphes...") : t("Un élément par ligne...")}
               aria-label={t("Contenu")}
               rows={6}
               className="w-full bg-[#150000] border border-[#890404]/20 rounded-lg px-3 py-2 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40 resize-y"
@@ -231,7 +231,7 @@ export default function CoachLeadMagnetManager({ ownMagnets }: { ownMagnets: Coa
                 onClick={() => handleToggle(m.id, !m.published)}
                 disabled={busyId === m.id}
                 className="text-[#F5EDED]/35 hover:text-[#F5EDED]/70 transition-colors p-1.5 disabled:opacity-40"
-                title={m.published ? "Masquer" : "Republier"}
+                title={m.published ? t("Masquer") : t("Republier")}
               >
                 {m.published ? <Eye size={15} strokeWidth={1.8} /> : <EyeOff size={15} strokeWidth={1.8} />}
               </button>

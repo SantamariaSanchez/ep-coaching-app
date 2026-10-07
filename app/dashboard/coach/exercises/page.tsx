@@ -66,8 +66,8 @@ export default async function CoachExercisesPage({
           {tr("Exercices et salles de musculation, dans un seul endroit. Le matériel d'une salle détermine ce qui y est réalisable. Tes membres peuvent aussi enrichir les deux listes.")}
         </p>
         <div className="flex flex-wrap gap-2">
-          <SeedLibraryButton label="Importer la bibliothèque officielle" action={seedOfficialExercises} />
-          <SeedLibraryButton label="Importer les enseignes officielles" action={seedOfficialGyms} />
+          <SeedLibraryButton label={tr("Importer la bibliothèque officielle")} action={seedOfficialExercises} />
+          <SeedLibraryButton label={tr("Importer les enseignes officielles")} action={seedOfficialGyms} />
         </div>
       </div>
 

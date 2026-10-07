@@ -218,7 +218,7 @@ function NewGoalForm({ onClose }: { onClose: () => void }) {
           min={1}
           value={targetValue}
           onChange={(e) => setTargetValue(e.target.value)}
-          placeholder={metricType === "revenu_mois" ? "Objectif en €" : "Objectif chiffré"}
+          placeholder={metricType === "revenu_mois" ? t("Objectif en €") : t("Objectif chiffré")}
           aria-label={t("Valeur cible")}
           className="bg-[#0D0000] border border-[#890404]/30 rounded-lg px-3 py-2.5 text-sm text-white placeholder-[#F5EDED]/20 outline-none focus:border-[#E01E1E]/60"
         />

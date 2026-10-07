@@ -248,7 +248,7 @@ export function BulkVideoImport({
             onChange={(e) => setText(e.target.value)}
             className="ep-input"
             rows={6}
-            placeholder={"Une URL YouTube par ligne, dans l'ordre des vidéos\nhttps://youtu.be/...\nhttps://www.youtube.com/watch?v=..."}
+            placeholder={t("Une URL YouTube par ligne, dans l'ordre des vidéos\nhttps://youtu.be/...\nhttps://www.youtube.com/watch?v=...")}
             aria-label={t("Une URL YouTube par ligne, dans l'ordre des vidéos")}
             style={{ fontSize: 12, padding: "10px 12px", resize: "vertical", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
           />

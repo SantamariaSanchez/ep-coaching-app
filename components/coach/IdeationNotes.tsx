@@ -208,7 +208,7 @@ export default function IdeationNotes({ initialNotes }: { initialNotes: Ideation
                 <button
                   type="button"
                   onClick={() => togglePin(note)}
-                  aria-label={note.pinned ? "Désépingler" : "Épingler"}
+                  aria-label={note.pinned ? tr("Désépingler") : tr("Épingler")}
                   style={{ background: "none", border: "none", cursor: "pointer", color: note.pinned ? "#fbbf24" : "rgba(245,237,237,0.25)", flexShrink: 0, padding: 4 }}
                 >
                   {note.pinned ? <Pin size={14} fill="currentColor" /> : <PinOff size={14} />}

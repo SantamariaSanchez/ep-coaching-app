@@ -122,7 +122,7 @@ export default function StaffShell({
 
   const navGroups: NavGroup[] = unlocked
     ? [
-        { label: null, items: [{ href: "/equipe", label: "Tableau de bord", icon: LayoutDashboard }] },
+        { label: null, items: [{ href: "/equipe", label: t("Tableau de bord"), icon: LayoutDashboard }] },
         ...groups.map((g) => ({
           label: g.label,
           items: [
@@ -134,9 +134,9 @@ export default function StaffShell({
             })),
             ...(g.label === "Moi"
               ? [
-                  { href: "/equipe/poste", label: "Fiche technique", icon: FileSignature },
-                  { href: "/equipe/claude", label: "Claude et Notion", icon: Sparkles },
-                  { href: "/equipe/compte", label: "Mon compte", icon: UserCog },
+                  { href: "/equipe/poste", label: t("Fiche technique"), icon: FileSignature },
+                  { href: "/equipe/claude", label: t("Claude et Notion"), icon: Sparkles },
+                  { href: "/equipe/compte", label: t("Mon compte"), icon: UserCog },
                 ]
               : []),
           ],

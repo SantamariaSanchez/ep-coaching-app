@@ -109,9 +109,9 @@ export default function CoachConversationsList({ rows }: { rows: ConversationRow
 
           <div style={{ display: "flex", gap: 7, flexWrap: "wrap" }}>
             {([
-              { key: "all" as const, label: "Tous", count: rows.length },
-              { key: "unread" as const, label: "Non lus", count: unreadCount },
-              { key: "silent" as const, label: "Jamais échangé", count: silentCount },
+              { key: "all" as const, label: t("Tous"), count: rows.length },
+              { key: "unread" as const, label: t("Non lus"), count: unreadCount },
+              { key: "silent" as const, label: t("Jamais échangé"), count: silentCount },
             ]).map((f) => (
               <button key={f.key} onClick={() => setFilter(f.key)} className="ep-press" style={chipStyle(filter === f.key)}>
                 {f.label} {f.count > 0 && <span style={{ opacity: 0.65 }}>{f.count}</span>}

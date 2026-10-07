@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useEffect, useState } from "react";
 
 interface ProgressRingProps {
@@ -32,6 +33,7 @@ export default function ProgressRing({
   className = "",
   delay = 0,
 }: ProgressRingProps) {
+  const t = useT();
   const R = (size - strokeWidth) / 2;
   const CIRC = 2 * Math.PI * R;
   const rawPct = max > 0 ? Math.min(value / max, 1) : 0;
@@ -66,7 +68,7 @@ export default function ProgressRing({
           height={size}
           viewBox={`0 0 ${size} ${size}`}
           role="img"
-          aria-label={label ?? "Progress"}
+          aria-label={label ?? t("Progress")}
         >
           {/* Track */}
           <circle

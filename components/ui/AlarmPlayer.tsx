@@ -129,7 +129,7 @@ export default function AlarmPlayer() {
       const data = event.data;
       if (!data) return;
       if (data.type === "PLAY_ALARM") {
-        setRinging({ title: data.title || "Réveil", body: data.body || "C'est l'heure de te lever.", url: data.url || "/", blockId: data.blockId });
+        setRinging({ title: data.title || t("Réveil"), body: data.body || "C'est l'heure de te lever.", url: data.url || "/", blockId: data.blockId });
         stopFnRef.current = playAlarmTone();
       } else if (data.type === "STOP_ALARM") {
         stopAlarm();

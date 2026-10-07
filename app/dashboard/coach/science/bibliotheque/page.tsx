@@ -43,7 +43,7 @@ export default async function CoachScienceBibliothequePage() {
       <ArticleListView
         articles={articles}
         isCoach={canCurate}
-        emptyLabel="La bibliothèque scientifique est vide pour l'instant."
+        emptyLabel={t("La bibliothèque scientifique est vide pour l'instant.")}
         showSeedButton={canCurate}
         seedAction={canCurate ? seedScienceLibrary : undefined}
         updateArticle={canCurate ? updateArticle : undefined}

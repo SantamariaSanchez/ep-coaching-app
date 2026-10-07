@@ -84,10 +84,10 @@ function TodayLogsView({
       <div className="bg-[#1f0101] border border-[#890404]/40 rounded-xl p-4">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[
-            { label: "Calories", v: totals.calories, t: targets.calories, unit: "kcal", color: "#E01E1E" },
-            { label: "Protéines", v: totals.proteins, t: targets.proteins, unit: "g", color: "#60a5fa" },
-            { label: "Glucides", v: totals.carbs, t: targets.carbs, unit: "g", color: "#fbbf24" },
-            { label: "Lipides", v: totals.fats, t: targets.fats, unit: "g", color: "#fb7185" },
+            { label: tr("Calories"), v: totals.calories, t: targets.calories, unit: "kcal", color: "#E01E1E" },
+            { label: tr("Protéines"), v: totals.proteins, t: targets.proteins, unit: "g", color: "#60a5fa" },
+            { label: tr("Glucides"), v: totals.carbs, t: targets.carbs, unit: "g", color: "#fbbf24" },
+            { label: tr("Lipides"), v: totals.fats, t: targets.fats, unit: "g", color: "#fb7185" },
           ].map(({ label, v, t, unit, color }) => (
             <div key={label} className="text-center">
               <p className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 mb-1">
@@ -350,10 +350,10 @@ export default function CoachClientNutritionTabs({
   const [showObjectifs, setShowObjectifs] = useState(allPlans.length === 0);
 
   const allTabs: { key: Tab; label: string }[] = [
-    { key: "plan", label: "Plan & objectifs" },
-    { key: "today", label: "Suivi du jour" },
-    { key: "history", label: "Historique alimentaire" },
-    { key: "supplements", label: "Compléments" },
+    { key: "plan", label: tr("Plan & objectifs") },
+    { key: "today", label: tr("Suivi du jour") },
+    { key: "history", label: tr("Historique alimentaire") },
+    { key: "supplements", label: tr("Compléments") },
   ];
   // Sur "Moi", ces deux là existent déjà (en interactif, pas en lecture
   // seule) sous l'onglet "Suivi du jour" du dessus, voir isOwnPlan ci-dessus.

@@ -133,7 +133,7 @@ export default function RoadmapTemplateEditor({
         {
           localId: uid(),
           type: "custom",
-          label: "Phase 1",
+          label: tr("Phase 1"),
           start_week_offset: "0",
           end_week_offset: String(weeks),
           notes: "",
@@ -144,7 +144,7 @@ export default function RoadmapTemplateEditor({
           localId: uid(),
           type: "custom",
           term: "medium",
-          label: "Objectif final",
+          label: tr("Objectif final"),
           week_offset: String(weeks),
           target_value: "",
           target_unit: "",
@@ -167,7 +167,7 @@ export default function RoadmapTemplateEditor({
         {
           localId,
           type: "maintenance",
-          label: "Nouvelle phase",
+          label: tr("Nouvelle phase"),
           start_week_offset: lastEnd,
           end_week_offset: String(Math.max(parseInt(lastEnd) || 0, weeks)),
           notes: "",
@@ -584,7 +584,7 @@ export default function RoadmapTemplateEditor({
                       <input aria-label={tr("Label")}
                         value={m.label}
                         onChange={(e) => updateMilestone(m.localId, { label: e.target.value })}
-                        placeholder={typeConfig?.label ?? "Jalon"}
+                        placeholder={typeConfig?.label ?? tr("Jalon")}
                         className={inputCls}
                       />
                     </div>

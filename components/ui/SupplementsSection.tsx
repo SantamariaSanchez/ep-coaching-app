@@ -183,7 +183,7 @@ export default function SupplementsSection({
                 <button
                   onClick={() => handleToggle(s)}
                   disabled={busyId === s.id}
-                  title={s.status === "active" ? "Arrêter" : "Reprendre"} aria-label={s.status === "active" ? "Arrêter" : "Reprendre"}
+                  title={s.status === "active" ? tr("Arrêter") : tr("Reprendre")} aria-label={s.status === "active" ? tr("Arrêter") : tr("Reprendre")}
                   className={`text-[9px] font-bold uppercase tracking-widest transition-colors disabled:opacity-30 ${
                     s.status === "active"
                       ? "text-[#F5EDED]/30 hover:text-amber-400"

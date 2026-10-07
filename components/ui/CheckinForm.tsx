@@ -319,8 +319,8 @@ export default function CheckinForm({
                   rows={2}
                   required
                   placeholder={isLowAttitude
-                    ? "Qu'est-ce qui a pesé sur ton attitude cette semaine ?"
-                    : "Qu'est-ce qui t'a mis dans cet état d'esprit ?"}
+                    ? t("Qu'est-ce qui a pesé sur ton attitude cette semaine ?")
+                    : t("Qu'est-ce qui t'a mis dans cet état d'esprit ?")}
                   aria-label={t("Explique-nous pourquoi")}
                   className={inp}
                 />

@@ -545,10 +545,10 @@ export default function NutritionTracker({
       {/* Anneaux */}
       <div className="rounded-2xl border border-[#890404]/25 bg-[#110000]/80 p-4">
         <div className="flex justify-between">
-          <Ring label="Calories" value={consumed.calories} target={target.calories} color="#E01E1E" />
-          <Ring label="Protéines" value={consumed.proteins} target={target.proteins} color="#60a5fa" />
-          <Ring label="Glucides" value={consumed.carbs} target={target.carbs} color="#facc15" />
-          <Ring label="Lipides" value={consumed.fats} target={target.fats} color="#a78bfa" />
+          <Ring label={tr("Calories")} value={consumed.calories} target={target.calories} color="#E01E1E" />
+          <Ring label={tr("Protéines")} value={consumed.proteins} target={target.proteins} color="#60a5fa" />
+          <Ring label={tr("Glucides")} value={consumed.carbs} target={target.carbs} color="#facc15" />
+          <Ring label={tr("Lipides")} value={consumed.fats} target={target.fats} color="#a78bfa" />
         </div>
         {mode === "flexible" && suggestions.length > 0 && (
           <p className="text-[11px] text-[#F5EDED]/55 mt-3 text-center">
@@ -717,7 +717,7 @@ export default function NutritionTracker({
           foods={foods}
           ctx={ctxFor(sheetLog.meal_slot)}
           allowSwap={mode !== "fixed"}
-          hint={mode === "fixed_flexible" && date === today ? "Les repas suivants s'ajustent tout seuls pour tenir tes macros." : undefined}
+          hint={mode === "fixed_flexible" && date === today ? tr("Les repas suivants s'ajustent tout seuls pour tenir tes macros.") : undefined}
           busy={busy}
           onSave={(next) => saveLog(sheetLog, next)}
           onRemove={() => removeLog(sheetLog)}
@@ -734,7 +734,7 @@ export default function NutritionTracker({
           foods={foods}
           ctx={ctxFor(sheetSuggest.slot)}
           allowSwap
-          hint="Le reste de ta journée se recalcule tout seul."
+          hint={tr("Le reste de ta journée se recalcule tout seul.")}
           onSave={(next) => setOverride(sheetSuggest.planMealId, { foodId: next.food.id, grams: next.grams })}
           onRemove={() => setOverride(sheetSuggest.planMealId, { removed: true })}
           onClose={() => setSheet(null)}

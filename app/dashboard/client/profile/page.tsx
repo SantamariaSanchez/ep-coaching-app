@@ -71,14 +71,14 @@ export default async function ClientProfilePage() {
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#F5EDED]/35 mb-2">
             {t("Mon coaching")}
           </p>
-          {weeks !== null && <InfoRow label="Semaines de coaching" value={`${weeks} semaine${weeks !== 1 ? "s" : ""}`} />}
-          <InfoRow label="Objectif" value={profile.goal} />
+          {weeks !== null && <InfoRow label={t("Semaines de coaching")} value={`${weeks} semaine${weeks !== 1 ? "s" : ""}`} />}
+          <InfoRow label={t("Objectif")} value={profile.goal} />
           <InfoRow
-            label="Poids de départ"
+            label={t("Poids de départ")}
             value={profile.weight_start != null ? `${profile.weight_start} kg` : null}
           />
           {profile.competition_category && (
-            <InfoRow label="Catégorie" value={profile.competition_category} />
+            <InfoRow label={t("Catégorie")} value={profile.competition_category} />
           )}
         </div>
       )}

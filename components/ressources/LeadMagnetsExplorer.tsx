@@ -323,7 +323,7 @@ export default function LeadMagnetsExplorer({
         <input
           value={search}
           onChange={(e) => runSearch(e.target.value)}
-          placeholder={isCoach ? "Rechercher, ou taper un code (076)..." : "Rechercher un guide, une checklist, un quiz..."}
+          placeholder={isCoach ? t("Rechercher, ou taper un code (076)...") : t("Rechercher un guide, une checklist, un quiz...")}
           aria-label={t("Rechercher")}
           className="w-full bg-[#1f0101] border border-[#890404]/25 rounded-xl pl-10 pr-9 py-2.5 text-sm text-white placeholder:text-[#F5EDED]/25 focus:outline-none focus:border-[#E01E1E]/40"
         />

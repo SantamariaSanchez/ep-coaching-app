@@ -70,7 +70,7 @@ export default function RoadmapView({
         {error && (
           <RoadmapLoadError
             message="Impossible de charger le résumé de ta road map pour l'instant."
-            hint="Ne modifie rien plus bas avant d'avoir rechargé."
+            hint={t("Ne modifie rien plus bas avant d'avoir rechargé.")}
           />
         )}
         {overview}

@@ -101,7 +101,7 @@ function ImportForm({ result, onImport, onCancel }: {
             setSaving(false);
           }}
           disabled={saving || !canImport}
-          title={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"} aria-label={canImport ? undefined : "Le titre FR et le résumé sont obligatoires"}
+          title={canImport ? undefined : tr("Le titre FR et le résumé sont obligatoires")} aria-label={canImport ? undefined : tr("Le titre FR et le résumé sont obligatoires")}
           className="flex-1 py-2 text-xs font-black uppercase tracking-widest bg-[#E01E1E] hover:bg-[#B00202] disabled:opacity-50 text-white rounded-lg transition-colors"
         >
           {saving ? tr("Ajout…") : tr("Confirmer l'ajout")}

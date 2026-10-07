@@ -344,12 +344,12 @@ export function ClientCard({
         marginBottom: href ? 14 : 0,
       }}>
         {[
-          { label: "Semaine",       value: weekNum != null ? `S${weekNum}`  : "···" },
-          { label: "Poids initial", value: weight  != null ? `${weight} kg` : "···" },
+          { label: t("Semaine"),       value: weekNum != null ? `S${weekNum}`  : "···" },
+          { label: t("Poids initial"), value: weight  != null ? `${weight} kg` : "···" },
           // Item 36 : masqué pour un client en pause/terminé, comme le
           // badge de silence — la constance n'a pas de sens à surveiller là.
           ...(weeklyConsistency != null && isActiveStatus
-            ? [{ label: "Constance", value: `${weeklyConsistency}%`, color: consistencyColor }]
+            ? [{ label: t("Constance"), value: `${weeklyConsistency}%`, color: consistencyColor }]
             : []),
         ].map((stat) => (
           <div key={stat.label} style={{

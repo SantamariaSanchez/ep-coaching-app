@@ -943,7 +943,7 @@ export default function Teleprompter({
                 background: recording ? "#fff" : "rgba(224,30,30,0.9)",
                 border: "3px solid rgba(255,255,255,0.85)",
               }}
-              aria-label={recording ? "Arrêter l'enregistrement" : "Démarrer l'enregistrement"}
+              aria-label={recording ? tr("Arrêter l'enregistrement") : tr("Démarrer l'enregistrement")}
             >
               {recording ? <Square size={22} className="text-[#E01E1E]" fill="currentColor" /> : <Circle size={26} className="text-white" fill="currentColor" />}
             </button>

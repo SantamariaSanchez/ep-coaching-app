@@ -641,8 +641,8 @@ export default function RecipesClient({
       {/* Tabs */}
       <div className="flex gap-1 mb-5 border-b border-[#890404]/20 overflow-x-auto">
         {[
-          { key: "bibliotheque" as const, label: "Bibliothèque", icon: BookOpen },
-          { key: "creer" as const, label: "Créateur de repas", icon: Wand2 },
+          { key: "bibliotheque" as const, label: tr("Bibliothèque"), icon: BookOpen },
+          { key: "creer" as const, label: tr("Créateur de repas"), icon: Wand2 },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}
@@ -779,15 +779,15 @@ export default function RecipesClient({
 
           {showFilters && (
             <div className="bg-[#150000] border border-[#890404]/15 rounded-xl p-4 mb-4">
-              <FilterGroup label="Type de repas" options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} selected={meals} toggle={(v) => toggleSet(setMeals, v)} />
-              <FilterGroup label="Régime alimentaire" options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diets} toggle={(v) => toggleSet(setDiets, v)} />
-              <FilterGroup label="Phase nutritionnelle" options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
-              <FilterGroup label="Saison" options={Object.keys(SEASON_LABELS).filter((s) => s !== "toute-saison") as Season[]} labels={SEASON_LABELS} selected={seasons} toggle={(v) => toggleSet(setSeasons, v)} />
-              <FilterGroup label="Température" options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} selected={temps} toggle={(v) => toggleSet(setTemps, v)} />
-              <FilterGroup label="Profil macro" options={Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]} labels={MACRO_PROFILE_LABELS} selected={macroProfiles} toggle={(v) => toggleSet(setMacroProfiles, v)} />
-              <FilterGroup label="Exclure allergènes" options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={excludedAllergens} toggle={(v) => toggleSet(setExcludedAllergens, v)} />
-              <FilterGroup label="Temps de préparation" options={["rapide", "moyen", "long"] as PrepBucket[]} labels={PREP_BUCKET_LABELS} selected={prepBuckets} toggle={(v) => toggleSet(setPrepBuckets, v)} />
-              <FilterGroup label="Budget" options={["1", "2", "3"] as ("1" | "2" | "3")[]} labels={BUDGET_LABELS} selected={budgets} toggle={(v) => toggleSet(setBudgets, v)} />
+              <FilterGroup label={tr("Type de repas")} options={Object.keys(MEAL_LABELS) as MealType[]} labels={MEAL_LABELS} selected={meals} toggle={(v) => toggleSet(setMeals, v)} />
+              <FilterGroup label={tr("Régime alimentaire")} options={Object.keys(DIET_LABELS) as Diet[]} labels={DIET_LABELS} selected={diets} toggle={(v) => toggleSet(setDiets, v)} />
+              <FilterGroup label={tr("Phase nutritionnelle")} options={Object.keys(PHASE_LABELS) as Phase[]} labels={PHASE_LABELS} selected={phases} toggle={(v) => toggleSet(setPhases, v)} />
+              <FilterGroup label={tr("Saison")} options={Object.keys(SEASON_LABELS).filter((s) => s !== "toute-saison") as Season[]} labels={SEASON_LABELS} selected={seasons} toggle={(v) => toggleSet(setSeasons, v)} />
+              <FilterGroup label={tr("Température")} options={Object.keys(TEMP_LABELS) as Temp[]} labels={TEMP_LABELS} selected={temps} toggle={(v) => toggleSet(setTemps, v)} />
+              <FilterGroup label={tr("Profil macro")} options={Object.keys(MACRO_PROFILE_LABELS) as MacroProfile[]} labels={MACRO_PROFILE_LABELS} selected={macroProfiles} toggle={(v) => toggleSet(setMacroProfiles, v)} />
+              <FilterGroup label={tr("Exclure allergènes")} options={Object.keys(ALLERGEN_LABELS) as Allergen[]} labels={ALLERGEN_LABELS} selected={excludedAllergens} toggle={(v) => toggleSet(setExcludedAllergens, v)} />
+              <FilterGroup label={tr("Temps de préparation")} options={["rapide", "moyen", "long"] as PrepBucket[]} labels={PREP_BUCKET_LABELS} selected={prepBuckets} toggle={(v) => toggleSet(setPrepBuckets, v)} />
+              <FilterGroup label={tr("Budget")} options={["1", "2", "3"] as ("1" | "2" | "3")[]} labels={BUDGET_LABELS} selected={budgets} toggle={(v) => toggleSet(setBudgets, v)} />
             </div>
           )}
 

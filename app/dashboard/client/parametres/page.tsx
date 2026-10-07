@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -25,6 +26,7 @@ import { isOuraConfigured } from "@/lib/oura";
 import { appVersion } from "@/lib/app-version";
 
 export default async function ClientParametresPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -58,7 +60,7 @@ export default async function ClientParametresPage() {
       sections={[
         {
           id: "affichage",
-          title: "Langue et affichage",
+          title: t("Langue et affichage"),
           keywords: "langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation objectif niveau taille du texte animations accessibilité",
           node: (
             <>
@@ -70,13 +72,13 @@ export default async function ClientParametresPage() {
         },
         {
           id: "entrainement",
-          title: "Séance et courses",
+          title: t("Séance et courses"),
           keywords: "repos minuteur chrono son bip vibration séance entraînement courses stock inventaire aliments repas",
           node: <TrainingNutritionCard initialPantryAuto={settings.pantryAuto} />,
         },
         {
           id: "notifications",
-          title: "Notifications",
+          title: t("Notifications"),
           keywords: "notifications rappels push autorisations heures calmes silence newsletter email pas podomètre caméra micro",
           node: (
             <>
@@ -93,7 +95,7 @@ export default async function ClientParametresPage() {
         },
         {
           id: "connexions",
-          title: "Claude, Notion et objets",
+          title: t("Claude, Notion et objets"),
           keywords: "claude ia intelligence artificielle notion connecteur clé oura bague montre connexion",
           node: (
             <>
@@ -104,13 +106,13 @@ export default async function ClientParametresPage() {
         },
         {
           id: "confidentialite",
-          title: "Confidentialité",
+          title: t("Confidentialité"),
           keywords: "confidentialité visibilité classement communauté données vie privée",
           node: <MemberPrivacyCard initialVisible={notifRow?.leaderboard_visible !== false} />,
         },
         {
           id: "securite",
-          title: "Compte et sécurité",
+          title: t("Compte et sécurité"),
           keywords: "compte email mot de passe déconnexion déconnecter partout appareils sessions supprimer exporter données double authentification 2fa sécurité",
           node: (
             <>
@@ -122,7 +124,7 @@ export default async function ClientParametresPage() {
         },
         {
           id: "appareil",
-          title: "Appareil et à propos",
+          title: t("Appareil et à propos"),
           keywords: "cache version mise à jour appareil mentions légales cgu confidentialité",
           node: (
             <>

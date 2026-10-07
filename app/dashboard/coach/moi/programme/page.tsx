@@ -67,7 +67,7 @@ export default async function CoachMonProgrammePage() {
 
       <div style={{ marginTop: program && program.days.length > 0 ? 24 : 0 }}>
         <CollapsibleSection
-          title={program && program.days.length > 0 ? "Modifier mon programme" : "Créer mon programme"}
+          title={program && program.days.length > 0 ? t("Modifier mon programme") : t("Créer mon programme")}
           defaultOpen={!program || program.days.length === 0}
         >
           <ProgramEditor

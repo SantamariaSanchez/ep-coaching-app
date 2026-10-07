@@ -114,14 +114,14 @@ export default function CoachOnboardingFlow({
 
       {step === "profile" && (
         <div>
-          <StepHeader icon={User} title={t("Ton profil")} subtitle="Ce que verra un prospect qui te découvre dans l'annuaire." />
+          <StepHeader icon={User} title={t("Ton profil")} subtitle={t("Ce que verra un prospect qui te découvre dans l'annuaire.")} />
           <ProfileEditor fullName={fullName} phone={phone} bio={bio} instagramHandle={instagramHandle} />
         </div>
       )}
 
       {step === "specializations" && (
         <div>
-          <StepHeader icon={Tags} title={t("Tes spécialités")} subtitle="Pour qu'un membre te trouve selon SON besoin, pas au hasard." />
+          <StepHeader icon={Tags} title={t("Tes spécialités")} subtitle={t("Pour qu'un membre te trouve selon SON besoin, pas au hasard.")} />
           <CoachSpecializationsCard initialSpecializations={specializations} />
         </div>
       )}
@@ -131,7 +131,7 @@ export default function CoachOnboardingFlow({
           <StepHeader
             icon={Target}
             title={t("Ton activité")}
-            subtitle="Sert à personnaliser automatiquement les prompts de contenu dans Studio créatif à TA situation, pas rester générique."
+            subtitle={t("Sert à personnaliser automatiquement les prompts de contenu dans Studio créatif à TA situation, pas rester générique.")}
           />
           <p style={{ fontSize: 11.5, color: "rgba(245,237,237,0.4)", lineHeight: 1.6, margin: "0 0 14px" }}>
             {t("Remplis au moins « Proposition de valeur » et « Segments de clientèle » si tu es pressé, les autres blocs t'attendent dans Développer mon business quand tu auras 5 minutes de plus. Rien n'est obligatoire, chaque bloc s'enregistre tout seul.")}
@@ -142,14 +142,14 @@ export default function CoachOnboardingFlow({
 
       {step === "capacity" && (
         <div>
-          <StepHeader icon={Users} title={t("Ta capacité")} subtitle="Combien de clients tu peux vraiment bien suivre en ce moment." />
+          <StepHeader icon={Users} title={t("Ta capacité")} subtitle={t("Combien de clients tu peux vraiment bien suivre en ce moment.")} />
           <AcceptingClientsCard initialAccepting={accepting} waitlist={waitlist} />
         </div>
       )}
 
       {step === "invite" && (
         <div>
-          <StepHeader icon={Link2} title={t("Ton lien")} subtitle="Chaque inscription via ce lien te rattache automatiquement le client." />
+          <StepHeader icon={Link2} title={t("Ton lien")} subtitle={t("Chaque inscription via ce lien te rattache automatiquement le client.")} />
           <InviteLinkCard inviteCode={inviteCode} />
         </div>
       )}

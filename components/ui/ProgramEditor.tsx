@@ -854,10 +854,10 @@ function AssignmentOnlyPanel({
             <div className="space-y-4">
               {(
                 [
-                  { field: "rom_notes" as const, label: "Amplitude visée", placeholder: "Ex. Amplitude complète, pas de limitation connue." },
-                  { field: "resistance_notes" as const, label: "Résistance & accessoires", placeholder: "Ex. Élastique léger pour garder la tension en haut." },
-                  { field: "availability_notes" as const, label: "Disponibilité vérifiée", placeholder: "Ex. Faisable partout, pas de contrainte matériel." },
-                  { field: "discomfort_notes" as const, label: "Seuil d'inconfort", placeholder: "Ex. Passe en partiel dès la 3e série à RIR 1." },
+                  { field: "rom_notes" as const, label: tr("Amplitude visée"), placeholder: tr("Ex. Amplitude complète, pas de limitation connue.") },
+                  { field: "resistance_notes" as const, label: tr("Résistance & accessoires"), placeholder: tr("Ex. Élastique léger pour garder la tension en haut.") },
+                  { field: "availability_notes" as const, label: tr("Disponibilité vérifiée"), placeholder: tr("Ex. Faisable partout, pas de contrainte matériel.") },
+                  { field: "discomfort_notes" as const, label: tr("Seuil d'inconfort"), placeholder: tr("Ex. Passe en partiel dès la 3e série à RIR 1.") },
                 ] as const
               ).map(({ field, label, placeholder }) => (
                 <div key={field}>
@@ -1425,18 +1425,18 @@ export default function ProgramEditor({
       <div className="bg-[#150000] border border-[#890404]/25 rounded-xl p-3 flex flex-wrap items-center gap-2">
         <span className="text-[9px] font-black uppercase tracking-widest text-[#F5EDED]/25 mr-1">{tr("Ce projet :")}</span>
         {[
-          { n: 1, label: "Contexte", detail: intake ? "fiche client chargée" : "fiche client absente" },
+          { n: 1, label: tr("Contexte"), detail: intake ? tr("fiche client chargée") : tr("fiche client absente") },
           {
             n: 2,
-            label: "Programmation",
+            label: tr("Programmation"),
             detail: `${placedDays}/${state.days.length || 0} séances placées · ${volumeTargetsSet} groupes budgétés`,
           },
           {
             n: 3,
-            label: "Construction",
-            detail: totalExercises === 0 ? "aucun exercice" : `${configuredExercises}/${totalExercises} exercices configurés`,
+            label: tr("Construction"),
+            detail: totalExercises === 0 ? tr("aucun exercice") : `${configuredExercises}/${totalExercises} exercices configurés`,
           },
-          { n: 4, label: "Livraison", detail: saved ? "sauvegardé" : "brouillon en cours" },
+          { n: 4, label: tr("Livraison"), detail: saved ? tr("sauvegardé") : tr("brouillon en cours") },
         ].map((phase) => (
           <button
             key={phase.n}
@@ -1459,7 +1459,7 @@ export default function ProgramEditor({
         id="phase-contexte"
         n={1}
         title={tr("Réflexion & contexte")}
-        subtitle="Le point de départ : qui est ce client, quelle structure de base, quelles contraintes déjà connues."
+        subtitle={tr("Le point de départ : qui est ce client, quelle structure de base, quelles contraintes déjà connues.")}
         open={openPhase === 1}
         onToggle={() => togglePhase(1)}
       />
@@ -1548,7 +1548,7 @@ export default function ProgramEditor({
         id="phase-programmation"
         n={2}
         title={tr("Programmation")}
-        subtitle="Placement réel dans la semaine, budget de volume, matériel disponible, avant le moindre exercice."
+        subtitle={tr("Placement réel dans la semaine, budget de volume, matériel disponible, avant le moindre exercice.")}
         open={openPhase === 2}
         onToggle={() => togglePhase(2)}
       />
@@ -1773,7 +1773,7 @@ export default function ProgramEditor({
         id="phase-construction"
         n={3}
         title={tr("Construction")}
-        subtitle="Chaque exercice se configure entièrement : tension, amplitude, matériel, risque. Pas juste un nom."
+        subtitle={tr("Chaque exercice se configure entièrement : tension, amplitude, matériel, risque. Pas juste un nom.")}
         open={openPhase === 3}
         onToggle={() => togglePhase(3)}
       />
@@ -1966,10 +1966,10 @@ export default function ProgramEditor({
                         <div className="grid grid-cols-4 gap-1.5">
                           {(
                             [
-                              { field: "sets" as const, label: "Séries", type: "number", placeholder: "4" },
-                              { field: "reps" as const, label: "Reps", type: "text", placeholder: "8-12" },
-                              { field: "rir" as const, label: "RIR", type: "number", placeholder: "2" },
-                              { field: "rest_seconds" as const, label: "Repos s", type: "number", placeholder: "90" },
+                              { field: "sets" as const, label: tr("Séries"), type: "number", placeholder: "4" },
+                              { field: "reps" as const, label: tr("Reps"), type: "text", placeholder: "8-12" },
+                              { field: "rir" as const, label: tr("RIR"), type: "number", placeholder: "2" },
+                              { field: "rest_seconds" as const, label: tr("Repos s"), type: "number", placeholder: "90" },
                             ] as const
                           ).map(({ field, label, type, placeholder }) => (
                             <div key={field}>
@@ -2134,7 +2134,7 @@ export default function ProgramEditor({
                 <input aria-label={tr("Nom du modèle")}
                   value={templateName}
                   onChange={(e) => setTemplateName(e.target.value)}
-                  placeholder={state.name || "Ex. PPL Hypertrophie 5x/semaine"}
+                  placeholder={state.name || tr("Ex. PPL Hypertrophie 5x/semaine")}
                   className={inputCls}
                 />
               </div>
@@ -2178,7 +2178,7 @@ export default function ProgramEditor({
         id="phase-livraison"
         n={4}
         title={tr("Livraison")}
-        subtitle="Vérification finale et sauvegarde, ce que ce client verra."
+        subtitle={tr("Vérification finale et sauvegarde, ce que ce client verra.")}
         open={openPhase === 4}
         onToggle={() => togglePhase(4)}
       />

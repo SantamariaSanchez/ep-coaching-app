@@ -95,12 +95,12 @@ function SelfCategoryPicker({
         className="flex-1 bg-[#150000] border border-amber-500/30 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500/60"
       >
         <option value="">{tr("Choisis ta catégorie")}</option>
-        <optgroup label="Femmes">
+        <optgroup label={tr("Femmes")}>
           {CATEGORIES_BY_GENDER.femme.map((cat) => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </optgroup>
-        <optgroup label="Hommes">
+        <optgroup label={tr("Hommes")}>
           {CATEGORIES_BY_GENDER.homme.map((cat) => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
@@ -515,7 +515,7 @@ function SubmissionForm({
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
-          placeholder={isSelfTracking ? "Notes personnelles…" : "Ce qui t'a plu, ce sur quoi tu veux un retour particulier…"}
+          placeholder={isSelfTracking ? tr("Notes personnelles…") : tr("Ce qui t'a plu, ce sur quoi tu veux un retour particulier…")}
           className={`${inputCls} resize-none`}
         />
       </div>

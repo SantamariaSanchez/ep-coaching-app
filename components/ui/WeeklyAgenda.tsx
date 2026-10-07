@@ -881,7 +881,7 @@ export default function WeeklyAgenda({
                     ? { background: "rgba(224,30,30,0.15)", color: "#E01E1E" }
                     : { background: "rgba(245,237,237,0.06)", color: "rgba(245,237,237,0.4)" }
                 }
-                title={timerBlockId === currentBlock.id && timerRunning ? "Mettre en pause" : "Lancer le minuteur"}
+                title={timerBlockId === currentBlock.id && timerRunning ? tr("Mettre en pause") : tr("Lancer le minuteur")}
               >
                 <Timer size={12} />
                 {timerBlockId === currentBlock.id ? formatTimer(timerSeconds) : "00:00"}
@@ -1055,7 +1055,7 @@ export default function WeeklyAgenda({
                 <button
                   type="button"
                   onClick={() => editable && openEdit(reveilBlockFor(selectedDay)!)}
-                  title={editable ? "Heure de réveil, cliquer pour la changer (alarme réelle, pas un simple rappel)" : "Heure de réveil (alarme réelle, pas un simple rappel)"}
+                  title={editable ? tr("Heure de réveil, cliquer pour la changer (alarme réelle, pas un simple rappel)") : tr("Heure de réveil (alarme réelle, pas un simple rappel)")}
                   className="flex items-center gap-1 text-[10px] font-bold normal-case tracking-normal text-[#a78bfa] bg-[#a78bfa]/10 border border-[#a78bfa]/25 rounded-full px-2 py-0.5"
                   style={{ cursor: editable ? "pointer" : "default" }}
                 >

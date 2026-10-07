@@ -36,7 +36,7 @@ export default async function ClientScienceBibliothequePage() {
       <ArticleListView
         articles={articles}
         isCoach={false}
-        emptyLabel="La bibliothèque scientifique arrive bientôt."
+        emptyLabel={t("La bibliothèque scientifique arrive bientôt.")}
         deleteArticle={deleteArticle}
       />
     </div>

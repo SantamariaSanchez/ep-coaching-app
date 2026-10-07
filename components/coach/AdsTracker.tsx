@@ -410,20 +410,20 @@ function CampaignCard({
       )}
 
       <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 12 }}>
-        <MetricTile label="Dépensé" value={eur(campaign.spend_total)} color="#F5EDED" />
-        <MetricTile label="Impressions" value={int(campaign.impressions)} color="#F5EDED" />
-        <MetricTile label="Clics" value={int(campaign.clicks)} color="#F5EDED" />
-        <MetricTile label="CTR" value={metrics.ctr !== null ? pct(metrics.ctr) : "···"} color={SEVERITY_COLOR[ctrSeverity(metrics.ctr, campaign.impressions)]} />
-        <MetricTile label="CPM" value={metrics.cpm !== null ? eur(metrics.cpm) : "···"} color="#F5EDED" />
-        <MetricTile label="CPC" value={metrics.cpc !== null ? eur(metrics.cpc) : "···"} color="#F5EDED" />
-        <MetricTile label="Leads" value={int(campaign.leads)} color="#F5EDED" />
+        <MetricTile label={t("Dépensé")} value={eur(campaign.spend_total)} color="#F5EDED" />
+        <MetricTile label={t("Impressions")} value={int(campaign.impressions)} color="#F5EDED" />
+        <MetricTile label={t("Clics")} value={int(campaign.clicks)} color="#F5EDED" />
+        <MetricTile label={t("CTR")} value={metrics.ctr !== null ? pct(metrics.ctr) : "···"} color={SEVERITY_COLOR[ctrSeverity(metrics.ctr, campaign.impressions)]} />
+        <MetricTile label={t("CPM")} value={metrics.cpm !== null ? eur(metrics.cpm) : "···"} color="#F5EDED" />
+        <MetricTile label={t("CPC")} value={metrics.cpc !== null ? eur(metrics.cpc) : "···"} color="#F5EDED" />
+        <MetricTile label={t("Leads")} value={int(campaign.leads)} color="#F5EDED" />
         <MetricTile
-          label="Coût / lead"
+          label={t("Coût / lead")}
           value={metrics.costPerLead !== null ? eur(metrics.costPerLead) : "···"}
           color={SEVERITY_COLOR[costPerLeadSeverity(metrics.costPerLead, avgCostPerLead)]}
         />
         {metrics.roas !== null && (
-          <MetricTile label="ROAS" value={`${metrics.roas.toFixed(1)}x`} color={SEVERITY_COLOR[roasSeverity(metrics.roas)]} />
+          <MetricTile label={t("ROAS")} value={`${metrics.roas.toFixed(1)}x`} color={SEVERITY_COLOR[roasSeverity(metrics.roas)]} />
         )}
       </div>
 

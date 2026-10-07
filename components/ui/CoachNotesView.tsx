@@ -259,10 +259,10 @@ function WeeklyNoteForm({
       {/* Textareas */}
       {(
         [
-          { key: "observations" as const, label: "Observations générales" },
-          { key: "nutrition_adjustments" as const, label: "Ajustements nutrition" },
-          { key: "program_adjustments" as const, label: "Ajustements programme" },
-          { key: "next_actions" as const, label: "Actions semaine prochaine" },
+          { key: "observations" as const, label: tr("Observations générales") },
+          { key: "nutrition_adjustments" as const, label: tr("Ajustements nutrition") },
+          { key: "program_adjustments" as const, label: tr("Ajustements programme") },
+          { key: "next_actions" as const, label: tr("Actions semaine prochaine") },
         ] as const
       ).map(({ key, label }) => (
         <div key={key}>
@@ -308,10 +308,10 @@ function NoteCard({ note }: { note: CoachNote }) {
   const [expanded, setExpanded] = useState(false);
 
   const fields = [
-    { label: "Observations", value: note.observations },
-    { label: "Ajustements nutrition", value: note.nutrition_adjustments },
-    { label: "Ajustements programme", value: note.program_adjustments },
-    { label: "Actions prochaine semaine", value: note.next_actions },
+    { label: tr("Observations"), value: note.observations },
+    { label: tr("Ajustements nutrition"), value: note.nutrition_adjustments },
+    { label: tr("Ajustements programme"), value: note.program_adjustments },
+    { label: tr("Actions prochaine semaine"), value: note.next_actions },
   ].filter((f) => f.value);
 
   return (
@@ -589,7 +589,7 @@ function DecisionCard({
         <div className="flex items-center gap-2 flex-shrink-0">
           <button
             onClick={() => setExpanded((e) => !e)}
-            aria-label={expanded ? "Réduire" : "Développer"}
+            aria-label={expanded ? tr("Réduire") : tr("Développer")}
             aria-expanded={expanded}
             className="text-[#F5EDED]/25 hover:text-[#F5EDED]/60 transition-colors"
           >

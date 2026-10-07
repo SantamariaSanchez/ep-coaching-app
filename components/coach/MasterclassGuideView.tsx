@@ -152,7 +152,7 @@ export default function MasterclassGuideView({
                 <button
                   type="button"
                   onClick={() => toggle(index)}
-                  aria-label={isDone ? "Marquer non fait" : "Marquer fait"}
+                  aria-label={isDone ? t("Marquer non fait") : t("Marquer fait")}
                   className={`flex-shrink-0 w-6 h-6 mt-0.5 rounded-md border flex items-center justify-center transition-colors ${
                     isDone ? "bg-[#4ade80] border-[#4ade80]" : "border-[#890404]/40 bg-transparent"
                   }`}

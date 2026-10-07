@@ -280,10 +280,10 @@ export default function CoachLogbookClient({ sessions, records, declaredInjuries
   const [activeTab, setActiveTab] = useState<"semaine" | "progression" | "qualite" | "historique">("semaine");
 
   const tabs = [
-    { key: "semaine" as const, label: "Semaine" },
-    { key: "progression" as const, label: "Progression" },
-    { key: "qualite" as const, label: "Qualité" },
-    { key: "historique" as const, label: "Historique" },
+    { key: "semaine" as const, label: t("Semaine") },
+    { key: "progression" as const, label: t("Progression") },
+    { key: "qualite" as const, label: t("Qualité") },
+    { key: "historique" as const, label: t("Historique") },
   ];
 
   return (

@@ -49,20 +49,20 @@ export default function Calculator() {
   return (
     <div>
       <div className="ep-card-hero" style={{ padding: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12, marginBottom: 14 }}>
-        <Field label="Budget" value={budget} onChange={setBudget} suffix="€" />
-        <Field label="Coût par lead" value={cpl} onChange={setCpl} suffix="€" />
-        <Field label="Leads qui achètent" value={conversion} onChange={setConversion} suffix="%" />
-        <Field label="Panier moyen" value={basket} onChange={setBasket} suffix="€" />
+        <Field label={t("Budget")} value={budget} onChange={setBudget} suffix="€" />
+        <Field label={t("Coût par lead")} value={cpl} onChange={setCpl} suffix="€" />
+        <Field label={t("Leads qui achètent")} value={conversion} onChange={setConversion} suffix="%" />
+        <Field label={t("Panier moyen")} value={basket} onChange={setBasket} suffix="€" />
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 10, marginBottom: 22 }}>
-        <Out label="Leads attendus" value={Math.round(leads).toLocaleString("fr-FR")} />
-        <Out label="Ventes attendues" value={sales.toFixed(1)} />
-        <Out label="CA généré" value={eur(revenue)} tone="good" />
-        <Out label="ROAS" value={roas.toFixed(2)} tone={roas >= 1 ? "good" : "bad"} />
+        <Out label={t("Leads attendus")} value={Math.round(leads).toLocaleString("fr-FR")} />
+        <Out label={t("Ventes attendues")} value={sales.toFixed(1)} />
+        <Out label={t("CA généré")} value={eur(revenue)} tone="good" />
+        <Out label={t("ROAS")} value={roas.toFixed(2)} tone={roas >= 1 ? "good" : "bad"} />
       </div>
       <div className="ep-card" style={{ padding: "16px", display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: 14 }}>
         <div style={{ width: 200 }}>
-          <Field label="Objectif de ventes" value={goal} onChange={setGoal} suffix="" />
+          <Field label={t("Objectif de ventes")} value={goal} onChange={setGoal} suffix="" />
         </div>
         <p style={{ fontSize: 13, color: "rgba(245,237,237,0.7)", margin: 0, lineHeight: 1.6 }}>
           {t("Budget nécessaire avec tes taux actuels :")}{" "}<strong style={{ color: "#F5EDED", fontSize: 16 }}>{eur(neededBudget)}</strong>

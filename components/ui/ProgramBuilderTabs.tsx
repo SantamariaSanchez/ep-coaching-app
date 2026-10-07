@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Wand2, Pencil } from "lucide-react";
@@ -18,6 +19,7 @@ export default function ProgramBuilderTabs({
   saveProgram: (clientId: string, input: ProgramInput) => Promise<{ error?: string }>;
   successRedirect?: string;
 }) {
+  const t = useT();
   const router = useRouter();
   // Pas encore de programme -> on propose le créateur guidé en premier ;
   // un programme existe déjà -> on retombe sur l'éditeur manuel par défaut.
@@ -27,8 +29,8 @@ export default function ProgramBuilderTabs({
     <div>
       <div className="flex gap-1 mb-5 border-b border-[#890404]/20 overflow-x-auto">
         {[
-          { key: "wizard" as const, label: "Créateur guidé", icon: Wand2 },
-          { key: "manual" as const, label: "Construire moi-même", icon: Pencil },
+          { key: "wizard" as const, label: t("Créateur guidé"), icon: Wand2 },
+          { key: "manual" as const, label: t("Construire moi-même"), icon: Pencil },
         ].map(({ key, label, icon: Icon }) => (
           <button
             key={key}

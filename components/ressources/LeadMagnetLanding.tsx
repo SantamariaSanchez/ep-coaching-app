@@ -592,7 +592,7 @@ function QuizFlow({
             {t("Laisse ton email ou ton numéro pour le débloquer.")}
           </p>
         </div>
-        <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Voir mon résultat" />
+        <CaptureForm slug={magnet.slug} submitLead={submitLead} onUnlocked={() => setStoredUnlock(true)} ctaLabel={t("Voir mon résultat")} />
       </div>
     );
   }
@@ -759,7 +759,7 @@ export default function LeadMagnetLanding({
               </p>
             )}
           </div>
-          <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel="Débloquer gratuitement" />
+          <CaptureForm slug={magnet.slug} submitLead={submitLeadWithOrigin} onUnlocked={() => setStoredUnlock(true)} ctaLabel={t("Débloquer gratuitement")} />
         </div>
       )}
     </div>

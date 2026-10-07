@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 // Carte de format du funnel TOF/MOF/BOF, avec une vraie action dessus.
 // Avant : une idée à lire puis à recopier soi-même dans le Studio créatif
 // pour pouvoir la travailler. Maintenant : un tap l'ajoute directement,
@@ -23,6 +24,7 @@ export default function FunnelIdeaCard({
   format: string;
   idea: string;
 }) {
+  const t = useT();
   const [added, setAdded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -49,7 +51,7 @@ export default function FunnelIdeaCard({
           type="button"
           onClick={add}
           disabled={isPending || added}
-          title={added ? "Ajoutée à ton Studio créatif" : "Ajouter à mon Studio créatif"}
+          title={added ? t("Ajoutée à ton Studio créatif") : t("Ajouter à mon Studio créatif")}
           className="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full border border-[#890404]/30 text-[#F5EDED]/40 hover:text-[#E01E1E] hover:border-[#E01E1E]/40 disabled:opacity-60 transition-colors"
         >
           {added ? <Check size={10} className="text-[#4ade80]" /> : <Plus size={10} />}

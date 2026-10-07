@@ -1,3 +1,4 @@
+import { getT } from "@/lib/i18n-server";
 import { redirect } from "next/navigation";
 import { getUser, getProfile } from "@/utils/auth";
 import { createServerSupabase } from "@/lib/supabase-server";
@@ -31,6 +32,7 @@ import { getUserSettingsAction } from "@/app/actions/user-settings";
 import { appVersion } from "@/lib/app-version";
 
 export default async function CoachParametresPage() {
+  const t = await getT();
   const user = await getUser();
   if (!user) redirect("/");
 
@@ -92,7 +94,7 @@ export default async function CoachParametresPage() {
       sections={[
         {
           id: "affichage",
-          title: "Langue et affichage",
+          title: t("Langue et affichage"),
           keywords: "langue anglais english français page d'ouverture accueil vibration haptique mon appli rubriques disciplines personnalisation taille du texte animations accessibilité",
           node: (
             <>
@@ -103,7 +105,7 @@ export default async function CoachParametresPage() {
         },
         {
           id: "activite",
-          title: "Mon activité de coach",
+          title: t("Mon activité de coach"),
           keywords: "nouveaux clients liste d'attente spécialisations niches annuaire visibilité",
           node: (
             <>
@@ -116,7 +118,7 @@ export default async function CoachParametresPage() {
         ...(!profile.is_platform_owner
           ? [{
               id: "abonnement",
-              title: "Abonnement et paiements",
+              title: t("Abonnement et paiements"),
               keywords: "abonnement facture stripe paiement lien d'invitation code coach personnel",
               node: (
                 <>
@@ -130,13 +132,13 @@ export default async function CoachParametresPage() {
           : []),
         {
           id: "entrainement",
-          title: "Séance et courses",
+          title: t("Séance et courses"),
           keywords: "repos minuteur chrono son bip vibration séance entraînement courses stock inventaire aliments repas",
           node: <TrainingNutritionCard initialPantryAuto={settings.pantryAuto} />,
         },
         {
           id: "notifications",
-          title: "Notifications",
+          title: t("Notifications"),
           keywords: "notifications rappels push autorisations heures calmes silence newsletter email pas podomètre",
           node: (
             <>
@@ -153,7 +155,7 @@ export default async function CoachParametresPage() {
         },
         {
           id: "connexions",
-          title: "Claude, Notion et objets",
+          title: t("Claude, Notion et objets"),
           keywords: "claude ia intelligence artificielle notion connecteur clé oura bague montre connexion",
           node: (
             <>
@@ -164,7 +166,7 @@ export default async function CoachParametresPage() {
         },
         {
           id: "securite",
-          title: "Compte et sécurité",
+          title: t("Compte et sécurité"),
           keywords: "compte email mot de passe déconnexion déconnecter partout appareils sessions supprimer exporter données double authentification 2fa sécurité",
           node: (
             <>
@@ -176,7 +178,7 @@ export default async function CoachParametresPage() {
         },
         {
           id: "appareil",
-          title: "Appareil et à propos",
+          title: t("Appareil et à propos"),
           keywords: "cache version mise à jour appareil mentions légales cgu confidentialité",
           node: (
             <>

@@ -89,7 +89,7 @@ export default function ArticleListView({ articles: initial, isCoach, emptyLabel
       )}
 
       {showSeedButton && seedAction && (
-        <SeedLibraryButton label="Importer la bibliothèque officielle (PubMed)" action={seedAction} />
+        <SeedLibraryButton label={tr("Importer la bibliothèque officielle (PubMed)")} action={seedAction} />
       )}
 
       <div className="flex flex-col sm:flex-row gap-3">

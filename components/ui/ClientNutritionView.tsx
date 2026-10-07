@@ -1722,9 +1722,9 @@ export default function ClientNutritionView({
               était en lecture seule. */}
           <div className="flex gap-1.5 bg-[#1f0101] border border-[#890404]/25 rounded-xl p-1">
             {([
-              { key: "jour", label: "Jour" },
-              { key: "semaine", label: "Semaine" },
-              { key: "mois", label: "Mois" },
+              { key: "jour", label: tr("Jour") },
+              { key: "semaine", label: tr("Semaine") },
+              { key: "mois", label: tr("Mois") },
             ] as const).map(({ key, label }) => (
               <button
                 key={key}
@@ -2473,11 +2473,11 @@ export default function ClientNutritionView({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: "calories_per_100", label: "Calories/100g *" },
-                  { key: "proteins_per_100", label: "Protéines/100g" },
-                  { key: "carbs_per_100", label: "Glucides/100g" },
-                  { key: "fats_per_100", label: "Lipides/100g" },
-                  { key: "fibers_per_100", label: "Fibres/100g" },
+                  { key: "calories_per_100", label: tr("Calories/100g *") },
+                  { key: "proteins_per_100", label: tr("Protéines/100g") },
+                  { key: "carbs_per_100", label: tr("Glucides/100g") },
+                  { key: "fats_per_100", label: tr("Lipides/100g") },
+                  { key: "fibers_per_100", label: tr("Fibres/100g") },
                 ].map(({ key, label }) => (
                   <div key={key}>
                     <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">
@@ -2565,10 +2565,10 @@ export default function ClientNutritionView({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { key: "calories", label: "Calories *" },
-                  { key: "proteins", label: "Protéines (g)" },
-                  { key: "carbs", label: "Glucides (g)" },
-                  { key: "fats", label: "Lipides (g)" },
+                  { key: "calories", label: tr("Calories *") },
+                  { key: "proteins", label: tr("Protéines (g)") },
+                  { key: "carbs", label: tr("Glucides (g)") },
+                  { key: "fats", label: tr("Lipides (g)") },
                 ].map(({ key, label }) => (
                   <div key={key}>
                     <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/40 mb-1.5 block">

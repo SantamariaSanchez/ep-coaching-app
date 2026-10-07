@@ -42,7 +42,7 @@ export default function DeviceAboutCard({ version }: { version: string }) {
       </SettingRow>
       <Divider />
       <SettingRow icon={MonitorSmartphone} title={t("Cet appareil")} hint={t("Son, vibrations, repos, page d'ouverture et accessibilité sont gardés sur cet appareil.")} />
-      <SettingRow icon={Info} title="EP Coaching" hint={`${t("Version")} ${version}`} />
+      <SettingRow icon={Info} title={t("EP Coaching")} hint={`${t("Version")} ${version}`} />
     </CardShell>
   );
 }

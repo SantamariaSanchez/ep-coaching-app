@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState } from "react";
 import ClientNutritionView from "@/components/ui/ClientNutritionView";
 import CoachClientNutritionTabs from "@/components/ui/CoachClientNutritionTabs";
@@ -15,14 +16,15 @@ export default function CoachMoiNutritionTabs({
   clientView: ClientViewProps;
   manageProps: ManageProps;
 }) {
+  const t = useT();
   const [tab, setTab] = useState<"suivi" | "gerer">("suivi");
 
   return (
     <div>
       <div className="flex gap-1 mb-6 border-b border-[#890404]/20 overflow-x-auto">
         {([
-          { key: "suivi" as const, label: "Suivi du jour" },
-          { key: "gerer" as const, label: "Mes objectifs & plan" },
+          { key: "suivi" as const, label: t("Suivi du jour") },
+          { key: "gerer" as const, label: t("Mes objectifs & plan") },
         ]).map(({ key, label }) => (
           <button
             key={key}

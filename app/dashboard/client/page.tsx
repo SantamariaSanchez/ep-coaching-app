@@ -889,8 +889,8 @@ export default async function ClientDashboard({
                   marginBottom: weightDelta != null ? 12 : 0,
                 }}>
                   {[
-                    { label: "Départ", val: startWeight },
-                    { label: "Actuel", val: currentWeight },
+                    { label: t("Départ"), val: startWeight },
+                    { label: t("Actuel"), val: currentWeight },
                   ].map(({ label, val }) => (
                     <div key={label}>
                       <p className="ep-label" style={{ marginBottom: 4 }}>{label}</p>

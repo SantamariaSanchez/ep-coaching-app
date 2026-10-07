@@ -170,7 +170,7 @@ function PhaseCard({
       {open && (
         <>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
-            <Field label="Type">
+            <Field label={tr("Type")}>
               <select
                 value={phase.type}
                 onChange={(e) => {
@@ -188,7 +188,7 @@ function PhaseCard({
               </select>
             </Field>
 
-            <Field label="Label personnalisé">
+            <Field label={tr("Label personnalisé")}>
               <input
                 type="text"
                 value={phase.label}
@@ -198,7 +198,7 @@ function PhaseCard({
               />
             </Field>
 
-            <Field label="Date de début">
+            <Field label={tr("Date de début")}>
               <input
                 type="date"
                 value={phase.start_date}
@@ -207,7 +207,7 @@ function PhaseCard({
               />
             </Field>
 
-            <Field label="Date de fin">
+            <Field label={tr("Date de fin")}>
               <input
                 type="date"
                 value={phase.end_date}
@@ -218,7 +218,7 @@ function PhaseCard({
             </Field>
           </div>
 
-          <Field label="Notes (facultatif)">
+          <Field label={tr("Notes (facultatif)")}>
             <textarea
               value={phase.notes ?? ""}
               onChange={(e) => onChange({ notes: e.target.value })}
@@ -317,7 +317,7 @@ function ObjectiveCard({
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 10 }}>
-            <Field label="Type">
+            <Field label={tr("Type")}>
               <select
                 value={obj.type}
                 onChange={(e) => {
@@ -332,7 +332,7 @@ function ObjectiveCard({
               </select>
             </Field>
 
-            <Field label="Date cible">
+            <Field label={tr("Date cible")}>
               <input
                 type="date"
                 value={obj.target_date}
@@ -341,12 +341,12 @@ function ObjectiveCard({
               />
             </Field>
 
-            <Field label="Label">
+            <Field label={tr("Label")}>
               <input
                 type="text"
                 value={obj.label}
                 onChange={(e) => onChange({ label: e.target.value })}
-                placeholder={typeConfig?.label ?? "Objectif"}
+                placeholder={typeConfig?.label ?? tr("Objectif")}
                 style={inputStyle}
               />
             </Field>
@@ -375,7 +375,7 @@ function ObjectiveCard({
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            <Field label="Description (facultatif)">
+            <Field label={tr("Description (facultatif)")}>
               <textarea
                 value={obj.description ?? ""}
                 onChange={(e) => onChange({ description: e.target.value })}
@@ -577,7 +577,7 @@ export default function RoadmapEditor({
       {
         localId,
         type: "maintenance",
-        label: "Maintenance",
+        label: tr("Maintenance"),
         start_date: nextStart,
         end_date: endDate || nextStart,
         notes: null,
@@ -727,7 +727,7 @@ export default function RoadmapEditor({
         </p>
         <div className="ep-card" style={{ padding: 20 }}>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 12 }}>
-            <Field label="Date de début">
+            <Field label={tr("Date de début")}>
               <input
                 type="date"
                 value={startDate}
@@ -735,7 +735,7 @@ export default function RoadmapEditor({
                 style={inputStyle}
               />
             </Field>
-            <Field label="Date de fin">
+            <Field label={tr("Date de fin")}>
               <input
                 type="date"
                 value={endDate}

@@ -91,7 +91,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
   const docTargets = [
     { value: `user:${userId}`, label: `Seulement ${member.full_name}` },
     { value: `role:${member.role_key}`, label: `Tous les ${card?.role.title ?? member.role_key}` },
-    { value: "all", label: "Toute l'équipe" },
+    { value: "all", label: tr("Toute l'équipe") },
   ];
 
   return (
@@ -201,7 +201,7 @@ export default async function TeamMemberPage({ params }: { params: Promise<{ use
                 <span style={{ fontSize: 12.5, color: "#F5EDED" }}>
                   {KINDS[k].plural} <span style={{ color: "rgba(245,237,237,0.45)" }}>· {records.filter((r) => r.kind === k).length}</span>
                 </span>
-                <CsvExport kind={k} memberId={userId} label="CSV" />
+                <CsvExport kind={k} memberId={userId} label={tr("CSV")} />
               </div>
             ))}
           </Section>

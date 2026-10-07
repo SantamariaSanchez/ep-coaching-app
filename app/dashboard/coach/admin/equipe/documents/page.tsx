@@ -51,7 +51,7 @@ export default async function FounderTeamDocumentsPage() {
   const cvs = applications.filter((a) => a.cvUrl);
 
   const targets = [
-    { value: "all", label: "Toute l'équipe" },
+    { value: "all", label: t("Toute l'équipe") },
     ...STAFF_ROLE_KEYS.map((k) => ({ value: `role:${k}`, label: `Métier : ${getRoleCard(k)?.role.title ?? k}` })),
     ...people.filter((p) => !p.isFounder).map((p) => ({ value: `user:${p.id}`, label: `${p.name} (${p.subtitle})` })),
   ];

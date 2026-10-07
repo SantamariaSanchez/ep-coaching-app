@@ -39,7 +39,7 @@ export default async function ClientScienceActualitePage() {
       <ArticleListView
         articles={articles}
         isCoach={false}
-        emptyLabel="Aucune actualité scientifique pour l'instant."
+        emptyLabel={t("Aucune actualité scientifique pour l'instant.")}
         deleteArticle={deleteArticle}
       />
     </div>

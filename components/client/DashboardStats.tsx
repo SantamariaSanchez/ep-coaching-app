@@ -25,6 +25,7 @@ interface Stats {
 }
 
 function SleepDisplay({ value }: { value: string }) {
+  const tr = useT();
   const hours = parseFloat(value) || 0;
   return (
     <ProgressRing
@@ -34,7 +35,7 @@ function SleepDisplay({ value }: { value: string }) {
       strokeWidth={7}
       color="#a78bfa"
       trackColor="rgba(167,139,250,0.07)"
-      label="Sommeil"
+      label={tr("Sommeil")}
       unit="h"
       delay={200}
     />
@@ -145,8 +146,8 @@ export default function ClientDashboardStats({
   const dailyTasks: DailyTask[] = [
     {
       done: stats.weighInToday,
-      label: stats.weighInToday ? "Pesée du matin faite" : "Se peser ce matin",
-      sublabel: "Le premier réflexe, avant même de manger",
+      label: stats.weighInToday ? tr("Pesée du matin faite") : tr("Se peser ce matin"),
+      sublabel: tr("Le premier réflexe, avant même de manger"),
       href: "/dashboard/client/bilan",
       icon: Scale,
       color: "#4ade80",
@@ -155,26 +156,26 @@ export default function ClientDashboardStats({
       done: stats.consumedCals > 0,
       label: stats.consumedCals > 0
         ? `Nutrition loggée : ${stats.consumedCals}${stats.targetCals > 0 ? ` / ${stats.targetCals} kcal` : " kcal"}`
-        : "Logger mes repas du jour",
+        : tr("Logger mes repas du jour"),
       sublabel: stats.targetCals > 0
         ? `Objectif : ${stats.targetCals} kcal`
-        : "Renseigne tes repas pour suivre tes kcal",
+        : tr("Renseigne tes repas pour suivre tes kcal"),
       href: "/dashboard/client/nutrition",
       icon: Apple,
       color: "#E01E1E",
     },
     {
       done: stats.hasSessionToday,
-      label: stats.hasSessionToday ? "Séance terminée aujourd'hui" : "Démarrer ma séance",
-      sublabel: "Lance ton logbook et suis ta progression",
+      label: stats.hasSessionToday ? tr("Séance terminée aujourd'hui") : tr("Démarrer ma séance"),
+      sublabel: tr("Lance ton logbook et suis ta progression"),
       href: "/dashboard/client/logbook",
       icon: Dumbbell,
       color: "#60a5fa",
     },
     {
       done: stats.hasBilanToday,
-      label: stats.hasBilanToday ? "Bilan du jour rempli" : "Remplir mon bilan du jour",
-      sublabel: "Poids, sommeil, ressenti, 30 secondes",
+      label: stats.hasBilanToday ? tr("Bilan du jour rempli") : tr("Remplir mon bilan du jour"),
+      sublabel: tr("Poids, sommeil, ressenti, 30 secondes"),
       href: "/dashboard/client/bilan",
       icon: ClipboardCheck,
       color: "#fbbf24",
@@ -262,7 +263,7 @@ export default function ClientDashboardStats({
             strokeWidth={9}
             color="#E01E1E"
             trackColor="rgba(224,30,30,0.07)"
-            label="Nutrition"
+            label={tr("Nutrition")}
             unit="%"
             sublabel={stats.targetCals > 0 ? `${stats.consumedCals} / ${stats.targetCals} kcal` : `${stats.consumedCals} kcal, objectif à calculer`}
             delay={0}
@@ -274,7 +275,7 @@ export default function ClientDashboardStats({
             strokeWidth={7}
             color={adherenceColor}
             trackColor={`${adherenceColor}10`}
-            label="Adhésion 7j"
+            label={tr("Adhésion 7j")}
             unit="%"
             sublabel={`${stats.daysWithLogs}/7 jours`}
             delay={100}

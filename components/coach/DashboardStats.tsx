@@ -209,10 +209,10 @@ export default function DashboardStats() {
   const checkinRate = stats.activeCount > 0 ? Math.round((stats.weeklyCount / stats.activeCount) * 100) : null;
 
   const tiles = [
-    { label: "Clients actifs",    value: stats.activeCount,  icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false, href: "/dashboard/coach/clients", trend: undefined, progress: null },
-    { label: "Check-ins / sem.",  value: stats.weeklyCount,  icon: TrendingUp,    sub: stats.activeCount > 0 ? `${stats.weeklyCount} / ${stats.activeCount} clients actifs` : "aucun client actif", urgent: false, href: "/dashboard/coach/clients", trend: weeklyTrend, progress: checkinRate },
-    { label: "Sans réponse",      value: stats.pendingCount, icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true,  href: stats.pendingCount > 0 ? "#pending-replies" : "/dashboard/coach/clients", trend: undefined, progress: null },
-    { label: "Membres au total",  value: stats.totalMembers, icon: UserPlus,      sub: "inscrits sur l'appli",                                                 urgent: false, href: "/dashboard/coach/communaute/membres", trend: undefined, progress: null },
+    { label: t("Clients actifs"),    value: stats.activeCount,  icon: Users,         sub: stats.activeCount === 0 ? "aucun pour l'instant" : "suivis en cours",   urgent: false, href: "/dashboard/coach/clients", trend: undefined, progress: null },
+    { label: t("Check-ins / sem."),  value: stats.weeklyCount,  icon: TrendingUp,    sub: stats.activeCount > 0 ? `${stats.weeklyCount} / ${stats.activeCount} clients actifs` : "aucun client actif", urgent: false, href: "/dashboard/coach/clients", trend: weeklyTrend, progress: checkinRate },
+    { label: t("Sans réponse"),      value: stats.pendingCount, icon: CalendarClock, sub: stats.pendingCount === 0 ? "tout à jour ✓"       : "en attente",          urgent: true,  href: stats.pendingCount > 0 ? "#pending-replies" : "/dashboard/coach/clients", trend: undefined, progress: null },
+    { label: t("Membres au total"),  value: stats.totalMembers, icon: UserPlus,      sub: "inscrits sur l'appli",                                                 urgent: false, href: "/dashboard/coach/communaute/membres", trend: undefined, progress: null },
   ];
 
   return (

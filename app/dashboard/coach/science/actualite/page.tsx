@@ -46,7 +46,7 @@ export default async function CoachScienceActualitePage() {
       <ArticleListView
         articles={articles}
         isCoach={canCurate}
-        emptyLabel="Aucune actualité scientifique pour l'instant."
+        emptyLabel={t("Aucune actualité scientifique pour l'instant.")}
         updateArticle={canCurate ? updateArticle : undefined}
         deleteArticle={canCurate ? deleteArticle : undefined}
       />

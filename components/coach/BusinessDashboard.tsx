@@ -107,42 +107,42 @@ export default function BusinessDashboard({
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
         <KpiCard
           icon={Users}
-          label="Clients actifs"
+          label={t("Clients actifs")}
           value={String(activeClientsCount)}
           sub={newClientsThisMonth > 0 ? `+${newClientsThisMonth} ce mois-ci` : undefined}
           onClick={() => onNavigate("dashboard")}
         />
         <KpiCard
           icon={Wallet}
-          label="Revenu du mois"
+          label={t("Revenu du mois")}
           value={eur(revenueThisMonth)}
           sub="Journal Revenus & dépenses"
           onClick={() => onNavigate("dashboard")}
         />
         <KpiCard
           icon={TrendingUp}
-          label="Objectifs en cours"
+          label={t("Objectifs en cours")}
           value={String(nearestGoal ? 1 : 0)}
           sub={nearestGoal ? `${nearestPct}% du plus proche` : "Aucun objectif fixé"}
           onClick={() => onNavigate("objectifs")}
         />
         <KpiCard
           icon={Network}
-          label="Réseau actif"
+          label={t("Réseau actif")}
           value={`${networkActiveCount}/${networkTotalCount}`}
           sub="Partenaires, affiliés, influenceurs"
           onClick={() => onNavigate("reseau")}
         />
         <KpiCard
           icon={CheckSquare}
-          label="Marque personnelle"
+          label={t("Marque personnelle")}
           value={`${checklistDone}/${checklistTotal}`}
           sub="Checklist de construction"
           onClick={() => onNavigate("checklist")}
         />
         <KpiCard
           icon={Target}
-          label="Jalons roadmap"
+          label={t("Jalons roadmap")}
           value={`${roadmapMilestonesDone}/${roadmapMilestonesTotal}`}
           sub="Vision 1/3/10/20 ans"
           onClick={() => onNavigate("roadmap")}

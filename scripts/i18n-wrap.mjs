@@ -7,7 +7,10 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import ts from "typescript";
 
-const ATTRS = new Set(["placeholder", "aria-label", "title", "alt"]);
+const ATTRS = new Set(["placeholder", "aria-label", "title", "alt", "label", "sublabel", "subtitle", "description", "desc", "hint", "emptyText", "emptyLabel", "confirmLabel", "cta", "ctaLabel", "heading", "caption"]);
+// Propriétés d'objet affichées telles quelles quand l'objet est construit
+// dans un composant ({ label: "...", hint: "..." }).
+const PROPS = new Set(["label", "sublabel", "subtitle", "title", "description", "desc", "hint", "placeholder", "cta", "ctaLabel", "heading", "caption", "help", "tip", "emptyText", "detail"]);
 const ENTITIES = { "&apos;": "'", "&quot;": '"', "&amp;": "&", "&nbsp;": " ", "&lt;": "<", "&gt;": ">", "&rsquo;": "’", "&laquo;": "«", "&raquo;": "»", "&ldquo;": "“", "&rdquo;": "”", "&hellip;": "…" };
 const decode = (s) => s.replace(/&[a-z]+;/g, (e) => ENTITIES[e] ?? e);
 const hasWords = (s) => /[A-Za-zÀ-ÿ]{2,}/.test(s.replace(/&[a-z]+;/g, ""));
@@ -59,6 +62,8 @@ for (const file of process.argv.slice(2)) {
         if (p.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken && p.left === child) return false;
         continue;
       }
+      if (ts.isPropertyAssignment(p)) return p.initializer === child && PROPS.has(p.name.getText(sf)) && !ts.isJsxAttributes(p.parent);
+      if (ts.isJsxExpression(p) && ts.isJsxAttribute(p.parent)) return ATTRS.has(p.parent.name.getText(sf));
       if (!ts.isJsxExpression(p)) return false;
       if (ts.isJsxElement(p.parent) && /^(style|script)$/.test(p.parent.openingElement.tagName.getText(sf))) return false;
       return ts.isJsxElement(p.parent) || ts.isJsxFragment(p.parent);
@@ -105,11 +110,21 @@ for (const file of process.argv.slice(2)) {
   };
   visit(sf);
 
-  if (!edits.length) {
+  // Composants qui appellent déjà le traducteur sans l'avoir déclaré
+  // (texte entouré lors d'un passage précédent dans un autre composant).
+  const findCalls = (n) => {
+    if (ts.isCallExpression(n) && ts.isIdentifier(n.expression) && n.expression.text === T) {
+      const comp = componentOf(n);
+      if (comp && !new RegExp(`const ${T} = (useT\(\)|await getT\(\))`).test(comp.body.getText(sf))) components.add(comp);
+    }
+    ts.forEachChild(n, findCalls);
+  };
+  findCalls(sf);
+  if (!edits.length && !components.size) {
     console.log(`rien à traduire : ${file}`);
     continue;
   }
-  if (!already) {
+  {
     for (const comp of components) {
       const body = comp.body;
       if (new RegExp(`const ${T} = (useT\\(\\)|await getT\\(\\))`).test(body.getText(sf))) continue;

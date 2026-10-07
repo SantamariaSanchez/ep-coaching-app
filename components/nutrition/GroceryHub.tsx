@@ -307,7 +307,7 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
   }
 
   return (
-    <SheetFrame title={picked ? picked.name : "Ajouter des courses"} onClose={onClose}>
+    <SheetFrame title={picked ? picked.name : t("Ajouter des courses")} onClose={onClose}>
       {!picked ? (
         <div className="space-y-2">
           <label className="flex items-center gap-2 rounded-xl bg-[#150000] border border-[#890404]/40 px-3">
@@ -340,9 +340,9 @@ function AddSheet({ foods, onClose, onAdd }: { foods: Food[]; onClose: () => voi
               <button key={u} role="radio" aria-checked={unit === u} onClick={() => setUnit(u)} className={`min-h-[40px] rounded-md text-xs font-bold ${unit === u ? "bg-[#E01E1E] text-white" : "text-[#F5EDED]/55"}`}>{UNIT_LABELS[u]}</button>
             ))}
           </div>
-          <NumberField label={unit === "piece" ? "Combien de pièces ?" : unit === "ml" ? "Combien de ml ?" : "Combien de grammes ?"} value={quantity} onChange={setQuantity} />
-          {unit === "piece" && <NumberField label="Poids d'une pièce (g)" value={gpu} onChange={setGpu} hint="Sert à retirer la bonne quantité quand tu notes un repas en grammes." />}
-          <NumberField label="Me prévenir sous (facultatif)" value={threshold} onChange={setThreshold} hint={`En ${unit === "piece" ? "pièces" : unit}. Sinon, l'alerte se base sur ta consommation.`} />
+          <NumberField label={unit === "piece" ? t("Combien de pièces ?") : unit === "ml" ? t("Combien de ml ?") : t("Combien de grammes ?")} value={quantity} onChange={setQuantity} />
+          {unit === "piece" && <NumberField label={t("Poids d'une pièce (g)")} value={gpu} onChange={setGpu} hint={t("Sert à retirer la bonne quantité quand tu notes un repas en grammes.")} />}
+          <NumberField label={t("Me prévenir sous (facultatif)")} value={threshold} onChange={setThreshold} hint={`En ${unit === "piece" ? "pièces" : unit}. Sinon, l'alerte se base sur ta consommation.`} />
           <button
             onClick={() => onAdd({ ...picked, unit, quantity: Number(quantity) || 0, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })}
             className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold"
@@ -365,8 +365,8 @@ function EditSheet({ item, onClose, onSave, onDelete }: { item: PantryItem; onCl
     <SheetFrame title={item.name} onClose={onClose}>
       <div className="space-y-3">
         <NumberField label={`Quantité en stock (${unit === "piece" ? "pièces" : unit})`} value={quantity} onChange={setQuantity} />
-        {unit === "piece" && <NumberField label="Poids d'une pièce (g)" value={gpu} onChange={setGpu} />}
-        <NumberField label="Me prévenir sous (facultatif)" value={threshold} onChange={setThreshold} />
+        {unit === "piece" && <NumberField label={t("Poids d'une pièce (g)")} value={gpu} onChange={setGpu} />}
+        <NumberField label={t("Me prévenir sous (facultatif)")} value={threshold} onChange={setThreshold} />
         <button onClick={() => onSave(Number(quantity) || 0, { unit, gramsPerUnit: unit === "piece" ? Number(gpu) || 100 : null, lowThreshold: threshold === "" ? null : Number(threshold) })} className="w-full min-h-[44px] rounded-xl bg-[#E01E1E] text-white text-sm font-bold">
           {t("Enregistrer")}
         </button>

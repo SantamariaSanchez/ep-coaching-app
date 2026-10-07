@@ -79,7 +79,7 @@ function FieldControl({
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={field.placeholder ?? "Écris ta réponse ici..."}
+        placeholder={field.placeholder ?? t("Écris ta réponse ici...")}
         aria-label={field.label}
         rows={4}
         className={inputCls}
@@ -495,9 +495,9 @@ export default function ClientOnboardingIntake() {
               {t("3 photos actuelles : face, profil, dos")}
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
-              <PhotoSlot label="Face" file={physiqueFiles.face} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, face: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, face: null }))} />
-              <PhotoSlot label="Profil" file={physiqueFiles.profil} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, profil: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, profil: null }))} />
-              <PhotoSlot label="Dos" file={physiqueFiles.dos} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, dos: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, dos: null }))} />
+              <PhotoSlot label={t("Face")} file={physiqueFiles.face} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, face: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, face: null }))} />
+              <PhotoSlot label={t("Profil")} file={physiqueFiles.profil} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, profil: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, profil: null }))} />
+              <PhotoSlot label={t("Dos")} file={physiqueFiles.dos} onPick={(f) => setPhysiqueFiles((p) => ({ ...p, dos: f }))} onClear={() => setPhysiqueFiles((p) => ({ ...p, dos: null }))} />
             </div>
             {fieldError && <p style={{ color: "#E01E1E", fontSize: 11.5, fontWeight: 700, marginTop: 10 }}>{fieldError}</p>}
             <div style={{ display: "flex", justifyContent: "space-between", gap: 12, marginTop: 20 }}>

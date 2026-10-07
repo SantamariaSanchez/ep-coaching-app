@@ -100,9 +100,9 @@ export default function ProgrammationHub({
   const [showDietBuilder, setShowDietBuilder] = useState(false);
 
   const tabs: { key: Tab; label: string; icon: React.ElementType; count: number }[] = [
-    { key: "programmes", label: "Programmes", icon: Dumbbell, count: programTemplates.length },
-    { key: "diet", label: "Diètes", icon: UtensilsCrossed, count: dietTemplates.length },
-    { key: "roadmap", label: "Road Map", icon: Map, count: roadmapTemplates.length },
+    { key: "programmes", label: tr("Programmes"), icon: Dumbbell, count: programTemplates.length },
+    { key: "diet", label: tr("Diètes"), icon: UtensilsCrossed, count: dietTemplates.length },
+    { key: "roadmap", label: tr("Road Map"), icon: Map, count: roadmapTemplates.length },
   ];
 
   return (
@@ -142,7 +142,7 @@ export default function ProgrammationHub({
             <EmptyState
               text="Aucun modèle de programme pour l'instant. Conçois une structure réutilisable (split, fréquence, objectif) une fois, applique-la à chaque nouveau client en quelques clics."
               ctaHref="/dashboard/coach/programmation/programmes/new"
-              ctaLabel="Créer le premier modèle"
+              ctaLabel={tr("Créer le premier modèle")}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -285,7 +285,7 @@ export default function ProgrammationHub({
             <EmptyState
               text="Aucun modèle de road map pour l'instant. Conçois une série de phases et de jalons type (prépa compétition, perte de poids, prise de masse) une fois, applique la à chaque nouveau client : les décalages en semaines deviennent de vraies dates."
               ctaHref="/dashboard/coach/programmation/roadmap/new"
-              ctaLabel="Créer le premier modèle"
+              ctaLabel={tr("Créer le premier modèle")}
             />
           ) : (
             <div className="space-y-2.5">

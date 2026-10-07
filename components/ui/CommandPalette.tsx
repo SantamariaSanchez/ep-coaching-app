@@ -211,7 +211,7 @@ export default function CommandPalette({
   const results: Result[] = [
     ...matchedClients.map((c) => ({
       key: `c-${c.id}`,
-      label: c.full_name ?? "Sans nom",
+      label: c.full_name ?? tr("Sans nom"),
       sub: "Client",
       href: `/dashboard/coach/clients/${c.id}`,
     })),
@@ -284,7 +284,7 @@ export default function CommandPalette({
             value={query}
             onChange={(e) => { setQuery(e.target.value); setActiveIndex(0); }}
             onKeyDown={onKeyDownInput}
-            placeholder={isCoach ? "Un client, une page, « poids », « leads »..." : "Une page, un aliment, « poids », « calories »..."}
+            placeholder={isCoach ? tr("Un client, une page, « poids », « leads »...") : tr("Une page, un aliment, « poids », « calories »...")}
             aria-label={tr("Rechercher")}
             style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "#F5EDED", fontSize: 14 }}
           />

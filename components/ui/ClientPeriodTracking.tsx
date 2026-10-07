@@ -115,10 +115,10 @@ export default function ClientPeriodTracking({
       </p>
 
       <div className="grid grid-cols-3 gap-2">
-        <StatCard label="Cycle moyen" value={stats.avgCycleLength ? `${stats.avgCycleLength}j` : "···"} />
-        <StatCard label="Règles (moy.)" value={stats.avgPeriodLength ? `${stats.avgPeriodLength}j` : "···"} />
+        <StatCard label={t("Cycle moyen")} value={stats.avgCycleLength ? `${stats.avgCycleLength}j` : "···"} />
+        <StatCard label={t("Règles (moy.)")} value={stats.avgPeriodLength ? `${stats.avgPeriodLength}j` : "···"} />
         <StatCard
-          label="Prochain cycle"
+          label={t("Prochain cycle")}
           value={
             stats.nextEstimated
               ? new Intl.DateTimeFormat("fr-FR", { day: "numeric", month: "short" }).format(new Date(stats.nextEstimated))

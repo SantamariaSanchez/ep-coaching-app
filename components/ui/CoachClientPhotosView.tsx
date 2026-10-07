@@ -50,14 +50,14 @@ function CompetitionSettings({
             className={inputCls}
           >
             <option value="">{t("Non définie")}</option>
-            <optgroup label="Femmes">
+            <optgroup label={t("Femmes")}>
               {CATEGORIES_BY_GENDER.femme.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
                 </option>
               ))}
             </optgroup>
-            <optgroup label="Hommes">
+            <optgroup label={t("Hommes")}>
               {CATEGORIES_BY_GENDER.homme.map((cat) => (
                 <option key={cat} value={cat}>
                   {cat}
@@ -81,8 +81,8 @@ function CompetitionSettings({
         <label className={labelCls}>{t("Phase actuelle")}</label>
         <div className="flex gap-2">
           {[
-            { value: "off_season", label: "Off-season" },
-            { value: "prep", label: "Prep" },
+            { value: "off_season", label: t("Off-season") },
+            { value: "prep", label: t("Prep") },
           ].map((opt) => (
             <label
               key={opt.value}
@@ -338,8 +338,8 @@ function ComparisonSection({ photos }: { photos: PhotoUpdate[] }) {
 
       <div className="grid grid-cols-2 gap-4">
         {[
-          { id: leftId, setId: setLeftId, photo: leftPhoto, label: "Avant" },
-          { id: rightId, setId: setRightId, photo: rightPhoto, label: "Après" },
+          { id: leftId, setId: setLeftId, photo: leftPhoto, label: t("Avant") },
+          { id: rightId, setId: setRightId, photo: rightPhoto, label: t("Après") },
         ].map(({ id, setId, photo, label }) => {
           const imgUrl = photo
             ? photo.photo_urls[0] ?? (photo.drive_link ? driveImageUrl(photo.drive_link) : null)

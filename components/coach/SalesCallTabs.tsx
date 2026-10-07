@@ -22,8 +22,8 @@ export default function SalesCallTabs({ calls }: { calls: SalesCall[] }) {
       <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
         {(
           [
-            { id: "suivi", label: "Suivi", icon: ListChecks },
-            { id: "closing", label: "Questions de closing", icon: MessageCircleQuestion },
+            { id: "suivi", label: t("Suivi"), icon: ListChecks },
+            { id: "closing", label: t("Questions de closing"), icon: MessageCircleQuestion },
           ] as const
         ).map(({ id, label, icon: Icon }) => (
           <button

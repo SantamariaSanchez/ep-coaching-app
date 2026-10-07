@@ -1581,8 +1581,8 @@ function ExerciseCard({
             type="button"
             onClick={() => onUpdate({ collapsed: !exState.collapsed })}
             className="p-1.5 text-[#F5EDED]/30 hover:text-[#F5EDED]/70 transition-colors flex-shrink-0"
-            title={exState.collapsed ? "Déplier" : "Replier"}
-            aria-label={exState.collapsed ? "Déplier l'exercice" : "Replier l'exercice"}
+            title={exState.collapsed ? tr("Déplier") : tr("Replier")}
+            aria-label={exState.collapsed ? tr("Déplier l'exercice") : tr("Replier l'exercice")}
           >
             <ChevronDown
               size={14}
@@ -2889,9 +2889,9 @@ export default function SessionView({
         {/* Stats summary */}
         <div className="grid grid-cols-3 gap-2 mb-6">
           {[
-            { label: "Sets", value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
-            { label: "RIR moy.", value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "···", icon: Activity, color: "#4ade80" },
-            { label: "Score tech.", value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "···", icon: Star, color: "#fbbf24" },
+            { label: tr("Sets"), value: String(totalSetsCompleted), icon: Dumbbell, color: "#E01E1E" },
+            { label: tr("RIR moy."), value: avgRIR != null ? String(Math.round(avgRIR * 10) / 10) : "···", icon: Activity, color: "#4ade80" },
+            { label: tr("Score tech."), value: avgScore > 0 ? `${Math.round(avgScore * 10) / 10}/5` : "···", icon: Star, color: "#fbbf24" },
           ].map(({ label, value, icon: Icon, color }) => (
             <div
               key={label}
@@ -2945,9 +2945,9 @@ export default function SessionView({
           </p>
           {!session.is_completed && (
             <>
-              <SliderInput label="Énergie générale" value={energy} onChange={setEnergy} />
-              <SliderInput label="Pump" value={pump} onChange={setPump} />
-              <SliderInput label="Feeling global" value={feeling} onChange={setFeeling} />
+              <SliderInput label={tr("Énergie générale")} value={energy} onChange={setEnergy} />
+              <SliderInput label={tr("Pump")} value={pump} onChange={setPump} />
+              <SliderInput label={tr("Feeling global")} value={feeling} onChange={setFeeling} />
               <div>
                 <label className="text-[10px] font-semibold uppercase tracking-widest text-[#F5EDED]/35 block mb-1.5">
                   {tr("Notes libres")}

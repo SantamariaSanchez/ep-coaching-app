@@ -206,10 +206,10 @@ function FoodGroupPicker({
           <p className="text-[9px] text-[#F5EDED]/25">{tr("Valeurs pour 100g de \"")}{search.trim()}&quot;</p>
           <div className="grid grid-cols-4 gap-1.5">
             {([
-              { key: "calories", label: "Kcal" },
-              { key: "protein", label: "Prot." },
-              { key: "carbs", label: "Gluc." },
-              { key: "fat", label: "Lip." },
+              { key: "calories", label: tr("Kcal") },
+              { key: "protein", label: tr("Prot.") },
+              { key: "carbs", label: tr("Gluc.") },
+              { key: "fat", label: tr("Lip.") },
             ] as const).map(({ key, label: l }) => (
               <div key={key}>
                 <input
@@ -572,7 +572,7 @@ export default function MealCreatorWizard({
                   <FoodGroupPicker
                     key={key}
                     label={FOOD_GROUP_LABELS[key] + (key === "proteine" ? "" : " (optionnel)")}
-                    hint={key === "proteine" ? "La base de ta recette." : "Choisis-en un ou plusieurs, ou passe."}
+                    hint={key === "proteine" ? tr("La base de ta recette.") : tr("Choisis-en un ou plusieurs, ou passe.")}
                     options={foodGroupOptions[key] ?? []}
                     selected={choices[key]}
                     toggle={(name) => toggleFood(key, name)}

@@ -465,10 +465,10 @@ export default function ProgramTemplateEditor({
                           <div className="grid grid-cols-4 gap-1.5">
                             {(
                               [
-                                { field: "sets" as const, label: "Séries", type: "number", placeholder: "4" },
-                                { field: "reps" as const, label: "Reps", type: "text", placeholder: "8-12" },
-                                { field: "rir" as const, label: "RIR", type: "number", placeholder: "2" },
-                                { field: "rest_seconds" as const, label: "Repos s", type: "number", placeholder: "90" },
+                                { field: "sets" as const, label: tr("Séries"), type: "number", placeholder: "4" },
+                                { field: "reps" as const, label: tr("Reps"), type: "text", placeholder: "8-12" },
+                                { field: "rir" as const, label: tr("RIR"), type: "number", placeholder: "2" },
+                                { field: "rest_seconds" as const, label: tr("Repos s"), type: "number", placeholder: "90" },
                               ] as const
                             ).map(({ field, label, type, placeholder }) => (
                               <div key={field}>

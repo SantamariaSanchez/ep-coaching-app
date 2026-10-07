@@ -168,7 +168,7 @@ export default function PermissionsPrimer() {
     {
       key: "notif",
       icon: Bell,
-      title: "Notifications",
+      title: tr("Notifications"),
       why: "Tes rappels d'agenda, de repas et de séance à l'heure prévue.",
       status: notif,
       ask: askNotifications,
@@ -176,7 +176,7 @@ export default function PermissionsPrimer() {
     {
       key: "camera",
       icon: Camera,
-      title: "Photos & vidéo",
+      title: tr("Photos & vidéo"),
       why: "Tes photos de progression et tes vidéos de technique.",
       status: camera,
       ask: askCamera,
@@ -184,7 +184,7 @@ export default function PermissionsPrimer() {
     {
       key: "location",
       icon: MapPin,
-      title: "Localisation",
+      title: tr("Localisation"),
       why: "Trouver une salle proche de toi.",
       status: location,
       ask: askLocation,

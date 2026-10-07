@@ -324,8 +324,8 @@ function ReminderCard({
           {/* Toggle */}
           <button
             onClick={onToggle}
-            title={reminder.is_active ? "Désactiver" : "Activer"}
-            aria-label={reminder.is_active ? "Désactiver" : "Activer"}
+            title={reminder.is_active ? t("Désactiver") : t("Activer")}
+            aria-label={reminder.is_active ? t("Désactiver") : t("Activer")}
             className="ep-press"
             style={{
               width: 36, height: 36, borderRadius: 8,

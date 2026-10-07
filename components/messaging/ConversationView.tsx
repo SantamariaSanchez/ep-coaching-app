@@ -140,7 +140,7 @@ function VoicePlayer({
     <div className="flex items-center gap-2.5 min-w-[160px]">
       <button
         onClick={handleToggle}
-        aria-label={playing ? "Mettre en pause" : "Lire"}
+        aria-label={playing ? tr("Mettre en pause") : tr("Lire")}
         className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center flex-shrink-0 transition-colors"
       >
         {playing ? (
@@ -179,6 +179,7 @@ function VoiceRecorderButton({
 }: {
   onSend: (blob: Blob, duration: number) => void;
 }) {
+  const tr = useT();
   const [recording, setRecording] = useState(false);
   const [elapsed, setElapsed] = useState(0);
   const recorderRef = useRef<MediaRecorder | null>(null);
@@ -246,7 +247,7 @@ function VoiceRecorderButton({
           ? "bg-red-500 scale-110 shadow-lg shadow-red-500/30"
           : "bg-[#890404]/30 hover:bg-[#890404]/50 text-[#F5EDED]/60"
       }`}
-      title={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"} aria-label={recording ? "Relâcher pour envoyer" : "Maintenir pour enregistrer"}
+      title={recording ? tr("Relâcher pour envoyer") : tr("Maintenir pour enregistrer")} aria-label={recording ? tr("Relâcher pour envoyer") : tr("Maintenir pour enregistrer")}
     >
       {recording ? (
         <div className="flex items-center gap-1">
@@ -311,7 +312,7 @@ function MessageBubble({
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={msg.image_url}
-              alt={isOwn ? "Photo envoyée" : "Photo reçue"}
+              alt={isOwn ? tr("Photo envoyée") : tr("Photo reçue")}
               className="rounded-lg max-w-[220px] max-h-[280px] object-cover"
             />
           </a>
@@ -536,7 +537,7 @@ export default function ConversationView({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: peerId,
-          title: "EP Coaching : Nouveau message",
+          title: tr("EP Coaching : Nouveau message"),
           body: `${senderName} : ${body.slice(0, 60)}`,
           url: pushUrl,
         }),

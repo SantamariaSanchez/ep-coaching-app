@@ -21,16 +21,16 @@ function DailyAveragesRecap({ averages }: { averages: WeeklyAverages }) {
   const t = useT();
   if (averages.daysLogged === 0) return null;
   const items: { label: string; value: string }[] = [];
-  if (averages.weight != null) items.push({ label: "Poids", value: `${averages.weight} kg` });
-  if (averages.sleep_hours != null) items.push({ label: "Sommeil", value: `${averages.sleep_hours} h` });
-  if (averages.calories_kcal != null) items.push({ label: "Kcal", value: `${averages.calories_kcal}` });
-  if (averages.proteins_g != null) items.push({ label: "Prot.", value: `${averages.proteins_g}g` });
-  if (averages.carbs_g != null) items.push({ label: "Gluc.", value: `${averages.carbs_g}g` });
-  if (averages.fats_g != null) items.push({ label: "Lip.", value: `${averages.fats_g}g` });
-  if (averages.training_rating != null) items.push({ label: "Séance", value: `${averages.training_rating}/10` });
-  if (averages.stress != null) items.push({ label: "Stress", value: STRESS_HUNGER_LABEL[Math.round(averages.stress)] });
-  if (averages.hunger != null) items.push({ label: "Faim", value: STRESS_HUNGER_LABEL[Math.round(averages.hunger)] });
-  if (averages.digestion_summary) items.push({ label: "Digestion", value: `${averages.digestion_summary.value} (${averages.digestion_summary.count}/${averages.daysLogged})` });
+  if (averages.weight != null) items.push({ label: t("Poids"), value: `${averages.weight} kg` });
+  if (averages.sleep_hours != null) items.push({ label: t("Sommeil"), value: `${averages.sleep_hours} h` });
+  if (averages.calories_kcal != null) items.push({ label: t("Kcal"), value: `${averages.calories_kcal}` });
+  if (averages.proteins_g != null) items.push({ label: t("Prot."), value: `${averages.proteins_g}g` });
+  if (averages.carbs_g != null) items.push({ label: t("Gluc."), value: `${averages.carbs_g}g` });
+  if (averages.fats_g != null) items.push({ label: t("Lip."), value: `${averages.fats_g}g` });
+  if (averages.training_rating != null) items.push({ label: t("Séance"), value: `${averages.training_rating}/10` });
+  if (averages.stress != null) items.push({ label: t("Stress"), value: STRESS_HUNGER_LABEL[Math.round(averages.stress)] });
+  if (averages.hunger != null) items.push({ label: t("Faim"), value: STRESS_HUNGER_LABEL[Math.round(averages.hunger)] });
+  if (averages.digestion_summary) items.push({ label: t("Digestion"), value: `${averages.digestion_summary.value} (${averages.digestion_summary.count}/${averages.daysLogged})` });
   if (items.length === 0) return null;
 
   return (
@@ -418,20 +418,20 @@ export default function CheckinCard({ checkin, dailyAverages }: { checkin: Check
               <p style={sectionLbl}>{t("Données chiffrées")}</p>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0 24px" }}>
                 <div>
-                  <NumRow label="Adhérence nutri" value={checkin.nutrition_adherence ? `${checkin.nutrition_adherence}%` : null} />
-                  <NumRow label="Calories/j" value={checkin.calories_per_day ? `${checkin.calories_per_day} kcal` : null} />
-                  <NumRow label="Pas/j" value={checkin.steps_per_day ? checkin.steps_per_day.toLocaleString("fr-FR") : null} />
+                  <NumRow label={t("Adhérence nutri")} value={checkin.nutrition_adherence ? `${checkin.nutrition_adherence}%` : null} />
+                  <NumRow label={t("Calories/j")} value={checkin.calories_per_day ? `${checkin.calories_per_day} kcal` : null} />
+                  <NumRow label={t("Pas/j")} value={checkin.steps_per_day ? checkin.steps_per_day.toLocaleString("fr-FR") : null} />
                 </div>
                 <div>
-                  <NumRow label="Sommeil" value={checkin.sleep_hours ? `${checkin.sleep_hours}h` : null} />
-                  <NumRow label="HRV" value={checkin.hrv ? String(checkin.hrv) : null} />
-                  <NumRow label="FC repos" value={checkin.resting_hr ? `${checkin.resting_hr} bpm` : null} />
+                  <NumRow label={t("Sommeil")} value={checkin.sleep_hours ? `${checkin.sleep_hours}h` : null} />
+                  <NumRow label={t("HRV")} value={checkin.hrv ? String(checkin.hrv) : null} />
+                  <NumRow label={t("FC repos")} value={checkin.resting_hr ? `${checkin.resting_hr} bpm` : null} />
                   <NumRow
-                    label="Digestion"
+                    label={t("Digestion")}
                     value={checkin.digestion != null ? `${checkin.digestion}/5 : ${DIGESTION[checkin.digestion] ?? ""}` : null}
                   />
                   <NumRow
-                    label="Ressenti"
+                    label={t("Ressenti")}
                     value={checkin.general_feeling != null ? `${checkin.general_feeling}/5 : ${FEELING[checkin.general_feeling] ?? ""}` : null}
                   />
                 </div>

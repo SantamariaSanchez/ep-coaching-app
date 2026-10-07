@@ -193,6 +193,7 @@ function AvgRow({ metric, label, value, unit = "" }: { metric: keyof typeof METR
 }
 
 function DayCard({ log }: { log: DailyLog }) {
+  const t = useT();
   return (
     <div className="ep-card" style={{ padding: "12px 14px" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -207,10 +208,10 @@ function DayCard({ log }: { log: DailyLog }) {
         {log.stress && <StressChip val={log.stress} />}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 14px" }}>
-        <KV metric="poids" label="Poids" value={log.weight_morning != null ? `${log.weight_morning} kg` : null} />
-        <KV metric="pas" label="Pas" value={log.steps != null ? log.steps.toLocaleString("fr-FR") : null} />
-        <KV metric="sommeil" label="Sommeil" value={log.sleep_hours != null ? `${log.sleep_hours}h` : null} />
-        <KV metric="kcal" label="Kcal" value={log.calories_kcal != null ? `${log.calories_kcal}` : null} />
+        <KV metric="poids" label={t("Poids")} value={log.weight_morning != null ? `${log.weight_morning} kg` : null} />
+        <KV metric="pas" label={t("Pas")} value={log.steps != null ? log.steps.toLocaleString("fr-FR") : null} />
+        <KV metric="sommeil" label={t("Sommeil")} value={log.sleep_hours != null ? `${log.sleep_hours}h` : null} />
+        <KV metric="kcal" label={t("Kcal")} value={log.calories_kcal != null ? `${log.calories_kcal}` : null} />
       </div>
     </div>
   );
@@ -309,13 +310,13 @@ export default function BilanProgressView({
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatTile
-            label="Poids"
+            label={t("Poids")}
             value={weightDelta != null ? `${weightDelta > 0 ? "+" : ""}${weightDelta} kg` : "N/A"}
             sub={lastWeight != null ? `${lastWeight} kg actuel` : undefined}
           />
-          <StatTile label="Pas / jour" value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "N/A"} />
-          <StatTile label="Sommeil" value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "N/A"} />
-          <StatTile label="Bilans d'affilée" value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} gold={streak > 0} />
+          <StatTile label={t("Pas / jour")} value={avgSteps != null ? Math.round(avgSteps).toLocaleString("fr-FR") : "N/A"} />
+          <StatTile label={t("Sommeil")} value={avgSleep != null ? `${avgSleep.toFixed(1)}h` : "N/A"} />
+          <StatTile label={t("Bilans d'affilée")} value={`${streak}j`} sub={streak > 0 ? "en cours" : undefined} gold={streak > 0} />
         </div>
       </div>
 
@@ -356,17 +357,17 @@ export default function BilanProgressView({
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "0 0 4px" }}>
                   {t("Moyennes · corps & activité")}
                 </p>
-                <AvgRow metric="poids" label="Poids" value={averages.weight} unit=" kg" />
-                <AvgRow metric="pas" label="Pas" value={averages.steps} />
-                <AvgRow metric="sommeil" label="Sommeil" value={averages.sleep_hours} unit="h" />
-                <AvgRow metric="sommeil" label="Qualité sommeil" value={averages.sleep_rating} unit="%" />
+                <AvgRow metric="poids" label={t("Poids")} value={averages.weight} unit=" kg" />
+                <AvgRow metric="pas" label={t("Pas")} value={averages.steps} />
+                <AvgRow metric="sommeil" label={t("Sommeil")} value={averages.sleep_hours} unit="h" />
+                <AvgRow metric="sommeil" label={t("Qualité sommeil")} value={averages.sleep_rating} unit="%" />
                 <p style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(224,30,30,0.4)", margin: "14px 0 4px" }}>
                   {t("Moyennes · nutrition")}
                 </p>
-                <AvgRow metric="kcal" label="Kcal" value={averages.calories_kcal} unit=" kcal" />
-                <AvgRow metric="proteines" label="Protéines" value={averages.proteins_g} unit="g" />
-                <AvgRow metric="glucides" label="Glucides" value={averages.carbs_g} unit="g" />
-                <AvgRow metric="lipides" label="Lipides" value={averages.fats_g} unit="g" />
+                <AvgRow metric="kcal" label={t("Kcal")} value={averages.calories_kcal} unit=" kcal" />
+                <AvgRow metric="proteines" label={t("Protéines")} value={averages.proteins_g} unit="g" />
+                <AvgRow metric="glucides" label={t("Glucides")} value={averages.carbs_g} unit="g" />
+                <AvgRow metric="lipides" label={t("Lipides")} value={averages.fats_g} unit="g" />
               </div>
 
               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

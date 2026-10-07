@@ -1,5 +1,6 @@
 "use client";
 
+import { useT } from "@/components/i18n/I18nProvider";
 import { useState, useEffect } from "react";
 
 export default function SeasonModeToggle({
@@ -9,6 +10,7 @@ export default function SeasonModeToggle({
   currentMode: "off_season" | "prep";
   setSeasonMode: (mode: "off_season" | "prep") => Promise<{ error?: string }>;
 }) {
+  const t = useT();
   const [mode, setMode] = useState(currentMode);
   const [saving, setSaving] = useState(false);
 
@@ -33,8 +35,8 @@ export default function SeasonModeToggle({
   return (
     <div className="flex gap-2 mb-4">
       {[
-        { value: "off_season" as const, label: "🧘 Off-season" },
-        { value: "prep" as const, label: "🔥 Prep" },
+        { value: "off_season" as const, label: t("🧘 Off-season") },
+        { value: "prep" as const, label: t("🔥 Prep") },
       ].map((opt) => (
         <button
           key={opt.value}

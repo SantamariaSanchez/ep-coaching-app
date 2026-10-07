@@ -231,10 +231,10 @@ function ProfileTab({
         </div>
 
         <div className="space-y-3">
-          <ScoreBar label="Motivation" value={profile.motivation_score ?? 0} color="#E01E1E" />
-          <ScoreBar label="Gestion du stress" value={profile.stress_score ?? 0} color="#60a5fa" />
-          <ScoreBar label="Sérénité image corporelle" value={profile.body_image_score ?? 0} color="#fbbf24" />
-          <ScoreBar label="Discipline" value={profile.discipline_score ?? 0} color="#4ade80" />
+          <ScoreBar label={tr("Motivation")} value={profile.motivation_score ?? 0} color="#E01E1E" />
+          <ScoreBar label={tr("Gestion du stress")} value={profile.stress_score ?? 0} color="#60a5fa" />
+          <ScoreBar label={tr("Sérénité image corporelle")} value={profile.body_image_score ?? 0} color="#fbbf24" />
+          <ScoreBar label={tr("Discipline")} value={profile.discipline_score ?? 0} color="#4ade80" />
         </div>
       </div>
 
@@ -678,10 +678,10 @@ export default function MindsetView({
   const [tab, setTab] = useState<Tab>(mindsetProfile?.quiz_completed_at ? "journal" : "profil");
 
   const tabs: { key: Tab; label: string; icon: React.ElementType }[] = [
-    { key: "profil", label: "Profil", icon: Brain },
-    { key: "habitudes", label: "Habitudes", icon: ListChecks },
-    { key: "conseils", label: "Conseils", icon: Lightbulb },
-    { key: "journal", label: "Journal", icon: PenLine },
+    { key: "profil", label: tr("Profil"), icon: Brain },
+    { key: "habitudes", label: tr("Habitudes"), icon: ListChecks },
+    { key: "conseils", label: tr("Conseils"), icon: Lightbulb },
+    { key: "journal", label: tr("Journal"), icon: PenLine },
   ];
 
   return (

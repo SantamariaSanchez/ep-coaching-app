@@ -76,7 +76,7 @@ export default async function ClientProgramPage() {
             d'office seulement s'il n'y a encore rien à montrer. */}
         <div className="border-t border-[#890404]/15 pt-6">
           <CollapsibleSection
-            title={program && program.days.length > 0 ? "Changer de programme" : "Créer mon programme"}
+            title={program && program.days.length > 0 ? t("Changer de programme") : t("Créer mon programme")}
             defaultOpen={!program || program.days.length === 0}
           >
             <ProgramPresetSelector

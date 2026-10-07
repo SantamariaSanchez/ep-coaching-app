@@ -295,15 +295,15 @@ export default function NonNegotiablesTracker({
           {new Date(weeklyStats.to + "T12:00:00").toLocaleDateString("fr-FR")}{" "}{t(": chiffres déjà présents dans l'appli, rien à ressaisir.")}
         </p>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
-          <StatTile label="Scripts publiés" value={weeklyStats.scriptsPublished} />
-          <StatTile label="Vues cumulées" value={weeklyStats.totalViews.toLocaleString("fr-FR")} />
-          <StatTile label="Engagement" value={weeklyStats.totalEngagement.toLocaleString("fr-FR")} />
-          <StatTile label="Nouveaux leads" value={weeklyStats.newLeads} />
-          <StatTile label="Appels bookés" value={weeklyStats.callsBooked} target={5} />
-          <StatTile label="Appels faits" value={weeklyStats.callsDone} />
-          <StatTile label="Ventes closes" value={weeklyStats.callsClosed} />
+          <StatTile label={t("Scripts publiés")} value={weeklyStats.scriptsPublished} />
+          <StatTile label={t("Vues cumulées")} value={weeklyStats.totalViews.toLocaleString("fr-FR")} />
+          <StatTile label={t("Engagement")} value={weeklyStats.totalEngagement.toLocaleString("fr-FR")} />
+          <StatTile label={t("Nouveaux leads")} value={weeklyStats.newLeads} />
+          <StatTile label={t("Appels bookés")} value={weeklyStats.callsBooked} target={5} />
+          <StatTile label={t("Appels faits")} value={weeklyStats.callsDone} />
+          <StatTile label={t("Ventes closes")} value={weeklyStats.callsClosed} />
           <StatTile
-            label="CA généré"
+            label={t("CA généré")}
             value={weeklyStats.revenueGenerated.toLocaleString("fr-FR", { maximumFractionDigits: 0 }) + " €"}
           />
         </div>

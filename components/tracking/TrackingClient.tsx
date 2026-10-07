@@ -405,10 +405,10 @@ export default function TrackingClient({
             {t("Données du jour")}
           </p>
           <div className="grid grid-cols-2 gap-3 mb-4">
-            <NumberField label="Sommeil (h)" value={sleepHours} onChange={setSleepHours} step={0.25} placeholder="7.5" />
-            <NumberField label="Récupération (0-100)" value={readiness} onChange={setReadiness} step={1} placeholder="80" />
-            <NumberField label="HRV (ms)" value={hrv} onChange={setHrv} step={1} placeholder="55" />
-            <NumberField label="FC repos (bpm)" value={restingHr} onChange={setRestingHr} step={1} placeholder="58" />
+            <NumberField label={t("Sommeil (h)")} value={sleepHours} onChange={setSleepHours} step={0.25} placeholder="7.5" />
+            <NumberField label={t("Récupération (0-100)")} value={readiness} onChange={setReadiness} step={1} placeholder="80" />
+            <NumberField label={t("HRV (ms)")} value={hrv} onChange={setHrv} step={1} placeholder="55" />
+            <NumberField label={t("FC repos (bpm)")} value={restingHr} onChange={setRestingHr} step={1} placeholder="58" />
           </div>
           <button
             onClick={handleSave}
@@ -428,18 +428,18 @@ export default function TrackingClient({
       {hasWeekStats && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <StatTile
-            label="Sommeil moy. (7j)"
+            label={t("Sommeil moy. (7j)")}
             value={avgSleep7 != null ? `${avgSleep7.toFixed(1)}h` : "N/A"}
             delta={avgSleep7 != null && avgSleepPrev7 != null ? avgSleep7 - avgSleepPrev7 : null}
             deltaUnit="h"
           />
           <StatTile
-            label="Récup. moy. (7j)"
+            label={t("Récup. moy. (7j)")}
             value={avgReadiness7 != null ? `${Math.round(avgReadiness7)}` : "N/A"}
             delta={avgReadiness7 != null && avgReadinessPrev7 != null ? avgReadiness7 - avgReadinessPrev7 : null}
           />
           <StatTile
-            label="Dette sommeil (7j)"
+            label={t("Dette sommeil (7j)")}
             value={sleepDebt7 != null ? `${sleepDebt7 > 0 ? "+" : ""}${sleepDebt7}h` : "N/A"}
           />
           <div className="bg-[#1f0101] border border-[#890404]/20 rounded-xl p-3.5">

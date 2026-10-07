@@ -84,12 +84,12 @@ export default async function TeamCockpitPage() {
 
   const count = (role: string) => active.filter((m) => m.role_key === role && m.contract_signed_at).length;
   const flows = [
-    { label: "Lead magnet et formulaire de préqualification vers le CRM d'un setter", ok: count("setter") + count("head-of-sales") + count("closer") > 0, who: count("setter") ? `${count("setter")} setter(s)` : "aucun setter, un closer ou le Head of Sales prend le relais" },
-    { label: "RDV Calendly vers l'agenda d'un closer", ok: !!process.env.CALENDLY_API_TOKEN && count("closer") + count("head-of-sales") > 0, who: process.env.CALENDLY_API_TOKEN ? `${count("closer")} closer(s)` : "jeton CALENDLY_API_TOKEN à ajouter sur Vercel" },
-    { label: "Paiement Stripe vers vente closée (closer et setter)", ok: count("closer") + count("setter") + count("head-of-sales") > 0, who: "automatique dès qu'un prospect paie avec l'email de sa fiche" },
-    { label: "Paiement Stripe vers la trésorerie", ok: count("finance-comptabilite") > 0, who: count("finance-comptabilite") ? "actif" : "pas encore de Finance / Comptabilité" },
-    { label: "Nouveau client coaching vers le suivi J+30", ok: count("coach-onboarding-success") > 0, who: count("coach-onboarding-success") ? "actif" : "pas encore de Coach Onboarding" },
-    { label: "Candidature vers le pipeline RH", ok: count("rh-people-ops") > 0, who: count("rh-people-ops") ? "actif" : "pas encore de RH" },
+    { label: t("Lead magnet et formulaire de préqualification vers le CRM d'un setter"), ok: count("setter") + count("head-of-sales") + count("closer") > 0, who: count("setter") ? `${count("setter")} setter(s)` : "aucun setter, un closer ou le Head of Sales prend le relais" },
+    { label: t("RDV Calendly vers l'agenda d'un closer"), ok: !!process.env.CALENDLY_API_TOKEN && count("closer") + count("head-of-sales") > 0, who: process.env.CALENDLY_API_TOKEN ? `${count("closer")} closer(s)` : "jeton CALENDLY_API_TOKEN à ajouter sur Vercel" },
+    { label: t("Paiement Stripe vers vente closée (closer et setter)"), ok: count("closer") + count("setter") + count("head-of-sales") > 0, who: "automatique dès qu'un prospect paie avec l'email de sa fiche" },
+    { label: t("Paiement Stripe vers la trésorerie"), ok: count("finance-comptabilite") > 0, who: count("finance-comptabilite") ? "actif" : "pas encore de Finance / Comptabilité" },
+    { label: t("Nouveau client coaching vers le suivi J+30"), ok: count("coach-onboarding-success") > 0, who: count("coach-onboarding-success") ? "actif" : "pas encore de Coach Onboarding" },
+    { label: t("Candidature vers le pipeline RH"), ok: count("rh-people-ops") > 0, who: count("rh-people-ops") ? "actif" : "pas encore de RH" },
   ];
 
   return (

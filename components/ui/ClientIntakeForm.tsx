@@ -182,10 +182,10 @@ export default function ClientIntakeForm({
 
       <Section title={t("Informations générales")} />
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Date de naissance">
+        <Field label={t("Date de naissance")}>
           <input type="date" value={txt("date_of_birth")} onChange={(e) => set("date_of_birth", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Sexe biologique">
+        <Field label={t("Sexe biologique")}>
           <select value={txt("gender")} onChange={(e) => set("gender", (e.target.value || null) as ClientIntakeInput["gender"])} className={inputClass}>
             <option value="">{t("Non renseigné")}</option>
             <option value="Homme">{t("Homme")}</option>
@@ -193,16 +193,16 @@ export default function ClientIntakeForm({
             <option value="Autre">{t("Autre")}</option>
           </select>
         </Field>
-        <Field label="Taille (cm)">
+        <Field label={t("Taille (cm)")}>
           <input type="number" value={num("height_cm")} onChange={(e) => set("height_cm", e.target.value ? parseFloat(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Métier">
+        <Field label={t("Métier")}>
           <input value={txt("occupation")} onChange={(e) => set("occupation", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Horaires de travail type">
+        <Field label={t("Horaires de travail type")}>
           <input value={txt("work_hours")} onChange={(e) => set("work_hours", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Emploi du temps">
+        <Field label={t("Emploi du temps")}>
           <select value={txt("schedule_type")} onChange={(e) => set("schedule_type", (e.target.value || null) as ClientIntakeInput["schedule_type"])} className={inputClass}>
             <option value="">{t("Non renseigné")}</option>
             <option value="fixe">{t("Fixe")}</option>
@@ -213,13 +213,13 @@ export default function ClientIntakeForm({
 
       <Section title={t("Objectifs")} />
       <div className="space-y-3">
-        <Field label="Objectif à 3 mois">
+        <Field label={t("Objectif à 3 mois")}>
           <textarea rows={2} value={txt("goal_3_months")} onChange={(e) => set("goal_3_months", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Objectif à 12 mois">
+        <Field label={t("Objectif à 12 mois")}>
           <textarea rows={2} value={txt("goal_12_months")} onChange={(e) => set("goal_12_months", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Comment le coach peut aider">
+        <Field label={t("Comment le coach peut aider")}>
           <textarea rows={2} value={txt("how_coach_can_help")} onChange={(e) => set("how_coach_can_help", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
@@ -260,52 +260,52 @@ export default function ClientIntakeForm({
       )}
 
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Nombre de pas moyen/jour (info onboarding, historique)">
+        <Field label={t("Nombre de pas moyen/jour (info onboarding, historique)")}>
           <input type="number" value={num("avg_daily_steps")} onChange={(e) => set("avg_daily_steps", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Montre / bague connectée">
+        <Field label={t("Montre / bague connectée")}>
           <input value={txt("wearable_device")} onChange={(e) => set("wearable_device", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Niveau de stress (1-10)">
+        <Field label={t("Niveau de stress (1-10)")}>
           <input type="number" min={1} max={10} value={num("stress_level")} onChange={(e) => set("stress_level", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Qualité du sommeil (1-10)">
+        <Field label={t("Qualité du sommeil (1-10)")}>
           <input type="number" min={1} max={10} value={num("sleep_quality")} onChange={(e) => set("sleep_quality", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Heures de sommeil/nuit">
+        <Field label={t("Heures de sommeil/nuit")}>
           <input type="number" step="0.5" value={num("sleep_hours")} onChange={(e) => set("sleep_hours", e.target.value ? parseFloat(e.target.value) : null)} className={inputClass} />
         </Field>
         <div />
-        <Field label="Problèmes de santé">
+        <Field label={t("Problèmes de santé")}>
           <textarea rows={2} value={txt("health_issues")} onChange={(e) => set("health_issues", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Blessures / douleurs">
+        <Field label={t("Blessures / douleurs")}>
           <textarea rows={2} value={txt("injuries")} onChange={(e) => set("injuries", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
 
       <Section title={t("Nutrition")} />
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Repas actuels/jour">
+        <Field label={t("Repas actuels/jour")}>
           <input type="number" value={num("meals_current")} onChange={(e) => set("meals_current", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Repas idéaux/jour">
+        <Field label={t("Repas idéaux/jour")}>
           <input type="number" value={num("meals_ideal")} onChange={(e) => set("meals_ideal", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
       </div>
       <div className="mt-3">
-        <Field label="Journée alimentaire type">
+        <Field label={t("Journée alimentaire type")}>
           <textarea rows={3} value={txt("typical_day")} onChange={(e) => set("typical_day", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
       <div className="grid grid-cols-3 gap-3 mt-3">
-        <Field label="Kcal connues">
+        <Field label={t("Kcal connues")}>
           <input type="number" value={num("known_calories")} onChange={(e) => set("known_calories", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Prot. (g)">
+        <Field label={t("Prot. (g)")}>
           <input type="number" value={num("known_protein")} onChange={(e) => set("known_protein", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Gluc./Lip. (g)">
+        <Field label={t("Gluc./Lip. (g)")}>
           <div className="flex gap-1.5">
             <input type="number" placeholder="G" aria-label="G" value={num("known_carbs")} onChange={(e) => set("known_carbs", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
             <input type="number" placeholder="L" aria-label="L" value={num("known_fat")} onChange={(e) => set("known_fat", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
@@ -313,28 +313,28 @@ export default function ClientIntakeForm({
         </Field>
       </div>
       <div className="grid sm:grid-cols-2 gap-3 mt-3">
-        <Field label="Cheat meals/semaine">
+        <Field label={t("Cheat meals/semaine")}>
           <input type="number" value={num("cheat_meals_per_week")} onChange={(e) => set("cheat_meals_per_week", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Budget compléments (€/mois)">
+        <Field label={t("Budget compléments (€/mois)")}>
           <input type="number" value={num("supplement_budget")} onChange={(e) => set("supplement_budget", e.target.value ? parseFloat(e.target.value) : null)} className={inputClass} />
         </Field>
       </div>
       <div className="mt-3">
-        <Field label="Impact des cheat meals (digestion, perf...)">
+        <Field label={t("Impact des cheat meals (digestion, perf...)")}>
           <textarea rows={2} value={txt("cheat_meal_impact")} onChange={(e) => set("cheat_meal_impact", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
       <div className="grid sm:grid-cols-2 gap-3 mt-3">
-        <Field label="Aliments détestés">
+        <Field label={t("Aliments détestés")}>
           <textarea rows={2} value={txt("disliked_foods")} onChange={(e) => set("disliked_foods", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Aliments adorés">
+        <Field label={t("Aliments adorés")}>
           <textarea rows={2} value={txt("liked_foods")} onChange={(e) => set("liked_foods", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
       <div className="mt-3">
-        <Field label="Restrictions alimentaires (détails libres)">
+        <Field label={t("Restrictions alimentaires (détails libres)")}>
           <textarea rows={2} value={txt("dietary_restrictions")} onChange={(e) => set("dietary_restrictions", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
@@ -378,14 +378,14 @@ export default function ClientIntakeForm({
         </div>
       </div>
       <div className="grid sm:grid-cols-2 gap-3 mt-3">
-        <Field label="Préférence de plan">
+        <Field label={t("Préférence de plan")}>
           <select value={txt("plan_preference")} onChange={(e) => set("plan_preference", (e.target.value || null) as ClientIntakeInput["plan_preference"])} className={inputClass}>
             <option value="">{t("Non renseigné")}</option>
             <option value="fixe">{t("Plan fixe")}</option>
             <option value="flexible">{t("Macros flexibles")}</option>
           </select>
         </Field>
-        <Field label="Apport calorique">
+        <Field label={t("Apport calorique")}>
           <select value={txt("calorie_preference")} onChange={(e) => set("calorie_preference", (e.target.value || null) as ClientIntakeInput["calorie_preference"])} className={inputClass}>
             <option value="">{t("Non renseigné")}</option>
             <option value="lineaire">{t("Linéaire chaque jour")}</option>
@@ -396,42 +396,42 @@ export default function ClientIntakeForm({
 
       <Section title={t("Entraînement")} />
       <div className="grid sm:grid-cols-2 gap-3">
-        <Field label="Séances actuelles/semaine">
+        <Field label={t("Séances actuelles/semaine")}>
           <input type="number" value={num("sessions_current")} onChange={(e) => set("sessions_current", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Séances voulues/semaine">
+        <Field label={t("Séances voulues/semaine")}>
           <input type="number" value={num("sessions_desired")} onChange={(e) => set("sessions_desired", e.target.value ? parseInt(e.target.value) : null)} className={inputClass} />
         </Field>
-        <Field label="Durée moyenne souhaitée">
+        <Field label={t("Durée moyenne souhaitée")}>
           <input value={txt("session_duration")} onChange={(e) => set("session_duration", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Disponibilités (jours/horaires)">
+        <Field label={t("Disponibilités (jours/horaires)")}>
           <input value={txt("availability")} onChange={(e) => set("availability", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Cardio préféré">
+        <Field label={t("Cardio préféré")}>
           <input value={txt("cardio_preference")} onChange={(e) => set("cardio_preference", e.target.value || null)} className={inputClass} />
         </Field>
-        <Field label="Split préféré">
+        <Field label={t("Split préféré")}>
           <input value={txt("preferred_split")} onChange={(e) => set("preferred_split", e.target.value || null)} className={inputClass} />
         </Field>
       </div>
       <div className="space-y-3 mt-3">
-        <Field label="Routine actuelle">
+        <Field label={t("Routine actuelle")}>
           <textarea rows={2} value={txt("current_routine")} onChange={(e) => set("current_routine", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Mouvements qui marchent bien">
+        <Field label={t("Mouvements qui marchent bien")}>
           <textarea rows={2} value={txt("exercises_that_work")} onChange={(e) => set("exercises_that_work", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Mouvements qui posent problème / à éviter">
+        <Field label={t("Mouvements qui posent problème / à éviter")}>
           <textarea rows={2} value={txt("exercises_problematic")} onChange={(e) => set("exercises_problematic", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
-        <Field label="Machines/exercices détestés">
+        <Field label={t("Machines/exercices détestés")}>
           <textarea rows={2} value={txt("disliked_equipment")} onChange={(e) => set("disliked_equipment", e.target.value || null)} className={`${inputClass} resize-none`} />
         </Field>
       </div>
 
       <Section title={t("Lieu d'entraînement")} />
-      <Field label="Où s'entraîne-t-il/elle vraiment ? (conditionne le matériel proposable dans les suggestions et le constructeur de programme)">
+      <Field label={t("Où s'entraîne-t-il/elle vraiment ? (conditionne le matériel proposable dans les suggestions et le constructeur de programme)")}>
         <select
           value={txt("training_access")}
           onChange={(e) => set("training_access", (e.target.value || null) as ClientIntakeInput["training_access"])}
@@ -445,17 +445,17 @@ export default function ClientIntakeForm({
       </Field>
       {form.training_access === "salle" && (
         <div className="grid sm:grid-cols-2 gap-3 mt-3">
-          <Field label="Nom de la salle">
+          <Field label={t("Nom de la salle")}>
             <input value={txt("gym_name")} onChange={(e) => set("gym_name", e.target.value || null)} className={inputClass} />
           </Field>
-          <Field label="Lien de la salle">
+          <Field label={t("Lien de la salle")}>
             <input value={txt("gym_link")} onChange={(e) => set("gym_link", e.target.value || null)} className={inputClass} />
           </Field>
         </div>
       )}
 
       <Section title={t("Autre")} />
-      <Field label="Notes libres">
+      <Field label={t("Notes libres")}>
         <textarea rows={3} value={txt("additional_notes")} onChange={(e) => set("additional_notes", e.target.value || null)} className={`${inputClass} resize-none`} />
       </Field>
 
